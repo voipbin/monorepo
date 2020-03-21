@@ -1,41 +1,91 @@
 image: golang/1.14-alpine
 
+variables:
+  LOCAL_PACKAGE_NAME: asterisk_proxy
+
 stages:
+  - ensure
   - test
-  - deploy
+  - build
+  - release
 
-before_script:
-    # check version
-    - gcloud --version
-    - ansible-playbook --version
+ensure:
+  stage: ensure
+  artifacts:
+    name: $CI_COMMIT_REF_NAME"
+    expire_in: 8 hours
+    paths:
+      - vendor/
+  script:
+    - go get -u github.com/golang/dep/cmd/dep
+    - dep ensure --vendor-only
 
-    # initiate gcp
-    - cd ansible
-    - export GCP_AUTH_KIND=serviceaccount
-    - export GCP_SERVICE_ACCOUNT_FILE=./google_service_account.json
-    - export ANSIBLE_CONFIG=./config/ansible.cfg
-    - echo $LOCAL_CREDENTIAL > ./google_service_account.json
-    - gcloud auth activate-service-account --key-file=./google_service_account.json
-    - gcloud config set project $LOCAL_PROJECTID
-    - gcloud compute config-ssh
+lint:
+  stage: test
+  script:
+    - go get -u golang.org/x/lint/golint
+    - golint -set_exit_status $(go list ./...)
+
+vet:
+  stage: test
+  script:
+    - go vet $(go list ./...)
 
 test:
   stage: test
-  allow_failure: true
   script:
-    - ansible-inventory -i ./inventories/inventory_production.gcp.yml --list
-    - ansible-playbook --diff -i inventories/inventory_production.gcp.yml ./playbooks/playbook.yml --check
-  variables:
-    LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
-    LOCAL_PROJECTID: voipbin-production
+    - go test -v $(go list ./...)
+  
+build:
+  stage: build
+  artifacts:
+    expire_in: 8 hours
+    paths:
+      - cmd
+  script:
+    - mkdir $LOCAL_PACKAGE_NAME
+    - go build -o $LOCAL_PACKAGE_NAME cmd/...
 
-deploy:
-  stage: deploy
+release:
+  stage: release
   only:
     - master
   when: manual
-  script:
-    - ansible-playbook --diff -i inventories/inventory_production.gcp.yml ./playbooks/playbook.yml
-  variables:
-    LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
-    LOCAL_PROJECTID: voipbin-production
+    
+
+
+# before_script:
+#     # check version
+#     - gcloud --version
+#     - ansible-playbook --version
+
+#     # initiate gcp
+#     - cd ansible
+#     - export GCP_AUTH_KIND=serviceaccount
+#     - export GCP_SERVICE_ACCOUNT_FILE=./google_service_account.json
+#     - export ANSIBLE_CONFIG=./config/ansible.cfg
+#     - echo $LOCAL_CREDENTIAL > ./google_service_account.json
+#     - gcloud auth activate-service-account --key-file=./google_service_account.json
+#     - gcloud config set project $LOCAL_PROJECTID
+#     - gcloud compute config-ssh
+
+# test:
+#   stage: test
+#   allow_failure: true
+#   script:
+#     - ansible-inventory -i ./inventories/inventory_production.gcp.yml --list
+#     - ansible-playbook --diff -i inventories/inventory_production.gcp.yml ./playbooks/playbook.yml --check
+#   variables:
+#     LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
+#     LOCAL_PROJECTID: voipbin-production
+
+# deploy:
+#   stage: deploy
+#   only:
+#     - master
+#   when: manual
+#   script:
+#     - ansible-playbook --diff -i inventories/inventory_production.gcp.yml ./playbooks/playbook.yml
+#   variables:
+#     LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
+#     LOCAL_PROJECTID: voipbin-production
