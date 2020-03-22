@@ -12,8 +12,6 @@ stages:
   - release
 
 .gcp_init: &gcp_init |-
-  cd terraform
-  terraform workspace list
   echo $LOCAL_CREDENTIAL > ./google_service_account.json
   gcloud auth activate-service-account --key-file=./google_service_account.json
   gcloud config set project $LOCAL_PROJECTID
