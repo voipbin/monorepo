@@ -61,7 +61,9 @@ release:
   script:
     - *gcp_init
     - gsutil cp bin/$LOCAL_PACKAGE_NAME gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-latest
+    - gsutil acl ch -u AllUsers:R gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-latest
     - gsutil cp bin/$LOCAL_PACKAGE_NAME gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-$CI_COMMIT_SHA
+    - gsutil acl ch -u AllUsers:R gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-$CI_COMMIT_SHA
     - echo "Stored asterisk-proxy. gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-$CI_COMMIT_SHA"
   variables:
     LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
