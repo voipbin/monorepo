@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-
-	// "log"
+	"log/syslog"
 	"net/url"
 	"time"
 
 	"github.com/gorilla/websocket"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
+	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
+
 	"github.com/streadway/amqp"
 )
 
@@ -23,6 +24,9 @@ var rabbitQueue = flag.String("rabbit_queue", "asterisk_ari", "rabbitmq queue na
 
 // create message buffer
 var chMessages = make(chan []byte, 1024000)
+
+// logger for global
+var log = logrus.New()
 
 func main() {
 	initiate()
@@ -39,20 +43,29 @@ func main() {
 
 // initiate initiates asterisk_proxy
 func initiate() {
+	// initiate flags
 	flag.Parse()
-	log.SetFormatter(&log.JSONFormatter{})
-	log.Info("asterisk-proxy started.")
+
+	// initiate log
+	log.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true, DisableColors: true})
+	log.SetLevel(logrus.DebugLevel)
+	hook, err := lSyslog.NewSyslogHook("", "", syslog.LOG_INFO, "")
+	if err == nil {
+		log.Hooks.Add(hook)
+	}
+
+	log.Info("asterisk-proxy has initiated.")
 }
 
 // connectARI connects to Asterisk's ARI websocket.
 // return *websocket.Conn must be closed after use.
-func connectARI(account, subscribe, application string) (*websocket.Conn, error) {
+func connectARI(addr, account, subscribe, application string) (*websocket.Conn, error) {
 	// create url query
 	rawquery := fmt.Sprintf("api_key=%s&subscribeAll=%s&app=%s", account, subscribe, application)
 
 	u := url.URL{
 		Scheme:   "ws",
-		Host:     *ariAddr,
+		Host:     addr,
 		Path:     "/ari/events",
 		RawQuery: rawquery,
 	}
@@ -84,7 +97,7 @@ func recvARIEvent(c *websocket.Conn) error {
 func handleARI() {
 	// connect to Asterisk ARI
 	for {
-		conn, err := connectARI(*ariAccount, *ariSubscribeAll, *ariApplication)
+		conn, err := connectARI(*ariAddr, *ariAccount, *ariSubscribeAll, *ariApplication)
 		if err != nil {
 			log.Errorf("Could not connect to Asterisk ARI. err: %v", err)
 			time.Sleep(time.Second * 1)
