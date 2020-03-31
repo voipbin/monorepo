@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: call-manager
+  labels:
+    app: call-manager
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: call-manager
+  template:
+    metadata:
+      labels:
+        app: call-manager
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: call-manager
+          image: call-manager-image
+          command:
+            - '/app/call-manager'
+          resources:
+            limits:
+              cpu: "5m"
+              memory: "128M"
