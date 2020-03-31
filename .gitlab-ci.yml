@@ -7,7 +7,7 @@ variables:
 
 stages:
   - ensure
-  # - test
+  - test
   - build
   - release
 
@@ -16,7 +16,6 @@ stages:
   gcloud auth activate-service-account --key-file=./google_service_account.json
   gcloud config set project $LOCAL_PROJECTID
   gcloud container clusters get-credentials $LOCAL_CLUSTER_NAME --zone $LOCAL_ZONE --project $LOCAL_PROJECTID
-  kubectl create secret docker-registry --dry-run gitlab-auth --docker-server=https://registry.gitlab.com --docker-username=$LOCAL_DOCKER_USERNAME --docker-password=$LOCAL_DOCKER_PASSWORD --docker-email=$LOCAL_DOCKER_EMAIL -o yaml | kubectl apply -f -
 
 ensure:
   stage: ensure
@@ -28,20 +27,20 @@ ensure:
   script:
     - go mod vendor
 
-# lint:
-#   stage: test
-#   script:
-#     - golint -set_exit_status $(go list ./...)
+lint:
+  stage: test
+  script:
+    - golint -set_exit_status $(go list ./...)
 
-# vet:
-#   stage: test
-#   script:
-#     - go vet $(go list ./...)
+vet:
+  stage: test
+  script:
+    - go vet $(go list ./...)
 
-# test:
-#   stage: test
-#   script:
-#     - go test -v $(go list ./...)
+test:
+  stage: test
+  script:
+    - go test -v $(go list ./...)
   
 build:
   stage: build
@@ -54,8 +53,8 @@ build:
 
 release:
   stage: release
-  # only:
-  #   - master
+  only:
+    - master
   when: manual
   dependencies:
     - build
@@ -69,38 +68,3 @@ release:
     LOCAL_PROJECTID: voipbin-production
     LOCAL_CLUSTER_NAME: k8s-cluster-production
     LOCAL_ZONE: europe-west4-a 
-    LOCAL_DOCKER_USERNAME: $GL_DEPLOY_USER
-    LOCAL_DOCKER_PASSWORD: $GL_DEPLOY_TOKEN
-    LOCAL_DOCKER_EMAIL: pchero21@gmail.com
-
-  # stage: build
-  # artifacts:
-  #   expire_in: 8 hours
-  #   paths:
-  #     - bin/$LOCAL_PACKAGE_NAME
-  # script:
-  #   - mkdir bin
-  #   - GOOS=$GOOS GOARCH=$GOARCH go build -o bin/$LOCAL_PACKAGE_NAME -ldflags "-extldflags '-static'" ./cmd/... 
-
-# release:
-#   stage: release
-#   only:
-#     - master
-#   when: manual
-#   dependencies:
-#     - build
-#   script:
-#     - *gcp_init
-#     - gsutil cp bin/$LOCAL_PACKAGE_NAME gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-latest
-#     - gsutil acl ch -u AllUsers:R gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-latest
-#     - gsutil cp bin/$LOCAL_PACKAGE_NAME gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-$CI_COMMIT_SHA
-#     - gsutil acl ch -u AllUsers:R gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-$CI_COMMIT_SHA
-#     - echo "Stored asterisk-proxy. gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-$CI_COMMIT_SHA"
-#   variables:
-#     LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
-#     LOCAL_PROJECTID: voipbin-production
-#     LOCAL_ENV: production
-#     LOCAL_ZONE: europe-west4-a 
-#     LOCAL_REGION: europe-west4
-
-
