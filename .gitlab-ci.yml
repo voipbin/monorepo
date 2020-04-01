@@ -53,8 +53,8 @@ build:
 
 release:
   stage: release
-  only:
-    - master
+  # only:
+  #   - master
   when: manual
   dependencies:
     - build
