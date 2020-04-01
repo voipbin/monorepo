@@ -7,7 +7,6 @@ import (
 	"syscall"
 	"time"
 
-	joonix "github.com/joonix/log"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -32,12 +31,11 @@ func main() {
 
 // proces init
 func init() {
-	log.SetFormatter(joonix.NewFormatter())
-	// log.SetFormatter(&log.JSONFormatter{})
+	log.SetFormatter(&log.JSONFormatter{})
 	log.SetLevel(log.DebugLevel)
-	// log.SetOutput(os.Stdout)
 
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+
 }
 
 // signalHandler catches signals and set the done
