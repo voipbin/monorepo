@@ -54,6 +54,7 @@ func init() {
 
 	// init signal handler
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	log.Info("init finished")
 }
 
 // signalHandler catches signals and set the done
