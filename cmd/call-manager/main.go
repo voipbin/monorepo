@@ -23,15 +23,12 @@ var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672",
 var rabbitQueueARI = flag.String("rabbit_queue_ari", "asterisk_ari", "rabbitmq asterisk ari queue name.")
 
 func main() {
-	fmt.Println("Hello world!")
-
 	log.WithFields(log.Fields{
 		"msg": "hello",
 	}).Debug("Hello world!")
 
 	// run workers
 	go signalHandler()
-	go timeClock()
 	go handleRabbitMQ()
 
 	simple := call.Call{
@@ -62,15 +59,6 @@ func signalHandler() {
 	sig := <-chSigs
 	log.Debugf("Received signal. sig: %v", sig)
 	chDone <- true
-}
-
-// timeClock prints current time per each seconds.
-func timeClock() {
-	log.Debug("timeClock started.")
-	for {
-		log.Debugf("Current time is: %v", time.Now())
-		time.Sleep(time.Second * 1)
-	}
 }
 
 // connectRabbitMQ connects to the gvien rabbitMQ address.
@@ -119,7 +107,13 @@ func handleRabbitMQ() {
 		)
 		if err != nil {
 			log.Errorf("Could not declare a queue. err: %v", err)
+			time.Sleep(time.Second * 1)
+			continue
+		}
 
+		// set qos
+		if err := ch.Qos(30, 0, false); err != nil {
+			log.Errorf("Could not set the qos. err: %v", err)
 			time.Sleep(time.Second * 1)
 			continue
 		}
