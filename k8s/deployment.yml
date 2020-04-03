@@ -20,8 +20,8 @@ spec:
         - name: call-manager
           image: call-manager-image
           command:
-            - '/app/call-manager'
+            - '/app/call-manager -rabbit_addr "amqp://guest:guest@rabbitmq.voipbin.net:5672" -rabbit_queue_ari "asterisk_ari_event"'
           resources:
             limits:
               cpu: "5m"
-              memory: "128M"
+              memory: "30M"
