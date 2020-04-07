@@ -1,4 +1,4 @@
-module cmd/asterisk-proxy/main.go
+module gitlab.com/voipbin/voip/asterisk-proxy
 
 go 1.14
 
