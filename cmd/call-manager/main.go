@@ -6,30 +6,29 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
+	"gitlab.com/voipbin/bin-manager/call-manager/internal/arihandler"
 	call "gitlab.com/voipbin/bin-manager/call-manager/internal/call"
 
 	joonix "github.com/joonix/log"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
 )
 
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueARI = flag.String("rabbit_queue_ari", "asterisk_ari", "rabbitmq asterisk ari queue name.")
+var rabbitQueueARIEvent = flag.String("rabbit_queue_arievent", "asterisk_ari_event", "rabbitmq asterisk ari event queue name.")
+var rabbitQueueARIRequest = flag.String("rabbit_queue_arirequest", "asterisk_ari_request", "rabbitmq asterisk ari request queue prefix.")
 
 func main() {
-	log.WithFields(log.Fields{
-		"msg": "hello",
-	}).Debug("Hello world!")
 
-	// run workers
+	// signal handler
 	go signalHandler()
-	go handleRabbitMQ()
+
+	// ari event handler
+	go arihandler.ReceiveEventQueue(*rabbitAddr, *rabbitQueueARIEvent, "call-manager")
 
 	simple := call.Call{
 		ID: uuid.NewV4(),
@@ -59,97 +58,4 @@ func signalHandler() {
 	sig := <-chSigs
 	log.Debugf("Received signal. sig: %v", sig)
 	chDone <- true
-}
-
-// connectRabbitMQ connects to the gvien rabbitMQ address.
-// returned *amqp.Connection must be closed after use.
-func connectRabbitMQ(addr string) (*amqp.Connection, error) {
-	// connect to rabbit mq
-	conn, err := amqp.Dial(addr)
-	if err != nil {
-		return nil, err
-	}
-
-	return conn, nil
-}
-
-// handleRabbitMQ handles rabbitMQ connection and message delivery.
-func handleRabbitMQ() {
-	for {
-		// connect to rabbitmq
-		conn, err := connectRabbitMQ(*rabbitAddr)
-		if err != nil {
-			log.Errorf("Could not connect to Rabbitmq. addr: %s, err: %v", *rabbitAddr, err)
-
-			time.Sleep(1 * time.Second)
-			continue
-		}
-		defer conn.Close()
-
-		// create channel
-		ch, err := conn.Channel()
-		if err != nil {
-			log.Errorf("Could not create a channel for RabbitMQ send. err: %v", err)
-
-			time.Sleep(time.Second * 1)
-			continue
-		}
-		defer ch.Close()
-
-		// set queue
-		q, err := ch.QueueDeclare(
-			*rabbitQueueARI, // name
-			true,            // durable
-			false,           // delete when unused
-			false,           // exclusive
-			false,           // no-wait
-			nil,             // arguments
-		)
-		if err != nil {
-			log.Errorf("Could not declare a queue. err: %v", err)
-			time.Sleep(time.Second * 1)
-			continue
-		}
-
-		// set qos
-		if err := ch.Qos(30, 0, false); err != nil {
-			log.Errorf("Could not set the qos. err: %v", err)
-			time.Sleep(time.Second * 1)
-			continue
-		}
-
-		// recevie the message
-		if err := receiveRabbitMSG(ch, q); err != nil {
-			log.Errorf("Could not receive the message. err: %v", err)
-
-			time.Sleep(time.Second * 1)
-			continue
-		}
-	}
-}
-
-// receiveRabbitMSG receives rabbitmq message and prints it.
-func receiveRabbitMSG(ch *amqp.Channel, q amqp.Queue) error {
-	// message receiving
-	for {
-		msgs, err := ch.Consume(
-			q.Name,
-			"",
-			true,
-			false,
-			false,
-			false,
-			nil,
-		)
-		if err != nil {
-			return err
-		}
-
-		go func(deliveries <-chan amqp.Delivery) {
-			for msg := range msgs {
-				log.Debugf("Received message. msg: %s", msg.Body)
-			}
-		}(msgs)
-
-	}
 }
