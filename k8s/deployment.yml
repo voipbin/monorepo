@@ -13,6 +13,10 @@ spec:
     metadata:
       labels:
         app: call-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
     spec:
       imagePullSecrets:
         - name: gitlab-auth
@@ -28,6 +32,14 @@ spec:
             - 'asterisk_ari_event'
             - '-rabbit_queue_arirequest'
             - 'asterisk_ari_request'
+            - '-prom_endpoint'
+            - '/metrics'
+            - '-prom_listen_addr'
+            - ':2112'
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
           resources:
             limits:
               cpu: "10m"
