@@ -3,6 +3,7 @@ package arihandler
 import (
 	log "github.com/sirupsen/logrus"
 
+	ari "gitlab.com/voipbin/bin-manager/call-manager/internal/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/internal/rabbitmq"
 )
 
@@ -23,7 +24,16 @@ func ReceiveEventQueue(addr, queue, receiver string) {
 }
 
 // processEvent processes received ARI event
-func processEvent(event string) error {
-	log.Debugf("Event recevied. event: %s", event)
+func processEvent(m string) error {
+	log.Debugf("Event recevied. event: %s", m)
+
+	event, evt, err := ari.Parse([]byte(m))
+	if err != nil {
+		return err
+	}
+	promARIEventTotal.WithLabelValues(event.Type, event.AsteriskID).Inc()
+
+	log.Debugf("Parsed event. evt: %v", evt)
+
 	return nil
 }
