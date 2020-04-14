@@ -18,9 +18,9 @@ Usage of ./asterisk-proxy:
   -rabbit_addr string
         The asterisk-proxy connect to rabbitmq address. (default "amqp://guest:guest@localhost:5672")
   -rabbit_queue_arievent string
-        The asterisk-proxy sends the ARI event to this rabbitmq queue name. (default "asterisk_ari")
+        The asterisk-proxy sends the ARI event to this rabbitmq queue name. (default "asterisk_ari_event")
   -rabbit_queue_arirequest string
-        The asterisk-proxy gets the ARI request from this rabbitmq queue name. (default "asterisk_ari_request_ip")
+        The asterisk-proxy gets the ARI request from this rabbitmq queue name. (default "asterisk_ari_request-<asterisk id>")
 ```
 
 example
@@ -32,7 +32,7 @@ $ ./asterisk-proxy \
   -ari_subscribe_all true \
   -rabbit_addr amqp://guest:guest@10.164.15.243:5672 \
   -rabbit_queue_arievent asterisk_ari_event \
-  -rabbit_queue_arirequest asterisk_ari_10.164.0.3
+  -rabbit_queue_arirequest asterisk_ari_request-42:01:0a:a4:00:03
 ```
 
 # RabbitMQ RPC
@@ -53,4 +53,18 @@ RPC response
   "status_code": 200,
   "data": "{...}"
 }
+```
+
+# Test
+
+```
+$ ssh -L 8088:127.0.0.1:8088 10.164.0.3
+$ ./asterisk-proxy \
+  -ari_account asterisk:asterisk \
+  -ari_addr localhost:8088 \
+  -ari_application voipbin \
+  -ari_subscribe_all true \
+  -rabbit_addr amqp://guest:guest@10.164.15.243:5672 \
+  -rabbit_queue_arievent asterisk_ari_event \
+  -rabbit_queue_arirequest asterisk_ari_request-42:01:0a:a4:00:03
 ```

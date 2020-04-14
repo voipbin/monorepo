@@ -24,8 +24,8 @@ var ariSubscribeAll = flag.String("ari_subscribe_all", "true", "The asterisk-pro
 var ariApplication = flag.String("ari_application", "asterisk-proxy", "The asterisk-proxy uses this asterisk ari application name.")
 
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "The asterisk-proxy connect to rabbitmq address.")
-var rabbitQueueARIEvent = flag.String("rabbit_queue_arievent", "asterisk_ari", "The asterisk-proxy sends the ARI event to this rabbitmq queue name.")
-var rabbitQueueARIRequest = flag.String("rabbit_queue_arirequest", "asterisk_ari_request_ip", "The asterisk-proxy gets the ARI request from this rabbitmq queue name.")
+var rabbitQueueARIEvent = flag.String("rabbit_queue_arievent", "asterisk_ari_event", "The asterisk-proxy sends the ARI event to this rabbitmq queue name.")
+var rabbitQueueARIRequest = flag.String("rabbit_queue_arirequest", "asterisk_ari_request-<asterisk id>", "The asterisk-proxy gets the ARI request from this rabbitmq queue name.")
 
 // create message buffer
 var chARIEvent = make(chan []byte, 1024000)

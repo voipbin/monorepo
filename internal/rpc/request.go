@@ -59,6 +59,10 @@ func parse(req []byte) (*Request, error) {
 // sendRequest sends a request to the Asterisk ARI.
 func (m *Request) sendRequest() (int, string, error) {
 	url := fmt.Sprintf("http://%s%s", ariAddr, m.URL)
+	log.WithFields(log.Fields{
+		"request": m,
+	}).Debug("Sending ARI request.")
+
 	req, err := http.NewRequest(m.Method, url, strings.NewReader(m.Data))
 	if err != nil {
 		return 0, "", err
