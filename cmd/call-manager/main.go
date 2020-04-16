@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/internal/arihandler"
-	call "gitlab.com/voipbin/bin-manager/call-manager/internal/call"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler"
+	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 
 	joonix "github.com/joonix/log"
 	uuid "github.com/satori/go.uuid"
@@ -34,7 +34,9 @@ var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prom
 func main() {
 
 	// ari event handler
-	go arihandler.ReceiveEventQueue(*rabbitAddr, *rabbitQueueARIEvent, "call-manager")
+	ariHandler := arihandler.NewARIHandler()
+	ariHandler.Connect(*rabbitAddr, *rabbitQueueARIEvent)
+	go ariHandler.Run()
 
 	simple := call.Call{
 		ID: uuid.NewV4(),

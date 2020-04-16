@@ -1,6 +1,7 @@
 package ari
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -133,5 +134,64 @@ func TestParseChannelHangupRequest(t *testing.T) {
 	}
 	if e.Soft != false {
 		t.Errorf("Wrong match. expect: false, got: %t", e.Soft)
+	}
+}
+
+func TestArgsMapUnmarshalJSON(t *testing.T) {
+	m := `["CONTEXT=test_context", "DOMAIN=echo.voipbin.net"]`
+
+	res := ArgsMap{}
+	if err := json.Unmarshal([]byte(m), &res); err != nil {
+		t.Errorf("Wrong match. expact: ok, got: %v", err)
+	}
+
+	if res["CONTEXT"] != "test_context" {
+		t.Errorf("Wrong match. expact: text_context, got: %s", res["CONTEXT"])
+	}
+	if res["DOMAIN"] != "echo.voipbin.net" {
+		t.Errorf("Wrong match. expact: echo.voipbin.net, got: %s", res["DOMAIN"])
+	}
+}
+
+func TestArgsMapUnmarshalJSONError(t *testing.T) {
+	type test struct {
+		name    string
+		message string
+	}
+
+	tests := []test{
+		{"wrong list", `["CONTEXT=test_context", "DOMAIN=echo.voipbin.net"`},
+		{"wrong item", `["CONTEXT=test_context", "DOMAIN=echo.voipbin.net]`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := ArgsMap{}
+			if err := json.Unmarshal([]byte(tt.message), &res); err == nil {
+				t.Errorf("Wrong match. expact: err, got: ok")
+			}
+		})
+	}
+}
+
+func TestParseStasisStart(t *testing.T) {
+	m := `{"type":"StasisStart","timestamp":"2020-04-12T22:34:41.144+0000","args":["CONTEXT=in-voipbin","DOMAIN=34.90.68.237"],"channel":{"id":"1586730880.1791","name":"PJSIP/in-voipbin-00000381","state":"Up","caller":{"name":"","number":"test123"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"0046605844066","priority":4,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,DOMAIN=34.90.68.237"},"creationtime":"2020-04-12T22:34:40.641+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`
+
+	_, evt, err := Parse([]byte(m))
+	t.Logf("Parse: %s", evt)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	e := evt.(*StasisStart)
+	if reflect.TypeOf(e.Channel) != reflect.TypeOf(Channel{}) {
+		t.Errorf("Wrong")
+	}
+
+	if e.Args["CONTEXT"] != "in-voipbin" {
+		t.Errorf("Wrong match. expect: in-voipbin, got: %s", e.Args["CONTEXT"])
+	}
+	if e.Args["DOMAIN"] != "34.90.68.237" {
+		t.Errorf("Wrong match. expect: 34.90.68.237, got: %s", e.Args["DOMAIN"])
 	}
 }
