@@ -1,6 +1,9 @@
 package ari
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 // Event is ARI base event
 type Event struct {
@@ -64,10 +67,13 @@ type ChannelHangupRequest struct {
 // StasisStart ARI event struct
 type StasisStart struct {
 	Event
-	Args           map[string]string
+	Args           ArgsMap `json:"args"`
 	Channel        Channel `json:"channel"`
 	ReplaceChannel Channel `json:"replace_channel"`
 }
+
+// ArgsMap map for args
+type ArgsMap map[string]string
 
 var parseMap = map[string]interface{}{
 	"ChannelCreated":       &ChannelCreated{},
@@ -96,4 +102,22 @@ func Parse(message []byte) (*Event, interface{}, error) {
 	}
 
 	return event, res, nil
+}
+
+// UnmarshalJSON StasisStart
+func (e *ArgsMap) UnmarshalJSON(m []byte) error {
+	res := ArgsMap{}
+	var arr []string
+	if err := json.Unmarshal(m, &arr); err != nil {
+		return err
+	}
+
+	// parse into map
+	for _, pair := range arr {
+		tmp := strings.Split(pair, "=")
+		res[tmp[0]] = tmp[1]
+	}
+
+	*e = res
+	return nil
 }
