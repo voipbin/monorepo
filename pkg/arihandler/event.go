@@ -28,7 +28,7 @@ type EventHandler interface {
 	SetSock(sock rabbitmq.Rabbit)
 
 	eventHandlerStasisStart(evt interface{}) error
-	handleStasisStartIncoming(m *ari.StasisStart) error
+	handleStasisStartInVoipbin(m *ari.StasisStart) error
 }
 
 type eventHandler struct {
@@ -71,12 +71,16 @@ func (h *eventHandler) HandleARIEvent(queue, receiver string) error {
 
 // processEvent processes received ARI event
 func (h *eventHandler) processEvent(m []byte) error {
-	log.Debugf("Event recevied. event: %s", m)
-
+	// parse
 	event, evt, err := ari.Parse(m)
 	if err != nil {
 		return err
 	}
+
+	log.WithFields(log.Fields{
+		"asterisk_id": event.AsteriskID,
+		"type":        event.Type,
+	}).Debugf("Received ARI event. message: %s", m)
 	promARIEventTotal.WithLabelValues(event.Type, event.AsteriskID).Inc()
 
 	// processMap maps ARIEvent name and event handler.
@@ -96,38 +100,49 @@ func (h *eventHandler) processEvent(m []byte) error {
 // eventHandlerStasisStart handles StasisStart ARI event
 func (h *eventHandler) eventHandlerStasisStart(evt interface{}) error {
 	e := evt.(*ari.StasisStart)
+	context := e.Args["CONTEXT"]
 
-	if e.Args["CONTEXT"] == "in-voipbin" {
-		return h.handleStasisStartIncoming(e)
+	switch context {
+	case "in-voipbin":
+		return h.handleStasisStartInVoipbin(e)
 	}
 
 	return nil
 }
 
-func (h *eventHandler) handleStasisStartIncoming(m *ari.StasisStart) error {
-	log.Debugf("handleStasisStartIncoming started.")
-	if m.Args["DOMAIN"] == "echo.voipbin.net" {
+// handleStasisStartInVoipbin handles in-voipbin type of stasisstart event
+func (h *eventHandler) handleStasisStartInVoipbin(m *ari.StasisStart) error {
 
-		// answer
-		if err := h.reqHandler.ChannelAnswer(m.AsteriskID, m.Channel.ID); err != nil {
-			return err
-		}
+	log.WithFields(log.Fields{
+		"context":    m.Args["CONTEXT"],
+		"doamin":     m.Args["DOMAIN"],
+		"channel_id": m.Channel.ID,
+	}).Debugf("Executing in-voip context handler.")
 
-		// set timeout for 180 sec
-		if err := h.reqHandler.ChannelVariableSet(m.AsteriskID, m.Channel.ID, "TIMEOUT(absolute)", "180"); err != nil {
-			return err
-		}
+	domain := m.Args["DOMAIN"]
+	switch domain {
+	case "echo.voipbin.net":
+		return handleServiceEcho(h.reqHandler, m)
+	}
 
-		// send it to svc-echo
-		log.WithFields(
-			log.Fields{
-				"asterisk_id": m.AsteriskID,
-				"channel":     m.Channel.ID,
-			}).Debugf("Sending echo service")
-		err := h.reqHandler.ChannelContinue(m.AsteriskID, m.Channel.ID, "svc-echo", m.Channel.Dialplan.Exten, 1, "")
-		if err != nil {
-			return err
-		}
+	return nil
+}
+
+// handleServiceEcho handles echo service.
+func handleServiceEcho(h RequestHandler, m *ari.StasisStart) error {
+	// answer
+	if err := h.ChannelAnswer(m.AsteriskID, m.Channel.ID); err != nil {
+		return err
+	}
+
+	// set timeout for 180 sec
+	if err := h.ChannelVariableSet(m.AsteriskID, m.Channel.ID, "TIMEOUT(absolute)", "180"); err != nil {
+		return err
+	}
+
+	// continue to svc-echo
+	if err := h.ChannelContinue(m.AsteriskID, m.Channel.ID, "svc-echo", m.Channel.Dialplan.Exten, 1, ""); err != nil {
+		return err
 	}
 
 	return nil

@@ -9,6 +9,8 @@ import (
 	"time"
 
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var requestTargetPrefix = "asterisk_ari_request"
@@ -36,6 +38,13 @@ type Response struct {
 
 // sendARIRequest send a request and return the response
 func (r *requester) sendARIRequest(sock rabbitmq.Rabbit, asteriskID, url, method string, timeout int64, dataType, data string) (Response, error) {
+	log.WithFields(log.Fields{
+		"asterisk_id": asteriskID,
+		"method":      method,
+		"url":         url,
+		"data_type":   dataType,
+	}).Debugf("Sending ARI request. data: %s", data)
+
 	// create a request message
 	m, err := json.Marshal(Request{
 		url,
@@ -64,6 +73,10 @@ func (r *requester) sendARIRequest(sock rabbitmq.Rabbit, asteriskID, url, method
 	if err != nil {
 		return Response{}, err
 	}
+
+	log.WithFields(log.Fields{
+		"status_code": resp.StatusCode,
+	}).Debugf("Received result. data: %s", resp.Data)
 
 	return resp, nil
 }
