@@ -1,4 +1,4 @@
-package arihandler
+package rabbitmqari
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ func TestSendARIRequest(t *testing.T) {
 			"bae178e2-7f6f-11ea-809d-b3dec50dc8f3",
 			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/continue",
 			3,
-			ContentTypeJSON,
+			"application/json",
 			`{"context":"test-context","extension":"testcall","priority":1,"label":"testlabel"}`,
 
 			"asterisk_ari_request-00:11:22:33:44:55",
@@ -40,13 +40,15 @@ func TestSendARIRequest(t *testing.T) {
 	defer mc.Finish()
 
 	mockRabbit := rabbitmq.NewMockRabbit(mc)
-	requester := requester{}
+	requester := requester{
+		sock: mockRabbit,
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRabbit.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectPayload).Return([]byte(`{"status_code":200,"data":""}`), nil)
 
-			_, err := requester.sendARIRequest(mockRabbit, tt.asteriskID, tt.url, tt.method, tt.timeout, tt.dataType, tt.data)
+			_, err := requester.SendARIRequest(tt.asteriskID, tt.url, tt.method, tt.timeout, tt.dataType, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

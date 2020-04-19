@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -31,11 +33,21 @@ var rabbitQueueARIRequest = flag.String("rabbit_queue_arirequest", "asterisk_ari
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
 var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
 
+// args for database
+var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for call-manager.")
+
 func main() {
 
+	// connect to database
+	db, err := sql.Open("mysql", *dbDSN)
+	if err != nil {
+		log.Errorf("Could not access to database. err: %v", err)
+		return
+	}
+
 	// ari event handler
-	ariHandler := arihandler.NewARIHandler()
-	ariHandler.Connect(*rabbitAddr, *rabbitQueueARIEvent)
+	ariHandler := arihandler.NewARIHandler(db, *rabbitAddr, *rabbitQueueARIEvent)
+	ariHandler.Connect()
 	go ariHandler.Run()
 
 	simple := call.Call{
