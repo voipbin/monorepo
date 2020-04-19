@@ -1,61 +1,16 @@
-package arihandler
-
-//go:generate mockgen -destination ./mock_arihandler_requesthandler.go -package arihandler gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler RequestHandler
+package arirequest
 
 import (
 	"encoding/json"
 	"fmt"
-
-	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"strconv"
 )
-
-// methods
-var (
-	reqPost = "POST"
-	reqGet  = "GET"
-	reqPut  = "PUT"
-)
-
-// contents type
-var (
-	ContentTypeText = "text/plain"
-	ContentTypeJSON = "application/json"
-)
-
-const requestTimeout int64 = 3 // default request timeout
-
-// RequestHandler intreface for ARI request handler
-type RequestHandler interface {
-	SetSock(rabbitmq.Rabbit)
-
-	ChannelAnswer(asteriskID, channelID string) error
-	ChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error
-	ChannelVariableSet(asteriskID, channelID, variable, value string) error
-}
-
-type requestHandler struct {
-	rabbitSock rabbitmq.Rabbit
-	requester  Requester
-}
-
-// NewRequestHandler create RequesterHandler
-func NewRequestHandler() RequestHandler {
-	requestHandler := &requestHandler{}
-	requestHandler.requester = &requester{}
-
-	return requestHandler
-}
-
-// setSock sets amqp sock
-func (r *requestHandler) SetSock(sock rabbitmq.Rabbit) {
-	r.rabbitSock = sock
-}
 
 // ChannelAnswer sends the channel answer request
 func (r *requestHandler) ChannelAnswer(asteriskID, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/answer", channelID)
 
-	res, err := r.requester.sendARIRequest(r.rabbitSock, asteriskID, url, reqPost, requestTimeout, "", "")
+	res, err := r.requester.SendARIRequest(asteriskID, url, reqPost, requestTimeout, "", "")
 	switch {
 	case err != nil:
 		return err
@@ -86,7 +41,32 @@ func (r *requestHandler) ChannelContinue(asteriskID, channelID, context, ext str
 		return err
 	}
 
-	res, err := r.requester.sendARIRequest(r.rabbitSock, asteriskID, url, reqPost, requestTimeout, ContentTypeJSON, string(m))
+	res, err := r.requester.SendARIRequest(asteriskID, url, reqPost, requestTimeout, ContentTypeJSON, string(m))
+	switch {
+	case err != nil:
+		return nil
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// ChannelContinue sends the continue request
+func (r *requestHandler) ChannelHangup(asteriskID, channelID string, code int) error {
+	url := fmt.Sprintf("/ari/channels/%s", channelID)
+
+	type Data struct {
+		ReasonCode string `json:"reason_code"`
+	}
+
+	m, err := json.Marshal(Data{
+		strconv.Itoa(code),
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.requester.SendARIRequest(asteriskID, url, reqDelete, requestTimeout, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
 		return nil
@@ -113,7 +93,7 @@ func (r *requestHandler) ChannelVariableSet(asteriskID, channelID, variable, val
 		return err
 	}
 
-	res, err := r.requester.sendARIRequest(r.rabbitSock, asteriskID, url, reqPost, requestTimeout, ContentTypeJSON, string(m))
+	res, err := r.requester.SendARIRequest(asteriskID, url, reqPost, requestTimeout, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
 		return nil

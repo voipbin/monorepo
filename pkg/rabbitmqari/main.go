@@ -1,6 +1,6 @@
-package arihandler
+package rabbitmqari
 
-//go:generate mockgen -destination ./mock_arihandler_requester.go -package arihandler gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler Requester
+//go:generate mockgen -destination ./mock_rabbitmqari_requester.go -package rabbitmqari gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmqari Requester
 
 import (
 	"context"
@@ -17,10 +17,12 @@ var requestTargetPrefix = "asterisk_ari_request"
 
 // Requester is interface for send ARI request
 type Requester interface {
-	sendARIRequest(sock rabbitmq.Rabbit, asteriskID, url, method string, timeout int64, dataType, data string) (Response, error)
+	SendARIRequest(asteriskID, url, method string, timeout int64, dataType, data string) (Response, error)
 }
 
-type requester struct{}
+type requester struct {
+	sock rabbitmq.Rabbit
+}
 
 // Request struct for ARI request
 type Request struct {
@@ -36,8 +38,17 @@ type Response struct {
 	Data       string `json:"data"`
 }
 
-// sendARIRequest send a request and return the response
-func (r *requester) sendARIRequest(sock rabbitmq.Rabbit, asteriskID, url, method string, timeout int64, dataType, data string) (Response, error) {
+// NewRabbitMQARI return new RabbitMQARI
+func NewRabbitMQARI(sock rabbitmq.Rabbit) Requester {
+	res := &requester{
+		sock: sock,
+	}
+
+	return res
+}
+
+// SendARIRequest send a request and return the response
+func (r *requester) SendARIRequest(asteriskID, url, method string, timeout int64, dataType, data string) (Response, error) {
 	log.WithFields(log.Fields{
 		"asterisk_id": asteriskID,
 		"method":      method,
@@ -62,7 +73,7 @@ func (r *requester) sendARIRequest(sock rabbitmq.Rabbit, asteriskID, url, method
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	res, err := sock.PublishRPC(ctx, target, string(m))
+	res, err := r.sock.PublishRPC(ctx, target, string(m))
 	if err != nil {
 		return Response{}, fmt.Errorf("could not publish the RPC. err: %v", err)
 	}

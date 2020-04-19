@@ -1,25 +1,26 @@
-package arihandler
+package arirequest
 
 import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmqari"
 )
 
 func TestSetSock(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockRabbit := rabbitmq.NewMockRabbit(mc)
-	if mockRabbit == nil {
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	if mockSock == nil {
 		t.Errorf("Error")
 	}
 
-	reqHandler := requestHandler{}
-	reqHandler.SetSock(mockRabbit)
+	reqHandler := NewRequestHandler(mockSock)
 
-	if reqHandler.rabbitSock != mockRabbit {
+	if reqHandler == nil {
 		t.Errorf("Wrong match. expact: true, got: false")
 	}
 }
@@ -46,15 +47,16 @@ func TestChannelAnswer(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockRequester := NewMockRequester(mc)
-	reqHandler := requestHandler{}
-	reqHandler.requester = mockRequester
+	mockRequester := rabbitmqari.NewMockRequester(mc)
+	reqHandler := requestHandler{
+		requester: mockRequester,
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockRequester.EXPECT().sendARIRequest(gomock.Any(), tt.asteriskID, tt.expectURL, reqPost, gomock.Any(), "", "").
-				Return(Response{StatusCode: 200, Data: ""}, nil)
+			mockRequester.EXPECT().SendARIRequest(tt.asteriskID, tt.expectURL, reqPost, gomock.Any(), "", "").
+				Return(rabbitmqari.Response{StatusCode: 200, Data: ""}, nil)
 
 			err := reqHandler.ChannelAnswer(tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -106,15 +108,16 @@ func TestChannelContinue(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockRequester := NewMockRequester(mc)
-	reqHandler := requestHandler{}
-	reqHandler.requester = mockRequester
+	mockRequester := rabbitmqari.NewMockRequester(mc)
+	reqHandler := requestHandler{
+		requester: mockRequester,
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockRequester.EXPECT().sendARIRequest(gomock.Any(), tt.asteriskID, tt.expectURL, reqPost, gomock.Any(), ContentTypeJSON, tt.expectPayload).
-				Return(Response{StatusCode: 200, Data: ""}, nil)
+			mockRequester.EXPECT().SendARIRequest(tt.asteriskID, tt.expectURL, reqPost, gomock.Any(), ContentTypeJSON, tt.expectPayload).
+				Return(rabbitmqari.Response{StatusCode: 200, Data: ""}, nil)
 
 			err := reqHandler.ChannelContinue(tt.asteriskID, tt.channelID, tt.context, tt.extension, tt.priority, tt.label)
 			if err != nil {
@@ -160,17 +163,62 @@ func TestChannelChannelVariableSet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockRequester := NewMockRequester(mc)
-	reqHandler := requestHandler{}
-	reqHandler.requester = mockRequester
+	mockRequester := rabbitmqari.NewMockRequester(mc)
+	reqHandler := requestHandler{
+		requester: mockRequester,
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockRequester.EXPECT().sendARIRequest(gomock.Any(), tt.asteriskID, tt.expectURL, reqPost, gomock.Any(), ContentTypeJSON, tt.expectPayload).
-				Return(Response{StatusCode: 200, Data: ""}, nil)
+			mockRequester.EXPECT().SendARIRequest(tt.asteriskID, tt.expectURL, reqPost, gomock.Any(), ContentTypeJSON, tt.expectPayload).
+				Return(rabbitmqari.Response{StatusCode: 200, Data: ""}, nil)
 
 			err := reqHandler.ChannelVariableSet(tt.asteriskID, tt.channelID, tt.variable, tt.value)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestChannelChannelHangup(t *testing.T) {
+
+	type test struct {
+		name          string
+		asteriskID    string
+		channelID     string
+		hangupCause   int
+		expectURL     string
+		expectPayload string
+	}
+
+	tests := []test{
+		{
+			"have all item",
+			"00:11:22:33:44:55",
+			"ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
+			ari.HangupNormalClearing,
+			"/ari/channels/ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
+			`{"reason_code":"16"}`,
+		},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockRequester := rabbitmqari.NewMockRequester(mc)
+	reqHandler := requestHandler{
+		requester: mockRequester,
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockRequester.EXPECT().SendARIRequest(tt.asteriskID, tt.expectURL, reqDelete, gomock.Any(), ContentTypeJSON, tt.expectPayload).
+				Return(rabbitmqari.Response{StatusCode: 200, Data: ""}, nil)
+
+			err := reqHandler.ChannelHangup(tt.asteriskID, tt.channelID, tt.hangupCause)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

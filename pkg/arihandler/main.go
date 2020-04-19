@@ -1,70 +1,55 @@
 package arihandler
 
 import (
-	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"database/sql"
 
-	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arievent"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arirequest"
+	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	svchandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler"
 )
 
 // ARIHandler arihandler package interface
 type ARIHandler interface {
-	Connect(addr, rabbitQueueARIEvent string)
+	Connect()
 	Run()
 }
 
 type ariHandler struct {
 	rabbitQueueARIEvent string
+	rabbitAddr          string
 
 	rabbitSock rabbitmq.Rabbit
 
-	reqHandler RequestHandler
-	evtHandler EventHandler
-}
-
-var (
-	metricsNamespace = "call_manager"
-
-	promARIEventTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
-			Name:      "ari_event_total",
-			Help:      "Total number of received ARI event types.",
-		},
-		[]string{"type", "asterisk_id"},
-	)
-)
-
-func init() {
-	prometheus.MustRegister(promARIEventTotal)
+	evtHandler arievent.EventHandler
+	reqHandler arirequest.RequestHandler
+	svcHandler svchandler.SVCHandler
+	db         db.DBHandler
 }
 
 // NewARIHandler creates ARIHandler interface
-func NewARIHandler() ARIHandler {
+func NewARIHandler(sqlDB *sql.DB, rabbitAddr, rabbitQueueARIEvent string) ARIHandler {
 	handler := &ariHandler{}
 
-	handler.reqHandler = NewRequestHandler()
-	handler.evtHandler = NewEventHandler()
+	handler.db = db.NewHandler(sqlDB)
+
+	handler.rabbitAddr = rabbitAddr
+	handler.rabbitQueueARIEvent = rabbitQueueARIEvent
 
 	return handler
 }
 
 // Connect connects to rabbitmq
-func (h *ariHandler) Connect(addr, rabbitQueueARIEvent string) {
-	// create queue for ari event receive
-	log.WithFields(log.Fields{
-		"addr": addr,
-	}).Infof("Connecting to the rabbitmq.")
-
-	h.rabbitSock = rabbitmq.NewRabbit(addr)
-	h.rabbitQueueARIEvent = rabbitQueueARIEvent
-
-	// connect
+func (h *ariHandler) Connect() {
+	// sock connect
+	h.rabbitSock = rabbitmq.NewRabbit(h.rabbitAddr)
 	h.rabbitSock.Connect()
 
-	// set sock for request handler
-	h.evtHandler.SetSock(h.rabbitSock)
-	h.reqHandler.SetSock(h.rabbitSock)
+	// new handlers
+	h.reqHandler = arirequest.NewRequestHandler(h.rabbitSock)
+	h.svcHandler = svchandler.NewServiceHandler(h.reqHandler, h.db)
+	h.evtHandler = arievent.NewEventHandler(h.rabbitSock, h.db)
 }
 
 // Run runs the arihandler
