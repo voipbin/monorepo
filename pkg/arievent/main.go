@@ -55,10 +55,26 @@ var (
 		},
 		[]string{"type", "asterisk_id"},
 	)
+
+	promARIProcessTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "ari_event_process_time",
+			Help:      "Process time of received ARI events",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000,
+			},
+		},
+		[]string{"asterisk_id", "type"},
+	)
 )
 
 func init() {
-	prometheus.MustRegister(promARIEventTotal)
+	prometheus.MustRegister(
+		promARIEventTotal,
+		promARIProcessTime,
+	)
+
 }
 
 // NewEventHandler create EventHandler
@@ -116,8 +132,15 @@ func (h *eventHandler) processEvent(m []byte) error {
 		return nil
 	}
 
+	start := time.Now()
+
 	ctx := context.Background()
-	if err := handler(ctx, evt); err != nil {
+	err = handler(ctx, evt)
+	elapsed := time.Since(start)
+
+	promARIProcessTime.WithLabelValues(event.AsteriskID, event.Type).Observe(float64(elapsed.Milliseconds()))
+
+	if err != nil {
 		return err
 	}
 
