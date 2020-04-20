@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
@@ -103,6 +104,7 @@ func initProm(endpoint, listen string) {
 			err := http.ListenAndServe(listen, nil)
 			if err != nil {
 				log.Errorf("Could not start prometheus listener")
+				time.Sleep(time.Second * 1)
 				continue
 			}
 			break
