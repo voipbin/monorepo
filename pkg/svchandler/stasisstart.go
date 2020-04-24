@@ -1,9 +1,12 @@
 package svchandler
 
 import (
+	"context"
 	"fmt"
 
+	uuid "github.com/satori/go.uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 )
 
 // StasisStart event's context types
@@ -64,6 +67,33 @@ func getService(e *ari.StasisStart) service {
 
 // stasisStartServiceEcho handles echo domain request.
 func (h *svcHandler) stasisStartServiceEcho(e *ari.StasisStart) error {
+	// create a call
+	source := call.ParseAddressByCallerID(&e.Channel.Caller)
+	destination := call.ParseAddressByDialplan(&e.Channel.Dialplan)
+	status := call.ParseStatusByChannelState(e.Channel.State)
+	data := map[string]string{}
+
+	c := call.NewCall(
+		uuid.NewV4(),
+		e.AsteriskID,
+		e.Channel.ID,
+		uuid.Nil,
+		call.TypeEcho,
+
+		*source,
+		*destination,
+
+		status,
+		data,
+		call.DirectionIncoming,
+
+		e.Timestamp,
+	)
+
+	if err := h.db.CallCreate(context.Background(), c); err != nil {
+		return err
+	}
+
 	// answer
 	if err := h.reqHandler.ChannelAnswer(e.AsteriskID, e.Channel.ID); err != nil {
 		return err

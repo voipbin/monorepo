@@ -3,15 +3,15 @@ create table calls(
   id            binary(16),   -- id
   asterisk_id   varchar(255), -- Asterisk id
   channel_id    varchar(255), -- chcallsannel id
-  callflow_id   varchar(255), -- callflow id
-  service       varchar(16),  -- service
+  flow_id       binary(16),   -- flow id
+  type          varchar(16),  -- type of call
 
   -- source/destination
-  source json, -- source's type, target, number, name, ...
-  source_target varchar(1024) generated always as (source->"$.target") stored,
+  source        json, -- source's type, target, number, name, ...
+  source_target varchar(1024),
 
-  destination json, -- destination's type, target, number, name, ...
-  destination_target varchar(1024) generated always as (destination->"$.target") stored,
+  destination         json, -- destination's type, target, number, name, ...
+  destination_target  varchar(1024),
 
   -- info
   status            varchar(255), -- current status of call.
@@ -31,6 +31,7 @@ create table calls(
   primary key(id)
 );
 
+create index idx_calls_flowid on calls(flow_id);
 create index idx_calls_create on calls(tm_create);
 create index idx_calls_hangup on calls(tm_hangup);
 create index idx_calls_source_target on calls(source_target);

@@ -52,46 +52,73 @@ func TestParseError(t *testing.T) {
 }
 
 func TestParseChannelCreated(t *testing.T) {
-	m := `
-	{
-		"type": "ChannelCreated",
-		"timestamp": "2020-04-10T01:09:10.574+0000",
-		"channel": {
-			"id": "1586480950.6217",
-			"name": "PJSIP/in-voipbin-00000c26",
-			"state": "Ring",
-			"caller": {
-				"name": "",
-				"number": "3400001"
+	type test struct {
+		name        string
+		message     string
+		expectEvent *Event
+		expectParse *ChannelCreated
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			`{"type":"ChannelCreated","timestamp":"2020-04-24T06:07:48.202+0000","channel":{"id":"1587708468.7504","name":"PJSIP/in-voipbin-00001d4b","state":"Ring","caller":{"name":"","number":"5"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"701146842002329","priority":1,"app_name":"","app_data":""},"creationtime":"2020-04-24T06:07:48.202+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			&Event{
+				Type:        EventTypeChannelCreated,
+				Application: "voipbin",
+				Timestamp:   "2020-04-24T06:07:48.202",
+				AsteriskID:  "42:01:0a:a4:00:05",
 			},
-			"connected": {
-				"name": "",
-				"number": ""
+			&ChannelCreated{
+				Event: Event{
+					Type:        EventTypeChannelCreated,
+					Application: "voipbin",
+					Timestamp:   "2020-04-24T06:07:48.202",
+					AsteriskID:  "42:01:0a:a4:00:05",
+				},
+				Channel: Channel{
+					ID:           "1587708468.7504",
+					Name:         "PJSIP/in-voipbin-00001d4b",
+					State:        "Ring",
+					Language:     "en",
+					CreationTime: "2020-04-24T06:07:48.202",
+					Caller: CallerID{
+						Name:   "",
+						Number: "5",
+					},
+					Connected: CallerID{
+						Name:   "",
+						Number: "",
+					},
+					AccountCode: "",
+					Dialplan: DialplanCEP{
+						Context:  "in-voipbin",
+						Exten:    "701146842002329",
+						Priority: 1,
+						AppName:  "",
+						AppData:  "",
+					},
+				},
 			},
-			"accountcode": "",
-			"dialplan": {
-				"context": "in-voipbin",
-				"exten": "9011441332323027",
-				"priority": 1,
-				"app_name": "",
-				"app_data": ""
-			},
-			"creationtime": "2020-04-10T01:09:10.574+0000",
-			"language": "en"
 		},
-		"asterisk_id": "42:01:0a:a4:00:05",
-		"application": "voipbin"
-	}
-	`
-
-	_, evt, err := Parse([]byte(m))
-	if err != nil {
-		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	e := evt.(*ChannelCreated)
-	if reflect.TypeOf(e.Channel) != reflect.TypeOf(Channel{}) {
-		t.Errorf("Wrong")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event, evt, err := Parse([]byte(tt.message))
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(event, tt.expectEvent) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectEvent, event)
+			}
+
+			e := evt.(*ChannelCreated)
+			if !reflect.DeepEqual(e, tt.expectParse) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectParse, e)
+			}
+		})
 	}
 }
 

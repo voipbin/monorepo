@@ -2,53 +2,12 @@ package dbhandler
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 
-	"database/sql"
-
-	log "github.com/sirupsen/logrus"
-
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/smotes/purse"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
-
-var dbTest *sql.DB = nil // database for test
-
-func TestMain(m *testing.M) {
-	db, err := sql.Open("sqlite3", `file::memory:?cache=shared`)
-	if err != nil {
-		log.Errorf("err: %v", err)
-	}
-	db.SetMaxOpenConns(1)
-
-	// Load all SQL files from specified directory into a map
-	ps, err := purse.New(filepath.Join("../../scripts/database_scripts"))
-	if err != nil {
-		log.Infof("Err. err: %v", err)
-	}
-	log.Infof("Script loaded. scripts: %v", ps)
-
-	// Get a file's contents
-	contents, ok := ps.Get("table_channels.sql")
-	if !ok {
-		log.Info("SQL file not loaded")
-	}
-
-	ret, err := db.Exec(contents)
-	if err != nil {
-		log.Errorf("Could not execute the sql. err: %v", err)
-	}
-	log.Infof("executed sql file. ret: %v", ret)
-
-	dbTest = db
-	defer dbTest.Close()
-
-	os.Exit(m.Run())
-}
 
 func TestChannelCreate(t *testing.T) {
 	type test struct {

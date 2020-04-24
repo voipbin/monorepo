@@ -9,7 +9,7 @@ import (
 )
 
 // ChannelCreate creates new channel record and returns the created channel record.
-func (h *Handler) ChannelCreate(ctx context.Context, channel channel.Channel) error {
+func (h *handler) ChannelCreate(ctx context.Context, channel channel.Channel) error {
 	q := `insert into channels(
 		asterisk_id,
 		id,
@@ -71,7 +71,7 @@ func (h *Handler) ChannelCreate(ctx context.Context, channel channel.Channel) er
 }
 
 // ChannelGet returns channel.
-func (h *Handler) ChannelGet(ctx context.Context, asteriskID, id string) (*channel.Channel, error) {
+func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*channel.Channel, error) {
 
 	// prepare
 	q := `select 
@@ -156,7 +156,7 @@ func (h *Handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
 }
 
 // ChannelEnd updates the channel end.
-func (h *Handler) ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup int) error {
+func (h *handler) ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup int) error {
 
 	// prepare
 	q := `

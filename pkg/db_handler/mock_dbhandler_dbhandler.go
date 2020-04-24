@@ -7,6 +7,8 @@ package dbhandler
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
+	uuid "github.com/satori/go.uuid"
+	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	reflect "reflect"
 )
@@ -32,6 +34,49 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// CallCreate mocks base method
+func (m *MockDBHandler) CallCreate(arg0 context.Context, arg1 *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallCreate", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallCreate indicates an expected call of CallCreate
+func (mr *MockDBHandlerMockRecorder) CallCreate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockDBHandler)(nil).CallCreate), arg0, arg1)
+}
+
+// CallGet mocks base method
+func (m *MockDBHandler) CallGet(arg0 context.Context, arg1 uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallGet", arg0, arg1)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallGet indicates an expected call of CallGet
+func (mr *MockDBHandlerMockRecorder) CallGet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGet", reflect.TypeOf((*MockDBHandler)(nil).CallGet), arg0, arg1)
+}
+
+// CallSetStatus mocks base method
+func (m *MockDBHandler) CallSetStatus(arg0 context.Context, arg1 uuid.UUID, arg2 call.Status, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetStatus", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetStatus indicates an expected call of CallSetStatus
+func (mr *MockDBHandlerMockRecorder) CallSetStatus(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetStatus", reflect.TypeOf((*MockDBHandler)(nil).CallSetStatus), arg0, arg1, arg2, arg3)
 }
 
 // ChannelCreate mocks base method
