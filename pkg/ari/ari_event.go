@@ -7,11 +7,22 @@ import (
 
 // Event is ARI base event
 type Event struct {
-	Type        string `json:"type"`
-	Application string `json:"application"`
-	Timestamp   string `json:"timestamp"`
-	AsteriskID  string `json:"asterisk_id"`
+	Type        EventType `json:"type"`
+	Application string    `json:"application"`
+	Timestamp   Timestamp `json:"timestamp"`
+	AsteriskID  string    `json:"asterisk_id"`
 }
+
+// EventType type
+type EventType string
+
+// List of ChannelType types
+const (
+	EventTypeChannelCreated       EventType = "ChannelCreated"
+	EventTypeChannelDestroyed     EventType = "ChannelDestroyed"
+	EventTypeChannelHangupRequest EventType = "ChannelHangupRequest"
+	EventTypeStasisStart          EventType = "StasisStart"
+)
 
 // CallerID Caller ID
 type CallerID struct {
@@ -28,17 +39,36 @@ type DialplanCEP struct {
 	AppData  string `json:"app_data"`
 }
 
+// ChannelState type
+type ChannelState string
+
+// List of ChannelState
+const (
+	ChannelStateDown           ChannelState = "Down"
+	ChannelStateRsrvd          ChannelState = "Rsrvd"
+	ChannelStateOffHook        ChannelState = "OffHook"
+	ChannelStateDialing        ChannelState = "Dialing"
+	ChannelStateRing           ChannelState = "Ring"
+	ChannelStateRinging        ChannelState = "Ringing"
+	ChannelStateUp             ChannelState = "Up"
+	ChannelStateBusy           ChannelState = "Busy"
+	ChannelStateDialingOffHook ChannelState = "Dialing Offhook"
+	ChannelStatePreRing        ChannelState = "Pre-ring"
+	ChannelStateMute           ChannelState = "Mute"
+	ChannelStateUnknown        ChannelState = "Unknown"
+)
+
 // Channel ARI message
 type Channel struct {
-	AccountCode  string      `json:"accoutcode"`
-	ID           string      `json:"id"`
-	Name         string      `json:"name"`
-	Language     string      `json:"language"`
-	CreationTime string      `json:"creationtime"`
-	State        string      `json:"state"`
-	Caller       CallerID    `json:"caller"`
-	Connected    CallerID    `json:"connected"`
-	Dialplan     DialplanCEP `json:"dialplan"`
+	AccountCode  string       `json:"accoutcode"`
+	ID           string       `json:"id"`
+	Name         string       `json:"name"`
+	Language     string       `json:"language"`
+	CreationTime Timestamp    `json:"creationtime"`
+	State        ChannelState `json:"state"`
+	Caller       CallerID     `json:"caller"`
+	Connected    CallerID     `json:"connected"`
+	Dialplan     DialplanCEP  `json:"dialplan"`
 	ChannelVars  map[string]string
 }
 
@@ -72,6 +102,9 @@ type StasisStart struct {
 	ReplaceChannel Channel `json:"replace_channel"`
 }
 
+// Timestamp for timestamp
+type Timestamp string
+
 // ArgsMap map for args
 type ArgsMap map[string]string
 
@@ -91,7 +124,7 @@ func Parse(message []byte) (*Event, interface{}, error) {
 		return nil, nil, err
 	}
 
-	res := parseMap[event.Type]
+	res := parseMap[string(event.Type)]
 	if res == nil {
 		return event, nil, nil
 	}
@@ -119,5 +152,16 @@ func (e *ArgsMap) UnmarshalJSON(m []byte) error {
 	}
 
 	*e = res
+	return nil
+}
+
+// UnmarshalJSON Timestamp
+func (e *Timestamp) UnmarshalJSON(m []byte) error {
+	var tmp string
+
+	json.Unmarshal(m, &tmp)
+	res := strings.TrimSuffix(tmp, "+0000")
+	*e = Timestamp(res)
+
 	return nil
 }

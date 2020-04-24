@@ -117,7 +117,7 @@ func (h *eventHandler) processEvent(m []byte) error {
 		"asterisk_id": event.AsteriskID,
 		"type":        event.Type,
 	}).Debugf("Received ARI event. message: %s", m)
-	promARIEventTotal.WithLabelValues(event.Type, event.AsteriskID).Inc()
+	promARIEventTotal.WithLabelValues(string(event.Type), event.AsteriskID).Inc()
 
 	// processMap maps ARIEvent name and event handler.
 	var processMap = map[string]func(context.Context, interface{}) error{
@@ -126,7 +126,7 @@ func (h *eventHandler) processEvent(m []byte) error {
 		"StasisStart":      h.eventHandlerStasisStart,
 	}
 
-	handler := processMap[event.Type]
+	handler := processMap[string(event.Type)]
 	if handler == nil {
 		// no handler
 		return nil
@@ -138,7 +138,7 @@ func (h *eventHandler) processEvent(m []byte) error {
 	err = handler(ctx, evt)
 	elapsed := time.Since(start)
 
-	promARIProcessTime.WithLabelValues(event.AsteriskID, event.Type).Observe(float64(elapsed.Milliseconds()))
+	promARIProcessTime.WithLabelValues(event.AsteriskID, string(event.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
 		return err
@@ -155,9 +155,4 @@ func getTech(name string) string {
 	}
 
 	return strings.ToLower(res[0])
-}
-
-// getTS convert ARI's timestamp to datetime(6) acceptable timestamp
-func getTS(timestamp string) string {
-	return strings.TrimSuffix(timestamp, "+0000")
 }

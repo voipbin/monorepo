@@ -20,9 +20,9 @@ hangup reason
 * normal: The call has ended after answer.
 * failed: The call attempt(signal) was not reached to the phone network.
 * busy: The destination is on the line with another caller.
-* cancelled: The call was cancelled by the originator before it was answered.
-* timeout: The call timed out before it was answered. This timeout is fired by our time out.(outgoing call)
-* noanswer: The destination didn't answer until destination's timeout.
+* cancel: The call was cancelled by the originator before it was answered.
+* timeout: The call reached max call duration after it was answered. This timeout is fired by our time out.(outgoing call)
+* unanswer: The destination didn't answer until destination's timeout.
 ```
 
 
@@ -38,8 +38,9 @@ hangup cause
 * busy: The destination is on the line with another caller.
 * cancelling: The call is being cancel. - hide?
 * cancelled: The call was cancelled by the originator before it was answered.
-* timeout: The call timed out before it was answered. This timeout is fired by our time out.(outgoing call)
+* timeout: The call reached max call duration after it was answered.
 * noanswer: The destination didn't answer until destination's timeout.
+* dialout: The call reached timeout before it was answered. This timeout is fired by our time out.(outgoing call)
 ```
 
 # NOTE

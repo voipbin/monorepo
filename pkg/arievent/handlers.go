@@ -2,7 +2,7 @@ package arievent
 
 import (
 	"context"
-	
+
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
@@ -18,8 +18,6 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelCreated)
 
-	ts := getTS(e.Timestamp)
-
 	tech := getTech(e.Channel.Name)
 	tmpChannel := channel.Channel{
 		AsteriskID: e.AsteriskID,
@@ -31,9 +29,9 @@ func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt inter
 		SourceNumber:      e.Channel.Caller.Number,
 		DestinationNumber: e.Channel.Dialplan.Exten,
 
-		State: e.Channel.State,
+		State: string(e.Channel.State),
 
-		TMCreate: ts,
+		TMCreate: string(e.Timestamp),
 	}
 
 	if err := h.db.ChannelCreate(ctx, tmpChannel); err != nil {
@@ -47,8 +45,7 @@ func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt inter
 func (h *eventHandler) eventHandlerChannelDestroyed(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelDestroyed)
 
-	ts := getTS(e.Timestamp)
-	if err := h.db.ChannelEnd(ctx, e.AsteriskID, e.Channel.ID, ts, e.Cause); err != nil {
+	if err := h.db.ChannelEnd(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), e.Cause); err != nil {
 		return err
 	}
 
