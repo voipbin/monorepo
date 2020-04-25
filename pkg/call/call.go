@@ -3,6 +3,7 @@ package call
 import (
 	uuid "github.com/satori/go.uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
 
 // Call struct represent asterisk's channel information
@@ -15,12 +16,12 @@ type Call struct {
 	Type       Type
 
 	// source/destination
-	Source      Address
-	Destination Address
+	Source      *Address
+	Destination *Address
 
 	// info
 	Status       Status
-	Data         map[string]string
+	Data         map[string]interface{}
 	Direction    Direction
 	HangupBy     HangupBy
 	HangupReason HangupReason
@@ -69,7 +70,7 @@ const (
 	StatusProgressing Status = "progressing" // The call has answered. The both endpoints are talking to each other.
 	StatusTerminating Status = "terminating" // The call is terminating.
 	StatusCanceling   Status = "canceling"   // The call originator is canceling the call.
-	StatusHangup      Status = "hangup"      // The call has been terminated.
+	StatusHangup      Status = "hangup"      // The call has been completed.
 )
 
 // Direction type
@@ -112,14 +113,14 @@ func NewCall(
 	flowID uuid.UUID,
 	cType Type,
 
-	source Address,
-	destination Address,
+	source *Address,
+	destination *Address,
 
 	status Status,
-	data map[string]string,
+	data map[string]interface{},
 	direction Direction,
 
-	tmCreate ari.Timestamp,
+	tmCreate string,
 ) *Call {
 
 	c := &Call{
@@ -136,10 +137,62 @@ func NewCall(
 		Data:      data,
 		Direction: direction,
 
-		TMCreate: string(tmCreate),
+		TMCreate: tmCreate,
 	}
 
 	return c
+}
+
+// NewCallByChannel creates a Call and return it.
+func NewCallByChannel(cn *channel.Channel, cType Type, direction Direction) *Call {
+	// create a call
+	source := CreateAddressByChannelSource(cn)
+	destination := CreateAddressByChannelDestination(cn)
+	status := ParseStatusByChannelState(cn.State)
+	data := map[string]interface{}{}
+
+	for k, v := range cn.Data {
+		data[k] = v
+	}
+
+	c := NewCall(
+		uuid.NewV4(),
+		cn.AsteriskID,
+		cn.ID,
+		uuid.Nil,
+		cType,
+
+		source,
+		destination,
+
+		status,
+		data,
+		direction,
+
+		string(cn.TMCreate),
+	)
+
+	return c
+}
+
+// CreateAddressByChannelSource creates and return the Address using channel's source.
+func CreateAddressByChannelSource(cn *channel.Channel) *Address {
+	r := &Address{
+		Type:   AddressTypeTel,
+		Target: cn.SourceNumber,
+		Name:   cn.SourceName,
+	}
+	return r
+}
+
+// CreateAddressByChannelDestination creates and return the Address using channel's destination.
+func CreateAddressByChannelDestination(cn *channel.Channel) *Address {
+	r := &Address{
+		Type:   AddressTypeTel,
+		Target: cn.DestinationNumber,
+		Name:   cn.DestinationName,
+	}
+	return r
 }
 
 // ParseAddressByCallerID parsing the ari's CallerID and returns Address
@@ -153,8 +206,8 @@ func ParseAddressByCallerID(e *ari.CallerID) *Address {
 	return r
 }
 
-// ParseAddressByDialplan parsing the ari's CallerID and returns Address
-func ParseAddressByDialplan(e *ari.DialplanCEP) *Address {
+// NewAddressByDialplan parsing the ari's CallerID and returns Address
+func NewAddressByDialplan(e *ari.DialplanCEP) *Address {
 	r := &Address{
 		Type:   AddressTypeTel,
 		Target: e.Exten,
@@ -186,4 +239,61 @@ func ParseStatusByChannelState(state ari.ChannelState) Status {
 	}
 
 	return res
+}
+
+// CalculateHangupReason calculates call hangup reason based on current status and hangup cause
+func CalculateHangupReason(lastStatus Status, cause ari.ChannelCause) HangupReason {
+	// Hangup reason calculate table
+	//
+	// +----------------------+-------+-----------------------+
+	// | last status					| cuase	| hangup reason					|
+	// |----------------------+-------+-----------------------+
+	// | StatusDialing				| ?			| HangupReasonFailed		|
+	// | StatusRinging				| ?			| HangupReasonBusy			|
+	// |											| ?			| HangupReasonTimeout		|
+	// |											| ?			| HangupReasonUnanswer	|
+	// |											| ?			| HanupgReasonDialout		|
+	// +----------------------+-------+-----------------------+
+	// | StatusProgressing		| *			| HangupReasonNormal		|
+	// +----------------------+-------+-----------------------+
+	// | StatusTerminating		| * 		| HangupReasonNormal		|
+	// +----------------------+-------+-----------------------+
+	// | StatusCanceling			| * 		| HangupReasonCanceled	|
+	// +----------------------+-------+-----------------------+
+	// | StatusHangup					| * 		| HangupReasonNormal		|
+	// +----------------------+-------+-----------------------+
+
+	switch lastStatus {
+	case StatusProgressing, StatusTerminating, StatusHangup:
+		return HangupReasonNormal
+	case StatusCanceling:
+		return HangupReasonCanceled
+	}
+
+	// TODO: Need to be fixed as above chart.
+	return HangupReasonFailed
+}
+
+// CalculateHangupBy calculates call hangupBy based on current status and hangup cause
+func CalculateHangupBy(lastStatus Status) HangupBy {
+	// Hangup by calculate table
+	//
+	// +----------------------+-----------------+
+	// | last status					| Hangup by				|
+	// |----------------------+-----------------+
+	// | StatusDialing				| HangupByRemote	|
+	// | StatusRinging				| 								|
+	// | StatusProgressing		|									|
+	// +----------------------+-----------------+
+	// | StatusTerminating		| HangupByLocal		|
+	// | StatusCanceling			|									|
+	// | StatusHangup					|									|
+	// +----------------------+-----------------+
+
+	switch lastStatus {
+	case StatusDialing, StatusRinging, StatusProgressing:
+		return HangupByRemote
+	default:
+		return HangupByLocal
+	}
 }

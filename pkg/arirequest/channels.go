@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 )
 
 // ChannelAnswer sends the channel answer request
@@ -52,7 +54,7 @@ func (r *requestHandler) ChannelContinue(asteriskID, channelID, context, ext str
 }
 
 // ChannelContinue sends the continue request
-func (r *requestHandler) ChannelHangup(asteriskID, channelID string, code int) error {
+func (r *requestHandler) ChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error {
 	url := fmt.Sprintf("/ari/channels/%s", channelID)
 
 	type Data struct {
@@ -60,7 +62,7 @@ func (r *requestHandler) ChannelHangup(asteriskID, channelID string, code int) e
 	}
 
 	m, err := json.Marshal(Data{
-		strconv.Itoa(code),
+		strconv.Itoa(int(code)),
 	})
 	if err != nil {
 		return err

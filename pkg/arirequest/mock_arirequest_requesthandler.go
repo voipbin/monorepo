@@ -6,6 +6,7 @@ package arirequest
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	reflect "reflect"
 )
 
@@ -61,7 +62,7 @@ func (mr *MockRequestHandlerMockRecorder) ChannelContinue(arg0, arg1, arg2, arg3
 }
 
 // ChannelHangup mocks base method
-func (m *MockRequestHandler) ChannelHangup(arg0, arg1 string, arg2 int) error {
+func (m *MockRequestHandler) ChannelHangup(arg0, arg1 string, arg2 ari.ChannelCause) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelHangup", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

@@ -178,6 +178,99 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	return res, nil
 }
 
+// CallGet returns call.
+func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error) {
+
+	// prepare
+	q := `
+	select 
+		id,
+		asterisk_id,
+		channel_id,
+		flow_id,
+		type,
+
+		source,
+		destination,
+
+		status,
+		data,
+		direction,
+		hangup_by,
+		hangup_reason,
+		
+		coalesce(tm_create, '') as tm_create,
+		coalesce(tm_update, '') as tm_update,
+
+		coalesce(tm_progressing, '') as tm_progressing,
+		coalesce(tm_ringing, '') as tm_ringing,
+		coalesce(tm_hangup, '') as tm_hangup
+
+	from 
+		calls
+	where 
+		channel_id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("could not prepare. CallGetByChannelID. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	row, err := stmt.QueryContext(ctx, channelID)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CallGetByChannelID. err: %v", err)
+	}
+	defer row.Close()
+
+	if row.Next() == false {
+		return nil, fmt.Errorf("could not get row. CallGetByChannelID. err: %v", err)
+	}
+
+	var data string
+	var source string
+	var destination string
+	res := &call.Call{}
+	if err := row.Scan(
+		&res.ID,
+		&res.AsteriskID,
+		&res.ChannelID,
+		&res.FlowID,
+		&res.Type,
+
+		&source,
+		&destination,
+
+		&res.Status,
+		&data,
+		&res.Direction,
+		&res.HangupBy,
+		&res.HangupReason,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+
+		&res.TMProgressing,
+		&res.TMRinging,
+		&res.TMHangup,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. CallGetByChannelID. err: %v", err)
+	}
+
+	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the data. CallGetByChannelID. err: %v", err)
+	}
+	if err := json.Unmarshal([]byte(source), &res.Source); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the source. CallGetByChannelID. err: %v", err)
+	}
+	if err := json.Unmarshal([]byte(destination), &res.Destination); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the destination. CallGetByChannelID. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // CallSetStatus sets the call status
 func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error {
 
@@ -199,6 +292,37 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 
 	// query
 	_, err = stmt.ExecContext(ctx, status, tmUpdate, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute query. CallSetStatus. err: %v", err)
+	}
+
+	return nil
+}
+
+// CallSetStatus sets the call status
+func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error {
+
+	// prepare
+	q := `
+	update
+		calls
+	set
+		status = ?,
+		hangup_by = ?,
+		hangup_reason = ?,
+		tm_update = ?,
+		tm_hangup = ?
+	where 
+		id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. CallSetStatus. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	_, err = stmt.ExecContext(ctx, string(call.StatusHangup), hangupBy, reason, tmUpdate, tmUpdate, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute query. CallSetStatus. err: %v", err)
 	}

@@ -1,72 +1,75 @@
 package ari
 
-// hangup cause codes
+// ChannelCause type
+type ChannelCause int
+
+// List of ChannelCause type
 const (
-	HangupUnallocated        = 1 // code -> sip: 404
-	HangupNoRouteTransitNet  = 2 // code -> sip: 404
-	HangupNoRouteDestination = 3 // code -> sip: 404
+	ChannelCauseUnallocated        ChannelCause = 1 // code -> sip: 404
+	ChannelCauseNoRouteTransitNet  ChannelCause = 2 // code -> sip: 404
+	ChannelCauseNoRouteDestination ChannelCause = 3 // code -> sip: 404
 
-	HangupMisdialedTrunkPrefix = 5 // code -> sip:
-	HangupChannelUnacceptable  = 6 // code -> sip:
-	HangupCallAwardedDelivered = 7 // code -> sip:
-	HangupPreEmpted            = 8 // code -> sip:
+	ChannelCauseMisdialedTrunkPrefix ChannelCause = 5 // code -> sip:
+	ChannelCauseChannelUnacceptable  ChannelCause = 6 // code -> sip:
+	ChannelCauseCallAwardedDelivered ChannelCause = 7 // code -> sip:
+	ChannelCausePreEmpted            ChannelCause = 8 // code -> sip:
 
-	HangupNumberPortedNotHere = 14 // code -> sip:
+	ChannelCauseNumberPortedNotHere ChannelCause = 14 // code -> sip:
 
-	HangupNormalClearing             = 16 // code -> sip:
-	HangupUserBusy                   = 17 // code -> sip: 486
-	HangupNoUserResponse             = 18 // code -> sip: 408
-	HangupNoAnswer                   = 19 // code -> sip: 480
-	HangupSubscriberAbsent           = 20 // code -> sip: 480
-	HangupCallRejected               = 21 // code -> sip: 403
-	HangupNumberChanged              = 22 // code -> sip: 410
-	HangupRedirectedToNewDestination = 23 // code -> sip:
+	ChannelCauseNormalClearing             ChannelCause = 16 // code -> sip:
+	ChannelCauseUserBusy                   ChannelCause = 17 // code -> sip: 486
+	ChannelCauseNoUserResponse             ChannelCause = 18 // code -> sip: 408
+	ChannelCauseNoAnswer                   ChannelCause = 19 // code -> sip: 480
+	ChannelCauseSubscriberAbsent           ChannelCause = 20 // code -> sip: 480
+	ChannelCauseCallRejected               ChannelCause = 21 // code -> sip: 403
+	ChannelCauseNumberChanged              ChannelCause = 22 // code -> sip: 410
+	ChannelCauseRedirectedToNewDestination ChannelCause = 23 // code -> sip:
 
-	HangupAnsweredElsewhere       = 26 // code -> sip:
-	HangupDestinatioOutOfOrder    = 27 // code -> sip: 502
-	HangupInvalidNumberFormat     = 28 // code -> sip: 484
-	HangupFacilityRejected        = 29 // code -> sip: 501
-	HangupResponseToStatusEnquiry = 30 // code -> sip:
-	HangupNormalUnspecified       = 31 // code -> sip: 480
+	ChannelCauseAnsweredElsewhere       ChannelCause = 26 // code -> sip:
+	ChannelCauseDestinatioOutOfOrder    ChannelCause = 27 // code -> sip: 502
+	ChannelCauseInvalidNumberFormat     ChannelCause = 28 // code -> sip: 484
+	ChannelCauseFacilityRejected        ChannelCause = 29 // code -> sip: 501
+	ChannelCauseResponseToStatusEnquiry ChannelCause = 30 // code -> sip:
+	ChannelCauseNormalUnspecified       ChannelCause = 31 // code -> sip: 480
 
-	HangupNormalCircuitCongestion = 34 // code -> sip: 503
+	ChannelCauseNormalCircuitCongestion ChannelCause = 34 // code -> sip: 503
 
-	HangupNetworkOutOfOrder = 38 // code -> sip: 500
+	ChannelCauseNetworkOutOfOrder ChannelCause = 38 // code -> sip: 500
 
-	HangupNormalTemporaryFailure = 41 // code -> sip:
-	HangupSwitchCongestion       = 42 // code -> sip: 503
-	HangupAccessInfoDiscarded    = 43 // code -> sip:
-	HangupRequestedChanUnavail   = 44 // code -> sip:
+	ChannelCauseNormalTemporaryFailure ChannelCause = 41 // code -> sip:
+	ChannelCauseSwitchCongestion       ChannelCause = 42 // code -> sip: 503
+	ChannelCauseAccessInfoDiscarded    ChannelCause = 43 // code -> sip:
+	ChannelCauseRequestedChanUnavail   ChannelCause = 44 // code -> sip:
 
-	HangupFacilityNotSubscribed = 50 // code -> sip:
+	ChannelCauseFacilityNotSubscribed ChannelCause = 50 // code -> sip:
 
-	HangupOutgoingCallBarred = 52 // code -> sip:
+	ChannelCauseOutgoingCallBarred ChannelCause = 52 // code -> sip:
 
-	HangupIncomingCallBarred = 54 // code -> sip:
+	ChannelCauseIncomingCallBarred ChannelCause = 54 // code -> sip:
 
-	HangupBearerCapabilityNotauth  = 57 // code -> sip:
-	HangupBearerCapabilityNotavail = 58 // code -> sip: 488
+	ChannelCauseBearerCapabilityNotauth  ChannelCause = 57 // code -> sip:
+	ChannelCauseBearerCapabilityNotavail ChannelCause = 58 // code -> sip: 488
 
-	HangupBearerCapabilityNotimpl = 65 // code -> sip:
-	HangupChanNotImplemented      = 66 // code -> sip: 503
+	ChannelCauseBearerCapabilityNotimpl ChannelCause = 65 // code -> sip:
+	ChannelCauseChanNotImplemented      ChannelCause = 66 // code -> sip: 503
 
-	HangupFacilityNotImplemented = 69 // code -> sip:
+	ChannelCauseFacilityNotImplemented ChannelCause = 69 // code -> sip:
 
-	HangupInvalidCallReference = 81 // code -> sip:
+	ChannelCauseInvalidCallReference ChannelCause = 81 // code -> sip:
 
-	HangupIncompatibleDestination = 88 // code -> sip:
+	ChannelCauseIncompatibleDestination ChannelCause = 88 // code -> sip:
 
-	HangupInvalidMsgUnspecified  = 95  // code -> sip:
-	HangupMandatoryIeMissing     = 96  // code -> sip:
-	HangupMessageTypeNonexist    = 97  // code -> sip:
-	HangupWrongMessage           = 98  // code -> sip:
-	HangupIeNonexist             = 99  // code -> sip:
-	HangupInvalidIeContents      = 100 // code -> sip:
-	HangupWrongCallState         = 101 // code -> sip:
-	HangupRecoveryIeTimerExpire  = 102 // code -> sip:
-	HangupMandatoryIeLengthError = 103 // code -> sip:
+	ChannelCauseInvalidMsgUnspecified  ChannelCause = 95  // code -> sip:
+	ChannelCauseMandatoryIeMissing     ChannelCause = 96  // code -> sip:
+	ChannelCauseMessageTypeNonexist    ChannelCause = 97  // code -> sip:
+	ChannelCauseWrongMessage           ChannelCause = 98  // code -> sip:
+	ChannelCauseIeNonexist             ChannelCause = 99  // code -> sip:
+	ChannelCauseInvalidIeContents      ChannelCause = 100 // code -> sip:
+	ChannelCauseWrongCallState         ChannelCause = 101 // code -> sip:
+	ChannelCauseRecoveryIeTimerExpire  ChannelCause = 102 // code -> sip:
+	ChannelCauseMandatoryIeLengthError ChannelCause = 103 // code -> sip:
 
-	HangupProtocolError = 111 // code -> sip:
+	ChannelCauseProtocolError ChannelCause = 111 // code -> sip:
 
-	HangupInterworking = 127 // code -> sip: 500
+	ChannelCauseInterworking ChannelCause = 127 // code -> sip: 500
 )

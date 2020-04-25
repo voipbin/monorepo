@@ -4,7 +4,6 @@ package arievent
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -78,13 +77,15 @@ func init() {
 }
 
 // NewEventHandler create EventHandler
-func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler) EventHandler {
+func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler arirequest.RequestHandler, svcHandler svchandler.SVCHandler) EventHandler {
 	evtHandler := &eventHandler{
 		rabbitSock: sock,
 		db:         db,
 	}
-	evtHandler.reqHandler = arirequest.NewRequestHandler(sock)
-	evtHandler.svcHandler = svchandler.NewServiceHandler(evtHandler.reqHandler, db)
+
+	evtHandler.reqHandler = reqHandler
+	evtHandler.svcHandler = svcHandler
+
 	return evtHandler
 }
 
@@ -145,14 +146,4 @@ func (h *eventHandler) processEvent(m []byte) error {
 	}
 
 	return nil
-}
-
-// getTech returns tech from channel name
-func getTech(name string) string {
-	res := strings.Split(name, "/")
-	if len(res) < 1 {
-		return ""
-	}
-
-	return strings.ToLower(res[0])
 }

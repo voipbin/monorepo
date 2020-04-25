@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,10 +10,8 @@ import (
 	"time"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler"
-	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 
 	joonix "github.com/joonix/log"
-	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -50,11 +47,6 @@ func main() {
 	ariHandler := arihandler.NewARIHandler(db, *rabbitAddr, *rabbitQueueARIEvent)
 	ariHandler.Connect()
 	go ariHandler.Run()
-
-	simple := call.Call{
-		ID: uuid.NewV4(),
-	}
-	fmt.Println(simple)
 
 	<-chDone
 

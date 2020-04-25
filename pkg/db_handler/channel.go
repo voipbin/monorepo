@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
 
 // ChannelCreate creates new channel record and returns the created channel record.
-func (h *handler) ChannelCreate(ctx context.Context, channel channel.Channel) error {
+func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) error {
 	q := `insert into channels(
 		asterisk_id,
 		id,
@@ -151,13 +152,47 @@ func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
 		return nil, fmt.Errorf("dbhandler: Could not unmarshal the result. err: %v", err)
 	}
+	if res.Data == nil {
+		res.Data = make(map[string]interface{})
+	}
+	// }
 
 	return res, nil
 }
 
-// ChannelEnd updates the channel end.
-func (h *handler) ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup int) error {
+// ChannelSetData sets the data
+func (h *handler) ChannelSetData(ctx context.Context, asteriskID, id, timestamp string, data map[string]interface{}) error {
+	//prepare
+	q := `
+	update channels set
+		data = ?,
+		tm_update = ?
+	where
+		asterisk_id = ?
+		and id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. ChannelSetData. err: %v", err)
+	}
+	defer stmt.Close()
 
+	tmpData, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetData. err: %v", err)
+	}
+
+	// execute
+	_, err = stmt.ExecContext(ctx, tmpData, timestamp, asteriskID, id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetData. err: %v", err)
+	}
+
+	return nil
+}
+
+// ChannelEnd updates the channel end.
+func (h *handler) ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup ari.ChannelCause) error {
 	// prepare
 	q := `
 	update channels set
