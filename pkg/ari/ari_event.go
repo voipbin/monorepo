@@ -81,17 +81,17 @@ type ChannelCreated struct {
 // ChannelDestroyed ARI event struct
 type ChannelDestroyed struct {
 	Event
-	Channel  Channel `json:"channel"`
-	CauseTxt string  `json:"cause_txt"`
-	Cause    int     `json:"cause"`
+	Channel  Channel      `json:"channel"`
+	CauseTxt string       `json:"cause_txt"`
+	Cause    ChannelCause `json:"cause"`
 }
 
 // ChannelHangupRequest ARI event struct
 type ChannelHangupRequest struct {
 	Event
-	Soft    bool    `json:"soft"`
-	Cause   int     `json:"cause"`
-	Channel Channel `json:"channel"`
+	Soft    bool         `json:"soft"`
+	Cause   ChannelCause `json:"cause"`
+	Channel Channel      `json:"channel"`
 }
 
 // StasisStart ARI event struct

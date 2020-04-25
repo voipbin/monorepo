@@ -48,8 +48,8 @@ func (h *ariHandler) Connect() {
 
 	// new handlers
 	h.reqHandler = arirequest.NewRequestHandler(h.rabbitSock)
-	h.svcHandler = svchandler.NewServiceHandler(h.reqHandler, h.db)
-	h.evtHandler = arievent.NewEventHandler(h.rabbitSock, h.db)
+	h.svcHandler = svchandler.NewSvcHandler(h.reqHandler, h.db)
+	h.evtHandler = arievent.NewEventHandler(h.rabbitSock, h.db, h.reqHandler, h.svcHandler)
 }
 
 // Run runs the arihandler

@@ -8,6 +8,7 @@ import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
 	uuid "github.com/satori/go.uuid"
+	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	reflect "reflect"
@@ -65,6 +66,35 @@ func (mr *MockDBHandlerMockRecorder) CallGet(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGet", reflect.TypeOf((*MockDBHandler)(nil).CallGet), arg0, arg1)
 }
 
+// CallGetByChannelID mocks base method
+func (m *MockDBHandler) CallGetByChannelID(arg0 context.Context, arg1 string) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallGetByChannelID", arg0, arg1)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallGetByChannelID indicates an expected call of CallGetByChannelID
+func (mr *MockDBHandlerMockRecorder) CallGetByChannelID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetByChannelID", reflect.TypeOf((*MockDBHandler)(nil).CallGetByChannelID), arg0, arg1)
+}
+
+// CallSetHangup mocks base method
+func (m *MockDBHandler) CallSetHangup(arg0 context.Context, arg1 uuid.UUID, arg2 call.HangupReason, arg3 call.HangupBy, arg4 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetHangup", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetHangup indicates an expected call of CallSetHangup
+func (mr *MockDBHandlerMockRecorder) CallSetHangup(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetHangup", reflect.TypeOf((*MockDBHandler)(nil).CallSetHangup), arg0, arg1, arg2, arg3, arg4)
+}
+
 // CallSetStatus mocks base method
 func (m *MockDBHandler) CallSetStatus(arg0 context.Context, arg1 uuid.UUID, arg2 call.Status, arg3 string) error {
 	m.ctrl.T.Helper()
@@ -80,7 +110,7 @@ func (mr *MockDBHandlerMockRecorder) CallSetStatus(arg0, arg1, arg2, arg3 interf
 }
 
 // ChannelCreate mocks base method
-func (m *MockDBHandler) ChannelCreate(arg0 context.Context, arg1 channel.Channel) error {
+func (m *MockDBHandler) ChannelCreate(arg0 context.Context, arg1 *channel.Channel) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelCreate", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -94,7 +124,7 @@ func (mr *MockDBHandlerMockRecorder) ChannelCreate(arg0, arg1 interface{}) *gomo
 }
 
 // ChannelEnd mocks base method
-func (m *MockDBHandler) ChannelEnd(arg0 context.Context, arg1, arg2, arg3 string, arg4 int) error {
+func (m *MockDBHandler) ChannelEnd(arg0 context.Context, arg1, arg2, arg3 string, arg4 ari.ChannelCause) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelEnd", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
@@ -120,4 +150,18 @@ func (m *MockDBHandler) ChannelGet(arg0 context.Context, arg1, arg2 string) (*ch
 func (mr *MockDBHandlerMockRecorder) ChannelGet(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGet", reflect.TypeOf((*MockDBHandler)(nil).ChannelGet), arg0, arg1, arg2)
+}
+
+// ChannelSetData mocks base method
+func (m *MockDBHandler) ChannelSetData(arg0 context.Context, arg1, arg2, arg3 string, arg4 map[string]interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetData", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetData indicates an expected call of ChannelSetData
+func (mr *MockDBHandlerMockRecorder) ChannelSetData(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetData), arg0, arg1, arg2, arg3, arg4)
 }

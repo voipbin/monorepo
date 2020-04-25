@@ -188,7 +188,7 @@ func TestChannelChannelHangup(t *testing.T) {
 		name          string
 		asteriskID    string
 		channelID     string
-		hangupCause   int
+		hangupCause   ari.ChannelCause
 		expectURL     string
 		expectPayload string
 	}
@@ -198,7 +198,7 @@ func TestChannelChannelHangup(t *testing.T) {
 			"have all item",
 			"00:11:22:33:44:55",
 			"ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
-			ari.HangupNormalClearing,
+			ari.ChannelCauseNormalClearing,
 			"/ari/channels/ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
 			`{"reason_code":"16"}`,
 		},

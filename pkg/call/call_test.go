@@ -90,7 +90,7 @@ func TestParseAddressByDialplan(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			address := ParseAddressByDialplan(tt.dialplan)
+			address := NewAddressByDialplan(tt.dialplan)
 			if !reflect.DeepEqual(address, tt.expectAddress) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectAddress, address)
 			}
