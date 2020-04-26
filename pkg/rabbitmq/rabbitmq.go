@@ -141,7 +141,6 @@ func (q *rabbit) PublishRPC(ctx context.Context, queueName, message string) ([]b
 		q.DeleteQueue(tmpQueue.Name, false, false, false)
 		return nil, err
 	}
-	log.Debugf("Published.")
 
 	select {
 	case <-ctx.Done():

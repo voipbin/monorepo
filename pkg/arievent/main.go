@@ -122,9 +122,10 @@ func (h *eventHandler) processEvent(m []byte) error {
 
 	// processMap maps ARIEvent name and event handler.
 	var processMap = map[string]func(context.Context, interface{}) error{
-		"ChannelCreated":   h.eventHandlerChannelCreated,
-		"ChannelDestroyed": h.eventHandlerChannelDestroyed,
-		"StasisStart":      h.eventHandlerStasisStart,
+		"ChannelCreated":     h.eventHandlerChannelCreated,
+		"ChannelDestroyed":   h.eventHandlerChannelDestroyed,
+		"ChannelStateChange": h.eventHandlerChannelStateChange,
+		"StasisStart":        h.eventHandlerStasisStart,
 	}
 
 	handler := processMap[string(event.Type)]

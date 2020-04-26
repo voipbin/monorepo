@@ -222,3 +222,35 @@ func TestParseStasisStart(t *testing.T) {
 		t.Errorf("Wrong match. expect: 34.90.68.237, got: %s", e.Args["DOMAIN"])
 	}
 }
+
+func TestParseChannelStateChange(t *testing.T) {
+	type test struct {
+		name    string
+		message string
+	}
+
+	tests := []test{
+		{
+			"normal test",
+			`{"type":"ChannelStateChange","timestamp":"2020-04-25T14:14:18.872+0000","channel":{"id":"1587824058.4108","name":"PJSIP/in-voipbin-00000fc8","state":"Up","caller":{"name":"","number":"1001"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"+46842002310","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1839956265-1792916014-1999965658,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=45.151.255.178"},"creationtime":"2020-04-25T14:14:18.670+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event, evt, err := Parse([]byte(tt.message))
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if event.Type != EventTypeChannelStateChange {
+				t.Errorf("Wrong match. expect: %s, got: %s", EventTypeChannelStateChange, event.Type)
+			}
+
+			e := evt.(*ChannelStateChange)
+			if e.Type != EventTypeChannelStateChange {
+				t.Errorf("Wrong match. expect: %s, got: %s", EventTypeChannelStateChange, e.Type)
+			}
+		})
+	}
+}

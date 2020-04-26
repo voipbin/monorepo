@@ -148,7 +148,7 @@ func NewCallByChannel(cn *channel.Channel, cType Type, direction Direction) *Cal
 	// create a call
 	source := CreateAddressByChannelSource(cn)
 	destination := CreateAddressByChannelDestination(cn)
-	status := ParseStatusByChannelState(cn.State)
+	status := GetStatusByChannelState(cn.State)
 	data := map[string]interface{}{}
 
 	for k, v := range cn.Data {
@@ -216,28 +216,30 @@ func NewAddressByDialplan(e *ari.DialplanCEP) *Address {
 	return r
 }
 
-// ParseStatusByChannelState return Status by the ChannelState
-func ParseStatusByChannelState(state ari.ChannelState) Status {
+// GetStatusByChannelState return Status by the ChannelState.
+func GetStatusByChannelState(state ari.ChannelState) Status {
+
 	mapParse := map[ari.ChannelState]Status{
-		ari.ChannelStateDown:           StatusHangup,
-		ari.ChannelStateRsrvd:          StatusHangup,
-		ari.ChannelStateOffHook:        StatusHangup,
+		ari.ChannelStateDown:           StatusDialing,
+		ari.ChannelStateRsrvd:          StatusDialing,
+		ari.ChannelStateOffHook:        StatusDialing,
 		ari.ChannelStateDialing:        StatusDialing,
-		ari.ChannelStateRing:           StatusRinging,
-		ari.ChannelStateRinging:        StatusRinging,
-		ari.ChannelStateUp:             StatusProgressing,
-		ari.ChannelStateBusy:           StatusHangup,
-		ari.ChannelStateDialingOffHook: StatusHangup,
+		ari.ChannelStateBusy:           StatusDialing,
+		ari.ChannelStateDialingOffHook: StatusDialing,
 		ari.ChannelStatePreRing:        StatusDialing,
-		ari.ChannelStateMute:           StatusProgressing,
-		ari.ChannelStateUnknown:        StatusHangup,
+		ari.ChannelStateUnknown:        StatusDialing,
+
+		ari.ChannelStateRinging: StatusRinging,
+		ari.ChannelStateRing:    StatusRinging,
+
+		ari.ChannelStateUp:   StatusProgressing,
+		ari.ChannelStateMute: StatusProgressing,
 	}
 
 	res, ok := mapParse[state]
 	if !ok {
 		return StatusHangup
 	}
-
 	return res
 }
 
@@ -293,7 +295,107 @@ func CalculateHangupBy(lastStatus Status) HangupBy {
 	switch lastStatus {
 	case StatusDialing, StatusRinging, StatusProgressing:
 		return HangupByRemote
-	default:
+	case StatusTerminating, StatusCanceling, StatusHangup:
 		return HangupByLocal
+	default:
+		return HangupByRemote
 	}
+}
+
+// IsUpdatableStatus returns true if the new status is updatable.
+func IsUpdatableStatus(oldStatus, newStatus Status) bool {
+
+	// Possible scenarios
+
+	// StatusDialing -> StatusRinging
+	// StatusDialing -> StatusProgressing
+	// StatusDialing -> StatusCanceling
+	// StatusDialing -> StatusTerminating
+	// StatusDialing -> StatusHangup
+	// StatusRinging -> StatusProgressing
+	// StatusRinging -> StatusCanceling
+	// StatusDialing -> StatusTerminating
+	// StatusDialing -> StatusHangup
+	// StatusProgressing -> StatusTerminating
+	// StatusProgressing -> StatusHangup
+	// StatusCanceling -> StatusHangup
+	// StatusTerminating -> StatusHangup
+
+	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
+	// | old \ new					| StatusDialing	| StatusRinging	| StatusProgressing	| StatusTerminating	| StatusCanceling	| StatusHangup	|
+	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
+	// | StatusDialing			| 			x				| 			o				|					o					|					o					|					o				|				o				|
+	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
+	// | StatusRinging			|				x				| 			x				|					o					|					o					|					o				|				o				|
+	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
+	// | StatusProgressing	|				x				| 			x				|					x					|					o					|					x				|				o				|
+	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
+	// | StatusTerminating	|				x				| 			x				|					x					|					x					|					x				|				o				|
+	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
+	// | StatusCanceling		|				x				| 			x				|					x					|					x					|					x				|				o				|
+	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
+	// | StatusHangup				|				x				| 			x				|					x					|					x					|					x				|				x				|
+	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
+
+	mapOldStatusDialing := map[Status]bool{
+		StatusDialing:     false,
+		StatusRinging:     true,
+		StatusProgressing: true,
+		StatusTerminating: true,
+		StatusCanceling:   true,
+		StatusHangup:      true,
+	}
+	mapOldStatusRinging := map[Status]bool{
+		StatusDialing:     false,
+		StatusRinging:     false,
+		StatusProgressing: true,
+		StatusTerminating: true,
+		StatusCanceling:   true,
+		StatusHangup:      true,
+	}
+	mapOldStatusProgressing := map[Status]bool{
+		StatusDialing:     false,
+		StatusRinging:     false,
+		StatusProgressing: false,
+		StatusTerminating: true,
+		StatusCanceling:   false,
+		StatusHangup:      true,
+	}
+	mapOldStatusTerminating := map[Status]bool{
+		StatusDialing:     false,
+		StatusRinging:     false,
+		StatusProgressing: false,
+		StatusTerminating: false,
+		StatusCanceling:   false,
+		StatusHangup:      true,
+	}
+	mapOldStatusCanceling := map[Status]bool{
+		StatusDialing:     false,
+		StatusRinging:     false,
+		StatusProgressing: false,
+		StatusTerminating: false,
+		StatusCanceling:   false,
+		StatusHangup:      true,
+	}
+
+	// return false if change is not valid
+	if oldStatus == newStatus || oldStatus == StatusHangup {
+		return false
+	}
+
+	switch oldStatus {
+	case StatusDialing:
+		return mapOldStatusDialing[newStatus]
+	case StatusRinging:
+		return mapOldStatusRinging[newStatus]
+	case StatusProgressing:
+		return mapOldStatusProgressing[newStatus]
+	case StatusTerminating:
+		return mapOldStatusTerminating[newStatus]
+	case StatusCanceling:
+		return mapOldStatusCanceling[newStatus]
+	}
+
+	// should not reach to here
+	return false
 }

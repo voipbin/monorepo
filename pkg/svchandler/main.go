@@ -12,6 +12,7 @@ import (
 type SVCHandler interface {
 	Start(cn *channel.Channel) error
 	Hangup(cn *channel.Channel) error
+	UpdateStatus(cn *channel.Channel) error
 }
 
 // svcHandler structure for service handle
