@@ -29,9 +29,9 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 		hangup_cause,
 		tm_create
 	) values(
-		?, ?, ?, ?, 
-		?, ?, ?, ?, 
-		?, ?, 
+		?, ?, ?, ?,
+		?, ?, ?, ?,
+		?, ?,
 		?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -75,7 +75,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*channel.Channel, error) {
 
 	// prepare
-	q := `select 
+	q := `select
 	asterisk_id,
   id,
   name,
@@ -99,9 +99,9 @@ func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
 	coalesce(tm_ringing, '') as tm_ringing,
 	coalesce(tm_end, '') as tm_end
 
-	from 
-	channels 
-	where 
+	from
+	channels
+	where
 	asterisk_id = ? and id = ?`
 	stmt, err := h.db.PrepareContext(ctx, q)
 	if err != nil {
@@ -117,7 +117,7 @@ func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
 	defer row.Close()
 
 	if row.Next() == false {
-		return nil, fmt.Errorf("dbhandler: Could not get row. err: %v", err)
+		return nil, ErrNotFound
 	}
 
 	var data string
@@ -186,6 +186,49 @@ func (h *handler) ChannelSetData(ctx context.Context, asteriskID, id, timestamp 
 	_, err = stmt.ExecContext(ctx, tmpData, timestamp, asteriskID, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetData. err: %v", err)
+	}
+
+	return nil
+}
+
+func (h *handler) ChannelSetState(ctx context.Context, asteriskID, id, timestamp string, state ari.ChannelState) error {
+
+	var q string
+	switch state {
+	case ari.ChannelStateUp:
+		q = `
+		update channels set
+			state = ?,
+			tm_update = ?,
+			tm_answer = ?
+		where
+			asterisk_id = ?
+			and id = ?
+		`
+	case ari.ChannelStateRing, ari.ChannelStateRinging:
+		q = `
+		update channels set
+			state = ?,
+			tm_update = ?,
+			tm_ringing = ?
+		where
+			asterisk_id = ?
+			and id = ?
+		`
+	default:
+		return fmt.Errorf("no match state. ChannelSetState. state: %s", state)
+	}
+
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. ChannelSetState. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// execute
+	_, err = stmt.ExecContext(ctx, string(state), timestamp, timestamp, asteriskID, id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetState. err: %v", err)
 	}
 
 	return nil

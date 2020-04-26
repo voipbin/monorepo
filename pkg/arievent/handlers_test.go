@@ -143,3 +143,47 @@ func TestEventHandlerStasisStart(t *testing.T) {
 		})
 	}
 }
+
+func TestEventHandlerChannelStateChange(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockRequest := arirequest.NewMockRequestHandler(mc)
+	mockSvc := svchandler.NewMockSVCHandler(mc)
+
+	type test struct {
+		name            string
+		event           string
+		expectAsterisID string
+		expectChannelID string
+		expectTmUpdate  string
+		expactState     ari.ChannelState
+	}
+
+	tests := []test{
+		{
+			"normal",
+			`{"type":"ChannelStateChange","timestamp":"2020-04-25T19:17:13.786+0000","channel":{"id":"1587842233.10218","name":"PJSIP/in-voipbin-000026ee","state":"Up","caller":{"name":"","number":"586737682"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"46842002310","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1491366011-850848062-1281392838,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=45.151.255.178"},"creationtime":"2020-04-25T19:17:13.585+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			"42:01:0a:a4:00:05",
+			"1587842233.10218",
+			"2020-04-25T19:17:13.786",
+			ari.ChannelStateUp,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+
+			mockDB.EXPECT().ChannelSetState(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expectTmUpdate, tt.expactState).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectAsterisID, tt.expectChannelID).Return(nil, nil)
+			mockSvc.EXPECT().UpdateStatus(nil).Return(nil)
+
+			if err := h.processEvent([]byte(tt.event)); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

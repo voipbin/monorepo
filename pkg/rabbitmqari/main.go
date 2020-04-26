@@ -86,6 +86,9 @@ func (r *requester) SendARIRequest(asteriskID, url, method string, timeout int64
 	}
 
 	log.WithFields(log.Fields{
+		"asterisk_id": asteriskID,
+		"method":      method,
+		"url":         url,
 		"status_code": resp.StatusCode,
 	}).Debugf("Received result. data: %s", resp.Data)
 

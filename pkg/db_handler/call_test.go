@@ -159,7 +159,9 @@ func TestCallSetStatus(t *testing.T) {
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionIncoming,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:18.995000",
+				TMProgressing: "2020-04-18T03:22:18.995000",
 			},
 		},
 	}

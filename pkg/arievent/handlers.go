@@ -60,3 +60,23 @@ func (h *eventHandler) eventHandlerChannelDestroyed(ctx context.Context, evt int
 
 	return nil
 }
+
+// eventHandlerChannelStateChange handels ChannelStateChange ARI event
+func (h *eventHandler) eventHandlerChannelStateChange(ctx context.Context, evt interface{}) error {
+	e := evt.(*ari.ChannelStateChange)
+
+	if err := h.db.ChannelSetState(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), e.Channel.State); err != nil {
+		return err
+	}
+
+	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
+	if err != nil {
+		return err
+	}
+
+	if err := h.svcHandler.UpdateStatus(cn); err != nil {
+		return err
+	}
+
+	return nil
+}

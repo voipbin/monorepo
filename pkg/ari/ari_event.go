@@ -21,6 +21,7 @@ const (
 	EventTypeChannelCreated       EventType = "ChannelCreated"
 	EventTypeChannelDestroyed     EventType = "ChannelDestroyed"
 	EventTypeChannelHangupRequest EventType = "ChannelHangupRequest"
+	EventTypeChannelStateChange   EventType = "ChannelStateChange"
 	EventTypeStasisStart          EventType = "StasisStart"
 )
 
@@ -102,26 +103,33 @@ type StasisStart struct {
 	ReplaceChannel Channel `json:"replace_channel"`
 }
 
+// ChannelStateChange ARI event struct
+type ChannelStateChange struct {
+	Event
+	Channel Channel `json:"channel"`
+}
+
 // Timestamp for timestamp
 type Timestamp string
 
 // ArgsMap map for args
 type ArgsMap map[string]string
 
-var parseMap = map[string]interface{}{
-	"ChannelCreated":       &ChannelCreated{},
-	"ChannelDestroyed":     &ChannelDestroyed{},
-	"ChannelHangupRequest": &ChannelHangupRequest{},
-	"StasisStart":          &StasisStart{},
-}
-
 // Parse parses received event to corresponded ARI event interface.
 // It returns nil interface if the message type's parser does not exists
-// in the parseMap above.
+// in the parseMap.
 func Parse(message []byte) (*Event, interface{}, error) {
 	event := &Event{}
 	if err := json.Unmarshal(message, event); err != nil {
 		return nil, nil, err
+	}
+
+	var parseMap = map[string]interface{}{
+		"ChannelCreated":       &ChannelCreated{},
+		"ChannelDestroyed":     &ChannelDestroyed{},
+		"ChannelHangupRequest": &ChannelHangupRequest{},
+		"ChannelStateChange":   &ChannelStateChange{},
+		"StasisStart":          &StasisStart{},
 	}
 
 	res := parseMap[string(event.Type)]

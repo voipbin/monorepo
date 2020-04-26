@@ -89,7 +89,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 
 	// prepare
 	q := `
-	select 
+	select
 		id,
 		asterisk_id,
 		channel_id,
@@ -105,7 +105,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		hangup_by,
 		hangup_reason,
 
-		
+
 		coalesce(tm_create, '') as tm_create,
 		coalesce(tm_update, '') as tm_update,
 
@@ -113,9 +113,9 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		coalesce(tm_ringing, '') as tm_ringing,
 		coalesce(tm_hangup, '') as tm_hangup
 
-	from 
+	from
 		calls
-	where 
+	where
 		id = ?
 	`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -132,7 +132,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	defer row.Close()
 
 	if row.Next() == false {
-		return nil, fmt.Errorf("could not get row. CallGet. err: %v", err)
+		return nil, ErrNotFound
 	}
 
 	var data string
@@ -183,7 +183,7 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 
 	// prepare
 	q := `
-	select 
+	select
 		id,
 		asterisk_id,
 		channel_id,
@@ -198,7 +198,7 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 		direction,
 		hangup_by,
 		hangup_reason,
-		
+
 		coalesce(tm_create, '') as tm_create,
 		coalesce(tm_update, '') as tm_update,
 
@@ -206,9 +206,9 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 		coalesce(tm_ringing, '') as tm_ringing,
 		coalesce(tm_hangup, '') as tm_hangup
 
-	from 
+	from
 		calls
-	where 
+	where
 		channel_id = ?
 	`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -225,7 +225,7 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 	defer row.Close()
 
 	if row.Next() == false {
-		return nil, fmt.Errorf("could not get row. CallGetByChannelID. err: %v", err)
+		return nil, ErrNotFound
 	}
 
 	var data string
@@ -280,8 +280,9 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 		calls
 	set
 		status = ?,
-		tm_update = ?
-	where 
+		tm_update = ?,
+		tm_progressing = ?
+	where
 		id = ?
 	`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -291,7 +292,7 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	defer stmt.Close()
 
 	// query
-	_, err = stmt.ExecContext(ctx, status, tmUpdate, id.Bytes())
+	_, err = stmt.ExecContext(ctx, status, tmUpdate, tmUpdate, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute query. CallSetStatus. err: %v", err)
 	}
@@ -312,7 +313,7 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 		hangup_reason = ?,
 		tm_update = ?,
 		tm_hangup = ?
-	where 
+	where
 		id = ?
 	`
 	stmt, err := h.db.PrepareContext(ctx, q)

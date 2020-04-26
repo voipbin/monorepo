@@ -60,3 +60,17 @@ func (mr *MockSVCHandlerMockRecorder) Start(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSVCHandler)(nil).Start), arg0)
 }
+
+// UpdateStatus mocks base method
+func (m *MockSVCHandler) UpdateStatus(arg0 *channel.Channel) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatus", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateStatus indicates an expected call of UpdateStatus
+func (mr *MockSVCHandlerMockRecorder) UpdateStatus(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockSVCHandler)(nil).UpdateStatus), arg0)
+}

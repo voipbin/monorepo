@@ -165,3 +165,17 @@ func (mr *MockDBHandlerMockRecorder) ChannelSetData(arg0, arg1, arg2, arg3, arg4
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetData), arg0, arg1, arg2, arg3, arg4)
 }
+
+// ChannelSetState mocks base method
+func (m *MockDBHandler) ChannelSetState(arg0 context.Context, arg1, arg2, arg3 string, arg4 ari.ChannelState) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetState", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetState indicates an expected call of ChannelSetState
+func (mr *MockDBHandlerMockRecorder) ChannelSetState(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetState", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetState), arg0, arg1, arg2, arg3, arg4)
+}
