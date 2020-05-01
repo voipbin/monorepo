@@ -9,29 +9,13 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/voip/asterisk-proxy/internal/rabbitmq"
 )
 
 var (
 	ariAddr    string //The asterisk-proxy connects to this asterisk ari service address
 	ariAccount string //The asterisk-proxy uses this asterisk ari account info. id:password
 )
-
-// logger for global
-// var log = logrus.New()
-
-// Request defines RPC message request
-type Request struct {
-	URL      string `json:"url"`
-	Method   string `json:"method"`
-	DataType string `json:"data_type"`
-	Data     string `json:"data,omitempty"`
-}
-
-// Response defines RPC message response
-type Response struct {
-	StatusCode int    `json:"status_code"`
-	Data       string `json:"data"`
-}
 
 func init() {
 	ariAddr = "localhost:8088"
@@ -47,8 +31,8 @@ func Initiate(addr, account string) {
 }
 
 // parse parses []byte to Message
-func parse(req []byte) (*Request, error) {
-	res := &Request{}
+func parse(req []byte) (*rabbitmq.Request, error) {
+	res := &rabbitmq.Request{}
 	err := json.Unmarshal(req, res)
 	if err != nil {
 		return nil, err
@@ -57,8 +41,8 @@ func parse(req []byte) (*Request, error) {
 }
 
 // sendRequest sends a request to the Asterisk ARI.
-func (m *Request) sendRequest() (int, string, error) {
-	url := fmt.Sprintf("http://%s%s", ariAddr, m.URL)
+func sendRequest(m *rabbitmq.Request) (int, string, error) {
+	url := fmt.Sprintf("http://%s%s", ariAddr, m.URI)
 	log.WithFields(log.Fields{
 		"request": m,
 	}).Debug("Sending ARI request.")
@@ -102,14 +86,15 @@ func RequestHandler(request string) (string, error) {
 	}
 
 	// send the request to Asterisk
-	statusCode, resData, err := m.sendRequest()
+	statusCode, resData, err := sendRequest(m)
 	if err != nil {
 		return "", err
 	}
 
-	response := Response{
-		statusCode,
-		resData,
+	response := &rabbitmq.Response{
+		StatusCode: statusCode,
+		DataType:   "application/json",
+		Data:       resData,
 	}
 
 	res, err := json.Marshal(response)

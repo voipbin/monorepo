@@ -187,7 +187,12 @@ func publishMessage() {
 		for {
 			select {
 			case msg := <-chARIEvent:
-				q.PublishMessage(string(msg))
+				event := &rabbitmq.Event{
+					Type:     "ari_event",
+					DataType: "application/json",
+					Data:     string(msg),
+				}
+				q.PublishMessage(event)
 			}
 		}
 	}(q)

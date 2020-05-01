@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"gitlab.com/voipbin/voip/asterisk-proxy/internal/rabbitmq"
 )
 
 func TestInitiate(t *testing.T) {
@@ -22,9 +24,9 @@ func TestInitiate(t *testing.T) {
 
 func TestParseNormal(t *testing.T) {
 	req := `{
-		"url": "/channels/create", 
-		"method": "POST", 
-		"data": "{ \"endpoint\": \"PJSIP/pchero-voip/sip:test@127.0.0.1\", \"app\": \"voipbin_test\", \"appArgs\": \"\", \"channelId\": \"03102122-7895-11ea-9721-63dc96d187a1\", \"callerId\": \"test\" }", 
+		"uri": "/channels/create",
+		"method": "POST",
+		"data": "{ \"endpoint\": \"PJSIP/pchero-voip/sip:test@127.0.0.1\", \"app\": \"voipbin_test\", \"appArgs\": \"\", \"channelId\": \"03102122-7895-11ea-9721-63dc96d187a1\", \"callerId\": \"test\" }",
 		"data_type": "application/json"
 	}`
 
@@ -33,7 +35,7 @@ func TestParseNormal(t *testing.T) {
 		t.Errorf("Could not parse the message. err: %v", err)
 	}
 
-	if res.URL != "/channels/create" {
+	if res.URI != "/channels/create" {
 		t.Errorf("Could not parse the URL.")
 	}
 	if res.Method != "POST" {
@@ -56,7 +58,7 @@ func TestParseError(t *testing.T) {
 	tests := []test{
 		{
 			name: "wrong url type",
-			data: `{"url": 123}`,
+			data: `{"uri": 123}`,
 		},
 		{
 			name: "wrong method type",
@@ -117,14 +119,14 @@ func TestSendRequest(t *testing.T) {
 	url := fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
 	Initiate(url, "asterisk:asterisk")
 
-	m := &Request{
-		"/channels?endpoint=pjsip/test@sippuas&app=test",
-		"POST",
-		"application/json",
-		"{\"endpoint\": \"pjsip/test@sippuas\", \"app\": \"test\"}",
+	m := &rabbitmq.Request{
+		URI:      "/channels?endpoint=pjsip/test@sippuas&app=test",
+		Method:   "POST",
+		DataType: "application/json",
+		Data:     "{\"endpoint\": \"pjsip/test@sippuas\", \"app\": \"test\"}",
 	}
 
-	status, res, err := m.sendRequest()
+	status, res, err := sendRequest(m)
 	if err != nil {
 		t.Errorf("Expected ok, but got error. err: %v", err)
 	}
@@ -169,9 +171,9 @@ func TestRequestHandler(t *testing.T) {
 	Initiate(url, "asterisk:asterisk")
 
 	m := `{
-		"url": "/channels/create", 
-		"method": "POST", 
-		"data": "{ \"endpoint\": \"PJSIP/pchero-voip/sip:test@127.0.0.1\", \"app\": \"voipbin_test\", \"appArgs\": \"\", \"channelId\": \"03102122-7895-11ea-9721-63dc96d187a1\", \"callerId\": \"test\" }", 
+		"url": "/channels/create",
+		"method": "POST",
+		"data": "{ \"endpoint\": \"PJSIP/pchero-voip/sip:test@127.0.0.1\", \"app\": \"voipbin_test\", \"appArgs\": \"\", \"channelId\": \"03102122-7895-11ea-9721-63dc96d187a1\", \"callerId\": \"test\" }",
 		"data_type": "application/json"
 	}`
 
