@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"encoding/json"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -18,8 +19,28 @@ type Queue struct {
 	channel      *amqp.Channel
 	closed       bool
 	durable      bool
+}
 
-	// consumers []messageConsumer
+// Request struct
+type Request struct {
+	URI      string `json:"uri"`
+	Method   string `json:"method"`
+	DataType string `json:"data_type"`
+	Data     string `json:"data"`
+}
+
+// Response struct
+type Response struct {
+	StatusCode int    `json:"status_code"`
+	DataType   string `json:"data_type"`
+	Data       string `json:"data"`
+}
+
+// Event struct
+type Event struct {
+	Type     string `json:"type"`
+	DataType string `json:"data_type"`
+	Data     string `json:"data"`
 }
 
 // CbMsgConsume is func prototype for message read callback.
@@ -28,24 +49,8 @@ type CbMsgConsume func(string) error
 // CbMsgRPC is func prototype for RPC callback
 type CbMsgRPC func(string) (string, error)
 
-// // logger for global
-// var log = logrus.New()
-
 // Initiate initiates rabbitmq package
 func Initiate() {
-
-	// log.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true, DisableColors: true})
-	// log.SetLevel(logrus.DebugLevel)
-	// hook, err := lSyslog.NewSyslogHook("", "", syslog.LOG_INFO, "")
-	// if err == nil {
-	// 	log.Hooks.Add(hook)
-	// }
-
-	// log.SetFormatter()
-	// if l != nil {
-	// 	log = l
-	// }
-
 	log.Infof("rabbitmq initiated.")
 }
 
@@ -63,18 +68,24 @@ func NewQueue(url string, qName string, durable bool) *Queue {
 }
 
 // PublishMessage sends a message to rabbitmq
-func (q *Queue) PublishMessage(message string) {
-	err := q.channel.Publish(
+func (q *Queue) PublishMessage(m *Event) {
+
+	message, err := json.Marshal(m)
+	if err != nil {
+		log.Errorf("Could not create a event message. err: %v", err)
+	}
+
+	if err := q.channel.Publish(
 		"",     // exchange
 		q.name, // routing key
 		false,  // mandatory
 		false,  // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
-			Body:        []byte(message),
-		})
-	if err != nil {
-		log.Errorf("Could not send a message. err: %v", err)
+			Body:        message,
+		}); err != nil {
+
+		log.Errorf("Could not publish a event message. err: %v", err)
 	}
 }
 

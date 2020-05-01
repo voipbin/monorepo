@@ -37,10 +37,26 @@ $ ./asterisk-proxy \
 
 # RabbitMQ RPC
 
+Event message
+```
+	Type     string `json:"type"`
+	DataType string `json:"data_type"`
+	Data     string `json:"data"`
+```
+
+```
+{
+  "type": "ari_event",
+  "data_type": "application/json",
+  "data: "{...}"
+}
+```
+
+
 RPC request
 ```
 {
-  "url": "/channels\?api_key=asterisk:asterisk\&endpoint=pjsip/test@sippuas\&app=test",
+  "uri": "/channels\?api_key=asterisk:asterisk\&endpoint=pjsip/test@sippuas\&app=test",
   "method": "POST",
   "date": "data",
   "data_type": "text/plain"
@@ -51,6 +67,7 @@ RPC response
 ```
 {
   "status_code": 200,
+  "data_type": "application/json",
   "data": "{...}"
 }
 ```
