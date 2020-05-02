@@ -26,6 +26,8 @@ spec:
           command:
             - '/app/call-manager'
           args:
+            - '-dbDSN'
+            - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
             - '-rabbit_addr'
             - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
             - '-rabbit_queue_arievent'
@@ -36,8 +38,6 @@ spec:
             - '/metrics'
             - '-prom_listen_addr'
             - ':2112'
-            - '-dbDSN'
-            - 'call-manager:47f94686-8184-11ea-bfe8-e791e06ef5ef@tcp(10.126.80.5:3306)/call_manager'
           ports:
             - name: metrics
               protocol: "TCP"

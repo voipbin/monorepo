@@ -23,13 +23,18 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 
 	type test struct {
 		name  string
-		event string
+		event *rabbitmq.Event
 	}
 
 	tests := []test{
 		{
 			"normal",
-			`{"type":"ChannelCreated","timestamp":"2020-04-19T14:38:00.363+0000","channel":{"id":"1587307080.49","name":"PJSIP/in-voipbin-00000030","state":"Ring","caller":{"name":"","number":"68025"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"011441332323027","priority":1,"app_name":"","app_data":""},"creationtime":"2020-04-19T14:38:00.363+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+
+			&rabbitmq.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     `{"type":"ChannelCreated","timestamp":"2020-04-19T14:38:00.363+0000","channel":{"id":"1587307080.49","name":"PJSIP/in-voipbin-00000030","state":"Ring","caller":{"name":"","number":"68025"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"011441332323027","priority":1,"app_name":"","app_data":""},"creationtime":"2020-04-19T14:38:00.363+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			},
 		},
 	}
 
@@ -40,7 +45,7 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 			cn := &channel.Channel{}
 			mockDB.EXPECT().ChannelCreate(gomock.Any(), gomock.AssignableToTypeOf(cn)).Return(nil)
 
-			if err := h.processEvent([]byte(tt.event)); err != nil {
+			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -57,7 +62,7 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 
 	type test struct {
 		name  string
-		event string
+		event *rabbitmq.Event
 
 		expectAsteriskID string
 		expectChannelID  string
@@ -68,7 +73,11 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			`{"type":"ChannelDestroyed","timestamp":"2020-04-19T17:02:58.651+0000","cause":42,"cause_txt":"Switching equipment congestion","channel":{"id":"1587315778.885","name":"PJSIP/in-voipbin-00000370","state":"Ring","caller":{"name":"","number":"804"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"00048323395006","priority":1,"app_name":"","app_data":""},"creationtime":"2020-04-19T17:02:58.651+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
+			&rabbitmq.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     `{"type":"ChannelDestroyed","timestamp":"2020-04-19T17:02:58.651+0000","cause":42,"cause_txt":"Switching equipment congestion","channel":{"id":"1587315778.885","name":"PJSIP/in-voipbin-00000370","state":"Ring","caller":{"name":"","number":"804"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"00048323395006","priority":1,"app_name":"","app_data":""},"creationtime":"2020-04-19T17:02:58.651+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
+			},
 			"42:01:0a:a4:00:03",
 			"1587315778.885",
 			"2020-04-19T17:02:58.651",
@@ -85,7 +94,7 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectAsteriskID, tt.expectChannelID).Return(cn, nil)
 			mockSvc.EXPECT().Hangup(cn).Return(nil)
 
-			h.processEvent([]byte(tt.event))
+			h.processEvent(tt.event)
 		})
 	}
 }
@@ -100,8 +109,9 @@ func TestEventHandlerStasisStart(t *testing.T) {
 	mockSvc := svchandler.NewMockSVCHandler(mc)
 
 	type test struct {
-		name            string
-		event           string
+		name  string
+		event *rabbitmq.Event
+
 		expectAsterisID string
 		expectChannelID string
 		expectTmUpdate  string
@@ -111,7 +121,12 @@ func TestEventHandlerStasisStart(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			`{"type":"StasisStart","timestamp":"2020-04-25T00:27:18.342+0000","args":["CONTEXT=in-voipbin","SIP_CALLID=8juJJyujlS","SIP_PAI=","SIP_PRIVACY=","DOMAIN=echo.voipbin.net","SOURCE=213.127.79.161"],"channel":{"id":"1587774438.2390","name":"PJSIP/in-voipbin-00000948","state":"Ring","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"1234234324","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=8juJJyujlS,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-04-25T00:27:18.341+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
+			&rabbitmq.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     `{"type":"StasisStart","timestamp":"2020-04-25T00:27:18.342+0000","args":["CONTEXT=in-voipbin","SIP_CALLID=8juJJyujlS","SIP_PAI=","SIP_PRIVACY=","DOMAIN=echo.voipbin.net","SOURCE=213.127.79.161"],"channel":{"id":"1587774438.2390","name":"PJSIP/in-voipbin-00000948","state":"Ring","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"1234234324","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=8juJJyujlS,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-04-25T00:27:18.341+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
+			},
+
 			"42:01:0a:a4:00:03",
 			"1587774438.2390",
 			"2020-04-25T00:27:18.342",
@@ -137,7 +152,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 			mockDB.EXPECT().ChannelSetData(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expectTmUpdate, tt.expactData).Return(nil)
 			mockSvc.EXPECT().Start(gomock.Any()).Return(nil)
 
-			if err := h.processEvent([]byte(tt.event)); err != nil {
+			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -154,8 +169,9 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 	mockSvc := svchandler.NewMockSVCHandler(mc)
 
 	type test struct {
-		name            string
-		event           string
+		name  string
+		event *rabbitmq.Event
+
 		expectAsterisID string
 		expectChannelID string
 		expectTmUpdate  string
@@ -165,7 +181,12 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			`{"type":"ChannelStateChange","timestamp":"2020-04-25T19:17:13.786+0000","channel":{"id":"1587842233.10218","name":"PJSIP/in-voipbin-000026ee","state":"Up","caller":{"name":"","number":"586737682"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"46842002310","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1491366011-850848062-1281392838,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=45.151.255.178"},"creationtime":"2020-04-25T19:17:13.585+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			&rabbitmq.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     `{"type":"ChannelStateChange","timestamp":"2020-04-25T19:17:13.786+0000","channel":{"id":"1587842233.10218","name":"PJSIP/in-voipbin-000026ee","state":"Up","caller":{"name":"","number":"586737682"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"46842002310","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1491366011-850848062-1281392838,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=45.151.255.178"},"creationtime":"2020-04-25T19:17:13.585+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			},
+
 			"42:01:0a:a4:00:05",
 			"1587842233.10218",
 			"2020-04-25T19:17:13.786",
@@ -181,7 +202,7 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectAsterisID, tt.expectChannelID).Return(nil, nil)
 			mockSvc.EXPECT().UpdateStatus(nil).Return(nil)
 
-			if err := h.processEvent([]byte(tt.event)); err != nil {
+			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

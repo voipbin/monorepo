@@ -128,10 +128,10 @@ func (mr *MockRabbitMockRecorder) PublishMessage(arg0, arg1 interface{}) *gomock
 }
 
 // PublishRPC mocks base method
-func (m *MockRabbit) PublishRPC(arg0 context.Context, arg1, arg2 string) ([]byte, error) {
+func (m *MockRabbit) PublishRPC(arg0 context.Context, arg1 string, arg2 *Request) (*Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishRPC", arg0, arg1, arg2)
-	ret0, _ := ret[0].([]byte)
+	ret0, _ := ret[0].(*Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

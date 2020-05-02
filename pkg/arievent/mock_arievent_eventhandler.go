@@ -7,6 +7,7 @@ package arievent
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
+	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	reflect "reflect"
 )
 
@@ -76,7 +77,7 @@ func (mr *MockEventHandlerMockRecorder) eventHandlerStasisStart(arg0, arg1 inter
 }
 
 // processEvent mocks base method
-func (m *MockEventHandler) processEvent(arg0 []byte) error {
+func (m *MockEventHandler) processEvent(arg0 *rabbitmq.Event) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "processEvent", arg0)
 	ret0, _ := ret[0].(error)
