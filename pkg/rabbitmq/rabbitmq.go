@@ -4,6 +4,7 @@ package rabbitmq
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -11,10 +12,46 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// Queue defines Queue
-type Queue interface {
-	NewQueue(url string, qName string, durable bool) Rabbit
+// Request struct
+type Request struct {
+	URI      string        `json:"uri"`
+	Method   RequestMethod `json:"method"`
+	DataType string        `json:"data_type"`
+	Data     string        `json:"data"`
 }
+
+// Response struct
+type Response struct {
+	StatusCode int    `json:"status_code"`
+	DataType   string `json:"data_type"`
+	Data       string `json:"data"`
+}
+
+// Event struct
+type Event struct {
+	Type     EventType `json:"type"`
+	DataType string    `json:"data_type"`
+	Data     string    `json:"data"`
+}
+
+// RequestMethod type
+type RequestMethod string
+
+// List of RequestMethod
+const (
+	RequestMethodPost   RequestMethod = "POST"
+	RequestMethodGet    RequestMethod = "GET"
+	RequestMethodPut    RequestMethod = "PUT"
+	RequestMethodDelete RequestMethod = "DELETE"
+)
+
+// EventType type
+type EventType string
+
+// List of EventType
+const (
+	EventTypeCall EventType = "cm_call"
+)
 
 // Rabbit defines rabbit queue interfaces
 type Rabbit interface {
@@ -27,7 +64,7 @@ type Rabbit interface {
 	ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error
 	PublishMessage(queueName, message string) error
 	ConsumeRPC(queueNqme, consumerName string, cbRPC CbMsgRPC) error
-	PublishRPC(ctx context.Context, queueName, message string) ([]byte, error)
+	PublishRPC(ctx context.Context, queueName string, req *Request) (*Response, error)
 }
 
 // rabbit struct for rabbitmq
@@ -43,10 +80,10 @@ type rabbit struct {
 }
 
 // CbMsgConsume is func prototype for message read callback.
-type CbMsgConsume func([]byte) error
+type CbMsgConsume func(*Event) error
 
 // CbMsgRPC is func prototype for RPC callback
-type CbMsgRPC func(string) (string, error)
+type CbMsgRPC func(*Request) (*Response, error)
 
 // NewRabbit creates queue for Rabbitmq
 func NewRabbit(url string) Rabbit {
@@ -93,11 +130,16 @@ func (q *rabbit) PublishMessage(queueName, message string) error {
 }
 
 // PublishRPC publishes RPC message and returns response.
-func (q *rabbit) PublishRPC(ctx context.Context, queueName, message string) ([]byte, error) {
+func (q *rabbit) PublishRPC(ctx context.Context, queueName string, req *Request) (*Response, error) {
 	log.WithFields(log.Fields{
 		"name":    queueName,
-		"message": message,
+		"request": req,
 	}).Info("Publish message to RPC.")
+
+	reqMsg, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
 
 	queue, err := q.getQueue(queueName)
 	if err != nil {
@@ -134,7 +176,7 @@ func (q *rabbit) PublishRPC(ctx context.Context, queueName, message string) ([]b
 		amqp.Publishing{
 			ContentType: "text/plain",
 			ReplyTo:     tmpQueue.Name,
-			Body:        []byte(message),
+			Body:        reqMsg,
 		},
 	)
 	if err != nil {
@@ -148,7 +190,12 @@ func (q *rabbit) PublishRPC(ctx context.Context, queueName, message string) ([]b
 		return nil, ctx.Err()
 	case res := <-chanRes:
 		q.DeleteQueue(tmpQueue.Name, false, false, false)
-		return res.Body, nil
+
+		var response Response
+		if err := json.Unmarshal(res.Body, &response); err != nil {
+			return nil, err
+		}
+		return &response, nil
 	}
 }
 
@@ -184,7 +231,7 @@ func (q *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 		return err
 	}
 
-	deliveries, err := q.channel.Consume(
+	messages, err := q.channel.Consume(
 		queue.Name,   // queue
 		consumerName, // messageConsumer
 		true,         // auto-ack
@@ -200,8 +247,13 @@ func (q *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 
 	// process message
 	go func() {
-		for delivery := range deliveries {
-			err := messageConsume(delivery.Body)
+		for message := range messages {
+			var event Event
+			if err := json.Unmarshal(message.Body, &event); err != nil {
+				log.Errorf("Could out unmarshal the message. err: %v", err)
+			}
+
+			err := messageConsume(&event)
 			if err != nil {
 				log.Errorf("Message consumer returns error. err: %v", err)
 			}
@@ -212,13 +264,13 @@ func (q *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 }
 
 // ConsumeRPC consumes RPC message
-func (q *rabbit) ConsumeRPC(queueName, consumerName string, cbRPC CbMsgRPC) error {
+func (q *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) error {
 	queue, err := q.getQueue(queueName)
 	if err != nil {
 		return err
 	}
 
-	deliveries, err := q.channel.Consume(
+	messages, err := q.channel.Consume(
 		queue.Name,   // queue
 		consumerName, // messageConsumer
 		false,        // auto-ack
@@ -234,27 +286,47 @@ func (q *rabbit) ConsumeRPC(queueName, consumerName string, cbRPC CbMsgRPC) erro
 
 	// process message
 	go func() {
-		for d := range deliveries {
+		for message := range messages {
+
+			// message parse
+			var req Request
+			if err := json.Unmarshal(message.Body, &req); err != nil {
+				log.Errorf("Could not parse the message. message: %s, err: %v", string(message.Body), err)
+				continue
+			}
 
 			// execute callback
-			res, err := cbRPC(string(d.Body))
+			res, err := cbConsume(&req)
 			if err != nil {
 				log.Errorf("Message consumer returns error. err: %v", err)
+				continue
+			} else if res == nil {
+				log.Errorf("Message consumer returns nil response.")
 				continue
 			}
 
 			// reply response
-			err = q.channel.Publish(
-				"",        // exchange
-				d.ReplyTo, // routing key
-				false,     // mandatory
-				false,     // immediate
-				amqp.Publishing{
-					ContentType:   "text/plain",
-					CorrelationId: d.CorrelationId,
-					Body:          []byte(res),
-				})
-			d.Ack(false)
+			if message.ReplyTo != "" {
+				resMsg, err := json.Marshal(res)
+				if err != nil {
+					log.Errorf("Could not marshal the response. res: %v, err: %v", res, err)
+					continue
+				}
+
+				if err := q.channel.Publish(
+					"",              // exchange
+					message.ReplyTo, // routing key
+					false,           // mandatory
+					false,           // immediate
+					amqp.Publishing{
+						ContentType:   "text/plain",
+						CorrelationId: message.CorrelationId,
+						Body:          resMsg,
+					}); err != nil {
+					log.Errorf("Could not reply the message. message: %v, err: %v", res, err)
+					continue
+				}
+			}
 		}
 	}()
 

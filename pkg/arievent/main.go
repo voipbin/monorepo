@@ -4,6 +4,7 @@ package arievent
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -29,7 +30,7 @@ type ARIEvent struct {
 type EventHandler interface {
 	HandleARIEvent(queue, receiver string) error
 
-	processEvent(m []byte) error
+	processEvent(m *rabbitmq.Event) error
 
 	eventHandlerStasisStart(ctx context.Context, evt interface{}) error
 	eventHandlerChannelCreated(ctx context.Context, evt interface{}) error
@@ -107,9 +108,13 @@ func (h *eventHandler) HandleARIEvent(queue, receiver string) error {
 }
 
 // processEvent processes received ARI event
-func (h *eventHandler) processEvent(m []byte) error {
+func (h *eventHandler) processEvent(m *rabbitmq.Event) error {
+	if m.Type != "ari_event" {
+		return fmt.Errorf("Wrong event type recevied. type: %s", m.Type)
+	}
+
 	// parse
-	event, evt, err := ari.Parse(m)
+	event, evt, err := ari.Parse([]byte(m.Data))
 	if err != nil {
 		return err
 	}

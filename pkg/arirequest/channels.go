@@ -12,7 +12,7 @@ import (
 func (r *requestHandler) ChannelAnswer(asteriskID, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/answer", channelID)
 
-	res, err := r.requester.SendARIRequest(asteriskID, url, reqPost, requestTimeout, "", "")
+	res, err := r.sendRequest(asteriskID, url, reqMethodPost, requestTimeout, "", "")
 	switch {
 	case err != nil:
 		return err
@@ -43,7 +43,7 @@ func (r *requestHandler) ChannelContinue(asteriskID, channelID, context, ext str
 		return err
 	}
 
-	res, err := r.requester.SendARIRequest(asteriskID, url, reqPost, requestTimeout, ContentTypeJSON, string(m))
+	res, err := r.sendRequest(asteriskID, url, reqMethodPost, requestTimeout, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
 		return nil
@@ -68,7 +68,7 @@ func (r *requestHandler) ChannelHangup(asteriskID, channelID string, code ari.Ch
 		return err
 	}
 
-	res, err := r.requester.SendARIRequest(asteriskID, url, reqDelete, requestTimeout, ContentTypeJSON, string(m))
+	res, err := r.sendRequest(asteriskID, url, reqMethodDelete, requestTimeout, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
 		return nil
@@ -95,7 +95,7 @@ func (r *requestHandler) ChannelVariableSet(asteriskID, channelID, variable, val
 		return err
 	}
 
-	res, err := r.requester.SendARIRequest(asteriskID, url, reqPost, requestTimeout, ContentTypeJSON, string(m))
+	res, err := r.sendRequest(asteriskID, url, reqMethodPost, requestTimeout, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
 		return nil
