@@ -4,9 +4,9 @@ import (
 	"database/sql"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arievent"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arirequest"
 	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 	svchandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler"
 )
 
@@ -23,7 +23,7 @@ type ariHandler struct {
 	rabbitSock rabbitmq.Rabbit
 
 	evtHandler arievent.EventHandler
-	reqHandler arirequest.RequestHandler
+	reqHandler requesthandler.RequestHandler
 	svcHandler svchandler.SVCHandler
 	db         db.DBHandler
 }
@@ -47,7 +47,7 @@ func (h *ariHandler) Connect() {
 	h.rabbitSock.Connect()
 
 	// new handlers
-	h.reqHandler = arirequest.NewRequestHandler(h.rabbitSock)
+	h.reqHandler = requesthandler.NewRequestHandler(h.rabbitSock)
 	h.svcHandler = svchandler.NewSvcHandler(h.reqHandler, h.db)
 	h.evtHandler = arievent.NewEventHandler(h.rabbitSock, h.db, h.reqHandler, h.svcHandler)
 }

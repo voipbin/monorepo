@@ -1,7 +1,10 @@
 package call
 
 import (
+	"strings"
+
 	uuid "github.com/satori/go.uuid"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
@@ -22,6 +25,7 @@ type Call struct {
 	// info
 	Status       Status
 	Data         map[string]interface{}
+	Action       action.Action
 	Direction    Direction
 	HangupBy     HangupBy
 	HangupReason HangupReason
@@ -152,7 +156,7 @@ func NewCallByChannel(cn *channel.Channel, cType Type, direction Direction) *Cal
 	data := map[string]interface{}{}
 
 	for k, v := range cn.Data {
-		data[k] = v
+		data[strings.ToLower(k)] = v
 	}
 
 	c := NewCall(

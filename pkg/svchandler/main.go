@@ -3,9 +3,12 @@ package svchandler
 //go:generate mockgen -destination ./mock_svchandler_svchandler.go -package svchandler gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler SVCHandler
 
 import (
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arirequest"
+	"strings"
+	"time"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
 // SVCHandler is interface for service handle
@@ -17,12 +20,12 @@ type SVCHandler interface {
 
 // svcHandler structure for service handle
 type svcHandler struct {
-	reqHandler arirequest.RequestHandler
+	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
 }
 
 // NewSvcHandler returns new service handler
-func NewSvcHandler(r arirequest.RequestHandler, d dbhandler.DBHandler) SVCHandler {
+func NewSvcHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) SVCHandler {
 
 	svchandler := &svcHandler{
 		reqHandler: r,
@@ -30,4 +33,14 @@ func NewSvcHandler(r arirequest.RequestHandler, d dbhandler.DBHandler) SVCHandle
 	}
 
 	return svchandler
+}
+
+// getCurTime return current utc time string
+func getCurTime() string {
+	date := time.Date(2018, 01, 12, 22, 51, 48, 324359102, time.UTC)
+
+	res := date.String()
+	res = strings.TrimSuffix(res, " +0000 UTC")
+
+	return res
 }
