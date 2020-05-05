@@ -4,6 +4,7 @@ import (
 	"context"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
 
@@ -13,7 +14,7 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 
 	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
 	if err != nil {
-		h.reqHandler.ChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
+		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
 	}
 
@@ -21,7 +22,7 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 		cn.Data[k] = v
 	}
 	if err := h.db.ChannelSetData(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), cn.Data); err != nil {
-		h.reqHandler.ChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
+		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
 	}
 	cn.TMUpdate = string(e.Timestamp)
@@ -75,6 +76,27 @@ func (h *eventHandler) eventHandlerChannelStateChange(ctx context.Context, evt i
 	}
 
 	if err := h.svcHandler.UpdateStatus(cn); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *eventHandler) eventHandlerBridgeCreated(ctx context.Context, evt interface{}) error {
+	e := evt.(*ari.BridgeCreated)
+
+	b := bridge.NewBridgeByBridgeCreated(e)
+	if err := h.db.BridgeCreate(ctx, b); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *eventHandler) eventHandlerBridgeDestroyed(ctx context.Context, evt interface{}) error {
+	e := evt.(*ari.BridgeDestroyed)
+
+	if err := h.db.BridgeEnd(ctx, e.AsteriskID, e.Bridge.ID, string(e.Timestamp)); err != nil {
 		return err
 	}
 

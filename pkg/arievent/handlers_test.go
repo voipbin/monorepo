@@ -5,10 +5,10 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arirequest"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler"
 )
 
@@ -18,7 +18,7 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
-	mockRequest := arirequest.NewMockRequestHandler(mc)
+	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockSvc := svchandler.NewMockSVCHandler(mc)
 
 	type test struct {
@@ -57,7 +57,7 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 	defer mc.Finish()
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
-	mockRequest := arirequest.NewMockRequestHandler(mc)
+	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockSvc := svchandler.NewMockSVCHandler(mc)
 
 	type test struct {
@@ -105,7 +105,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
-	mockRequest := arirequest.NewMockRequestHandler(mc)
+	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockSvc := svchandler.NewMockSVCHandler(mc)
 
 	type test struct {
@@ -165,7 +165,7 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
-	mockRequest := arirequest.NewMockRequestHandler(mc)
+	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockSvc := svchandler.NewMockSVCHandler(mc)
 
 	type test struct {

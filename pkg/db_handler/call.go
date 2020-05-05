@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	uuid "github.com/satori/go.uuid"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 )
 
@@ -25,6 +26,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 
 		status,
 		data,
+		action,
 		direction,
 		hangup_by,
 		hangup_reason,
@@ -33,7 +35,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 	) values(
 		?, ?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?,?,
 		?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -54,7 +56,12 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 
 	tmpData, err := json.Marshal(call.Data)
 	if err != nil {
-		return fmt.Errorf("could not marshal. CallCreate. err: %v", err)
+		return fmt.Errorf("could not marshal data. CallCreate. err: %v", err)
+	}
+
+	tmpAction, err := json.Marshal(call.Action)
+	if err != nil {
+		return fmt.Errorf("could not marshal action. CallCreate. err: %v", err)
 	}
 
 	_, err = stmt.ExecContext(ctx,
@@ -71,6 +78,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 
 		call.Status,
 		tmpData,
+		tmpAction,
 		call.Direction,
 		call.HangupBy,
 		call.HangupReason,
@@ -101,6 +109,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 
 		status,
 		data,
+		action,
 		direction,
 		hangup_by,
 		hangup_reason,
@@ -138,6 +147,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	var data string
 	var source string
 	var destination string
+	var action string
 	res := &call.Call{}
 	if err := row.Scan(
 		&res.ID,
@@ -151,6 +161,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 
 		&res.Status,
 		&data,
+		&action,
 		&res.Direction,
 		&res.HangupBy,
 		&res.HangupReason,
@@ -167,6 +178,9 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the data. CallGet. err: %v", err)
+	}
+	if err := json.Unmarshal([]byte(action), &res.Action); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the action. CallGet. err: %v", err)
 	}
 	if err := json.Unmarshal([]byte(source), &res.Source); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the source. CallGet. err: %v", err)
@@ -271,9 +285,36 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 	return res, nil
 }
 
-// CallSetStatus sets the call status
-func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error {
+// callSetStatusRinging sets the call status to ringing
+func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStatus string) error {
+	// prepare
+	q := `
+	update
+		calls
+	set
+		status = ?,
+		tm_update = ?,
+		tm_ringing = ?
+	where
+		id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. CallSetStatusRinging. err: %v", err)
+	}
+	defer stmt.Close()
 
+	// query
+	_, err = stmt.ExecContext(ctx, call.StatusRinging, getCurTime(), tmStatus, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute query. CallSetStatusRinging. err: %v", err)
+	}
+
+	return nil
+}
+
+// callSetStatusProgressing sets the call status to progressing
+func (h *handler) callSetStatusProgressing(ctx context.Context, id uuid.UUID, tmStatus string) error {
 	// prepare
 	q := `
 	update
@@ -287,17 +328,57 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	`
 	stmt, err := h.db.PrepareContext(ctx, q)
 	if err != nil {
-		return fmt.Errorf("could not prepare. CallSetStatus. err: %v", err)
+		return fmt.Errorf("could not prepare. callSetStatusProgressing. err: %v", err)
 	}
 	defer stmt.Close()
 
 	// query
-	_, err = stmt.ExecContext(ctx, status, tmUpdate, tmUpdate, id.Bytes())
+	_, err = stmt.ExecContext(ctx, call.StatusProgressing, getCurTime(), tmStatus, id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute query. CallSetStatus. err: %v", err)
+		return fmt.Errorf("could not execute query. callSetStatusProgressing. err: %v", err)
 	}
 
 	return nil
+}
+
+// callSetStatus sets the call status without update the timestamp for status
+func (h *handler) callSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error {
+	// prepare
+	q := `
+	update
+		calls
+	set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. callSetStatus. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	_, err = stmt.ExecContext(ctx, status, getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute query. callSetStatus. err: %v", err)
+	}
+
+	return nil
+}
+
+// CallSetStatus sets the call status
+func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmStatus string) error {
+
+	switch status {
+	case call.StatusRinging:
+		return h.callSetStatusRinging(ctx, id, tmStatus)
+	case call.StatusProgressing:
+		return h.callSetStatusProgressing(ctx, id, tmStatus)
+	default:
+		return h.callSetStatus(ctx, id, status)
+	}
 }
 
 // CallSetStatus sets the call status
@@ -326,6 +407,67 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 	_, err = stmt.ExecContext(ctx, string(call.StatusHangup), hangupBy, reason, tmUpdate, tmUpdate, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute query. CallSetStatus. err: %v", err)
+	}
+
+	return nil
+}
+
+// CallSetFlowID sets the call status
+func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID, tmUpdate string) error {
+
+	// prepare
+	q := `
+	update
+		calls
+	set
+		flow_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. CallSetFlowID. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	_, err = stmt.ExecContext(ctx, flowID.Bytes(), tmUpdate, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute query. CallSetFlowID. err: %v", err)
+	}
+
+	return nil
+}
+
+// CallSetAction sets the call status
+func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error {
+
+	// prepare
+	q := `
+	update
+		calls
+	set
+		action = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. CallSetAction. err: %v", err)
+	}
+	defer stmt.Close()
+
+	actStr, err := json.Marshal(action)
+	if err != nil {
+		return err
+	}
+
+	// query
+	_, err = stmt.ExecContext(ctx, actStr, getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute query. CallSetAction. err: %v", err)
 	}
 
 	return nil

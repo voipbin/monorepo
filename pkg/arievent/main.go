@@ -11,9 +11,9 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arirequest"
 	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler"
 )
 
@@ -40,7 +40,7 @@ type eventHandler struct {
 	db         db.DBHandler
 	rabbitSock rabbitmq.Rabbit
 
-	reqHandler arirequest.RequestHandler
+	reqHandler requesthandler.RequestHandler
 	svcHandler svchandler.SVCHandler
 }
 
@@ -78,7 +78,7 @@ func init() {
 }
 
 // NewEventHandler create EventHandler
-func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler arirequest.RequestHandler, svcHandler svchandler.SVCHandler) EventHandler {
+func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler requesthandler.RequestHandler, svcHandler svchandler.SVCHandler) EventHandler {
 	evtHandler := &eventHandler{
 		rabbitSock: sock,
 		db:         db,

@@ -8,7 +8,9 @@ import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
 	uuid "github.com/satori/go.uuid"
+	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	reflect "reflect"
@@ -35,6 +37,49 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// BridgeCreate mocks base method
+func (m *MockDBHandler) BridgeCreate(arg0 context.Context, arg1 *bridge.Bridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeCreate", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BridgeCreate indicates an expected call of BridgeCreate
+func (mr *MockDBHandlerMockRecorder) BridgeCreate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeCreate", reflect.TypeOf((*MockDBHandler)(nil).BridgeCreate), arg0, arg1)
+}
+
+// BridgeEnd mocks base method
+func (m *MockDBHandler) BridgeEnd(arg0 context.Context, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeEnd", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BridgeEnd indicates an expected call of BridgeEnd
+func (mr *MockDBHandlerMockRecorder) BridgeEnd(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeEnd", reflect.TypeOf((*MockDBHandler)(nil).BridgeEnd), arg0, arg1, arg2, arg3)
+}
+
+// BridgeGet mocks base method
+func (m *MockDBHandler) BridgeGet(arg0 context.Context, arg1, arg2 string) (*bridge.Bridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeGet", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*bridge.Bridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BridgeGet indicates an expected call of BridgeGet
+func (mr *MockDBHandlerMockRecorder) BridgeGet(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGet", reflect.TypeOf((*MockDBHandler)(nil).BridgeGet), arg0, arg1, arg2)
 }
 
 // CallCreate mocks base method
@@ -79,6 +124,34 @@ func (m *MockDBHandler) CallGetByChannelID(arg0 context.Context, arg1 string) (*
 func (mr *MockDBHandlerMockRecorder) CallGetByChannelID(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetByChannelID", reflect.TypeOf((*MockDBHandler)(nil).CallGetByChannelID), arg0, arg1)
+}
+
+// CallSetAction mocks base method
+func (m *MockDBHandler) CallSetAction(arg0 context.Context, arg1 uuid.UUID, arg2 *action.Action) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetAction", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetAction indicates an expected call of CallSetAction
+func (mr *MockDBHandlerMockRecorder) CallSetAction(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetAction", reflect.TypeOf((*MockDBHandler)(nil).CallSetAction), arg0, arg1, arg2)
+}
+
+// CallSetFlowID mocks base method
+func (m *MockDBHandler) CallSetFlowID(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetFlowID", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetFlowID indicates an expected call of CallSetFlowID
+func (mr *MockDBHandlerMockRecorder) CallSetFlowID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetFlowID", reflect.TypeOf((*MockDBHandler)(nil).CallSetFlowID), arg0, arg1, arg2, arg3)
 }
 
 // CallSetHangup mocks base method
