@@ -12,7 +12,7 @@ type Channel struct {
 	ID         string
 	AsteriskID string
 	Name       string
-	Tech       string
+	Tech       Tech
 
 	// source/destination
 	SourceName        string
@@ -20,8 +20,9 @@ type Channel struct {
 	DestinationName   string
 	DestinationNumber string
 
-	State ari.ChannelState
-	Data  map[string]interface{}
+	State  ari.ChannelState
+	Data   map[string]interface{}
+	Stasis string
 
 	DialResult  string
 	HangupCause ari.ChannelCause
@@ -33,6 +34,18 @@ type Channel struct {
 	TMRinging string
 	TMEnd     string
 }
+
+// Tech represent channel's technology
+type Tech string
+
+// List of Tech types
+const (
+	TechNone  Tech = ""
+	TechLocal Tech = "local"
+	TechPJSIP Tech = "pjsip"
+	TechSIP   Tech = "sip"
+	TechSnoop Tech = "snoop"
+)
 
 // NewChannelByChannelCreated creates Channel based on ARI ChannelCreated event
 func NewChannelByChannelCreated(e *ari.ChannelCreated) *Channel {
@@ -57,11 +70,23 @@ func NewChannelByChannelCreated(e *ari.ChannelCreated) *Channel {
 }
 
 // getTech returns tech from channel name
-func getTech(name string) string {
+func getTech(name string) Tech {
 	res := strings.Split(name, "/")
 	if len(res) < 1 {
-		return ""
+		return TechNone
 	}
 
-	return strings.ToLower(res[0])
+	tmp := strings.ToLower(res[0])
+	switch tmp {
+	case "pjsip":
+		return TechPJSIP
+	case "snoop":
+		return TechSnoop
+	case "local":
+		return TechLocal
+	case "sip":
+		return TechSIP
+	default:
+		return TechNone
+	}
 }

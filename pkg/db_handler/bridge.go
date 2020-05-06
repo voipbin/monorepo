@@ -10,7 +10,7 @@ import (
 
 // ChannelCreate creates new channel record and returns the created channel record.
 func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
-	q := `insert into bridges(
+	q := `insert into cm_bridges(
 		asterisk_id,
 		id,
 		name,
@@ -92,7 +92,7 @@ func (h *handler) BridgeGet(ctx context.Context, asteriskID, id string) (*bridge
 		coalesce(tm_update, '') as tm_update,
 		coalesce(tm_delete, '') as tm_delete
 	from
-		bridges
+		cm_bridges
 	where
 	asterisk_id = ? and id = ?`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -150,7 +150,7 @@ func (h *handler) BridgeGet(ctx context.Context, asteriskID, id string) (*bridge
 func (h *handler) BridgeEnd(ctx context.Context, asteriskID, id, timestamp string) error {
 	// prepare
 	q := `
-	update bridges set
+	update cm_bridges set
 		tm_update = ?,
 		tm_delete = ?
 	where

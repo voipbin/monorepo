@@ -103,7 +103,9 @@ func (h *eventHandler) HandleARIEvent(queue, receiver string) error {
 	}
 
 	// receive ARI event
-	h.rabbitSock.ConsumeMessage(queue, receiver, h.processEvent)
+	if err := h.rabbitSock.ConsumeMessage(queue, receiver, h.processEvent); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -126,14 +128,15 @@ func (h *eventHandler) processEvent(m *rabbitmq.Event) error {
 	promARIEventTotal.WithLabelValues(string(event.Type), event.AsteriskID).Inc()
 
 	// processMap maps ARIEvent name and event handler.
-	var processMap = map[string]func(context.Context, interface{}) error{
-		"ChannelCreated":     h.eventHandlerChannelCreated,
-		"ChannelDestroyed":   h.eventHandlerChannelDestroyed,
-		"ChannelStateChange": h.eventHandlerChannelStateChange,
-		"StasisStart":        h.eventHandlerStasisStart,
+	var processMap = map[ari.EventType]func(context.Context, interface{}) error{
+		ari.EventTypeChannelCreated:     h.eventHandlerChannelCreated,
+		ari.EventTypeChannelDestroyed:   h.eventHandlerChannelDestroyed,
+		ari.EventTypeChannelStateChange: h.eventHandlerChannelStateChange,
+		ari.EventTypeStasisEnd:          h.eventHandlerStasisEnd,
+		ari.EventTypeStasisStart:        h.eventHandlerStasisStart,
 	}
 
-	handler := processMap[string(event.Type)]
+	handler := processMap[event.Type]
 	if handler == nil {
 		// no handler
 		return nil
@@ -148,6 +151,7 @@ func (h *eventHandler) processEvent(m *rabbitmq.Event) error {
 	promARIProcessTime.WithLabelValues(event.AsteriskID, string(event.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
+		log.Errorf("Could not process the ari event correctly. err: %v", err)
 		return err
 	}
 
