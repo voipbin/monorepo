@@ -9,29 +9,34 @@ import (
 
 func TestGetTech(t *testing.T) {
 	type test struct {
-		name     string
-		testName string
-		expect   string
+		name       string
+		testName   string
+		expectTech Tech
 	}
 
 	tests := []test{
 		{
-			"pjsip normal",
-			"PJSIP/in-voipbin-000002f6",
 			"pjsip",
+			"PJSIP/in-voipbin-000002f6",
+			TechPJSIP,
 		},
 		{
-			"sip normal",
-			"SIP/in-voipbin-00000006",
 			"sip",
+			"SIP/in-voipbin-00000006",
+			TechSIP,
+		},
+		{
+			"snoop",
+			"Snoop/1588549018.132-00000000",
+			TechSnoop,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res := getTech(tt.testName)
-			if res != tt.expect {
-				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			if res != tt.expectTech {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectTech, res)
 			}
 		})
 	}

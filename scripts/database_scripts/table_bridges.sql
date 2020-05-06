@@ -1,4 +1,4 @@
-create table bridges(
+create table cm_bridges(
   -- identity
   asterisk_id varchar(255), -- Asterisk id
   id          varchar(255),       -- bridge id
@@ -23,4 +23,4 @@ create table bridges(
   primary key(asterisk_id, id)
 );
 
-create index idx_create on channels(tm_create);
+create index idx_create on cm_bridges(tm_create);

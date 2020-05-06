@@ -11,7 +11,7 @@ import (
 
 // ChannelCreate creates new channel record and returns the created channel record.
 func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) error {
-	q := `insert into channels(
+	q := `insert into cm_channels(
 		asterisk_id,
 		id,
 		name,
@@ -24,6 +24,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 
 		state,
 		data,
+		stasis,
 
 		dial_result,
 		hangup_cause,
@@ -31,7 +32,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 	) values(
 		?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?,
+		?, ?, ?,
 		?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -58,6 +59,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 
 		channel.State,
 		tmpData,
+		channel.Stasis,
 
 		channel.DialResult,
 		channel.HangupCause,
@@ -87,7 +89,8 @@ func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
   dst_number,
 
   state,
-  data,
+	data,
+	stasis,
 
   dial_result,
   hangup_cause,
@@ -100,7 +103,7 @@ func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
 	coalesce(tm_end, '') as tm_end
 
 	from
-	channels
+		cm_channels
 	where
 	asterisk_id = ? and id = ?`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -135,6 +138,7 @@ func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
 
 		&res.State,
 		&data,
+		&res.Stasis,
 
 		&res.DialResult,
 		&res.HangupCause,
@@ -161,10 +165,10 @@ func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
 }
 
 // ChannelSetData sets the data
-func (h *handler) ChannelSetData(ctx context.Context, asteriskID, id, timestamp string, data map[string]interface{}) error {
+func (h *handler) ChannelSetData(ctx context.Context, asteriskID, id string, data map[string]interface{}) error {
 	//prepare
 	q := `
-	update channels set
+	update cm_channels set
 		data = ?,
 		tm_update = ?
 	where
@@ -183,9 +187,35 @@ func (h *handler) ChannelSetData(ctx context.Context, asteriskID, id, timestamp 
 	}
 
 	// execute
-	_, err = stmt.ExecContext(ctx, tmpData, timestamp, asteriskID, id)
+	_, err = stmt.ExecContext(ctx, tmpData, getCurTime(), asteriskID, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetData. err: %v", err)
+	}
+
+	return nil
+}
+
+// ChannelSetStasis sets the stasis
+func (h *handler) ChannelSetStasis(ctx context.Context, asteriskID, id, stasis string) error {
+	//prepare
+	q := `
+	update cm_channels set
+		stasis = ?,
+		tm_update = ?
+	where
+		asterisk_id = ?
+		and id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. ChannelSetStasis. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// execute
+	_, err = stmt.ExecContext(ctx, stasis, getCurTime(), asteriskID, id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetStasis. err: %v", err)
 	}
 
 	return nil
@@ -197,7 +227,7 @@ func (h *handler) ChannelSetState(ctx context.Context, asteriskID, id, timestamp
 	switch state {
 	case ari.ChannelStateUp:
 		q = `
-		update channels set
+		update cm_channels set
 			state = ?,
 			tm_update = ?,
 			tm_answer = ?
@@ -207,7 +237,7 @@ func (h *handler) ChannelSetState(ctx context.Context, asteriskID, id, timestamp
 		`
 	case ari.ChannelStateRing, ari.ChannelStateRinging:
 		q = `
-		update channels set
+		update cm_channels set
 			state = ?,
 			tm_update = ?,
 			tm_ringing = ?
@@ -238,7 +268,7 @@ func (h *handler) ChannelSetState(ctx context.Context, asteriskID, id, timestamp
 func (h *handler) ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup ari.ChannelCause) error {
 	// prepare
 	q := `
-	update channels set
+	update cm_channels set
 		hangup_cause = ?,
 		tm_update = ?,
 		tm_end = ?
@@ -256,6 +286,38 @@ func (h *handler) ChannelEnd(ctx context.Context, asteriskID, id, timestamp stri
 	_, err = stmt.ExecContext(ctx, hangup, timestamp, timestamp, asteriskID, id)
 	if err != nil {
 		return fmt.Errorf("dbhandler: Could not query. err: %v", err)
+	}
+
+	return nil
+}
+
+// ChannelSetDataAndStasis sets the data and stasis
+func (h *handler) ChannelSetDataAndStasis(ctx context.Context, asteriskID, id string, data map[string]interface{}, stasis string) error {
+	//prepare
+	q := `
+	update cm_channels set
+		data = ?,
+		stasis = ?,
+		tm_update = ?
+	where
+		asterisk_id = ?
+		and id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. ChannelSetDataAndStasis. err: %v", err)
+	}
+	defer stmt.Close()
+
+	tmpData, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetDataAndStasis. err: %v", err)
+	}
+
+	// execute
+	_, err = stmt.ExecContext(ctx, tmpData, stasis, getCurTime(), asteriskID, id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetDataAndStasis. err: %v", err)
 	}
 
 	return nil

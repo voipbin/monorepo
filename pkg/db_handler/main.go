@@ -23,12 +23,6 @@ type DBHandler interface {
 	BridgeEnd(ctx context.Context, asteriskID, id, timestamp string) error
 	BridgeGet(ctx context.Context, asteriskID, id string) (*bridge.Bridge, error)
 
-	ChannelCreate(ctx context.Context, channel *channel.Channel) error
-	ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup ari.ChannelCause) error
-	ChannelGet(ctx context.Context, asteriskID, id string) (*channel.Channel, error)
-	ChannelSetData(ctx context.Context, asteriskID, id, timestamp string, data map[string]interface{}) error
-	ChannelSetState(ctx context.Context, asteriskID, id, timestamp string, state ari.ChannelState) error
-
 	CallCreate(ctx context.Context, call *call.Call) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
@@ -36,6 +30,14 @@ type DBHandler interface {
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID, tmUpdate string) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
+
+	ChannelCreate(ctx context.Context, channel *channel.Channel) error
+	ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup ari.ChannelCause) error
+	ChannelGet(ctx context.Context, asteriskID, id string) (*channel.Channel, error)
+	ChannelSetData(ctx context.Context, asteriskID, id string, data map[string]interface{}) error
+	ChannelSetDataAndStasis(ctx context.Context, asteriskID, id string, data map[string]interface{}, stasis string) error
+	ChannelSetStasis(ctx context.Context, asteriskID, id, stasis string) error
+	ChannelSetState(ctx context.Context, asteriskID, id, timestamp string, state ari.ChannelState) error
 }
 
 // handler database handler

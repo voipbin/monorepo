@@ -1,4 +1,4 @@
-create table calls(
+create table cm_calls(
   -- identity
   id            binary(16),   -- id
   asterisk_id   varchar(255), -- Asterisk id
@@ -32,8 +32,8 @@ create table calls(
   primary key(id)
 );
 
-create index idx_calls_flowid on calls(flow_id);
-create index idx_calls_create on calls(tm_create);
-create index idx_calls_hangup on calls(tm_hangup);
-create index idx_calls_source_target on calls(source_target);
-create index idx_calls_destination_target on calls(destination_target);
+create index idx_calls_flowid on cm_calls(flow_id);
+create index idx_calls_create on cm_calls(tm_create);
+create index idx_calls_hangup on cm_calls(tm_hangup);
+create index idx_calls_source_target on cm_calls(source_target);
+create index idx_calls_destination_target on cm_calls(destination_target);

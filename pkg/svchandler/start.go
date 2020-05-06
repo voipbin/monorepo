@@ -33,6 +33,12 @@ const (
 
 // Start starts the call service
 func (h *svcHandler) Start(cn *channel.Channel) error {
+
+	if cn.Tech != channel.TechPJSIP {
+		// we don't do any other tech at here.
+		return nil
+	}
+
 	// get service
 	service := getService(cn)
 

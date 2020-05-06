@@ -226,17 +226,45 @@ func (mr *MockDBHandlerMockRecorder) ChannelGet(arg0, arg1, arg2 interface{}) *g
 }
 
 // ChannelSetData mocks base method
-func (m *MockDBHandler) ChannelSetData(arg0 context.Context, arg1, arg2, arg3 string, arg4 map[string]interface{}) error {
+func (m *MockDBHandler) ChannelSetData(arg0 context.Context, arg1, arg2 string, arg3 map[string]interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSetData", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "ChannelSetData", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelSetData indicates an expected call of ChannelSetData
-func (mr *MockDBHandlerMockRecorder) ChannelSetData(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelSetData(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetData), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetData), arg0, arg1, arg2, arg3)
+}
+
+// ChannelSetDataAndStasis mocks base method
+func (m *MockDBHandler) ChannelSetDataAndStasis(arg0 context.Context, arg1, arg2 string, arg3 map[string]interface{}, arg4 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetDataAndStasis", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetDataAndStasis indicates an expected call of ChannelSetDataAndStasis
+func (mr *MockDBHandlerMockRecorder) ChannelSetDataAndStasis(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDataAndStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDataAndStasis), arg0, arg1, arg2, arg3, arg4)
+}
+
+// ChannelSetStasis mocks base method
+func (m *MockDBHandler) ChannelSetStasis(arg0 context.Context, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetStasis", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetStasis indicates an expected call of ChannelSetStasis
+func (mr *MockDBHandlerMockRecorder) ChannelSetStasis(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetStasis), arg0, arg1, arg2, arg3)
 }
 
 // ChannelSetState mocks base method

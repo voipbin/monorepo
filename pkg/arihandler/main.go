@@ -3,6 +3,8 @@ package arihandler
 import (
 	"database/sql"
 
+	log "github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arievent"
 	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
@@ -54,5 +56,8 @@ func (h *ariHandler) Connect() {
 
 // Run runs the arihandler
 func (h *ariHandler) Run() {
-	h.evtHandler.HandleARIEvent(h.rabbitQueueARIEvent, "call-manager")
+	err := h.evtHandler.HandleARIEvent(h.rabbitQueueARIEvent, "call-manager")
+	if err != nil {
+		log.Errorf("Could not handle the ari event. err: %v", err)
+	}
 }

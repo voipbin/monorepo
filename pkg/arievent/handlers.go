@@ -3,6 +3,8 @@ package arievent
 import (
 	"context"
 
+	log "github.com/sirupsen/logrus"
+
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
@@ -12,22 +14,40 @@ import (
 func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisStart)
 
+	// set data and stasis
+	data := make(map[string]interface{}, 1)
+	for k, v := range e.Args {
+		data[k] = v
+	}
+	stasis := e.Application
+
+	// update data and stasis
+	log.Debugf("Updating channel stasis. stasis: %s", stasis)
+	if err := h.db.ChannelSetDataAndStasis(ctx, e.AsteriskID, e.Channel.ID, data, stasis); err != nil {
+		// something went wrong. Hangup at here.
+		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
+		return err
+	}
+
 	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
 	if err != nil {
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
 	}
 
-	for k, v := range e.Args {
-		cn.Data[k] = v
-	}
-	if err := h.db.ChannelSetData(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), cn.Data); err != nil {
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
+	return h.svcHandler.Start(cn)
+}
+
+// eventHandlerStasisEnd handles StasisEnd ARI event
+func (h *eventHandler) eventHandlerStasisEnd(ctx context.Context, evt interface{}) error {
+	e := evt.(*ari.StasisEnd)
+
+	if err := h.db.ChannelSetStasis(ctx, e.AsteriskID, e.Channel.ID, ""); err != nil {
+		// nothing we can do here
 		return err
 	}
-	cn.TMUpdate = string(e.Timestamp)
 
-	return h.svcHandler.Start(cn)
+	return nil
 }
 
 // eventHandlerChannelCreated handels ChannelCreated ARI event
