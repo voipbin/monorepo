@@ -186,6 +186,8 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
 
+			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, tt.expectAsterisID, defaultExistTimeout).Return(true)
+			mockDB.EXPECT().BridgeIsExist(tt.expectBridgeID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expectBridgeID)
 			mockDB.EXPECT().BridgeAddChannelID(gomock.Any(), tt.expectBridgeID, tt.expectChannelID)
 
@@ -233,6 +235,8 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
 
+			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, tt.expectAsterisID, defaultExistTimeout).Return(true)
+			mockDB.EXPECT().BridgeIsExist(tt.expectBridgeID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, "")
 			mockDB.EXPECT().BridgeRemoveChannelID(gomock.Any(), tt.expectBridgeID, tt.expectChannelID)
 

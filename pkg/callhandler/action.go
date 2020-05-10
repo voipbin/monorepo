@@ -6,8 +6,11 @@ import (
 	"fmt"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -26,6 +29,31 @@ func (h *callHandler) ExecuteAction(c *call.Call, a *action.Action) error {
 	default:
 		return fmt.Errorf("no action handle found. type: %s", a.Type)
 	}
+}
+
+// ActionNext Execute next action
+func (h *callHandler) ActionNext(c *call.Call) error {
+	//
+	log := log.WithFields(
+		logrus.Fields{
+			"call": c.ID,
+		})
+
+	// validate next action
+	if c.Action.Next == uuid.Nil {
+		log.Debug("End of call flow. No more next action left.")
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNoRouteDestination)
+		return nil
+	} else if c.Action.ID == c.Action.Next {
+		log.WithFields(
+			logrus.Fields{
+				"action_current": c.Action.ID.String(),
+				"action_next":    c.Action.Next.String(),
+			}).Warning("Loop detected. Current and the next action id is the same.")
+		return nil
+	}
+
+	return nil
 }
 
 func (h *callHandler) executeActionEcho(c *call.Call, a *action.Action) error {

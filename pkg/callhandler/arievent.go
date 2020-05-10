@@ -37,5 +37,18 @@ func (h *callHandler) ARIChannelLeftBridge(cn *channel.Channel) error {
 		return err
 	}
 
+	// do next action
+
 	return nil
+}
+
+// ARIStasisStart is called when the channel handler received StasisStart.
+func (h *callHandler) ARIStasisStart(cn *channel.Channel) error {
+	contextType := getContextType(cn.Data["CONTEXT"])
+	switch contextType {
+	case contextTypeConference:
+		return h.confHandler.ARIStasisStart(cn)
+	default:
+		return h.Start(cn)
+	}
 }

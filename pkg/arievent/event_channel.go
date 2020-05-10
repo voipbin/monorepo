@@ -2,7 +2,9 @@ package arievent
 
 import (
 	"context"
+	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
@@ -43,6 +45,26 @@ func (h *eventHandler) eventHandlerChannelDestroyed(ctx context.Context, evt int
 func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelEnteredBridge)
 
+	log := log.WithFields(
+		log.Fields{
+			"channel":  e.Channel.ID,
+			"bridge":   e.Bridge.ID,
+			"asterisk": e.AsteriskID,
+			"stasis":   e.Application,
+		})
+
+	if h.db.ChannelIsExist(e.Channel.ID, e.AsteriskID, defaultExistTimeout) == false {
+		log.Error("The given channel is not in our database.")
+		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		return fmt.Errorf("no channel found")
+	}
+
+	if h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) == false {
+		log.Error("The given bridge is not in our database.")
+		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		return fmt.Errorf("no bridge found")
+	}
+
 	// set channel's bridge id
 	if err := h.db.ChannelSetBridgeID(ctx, e.AsteriskID, e.Channel.ID, e.Bridge.ID); err != nil {
 		return err
@@ -59,6 +81,26 @@ func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt
 // eventHandlerChannelLeftBridge handles ChannelLeftBridge ARI event
 func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelLeftBridge)
+
+	log := log.WithFields(
+		log.Fields{
+			"channel":  e.Channel.ID,
+			"bridge":   e.Bridge.ID,
+			"asterisk": e.AsteriskID,
+			"stasis":   e.Application,
+		})
+
+	if h.db.ChannelIsExist(e.Channel.ID, e.AsteriskID, defaultExistTimeout) == false {
+		log.Error("The given channel is not in our database.")
+		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		return fmt.Errorf("no channel found")
+	}
+
+	if h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) == false {
+		log.Error("The given bridge is not in our database.")
+		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		return fmt.Errorf("no bridge found")
+	}
 
 	// set channel's bridge id to empty
 	if err := h.db.ChannelSetBridgeID(ctx, e.AsteriskID, e.Channel.ID, ""); err != nil {

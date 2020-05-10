@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 )
@@ -233,4 +234,42 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 	}
 
 	return nil
+}
+
+// BridgeGetUntilTimeout gets the bridge until the ctx is timed out.
+func (h *handler) BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error) {
+
+	chanBridge := make(chan *bridge.Bridge)
+
+	go func() {
+		for {
+			res, err := h.BridgeGet(ctx, id)
+			if err != nil {
+				time.Sleep(defaultDelayTimeout)
+				continue
+			}
+
+			chanBridge <- res
+		}
+	}()
+
+	select {
+	case res := <-chanBridge:
+		return res, nil
+	case <-ctx.Done():
+		return nil, fmt.Errorf("could not get bridge. err: tiemout")
+	}
+}
+
+// BridgeIsExist returns true if the bridge exist within timeout.
+func (h *handler) BridgeIsExist(id string, timeout time.Duration) bool {
+	// check the channel is exists
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	_, err := h.BridgeGetUntilTimeout(ctx, id)
+	if err != nil {
+		return false
+	}
+	return true
 }

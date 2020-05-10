@@ -100,6 +100,7 @@ func TestEventHandlerBridgeDestroyed(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
 
+			mockDB.EXPECT().BridgeIsExist(tt.expectBridgeID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().BridgeEnd(gomock.Any(), tt.expectBridgeID, tt.expectTimestamp)
 
 			if err := h.processEvent(tt.event); err != nil {

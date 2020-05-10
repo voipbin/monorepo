@@ -33,6 +33,48 @@ func (m *MockCallHandler) EXPECT() *MockCallHandlerMockRecorder {
 	return m.recorder
 }
 
+// ARIChannelEnteredBridge mocks base method
+func (m *MockCallHandler) ARIChannelEnteredBridge(arg0 *channel.Channel) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIChannelEnteredBridge", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIChannelEnteredBridge indicates an expected call of ARIChannelEnteredBridge
+func (mr *MockCallHandlerMockRecorder) ARIChannelEnteredBridge(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelEnteredBridge", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelEnteredBridge), arg0)
+}
+
+// ARIChannelLeftBridge mocks base method
+func (m *MockCallHandler) ARIChannelLeftBridge(arg0 *channel.Channel) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIChannelLeftBridge", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIChannelLeftBridge indicates an expected call of ARIChannelLeftBridge
+func (mr *MockCallHandlerMockRecorder) ARIChannelLeftBridge(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelLeftBridge), arg0)
+}
+
+// ARIStasisStart mocks base method
+func (m *MockCallHandler) ARIStasisStart(arg0 *channel.Channel) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIStasisStart", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIStasisStart indicates an expected call of ARIStasisStart
+func (mr *MockCallHandlerMockRecorder) ARIStasisStart(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockCallHandler)(nil).ARIStasisStart), arg0)
+}
+
 // Hangup mocks base method
 func (m *MockCallHandler) Hangup(arg0 *channel.Channel) error {
 	m.ctrl.T.Helper()

@@ -24,6 +24,8 @@ type DBHandler interface {
 	BridgeCreate(ctx context.Context, b *bridge.Bridge) error
 	BridgeEnd(ctx context.Context, id, timestamp string) error
 	BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error)
+	BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error)
+	BridgeIsExist(id string, timeout time.Duration) bool
 	BridgeRemoveChannelID(ctx context.Context, id, channelID string) error
 
 	CallCreate(ctx context.Context, call *call.Call) error
@@ -38,6 +40,7 @@ type DBHandler interface {
 	ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, asteriskID, id string) (*channel.Channel, error)
 	ChannelGetByID(ctx context.Context, id string) (*channel.Channel, error)
+	ChannelGetUntilTimeout(ctx context.Context, asteriskID, id string) (*channel.Channel, error)
 	ChannelGetUntilTimeoutWithStasis(ctx context.Context, asteriskID, id string) (*channel.Channel, error)
 	ChannelSetBridgeID(ctx context.Context, asteriskID, id, bridgeID string) error
 	ChannelSetData(ctx context.Context, asteriskID, id string, data map[string]interface{}) error
@@ -63,6 +66,8 @@ type handler struct {
 var (
 	ErrNotFound = errors.New("Record not found")
 )
+
+const defaultDelayTimeout = time.Millisecond * 30
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB) DBHandler {
