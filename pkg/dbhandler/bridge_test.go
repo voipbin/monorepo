@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 )
@@ -155,3 +156,158 @@ func TestBridgeEnd(t *testing.T) {
 // 		})
 // 	}
 // }
+
+func TestBridgeGetUntilTimeout(t *testing.T) {
+	type test struct {
+		name string
+
+		timeout time.Duration
+		bridge  *bridge.Bridge
+	}
+
+	tests := []test{
+		{
+			"timeout",
+			time.Millisecond * 100,
+			&bridge.Bridge{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "75a53bae-92f9-11ea-90c9-57a00330ee42",
+				TMCreate:   "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest)
+
+			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			start := time.Now()
+
+			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
+			defer cancel()
+
+			_, err := h.BridgeGetUntilTimeout(ctx, tt.bridge.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			elapsed := time.Since(start)
+			if tt.timeout < elapsed {
+				t.Errorf("Wrong match. expect: true, got: false")
+			}
+		})
+	}
+}
+
+func TestBridgeGetUntilTimeoutError(t *testing.T) {
+	type test struct {
+		name string
+
+		timeout time.Duration
+		bridge  *bridge.Bridge
+	}
+
+	tests := []test{
+		{
+			"timeout",
+			time.Millisecond * 100,
+			&bridge.Bridge{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "cd892d58-92f9-11ea-a524-8f03337a67b5",
+				TMCreate:   "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest)
+
+			start := time.Now()
+
+			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
+			defer cancel()
+
+			_, err := h.BridgeGetUntilTimeout(ctx, tt.bridge.ID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: err, got: ok")
+			}
+
+			elapsed := time.Since(start)
+			if elapsed < tt.timeout {
+				t.Errorf("Wrong match. expect: true, got: false")
+			}
+		})
+	}
+}
+
+func TestBridgeIsExist(t *testing.T) {
+	type test struct {
+		name   string
+		bridge *bridge.Bridge
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&bridge.Bridge{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "cd892d58-92f9-11ea-a524-8f03337a67b5",
+				TMCreate:   "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest)
+
+			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res := h.BridgeIsExist(tt.bridge.ID, time.Second*1)
+			if res != true {
+				t.Errorf("Wrong match. expect: true, got: false")
+			}
+		})
+	}
+}
+
+func TestBridgeIsExistError(t *testing.T) {
+	type test struct {
+		name    string
+		id      string
+		timeout time.Duration
+	}
+
+	tests := []test{
+		{
+			"normal",
+			"e1b9db5e-92fb-11ea-a300-6f0c56d7b2cc",
+			time.Second * 1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest)
+
+			start := time.Now()
+
+			res := h.BridgeIsExist(tt.id, tt.timeout)
+			if res != false {
+				t.Errorf("Wrong match. expect: false, got: true")
+			}
+
+			elapsed := time.Since(start)
+			if elapsed < tt.timeout {
+				t.Errorf("Wrong match. expect: true, got: false")
+			}
+		})
+	}
+}

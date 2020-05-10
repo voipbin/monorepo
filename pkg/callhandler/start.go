@@ -18,6 +18,7 @@ import (
 // StasisStart event's context types
 const (
 	contextIncomingVoip = "in-voipbin"
+	contextIncomingCall = "call-in"
 )
 
 // domain types
@@ -33,13 +34,12 @@ const (
 	svcConfEcho service = "conf-echo"
 )
 
+const (
+	defaultMaxTimeoutEcho = "300" // maximum call duration for service echo
+)
+
 // Start starts the call service
 func (h *callHandler) Start(cn *channel.Channel) error {
-
-	if cn.Tech != channel.TechPJSIP {
-		// we don't do any other tech at here.
-		return nil
-	}
 
 	// get service
 	service := getService(cn)
@@ -63,7 +63,7 @@ func getService(cn *channel.Channel) service {
 	context := cn.Data["CONTEXT"]
 
 	switch context {
-	case contextIncomingVoip:
+	case contextIncomingCall, contextIncomingVoip:
 		// incoming context
 		domain := cn.Data["DOMAIN"]
 		switch domain {
@@ -80,7 +80,12 @@ func getService(cn *channel.Channel) service {
 
 // stasisStartServiceEcho handles echo domain request.
 func (h *callHandler) serviceEchoStart(cn *channel.Channel) error {
+	// set timeout for 300 sec
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho); err != nil {
+		return err
+	}
 
+	// create default option for echo
 	option := action.OptionEcho{
 		Duration: 180,
 		DTMF:     true,
@@ -118,21 +123,6 @@ func (h *callHandler) serviceEchoStart(cn *channel.Channel) error {
 		return err
 	}
 	log.Debugf("Conference started. conf: %v", conf)
-
-	// // answer
-	// if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
-	// 	return err
-	// }
-
-	// // set timeout for 180 sec
-	// if err := h.reqHandler.AstChannelVariableSet(c.AsteriskID, c.ChannelID, "TIMEOUT(absolute)", "180"); err != nil {
-	// 	return err
-	// }
-
-	// // continue to svc-echo
-	// if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-echo", c.Destination.Target, 1, ""); err != nil {
-	// 	return err
-	// }
 
 	return nil
 }

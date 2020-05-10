@@ -3,7 +3,6 @@ package arievent
 import (
 	"context"
 	"fmt"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -21,8 +20,9 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 			"stasis":   e.Application,
 		})
 
-	if h.db.ChannelIsExist(e.Channel.ID, e.AsteriskID, time.Second*3) == false {
+	if h.db.ChannelIsExist(e.Channel.ID, e.AsteriskID, defaultExistTimeout) == false {
 		log.Error("The given channel is not in our database.")
+		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no channel found")
 	}
 
@@ -47,13 +47,7 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 		return err
 	}
 
-	contextType := getContextType(cn.Data["CONTEXT"])
-	switch contextType {
-	case contextTypeConference:
-		return h.confHandler.ARIStasisStart(cn)
-	default:
-		return h.svcHandler.Start(cn)
-	}
+	return h.svcHandler.ARIStasisStart(cn)
 }
 
 // eventHandlerStasisEnd handles StasisEnd ARI event

@@ -250,12 +250,12 @@ func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, asterisk
 		for {
 			channel, err := h.ChannelGet(ctx, asteriskID, id)
 			if err != nil {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(defaultDelayTimeout)
 				continue
 			}
 
 			if channel.Stasis == "" {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(defaultDelayTimeout)
 				continue
 			}
 
@@ -280,7 +280,7 @@ func (h *handler) ChannelGetUntilTimeout(ctx context.Context, asteriskID, id str
 		for {
 			channel, err := h.ChannelGet(ctx, asteriskID, id)
 			if err != nil {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(defaultDelayTimeout)
 				continue
 			}
 

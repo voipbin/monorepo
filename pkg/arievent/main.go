@@ -5,7 +5,6 @@ package arievent
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -185,17 +184,4 @@ const (
 	contextTypeCall       contextType = "call"
 )
 
-// getContextType returns CONTEXT's type
-func getContextType(message interface{}) contextType {
-	if message == nil {
-		return contextTypeCall
-	}
-
-	tmp := strings.Split(message.(string), "-")[0]
-	switch tmp {
-	case string(contextTypeConference):
-		return contextTypeConference
-	default:
-		return contextTypeCall
-	}
-}
+const defaultExistTimeout = time.Second * 3

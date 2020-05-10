@@ -707,3 +707,91 @@ func TestChannelSetBridgeID(t *testing.T) {
 		})
 	}
 }
+
+func TestChannelGetUntilTimeout(t *testing.T) {
+	type test struct {
+		name string
+
+		timeout time.Duration
+		channel *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"timeout",
+			time.Millisecond * 100,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "75a53bae-92f9-11ea-90c9-57a00330ee42",
+				TMCreate:   "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest)
+
+			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			start := time.Now()
+
+			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
+			defer cancel()
+
+			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.AsteriskID, tt.channel.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			elapsed := time.Since(start)
+			if tt.timeout < elapsed {
+				t.Errorf("Wrong match. expect: true, got: false")
+			}
+		})
+	}
+}
+
+func TestChannelGetUntilTimeoutError(t *testing.T) {
+	type test struct {
+		name string
+
+		timeout time.Duration
+		channel *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"timeout",
+			time.Millisecond * 100,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "cd892d58-92f9-11ea-a524-8f03337a67b5",
+				TMCreate:   "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest)
+
+			start := time.Now()
+
+			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
+			defer cancel()
+
+			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.AsteriskID, tt.channel.ID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: err, got: ok")
+			}
+
+			elapsed := time.Since(start)
+			if elapsed < tt.timeout {
+				t.Errorf("Wrong match. expect: true, got: false")
+			}
+		})
+	}
+}
