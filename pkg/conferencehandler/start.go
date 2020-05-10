@@ -1,4 +1,4 @@
-package conferhandler
+package conferencehandler
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 )
 
-func (h *conferHandler) Start(cType conference.Type, c *call.Call) (*conference.Conference, error) {
+func (h *conferenceHandler) Start(cType conference.Type, c *call.Call) (*conference.Conference, error) {
 	mapHandler := map[conference.Type]func(*call.Call) (*conference.Conference, error){
 		// conference.TypeConference: h.startConferTypeConference,
 		conference.TypeEcho: h.startTypeEcho,
@@ -26,14 +26,14 @@ func (h *conferHandler) Start(cType conference.Type, c *call.Call) (*conference.
 }
 
 // startTypeTransfer handles transfer conference
-func (h *conferHandler) startTypeTransfer(cf *conference.Conference, c *call.Call) error {
+func (h *conferenceHandler) startTypeTransfer(cf *conference.Conference, c *call.Call) error {
 
 	// todo: ????
 	return nil
 }
 
 // startTypeConference
-func (h *conferHandler) startTypeConference(cf *conference.Conference, c *call.Call) error {
+func (h *conferenceHandler) startTypeConference(cf *conference.Conference, c *call.Call) error {
 
 	// todo: ????
 	return nil
@@ -41,7 +41,7 @@ func (h *conferHandler) startTypeConference(cf *conference.Conference, c *call.C
 
 // startTypeEcho
 // echo conference makes a bridge and create a snoop channel and put the bridge together.
-func (h *conferHandler) startTypeEcho(c *call.Call) (*conference.Conference, error) {
+func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	// defer cancel()
 

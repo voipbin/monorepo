@@ -1,4 +1,4 @@
-package svchandler
+package callhandler
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 )
 
 // ARIChannelEnteredBridge is called when the channel handler received ChannelEnteredBridge.
-func (h *svcHandler) ARIChannelEnteredBridge(cn *channel.Channel) error {
+func (h *callHandler) ARIChannelEnteredBridge(cn *channel.Channel) error {
 	ctx := context.Background()
 
 	// get call
@@ -24,7 +24,7 @@ func (h *svcHandler) ARIChannelEnteredBridge(cn *channel.Channel) error {
 }
 
 // ARIChannelLeftBridge is called when the channel handler received ChannelLeftBridge.
-func (h *svcHandler) ARIChannelLeftBridge(cn *channel.Channel) error {
+func (h *callHandler) ARIChannelLeftBridge(cn *channel.Channel) error {
 	ctx := context.Background()
 
 	// get call

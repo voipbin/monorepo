@@ -1,4 +1,4 @@
-package conferhandler
+package conferencehandler
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 )
 
 // Leaved handle
-func (h *conferHandler) Leaved(id, callID uuid.UUID) error {
+func (h *conferenceHandler) Leaved(id, callID uuid.UUID) error {
 	ctx := context.Background()
 
 	if err := h.db.ConferenceRemoveCallID(ctx, id, callID); err != nil {
@@ -35,7 +35,7 @@ func (h *conferHandler) Leaved(id, callID uuid.UUID) error {
 
 // isTerminatable returns true if the given conference is terminatable
 // return false if it gets error
-func (h *conferHandler) isTerminatable(ctx context.Context, id uuid.UUID) bool {
+func (h *conferenceHandler) isTerminatable(ctx context.Context, id uuid.UUID) bool {
 	// get conference
 	cf, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {

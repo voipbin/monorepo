@@ -13,11 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferhandler"
-	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
+	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler"
 )
 
 // ARIEvent is the structure for ARI event parse.
@@ -44,8 +44,8 @@ type eventHandler struct {
 	rabbitSock rabbitmq.Rabbit
 
 	reqHandler  requesthandler.RequestHandler
-	svcHandler  svchandler.SVCHandler
-	confHandler conferhandler.ConferenceHandler
+	svcHandler  callhandler.CallHandler
+	confHandler conferencehandler.ConferenceHandler
 }
 
 var (
@@ -82,7 +82,7 @@ func init() {
 }
 
 // NewEventHandler create EventHandler
-func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler requesthandler.RequestHandler, svcHandler svchandler.SVCHandler) EventHandler {
+func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler requesthandler.RequestHandler, svcHandler callhandler.CallHandler) EventHandler {
 	evtHandler := &eventHandler{
 		rabbitSock: sock,
 		db:         db,
@@ -90,7 +90,7 @@ func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler requestha
 
 	evtHandler.reqHandler = reqHandler
 	evtHandler.svcHandler = svcHandler
-	evtHandler.confHandler = conferhandler.NewConferHandler(reqHandler, db)
+	evtHandler.confHandler = conferencehandler.NewConferHandler(reqHandler, db)
 
 	return evtHandler
 }

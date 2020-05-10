@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler"
 )
 
 func TestEventHandlerStasisStart(t *testing.T) {
@@ -18,7 +18,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := svchandler.NewMockSVCHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
@@ -79,7 +79,7 @@ func TestEventHandlerStasisEnd(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := svchandler.NewMockSVCHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string

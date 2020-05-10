@@ -1,4 +1,4 @@
-package conferhandler
+package conferencehandler
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 // Stop is stopping the conference
-func (h *conferHandler) Stop(id uuid.UUID) error {
+func (h *conferenceHandler) Stop(id uuid.UUID) error {
 	ctx := context.Background()
 
 	log.WithFields(
@@ -55,7 +55,7 @@ func (h *conferHandler) Stop(id uuid.UUID) error {
 }
 
 // stopConferTypeEcho
-func (h *conferHandler) stopConfTypeEcho(cf *conference.Conference, c *call.Call) error {
+func (h *conferenceHandler) stopConfTypeEcho(cf *conference.Conference, c *call.Call) error {
 	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	// defer cancel()
 

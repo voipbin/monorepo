@@ -1,4 +1,4 @@
-package conferhandler
+package conferencehandler
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 )
 
 // Leave outs the call from the conference
-func (h *conferHandler) Leave(id, callID uuid.UUID) error {
+func (h *conferenceHandler) Leave(id, callID uuid.UUID) error {
 	ctx := context.Background()
 
 	log := log.WithFields(

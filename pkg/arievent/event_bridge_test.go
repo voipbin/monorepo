@@ -5,10 +5,10 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler"
 )
 
 func TestEventHandlerBridgeCreated(t *testing.T) {
@@ -18,7 +18,7 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := svchandler.NewMockSVCHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name         string
@@ -74,7 +74,7 @@ func TestEventHandlerBridgeDestroyed(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := svchandler.NewMockSVCHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name            string

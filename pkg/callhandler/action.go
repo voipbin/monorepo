@@ -1,4 +1,4 @@
-package svchandler
+package callhandler
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (h *svcHandler) ExecuteAction(c *call.Call, a *action.Action) error {
+func (h *callHandler) ExecuteAction(c *call.Call, a *action.Action) error {
 	ctx := context.Background()
 
 	// set action to call
@@ -28,7 +28,7 @@ func (h *svcHandler) ExecuteAction(c *call.Call, a *action.Action) error {
 	}
 }
 
-func (h *svcHandler) executeActionEcho(c *call.Call, a *action.Action) error {
+func (h *callHandler) executeActionEcho(c *call.Call, a *action.Action) error {
 	var option action.OptionEcho
 	if err := json.Unmarshal(a.Option, &option); err != nil {
 		log.WithFields(log.Fields{
