@@ -3,7 +3,7 @@ package call
 import (
 	"strings"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
@@ -15,7 +15,8 @@ type Call struct {
 	ID         uuid.UUID
 	AsteriskID string
 	ChannelID  string
-	FlowID     uuid.UUID
+	FlowID     uuid.UUID // flow id
+	ConfID     uuid.UUID // currently joined conference id
 	Type       Type
 
 	// source/destination
@@ -160,7 +161,7 @@ func NewCallByChannel(cn *channel.Channel, cType Type, direction Direction) *Cal
 	}
 
 	c := NewCall(
-		uuid.NewV4(),
+		uuid.Must(uuid.NewV4()),
 		cn.AsteriskID,
 		cn.ID,
 		uuid.Nil,

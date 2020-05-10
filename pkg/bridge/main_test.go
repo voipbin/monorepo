@@ -27,7 +27,7 @@ func TestNewBridgeByBridgeCreated(t *testing.T) {
 				Class:      "stasis",
 				Creator:    "Stasis",
 				VideoMode:  "none",
-				Channels:   []string{},
+				ChannelIDs: []string{},
 				TMCreate:   "2020-05-03T21:35:02.809",
 			},
 		},

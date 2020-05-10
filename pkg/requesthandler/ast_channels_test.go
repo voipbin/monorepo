@@ -5,6 +5,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
 
@@ -286,8 +287,8 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 		channelID  string
 		snoopID    string
 		appArgs    string
-		spy        ChannelSnoopDirection
-		whisper    ChannelSnoopDirection
+		spy        channel.SnoopDirection
+		whisper    channel.SnoopDirection
 
 		expectURI    string
 		expectQueue  string
@@ -302,8 +303,8 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			"a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d",
 			"acc09eea-8dd0-11ea-99ba-e311d0dcd408",
 			"test",
-			ChannelSnoopDirectionIn,
-			ChannelSnoopDirectionIn,
+			channel.SnoopDirectionIn,
+			channel.SnoopDirectionIn,
 
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk_ari_request-00:11:22:33:44:55",
@@ -316,8 +317,8 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			"a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d",
 			"acc09eea-8dd0-11ea-99ba-e311d0dcd408",
 			"",
-			ChannelSnoopDirectionIn,
-			ChannelSnoopDirectionNone,
+			channel.SnoopDirectionIn,
+			channel.SnoopDirectionNone,
 
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk_ari_request-00:11:22:33:44:55",
@@ -330,8 +331,8 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			"a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d",
 			"acc09eea-8dd0-11ea-99ba-e311d0dcd408",
 			"",
-			ChannelSnoopDirectionNone,
-			ChannelSnoopDirectionBoth,
+			channel.SnoopDirectionNone,
+			channel.SnoopDirectionBoth,
 
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk_ari_request-00:11:22:33:44:55",

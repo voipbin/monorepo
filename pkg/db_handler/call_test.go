@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 
@@ -25,8 +25,8 @@ func TestCallCreate(t *testing.T) {
 	tests := []test{
 		{
 			"test normal",
-			uuid.NewV4(),
-			uuid.NewV4(),
+			uuid.Must(uuid.NewV4()),
+			uuid.Must(uuid.NewV4()),
 			call.Call{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
@@ -56,8 +56,8 @@ func TestCallCreate(t *testing.T) {
 		},
 		{
 			"test normal has source address type sip",
-			uuid.NewV4(),
-			uuid.NewV4(),
+			uuid.Must(uuid.NewV4()),
+			uuid.Must(uuid.NewV4()),
 			call.Call{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "bd610e10-84ed-11ea-b6e1-ef9d10ec3de6",
@@ -132,8 +132,8 @@ func TestCallSetStatus(t *testing.T) {
 	tests := []test{
 		{
 			"test normal",
-			uuid.NewV4(),
-			uuid.NewV4(),
+			uuid.Must(uuid.NewV4()),
+			uuid.Must(uuid.NewV4()),
 			call.StatusProgressing,
 			"2020-04-18T03:22:18.995000",
 			&call.Call{
@@ -197,7 +197,7 @@ func TestCallSetStatus(t *testing.T) {
 	}
 }
 
-func TestCallGetByChannelID(t *testing.T) {
+func TestCallGetByChannelIDAndAsteriskID(t *testing.T) {
 	type test struct {
 		name   string
 		id     uuid.UUID
@@ -210,8 +210,8 @@ func TestCallGetByChannelID(t *testing.T) {
 	tests := []test{
 		{
 			"test normal",
-			uuid.NewV4(),
-			uuid.NewV4(),
+			uuid.Must(uuid.NewV4()),
+			uuid.Must(uuid.NewV4()),
 			call.Call{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "2505d858-8687-11ea-8723-d35628256201",
@@ -241,8 +241,8 @@ func TestCallGetByChannelID(t *testing.T) {
 		},
 		{
 			"test normal has source address type sip",
-			uuid.NewV4(),
-			uuid.NewV4(),
+			uuid.Must(uuid.NewV4()),
+			uuid.Must(uuid.NewV4()),
 			call.Call{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "2aa510da-8687-11ea-b1b4-3f62cf9e4def",
@@ -289,7 +289,7 @@ func TestCallGetByChannelID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.CallGetByChannelID(context.Background(), tt.call.ChannelID)
+			res, err := h.CallGetByChannelIDAndAsteriskID(context.Background(), tt.call.ChannelID, tt.call.AsteriskID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -317,7 +317,7 @@ func TestCallCallSetHangup(t *testing.T) {
 	tests := []test{
 		{
 			"test normal",
-			uuid.NewV4(),
+			uuid.Must(uuid.NewV4()),
 			call.HangupReasonNormal,
 			call.HangupByLocal,
 			"2020-04-18T03:22:18.995000",
@@ -397,7 +397,7 @@ func TestCallSetFlowID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			uuid.NewV4(),
+			uuid.Must(uuid.NewV4()),
 			uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 			"2020-04-18T03:22:18.995000",
 			&call.Call{

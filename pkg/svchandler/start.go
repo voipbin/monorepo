@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -27,8 +28,9 @@ const (
 type service string
 
 const (
-	svcNone service = "none"
-	svcEcho service = "echo"
+	svcNone     service = "none"
+	svcEcho     service = "echo"
+	svcConfEcho service = "conf-echo"
 )
 
 // Start starts the call service
@@ -110,20 +112,27 @@ func (h *svcHandler) serviceEchoStart(cn *channel.Channel) error {
 	// set action
 	log.Infof("%v", action)
 
-	// answer
-	if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
+	// start echo conference
+	conf, err := h.confHandler.Start(conference.TypeEcho, c)
+	if err != nil {
 		return err
 	}
+	log.Debugf("Conference started. conf: %v", conf)
 
-	// set timeout for 180 sec
-	if err := h.reqHandler.AstChannelVariableSet(c.AsteriskID, c.ChannelID, "TIMEOUT(absolute)", "180"); err != nil {
-		return err
-	}
+	// // answer
+	// if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
+	// 	return err
+	// }
 
-	// continue to svc-echo
-	if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-echo", c.Destination.Target, 1, ""); err != nil {
-		return err
-	}
+	// // set timeout for 180 sec
+	// if err := h.reqHandler.AstChannelVariableSet(c.AsteriskID, c.ChannelID, "TIMEOUT(absolute)", "180"); err != nil {
+	// 	return err
+	// }
+
+	// // continue to svc-echo
+	// if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-echo", c.Destination.Target, 1, ""); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

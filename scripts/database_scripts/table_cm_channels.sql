@@ -12,9 +12,10 @@ create table cm_channels(
   dst_number  varchar(255), -- destination number
 
   -- info
-  state   varchar(255), -- current state.
-  data    json,         -- additional data. sip headers, and so on...
-  stasis  varchar(255), -- stasis application name.
+  state     varchar(255), -- current state.
+  data      json,         -- additional data. sip headers, and so on...
+  stasis    varchar(255), -- stasis application name.
+  bridge_id varchar(255), -- bridge id
 
   dial_result       varchar(255), -- dial result. answer, busy, cancel, ...
   hangup_cause      int,          -- hangup cause code.
@@ -30,6 +31,6 @@ create table cm_channels(
   primary key(asterisk_id, id)
 );
 
-create index idx_create on cm_channels(tm_create);
-create index idx_src_number on cm_channels(src_number);
-create index idx_dst_number on cm_channels(dst_number);
+create index idx_cm_channels_create on cm_channels(tm_create);
+create index idx_cm_channels_src_number on cm_channels(src_number);
+create index idx_cm_channels_dst_number on cm_channels(dst_number);

@@ -1,18 +1,19 @@
 package conference
 
-import uuid "github.com/satori/go.uuid"
+import uuid "github.com/gofrs/uuid"
 
 // Conference type
 type Conference struct {
 	ID   uuid.UUID
 	Type Type
 
+	Status Status
 	Name   string
 	Detail string
 	Data   []map[string]interface{}
 
-	Bridges []uuid.UUID
-	Calls   []uuid.UUID
+	BridgeIDs []string
+	CallIDs   []uuid.UUID
 
 	TMCreate string
 	TMUpdate string
@@ -29,9 +30,26 @@ const (
 	TypeConference Type = "conference" // conference for more than 3 calls join
 )
 
+// Status type
+type Status string
+
+// List of Status types
+const (
+	StatusStarting    Status = "starting"
+	StatusProgressing Status = "progressing"
+	StatusStopping    Status = "stopping"
+	StatusTerminated  Status = "terminated"
+)
+
 // NewConference creates a new conference
-func NewConference() *Conference {
-	cf := &Conference{}
+func NewConference(cType Type, name, detail string) *Conference {
+	cf := &Conference{
+		ID:   uuid.Must(uuid.NewV4()),
+		Type: cType,
+
+		Name:   name,
+		Detail: detail,
+	}
 
 	return cf
 }

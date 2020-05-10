@@ -2,17 +2,29 @@ package arievent
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
-	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
 
 // eventHandlerStasisStart handles StasisStart ARI event
 func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisStart)
+
+	log := log.WithFields(
+		log.Fields{
+			"channel":  e.Channel.ID,
+			"asterisk": e.AsteriskID,
+			"stasis":   e.Application,
+		})
+
+	if h.db.ChannelIsExist(e.Channel.ID, e.AsteriskID, time.Second*3) == false {
+		log.Error("The given channel is not in our database.")
+		return fmt.Errorf("no channel found")
+	}
 
 	// set data and stasis
 	data := make(map[string]interface{}, 1)
@@ -22,7 +34,7 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 	stasis := e.Application
 
 	// update data and stasis
-	log.Debugf("Updating channel stasis. stasis: %s", stasis)
+	log.Debug("Updating channel stasis.")
 	if err := h.db.ChannelSetDataAndStasis(ctx, e.AsteriskID, e.Channel.ID, data, stasis); err != nil {
 		// something went wrong. Hangup at here.
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
@@ -35,7 +47,13 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 		return err
 	}
 
-	return h.svcHandler.Start(cn)
+	contextType := getContextType(cn.Data["CONTEXT"])
+	switch contextType {
+	case contextTypeConference:
+		return h.confHandler.ARIStasisStart(cn)
+	default:
+		return h.svcHandler.Start(cn)
+	}
 }
 
 // eventHandlerStasisEnd handles StasisEnd ARI event
@@ -44,79 +62,6 @@ func (h *eventHandler) eventHandlerStasisEnd(ctx context.Context, evt interface{
 
 	if err := h.db.ChannelSetStasis(ctx, e.AsteriskID, e.Channel.ID, ""); err != nil {
 		// nothing we can do here
-		return err
-	}
-
-	return nil
-}
-
-// eventHandlerChannelCreated handels ChannelCreated ARI event
-func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt interface{}) error {
-	e := evt.(*ari.ChannelCreated)
-
-	cn := channel.NewChannelByChannelCreated(e)
-	if err := h.db.ChannelCreate(ctx, cn); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// eventHandlerChannelDestroyed handels ChannelDestroyed ARI event
-func (h *eventHandler) eventHandlerChannelDestroyed(ctx context.Context, evt interface{}) error {
-	e := evt.(*ari.ChannelDestroyed)
-
-	if err := h.db.ChannelEnd(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), e.Cause); err != nil {
-		return err
-	}
-
-	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
-	if err != nil {
-		return err
-	}
-
-	if err := h.svcHandler.Hangup(cn); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// eventHandlerChannelStateChange handels ChannelStateChange ARI event
-func (h *eventHandler) eventHandlerChannelStateChange(ctx context.Context, evt interface{}) error {
-	e := evt.(*ari.ChannelStateChange)
-
-	if err := h.db.ChannelSetState(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), e.Channel.State); err != nil {
-		return err
-	}
-
-	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
-	if err != nil {
-		return err
-	}
-
-	if err := h.svcHandler.UpdateStatus(cn); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (h *eventHandler) eventHandlerBridgeCreated(ctx context.Context, evt interface{}) error {
-	e := evt.(*ari.BridgeCreated)
-
-	b := bridge.NewBridgeByBridgeCreated(e)
-	if err := h.db.BridgeCreate(ctx, b); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (h *eventHandler) eventHandlerBridgeDestroyed(ctx context.Context, evt interface{}) error {
-	e := evt.(*ari.BridgeDestroyed)
-
-	if err := h.db.BridgeEnd(ctx, e.AsteriskID, e.Bridge.ID, string(e.Timestamp)); err != nil {
 		return err
 	}
 

@@ -5,12 +5,15 @@ package arievent
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
-	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferhandler"
 	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
@@ -40,8 +43,9 @@ type eventHandler struct {
 	db         db.DBHandler
 	rabbitSock rabbitmq.Rabbit
 
-	reqHandler requesthandler.RequestHandler
-	svcHandler svchandler.SVCHandler
+	reqHandler  requesthandler.RequestHandler
+	svcHandler  svchandler.SVCHandler
+	confHandler conferhandler.ConferenceHandler
 }
 
 var (
@@ -86,6 +90,7 @@ func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler requestha
 
 	evtHandler.reqHandler = reqHandler
 	evtHandler.svcHandler = svcHandler
+	evtHandler.confHandler = conferhandler.NewConferHandler(reqHandler, db)
 
 	return evtHandler
 }
@@ -121,19 +126,29 @@ func (h *eventHandler) processEvent(m *rabbitmq.Event) error {
 		return err
 	}
 
-	log.WithFields(log.Fields{
-		"asterisk_id": event.AsteriskID,
-		"type":        event.Type,
-	}).Debugf("Received ARI event. message: %s", m)
+	log := log.WithFields(
+		log.Fields{
+			"asterisk": event.AsteriskID,
+			"type":     event.Type,
+		})
+
+	log.WithFields(
+		logrus.Fields{
+			"event": m,
+		}).Debug("Received ARI event.")
 	promARIEventTotal.WithLabelValues(string(event.Type), event.AsteriskID).Inc()
 
 	// processMap maps ARIEvent name and event handler.
 	var processMap = map[ari.EventType]func(context.Context, interface{}) error{
-		ari.EventTypeChannelCreated:     h.eventHandlerChannelCreated,
-		ari.EventTypeChannelDestroyed:   h.eventHandlerChannelDestroyed,
-		ari.EventTypeChannelStateChange: h.eventHandlerChannelStateChange,
-		ari.EventTypeStasisEnd:          h.eventHandlerStasisEnd,
-		ari.EventTypeStasisStart:        h.eventHandlerStasisStart,
+		ari.EventTypeBridgeCreated:        h.eventHandlerBridgeCreated,
+		ari.EventTypeBridgeDestroyed:      h.eventHandlerBridgeDestroyed,
+		ari.EventTypeChannelCreated:       h.eventHandlerChannelCreated,
+		ari.EventTypeChannelDestroyed:     h.eventHandlerChannelDestroyed,
+		ari.EventTypeChannelEnteredBridge: h.eventHandlerChannelEnteredBridge,
+		ari.EventTypeChannelLeftBridge:    h.eventHandlerChannelLeftBridge,
+		ari.EventTypeChannelStateChange:   h.eventHandlerChannelStateChange,
+		ari.EventTypeStasisEnd:            h.eventHandlerStasisEnd,
+		ari.EventTypeStasisStart:          h.eventHandlerStasisStart,
 	}
 
 	handler := processMap[event.Type]
@@ -151,9 +166,36 @@ func (h *eventHandler) processEvent(m *rabbitmq.Event) error {
 	promARIProcessTime.WithLabelValues(event.AsteriskID, string(event.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
-		log.Errorf("Could not process the ari event correctly. err: %v", err)
+		log.WithFields(
+			logrus.Fields{
+				"event": m,
+			}).Errorf("Could not process the ari event correctly. err: %v", err)
 		return err
 	}
 
 	return nil
+}
+
+// contextType
+type contextType string
+
+// List of contextType types.
+const (
+	contextTypeConference contextType = "conf"
+	contextTypeCall       contextType = "call"
+)
+
+// getContextType returns CONTEXT's type
+func getContextType(message interface{}) contextType {
+	if message == nil {
+		return contextTypeCall
+	}
+
+	tmp := strings.Split(message.(string), "-")[0]
+	switch tmp {
+	case string(contextTypeConference):
+		return contextTypeConference
+	default:
+		return contextTypeCall
+	}
 }

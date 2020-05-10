@@ -10,7 +10,7 @@ import (
 // Start starts the call service
 func (h *svcHandler) Hangup(cn *channel.Channel) error {
 	ctx := context.Background()
-	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
+	c, err := h.db.CallGetByChannelIDAndAsteriskID(ctx, cn.ID, cn.AsteriskID)
 	if err != nil {
 		// nothing we can do
 		return err

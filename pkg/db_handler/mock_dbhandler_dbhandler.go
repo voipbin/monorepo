@@ -6,14 +6,16 @@ package dbhandler
 
 import (
 	context "context"
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	uuid "github.com/satori/go.uuid"
 	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	conference "gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 	reflect "reflect"
+	time "time"
 )
 
 // MockDBHandler is a mock of DBHandler interface
@@ -39,6 +41,20 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
+// BridgeAddChannelID mocks base method
+func (m *MockDBHandler) BridgeAddChannelID(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeAddChannelID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BridgeAddChannelID indicates an expected call of BridgeAddChannelID
+func (mr *MockDBHandlerMockRecorder) BridgeAddChannelID(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeAddChannelID", reflect.TypeOf((*MockDBHandler)(nil).BridgeAddChannelID), arg0, arg1, arg2)
+}
+
 // BridgeCreate mocks base method
 func (m *MockDBHandler) BridgeCreate(arg0 context.Context, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()
@@ -54,32 +70,46 @@ func (mr *MockDBHandlerMockRecorder) BridgeCreate(arg0, arg1 interface{}) *gomoc
 }
 
 // BridgeEnd mocks base method
-func (m *MockDBHandler) BridgeEnd(arg0 context.Context, arg1, arg2, arg3 string) error {
+func (m *MockDBHandler) BridgeEnd(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BridgeEnd", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "BridgeEnd", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // BridgeEnd indicates an expected call of BridgeEnd
-func (mr *MockDBHandlerMockRecorder) BridgeEnd(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) BridgeEnd(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeEnd", reflect.TypeOf((*MockDBHandler)(nil).BridgeEnd), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeEnd", reflect.TypeOf((*MockDBHandler)(nil).BridgeEnd), arg0, arg1, arg2)
 }
 
 // BridgeGet mocks base method
-func (m *MockDBHandler) BridgeGet(arg0 context.Context, arg1, arg2 string) (*bridge.Bridge, error) {
+func (m *MockDBHandler) BridgeGet(arg0 context.Context, arg1 string) (*bridge.Bridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BridgeGet", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "BridgeGet", arg0, arg1)
 	ret0, _ := ret[0].(*bridge.Bridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BridgeGet indicates an expected call of BridgeGet
-func (mr *MockDBHandlerMockRecorder) BridgeGet(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) BridgeGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGet", reflect.TypeOf((*MockDBHandler)(nil).BridgeGet), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGet", reflect.TypeOf((*MockDBHandler)(nil).BridgeGet), arg0, arg1)
+}
+
+// BridgeRemoveChannelID mocks base method
+func (m *MockDBHandler) BridgeRemoveChannelID(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeRemoveChannelID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BridgeRemoveChannelID indicates an expected call of BridgeRemoveChannelID
+func (mr *MockDBHandlerMockRecorder) BridgeRemoveChannelID(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeRemoveChannelID", reflect.TypeOf((*MockDBHandler)(nil).BridgeRemoveChannelID), arg0, arg1, arg2)
 }
 
 // CallCreate mocks base method
@@ -111,19 +141,19 @@ func (mr *MockDBHandlerMockRecorder) CallGet(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGet", reflect.TypeOf((*MockDBHandler)(nil).CallGet), arg0, arg1)
 }
 
-// CallGetByChannelID mocks base method
-func (m *MockDBHandler) CallGetByChannelID(arg0 context.Context, arg1 string) (*call.Call, error) {
+// CallGetByChannelIDAndAsteriskID mocks base method
+func (m *MockDBHandler) CallGetByChannelIDAndAsteriskID(arg0 context.Context, arg1, arg2 string) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallGetByChannelID", arg0, arg1)
+	ret := m.ctrl.Call(m, "CallGetByChannelIDAndAsteriskID", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CallGetByChannelID indicates an expected call of CallGetByChannelID
-func (mr *MockDBHandlerMockRecorder) CallGetByChannelID(arg0, arg1 interface{}) *gomock.Call {
+// CallGetByChannelIDAndAsteriskID indicates an expected call of CallGetByChannelIDAndAsteriskID
+func (mr *MockDBHandlerMockRecorder) CallGetByChannelIDAndAsteriskID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetByChannelID", reflect.TypeOf((*MockDBHandler)(nil).CallGetByChannelID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetByChannelIDAndAsteriskID", reflect.TypeOf((*MockDBHandler)(nil).CallGetByChannelIDAndAsteriskID), arg0, arg1, arg2)
 }
 
 // CallSetAction mocks base method
@@ -225,6 +255,64 @@ func (mr *MockDBHandlerMockRecorder) ChannelGet(arg0, arg1, arg2 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGet", reflect.TypeOf((*MockDBHandler)(nil).ChannelGet), arg0, arg1, arg2)
 }
 
+// ChannelGetByID mocks base method
+func (m *MockDBHandler) ChannelGetByID(arg0 context.Context, arg1 string) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelGetByID", arg0, arg1)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelGetByID indicates an expected call of ChannelGetByID
+func (mr *MockDBHandlerMockRecorder) ChannelGetByID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetByID", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetByID), arg0, arg1)
+}
+
+// ChannelGetUntilTimeoutWithStasis mocks base method
+func (m *MockDBHandler) ChannelGetUntilTimeoutWithStasis(arg0 context.Context, arg1, arg2 string) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelGetUntilTimeoutWithStasis", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelGetUntilTimeoutWithStasis indicates an expected call of ChannelGetUntilTimeoutWithStasis
+func (mr *MockDBHandlerMockRecorder) ChannelGetUntilTimeoutWithStasis(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetUntilTimeoutWithStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetUntilTimeoutWithStasis), arg0, arg1, arg2)
+}
+
+// ChannelIsExist mocks base method
+func (m *MockDBHandler) ChannelIsExist(arg0, arg1 string, arg2 time.Duration) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelIsExist", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ChannelIsExist indicates an expected call of ChannelIsExist
+func (mr *MockDBHandlerMockRecorder) ChannelIsExist(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelIsExist", reflect.TypeOf((*MockDBHandler)(nil).ChannelIsExist), arg0, arg1, arg2)
+}
+
+// ChannelSetBridgeID mocks base method
+func (m *MockDBHandler) ChannelSetBridgeID(arg0 context.Context, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetBridgeID", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetBridgeID indicates an expected call of ChannelSetBridgeID
+func (mr *MockDBHandlerMockRecorder) ChannelSetBridgeID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetBridgeID), arg0, arg1, arg2, arg3)
+}
+
 // ChannelSetData mocks base method
 func (m *MockDBHandler) ChannelSetData(arg0 context.Context, arg1, arg2 string, arg3 map[string]interface{}) error {
 	m.ctrl.T.Helper()
@@ -279,4 +367,89 @@ func (m *MockDBHandler) ChannelSetState(arg0 context.Context, arg1, arg2, arg3 s
 func (mr *MockDBHandlerMockRecorder) ChannelSetState(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetState", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetState), arg0, arg1, arg2, arg3, arg4)
+}
+
+// ConferenceAddCallID mocks base method
+func (m *MockDBHandler) ConferenceAddCallID(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceAddCallID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceAddCallID indicates an expected call of ConferenceAddCallID
+func (mr *MockDBHandlerMockRecorder) ConferenceAddCallID(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddCallID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddCallID), arg0, arg1, arg2)
+}
+
+// ConferenceCreate mocks base method
+func (m *MockDBHandler) ConferenceCreate(arg0 context.Context, arg1 *conference.Conference) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceCreate", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceCreate indicates an expected call of ConferenceCreate
+func (mr *MockDBHandlerMockRecorder) ConferenceCreate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceCreate", reflect.TypeOf((*MockDBHandler)(nil).ConferenceCreate), arg0, arg1)
+}
+
+// ConferenceEnd mocks base method
+func (m *MockDBHandler) ConferenceEnd(arg0 context.Context, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceEnd", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceEnd indicates an expected call of ConferenceEnd
+func (mr *MockDBHandlerMockRecorder) ConferenceEnd(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceEnd", reflect.TypeOf((*MockDBHandler)(nil).ConferenceEnd), arg0, arg1)
+}
+
+// ConferenceGet mocks base method
+func (m *MockDBHandler) ConferenceGet(arg0 context.Context, arg1 uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceGet", arg0, arg1)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceGet indicates an expected call of ConferenceGet
+func (mr *MockDBHandlerMockRecorder) ConferenceGet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGet), arg0, arg1)
+}
+
+// ConferenceRemoveCallID mocks base method
+func (m *MockDBHandler) ConferenceRemoveCallID(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceRemoveCallID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceRemoveCallID indicates an expected call of ConferenceRemoveCallID
+func (mr *MockDBHandlerMockRecorder) ConferenceRemoveCallID(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRemoveCallID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceRemoveCallID), arg0, arg1, arg2)
+}
+
+// ConferenceSetStatus mocks base method
+func (m *MockDBHandler) ConferenceSetStatus(arg0 context.Context, arg1 uuid.UUID, arg2 conference.Status) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceSetStatus", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceSetStatus indicates an expected call of ConferenceSetStatus
+func (mr *MockDBHandlerMockRecorder) ConferenceSetStatus(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetStatus", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetStatus), arg0, arg1, arg2)
 }
