@@ -1,4 +1,4 @@
-package conferhandler
+package conferencehandler
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
@@ -45,7 +45,7 @@ func TestLeave(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
-	h := conferHandler{
+	h := conferenceHandler{
 		reqHandler: mockReq,
 		db:         mockDB,
 	}

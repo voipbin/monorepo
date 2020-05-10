@@ -6,10 +6,10 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arievent"
-	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	callhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
+	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
-	svchandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler"
 )
 
 // ARIHandler arihandler package interface
@@ -26,7 +26,7 @@ type ariHandler struct {
 
 	evtHandler arievent.EventHandler
 	reqHandler requesthandler.RequestHandler
-	svcHandler svchandler.SVCHandler
+	svcHandler callhandler.CallHandler
 	db         db.DBHandler
 }
 
@@ -50,7 +50,7 @@ func (h *ariHandler) Connect() {
 
 	// new handlers
 	h.reqHandler = requesthandler.NewRequestHandler(h.rabbitSock)
-	h.svcHandler = svchandler.NewSvcHandler(h.reqHandler, h.db)
+	h.svcHandler = callhandler.NewSvcHandler(h.reqHandler, h.db)
 	h.evtHandler = arievent.NewEventHandler(h.rabbitSock, h.db, h.reqHandler, h.svcHandler)
 }
 

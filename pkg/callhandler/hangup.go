@@ -1,4 +1,4 @@
-package svchandler
+package callhandler
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 )
 
 // Start starts the call service
-func (h *svcHandler) Hangup(cn *channel.Channel) error {
+func (h *callHandler) Hangup(cn *channel.Channel) error {
 	ctx := context.Background()
 	c, err := h.db.CallGetByChannelIDAndAsteriskID(ctx, cn.ID, cn.AsteriskID)
 	if err != nil {

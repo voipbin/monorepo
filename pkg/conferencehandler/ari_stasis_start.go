@@ -1,4 +1,4 @@
-package conferhandler
+package conferencehandler
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
 
-func (h *conferHandler) ARIStasisStart(cn *channel.Channel) error {
+func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel) error {
 
 	mapType := map[interface{}]func(*channel.Channel) error{
 		ContextConferenceEcho: h.ariStasisStartContextEcho,
@@ -27,7 +27,7 @@ func (h *conferHandler) ARIStasisStart(cn *channel.Channel) error {
 	return handler(cn)
 }
 
-func (h *conferHandler) ariStasisStartContextEcho(cn *channel.Channel) error {
+func (h *conferenceHandler) ariStasisStartContextEcho(cn *channel.Channel) error {
 	if cn.Data["BRIDGE_ID"] == nil {
 		return nil
 	}

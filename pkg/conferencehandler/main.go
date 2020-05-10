@@ -1,13 +1,13 @@
-package conferhandler
+package conferencehandler
 
-//go:generate mockgen -destination ./mock_conferhandler_conferhandler.go -package conferhandler gitlab.com/voipbin/bin-manager/call-manager/pkg/conferhandler ConferenceHandler
+//go:generate mockgen -destination ./mock_conferencehandler_conferencehandler.go -package conferencehandler gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler ConferenceHandler
 
 import (
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
@@ -26,8 +26,8 @@ type ConferenceHandler interface {
 	Terminate(id uuid.UUID) error
 }
 
-// conferHandler structure for service handle
-type conferHandler struct {
+// conferenceHandler structure for service handle
+type conferenceHandler struct {
 	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
 }
@@ -40,7 +40,7 @@ const (
 // NewConferHandler returns new service handler
 func NewConferHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) ConferenceHandler {
 
-	h := &conferHandler{
+	h := &conferenceHandler{
 		reqHandler: r,
 		db:         d,
 	}
@@ -48,15 +48,15 @@ func NewConferHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) Co
 	return h
 }
 
-func (h *conferHandler) Join(id, callID uuid.UUID) error {
+func (h *conferenceHandler) Join(id, callID uuid.UUID) error {
 	return nil
 }
 
-func (h *conferHandler) Joined(id, callID uuid.UUID) error {
+func (h *conferenceHandler) Joined(id, callID uuid.UUID) error {
 	return nil
 }
 
-func (h *conferHandler) leaveTypeEcho(c *call.Call) error {
+func (h *conferenceHandler) leaveTypeEcho(c *call.Call) error {
 	// cf := h.db.
 
 	return nil

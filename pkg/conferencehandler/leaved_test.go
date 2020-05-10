@@ -1,4 +1,4 @@
-package conferhandler
+package conferencehandler
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
@@ -40,7 +40,7 @@ func TestLeaved(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
-	h := conferHandler{
+	h := conferenceHandler{
 		reqHandler: mockReq,
 		db:         mockDB,
 	}
@@ -91,7 +91,7 @@ func TestIsTerminatable(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
-	h := conferHandler{
+	h := conferenceHandler{
 		reqHandler: mockReq,
 		db:         mockDB,
 	}

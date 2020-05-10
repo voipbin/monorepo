@@ -1,4 +1,4 @@
-package conferhandler
+package conferencehandler
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 // Terminate is final task to terminating the conference
-func (h *conferHandler) Terminate(id uuid.UUID) error {
+func (h *conferenceHandler) Terminate(id uuid.UUID) error {
 	ctx := context.Background()
 
 	// update conference status to terminated
@@ -50,7 +50,7 @@ func (h *conferHandler) Terminate(id uuid.UUID) error {
 }
 
 // hangupAllChannelsInBridge hangs up the all channels in the bridge
-func (h *conferHandler) hangupAllChannelsInBridge(bridge *bridge.Bridge) {
+func (h *conferenceHandler) hangupAllChannelsInBridge(bridge *bridge.Bridge) {
 	log.WithFields(
 		log.Fields{
 			"asterisk": bridge.AsteriskID,

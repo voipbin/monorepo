@@ -5,11 +5,11 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/svchandler"
 )
 
 func TestEventHandlerChannelCreated(t *testing.T) {
@@ -19,7 +19,7 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := svchandler.NewMockSVCHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
@@ -58,7 +58,7 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := svchandler.NewMockSVCHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
@@ -106,7 +106,7 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := svchandler.NewMockSVCHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
@@ -156,7 +156,7 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := svchandler.NewMockSVCHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
@@ -203,7 +203,7 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := svchandler.NewMockSVCHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string

@@ -1,17 +1,17 @@
-package svchandler
+package callhandler
 
 import (
 	"context"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 
 	log "github.com/sirupsen/logrus"
 )
 
 // UpdateStatus updates the status and does actions.
-func (h *svcHandler) UpdateStatus(cn *channel.Channel) error {
+func (h *callHandler) UpdateStatus(cn *channel.Channel) error {
 	ctx := context.Background()
 
 	status := call.GetStatusByChannelState(cn.State)
@@ -49,7 +49,7 @@ func (h *svcHandler) UpdateStatus(cn *channel.Channel) error {
 }
 
 // statusRinging updates the call's status to ringing
-func (h *svcHandler) statusRinging(ctx context.Context, cn *channel.Channel, c *call.Call) error {
+func (h *callHandler) statusRinging(ctx context.Context, cn *channel.Channel, c *call.Call) error {
 	// update status
 	if err := h.db.CallSetStatus(ctx, c.ID, call.StatusRinging, cn.TMRinging); err != nil {
 		return err
@@ -58,7 +58,7 @@ func (h *svcHandler) statusRinging(ctx context.Context, cn *channel.Channel, c *
 }
 
 // statusProgressing updates the call's status to progressing and does required actions.
-func (h *svcHandler) statusProgressing(ctx context.Context, cn *channel.Channel, c *call.Call) error {
+func (h *callHandler) statusProgressing(ctx context.Context, cn *channel.Channel, c *call.Call) error {
 	// update status
 	if err := h.db.CallSetStatus(ctx, c.ID, call.StatusProgressing, cn.TMAnswer); err != nil {
 		return err

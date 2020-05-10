@@ -1,4 +1,4 @@
-package svchandler
+package callhandler
 
 import (
 	"context"
@@ -34,7 +34,7 @@ const (
 )
 
 // Start starts the call service
-func (h *svcHandler) Start(cn *channel.Channel) error {
+func (h *callHandler) Start(cn *channel.Channel) error {
 
 	if cn.Tech != channel.TechPJSIP {
 		// we don't do any other tech at here.
@@ -79,7 +79,7 @@ func getService(cn *channel.Channel) service {
 }
 
 // stasisStartServiceEcho handles echo domain request.
-func (h *svcHandler) serviceEchoStart(cn *channel.Channel) error {
+func (h *callHandler) serviceEchoStart(cn *channel.Channel) error {
 
 	option := action.OptionEcho{
 		Duration: 180,

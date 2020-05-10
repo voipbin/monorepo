@@ -1,4 +1,4 @@
-package conferhandler
+package conferencehandler
 
 // func (h *conferHandler) kickOutCall(id, callID uuid.UUID) error {
 // 	ctx := context.Background()
