@@ -2,8 +2,9 @@ create table cm_calls(
   -- identity
   id            binary(16),   -- id
   asterisk_id   varchar(255), -- Asterisk id
-  channel_id    varchar(255), -- chcallsannel id
+  channel_id    varchar(255), -- channel id
   flow_id       binary(16),   -- flow id
+  conf_id       binary(16),   -- currently joined conference id
   type          varchar(16),  -- type of call
 
   -- source/destination
@@ -32,8 +33,8 @@ create table cm_calls(
   primary key(id)
 );
 
-create index idx_calls_flowid on cm_calls(flow_id);
-create index idx_calls_create on cm_calls(tm_create);
-create index idx_calls_hangup on cm_calls(tm_hangup);
-create index idx_calls_source_target on cm_calls(source_target);
-create index idx_calls_destination_target on cm_calls(destination_target);
+create index idx_cm_calls_flowid on cm_calls(flow_id);
+create index idx_cm_calls_create on cm_calls(tm_create);
+create index idx_cm_calls_hangup on cm_calls(tm_hangup);
+create index idx_cm_calls_source_target on cm_calls(source_target);
+create index idx_cm_calls_destination_target on cm_calls(destination_target);

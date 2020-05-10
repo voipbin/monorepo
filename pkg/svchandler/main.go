@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferhandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/db_handler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
@@ -20,16 +21,18 @@ type SVCHandler interface {
 
 // svcHandler structure for service handle
 type svcHandler struct {
-	reqHandler requesthandler.RequestHandler
-	db         dbhandler.DBHandler
+	reqHandler  requesthandler.RequestHandler
+	db          dbhandler.DBHandler
+	confHandler conferhandler.ConferenceHandler
 }
 
 // NewSvcHandler returns new service handler
 func NewSvcHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) SVCHandler {
 
 	svchandler := &svcHandler{
-		reqHandler: r,
-		db:         d,
+		reqHandler:  r,
+		db:          d,
+		confHandler: conferhandler.NewConferHandler(r, d),
 	}
 
 	return svchandler

@@ -5,10 +5,12 @@
 package requesthandler
 
 import (
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	uuid "github.com/satori/go.uuid"
 	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	reflect "reflect"
 )
 
@@ -33,6 +35,62 @@ func NewMockRequestHandler(ctrl *gomock.Controller) *MockRequestHandler {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
+}
+
+// AstBridgeAddChannel mocks base method
+func (m *MockRequestHandler) AstBridgeAddChannel(arg0, arg1, arg2, arg3 string, arg4, arg5 bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstBridgeAddChannel", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstBridgeAddChannel indicates an expected call of AstBridgeAddChannel
+func (mr *MockRequestHandlerMockRecorder) AstBridgeAddChannel(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeAddChannel", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeAddChannel), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
+// AstBridgeCreate mocks base method
+func (m *MockRequestHandler) AstBridgeCreate(arg0, arg1, arg2 string, arg3 bridge.Type) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstBridgeCreate", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstBridgeCreate indicates an expected call of AstBridgeCreate
+func (mr *MockRequestHandlerMockRecorder) AstBridgeCreate(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeCreate", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeCreate), arg0, arg1, arg2, arg3)
+}
+
+// AstBridgeDelete mocks base method
+func (m *MockRequestHandler) AstBridgeDelete(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstBridgeDelete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstBridgeDelete indicates an expected call of AstBridgeDelete
+func (mr *MockRequestHandlerMockRecorder) AstBridgeDelete(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeDelete", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeDelete), arg0, arg1)
+}
+
+// AstBridgeRemoveChannel mocks base method
+func (m *MockRequestHandler) AstBridgeRemoveChannel(arg0, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstBridgeRemoveChannel", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstBridgeRemoveChannel indicates an expected call of AstBridgeRemoveChannel
+func (mr *MockRequestHandlerMockRecorder) AstBridgeRemoveChannel(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeRemoveChannel", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeRemoveChannel), arg0, arg1, arg2)
 }
 
 // AstChannelAnswer mocks base method
@@ -64,7 +122,7 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelContinue(arg0, arg1, arg2, a
 }
 
 // AstChannelCreateSnoop mocks base method
-func (m *MockRequestHandler) AstChannelCreateSnoop(arg0, arg1, arg2, arg3 string, arg4, arg5 ChannelSnoopDirection) error {
+func (m *MockRequestHandler) AstChannelCreateSnoop(arg0, arg1, arg2, arg3 string, arg4, arg5 channel.SnoopDirection) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstChannelCreateSnoop", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(error)

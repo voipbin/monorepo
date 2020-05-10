@@ -86,3 +86,48 @@ func TestNewChannelByChannelCreated(t *testing.T) {
 		})
 	}
 }
+
+func TestNewChannelByStasisStart(t *testing.T) {
+	type test struct {
+		name          string
+		message       string
+		expectChannel *Channel
+	}
+
+	tests := []test{
+		{
+			"normal",
+			`{"type":"StasisStart","timestamp":"2020-05-10T07:11:05.479+0000","args":["CONTEXT=in-voipbin","SIP_CALLID=1578514523-1170819966-743482919","SIP_PAI=","SIP_PRIVACY=","DOMAIN=echo.voipbin.net","SOURCE=45.249.91.194"],"channel":{"id":"1589094665.1053","name":"PJSIP/in-voipbin-0000015e","state":"Ring","caller":{"name":"","number":"2000000"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"9103011442037694942","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1578514523-1170819966-743482919,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=45.249.91.194"},"creationtime":"2020-05-10T07:11:05.477+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			&Channel{
+				AsteriskID: "42:01:0a:a4:00:05",
+				ID:         "1589094665.1053",
+				Name:       "PJSIP/in-voipbin-0000015e",
+				Tech:       "pjsip",
+
+				SourceName:        "",
+				SourceNumber:      "2000000",
+				DestinationNumber: "9103011442037694942",
+
+				State: "Ring",
+				Data:  make(map[string]interface{}, 1),
+
+				TMCreate: "2020-05-10T07:11:05.479",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, evt, err := ari.Parse([]byte(tt.message))
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			e := evt.(*ari.StasisStart)
+
+			channel := NewChannelByStasisStart(e)
+			if !reflect.DeepEqual(tt.expectChannel, channel) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectChannel, channel)
+			}
+		})
+	}
+}

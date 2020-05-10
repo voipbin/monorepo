@@ -246,19 +246,19 @@ func (q *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 	}
 
 	// process message
-	go func() {
-		for message := range messages {
-			var event Event
-			if err := json.Unmarshal(message.Body, &event); err != nil {
-				log.Errorf("Could out unmarshal the message. err: %v", err)
-			}
+	for message := range messages {
+		var event Event
+		if err := json.Unmarshal(message.Body, &event); err != nil {
+			log.Errorf("Could out unmarshal the message. err: %v", err)
+		}
 
+		go func() {
 			err := messageConsume(&event)
 			if err != nil {
 				log.Errorf("Message consumer returns error. err: %v", err)
 			}
-		}
-	}()
+		}()
+	}
 
 	return nil
 }

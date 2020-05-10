@@ -6,18 +6,8 @@ import (
 	"strconv"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
-)
-
-// ChannelSnoopDirection represents possible values for channel snoop
-type ChannelSnoopDirection string
-
-// List of ChannelSnoopType types
-const (
-	ChannelSnoopDirectionNone ChannelSnoopDirection = ""     // none
-	ChannelSnoopDirectionBoth ChannelSnoopDirection = "both" // snoop the channel in/out both.
-	ChannelSnoopDirectionOut  ChannelSnoopDirection = "out"  //
-	ChannelSnoopDirectionIn   ChannelSnoopDirection = "in"   // snoop the channel incoming
 )
 
 // AstChannelAnswer sends the channel answer request
@@ -118,15 +108,15 @@ func (r *requestHandler) AstChannelVariableSet(asteriskID, channelID, variable, 
 }
 
 // AstChannelCreateSnoop sends the request for create a snoop channel
-func (r *requestHandler) AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper ChannelSnoopDirection) error {
+func (r *requestHandler) AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error {
 	url := fmt.Sprintf("/ari/channels/%s/snoop", channelID)
 
 	type Data struct {
-		Spy     ChannelSnoopDirection `json:"spy,omitempty"`
-		Whisper ChannelSnoopDirection `json:"whisper,omitempty"`
-		App     string                `json:"app"`
-		AppArgs string                `json:"appArgs,omitempty"`
-		SnoopID string                `json:"snoopId"`
+		Spy     channel.SnoopDirection `json:"spy,omitempty"`
+		Whisper channel.SnoopDirection `json:"whisper,omitempty"`
+		App     string                 `json:"app"`
+		AppArgs string                 `json:"appArgs,omitempty"`
+		SnoopID string                 `json:"snoopId"`
 	}
 
 	m, err := json.Marshal(Data{

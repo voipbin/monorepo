@@ -4,12 +4,13 @@ create table cm_conferences(
   type  varchar(255), -- type
 
   -- info
+  status  varchar(255),   -- status
   name    varchar(255),   -- conference's name
   detail  text,           -- conference's detail description
   data    json,           -- additional data
 
-  bridges json, -- bridges related with this conference
-  calls   json, -- calls in the conference
+  bridge_ids json, -- bridges related with this conference
+  call_ids   json, -- calls in the conference
 
   -- timestamps
   tm_create datetime(6),  --
@@ -19,4 +20,4 @@ create table cm_conferences(
   primary key(id)
 );
 
-create index idx_create on cm_confreneces(tm_create);
+create index idx_cm_conferences_create on cm_conferences(tm_create);

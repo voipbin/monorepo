@@ -9,9 +9,11 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,10 +32,16 @@ const defaultAstStasisApp = "voipbin"
 
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
+	// asterisk bridges
+	AstBridgeAddChannel(asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error
+	AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType bridge.Type) error
+	AstBridgeDelete(asteriskID, bridgeID string) error
+	AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error
+
 	// asterisk channels
 	AstChannelAnswer(asteriskID, channelID string) error
 	AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error
-	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper ChannelSnoopDirection) error
+	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
 	AstChannelVariableSet(asteriskID, channelID, variable, value string) error
 

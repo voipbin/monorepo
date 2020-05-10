@@ -4,23 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
 
-// BridgeType type
-type BridgeType string
-
-// List of BirdgeTypes
-const (
-	BridgeTypeMixing     BridgeType = "mixing"
-	BirdgeTypeHolding    BridgeType = "holding"
-	BirdgeTypeDTMFEvents BridgeType = "dtmf_events"
-	BridgeTypeProxyMedia BridgeType = "proxy_media"
-	BridgeTypeVideoSFU   BridgeType = "video_sfu"
-)
-
 // AstBridgeCreate sends the bridge create request
-func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType BridgeType) error {
+func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType bridge.Type) error {
 	url := fmt.Sprint("/ari/bridges")
 
 	type Data struct {
@@ -78,6 +67,31 @@ func (r *requestHandler) AstBridgeAddChannel(asteriskID, bridgeID, channelID, ro
 		role,
 		absorbDTMF,
 		mute,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, requestTimeoutDefault, ContentTypeJSON, string(m))
+	switch {
+	case err != nil:
+		return nil
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// AstBridgeRemoveChannel sends the request for removing the channel from the bridge
+func (r *requestHandler) AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error {
+	url := fmt.Sprintf("/ari/bridges/%s/removeChannel", bridgeID)
+
+	type Data struct {
+		ChannelID string `json:"channel"`
+	}
+
+	m, err := json.Marshal(Data{
+		channelID,
 	})
 	if err != nil {
 		return err

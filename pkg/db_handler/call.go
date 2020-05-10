@@ -2,10 +2,11 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 )
@@ -17,6 +18,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 		asterisk_id,
 		channel_id,
 		flow_id,
+		conf_id,
 		type,
 
 		source,
@@ -33,7 +35,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 
 		tm_create
 	) values(
-		?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?,?,
 		?
@@ -69,6 +71,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 		call.AsteriskID,
 		call.ChannelID,
 		call.FlowID.Bytes(),
+		call.ConfID.Bytes(),
 		call.Type,
 
 		tmpSource,
@@ -102,6 +105,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		asterisk_id,
 		channel_id,
 		flow_id,
+		conf_id,
 		type,
 
 		source,
@@ -144,6 +148,76 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		return nil, ErrNotFound
 	}
 
+	res, err := h.callGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get call. CallGet, err: %v", err)
+	}
+
+	return res, nil
+}
+
+// CallGet returns call.
+func (h *handler) CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID, asteriskID string) (*call.Call, error) {
+
+	// prepare
+	q := `
+	select
+		id,
+		asterisk_id,
+		channel_id,
+		flow_id,
+		conf_id,
+		type,
+
+		source,
+		destination,
+
+		status,
+		data,
+		action,
+		direction,
+		hangup_by,
+		hangup_reason,
+
+		coalesce(tm_create, '') as tm_create,
+		coalesce(tm_update, '') as tm_update,
+
+		coalesce(tm_progressing, '') as tm_progressing,
+		coalesce(tm_ringing, '') as tm_ringing,
+		coalesce(tm_hangup, '') as tm_hangup
+
+	from
+		cm_calls
+	where
+		channel_id = ? and asterisk_id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("could not prepare. CallGetByChannelIDAndAsteriskID. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	row, err := stmt.QueryContext(ctx, channelID, asteriskID)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CallGetByChannelIDAndAsteriskID. err: %v", err)
+	}
+	defer row.Close()
+
+	if row.Next() == false {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.callGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get call. CallGetByChannelIDAndAsteriskID, err: %v", err)
+	}
+
+	return res, nil
+}
+
+// callGetFromRow gets the call from the row.
+func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	var data string
 	var source string
 	var destination string
@@ -154,6 +228,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		&res.AsteriskID,
 		&res.ChannelID,
 		&res.FlowID,
+		&res.ConfID,
 		&res.Type,
 
 		&source,
@@ -173,113 +248,20 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		&res.TMRinging,
 		&res.TMHangup,
 	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. CallGet. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
 	}
 
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. CallGet. err: %v", err)
+		return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
 	}
 	if err := json.Unmarshal([]byte(action), &res.Action); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the action. CallGet. err: %v", err)
+		return nil, fmt.Errorf("could not unmarshal the action. callGetFromRow. err: %v", err)
 	}
 	if err := json.Unmarshal([]byte(source), &res.Source); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the source. CallGet. err: %v", err)
+		return nil, fmt.Errorf("could not unmarshal the source. callGetFromRow. err: %v", err)
 	}
 	if err := json.Unmarshal([]byte(destination), &res.Destination); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the destination. CallGet. err: %v", err)
-	}
-
-	return res, nil
-}
-
-// CallGet returns call.
-func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error) {
-
-	// prepare
-	q := `
-	select
-		id,
-		asterisk_id,
-		channel_id,
-		flow_id,
-		type,
-
-		source,
-		destination,
-
-		status,
-		data,
-		direction,
-		hangup_by,
-		hangup_reason,
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-
-		coalesce(tm_progressing, '') as tm_progressing,
-		coalesce(tm_ringing, '') as tm_ringing,
-		coalesce(tm_hangup, '') as tm_hangup
-
-	from
-		cm_calls
-	where
-		channel_id = ?
-	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("could not prepare. CallGetByChannelID. err: %v", err)
-	}
-	defer stmt.Close()
-
-	// query
-	row, err := stmt.QueryContext(ctx, channelID)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. CallGetByChannelID. err: %v", err)
-	}
-	defer row.Close()
-
-	if row.Next() == false {
-		return nil, ErrNotFound
-	}
-
-	var data string
-	var source string
-	var destination string
-	res := &call.Call{}
-	if err := row.Scan(
-		&res.ID,
-		&res.AsteriskID,
-		&res.ChannelID,
-		&res.FlowID,
-		&res.Type,
-
-		&source,
-		&destination,
-
-		&res.Status,
-		&data,
-		&res.Direction,
-		&res.HangupBy,
-		&res.HangupReason,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-
-		&res.TMProgressing,
-		&res.TMRinging,
-		&res.TMHangup,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. CallGetByChannelID. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. CallGetByChannelID. err: %v", err)
-	}
-	if err := json.Unmarshal([]byte(source), &res.Source); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the source. CallGetByChannelID. err: %v", err)
-	}
-	if err := json.Unmarshal([]byte(destination), &res.Destination); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the destination. CallGetByChannelID. err: %v", err)
+		return nil, fmt.Errorf("could not unmarshal the destination. callGetFromRow. err: %v", err)
 	}
 
 	return res, nil

@@ -20,7 +20,7 @@ type Bridge struct {
 	VideoMode     string
 	VideoSourceID string
 
-	Channels []string
+	ChannelIDs []string
 
 	TMCreate string
 	TMUpdate string
@@ -64,7 +64,7 @@ func NewBridgeByBridgeCreated(e *ari.BridgeCreated) *Bridge {
 		VideoMode:     e.Bridge.VideoMode,
 		VideoSourceID: e.Bridge.VideoSourceID,
 
-		Channels: e.Bridge.Channels,
+		ChannelIDs: e.Bridge.Channels,
 
 		TMCreate: string(e.Timestamp),
 	}

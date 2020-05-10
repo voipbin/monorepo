@@ -26,7 +26,7 @@ func TestBridgeCreate(t *testing.T) {
 			&bridge.Bridge{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
-				Channels:   []string{},
+				ChannelIDs: []string{},
 				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 		},
@@ -40,7 +40,7 @@ func TestBridgeCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.BridgeGet(context.Background(), tt.bridge.AsteriskID, tt.bridge.ID)
+			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -72,7 +72,7 @@ func TestBridgeEnd(t *testing.T) {
 			&bridge.Bridge{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "208a5bbe-8ee3-11ea-b267-174c3bd0a842",
-				Channels:   []string{},
+				ChannelIDs: []string{},
 				TMCreate:   "2020-04-18T03:22:17.995000",
 				TMDelete:   "2020-04-18T05:22:17.995000",
 			},
@@ -87,11 +87,11 @@ func TestBridgeEnd(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.BridgeEnd(context.Background(), tt.bridge.AsteriskID, tt.bridge.ID, tt.timestamp); err != nil {
+			if err := h.BridgeEnd(context.Background(), tt.bridge.ID, tt.timestamp); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.BridgeGet(context.Background(), tt.bridge.AsteriskID, tt.bridge.ID)
+			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -103,3 +103,55 @@ func TestBridgeEnd(t *testing.T) {
 		})
 	}
 }
+
+// func TestBridgeAddChannel(t *testing.T) {
+// 	type test struct {
+// 		name         string
+// 		bridge       *bridge.Bridge
+// 		channelID    string
+// 		expectBridge *bridge.Bridge
+// 	}
+
+// 	tests := []test{
+// 		{
+// 			"test normal",
+// 			&bridge.Bridge{
+// 				AsteriskID: "3e:50:6b:43:bb:30",
+// 				ID:         "2b45f6ee-917c-11ea-9caa-17f6fdd51eda",
+// 				TMCreate:   "2020-04-18T03:22:17.995000",
+// 			},
+// 			"3fd26c3c-917c-11ea-a8a0-93d5d27da96a",
+// 			&bridge.Bridge{
+// 				AsteriskID: "3e:50:6b:43:bb:30",
+// 				ID:         "2b45f6ee-917c-11ea-9caa-17f6fdd51eda",
+// 				Channels:   []string{"3fd26c3c-917c-11ea-a8a0-93d5d27da96a"},
+// 				TMCreate:   "2020-04-18T03:22:17.995000",
+// 				TMDelete:   "2020-04-18T05:22:17.995000",
+// 			},
+// 		},
+// 	}
+
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			h := NewHandler(dbTest)
+
+// 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
+
+// 			if err := h.BridgeAddChannel(context.Background(), tt.bridge.ID, tt.channelID); err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
+
+// 			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
+
+// 			res.TMUpdate = ""
+// 			if reflect.DeepEqual(tt.expectBridge, res) == false {
+// 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectBridge, res)
+// 			}
+// 		})
+// 	}
+// }

@@ -3,7 +3,7 @@ package action
 import (
 	"encoding/json"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid"
 )
 
 // Action struct

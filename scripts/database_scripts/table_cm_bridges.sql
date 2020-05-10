@@ -13,14 +13,14 @@ create table cm_bridges(
   video_mode      varchar(255),
   video_source_id varchar(255),
 
-  channels json,
+  channel_ids json,
 
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --
   tm_delete datetime(6),  --
 
-  primary key(asterisk_id, id)
+  primary key(id)
 );
 
-create index idx_create on cm_bridges(tm_create);
+create index idx_cm_bridges_create on cm_bridges(tm_create);
