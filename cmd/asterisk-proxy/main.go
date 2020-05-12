@@ -176,7 +176,12 @@ func handleARIEvent() {
 func handleARIRequest() {
 	// connect new queue.
 	q := rabbitmq.NewQueue(*rabbitAddr, *rabbitQueueARIRequest, false)
-	q.ConsumeRPC("", rpc.RequestHandler)
+	go func(q *rabbitmq.Queue) {
+		for {
+			q.ConsumeRPC("", rpc.RequestHandler)
+			time.Sleep(time.Second * 1)
+		}
+	}(q)
 }
 
 // consumeMessage publish the Asterisk ARI event to the queue.
