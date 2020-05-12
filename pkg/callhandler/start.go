@@ -98,10 +98,10 @@ func (h *callHandler) serviceEchoStart(cn *channel.Channel) error {
 
 	// create a action echo
 	action := &action.Action{
-		ID:     uuid.Nil,
+		ID:     actionBegin,
 		Type:   action.TypeEcho,
 		Option: opt,
-		Next:   uuid.Nil,
+		Next:   actionEnd,
 	}
 
 	c := call.NewCallByChannel(cn, call.TypeEcho, call.DirectionIncoming)
@@ -110,7 +110,7 @@ func (h *callHandler) serviceEchoStart(cn *channel.Channel) error {
 	}
 
 	// set flowid
-	if err := h.db.CallSetFlowID(context.Background(), c.ID, uuid.Nil, getCurTime()); err != nil {
+	if err := h.db.CallSetFlowID(context.Background(), c.ID, uuid.Nil); err != nil {
 		return err
 	}
 

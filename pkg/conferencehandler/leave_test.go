@@ -13,6 +13,18 @@ import (
 )
 
 func TestLeave(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := conferenceHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
 	type test struct {
 		name       string
 		conference *conference.Conference
@@ -37,17 +49,6 @@ func TestLeave(t *testing.T) {
 				BridgeID:   "e6370b1c-9246-11ea-9fc8-533a3618523b",
 			},
 		},
-	}
-
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := conferenceHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
 	}
 
 	for _, tt := range tests {

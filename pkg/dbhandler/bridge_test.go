@@ -6,7 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 )
 
 func TestBridgeCreate(t *testing.T) {
@@ -29,6 +31,58 @@ func TestBridgeCreate(t *testing.T) {
 				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
 				ChannelIDs: []string{},
 				TMCreate:   "2020-04-18T03:22:17.995000",
+			},
+		},
+		{
+			"have Conference id",
+			&bridge.Bridge{
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ID:           "36d8b0be-9316-11ea-b829-6be92ca1faee",
+				ConferenceID: uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
+				TMCreate:     "2020-04-18T03:22:17.995000",
+			},
+			&bridge.Bridge{
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ID:           "36d8b0be-9316-11ea-b829-6be92ca1faee",
+				ChannelIDs:   []string{},
+				ConferenceID: uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
+				TMCreate:     "2020-04-18T03:22:17.995000",
+			},
+		},
+		{
+			"have Conference id and type",
+			&bridge.Bridge{
+				AsteriskID:     "3e:50:6b:43:bb:30",
+				ID:             "5149007a-9316-11ea-9de0-5f9cb2e8c235",
+				ConferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
+				ConferenceType: conference.TypeEcho,
+				TMCreate:       "2020-04-18T03:22:17.995000",
+			},
+			&bridge.Bridge{
+				AsteriskID:     "3e:50:6b:43:bb:30",
+				ID:             "5149007a-9316-11ea-9de0-5f9cb2e8c235",
+				ChannelIDs:     []string{},
+				ConferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
+				ConferenceType: conference.TypeEcho,
+				TMCreate:       "2020-04-18T03:22:17.995000",
+			},
+		},
+		{
+			"conference type none",
+			&bridge.Bridge{
+				AsteriskID:     "3e:50:6b:43:bb:30",
+				ID:             "8489f4c6-9316-11ea-9b3d-3b37cb9a2974",
+				ConferenceID:   uuid.FromStringOrNil("8892c1f6-9316-11ea-96ff-8b2d8c1b2642"),
+				ConferenceType: conference.TypeNone,
+				TMCreate:       "2020-04-18T03:22:17.995000",
+			},
+			&bridge.Bridge{
+				AsteriskID:     "3e:50:6b:43:bb:30",
+				ID:             "8489f4c6-9316-11ea-9b3d-3b37cb9a2974",
+				ChannelIDs:     []string{},
+				ConferenceID:   uuid.FromStringOrNil("8892c1f6-9316-11ea-96ff-8b2d8c1b2642"),
+				ConferenceType: conference.TypeNone,
+				TMCreate:       "2020-04-18T03:22:17.995000",
 			},
 		},
 	}

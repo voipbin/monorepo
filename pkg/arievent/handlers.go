@@ -47,7 +47,7 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 		return err
 	}
 
-	return h.svcHandler.ARIStasisStart(cn)
+	return h.callHandler.ARIStasisStart(cn)
 }
 
 // eventHandlerStasisEnd handles StasisEnd ARI event

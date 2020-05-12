@@ -32,7 +32,8 @@ type DBHandler interface {
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID, asteriskID string) (*call.Call, error)
 	CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error
-	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID, tmUpdate string) error
+	CallSetConferenceID(ctx context.Context, id, conferenceID uuid.UUID) error
+	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
 
@@ -40,8 +41,8 @@ type DBHandler interface {
 	ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, asteriskID, id string) (*channel.Channel, error)
 	ChannelGetByID(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelGetUntilTimeout(ctx context.Context, asteriskID, id string) (*channel.Channel, error)
-	ChannelGetUntilTimeoutWithStasis(ctx context.Context, asteriskID, id string) (*channel.Channel, error)
+	ChannelGetUntilTimeout(ctx context.Context, id, asteriskID string) (*channel.Channel, error)
+	ChannelGetUntilTimeoutWithStasis(ctx context.Context, id, asteriskID string) (*channel.Channel, error)
 	ChannelSetBridgeID(ctx context.Context, asteriskID, id, bridgeID string) error
 	ChannelSetData(ctx context.Context, asteriskID, id string, data map[string]interface{}) error
 	ChannelSetDataAndStasis(ctx context.Context, asteriskID, id string, data map[string]interface{}, stasis string) error

@@ -199,18 +199,32 @@ func (mr *MockDBHandlerMockRecorder) CallSetAction(arg0, arg1, arg2 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetAction", reflect.TypeOf((*MockDBHandler)(nil).CallSetAction), arg0, arg1, arg2)
 }
 
-// CallSetFlowID mocks base method
-func (m *MockDBHandler) CallSetFlowID(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string) error {
+// CallSetConferenceID mocks base method
+func (m *MockDBHandler) CallSetConferenceID(arg0 context.Context, arg1, arg2 uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallSetFlowID", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "CallSetConferenceID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetConferenceID indicates an expected call of CallSetConferenceID
+func (mr *MockDBHandlerMockRecorder) CallSetConferenceID(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetConferenceID", reflect.TypeOf((*MockDBHandler)(nil).CallSetConferenceID), arg0, arg1, arg2)
+}
+
+// CallSetFlowID mocks base method
+func (m *MockDBHandler) CallSetFlowID(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetFlowID", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallSetFlowID indicates an expected call of CallSetFlowID
-func (mr *MockDBHandlerMockRecorder) CallSetFlowID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CallSetFlowID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetFlowID", reflect.TypeOf((*MockDBHandler)(nil).CallSetFlowID), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetFlowID", reflect.TypeOf((*MockDBHandler)(nil).CallSetFlowID), arg0, arg1, arg2)
 }
 
 // CallSetHangup mocks base method

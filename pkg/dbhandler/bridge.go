@@ -26,12 +26,16 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 
 		channel_ids,
 
+		conference_id,
+		conference_type,
+
 		tm_create
 	) values(
 		?, ?, ?,
 		?, ?, ?, ?,
 		?, ?,
 		?,
+		?, ?,
 		?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -59,6 +63,9 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		b.VideoSourceID,
 
 		tmpChannelIDs,
+
+		b.ConferenceID.Bytes(),
+		b.ConferenceType,
 
 		b.TMCreate,
 	)
@@ -88,6 +95,9 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 		video_source_id,
 
 		channel_ids,
+
+		conference_id,
+		conference_type,
 
 		coalesce(tm_create, '') as tm_create,
 		coalesce(tm_update, '') as tm_update,
@@ -129,6 +139,9 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 		&res.VideoSourceID,
 
 		&channelIDs,
+
+		&res.ConferenceID,
+		&res.ConferenceType,
 
 		&res.TMCreate,
 		&res.TMUpdate,

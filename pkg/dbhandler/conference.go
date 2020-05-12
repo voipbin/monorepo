@@ -64,7 +64,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		bridgeIDs,
 		callIDs,
 
-		cf.TMCreate,
+		getCurTime(),
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. ConferenceCreate. err: %v", err)

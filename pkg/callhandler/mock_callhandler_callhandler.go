@@ -6,6 +6,7 @@ package callhandler
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	reflect "reflect"
 )
@@ -33,32 +34,46 @@ func (m *MockCallHandler) EXPECT() *MockCallHandlerMockRecorder {
 	return m.recorder
 }
 
-// ARIChannelEnteredBridge mocks base method
-func (m *MockCallHandler) ARIChannelEnteredBridge(arg0 *channel.Channel) error {
+// ARIChannelDestroyed mocks base method
+func (m *MockCallHandler) ARIChannelDestroyed(arg0 *channel.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIChannelEnteredBridge", arg0)
+	ret := m.ctrl.Call(m, "ARIChannelDestroyed", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIChannelDestroyed indicates an expected call of ARIChannelDestroyed
+func (mr *MockCallHandlerMockRecorder) ARIChannelDestroyed(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelDestroyed", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelDestroyed), arg0)
+}
+
+// ARIChannelEnteredBridge mocks base method
+func (m *MockCallHandler) ARIChannelEnteredBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIChannelEnteredBridge", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ARIChannelEnteredBridge indicates an expected call of ARIChannelEnteredBridge
-func (mr *MockCallHandlerMockRecorder) ARIChannelEnteredBridge(arg0 interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) ARIChannelEnteredBridge(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelEnteredBridge", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelEnteredBridge), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelEnteredBridge", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelEnteredBridge), arg0, arg1)
 }
 
 // ARIChannelLeftBridge mocks base method
-func (m *MockCallHandler) ARIChannelLeftBridge(arg0 *channel.Channel) error {
+func (m *MockCallHandler) ARIChannelLeftBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIChannelLeftBridge", arg0)
+	ret := m.ctrl.Call(m, "ARIChannelLeftBridge", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ARIChannelLeftBridge indicates an expected call of ARIChannelLeftBridge
-func (mr *MockCallHandlerMockRecorder) ARIChannelLeftBridge(arg0 interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) ARIChannelLeftBridge(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelLeftBridge), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelLeftBridge), arg0, arg1)
 }
 
 // ARIStasisStart mocks base method

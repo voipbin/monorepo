@@ -385,11 +385,9 @@ func TestCallCallSetHangup(t *testing.T) {
 
 func TestCallSetFlowID(t *testing.T) {
 	type test struct {
-		name     string
-		id       uuid.UUID
-		flowID   uuid.UUID
-		tmUpdate string
-		call     *call.Call
+		name   string
+		flowID uuid.UUID
+		call   *call.Call
 
 		expectCall *call.Call
 	}
@@ -397,10 +395,9 @@ func TestCallSetFlowID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			uuid.Must(uuid.NewV4()),
 			uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
-			"2020-04-18T03:22:18.995000",
 			&call.Call{
+				ID:         uuid.FromStringOrNil("3599ce5e-9357-11ea-b215-f7ddc7ee506e"),
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
@@ -414,9 +411,12 @@ func TestCallSetFlowID(t *testing.T) {
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&call.Call{
+				ID:         uuid.FromStringOrNil("3599ce5e-9357-11ea-b215-f7ddc7ee506e"),
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
+
+				FlowID: uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 
 				Source:      &call.Address{},
 				Destination: &call.Address{},
@@ -425,7 +425,6 @@ func TestCallSetFlowID(t *testing.T) {
 				Direction: call.DirectionIncoming,
 
 				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:18.995000",
 			},
 		},
 	}
@@ -434,16 +433,11 @@ func TestCallSetFlowID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest)
 
-			tt.call.ID = tt.id
-			tt.expectCall.ID = tt.id
-			tt.expectCall.FlowID = tt.flowID
-			tt.expectCall.TMUpdate = tt.tmUpdate
-
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.CallSetFlowID(context.Background(), tt.id, tt.flowID, tt.tmUpdate); err != nil {
+			if err := h.CallSetFlowID(context.Background(), tt.call.ID, tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -452,6 +446,78 @@ func TestCallSetFlowID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			res.TMUpdate = ""
+			if reflect.DeepEqual(tt.expectCall, res) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+			}
+		})
+	}
+}
+
+func TestCallSetConferenceID(t *testing.T) {
+	type test struct {
+		name         string
+		conferenceID uuid.UUID
+		call         *call.Call
+
+		expectCall *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
+			&call.Call{
+				ID:         uuid.FromStringOrNil("56ca1f9c-9358-11ea-8dd7-472b84a9f7d4"),
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
+				Type:       call.TypeFlow,
+
+				Source:      &call.Address{},
+				Destination: &call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("56ca1f9c-9358-11ea-8dd7-472b84a9f7d4"),
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
+				Type:       call.TypeFlow,
+
+				ConfID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
+
+				Source:      &call.Address{},
+				Destination: &call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest)
+
+			if err := h.CallCreate(context.Background(), tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if err := h.CallSetConferenceID(context.Background(), tt.call.ID, tt.conferenceID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.CallGet(context.Background(), tt.call.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMUpdate = ""
 			if reflect.DeepEqual(tt.expectCall, res) == false {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
 			}

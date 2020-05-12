@@ -21,58 +21,46 @@ func TestConferenceCreate(t *testing.T) {
 		{
 			"type echo",
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("eb8e31ec-9162-11ea-ba76-cbd8f42249bd"),
-				Type: conference.TypeEcho,
-				Name: "test type echo",
+				ID:     uuid.FromStringOrNil("eb8e31ec-9162-11ea-ba76-cbd8f42249bd"),
+				Type:   conference.TypeEcho,
+				Name:   "test type echo",
 				Detail: "test type echo detail",
-
-				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("eb8e31ec-9162-11ea-ba76-cbd8f42249bd"),
-				Type: conference.TypeEcho,
-				Name: "test type echo",
+				ID:     uuid.FromStringOrNil("eb8e31ec-9162-11ea-ba76-cbd8f42249bd"),
+				Type:   conference.TypeEcho,
+				Name:   "test type echo",
 				Detail: "test type echo detail",
-
-				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 		},
 		{
 			"type conference",
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
-				Type: conference.TypeConference,
-				Name: "test type conference",
+				ID:     uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
+				Type:   conference.TypeConference,
+				Name:   "test type conference",
 				Detail: "test type conference detail",
-
-				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
-				Type: conference.TypeConference,
-				Name: "test type conference",
+				ID:     uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
+				Type:   conference.TypeConference,
+				Name:   "test type conference",
 				Detail: "test type conference detail",
-
-				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 		},
 		{
 			"type transfer",
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("483a5dee-9163-11ea-95c5-cbea96d71f7b"),
-				Type: conference.TypeTransfer,
-				Name: "test type transfer",
+				ID:     uuid.FromStringOrNil("483a5dee-9163-11ea-95c5-cbea96d71f7b"),
+				Type:   conference.TypeTransfer,
+				Name:   "test type transfer",
 				Detail: "test type transfer detail",
-
-				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("483a5dee-9163-11ea-95c5-cbea96d71f7b"),
-				Type: conference.TypeTransfer,
-				Name: "test type transfer",
+				ID:     uuid.FromStringOrNil("483a5dee-9163-11ea-95c5-cbea96d71f7b"),
+				Type:   conference.TypeTransfer,
+				Name:   "test type transfer",
 				Detail: "test type transfer detail",
-
-				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 		},
 	}
@@ -90,6 +78,7 @@ func TestConferenceCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			res.TMCreate = ""
 			if reflect.DeepEqual(tt.expectConference, res) == false {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectConference, res)
 			}

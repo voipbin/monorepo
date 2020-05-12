@@ -3,6 +3,8 @@ package conferencehandler
 //go:generate mockgen -destination ./mock_conferencehandler_conferencehandler.go -package conferencehandler gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler ConferenceHandler
 
 import (
+	"fmt"
+
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
@@ -52,12 +54,16 @@ func (h *conferenceHandler) Join(id, callID uuid.UUID) error {
 	return nil
 }
 
-func (h *conferenceHandler) Joined(id, callID uuid.UUID) error {
-	return nil
-}
-
 func (h *conferenceHandler) leaveTypeEcho(c *call.Call) error {
 	// cf := h.db.
 
 	return nil
+}
+
+// generateBridgeName generates the bridge name for conference
+// all of conference created bridge must use this function for bridge's name.
+func generateBridgeName(cType conference.Type, id uuid.UUID) string {
+	res := fmt.Sprintf("conference_type=%s,conference_id=%s", cType, id.String())
+
+	return res
 }
