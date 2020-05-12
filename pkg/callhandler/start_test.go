@@ -95,7 +95,7 @@ func TestServiceEchoStart(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
 			mockConf.EXPECT().Start(conference.TypeEcho, gomock.Any())
 
 			h.serviceEchoStart(tt.channel)

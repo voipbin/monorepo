@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
@@ -14,8 +15,9 @@ import (
 
 // CallHandler is interface for service handle
 type CallHandler interface {
-	ARIChannelEnteredBridge(cn *channel.Channel) error
-	ARIChannelLeftBridge(cn *channel.Channel) error
+	ARIChannelDestroyed(cn *channel.Channel) error
+	ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error
+	ARIChannelLeftBridge(cn *channel.Channel, bridge *bridge.Bridge) error
 	ARIStasisStart(cn *channel.Channel) error
 
 	Start(cn *channel.Channel) error

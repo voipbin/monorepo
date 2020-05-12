@@ -43,7 +43,7 @@ type eventHandler struct {
 	rabbitSock rabbitmq.Rabbit
 
 	reqHandler  requesthandler.RequestHandler
-	svcHandler  callhandler.CallHandler
+	callHandler callhandler.CallHandler
 	confHandler conferencehandler.ConferenceHandler
 }
 
@@ -81,14 +81,14 @@ func init() {
 }
 
 // NewEventHandler create EventHandler
-func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler requesthandler.RequestHandler, svcHandler callhandler.CallHandler) EventHandler {
+func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) EventHandler {
 	evtHandler := &eventHandler{
 		rabbitSock: sock,
 		db:         db,
 	}
 
 	evtHandler.reqHandler = reqHandler
-	evtHandler.svcHandler = svcHandler
+	evtHandler.callHandler = callHandler
 	evtHandler.confHandler = conferencehandler.NewConferHandler(reqHandler, db)
 
 	return evtHandler
@@ -101,15 +101,21 @@ func (h *eventHandler) HandleARIEvent(queue, receiver string) error {
 		"queue": queue,
 	}).Infof("Creating rabbitmq queue for ARI event receiving.")
 
-	err := h.rabbitSock.DeclareQueue(queue, true, false, false, false)
+	err := h.rabbitSock.QueueDeclare(queue, true, false, false, false)
 	if err != nil {
 		return err
 	}
 
 	// receive ARI event
-	if err := h.rabbitSock.ConsumeMessage(queue, receiver, h.processEvent); err != nil {
-		return err
-	}
+	go func() {
+		for {
+			err := h.rabbitSock.ConsumeMessage(queue, receiver, h.processEvent)
+			if err != nil {
+				log.Errorf("Could not consume the ARI message. Will retry after 1 second. err: %v", err)
+			}
+			time.Sleep(time.Second * 1)
+		}
+	}()
 	return nil
 }
 

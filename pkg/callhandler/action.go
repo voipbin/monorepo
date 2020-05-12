@@ -14,7 +14,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (h *callHandler) ExecuteAction(c *call.Call, a *action.Action) error {
+var (
+	actionBegin uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
+	actionEnd   uuid.UUID = uuid.Nil
+)
+
+func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	ctx := context.Background()
 
 	// set action to call
@@ -24,7 +29,7 @@ func (h *callHandler) ExecuteAction(c *call.Call, a *action.Action) error {
 
 	switch a.Type {
 	case action.TypeEcho:
-		return h.executeActionEcho(c, a)
+		return h.actionExecuteEcho(c, a)
 
 	default:
 		return fmt.Errorf("no action handle found. type: %s", a.Type)
@@ -33,30 +38,47 @@ func (h *callHandler) ExecuteAction(c *call.Call, a *action.Action) error {
 
 // ActionNext Execute next action
 func (h *callHandler) ActionNext(c *call.Call) error {
-	//
 	log := log.WithFields(
 		logrus.Fields{
 			"call": c.ID,
 		})
 
-	// validate next action
-	if c.Action.Next == uuid.Nil {
+	// validate current state
+	switch {
+	case c.Action.Next == actionEnd:
+		// last action
 		log.Debug("End of call flow. No more next action left.")
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNoRouteDestination)
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return nil
-	} else if c.Action.ID == c.Action.Next {
+
+	case c.Action.ID == c.Action.Next:
+		// loop detected
 		log.WithFields(
 			logrus.Fields{
 				"action_current": c.Action.ID.String(),
 				"action_next":    c.Action.Next.String(),
 			}).Warning("Loop detected. Current and the next action id is the same.")
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		return nil
+
+	case c.FlowID == uuid.Nil:
+		// invalid flow id
+		log.Info("The call's flow id is not valid. Hanging up the call.")
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
-	return nil
+	// get next action from flow-manager
+	action, err := h.reqHandler.FlowActionGet(c.FlowID, c.Action.Next)
+	if err != nil {
+		log.Errorf("Could not get next flow action. err: %v", err)
+		return err
+	}
+
+	return h.ActionExecute(c, action)
 }
 
-func (h *callHandler) executeActionEcho(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	var option action.OptionEcho
 	if err := json.Unmarshal(a.Option, &option); err != nil {
 		log.WithFields(log.Fields{

@@ -18,7 +18,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 		asterisk_id,
 		channel_id,
 		flow_id,
-		conf_id,
+		conference_id,
 		type,
 
 		source,
@@ -105,7 +105,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		asterisk_id,
 		channel_id,
 		flow_id,
-		conf_id,
+		conference_id,
 		type,
 
 		source,
@@ -166,7 +166,7 @@ func (h *handler) CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID
 		asterisk_id,
 		channel_id,
 		flow_id,
-		conf_id,
+		conference_id,
 		type,
 
 		source,
@@ -395,7 +395,7 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 }
 
 // CallSetFlowID sets the call status
-func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID, tmUpdate string) error {
+func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error {
 
 	// prepare
 	q := `
@@ -414,7 +414,35 @@ func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID, tmUpd
 	defer stmt.Close()
 
 	// query
-	_, err = stmt.ExecContext(ctx, flowID.Bytes(), tmUpdate, id.Bytes())
+	_, err = stmt.ExecContext(ctx, flowID.Bytes(), getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute query. CallSetFlowID. err: %v", err)
+	}
+
+	return nil
+}
+
+// CallSetFlowID sets the call status
+func (h *handler) CallSetConferenceID(ctx context.Context, id, conferenceID uuid.UUID) error {
+
+	// prepare
+	q := `
+	update
+		cm_calls
+	set
+		conference_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. CallSetFlowID. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	_, err = stmt.ExecContext(ctx, conferenceID.Bytes(), getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute query. CallSetFlowID. err: %v", err)
 	}

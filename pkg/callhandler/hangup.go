@@ -13,7 +13,7 @@ func (h *callHandler) Hangup(cn *channel.Channel) error {
 	c, err := h.db.CallGetByChannelIDAndAsteriskID(ctx, cn.ID, cn.AsteriskID)
 	if err != nil {
 		// nothing we can do
-		return err
+		return nil
 	}
 
 	// calculate hangup_reason, hangup_by

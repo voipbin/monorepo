@@ -223,7 +223,7 @@ func TestChannelStasisGetUntilTimeout(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.AsteriskID, tt.channel.ID)
+			resChannel, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.ID, tt.channel.AsteriskID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok , got: %v", err)
 			}
@@ -266,7 +266,7 @@ func TestChannelStasisGetUntilTimeoutError(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
 			defer cancel()
 
-			_, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.AsteriskID, tt.channel.ID)
+			_, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.ID, tt.channel.AsteriskID)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
@@ -732,16 +732,19 @@ func TestChannelGetUntilTimeout(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest)
 
-			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
 			start := time.Now()
 
 			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
 			defer cancel()
 
-			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.AsteriskID, tt.channel.ID)
+			go func() {
+				time.Sleep(time.Millisecond * 10)
+				if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}()
+
+			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.ID, tt.channel.AsteriskID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -783,7 +786,7 @@ func TestChannelGetUntilTimeoutError(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
 			defer cancel()
 
-			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.AsteriskID, tt.channel.ID)
+			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.ID, tt.channel.AsteriskID)
 			if err == nil {
 				t.Errorf("Wrong match. expect: err, got: ok")
 			}

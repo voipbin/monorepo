@@ -234,7 +234,7 @@ func (h *handler) ChannelIsExist(id, asteriskID string, timeout time.Duration) b
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	_, err := h.ChannelGetUntilTimeout(ctx, asteriskID, id)
+	_, err := h.ChannelGetUntilTimeout(ctx, id, asteriskID)
 	if err != nil {
 		return false
 	}
@@ -242,7 +242,7 @@ func (h *handler) ChannelIsExist(id, asteriskID string, timeout time.Duration) b
 }
 
 // ChannelGetUntilTimeoutWithStasis gets the stasis channel until the ctx is timed out.
-func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, asteriskID, id string) (*channel.Channel, error) {
+func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id, asteriskID string) (*channel.Channel, error) {
 
 	chanChannel := make(chan *channel.Channel)
 
@@ -272,7 +272,7 @@ func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, asterisk
 }
 
 // ChannelGetUntilTimeout gets the channel until the ctx is timed out.
-func (h *handler) ChannelGetUntilTimeout(ctx context.Context, asteriskID, id string) (*channel.Channel, error) {
+func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id, asteriskID string) (*channel.Channel, error) {
 
 	chanChannel := make(chan *channel.Channel)
 

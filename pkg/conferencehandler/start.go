@@ -1,6 +1,7 @@
 package conferencehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -8,9 +9,20 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+
+	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 func (h *conferenceHandler) Start(cType conference.Type, c *call.Call) (*conference.Conference, error) {
+
+	log := log.WithFields(
+		log.Fields{
+			"conference_type": cType,
+			"call":            c.ID.String(),
+		})
+	log.Info("Start conference.")
+
 	mapHandler := map[conference.Type]func(*call.Call) (*conference.Conference, error){
 		// conference.TypeConference: h.startConferTypeConference,
 		conference.TypeEcho: h.startTypeEcho,
@@ -42,19 +54,37 @@ func (h *conferenceHandler) startTypeConference(cf *conference.Conference, c *ca
 // startTypeEcho
 // echo conference makes a bridge and create a snoop channel and put the bridge together.
 func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference, error) {
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	// defer cancel()
-
-	// create a bridge
-	bridgeID := uuid.Must(uuid.NewV4()).String()
-	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, "echo", bridge.TypeMixing); err != nil {
-		return nil, fmt.Errorf("could not create a bridge for echo conference. err: %v", err)
-	}
+	ctx := context.Background()
 
 	// create a conference
 	cf := conference.NewConference(conference.TypeEcho, "echo", "action echo")
-	cf.CallIDs = append(cf.CallIDs, c.ID)
+
+	log := log.WithFields(
+		log.Fields{
+			"call":       c.ID.String(),
+			"conference": cf.ID.String(),
+			"type":       cf.Type,
+		})
+	log.Debug("Starting conference.")
+
+	// create a bridge and add to conference
+	bridgeID := uuid.Must(uuid.NewV4()).String()
+	bridgeName := generateBridgeName(conference.TypeEcho, cf.ID)
+	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, bridge.TypeMixing); err != nil {
+		return nil, fmt.Errorf("could not create a bridge for echo conference. err: %v", err)
+	}
 	cf.BridgeIDs = append(cf.BridgeIDs, bridgeID)
+
+	log = log.WithFields(
+		logrus.Fields{
+			"bridge": bridgeID,
+		})
+	log.Debug("Created bridge.")
+
+	// create a conference record
+	if err := h.db.ConferenceCreate(ctx, cf); err != nil {
+		return nil, fmt.Errorf("could not create a conference. err: %v", err)
+	}
 
 	// create a snoop channel
 	args := fmt.Sprintf("CONTEXT=%s,CONFERENCE_ID=%s,BRIDGE_ID=%s,CALL_ID=%s",

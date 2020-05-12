@@ -5,6 +5,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
@@ -58,7 +59,7 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
@@ -87,12 +88,12 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := NewEventHandler(mockSock, mockDB, mockRequest, mockCall)
 
 			cn := &channel.Channel{}
 			mockDB.EXPECT().ChannelEnd(gomock.Any(), tt.expectAsteriskID, tt.expectChannelID, tt.expectTimestamp, tt.expectHangup).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectAsteriskID, tt.expectChannelID).Return(cn, nil)
-			mockSvc.EXPECT().Hangup(cn).Return(nil)
+			mockCall.EXPECT().ARIChannelDestroyed(cn).Return(nil)
 
 			h.processEvent(tt.event)
 		})
@@ -156,15 +157,13 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
-		name  string
-		event *rabbitmq.Event
-
-		expectAsterisID string
-		expectChannelID string
-		expectBridgeID  string
+		name    string
+		event   *rabbitmq.Event
+		channel *channel.Channel
+		bridge  *bridge.Bridge
 	}
 
 	tests := []test{
@@ -175,21 +174,28 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 				DataType: "application/json",
 				Data:     `{"type":"ChannelEnteredBridge","timestamp":"2020-05-09T10:36:04.595+0000","bridge":{"id":"a6abbe41-2a83-447b-8175-e52e5dea000f","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":["1589020563.4752","915befe7-7fff-490e-8432-ffe063d5c46d"],"creationtime":"2020-05-09T10:36:04.360+0000","video_mode":"talker"},"channel":{"id":"1589020563.4752","name":"PJSIP/in-voipbin-000008cc","state":"Ring","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"999999","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=B0SUsFI1eo,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-09T10:36:03.792+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
 			},
-
-			"42:01:0a:a4:00:05",
-			"1589020563.4752",
-			"a6abbe41-2a83-447b-8175-e52e5dea000f",
+			&channel.Channel{
+				ID:         "1589020563.4752",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
+			&bridge.Bridge{
+				ID:         "a6abbe41-2a83-447b-8175-e52e5dea000f",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := NewEventHandler(mockSock, mockDB, mockRequest, mockCall)
 
-			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, tt.expectAsterisID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().BridgeIsExist(tt.expectBridgeID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expectBridgeID)
-			mockDB.EXPECT().BridgeAddChannelID(gomock.Any(), tt.expectBridgeID, tt.expectChannelID)
+			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, tt.channel.AsteriskID, defaultExistTimeout).Return(true)
+			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
+			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, tt.bridge.ID)
+			mockDB.EXPECT().BridgeAddChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
+			mockCall.EXPECT().ARIChannelEnteredBridge(tt.channel, tt.bridge).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -205,15 +211,13 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
-		name  string
-		event *rabbitmq.Event
-
-		expectAsterisID string
-		expectChannelID string
-		expectBridgeID  string
+		name    string
+		event   *rabbitmq.Event
+		channel *channel.Channel
+		bridge  *bridge.Bridge
 	}
 
 	tests := []test{
@@ -224,21 +228,28 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 				DataType: "application/json",
 				Data:     `{"type":"ChannelLeftBridge","timestamp":"2020-05-09T10:53:39.181+0000","bridge":{"id":"a6abbe41-2a83-447b-8175-e52e5dea000f","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":["915befe7-7fff-490e-8432-ffe063d5c46d"],"creationtime":"2020-05-09T10:36:04.360+0000","video_mode":"talker"},"channel":{"id":"1589020563.4752","name":"PJSIP/in-voipbin-000008cc","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"999999","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=B0SUsFI1eo,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-09T10:36:03.792+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
 			},
-
-			"42:01:0a:a4:00:05",
-			"1589020563.4752",
-			"a6abbe41-2a83-447b-8175-e52e5dea000f",
+			&channel.Channel{
+				ID:         "1589020563.4752",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
+			&bridge.Bridge{
+				ID:         "a6abbe41-2a83-447b-8175-e52e5dea000f",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := NewEventHandler(mockSock, mockDB, mockRequest, mockCall)
 
-			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, tt.expectAsterisID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().BridgeIsExist(tt.expectBridgeID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, "")
-			mockDB.EXPECT().BridgeRemoveChannelID(gomock.Any(), tt.expectBridgeID, tt.expectChannelID)
+			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, tt.channel.AsteriskID, defaultExistTimeout).Return(true)
+			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
+			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "")
+			mockDB.EXPECT().BridgeRemoveChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
+			mockCall.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

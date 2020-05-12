@@ -1,7 +1,11 @@
 package bridge
 
 import (
+	"strings"
+
+	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 )
 
 // Bridge struct represent asterisk's bridge information
@@ -21,6 +25,10 @@ type Bridge struct {
 	VideoSourceID string
 
 	ChannelIDs []string
+
+	// conference info
+	ConferenceID   uuid.UUID
+	ConferenceType conference.Type
 
 	TMCreate string
 	TMUpdate string
@@ -66,8 +74,39 @@ func NewBridgeByBridgeCreated(e *ari.BridgeCreated) *Bridge {
 
 		ChannelIDs: e.Bridge.Channels,
 
+		ConferenceID:   uuid.Nil,
+		ConferenceType: conference.TypeNone,
+
 		TMCreate: string(e.Timestamp),
 	}
 
+	mapParse := parseBridgeName(b.Name)
+	if mapParse["conference_id"] != "" {
+		b.ConferenceID = uuid.FromStringOrNil(mapParse["conference_id"])
+	}
+	if mapParse["conference_type"] != "" {
+		b.ConferenceType = conference.Type(mapParse["conference_type"])
+	}
+
 	return b
+}
+
+// parseBridgeName returns bridge name parse
+func parseBridgeName(bridgeName string) map[string]string {
+	res := map[string]string{}
+
+	if bridgeName == "" {
+		return res
+	}
+
+	pairs := strings.Split(bridgeName, ",")
+	for _, pair := range pairs {
+		tmp := strings.Split(pair, "=")
+		if len(tmp) != 2 {
+			continue
+		}
+		res[tmp[0]] = tmp[1]
+	}
+
+	return res
 }
