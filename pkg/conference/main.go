@@ -50,6 +50,9 @@ func NewConference(cType Type, name, detail string) *Conference {
 
 		Name:   name,
 		Detail: detail,
+
+		BridgeIDs: []string{},
+		CallIDs:   []uuid.UUID{},
 	}
 
 	return cf

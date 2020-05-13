@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -80,47 +81,65 @@ func getService(cn *channel.Channel) service {
 
 // stasisStartServiceEcho handles echo domain request.
 func (h *callHandler) serviceEchoStart(cn *channel.Channel) error {
+	log := log.WithFields(
+		log.Fields{
+			"channel":  cn.ID,
+			"asterisk": cn.AsteriskID,
+		})
+
 	// set timeout for 300 sec
 	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho); err != nil {
-		return err
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
+	c := call.NewCallByChannel(cn, call.TypeEcho, call.DirectionIncoming)
+	if err := h.db.CallCreate(context.Background(), c); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+	log = log.WithFields(
+		logrus.Fields{
+			"call":      c.ID,
+			"type":      c.Type,
+			"direction": c.Direction,
+		})
+	log.Debug("The call has created.")
+
+	// set flowid
+	if err := h.db.CallSetFlowID(context.Background(), c.ID, uuid.Nil); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
+	}
+
+	// set action
+	// create a action echo
 	// create default option for echo
 	option := action.OptionEcho{
 		Duration: 180,
 		DTMF:     true,
 	}
-
 	opt, err := json.Marshal(option)
 	if err != nil {
-		return err
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
-
-	// create a action echo
 	action := &action.Action{
 		ID:     actionBegin,
 		Type:   action.TypeEcho,
 		Option: opt,
 		Next:   actionEnd,
 	}
-
-	c := call.NewCallByChannel(cn, call.TypeEcho, call.DirectionIncoming)
-	if err := h.db.CallCreate(context.Background(), c); err != nil {
-		return err
+	if err := h.db.CallSetAction(context.Background(), c.ID, action); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set the action for call. call: %s, err: %v", c.ID, err)
 	}
-
-	// set flowid
-	if err := h.db.CallSetFlowID(context.Background(), c.ID, uuid.Nil); err != nil {
-		return err
-	}
-
-	// set action
-	log.Infof("%v", action)
 
 	// start echo conference
 	conf, err := h.confHandler.Start(conference.TypeEcho, c)
 	if err != nil {
-		return err
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not start a conference for call. call: %s, conference_type: %s, err: %v", c.ID, conference.TypeEcho, err)
 	}
 	log.Debugf("Conference started. conf: %v", conf)
 

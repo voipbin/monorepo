@@ -35,14 +35,15 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 		var event Event
 		if err := json.Unmarshal(message.Body, &event); err != nil {
 			log.Errorf("Could out unmarshal the message. err: %v", err)
+			continue
 		}
 
-		go func() {
+		go func(event Event) {
 			err := messageConsume(&event)
 			if err != nil {
 				log.Errorf("Message consumer returns error. err: %v", err)
 			}
-		}()
+		}(event)
 	}
 
 	return nil
