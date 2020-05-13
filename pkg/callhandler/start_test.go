@@ -1,10 +1,12 @@
 package callhandler
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
@@ -93,9 +95,26 @@ func TestServiceEchoStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			option := action.OptionEcho{
+				Duration: 180,
+				DTMF:     true,
+			}
+			opt, err := json.Marshal(option)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			action := &action.Action{
+				ID:     actionBegin,
+				Type:   action.TypeEcho,
+				Option: opt,
+				Next:   actionEnd,
+			}
+
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 			mockConf.EXPECT().Start(conference.TypeEcho, gomock.Any())
 
 			h.serviceEchoStart(tt.channel)

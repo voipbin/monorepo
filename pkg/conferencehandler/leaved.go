@@ -12,21 +12,21 @@ import (
 func (h *conferenceHandler) Leaved(id, callID uuid.UUID) error {
 	ctx := context.Background()
 
+	log := log.WithFields(
+		log.Fields{
+			"conference": id.String(),
+			"Call":       callID.String(),
+		})
+	log.Debug("The call has leaved from the conference.")
+
 	if err := h.db.ConferenceRemoveCallID(ctx, id, callID); err != nil {
-		log.WithFields(
-			log.Fields{
-				"conference": id.String,
-				"call":       callID.String(),
-			}).Errorf("Could not remove the call id from the conference. err: %v", err)
+		log.Errorf("Could not remove the call id from the conference. err: %v", err)
 		return err
 	}
 
 	// evaluate the conference is terminatable
 	if h.isTerminatable(ctx, id) == true {
-		log.WithFields(
-			log.Fields{
-				"conference": id.String(),
-			}).Info("This conference is ended. Terminating the conference.")
+		log.Info("This conference is ended. Terminating the conference.")
 		return h.Terminate(id)
 	}
 
