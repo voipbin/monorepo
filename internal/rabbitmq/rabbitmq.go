@@ -139,6 +139,7 @@ func (q *Queue) ConsumeRPC(consumerName string, cbRPC CbMsgRPC) {
 				log.Errorf("Could not create a channel.")
 				return
 			}
+			defer channel.Close()
 
 			// execute callback
 			res, err := cbRPC(string(m.Body))
