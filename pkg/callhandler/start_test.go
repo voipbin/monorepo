@@ -56,6 +56,19 @@ func TestGetService(t *testing.T) {
 }
 
 func TestServiceEchoStart(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
 	type test struct {
 		name    string
 		channel *channel.Channel
@@ -78,19 +91,6 @@ func TestServiceEchoStart(t *testing.T) {
 				Direction:  call.DirectionIncoming,
 			},
 		},
-	}
-
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
-
-	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
 	}
 
 	for _, tt := range tests {
