@@ -44,6 +44,16 @@ func (h *conferenceHandler) Terminate(id uuid.UUID) error {
 
 		// hangup all channels
 		h.hangupAllChannelsInBridge(bridge)
+
+		// destroy the bridge
+		if err := h.reqHandler.AstBridgeDelete(bridge.AsteriskID, bridge.ID); err != nil {
+			log.WithFields(
+				log.Fields{
+					"conference": id.String(),
+					"bridge":     bridge.ID,
+				}).Errorf("could not delete the bridge. err: %v", err)
+			continue
+		}
 	}
 
 	return nil

@@ -1,4 +1,4 @@
-package arievent
+package arihandler
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 // eventHandlerChannelCreated handels ChannelCreated ARI event
-func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt interface{}) error {
+func (h *ariHandler) eventHandlerChannelCreated(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelCreated)
 
 	cn := channel.NewChannelByChannelCreated(e)
@@ -22,7 +22,7 @@ func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt inter
 }
 
 // eventHandlerChannelDestroyed handels ChannelDestroyed ARI event
-func (h *eventHandler) eventHandlerChannelDestroyed(ctx context.Context, evt interface{}) error {
+func (h *ariHandler) eventHandlerChannelDestroyed(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelDestroyed)
 
 	if err := h.db.ChannelEnd(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), e.Cause); err != nil {
@@ -42,7 +42,7 @@ func (h *eventHandler) eventHandlerChannelDestroyed(ctx context.Context, evt int
 }
 
 // eventHandlerChannelEnteredBridge handles ChannelEnteredBridge ARI event
-func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt interface{}) error {
+func (h *ariHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelEnteredBridge)
 
 	log := log.WithFields(
@@ -97,7 +97,7 @@ func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt
 }
 
 // eventHandlerChannelLeftBridge handles ChannelLeftBridge ARI event
-func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt interface{}) error {
+func (h *ariHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelLeftBridge)
 
 	log := log.WithFields(
@@ -152,7 +152,7 @@ func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt in
 }
 
 // eventHandlerChannelStateChange handels ChannelStateChange ARI event
-func (h *eventHandler) eventHandlerChannelStateChange(ctx context.Context, evt interface{}) error {
+func (h *ariHandler) eventHandlerChannelStateChange(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelStateChange)
 
 	if err := h.db.ChannelSetState(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), e.Channel.State); err != nil {

@@ -9,10 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler"
-
 	joonix "github.com/joonix/log"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/worker"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -34,6 +33,9 @@ var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prom
 // args for database
 var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for call-manager.")
 
+// workerCount
+var workerCount = flag.Int("worker_count", 5, "counts of workers")
+
 func main() {
 
 	// connect to database
@@ -43,10 +45,12 @@ func main() {
 		return
 	}
 
-	// ari event handler
-	ariHandler := arihandler.NewARIHandler(db, *rabbitAddr, *rabbitQueueARIEvent)
-	ariHandler.Connect()
-	go ariHandler.Run()
+	// run workers
+	for i := 0; i < *workerCount; i++ {
+		worker := worker.NewWorker(db, *rabbitAddr, *rabbitQueueARIEvent)
+		worker.Connect()
+		go worker.Run()
+	}
 
 	<-chDone
 

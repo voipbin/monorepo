@@ -1,4 +1,4 @@
-package arievent
+package arihandler
 
 import (
 	"testing"
@@ -41,7 +41,13 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			// h := NewARIHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := ariHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockSvc,
+			}
 
 			cn := &channel.Channel{}
 			mockDB.EXPECT().ChannelCreate(gomock.Any(), gomock.AssignableToTypeOf(cn)).Return(nil)
@@ -88,7 +94,13 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockCall)
+			// h := NewARIHandler(mockSock, mockDB, mockRequest, mockCall)
+			h := ariHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockCall,
+			}
 
 			cn := &channel.Channel{}
 			mockDB.EXPECT().ChannelEnd(gomock.Any(), tt.expectAsteriskID, tt.expectChannelID, tt.expectTimestamp, tt.expectHangup).Return(nil)
@@ -137,7 +149,12 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := ariHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockSvc,
+			}
 
 			mockDB.EXPECT().ChannelSetState(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expectTmUpdate, tt.expactState).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectAsterisID, tt.expectChannelID).Return(nil, nil)
@@ -187,7 +204,12 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockCall)
+			h := ariHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockCall,
+			}
 
 			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, tt.channel.AsteriskID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
@@ -241,7 +263,12 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockCall)
+			h := ariHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockCall,
+			}
 
 			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, tt.channel.AsteriskID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
