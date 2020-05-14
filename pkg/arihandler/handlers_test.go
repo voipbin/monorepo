@@ -1,4 +1,4 @@
-package arievent
+package arihandler
 
 import (
 	"testing"
@@ -18,7 +18,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
@@ -55,7 +55,12 @@ func TestEventHandlerStasisStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := ariHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockCall,
+			}
 
 			channel := &channel.Channel{
 				Data: map[string]interface{}{},
@@ -63,7 +68,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, tt.expectAsterisID, gomock.Any()).Return(true)
 			mockDB.EXPECT().ChannelSetDataAndStasis(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expactData, tt.expectStasis).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectAsterisID, tt.expectChannelID).Return(channel, nil)
-			mockSvc.EXPECT().ARIStasisStart(channel).Return(nil)
+			mockCall.EXPECT().ARIStasisStart(channel).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -79,7 +84,7 @@ func TestEventHandlerStasisEnd(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
@@ -107,7 +112,12 @@ func TestEventHandlerStasisEnd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := ariHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockCall,
+			}
 
 			mockDB.EXPECT().ChannelSetStasis(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expectStasis).Return(nil)
 

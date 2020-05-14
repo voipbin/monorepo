@@ -38,6 +38,8 @@ spec:
             - '/metrics'
             - '-prom_listen_addr'
             - ':2112'
+            - '-worker_count'
+            - '5'
           ports:
             - name: metrics
               protocol: "TCP"

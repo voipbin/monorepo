@@ -1,4 +1,4 @@
-package arievent
+package arihandler
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 // eventHandlerStasisStart handles StasisStart ARI event
-func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interface{}) error {
+func (h *ariHandler) eventHandlerStasisStart(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisStart)
 
 	log := log.WithFields(
@@ -51,7 +51,7 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 }
 
 // eventHandlerStasisEnd handles StasisEnd ARI event
-func (h *eventHandler) eventHandlerStasisEnd(ctx context.Context, evt interface{}) error {
+func (h *ariHandler) eventHandlerStasisEnd(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisEnd)
 
 	if err := h.db.ChannelSetStasis(ctx, e.AsteriskID, e.Channel.ID, ""); err != nil {

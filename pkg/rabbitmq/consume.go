@@ -38,12 +38,10 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 			continue
 		}
 
-		go func(event Event) {
-			err := messageConsume(&event)
-			if err != nil {
-				log.Errorf("Message consumer returns error. err: %v", err)
-			}
-		}(event)
+		err := messageConsume(&event)
+		if err != nil {
+			log.Errorf("Message consumer returns error. err: %v", err)
+		}
 	}
 
 	return nil
@@ -71,50 +69,48 @@ func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) 
 	}
 
 	// process message
-	go func() {
-		for message := range messages {
+	for message := range messages {
 
-			// message parse
-			var req Request
-			if err := json.Unmarshal(message.Body, &req); err != nil {
-				log.Errorf("Could not parse the message. message: %s, err: %v", string(message.Body), err)
-				continue
-			}
+		// message parse
+		var req Request
+		if err := json.Unmarshal(message.Body, &req); err != nil {
+			log.Errorf("Could not parse the message. message: %s, err: %v", string(message.Body), err)
+			continue
+		}
 
-			// execute callback
-			res, err := cbConsume(&req)
+		// execute callback
+		res, err := cbConsume(&req)
+		if err != nil {
+			log.Errorf("Message consumer returns error. err: %v", err)
+			continue
+		} else if res == nil {
+			log.Errorf("Message consumer returns nil response.")
+			continue
+		}
+
+		// reply response
+		if message.ReplyTo != "" {
+			resMsg, err := json.Marshal(res)
 			if err != nil {
-				log.Errorf("Message consumer returns error. err: %v", err)
-				continue
-			} else if res == nil {
-				log.Errorf("Message consumer returns nil response.")
+				log.Errorf("Could not marshal the response. res: %v, err: %v", res, err)
 				continue
 			}
 
-			// reply response
-			if message.ReplyTo != "" {
-				resMsg, err := json.Marshal(res)
-				if err != nil {
-					log.Errorf("Could not marshal the response. res: %v, err: %v", res, err)
-					continue
-				}
-
-				if err := q.channel.Publish(
-					"",              // exchange
-					message.ReplyTo, // routing key
-					false,           // mandatory
-					false,           // immediate
-					amqp.Publishing{
-						ContentType:   "text/plain",
-						CorrelationId: message.CorrelationId,
-						Body:          resMsg,
-					}); err != nil {
-					log.Errorf("Could not reply the message. message: %v, err: %v", res, err)
-					continue
-				}
+			if err := q.channel.Publish(
+				"",              // exchange
+				message.ReplyTo, // routing key
+				false,           // mandatory
+				false,           // immediate
+				amqp.Publishing{
+					ContentType:   "text/plain",
+					CorrelationId: message.CorrelationId,
+					Body:          resMsg,
+				}); err != nil {
+				log.Errorf("Could not reply the message. message: %v, err: %v", res, err)
+				continue
 			}
 		}
-	}()
+	}
 
 	return nil
 }

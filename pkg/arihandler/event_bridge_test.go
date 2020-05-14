@@ -1,4 +1,4 @@
-package arievent
+package arihandler
 
 import (
 	"testing"
@@ -18,7 +18,7 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name         string
@@ -53,7 +53,12 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := ariHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockCall,
+			}
 
 			mockDB.EXPECT().BridgeCreate(gomock.Any(), tt.expectBridge)
 
@@ -74,7 +79,7 @@ func TestEventHandlerBridgeDestroyed(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name            string
@@ -98,7 +103,12 @@ func TestEventHandlerBridgeDestroyed(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := ariHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockCall,
+			}
 
 			mockDB.EXPECT().BridgeIsExist(tt.expectBridgeID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().BridgeEnd(gomock.Any(), tt.expectBridgeID, tt.expectTimestamp)
