@@ -14,6 +14,7 @@ import (
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 
 	uuid "github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,6 +30,45 @@ const requestTimeoutDefault int64 = 3 // default request timeout
 // normally, we don't need to use this, because proxy will set this automatically.
 // but, some of Asterisk ARI required application name. this is for that.
 const defaultAstStasisApp = "voipbin"
+
+var (
+	metricsNamespace = "call_manager"
+
+	promRequestProcessTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "request_process_time",
+			Help:      "Process time of send/receiv requests",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000,
+			},
+		},
+		[]string{"target", "resource", "method"},
+	)
+)
+
+type resource string
+
+const (
+	resourceAstBridges              resource = "ast/bridges"
+	resourceAstBridgesAddChannel    resource = "ast/bridges/addchannel"
+	resourceAstBridgesRemoveChannel resource = "ast/bridges/removechannel"
+
+	resourceAstChannels         resource = "ast/channels"
+	resourceAstChannelsAnswer   resource = "ast/channels/answer"
+	resourceAstChannelsContinue resource = "ast/channels/continue"
+	resourceAstChannelsHangup   resource = "ast/channels/hangup"
+	resourceAstChannelsSnoop    resource = "ast/channels/snoop"
+	resourceAstChannelsVar      resource = "ast/channels/var"
+
+	resourceFlowsActions resource = "flows/actions"
+)
+
+func init() {
+	prometheus.MustRegister(
+		promRequestProcessTime,
+	)
+}
 
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
@@ -63,7 +103,7 @@ func NewRequestHandler(sock rabbitmq.Rabbit) RequestHandler {
 }
 
 // SendARIRequest send a request to the Asterisk-proxy and return the response
-func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.RequestMethod, timeout int64, dataType, data string) (*rabbitmq.Response, error) {
+func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.RequestMethod, resource resource, timeout int64, dataType, data string) (*rabbitmq.Response, error) {
 	log.WithFields(log.Fields{
 		"asterisk_id": asteriskID,
 		"method":      method,
@@ -86,7 +126,7 @@ func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	res, err := r.sock.PublishRPC(ctx, target, m)
+	res, err := r.sendRequest(ctx, target, resource, m)
 	if err != nil {
 		return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 	}
@@ -102,7 +142,7 @@ func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
-func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMethod, timeout int64, dataType, data string) (*rabbitmq.Response, error) {
+func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMethod, resource resource, timeout int64, dataType, data string) (*rabbitmq.Response, error) {
 	log.WithFields(log.Fields{
 		"uri":       uri,
 		"method":    method,
@@ -122,7 +162,7 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMeth
 	defer cancel()
 
 	target := "flow_manager-request"
-	res, err := r.sock.PublishRPC(ctx, target, m)
+	res, err := r.sendRequest(ctx, target, resource, m)
 	if err != nil {
 		return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 	}
@@ -134,4 +174,15 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMeth
 	}).Debugf("Received result. data: %s", res.Data)
 
 	return res, nil
+}
+
+// sendRequest sends the request to the target
+func (r *requestHandler) sendRequest(ctx context.Context, target string, resource resource, req *rabbitmq.Request) (*rabbitmq.Response, error) {
+
+	start := time.Now()
+	res, err := r.sock.PublishRPC(ctx, target, req)
+	elapsed := time.Since(start)
+	promRequestProcessTime.WithLabelValues(target, string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
+
+	return res, err
 }

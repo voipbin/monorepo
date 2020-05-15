@@ -27,7 +27,7 @@ func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
 		return nil
@@ -41,7 +41,7 @@ func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string
 func (r *requestHandler) AstBridgeDelete(asteriskID, bridgeID string) error {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodDelete, requestTimeoutDefault, ContentTypeJSON, string(""))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodDelete, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, string(""))
 	switch {
 	case err != nil:
 		return nil
@@ -72,7 +72,7 @@ func (r *requestHandler) AstBridgeAddChannel(asteriskID, bridgeID, channelID, ro
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridgesAddChannel, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
 		return nil
@@ -97,7 +97,7 @@ func (r *requestHandler) AstBridgeRemoveChannel(asteriskID, bridgeID, channelID 
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridgesRemoveChannel, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
 		return nil
