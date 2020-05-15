@@ -116,12 +116,14 @@ func (q *Queue) MessageConsume(consumerName string, messageConsume CbMsgConsume)
 }
 
 // ConsumeRPC consumes RPC message
-func (q *Queue) ConsumeRPC(consumerName string, cbRPC CbMsgRPC) {
+// it doesn't do any concurrent work at here.
+// that guarnatees queued job will be processed in an order.
+func (q *Queue) ConsumeRPC(consumerName string, cbHandler CbMsgRPC) {
 
 	messages, err := q.channel.Consume(
 		q.name,       // queue
 		consumerName, // messageConsumer
-		false,        // auto-ack
+		true,         // auto-ack
 		false,        // exclusive
 		false,        // no-local
 		false,        // no-wait
@@ -132,40 +134,29 @@ func (q *Queue) ConsumeRPC(consumerName string, cbRPC CbMsgRPC) {
 		return
 	}
 
-	for message := range messages {
-		go func(m amqp.Delivery) {
-			channel, err := q.connection.Channel()
-			if err != nil {
-				log.Errorf("Could not create a channel.")
-				return
-			}
-			defer channel.Close()
+	for m := range messages {
+		// execute callback
+		res, err := cbHandler(string(m.Body))
+		if err != nil {
+			log.Errorf("Message consumer returns error. err: %v", err)
+			continue
+		}
 
-			// execute callback
-			res, err := cbRPC(string(m.Body))
-			if err != nil {
-				log.Errorf("Message consumer returns error. err: %v", err)
-				return
-			}
-
-			// reply response
-			err = channel.Publish(
-				"",        // exchange
-				m.ReplyTo, // routing key
-				false,     // mandatory
-				false,     // immediate
-				amqp.Publishing{
-					ContentType:   "text/plain",
-					CorrelationId: m.CorrelationId,
-					Body:          []byte(res),
-				})
-			if err != nil {
-				log.Errorf("Could not publish the response. err: %v", err)
-			}
-			m.Ack(false)
-		}(message)
+		// reply response
+		err = q.channel.Publish(
+			"",        // exchange
+			m.ReplyTo, // routing key
+			false,     // mandatory
+			false,     // immediate
+			amqp.Publishing{
+				ContentType:   "text/plain",
+				CorrelationId: m.CorrelationId,
+				Body:          []byte(res),
+			})
+		if err != nil {
+			log.Errorf("Could not publish the response. err: %v", err)
+		}
 	}
-
 }
 
 // Close close the Queue.
@@ -238,21 +229,4 @@ func (q *Queue) openChannel() {
 		log.Errorf("Could not open the channel. err: %v", err)
 	}
 	q.channel = channel
-}
-
-// registerQueueConsumer consumes message.
-func (q *Queue) registerQueueConsumer(autoAck bool) (<-chan amqp.Delivery, error) {
-	msgs, err := q.channel.Consume(
-		q.name,  // queue
-		"",      // messageConsumer
-		autoAck, // auto-ack
-		false,   // exclusive
-		false,   // no-local
-		false,   // no-wait
-		nil,     // args
-	)
-	if err != nil {
-		log.Errorf("Could not consume the message. err: %v", err)
-	}
-	return msgs, err
 }
