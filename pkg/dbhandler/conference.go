@@ -30,12 +30,8 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		?, ?, ?, ?,
 		?, ?,
 		?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ConferenceCreate. err: %v", err)
-	}
-	defer stmt.Close()
+		)
+	`
 
 	data, err := json.Marshal(cf.Data)
 	if err != nil {
@@ -52,7 +48,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		return fmt.Errorf("could not marshal calls. ConferenceCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
+	_, err = h.db.Exec(q,
 		cf.ID.Bytes(),
 		cf.Type,
 
@@ -67,7 +63,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		getCurTime(),
 	)
 	if err != nil {
-		return fmt.Errorf("could not execute query. ConferenceCreate. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceCreate. err: %v", err)
 	}
 
 	return nil
@@ -99,14 +95,7 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("could not prepare. ConferenceGet. err: %v", err)
-	}
-	defer stmt.Close()
-
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferenceGet. err: %v", err)
 	}
@@ -176,16 +165,10 @@ func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID)
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not prepare. ConferenceAddCallID. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, callID.String(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, callID.String(), getCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not query. ConferenceAddCallID. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceAddCallID. err: %v", err)
 	}
 
 	return nil
@@ -211,16 +194,10 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not prepare. ConferenceRemoveCallID. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, callID.String(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, callID.String(), getCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not query. ConferenceRemoveCallID. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceRemoveCallID. err: %v", err)
 	}
 
 	return nil
@@ -236,14 +213,8 @@ func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status 
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ConferenceSetStatus. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, status, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetStatus. err: %v", err)
 	}
@@ -261,14 +232,8 @@ func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ConferenceEnd. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, conference.StatusTerminated, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, conference.StatusTerminated, getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceEnd. err: %v", err)
 	}

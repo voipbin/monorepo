@@ -92,12 +92,12 @@ func TestBridgeCreate(t *testing.T) {
 			h := NewHandler(dbTest)
 
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+				t.Errorf("Wrong match. BridgeCreate expect: ok, got: %v", err)
 			}
 
 			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
 			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+				t.Errorf("Wrong match. BridgeGet expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(tt.expectBridge, res) == false {

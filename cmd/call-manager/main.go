@@ -44,6 +44,7 @@ func main() {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
+	defer db.Close()
 
 	// run workers
 	for i := 0; i < *workerCount; i++ {
