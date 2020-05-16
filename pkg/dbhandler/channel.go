@@ -37,19 +37,15 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not prepare. err: %v", err)
-	}
-	defer stmt.Close()
+		)
+	`
 
 	tmpData, err := json.Marshal(channel.Data)
 	if err != nil {
 		return fmt.Errorf("dbhandler: Could not marshal. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
+	_, err = h.db.Exec(q,
 		channel.AsteriskID,
 		channel.ID,
 		channel.Name,
@@ -110,17 +106,12 @@ func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
 	from
 		cm_channels
 	where
-	asterisk_id = ? and id = ?`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not prepare. err: %v", err)
-	}
-	defer stmt.Close()
+		id = ? and asterisk_id = ?
+	`
 
-	// query
-	row, err := stmt.QueryContext(ctx, asteriskID, id)
+	row, err := h.db.Query(q, id, asteriskID)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not query. err: %v", err)
+		return nil, fmt.Errorf("could not query. ChannelGet. err: %v", err)
 	}
 	defer row.Close()
 
@@ -164,17 +155,12 @@ func (h *handler) ChannelGetByID(ctx context.Context, id string) (*channel.Chann
 	from
 		cm_channels
 	where
-		id = ?`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not prepare. err: %v", err)
-	}
-	defer stmt.Close()
+		id = ?
+	`
 
-	// query
-	row, err := stmt.QueryContext(ctx, id)
+	row, err := h.db.Query(q, id)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not query. err: %v", err)
+		return nil, fmt.Errorf("could not query. ChannelGetByID. err: %v", err)
 	}
 	defer row.Close()
 
@@ -307,19 +293,13 @@ func (h *handler) ChannelSetData(ctx context.Context, asteriskID, id string, dat
 		asterisk_id = ?
 		and id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ChannelSetData. err: %v", err)
-	}
-	defer stmt.Close()
 
 	tmpData, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetData. err: %v", err)
 	}
 
-	// execute
-	_, err = stmt.ExecContext(ctx, tmpData, getCurTime(), asteriskID, id)
+	_, err = h.db.Exec(q, tmpData, getCurTime(), asteriskID, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetData. err: %v", err)
 	}
@@ -338,14 +318,8 @@ func (h *handler) ChannelSetStasis(ctx context.Context, asteriskID, id, stasis s
 		asterisk_id = ?
 		and id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ChannelSetStasis. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, stasis, getCurTime(), asteriskID, id)
+	_, err := h.db.Exec(q, stasis, getCurTime(), asteriskID, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetStasis. err: %v", err)
 	}
@@ -381,14 +355,7 @@ func (h *handler) ChannelSetState(ctx context.Context, asteriskID, id, timestamp
 		return fmt.Errorf("no match state. ChannelSetState. state: %s", state)
 	}
 
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ChannelSetState. err: %v", err)
-	}
-	defer stmt.Close()
-
-	// execute
-	_, err = stmt.ExecContext(ctx, string(state), timestamp, timestamp, asteriskID, id)
+	_, err := h.db.Exec(q, string(state), timestamp, timestamp, asteriskID, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetState. err: %v", err)
 	}
@@ -407,14 +374,8 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, asteriskID, id, bridge
 		asterisk_id = ?
 		and id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ChannelSetBridgeID. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, bridgeID, getCurTime(), asteriskID, id)
+	_, err := h.db.Exec(q, bridgeID, getCurTime(), asteriskID, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetBridgeID. err: %v", err)
 	}
@@ -434,16 +395,10 @@ func (h *handler) ChannelEnd(ctx context.Context, asteriskID, id, timestamp stri
 		asterisk_id = ?
 		and id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not prepare. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, hangup, timestamp, timestamp, asteriskID, id)
+	_, err := h.db.Exec(q, hangup, timestamp, timestamp, asteriskID, id)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not query. err: %v", err)
+		return fmt.Errorf("could not execute. ChannelEnd. err: %v", err)
 	}
 
 	return nil
@@ -461,19 +416,13 @@ func (h *handler) ChannelSetDataAndStasis(ctx context.Context, asteriskID, id st
 		asterisk_id = ?
 		and id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ChannelSetDataAndStasis. err: %v", err)
-	}
-	defer stmt.Close()
 
 	tmpData, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetDataAndStasis. err: %v", err)
 	}
 
-	// execute
-	_, err = stmt.ExecContext(ctx, tmpData, stasis, getCurTime(), asteriskID, id)
+	_, err = h.db.Exec(q, tmpData, stasis, getCurTime(), asteriskID, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetDataAndStasis. err: %v", err)
 	}

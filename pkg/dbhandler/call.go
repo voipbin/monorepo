@@ -40,11 +40,6 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 		?, ?, ?, ?, ?,?,
 		?
 		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. CallCreate. err: %v", err)
-	}
-	defer stmt.Close()
 
 	tmpSource, err := json.Marshal(call.Source)
 	if err != nil {
@@ -66,7 +61,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 		return fmt.Errorf("could not marshal action. CallCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
+	_, err = h.db.Exec(q,
 		call.ID.Bytes(),
 		call.AsteriskID,
 		call.ChannelID,
@@ -89,7 +84,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 		call.TMCreate,
 	)
 	if err != nil {
-		return fmt.Errorf("could not execute query. CallCreate. err: %v", err)
+		return fmt.Errorf("could not execute. CallCreate. err: %v", err)
 	}
 
 	return nil
@@ -131,14 +126,8 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("could not prepare. CallGet. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGet. err: %v", err)
 	}
@@ -191,14 +180,8 @@ func (h *handler) CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID
 	where
 		channel_id = ? and asterisk_id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("could not prepare. CallGetByChannelIDAndAsteriskID. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// query
-	row, err := stmt.QueryContext(ctx, channelID, asteriskID)
+	row, err := h.db.Query(q, channelID, asteriskID)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGetByChannelIDAndAsteriskID. err: %v", err)
 	}
@@ -280,16 +263,10 @@ func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStat
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. CallSetStatusRinging. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// query
-	_, err = stmt.ExecContext(ctx, call.StatusRinging, getCurTime(), tmStatus, id.Bytes())
+	_, err := h.db.Exec(q, call.StatusRinging, getCurTime(), tmStatus, id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute query. CallSetStatusRinging. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetStatusRinging. err: %v", err)
 	}
 
 	return nil
@@ -308,16 +285,10 @@ func (h *handler) callSetStatusProgressing(ctx context.Context, id uuid.UUID, tm
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. callSetStatusProgressing. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// query
-	_, err = stmt.ExecContext(ctx, call.StatusProgressing, getCurTime(), tmStatus, id.Bytes())
+	_, err := h.db.Exec(q, call.StatusProgressing, getCurTime(), tmStatus, id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute query. callSetStatusProgressing. err: %v", err)
+		return fmt.Errorf("could not execute. callSetStatusProgressing. err: %v", err)
 	}
 
 	return nil
@@ -335,16 +306,10 @@ func (h *handler) callSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. callSetStatus. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// query
-	_, err = stmt.ExecContext(ctx, status, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, getCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute query. callSetStatus. err: %v", err)
+		return fmt.Errorf("could not execute. callSetStatus. err: %v", err)
 	}
 
 	return nil
@@ -379,16 +344,10 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. CallSetStatus. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// query
-	_, err = stmt.ExecContext(ctx, string(call.StatusHangup), hangupBy, reason, tmUpdate, tmUpdate, id.Bytes())
+	_, err := h.db.Exec(q, string(call.StatusHangup), hangupBy, reason, tmUpdate, tmUpdate, id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute query. CallSetStatus. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetHangup. err: %v", err)
 	}
 
 	return nil
@@ -407,16 +366,10 @@ func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. CallSetFlowID. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// query
-	_, err = stmt.ExecContext(ctx, flowID.Bytes(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, flowID.Bytes(), getCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute query. CallSetFlowID. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetFlowID. err: %v", err)
 	}
 
 	return nil
@@ -435,16 +388,10 @@ func (h *handler) CallSetConferenceID(ctx context.Context, id, conferenceID uuid
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. CallSetFlowID. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// query
-	_, err = stmt.ExecContext(ctx, conferenceID.Bytes(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, conferenceID.Bytes(), getCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute query. CallSetFlowID. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetConferenceID. err: %v", err)
 	}
 
 	return nil
@@ -463,21 +410,15 @@ func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *actio
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. CallSetAction. err: %v", err)
-	}
-	defer stmt.Close()
 
-	actStr, err := json.Marshal(action)
+	tmpAction, err := json.Marshal(action)
 	if err != nil {
 		return err
 	}
 
-	// query
-	_, err = stmt.ExecContext(ctx, actStr, getCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmpAction, getCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute query. CallSetAction. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetAction. err: %v", err)
 	}
 
 	return nil

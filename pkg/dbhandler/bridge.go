@@ -37,19 +37,15 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		?,
 		?, ?,
 		?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not prepare. BridgeCreate. err: %v", err)
-	}
-	defer stmt.Close()
+		)
+	`
 
 	tmpChannelIDs, err := json.Marshal(b.ChannelIDs)
 	if err != nil {
 		return fmt.Errorf("dbhandler: Could not marshal. BridgeCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
+	_, err = h.db.Exec(q,
 		b.ID,
 		b.AsteriskID,
 		b.Name,
@@ -70,7 +66,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		b.TMCreate,
 	)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not execute query. BridgeCreate. err: %v", err)
+		return fmt.Errorf("could not execute. BridgeCreate. err: %v", err)
 	}
 
 	return nil
@@ -105,17 +101,12 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 	from
 		cm_bridges
 	where
-		id = ?`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not prepare. BridgeGet. err: %v", err)
-	}
-	defer stmt.Close()
+		id = ?
+	`
 
-	// query
-	row, err := stmt.QueryContext(ctx, id)
+	row, err := h.db.Query(q, id)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not query. BridgeGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. BridgeGet. err: %v", err)
 	}
 	defer row.Close()
 
@@ -170,16 +161,10 @@ func (h *handler) BridgeEnd(ctx context.Context, id, timestamp string) error {
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not prepare. BridgeEnd. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, getCurTime(), timestamp, id)
+	_, err := h.db.Exec(q, getCurTime(), timestamp, id)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not query. BridgeEnd. err: %v", err)
+		return fmt.Errorf("could not execute. BridgeEnd. err: %v", err)
 	}
 
 	return nil
@@ -199,16 +184,10 @@ func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) 
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not prepare. BridgeAddChannelID. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, channelID, getCurTime(), id)
+	_, err := h.db.Exec(q, channelID, getCurTime(), id)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not query. BridgeAddChannelID. err: %v", err)
+		return fmt.Errorf("could not execute. BridgeAddChannelID. err: %v", err)
 	}
 
 	return nil
@@ -234,16 +213,10 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 	where
 		id = ?
 	`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not prepare. BridgeRemoveChannelID. err: %v", err)
-	}
-	defer stmt.Close()
 
-	// execute
-	_, err = stmt.ExecContext(ctx, channelID, getCurTime(), id)
+	_, err := h.db.Exec(q, channelID, getCurTime(), id)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not query. BridgeRemoveChannelID. err: %v", err)
+		return fmt.Errorf("could not execute. BridgeRemoveChannelID. err: %v", err)
 	}
 
 	return nil
