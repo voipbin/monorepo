@@ -16,7 +16,7 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 		return fmt.Errorf("no queue found")
 	}
 
-	messages, err := q.channel.Consume(
+	messages, err := r.channel.Consume(
 		q.name,       // queue
 		consumerName, // messageConsumer
 		true,         // auto-ack
@@ -54,10 +54,10 @@ func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) 
 		return fmt.Errorf("no queue found")
 	}
 
-	messages, err := q.channel.Consume(
+	messages, err := r.channel.Consume(
 		q.name,       // queue
 		consumerName, // messageConsumer
-		false,        // auto-ack
+		true,         // auto-ack
 		false,        // exclusive
 		false,        // no-local
 		false,        // no-wait
@@ -84,19 +84,26 @@ func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) 
 			log.Errorf("Message consumer returns error. err: %v", err)
 			continue
 		} else if res == nil {
-			log.Errorf("Message consumer returns nil response.")
+			// nothing to reply
 			continue
 		}
 
 		// reply response
 		if message.ReplyTo != "" {
+			channel, err := r.connection.Channel()
+			if err != nil {
+				log.Errorf("Could not create a channel. err: %v", err)
+				continue
+			}
+			defer channel.Close()
+
 			resMsg, err := json.Marshal(res)
 			if err != nil {
 				log.Errorf("Could not marshal the response. res: %v, err: %v", res, err)
 				continue
 			}
 
-			if err := q.channel.Publish(
+			if err := channel.Publish(
 				"",              // exchange
 				message.ReplyTo, // routing key
 				false,           // mandatory

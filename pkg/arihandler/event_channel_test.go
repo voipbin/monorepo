@@ -23,8 +23,9 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
-		name  string
-		event *rabbitmq.Event
+		name    string
+		event   *rabbitmq.Event
+		channel *channel.Channel
 	}
 
 	tests := []test{
@@ -35,6 +36,10 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     `{"type":"ChannelCreated","timestamp":"2020-04-19T14:38:00.363+0000","channel":{"id":"1587307080.49","name":"PJSIP/in-voipbin-00000030","state":"Ring","caller":{"name":"","number":"68025"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"011441332323027","priority":1,"app_name":"","app_data":""},"creationtime":"2020-04-19T14:38:00.363+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			},
+			&channel.Channel{
+				AsteriskID: "42:01:0a:a4:00:05",
+				ID:         "1587307080.49",
 			},
 		},
 	}
@@ -51,6 +56,7 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 
 			cn := &channel.Channel{}
 			mockDB.EXPECT().ChannelCreate(gomock.Any(), gomock.AssignableToTypeOf(cn)).Return(nil)
+			mockRequest.EXPECT().CallChannelHealth(tt.channel.AsteriskID, tt.channel.ID, gomock.Any(), gomock.Any(), gomock.Any())
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

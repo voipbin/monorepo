@@ -135,6 +135,21 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelCreateSnoop(arg0, arg1, arg2
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelCreateSnoop", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelCreateSnoop), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
+// AstChannelGet mocks base method
+func (m *MockRequestHandler) AstChannelGet(arg0, arg1 string) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelGet", arg0, arg1)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AstChannelGet indicates an expected call of AstChannelGet
+func (mr *MockRequestHandlerMockRecorder) AstChannelGet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelGet", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelGet), arg0, arg1)
+}
+
 // AstChannelHangup mocks base method
 func (m *MockRequestHandler) AstChannelHangup(arg0, arg1 string, arg2 ari.ChannelCause) error {
 	m.ctrl.T.Helper()
@@ -161,6 +176,34 @@ func (m *MockRequestHandler) AstChannelVariableSet(arg0, arg1, arg2, arg3 string
 func (mr *MockRequestHandlerMockRecorder) AstChannelVariableSet(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelVariableSet", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelVariableSet), arg0, arg1, arg2, arg3)
+}
+
+// CallCallHealth mocks base method
+func (m *MockRequestHandler) CallCallHealth(arg0 uuid.UUID, arg1, arg2 int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallCallHealth", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallCallHealth indicates an expected call of CallCallHealth
+func (mr *MockRequestHandlerMockRecorder) CallCallHealth(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCallHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallCallHealth), arg0, arg1, arg2)
+}
+
+// CallChannelHealth mocks base method
+func (m *MockRequestHandler) CallChannelHealth(arg0, arg1 string, arg2, arg3, arg4 int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallChannelHealth", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallChannelHealth indicates an expected call of CallChannelHealth
+func (mr *MockRequestHandlerMockRecorder) CallChannelHealth(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallChannelHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallChannelHealth), arg0, arg1, arg2, arg3, arg4)
 }
 
 // FlowActionGet mocks base method

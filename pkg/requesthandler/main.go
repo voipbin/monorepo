@@ -24,7 +24,7 @@ var (
 	ContentTypeJSON = "application/json"
 )
 
-const requestTimeoutDefault int64 = 3 // default request timeout
+const requestTimeoutDefault int = 3 // default request timeout
 
 // default stasis application name.
 // normally, we don't need to use this, because proxy will set this automatically.
@@ -61,6 +61,10 @@ const (
 	resourceAstChannelsSnoop    resource = "ast/channels/snoop"
 	resourceAstChannelsVar      resource = "ast/channels/var"
 
+	resourceCallCalls          resource = "call/calls"
+	resourceCallCallsHealth    resource = "call/calls/health"
+	resourceCallChannelsHealth resource = "call/channels/health"
+
 	resourceFlowsActions resource = "flows/actions"
 )
 
@@ -78,10 +82,14 @@ type RequestHandler interface {
 	AstBridgeDelete(asteriskID, bridgeID string) error
 	AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error
 
+	CallCallHealth(id uuid.UUID, delay, retryCount int) error
+	CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
+
 	// asterisk channels
 	AstChannelAnswer(asteriskID, channelID string) error
 	AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error
 	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
+	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
 	AstChannelVariableSet(asteriskID, channelID, variable, value string) error
 
@@ -91,19 +99,28 @@ type RequestHandler interface {
 
 type requestHandler struct {
 	sock rabbitmq.Rabbit
+
+	exchangeDelay string
+
+	queueCall string
+	queueFlow string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmq.Rabbit) RequestHandler {
+func NewRequestHandler(sock rabbitmq.Rabbit, exchangeDelay, queueCall, queueFlow string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
+
+		exchangeDelay: exchangeDelay,
+		queueCall:     queueCall,
+		queueFlow:     queueFlow,
 	}
 
 	return h
 }
 
 // SendARIRequest send a request to the Asterisk-proxy and return the response
-func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.RequestMethod, resource resource, timeout int64, dataType, data string) (*rabbitmq.Response, error) {
+func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.RequestMethod, resource resource, timeout int, dataType, data string) (*rabbitmq.Response, error) {
 	log.WithFields(log.Fields{
 		"asterisk_id": asteriskID,
 		"method":      method,
@@ -123,7 +140,7 @@ func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.
 	var requestTargetPrefix = "asterisk_ari_request"
 	target := fmt.Sprintf("%s-%s", requestTargetPrefix, asteriskID)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 
 	res, err := r.sendRequest(ctx, target, resource, m)
@@ -142,7 +159,7 @@ func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
-func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMethod, resource resource, timeout int64, dataType, data string) (*rabbitmq.Response, error) {
+func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMethod, resource resource, timeout int, dataType, data string) (*rabbitmq.Response, error) {
 	log.WithFields(log.Fields{
 		"uri":       uri,
 		"method":    method,
@@ -158,7 +175,7 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMeth
 		Data:     data,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 
 	target := "flow_manager-request"
@@ -176,6 +193,51 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMeth
 	return res, nil
 }
 
+// SendARIRequest send a request to the Asterisk-proxy and return the response
+// timeout second
+// delayed milli second
+func (r *requestHandler) sendRequestCall(uri string, method rabbitmq.RequestMethod, resource resource, timeout, delayed int, dataType, data string) (*rabbitmq.Response, error) {
+	log.WithFields(log.Fields{
+		"method":    method,
+		"uri":       uri,
+		"data_type": dataType,
+	}).Debugf("Sending request to call-manager. data: %s", data)
+
+	// creat a request message
+	req := &rabbitmq.Request{
+		URI:      uri,
+		Method:   method,
+		DataType: dataType,
+		Data:     data,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	defer cancel()
+
+	switch {
+	case delayed > 0:
+		if err := r.sendDelayedRequest(ctx, r.exchangeDelay, resource, delayed, req); err != nil {
+			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
+		}
+
+		return nil, nil
+
+	default:
+		res, err := r.sendRequest(ctx, r.queueCall, resource, req)
+		if err != nil {
+			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+		}
+
+		log.WithFields(log.Fields{
+			"method":      method,
+			"uri":         uri,
+			"status_code": res.StatusCode,
+		}).Debugf("Received result. data: %s", res.Data)
+
+		return res, nil
+	}
+}
+
 // sendRequest sends the request to the target
 func (r *requestHandler) sendRequest(ctx context.Context, target string, resource resource, req *rabbitmq.Request) (*rabbitmq.Response, error) {
 
@@ -185,4 +247,16 @@ func (r *requestHandler) sendRequest(ctx context.Context, target string, resourc
 	promRequestProcessTime.WithLabelValues(target, string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	return res, err
+}
+
+// sendDelayedRequest sends the delayed request to the target
+// delay unit is ms.
+func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, resource resource, delay int, req *rabbitmq.Request) error {
+
+	start := time.Now()
+	err := r.sock.PublishExchangeDelayedRequest(r.exchangeDelay, r.queueCall, req, delay)
+	elapsed := time.Since(start)
+	promRequestProcessTime.WithLabelValues(target, string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
+
+	return err
 }

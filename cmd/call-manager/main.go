@@ -11,7 +11,12 @@ import (
 
 	joonix "github.com/joonix/log"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/worker"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -25,6 +30,11 @@ var chDone = make(chan bool, 1)
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueARIEvent = flag.String("rabbit_queue_arievent", "asterisk_ari_event", "rabbitmq asterisk ari event queue name.")
 var rabbitQueueARIRequest = flag.String("rabbit_queue_arirequest", "asterisk_ari_request", "rabbitmq asterisk ari request queue prefix.")
+var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
+var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
+var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.call-manager.event", "rabbitmq queue name for event notify")
+
+var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -34,25 +44,31 @@ var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prom
 var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for call-manager.")
 
 // workerCount
-var workerCount = flag.Int("worker_count", 5, "counts of workers")
+var workerCount = flag.Int("worker_count", 3, "counts of workers")
+
+type worker struct {
+	rabbitSock rabbitmq.Rabbit
+
+	ariHandler    arihandler.ARIHandler
+	reqHandler    requesthandler.RequestHandler
+	callHandler   callhandler.CallHandler
+	listenHandler listenhandler.ListenHandler
+
+	db dbhandler.DBHandler
+}
 
 func main() {
-
 	// connect to database
-	db, err := sql.Open("mysql", *dbDSN)
+	sqlDB, err := sql.Open("mysql", *dbDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
-	defer db.Close()
+	defer sqlDB.Close()
 
-	// run workers
 	for i := 0; i < *workerCount; i++ {
-		worker := worker.NewWorker(db, *rabbitAddr, *rabbitQueueARIEvent)
-		worker.Connect()
-		go worker.Run()
+		run(sqlDB)
 	}
-
 	<-chDone
 
 	return
@@ -107,4 +123,68 @@ func initProm(endpoint, listen string) {
 			break
 		}
 	}()
+}
+
+// NewWorker creates worker interface
+func run(db *sql.DB) error {
+	if err := runARI(db); err != nil {
+		return err
+	}
+
+	if err := runListen(db); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func runARI(sqlDB *sql.DB) error {
+	// dbhandler
+	db := dbhandler.NewHandler(sqlDB)
+
+	// rabbitmq sock connect
+	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	reqHandler := requesthandler.NewRequestHandler(
+		rabbitSock,
+		*rabbitExchangeDelay,
+		*rabbitQueueListen,
+		*rabbitQueueFlowRequest,
+	)
+
+	callHandler := callhandler.NewSvcHandler(reqHandler, db)
+	ariHandler := arihandler.NewARIHandler(rabbitSock, db, reqHandler, callHandler)
+
+	// run
+	if err := ariHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
+		log.Errorf("Could not run the arihandler correctly. err: %v", err)
+	}
+
+	return nil
+}
+
+func runListen(sqlDB *sql.DB) error {
+	// dbhandler
+	db := dbhandler.NewHandler(sqlDB)
+
+	// rabbitmq sock connect
+	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	// request handler
+	reqHandler := requesthandler.NewRequestHandler(
+		rabbitSock,
+		*rabbitExchangeDelay,
+		*rabbitQueueListen,
+		*rabbitQueueFlowRequest,
+	)
+
+	// callHandler := callhandler.NewSvcHandler(reqHandler, db)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, reqHandler)
+	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	}
+
+	return nil
 }

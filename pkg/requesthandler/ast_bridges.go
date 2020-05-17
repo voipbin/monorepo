@@ -30,7 +30,7 @@ func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
-		return nil
+		return err
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
@@ -44,7 +44,7 @@ func (r *requestHandler) AstBridgeDelete(asteriskID, bridgeID string) error {
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodDelete, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, string(""))
 	switch {
 	case err != nil:
-		return nil
+		return err
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
@@ -75,7 +75,7 @@ func (r *requestHandler) AstBridgeAddChannel(asteriskID, bridgeID, channelID, ro
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridgesAddChannel, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
-		return nil
+		return err
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
@@ -100,7 +100,7 @@ func (r *requestHandler) AstBridgeRemoveChannel(asteriskID, bridgeID, channelID 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridgesRemoveChannel, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
-		return nil
+		return err
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
