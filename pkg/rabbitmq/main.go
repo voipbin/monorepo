@@ -58,12 +58,20 @@ type Rabbit interface {
 	Close()
 	GetURL() string
 
-	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error
-
 	ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error
-	PublishMessage(queueName, message string) error
 	ConsumeRPC(queueNqme, consumerName string, cbRPC CbMsgRPC) error
+
+	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
+	ExchangeDeclareForDelay(name string, durable, autoDelete, internal, noWait bool) error
+
+	PublishExchangeDelayedRequest(exchange, key string, req *Request, delay int) error
+	PublishExchangeRequest(exchange, key string, req *Request) error
+	PublishEvent(queueName string, evt *Event) error
+	PublishRequest(queueName string, req *Request) error
 	PublishRPC(ctx context.Context, queueName string, req *Request) (*Response, error)
+
+	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error
+	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
 }
 
 // rabbit struct for rabbitmq
@@ -72,9 +80,12 @@ type rabbit struct {
 
 	errorChannel chan *amqp.Error
 	connection   *amqp.Connection
+	channel      *amqp.Channel
 	closed       bool
 
-	queues map[string]*queue
+	queues     map[string]*queue
+	exchanges  map[string]*exchange
+	queueBinds map[string]*queueBind
 }
 
 type queue struct {
@@ -84,8 +95,26 @@ type queue struct {
 	exclusive  bool
 	noWait     bool
 
-	channel      *amqp.Channel
-	channelQueue *amqp.Queue
+	qeueue *amqp.Queue
+}
+
+type queueBind struct {
+	name     string
+	key      string
+	exchange string
+	noWait   bool
+	args     amqp.Table
+}
+
+type exchange struct {
+	name string
+
+	kind       string
+	durable    bool
+	autoDelete bool
+	internal   bool
+	noWait     bool
+	args       amqp.Table
 }
 
 // CbMsgConsume is func prototype for message read callback.
@@ -97,8 +126,10 @@ type CbMsgRPC func(*Request) (*Response, error)
 // NewRabbit creates queue for Rabbitmq
 func NewRabbit(uri string) Rabbit {
 	res := &rabbit{
-		uri:    uri,
-		queues: make(map[string]*queue),
+		uri:        uri,
+		queues:     make(map[string]*queue),
+		exchanges:  make(map[string]*exchange),
+		queueBinds: make(map[string]*queueBind),
 	}
 
 	return res
@@ -122,11 +153,7 @@ func (r *rabbit) Close() {
 	}).Info("Close the rabbitmq connection.")
 
 	r.closed = true
-
-	// close all queues
-	for _, q := range r.queues {
-		q.channel.Close()
-	}
+	r.channel.Close()
 	r.connection.Close()
 }
 
@@ -137,6 +164,7 @@ func (r *rabbit) reconnector() {
 		if r.closed == false {
 			log.Errorf("Reconnecting after connection closed. err: %v", err)
 			r.connect()
+			r.redeclareAll()
 		}
 	}
 }
@@ -152,18 +180,47 @@ func (r *rabbit) connect() {
 		// connect
 		conn, err := amqp.Dial(r.uri)
 		if err != nil {
-			log.Errorf("Could not connect to rabbitmq. Retrying after 1 sec. err: %v", err)
+			log.Errorf("Could not connect to rabbitmq. Will retry again after 1 sec. err: %v", err)
 			time.Sleep(time.Second * 1)
 			continue
 		}
-
 		r.connection = conn
+
+		// set channel
+		r.channel, err = r.connection.Channel()
+		if err != nil {
+			log.Errorf("Could not create a channel. Will retry again after 1 sec. err: %v", err)
+			time.Sleep(time.Second * 1)
+			r.connection.Close()
+			continue
+		}
+
+		// set error channel
 		r.errorChannel = make(chan *amqp.Error)
 		r.connection.NotifyClose(r.errorChannel)
 
-		r.queuesRedeclare()
-
 		log.Debug("Connection established to rabbitmq.")
 		return
+	}
+}
+
+// redeclareAll recovers the all pre-defined queue/exchange/bind in the channel.
+func (r *rabbit) redeclareAll() {
+	// redeclare the queues
+	for _, queue := range r.queues {
+		log.Debugf("Redeclaring the queue. queue: %s", queue.name)
+		r.QueueDeclare(queue.name, queue.durable, queue.autoDelete, queue.exclusive, queue.noWait)
+	}
+
+	// redeclare the exchanges
+	for _, exchange := range r.exchanges {
+		log.Debugf("Redeclaring the exchange. exchage: %s", exchange.name)
+		r.ExchangeDeclare(exchange.name, exchange.kind, exchange.durable, exchange.autoDelete, exchange.internal, exchange.noWait, exchange.args)
+	}
+
+	// redeclare the binds
+	for _, queueBind := range r.queueBinds {
+		log.Debugf("Redeclaring the bind. bind: %s", queueBind.name)
+		r.QueueBind(queueBind.name, queueBind.key, queueBind.exchange, queueBind.noWait, queueBind.args)
 	}
 }

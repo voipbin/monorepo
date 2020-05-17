@@ -48,7 +48,7 @@ func (r *requestHandler) AstChannelContinue(asteriskID, channelID, context, ext 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsContinue, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
-		return nil
+		return err
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
@@ -73,7 +73,7 @@ func (r *requestHandler) AstChannelHangup(asteriskID, channelID string, code ari
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodDelete, resourceAstChannelsHangup, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
-		return nil
+		return err
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
@@ -100,7 +100,7 @@ func (r *requestHandler) AstChannelVariableSet(asteriskID, channelID, variable, 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsVar, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
-		return nil
+		return err
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
@@ -133,9 +133,30 @@ func (r *requestHandler) AstChannelCreateSnoop(asteriskID, channelID, snoopID, a
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsSnoop, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
-		return nil
+		return err
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
 	return nil
+}
+
+// AstChannelGet gets the Asterisk's channel defail
+func (r *requestHandler) AstChannelGet(asteriskID, channelID string) (*channel.Channel, error) {
+	url := fmt.Sprintf("/ari/channels/%s", channelID)
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodGet, resourceAstChannels, requestTimeoutDefault, ContentTypeJSON, "")
+	switch {
+	case err != nil:
+		return nil, err
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	tmpChannel, err := ari.ParseChannel([]byte(res.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	channel := channel.NewChannelByChannel(tmpChannel)
+	return channel, nil
 }

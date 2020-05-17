@@ -1,0 +1,63 @@
+package listenhandler
+
+import (
+	"testing"
+
+	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
+)
+
+func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock: mockSock,
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	type test struct {
+		name    string
+		channel *channel.Channel
+		request *rabbitmq.Request
+	}
+
+	tests := []test{
+		{
+			"normal test",
+			&channel.Channel{
+				ID:         "f1f90a0a-9844-11ea-8948-5378837e7179",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
+			&rabbitmq.Request{
+				URI:  "/v1/asterisks/42%3A01%3A0a%3Aa4%3A00%3A05/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
+				Data: `{"retry_count": 0, "retry_count_max": 2, "delay": 10}`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
+			mockReq.EXPECT().AstChannelGet(tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
+			mockReq.EXPECT().CallChannelHealth(tt.channel.AsteriskID, tt.channel.ID, 10, 0, 2).Return(nil)
+
+			res, err := h.processV1AsterisksIDChannelsIDHealthPost(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			} else if res != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", res)
+			}
+
+		})
+	}
+}

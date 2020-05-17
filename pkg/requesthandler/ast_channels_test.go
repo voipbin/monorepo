@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -9,21 +10,21 @@ import (
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
 
-func TestSetSock(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+// func TestSetSock(t *testing.T) {
+// 	mc := gomock.NewController(t)
+// 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
-	if mockSock == nil {
-		t.Errorf("Error")
-	}
+// 	mockSock := rabbitmq.NewMockRabbit(mc)
+// 	if mockSock == nil {
+// 		t.Errorf("Error")
+// 	}
 
-	reqHandler := NewRequestHandler(mockSock)
+// 	reqHandler := NewRequestHandler(mockSock)
 
-	if reqHandler == nil {
-		t.Errorf("Wrong match. expact: true, got: false")
-	}
-}
+// 	if reqHandler == nil {
+// 		t.Errorf("Wrong match. expact: true, got: false")
+// 	}
+// }
 
 func TestAstChannelAnswer(t *testing.T) {
 
@@ -53,7 +54,7 @@ func TestAstChannelAnswer(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmq.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -128,7 +129,7 @@ func TestAstChannelContinue(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmq.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -199,7 +200,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmq.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -255,7 +256,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmq.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -280,6 +281,11 @@ func TestChannelAstChannelHangup(t *testing.T) {
 }
 
 func TestChannelAstChannelCreateSnoop(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
 
 	type test struct {
 		name       string
@@ -341,12 +347,6 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 		},
 	}
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmq.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock)
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
@@ -367,4 +367,77 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAstChannelGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
+
+	type test struct {
+		name     string
+		asterisk string
+		id       string
+		response *rabbitmq.Response
+
+		expectTarget  string
+		expectRequest *rabbitmq.Request
+
+		expectURI     string
+		expectChannel *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"normal test",
+			"00:11:22:33:44:55",
+			"1589711094.100",
+			&rabbitmq.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       `{"id":"1589711094.100","name":"PJSIP/call-in-00000019","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"8872616","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=xt1GqgsEfG,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-17T10:24:54.396+0000","language":"en"}`,
+			},
+
+			"asterisk_ari_request-00:11:22:33:44:55",
+			&rabbitmq.Request{
+				URI:      "/ari/channels/1589711094.100",
+				Method:   rabbitmq.RequestMethodGet,
+				DataType: ContentTypeJSON,
+				Data:     "",
+			},
+			"/ari/channels/1589711094.100",
+			&channel.Channel{
+				ID:         "1589711094.100",
+				AsteriskID: "",
+				Name:       "PJSIP/call-in-00000019",
+				Tech:       channel.TechPJSIP,
+
+				SourceName:   "tttt",
+				SourceNumber: "pchero",
+
+				DestinationNumber: "8872616",
+				State:             ari.ChannelStateUp,
+
+				Data: map[string]interface{}{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AstChannelGet(tt.asterisk, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectChannel, res) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectChannel, res)
+			}
+		})
+	}
+
 }

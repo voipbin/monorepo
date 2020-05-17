@@ -1,7 +1,6 @@
 package rabbitmq
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -10,56 +9,23 @@ import (
 func (r *rabbit) queueGet(name string) *queue {
 	q := r.queues[name]
 	return q
-
-	// if q != nil {
-	// 	return q.queue, nil
-	// }
-
-	// return r.queueDeclare(q.channel, q.name, false, false, false, false)
 }
 
-// closeQueue delete the queue with given args.
+// QueueDelete deletes the queue with given args.
 // returns deleted messages in the queue.
-func (r *rabbit) DeleteQueue(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
+func (r *rabbit) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
 	queue := r.queueGet(name)
 	if queue == nil {
 		return 0, nil
 	}
 
-	return queue.channel.QueueDelete(name, ifUnused, ifEmpty, noWait)
+	return r.channel.QueueDelete(name, ifUnused, ifEmpty, noWait)
 }
 
 // QueueDeclare declares the rabbitmq queue using name and add it to the queues.
 func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error {
-	// declare the channel
-	channel, err := r.connection.Channel()
-	if err != nil {
-		return err
-	}
-
 	// declare the queue
-	q, err := r.channelQueueDeclare(channel, name, durable, autoDelete, exclusive, noWait)
-	if err != nil {
-		return err
-	}
-
-	tmpQueue := &queue{
-		name:         name,
-		durable:      durable,
-		autoDelete:   autoDelete,
-		exclusive:    exclusive,
-		noWait:       noWait,
-		channel:      channel,
-		channelQueue: q,
-	}
-
-	r.queues[name] = tmpQueue
-	return nil
-}
-
-// queueDeclare declares the rabbitmq queue using name.
-func (r *rabbit) channelQueueDeclare(channel *amqp.Channel, name string, durable, autoDelete, exclusive, noWait bool) (*amqp.Queue, error) {
-	queue, err := channel.QueueDeclare(
+	q, err := r.channel.QueueDeclare(
 		name,       // name
 		durable,    // durable
 		autoDelete, // delete when unused
@@ -68,16 +34,33 @@ func (r *rabbit) channelQueueDeclare(channel *amqp.Channel, name string, durable
 		nil,        // arguments
 	)
 	if err != nil {
-		log.Errorf("Could not declare the queue. err: %v", err)
-		return nil, err
+		return err
 	}
 
-	return &queue, nil
+	r.queues[name] = &queue{
+		name:       name,
+		durable:    durable,
+		autoDelete: autoDelete,
+		exclusive:  exclusive,
+		noWait:     noWait,
+		qeueue:     &q,
+	}
+
+	return nil
 }
 
-func (r *rabbit) queuesRedeclare() {
-	for _, queue := range r.queues {
-		log.Debugf("Redeclaring the queue. queue: %s", queue.name)
-		r.QueueDeclare(queue.name, queue.durable, queue.autoDelete, queue.exclusive, queue.noWait)
+// QueueBind binds queue and exchange with a key
+func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	if err := r.channel.QueueBind(name, key, exchange, noWait, args); err != nil {
+		return err
 	}
+
+	r.queueBinds[name] = &queueBind{
+		name:     name,
+		key:      key,
+		exchange: exchange,
+		noWait:   noWait,
+		args:     args,
+	}
+	return nil
 }

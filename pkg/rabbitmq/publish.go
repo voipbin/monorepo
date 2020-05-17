@@ -9,7 +9,7 @@ import (
 )
 
 // PublishMessage sends a message to rabbitmq
-func (r *rabbit) PublishMessage(queueName, message string) error {
+func (r *rabbit) publishExchange(exchange, key string, message []byte, headers amqp.Table) error {
 	channel, err := r.connection.Channel()
 	if err != nil {
 		log.Errorf("Could not create a channel for PublishMessage. err: %v", err)
@@ -17,15 +17,46 @@ func (r *rabbit) PublishMessage(queueName, message string) error {
 	}
 
 	err = channel.Publish(
-		"",        // exchange
-		queueName, // routing key
-		false,     // mandatory
-		false,     // immediate
+		exchange, // exchange
+		key,      // routing key
+		false,    // mandatory
+		false,    // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
-			Body:        []byte(message),
+			Body:        message,
+			Headers:     headers,
 		})
 	if err != nil {
+		log.Errorf("Could not send a message. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// PublishMessage sends a request to rabbitmq
+func (r *rabbit) PublishRequest(queueName string, req *Request) error {
+	message, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+
+	if err := r.publishExchange("", queueName, message, nil); err != nil {
+		log.Errorf("Could not send a message. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// PublishEvent sends a event to rabbitmq
+func (r *rabbit) PublishEvent(queueName string, evt *Event) error {
+	message, err := json.Marshal(evt)
+	if err != nil {
+		return err
+	}
+
+	if err := r.publishExchange("", queueName, message, nil); err != nil {
 		log.Errorf("Could not send a message. err: %v", err)
 		return err
 	}
@@ -104,4 +135,26 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *Request)
 		}
 		return &response, nil
 	}
+}
+
+// PublishMessage sends a message to rabbitmq
+func (r *rabbit) PublishExchangeRequest(exchange, key string, req *Request) error {
+	message, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+	return r.publishExchange(exchange, key, message, nil)
+}
+
+// PublishExchangeDelayedRequest sends a delayed request to rabbitmq
+// delay is ms.
+func (r *rabbit) PublishExchangeDelayedRequest(exchange, key string, req *Request, delay int) error {
+	headers := make(amqp.Table)
+	headers["x-delay"] = delay
+
+	message, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+	return r.publishExchange(exchange, key, message, headers)
 }

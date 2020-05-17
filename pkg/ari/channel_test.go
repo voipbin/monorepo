@@ -5,6 +5,53 @@ import (
 	"testing"
 )
 
+func TestParseChannel(t *testing.T) {
+	type test struct {
+		name        string
+		message     string
+		expectParse *Channel
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			`{"id":"1589706755.0","name":"PJSIP/call-in-00000000","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"8872616","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=NfD0bqG~ys,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-17T09:12:35.988+0000","language":"en"}`,
+			&Channel{
+				ID:           "1589706755.0",
+				Name:         "PJSIP/call-in-00000000",
+				Language:     "en",
+				CreationTime: "2020-05-17T09:12:35.988",
+				State:        ChannelStateUp,
+				Caller: CallerID{
+					Name:   "tttt",
+					Number: "pchero",
+				},
+				Connected: CallerID{},
+				Dialplan: DialplanCEP{
+					Context:  "call-in",
+					Exten:    "8872616",
+					Priority: 2,
+					AppName:  "Stasis",
+					AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=NfD0bqG~ys,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			channel, err := ParseChannel([]byte(tt.message))
+			if err != nil {
+				t.Errorf("Wront match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectParse, channel) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectParse, channel)
+			}
+		})
+	}
+}
+
 func TestParseChannelCreated(t *testing.T) {
 	type test struct {
 		name        string

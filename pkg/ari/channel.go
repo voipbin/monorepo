@@ -1,5 +1,7 @@
 package ari
 
+import "encoding/json"
+
 // CallerID Caller ID
 type CallerID struct {
 	Name   string `json:"name"`
@@ -88,4 +90,16 @@ type ChannelLeftBridge struct {
 	Event
 	Channel Channel `json:"channel"`
 	Bridge  Bridge  `json:"bridge"`
+}
+
+// ParseChannel parses message into Channel struct
+func ParseChannel(message []byte) (*Channel, error) {
+	res := &Channel{}
+
+	err := json.Unmarshal(message, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
