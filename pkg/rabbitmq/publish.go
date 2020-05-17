@@ -15,6 +15,7 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 		log.Errorf("Could not create a channel for PublishMessage. err: %v", err)
 		return err
 	}
+	defer channel.Close()
 
 	err = channel.Publish(
 		exchange, // exchange
