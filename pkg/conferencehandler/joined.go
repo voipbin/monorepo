@@ -20,7 +20,14 @@ func (h *conferenceHandler) Joined(id, callID uuid.UUID) error {
 	if err := h.db.ConferenceAddCallID(ctx, id, callID); err != nil {
 		// we don't kick out the joined call at here.
 		// just write log.
-		log.Errorf("Could not add the callid into the conference. err: %v", err)
+		log.Errorf("Could not add the callid into the conference. conference: %s, call: %s, err: %v", id, callID, err)
 	}
+
+	cf, err := h.db.ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get conference info. conference: %s, err: %v", id, err)
+	}
+	promConferenceJoinTotal.WithLabelValues(string(cf.Type)).Inc()
+
 	return nil
 }

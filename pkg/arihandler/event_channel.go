@@ -26,6 +26,11 @@ func (h *ariHandler) eventHandlerChannelCreated(ctx context.Context, evt interfa
 				"channel":  cn.ID,
 			}).Errorf("Could not start the channel water. err: %v", err)
 	}
+	log.WithFields(
+		log.Fields{
+			"asterisk": cn.AsteriskID,
+			"channel":  cn.ID,
+		}).Debugf("Started channel watcher.")
 
 	return nil
 }

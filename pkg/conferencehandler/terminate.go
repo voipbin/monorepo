@@ -27,6 +27,7 @@ func (h *conferenceHandler) Terminate(id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
+	promConferenceCloseTotal.WithLabelValues(string(cf.Type)).Inc()
 
 	// loop the bridge
 	for _, bridgeID := range cf.BridgeIDs {

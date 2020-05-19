@@ -2,7 +2,6 @@ package conferencehandler
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -13,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
-func TestLeaved(t *testing.T) {
+func TestLeavedNoTerminate(t *testing.T) {
 	type test struct {
 		name       string
 		conference *conference.Conference
@@ -22,9 +21,11 @@ func TestLeaved(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			"echo leaved but",
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("1b0f9e5e-9246-11ea-a764-53e61c9fef34"),
+				ID:      uuid.FromStringOrNil("1b0f9e5e-9246-11ea-a764-53e61c9fef34"),
+				Type:    conference.TypeEcho,
+				CallIDs: []uuid.UUID{uuid.Nil},
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("2dde2e70-9245-11ea-a1e5-1b4f44d33983"),
@@ -48,7 +49,8 @@ func TestLeaved(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().ConferenceRemoveCallID(gomock.Any(), tt.conference.ID, tt.call.ID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(nil, fmt.Errorf("error"))
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 
 			h.Leaved(tt.conference.ID, tt.call.ID)
 		})

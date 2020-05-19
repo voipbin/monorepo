@@ -38,6 +38,15 @@ const (
 	defaultMaxTimeoutEcho = "300" // maximum call duration for service echo
 )
 
+func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
+	if err := h.db.CallCreate(ctx, c); err != nil {
+		return err
+	}
+	promCallCreateTotal.WithLabelValues(string(c.Direction), string(c.Type)).Inc()
+
+	return nil
+}
+
 // Start starts the call service
 func (h *callHandler) Start(cn *channel.Channel) error {
 
@@ -95,7 +104,7 @@ func (h *callHandler) serviceEchoStart(cn *channel.Channel) error {
 	}
 
 	c := call.NewCallByChannel(cn, call.TypeEcho, call.DirectionIncoming)
-	if err := h.db.CallCreate(ctx, c); err != nil {
+	if err := h.createCall(ctx, c); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}

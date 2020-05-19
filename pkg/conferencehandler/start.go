@@ -14,6 +14,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// createConference is handy function for creating a conference.
+// it increases corresponded counter
+func (h *conferenceHandler) createConference(ctx context.Context, cf *conference.Conference) error {
+	// create a conference record
+	if err := h.db.ConferenceCreate(ctx, cf); err != nil {
+		return fmt.Errorf("could not create a conference. err: %v", err)
+	}
+	promConferenceCreateTotal.WithLabelValues(string(cf.Type)).Inc()
+
+	return nil
+}
+
 func (h *conferenceHandler) Start(cType conference.Type, c *call.Call) (*conference.Conference, error) {
 
 	log := log.WithFields(
@@ -82,7 +94,7 @@ func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference,
 	log.Debug("Created bridge.")
 
 	// create a conference record
-	if err := h.db.ConferenceCreate(ctx, cf); err != nil {
+	if err := h.createConference(ctx, cf); err != nil {
 		return nil, fmt.Errorf("could not create a conference. err: %v", err)
 	}
 

@@ -202,6 +202,7 @@ func (r *requestHandler) sendRequestCall(uri string, method rabbitmq.RequestMeth
 		"method":    method,
 		"uri":       uri,
 		"data_type": dataType,
+		"delayed":   delayed,
 	}).Debugf("Sending request to call-manager. data: %s", data)
 
 	// creat a request message

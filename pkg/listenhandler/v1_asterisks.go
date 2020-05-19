@@ -17,7 +17,7 @@ func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmq.Req
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 7 {
-		return nil, fmt.Errorf("wrong uri")
+		return simpleResponse(400), fmt.Errorf("wrong uri")
 	}
 
 	tmpAsteriskID := uriItems[3]
@@ -37,6 +37,12 @@ func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmq.Req
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 		return nil, err
 	}
+	log := logrus.WithFields(
+		logrus.Fields{
+			"asterisk": asteriskID,
+			"channel":  channelID,
+		})
+	log.Debugf("Received health-check request. retry: %d, retry_max: %d, delay: %d", data.RetryCount, data.RetryCountMax, data.Delay)
 
 	channel, err := h.db.ChannelGet(ctx, asteriskID, channelID)
 	if err != nil {
@@ -76,6 +82,7 @@ func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmq.Req
 	}
 
 	// send another health check.
+	log.Debugf("Sending health-check request. retry: %d, retry_max: %d, delay: %d", data.RetryCount, data.RetryCountMax, data.Delay)
 	if err := h.reqHandler.CallChannelHealth(asteriskID, channelID, data.Delay, data.RetryCount, data.RetryCountMax); err != nil {
 		return nil, err
 	}
