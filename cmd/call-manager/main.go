@@ -180,8 +180,10 @@ func runListen(sqlDB *sql.DB) error {
 		*rabbitQueueFlowRequest,
 	)
 
-	// callHandler := callhandler.NewSvcHandler(reqHandler, db)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, reqHandler)
+	callHandler := callhandler.NewSvcHandler(reqHandler, db)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, reqHandler, callHandler)
+
+	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
 		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}

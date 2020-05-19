@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
@@ -23,6 +25,8 @@ type CallHandler interface {
 	Start(cn *channel.Channel) error
 	Hangup(cn *channel.Channel) error
 	UpdateStatus(cn *channel.Channel) error
+
+	ActionTimeout(callID uuid.UUID, a *action.Action) error
 }
 
 // callHandler structure for service handle

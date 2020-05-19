@@ -178,6 +178,20 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelVariableSet(arg0, arg1, arg2
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelVariableSet", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelVariableSet), arg0, arg1, arg2, arg3)
 }
 
+// CallCallActionTimeout mocks base method
+func (m *MockRequestHandler) CallCallActionTimeout(arg0 uuid.UUID, arg1 int, arg2 *action.Action) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallCallActionTimeout", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallCallActionTimeout indicates an expected call of CallCallActionTimeout
+func (mr *MockRequestHandlerMockRecorder) CallCallActionTimeout(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCallActionTimeout", reflect.TypeOf((*MockRequestHandler)(nil).CallCallActionTimeout), arg0, arg1, arg2)
+}
+
 // CallCallHealth mocks base method
 func (m *MockRequestHandler) CallCallHealth(arg0 uuid.UUID, arg1, arg2 int) error {
 	m.ctrl.T.Helper()
