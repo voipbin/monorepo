@@ -83,6 +83,7 @@ type RequestHandler interface {
 	AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error
 
 	CallCallHealth(id uuid.UUID, delay, retryCount int) error
+	CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
 	CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
 	// asterisk channels
@@ -195,7 +196,7 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMeth
 
 // SendARIRequest send a request to the Asterisk-proxy and return the response
 // timeout second
-// delayed milli second
+// delayed millisecond
 func (r *requestHandler) sendRequestCall(uri string, method rabbitmq.RequestMethod, resource resource, timeout, delayed int, dataType, data string) (*rabbitmq.Response, error) {
 	log.WithFields(log.Fields{
 		"method":    method,
@@ -216,10 +217,11 @@ func (r *requestHandler) sendRequestCall(uri string, method rabbitmq.RequestMeth
 
 	switch {
 	case delayed > 0:
+		// send scheduled message.
+		// we don't expect the response message here.
 		if err := r.sendDelayedRequest(ctx, r.exchangeDelay, resource, delayed, req); err != nil {
 			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
 		}
-
 		return nil, nil
 
 	default:
@@ -233,7 +235,6 @@ func (r *requestHandler) sendRequestCall(uri string, method rabbitmq.RequestMeth
 			"uri":         uri,
 			"status_code": res.StatusCode,
 		}).Debugf("Received result. data: %s", res.Data)
-
 		return res, nil
 	}
 }

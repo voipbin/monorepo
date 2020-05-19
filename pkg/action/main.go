@@ -11,7 +11,9 @@ type Action struct {
 	ID     uuid.UUID       `json:"id"`
 	Type   Type            `json:"type"`
 	Option json.RawMessage `json:"option,omitempty"`
-	Next   uuid.UUID       `json:"next"`
+	Next   uuid.UUID       `json:"next"` // represent next action's next action.
+
+	TMExecute string `json:"tm_execute"` // represent when this action has executed.
 }
 
 // Flow struct
@@ -29,6 +31,12 @@ type Flow struct {
 	TMDelete string `json:"tm_delete"`
 }
 
+// Predefined special IDs
+var (
+	IDBegin uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
+	IDEnd   uuid.UUID = uuid.Nil
+)
+
 // Type type
 type Type string
 
@@ -40,6 +48,6 @@ const (
 
 // OptionEcho struct
 type OptionEcho struct {
-	Duration int  `json:"duration"` // echo duration
+	Duration int  `json:"duration"` // echo duration. ms
 	DTMF     bool `json:"dtmf"`     // sending back the dtmf on/off
 }

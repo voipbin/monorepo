@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
@@ -20,7 +21,8 @@ type listenHandler struct {
 	rabbitSock rabbitmq.Rabbit
 	db         dbhandler.DBHandler
 
-	reqHandler requesthandler.RequestHandler
+	reqHandler  requesthandler.RequestHandler
+	callHandler callhandler.CallHandler
 }
 
 var (
@@ -31,20 +33,25 @@ var (
 	regV1AsterisksIDChannelsIDHealth = regexp.MustCompile("/v1/asterisks/" + regUUID + "/channels/" + regUUID + "/health-check")
 
 	// calls
-	regV1CallsID       = regexp.MustCompile("/v1/calls/" + regUUID)
-	regV1CallsIDHealth = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check")
+	regV1CallsID              = regexp.MustCompile("/v1/calls/" + regUUID)
+	regV1CallsIDHealth        = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check")
+	regV1CallsIDActionTimeout = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
 )
 
-var (
-	response404 *rabbitmq.Response = &rabbitmq.Response{StatusCode: 404}
-)
+// simpleResponse returns simple rabbitmq response
+func simpleResponse(code int) *rabbitmq.Response {
+	return &rabbitmq.Response{
+		StatusCode: code,
+	}
+}
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(rabbitSock rabbitmq.Rabbit, db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler) ListenHandler {
+func NewListenHandler(rabbitSock rabbitmq.Rabbit, db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) ListenHandler {
 	h := &listenHandler{
-		rabbitSock: rabbitSock,
-		db:         db,
-		reqHandler: reqHandler,
+		rabbitSock:  rabbitSock,
+		db:          db,
+		reqHandler:  reqHandler,
+		callHandler: callHandler,
 	}
 
 	return h
@@ -98,7 +105,10 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 
 	case regV1CallsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		return h.processV1CallsIDHealthPost(m)
+
+	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+		return h.processV1CallsIDActionTimeoutPost(m)
 	}
 
-	return response404, nil
+	return simpleResponse(404), nil
 }

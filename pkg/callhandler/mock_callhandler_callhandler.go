@@ -5,7 +5,9 @@
 package callhandler
 
 import (
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	reflect "reflect"
@@ -88,6 +90,20 @@ func (m *MockCallHandler) ARIStasisStart(arg0 *channel.Channel) error {
 func (mr *MockCallHandlerMockRecorder) ARIStasisStart(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockCallHandler)(nil).ARIStasisStart), arg0)
+}
+
+// ActionTimeout mocks base method
+func (m *MockCallHandler) ActionTimeout(arg0 uuid.UUID, arg1 *action.Action) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActionTimeout", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActionTimeout indicates an expected call of ActionTimeout
+func (mr *MockCallHandlerMockRecorder) ActionTimeout(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionTimeout", reflect.TypeOf((*MockCallHandler)(nil).ActionTimeout), arg0, arg1)
 }
 
 // Hangup mocks base method

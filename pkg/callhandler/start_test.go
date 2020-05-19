@@ -2,6 +2,8 @@ package callhandler
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -14,6 +16,27 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
+
+type matchAction struct {
+	action action.Action
+}
+
+func isSameAction(a *action.Action) gomock.Matcher {
+	return &matchAction{
+		action: *a,
+	}
+}
+
+func (a *matchAction) Matches(x interface{}) bool {
+	compAction := x.(*action.Action)
+	act := a.action
+	act.TMExecute = compAction.TMExecute
+	return reflect.DeepEqual(&act, compAction)
+}
+
+func (a *matchAction) String() string {
+	return fmt.Sprintf("%v", a.action)
+}
 
 func TestGetService(t *testing.T) {
 	type test struct {
@@ -96,7 +119,7 @@ func TestServiceEchoStart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			option := action.OptionEcho{
-				Duration: 180,
+				Duration: 180 * 1000,
 				DTMF:     true,
 			}
 			opt, err := json.Marshal(option)
@@ -105,17 +128,25 @@ func TestServiceEchoStart(t *testing.T) {
 			}
 
 			action := &action.Action{
-				ID:     actionBegin,
+				ID:     action.IDBegin,
 				Type:   action.TypeEcho,
 				Option: opt,
-				Next:   actionEnd,
+				Next:   action.IDEnd,
 			}
+
+			// type actionMatcher interface{}
+			// (a *actionMatcher)Matches()
 
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), isSameAction(action)).Return(nil)
+
+			// mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 			mockConf.EXPECT().Start(conference.TypeEcho, gomock.Any())
+			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), option.Duration, isSameAction(action))
 
 			h.serviceEchoStart(tt.channel)
 		})

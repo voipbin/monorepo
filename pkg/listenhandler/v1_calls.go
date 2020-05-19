@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
 
@@ -16,19 +17,19 @@ func (h *listenHandler) processV1CallsIDGet(m *rabbitmq.Request) (*rabbitmq.Resp
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
-		return response404, nil
+		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
 	c, err := h.db.CallGet(ctx, id)
 	if err != nil {
-		return response404, nil
+		return simpleResponse(404), nil
 	}
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		return response404, nil
+		return simpleResponse(404), nil
 	}
 
 	res := &rabbitmq.Response{
@@ -46,7 +47,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmq.Request) (*rabbit
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
-		return nil, fmt.Errorf("wrong uri")
+		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
@@ -79,4 +80,28 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmq.Request) (*rabbit
 	}
 
 	return nil, nil
+}
+
+// processV1CallsIDGet handles /v1/calls/<id>/action-timeout request
+func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	var a action.Action
+	if err := json.Unmarshal([]byte(m.Data), &a); err != nil {
+		return simpleResponse(404), nil
+	}
+
+	if err := h.callHandler.ActionTimeout(id, &a); err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmq.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
 }
