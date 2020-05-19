@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
@@ -44,6 +45,35 @@ const (
 	contextTypeConference contextType = "conf"
 	contextTypeCall       contextType = "call"
 )
+
+var (
+	metricsNamespace = "call_manager"
+
+	promCallCreateTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "call_create_total",
+			Help:      "Total number of created call direction with type.",
+		},
+		[]string{"direction", "type"},
+	)
+
+	promCallHangupTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "call_hangup_total",
+			Help:      "Total number of hungup call direction with type and reason.",
+		},
+		[]string{"direction", "type", "reason"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promCallCreateTotal,
+		promCallHangupTotal,
+	)
+}
 
 // NewSvcHandler returns new service handler
 func NewSvcHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) CallHandler {

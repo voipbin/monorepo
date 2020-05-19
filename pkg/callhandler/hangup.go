@@ -25,5 +25,7 @@ func (h *callHandler) Hangup(cn *channel.Channel) error {
 		// we don't channel hangup here, because the channel has already gone.
 		return err
 	}
+	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
+
 	return nil
 }

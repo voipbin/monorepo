@@ -24,6 +24,13 @@ func (h *conferenceHandler) Leaved(id, callID uuid.UUID) error {
 		return err
 	}
 
+	cf, err := h.db.ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get conference info. conference: %s, err: %v", id, err)
+		return err
+	}
+	promConferenceLeaveTotal.WithLabelValues(string(cf.Type)).Inc()
+
 	// evaluate the conference is terminatable
 	if h.isTerminatable(ctx, id) == true {
 		log.Info("This conference is ended. Terminating the conference.")

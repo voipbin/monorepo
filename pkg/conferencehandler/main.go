@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
@@ -38,6 +39,55 @@ type conferenceHandler struct {
 const (
 	ContextConferenceEcho string = "conf-echo"
 )
+
+var (
+	metricsNamespace = "call_manager"
+
+	promConferenceCreateTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "conference_create_total",
+			Help:      "Total number of created conference with type.",
+		},
+		[]string{"type"},
+	)
+
+	promConferenceCloseTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "conference_close_total",
+			Help:      "Total number of closed conference type.",
+		},
+		[]string{"type"},
+	)
+
+	promConferenceJoinTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "conference_join_total",
+			Help:      "Total number of joined calls to the conference with type.",
+		},
+		[]string{"type"},
+	)
+
+	promConferenceLeaveTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "conference_leave_total",
+			Help:      "Total number of leaved calls from the conference with type.",
+		},
+		[]string{"type"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promConferenceCreateTotal,
+		promConferenceCloseTotal,
+		promConferenceJoinTotal,
+		promConferenceLeaveTotal,
+	)
+}
 
 // NewConferHandler returns new service handler
 func NewConferHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) ConferenceHandler {
