@@ -107,6 +107,22 @@ func (h *callHandler) ARIStasisStart(cn *channel.Channel) error {
 	}
 }
 
+// ARIChannelDestroyed handles ChannelDestroyed ARI event
 func (h *callHandler) ARIChannelDestroyed(cn *channel.Channel) error {
 	return h.Hangup(cn)
+}
+
+// ARIChannelDtmfReceived handles ChannelDtmfReceived ARI event
+func (h *callHandler) ARIChannelDtmfReceived(cn *channel.Channel, digit string, duration int) error {
+
+	// support pjsip type only for now.
+	if cn.Tech != channel.TechPJSIP {
+		return nil
+	}
+
+	if err := h.DTMFReceived(cn, digit, duration); err != nil {
+		return err
+	}
+
+	return nil
 }

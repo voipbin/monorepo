@@ -441,3 +441,82 @@ func TestAstChannelGet(t *testing.T) {
 	}
 
 }
+
+func TestAstChannelDTMF(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
+
+	type test struct {
+		name     string
+		asterisk string
+		id       string
+		digit    string
+		duration int
+		before   int
+		between  int
+		after    int
+		response *rabbitmq.Response
+
+		expectTarget  string
+		expectRequest *rabbitmq.Request
+	}
+
+	tests := []test{
+		{
+			"normal test",
+			"00:11:22:33:44:55",
+			"6d11e7c2-9a69-11ea-95af-eb4a15c08df1",
+			"1",
+			100,
+			0,
+			0,
+			0,
+			&rabbitmq.Response{
+				StatusCode: 200,
+			},
+
+			"asterisk_ari_request-00:11:22:33:44:55",
+			&rabbitmq.Request{
+				URI:      "/ari/channels/6d11e7c2-9a69-11ea-95af-eb4a15c08df1/dtmf",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     `{"dtmf":"1","duration":100,"before":0,"between":0,"after":0}`,
+			},
+		},
+		{
+			"longer digits",
+			"00:11:22:33:44:55",
+			"6d11e7c2-9a69-11ea-95af-eb4a15c08df1",
+			"19827348",
+			100,
+			0,
+			0,
+			0,
+			&rabbitmq.Response{
+				StatusCode: 200,
+			},
+
+			"asterisk_ari_request-00:11:22:33:44:55",
+			&rabbitmq.Request{
+				URI:      "/ari/channels/6d11e7c2-9a69-11ea-95af-eb4a15c08df1/dtmf",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     `{"dtmf":"19827348","duration":100,"before":0,"between":0,"after":0}`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			err := reqHandler.AstChannelDTMF(tt.asterisk, tt.id, tt.digit, tt.duration, tt.before, tt.between, tt.after)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

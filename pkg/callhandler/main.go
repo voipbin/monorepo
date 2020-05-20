@@ -19,6 +19,7 @@ import (
 // CallHandler is interface for service handle
 type CallHandler interface {
 	ARIChannelDestroyed(cn *channel.Channel) error
+	ARIChannelDtmfReceived(cn *channel.Channel, digit string, duration int) error
 	ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error
 	ARIChannelLeftBridge(cn *channel.Channel, bridge *bridge.Bridge) error
 	ARIStasisStart(cn *channel.Channel) error
@@ -75,8 +76,8 @@ func init() {
 	)
 }
 
-// NewSvcHandler returns new service handler
-func NewSvcHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) CallHandler {
+// NewCallHandler returns new service handler
+func NewCallHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) CallHandler {
 
 	h := &callHandler{
 		reqHandler:  r,

@@ -153,7 +153,7 @@ func runARI(sqlDB *sql.DB) error {
 		*rabbitQueueFlowRequest,
 	)
 
-	callHandler := callhandler.NewSvcHandler(reqHandler, db)
+	callHandler := callhandler.NewCallHandler(reqHandler, db)
 	ariHandler := arihandler.NewARIHandler(rabbitSock, db, reqHandler, callHandler)
 
 	// run
@@ -180,7 +180,7 @@ func runListen(sqlDB *sql.DB) error {
 		*rabbitQueueFlowRequest,
 	)
 
-	callHandler := callhandler.NewSvcHandler(reqHandler, db)
+	callHandler := callhandler.NewCallHandler(reqHandler, db)
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, reqHandler, callHandler)
 
 	// run
