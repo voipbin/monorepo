@@ -38,8 +38,9 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 			},
 			&rabbitmq.Request{
-				URI:  "/v1/asterisks/42%3A01%3A0a%3Aa4%3A00%3A05/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
-				Data: `{"retry_count": 0, "retry_count_max": 2, "delay": 10}`,
+				URI:    "/v1/asterisks/42%3A01%3A0a%3Aa4%3A00%3A05/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
+				Method: rabbitmq.RequestMethodPost,
+				Data:   `{"retry_count": 0, "retry_count_max": 2, "delay": 10000}`,
 			},
 		},
 	}
@@ -49,9 +50,9 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
 			mockReq.EXPECT().AstChannelGet(tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
-			mockReq.EXPECT().CallChannelHealth(tt.channel.AsteriskID, tt.channel.ID, 10, 0, 2).Return(nil)
+			mockReq.EXPECT().CallChannelHealth(tt.channel.AsteriskID, tt.channel.ID, 10000, 0, 2).Return(nil)
 
-			res, err := h.processV1AsterisksIDChannelsIDHealthPost(tt.request)
+			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			} else if res != nil {

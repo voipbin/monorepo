@@ -30,7 +30,7 @@ var (
 
 	// v1
 	// asterisks
-	regV1AsterisksIDChannelsIDHealth = regexp.MustCompile("/v1/asterisks/" + regUUID + "/channels/" + regUUID + "/health-check")
+	regV1AsterisksIDChannelsIDHealth = regexp.MustCompile("/v1/asterisks/(.*)/channels/(.*)/health-check")
 
 	// calls
 	regV1CallsID              = regexp.MustCompile("/v1/calls/" + regUUID)
@@ -96,6 +96,7 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 	switch {
 	// v1
 
+	// asterisks
 	case regV1AsterisksIDChannelsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		return h.processV1AsterisksIDChannelsIDHealthPost(m)
 
@@ -110,5 +111,10 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 		return h.processV1CallsIDActionTimeoutPost(m)
 	}
 
+	logrus.WithFields(
+		logrus.Fields{
+			"uri":    m.URI,
+			"method": m.Method,
+		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
 	return simpleResponse(404), nil
 }
