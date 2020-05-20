@@ -92,6 +92,14 @@ type ChannelLeftBridge struct {
 	Bridge  Bridge  `json:"bridge"`
 }
 
+// ChannelDtmfReceived ARI event struct
+type ChannelDtmfReceived struct {
+	Event
+	Digit    string  `json:"digit"`
+	Duration int     `json:"duration_ms"`
+	Channel  Channel `json:"channel"`
+}
+
 // ParseChannel parses message into Channel struct
 func ParseChannel(message []byte) (*Channel, error) {
 	res := &Channel{}

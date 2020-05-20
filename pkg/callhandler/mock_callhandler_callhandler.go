@@ -50,6 +50,20 @@ func (mr *MockCallHandlerMockRecorder) ARIChannelDestroyed(arg0 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelDestroyed", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelDestroyed), arg0)
 }
 
+// ARIChannelDtmfReceived mocks base method
+func (m *MockCallHandler) ARIChannelDtmfReceived(arg0 *channel.Channel, arg1 string, arg2 int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIChannelDtmfReceived", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIChannelDtmfReceived indicates an expected call of ARIChannelDtmfReceived
+func (mr *MockCallHandlerMockRecorder) ARIChannelDtmfReceived(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelDtmfReceived", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelDtmfReceived), arg0, arg1, arg2)
+}
+
 // ARIChannelEnteredBridge mocks base method
 func (m *MockCallHandler) ARIChannelEnteredBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()

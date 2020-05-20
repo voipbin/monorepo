@@ -160,3 +160,36 @@ func (r *requestHandler) AstChannelGet(asteriskID, channelID string) (*channel.C
 	channel := channel.NewChannelByChannel(tmpChannel)
 	return channel, nil
 }
+
+// AstChannelDTMF sends the dtmf request
+func (r *requestHandler) AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error {
+	url := fmt.Sprintf("/ari/channels/%s/dtmf", channelID)
+
+	type Data struct {
+		DTMF     string `json:"dtmf"`
+		Duration int    `json:"duration"`
+		Before   int    `json:"before"`
+		Between  int    `json:"between"`
+		After    int    `json:"after"`
+	}
+
+	m, err := json.Marshal(Data{
+		digit,
+		duration,
+		before,
+		between,
+		after,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsHangup, requestTimeoutDefault, ContentTypeJSON, string(m))
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}

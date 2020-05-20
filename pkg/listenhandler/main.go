@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
@@ -37,6 +38,28 @@ var (
 	regV1CallsIDHealth        = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check")
 	regV1CallsIDActionTimeout = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
 )
+
+var (
+	metricsNamespace = "call_manager"
+
+	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "receive_request_process_time",
+			Help:      "Process time of received request",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000,
+			},
+		},
+		[]string{"type", "method"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promReceivedRequestProcessTime,
+	)
+}
 
 // simpleResponse returns simple rabbitmq response
 func simpleResponse(code int) *rabbitmq.Response {
@@ -93,28 +116,44 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response, error) {
 
+	var requestType string
+	var err error
+	var response *rabbitmq.Response
+
+	start := time.Now()
 	switch {
 	// v1
 
 	// asterisks
 	case regV1AsterisksIDChannelsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
-		return h.processV1AsterisksIDChannelsIDHealthPost(m)
+		response, err = h.processV1AsterisksIDChannelsIDHealthPost(m)
+		requestType = "/v1/asterisks/channels/health-check"
 
 	// calls
 	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
-		return h.processV1CallsIDGet(m)
+		response, err = h.processV1CallsIDGet(m)
+		requestType = "/v1/calls"
 
 	case regV1CallsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
-		return h.processV1CallsIDHealthPost(m)
+		response, err = h.processV1CallsIDHealthPost(m)
+		requestType = "/v1/calls/health-check"
 
 	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
-		return h.processV1CallsIDActionTimeoutPost(m)
-	}
+		response, err = h.processV1CallsIDActionTimeoutPost(m)
+		requestType = "/v1/calls/action-timeout"
 
-	logrus.WithFields(
-		logrus.Fields{
-			"uri":    m.URI,
-			"method": m.Method,
-		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
-	return simpleResponse(404), nil
+	default:
+		logrus.WithFields(
+			logrus.Fields{
+				"uri":    m.URI,
+				"method": m.Method,
+			}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		response = simpleResponse(404)
+		err = nil
+		requestType = "notfound"
+	}
+	elapsed := time.Since(start)
+	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
+
+	return response, err
 }

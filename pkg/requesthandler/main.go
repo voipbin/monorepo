@@ -90,6 +90,7 @@ type RequestHandler interface {
 	AstChannelAnswer(asteriskID, channelID string) error
 	AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error
 	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
+	AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error
 	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
 	AstChannelVariableSet(asteriskID, channelID, variable, value string) error

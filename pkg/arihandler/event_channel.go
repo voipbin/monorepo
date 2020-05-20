@@ -56,6 +56,22 @@ func (h *ariHandler) eventHandlerChannelDestroyed(ctx context.Context, evt inter
 	return nil
 }
 
+// eventHandlerChannelDtmfReceived handels ChannelDtmfReceived ARI event
+func (h *ariHandler) eventHandlerChannelDtmfReceived(ctx context.Context, evt interface{}) error {
+	e := evt.(*ari.ChannelDtmfReceived)
+
+	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
+	if err != nil {
+		return err
+	}
+
+	if err := h.callHandler.ARIChannelDtmfReceived(cn, e.Digit, e.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // eventHandlerChannelEnteredBridge handles ChannelEnteredBridge ARI event
 func (h *ariHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelEnteredBridge)

@@ -22,6 +22,7 @@ const (
 	EventTypeBridgeDestroyed      EventType = "BridgeDestroyed"
 	EventTypeChannelCreated       EventType = "ChannelCreated"
 	EventTypeChannelDestroyed     EventType = "ChannelDestroyed"
+	EventTypeChannelDtmfReceived  EventType = "ChannelDtmfReceived"
 	EventTypeChannelEnteredBridge EventType = "ChannelEnteredBridge"
 	EventTypeChannelHangupRequest EventType = "ChannelHangupRequest"
 	EventTypeChannelLeftBridge    EventType = "ChannelLeftBridge"
@@ -50,6 +51,7 @@ func Parse(message []byte) (*Event, interface{}, error) {
 		EventTypeBridgeDestroyed:      &BridgeDestroyed{},
 		EventTypeChannelCreated:       &ChannelCreated{},
 		EventTypeChannelDestroyed:     &ChannelDestroyed{},
+		EventTypeChannelDtmfReceived:  &ChannelDtmfReceived{},
 		EventTypeChannelEnteredBridge: &ChannelEnteredBridge{},
 		EventTypeChannelHangupRequest: &ChannelHangupRequest{},
 		EventTypeChannelLeftBridge:    &ChannelLeftBridge{},

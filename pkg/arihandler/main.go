@@ -144,6 +144,7 @@ func (h *ariHandler) processEvent(m *rabbitmq.Event) error {
 		ari.EventTypeBridgeDestroyed:      h.eventHandlerBridgeDestroyed,
 		ari.EventTypeChannelCreated:       h.eventHandlerChannelCreated,
 		ari.EventTypeChannelDestroyed:     h.eventHandlerChannelDestroyed,
+		ari.EventTypeChannelDtmfReceived:  h.eventHandlerChannelDtmfReceived,
 		ari.EventTypeChannelEnteredBridge: h.eventHandlerChannelEnteredBridge,
 		ari.EventTypeChannelLeftBridge:    h.eventHandlerChannelLeftBridge,
 		ari.EventTypeChannelStateChange:   h.eventHandlerChannelStateChange,

@@ -346,3 +346,69 @@ func TestParseChannelLeftBridge(t *testing.T) {
 		})
 	}
 }
+
+func TestParseChannelDtmfReceived(t *testing.T) {
+	type test struct {
+		name        string
+		message     string
+		expectEvent *ChannelDtmfReceived
+	}
+
+	tests := []test{
+		{
+			"normal",
+			`{"type":"ChannelDtmfReceived","timestamp":"2020-05-20T06:40:45.663+0000","digit":"9","duration_ms":100,"channel":{"id":"1589956827.6285","name":"PJSIP/call-in-00000633","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"9912321321","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=n1kN7Utaj-,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-20T06:40:27.599+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			&ChannelDtmfReceived{
+				Event{
+					Type:        EventTypeChannelDtmfReceived,
+					Application: "voipbin",
+					Timestamp:   "2020-05-20T06:40:45.663",
+					AsteriskID:  "42:01:0a:a4:00:05",
+				},
+				"9",
+				100,
+				Channel{
+					ID:           "1589956827.6285",
+					Name:         "PJSIP/call-in-00000633",
+					Language:     "en",
+					CreationTime: "2020-05-20T06:40:27.599",
+					State:        "Up",
+					Caller: CallerID{
+						Name:   "tttt",
+						Number: "pchero",
+					},
+					Dialplan: DialplanCEP{
+						Context:  "call-in",
+						Exten:    "9912321321",
+						Priority: 2,
+						AppName:  "Stasis",
+						AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=n1kN7Utaj-,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event, evt, err := Parse([]byte(tt.message))
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if event.Type != EventTypeChannelDtmfReceived {
+				t.Errorf("Wrong match. expect: %s, got: %s", EventTypeChannelDtmfReceived, event.Type)
+			}
+
+			e := evt.(*ChannelDtmfReceived)
+			if e.Type != EventTypeChannelDtmfReceived {
+				t.Errorf("Wrong match. expect: %s, got: %s", EventTypeChannelDtmfReceived, e.Type)
+			}
+
+			if reflect.DeepEqual(tt.expectEvent, e) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectEvent, e)
+			}
+		})
+	}
+
+}
