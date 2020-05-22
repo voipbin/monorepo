@@ -67,12 +67,22 @@ var (
 		},
 		[]string{"direction", "type", "reason"},
 	)
+
+	promCallActionTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "call_action_total",
+			Help:      "Total number of executed actions.",
+		},
+		[]string{"type"},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(
 		promCallCreateTotal,
 		promCallHangupTotal,
+		promCallActionTotal,
 	)
 }
 

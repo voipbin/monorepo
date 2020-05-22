@@ -4,8 +4,9 @@ import uuid "github.com/gofrs/uuid"
 
 // Conference type
 type Conference struct {
-	ID   uuid.UUID
-	Type Type
+	ID       uuid.UUID
+	Type     Type
+	BridgeID string
 
 	Status Status
 	Name   string
@@ -43,10 +44,11 @@ const (
 )
 
 // NewConference creates a new conference
-func NewConference(cType Type, name, detail string) *Conference {
+func NewConference(id uuid.UUID, cType Type, bridgeID, name, detail string) *Conference {
 	cf := &Conference{
-		ID:   uuid.Must(uuid.NewV4()),
-		Type: cType,
+		ID:       id,
+		Type:     cType,
+		BridgeID: bridgeID,
 
 		Name:   name,
 		Detail: detail,

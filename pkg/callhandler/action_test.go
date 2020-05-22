@@ -1,0 +1,119 @@
+package callhandler
+
+import (
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
+)
+
+func TestActionExecuteEcho(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name          string
+		call          *call.Call
+		action        *action.Action
+		expectAction  *action.Action
+		expectTimeout int
+	}
+
+	tests := []test{
+		{
+			"empty action",
+			&call.Call{},
+			&action.Action{
+				Type:   action.TypeEcho,
+				Option: []byte(`{}`),
+			},
+			&action.Action{
+				Type:   action.TypeEcho,
+				ID:     uuid.Nil,
+				Option: []byte(`{"duration":180000,"dtmf":false}`),
+			},
+			180 * 1000,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
+			mockConf.EXPECT().Start(conference.TypeEcho, tt.call).Return(nil, nil)
+			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, tt.expectTimeout, tt.expectAction)
+
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionExecuteConferenceJoin(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name              string
+		call              *call.Call
+		action            *action.Action
+		expectAction      *action.Action
+		expectConfereneID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"empty action",
+			&call.Call{},
+			&action.Action{
+				Type:   action.TypeConferenceJoin,
+				Option: []byte(`{}`),
+			},
+			&action.Action{
+				Type:   action.TypeConferenceJoin,
+				ID:     uuid.Nil,
+				Option: []byte(`{"conference_id":""}`),
+				// Option: []byte(`{"duration":180000,"dtmf":false}`),
+			},
+			uuid.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
+			mockConf.EXPECT().Join(tt.expectConfereneID, tt.call.ID)
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

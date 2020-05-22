@@ -2,6 +2,8 @@ package action
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 
 	uuid "github.com/gofrs/uuid"
 )
@@ -37,17 +39,35 @@ var (
 	IDEnd   uuid.UUID = uuid.Nil
 )
 
+// Matches return true if the given items are the same
+func (a *Action) Matches(x interface{}) bool {
+	compAction := x.(*Action)
+	act := *a
+	act.TMExecute = compAction.TMExecute
+	return reflect.DeepEqual(&act, compAction)
+}
+
+func (a *Action) String() string {
+	return fmt.Sprintf("%v", *a)
+}
+
 // Type type
 type Type string
 
 // List of Action types
 const (
-	TypeEcho   Type = "echo"
-	TypeAnswer Type = "answer"
+	TypeEcho           Type = "echo"
+	TypeAnswer         Type = "answer"
+	TypeConferenceJoin Type = "conference_join"
 )
 
 // OptionEcho struct
 type OptionEcho struct {
 	Duration int  `json:"duration"` // echo duration. ms
 	DTMF     bool `json:"dtmf"`     // sending back the dtmf on/off
+}
+
+// OptionConferenceJoin struct
+type OptionConferenceJoin struct {
+	ConferenceID string `json:"conference_id"`
 }

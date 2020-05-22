@@ -1,7 +1,8 @@
 create table cm_conferences(
   -- identity
-  id    binary(16),   -- id
-  type  varchar(255), -- type
+  id    binary(16),       -- id
+  type  varchar(255),     -- type
+  bridge_id varchar(255), -- conference's bridge id
 
   -- info
   status  varchar(255),   -- status

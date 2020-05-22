@@ -69,22 +69,24 @@ func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference,
 	ctx := context.Background()
 
 	// create a conference
-	cf := conference.NewConference(conference.TypeEcho, "echo", "action echo")
+	id := uuid.Must(uuid.NewV4())
 
 	log := log.WithFields(
 		log.Fields{
 			"call":       c.ID.String(),
-			"conference": cf.ID.String(),
-			"type":       cf.Type,
+			"conference": id.String(),
+			"type":       conference.TypeEcho,
 		})
 	log.Debug("Starting conference.")
 
 	// create a bridge and add to conference
 	bridgeID := uuid.Must(uuid.NewV4()).String()
-	bridgeName := generateBridgeName(conference.TypeEcho, cf.ID)
+	bridgeName := generateBridgeName(conference.TypeEcho, id)
 	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, bridge.TypeMixing); err != nil {
 		return nil, fmt.Errorf("could not create a bridge for echo conference. err: %v", err)
 	}
+
+	cf := conference.NewConference(id, conference.TypeEcho, bridgeID, "echo", "action echo")
 	cf.BridgeIDs = append(cf.BridgeIDs, bridgeID)
 
 	log = log.WithFields(
@@ -100,7 +102,7 @@ func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference,
 
 	// create a snoop channel
 	args := fmt.Sprintf("CONTEXT=%s,CONFERENCE_ID=%s,BRIDGE_ID=%s,CALL_ID=%s",
-		ContextConferenceEcho,
+		contextConferenceEcho,
 		cf.ID.String(),
 		bridgeID,
 		c.ID.String(),

@@ -37,7 +37,9 @@ type conferenceHandler struct {
 
 // Contexts of conference types
 const (
-	ContextConferenceEcho string = "conf-echo"
+	contextConferenceEcho     string = "conf-echo"
+	contextConferenceJoining  string = "conf-joining"
+	contextConferenceIncoming string = "conf-in"
 )
 
 var (
@@ -98,10 +100,6 @@ func NewConferHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) Co
 	}
 
 	return h
-}
-
-func (h *conferenceHandler) Join(id, callID uuid.UUID) error {
-	return nil
 }
 
 func (h *conferenceHandler) leaveTypeEcho(c *call.Call) error {
