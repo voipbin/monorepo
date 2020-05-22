@@ -45,8 +45,10 @@ type Type string
 
 // List of CallType
 const (
-	TypeFlow Type = "flow"
-	TypeEcho Type = "echo"
+	TypeNone       Type = ""
+	TypeFlow       Type = "flow"
+	TypeEcho       Type = "echo"
+	TypeConference Type = "conference"
 )
 
 // AddressType type

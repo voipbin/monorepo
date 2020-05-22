@@ -11,7 +11,7 @@ import (
 func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel) error {
 
 	mapType := map[interface{}]func(*channel.Channel) error{
-		ContextConferenceEcho: h.ariStasisStartContextEcho,
+		contextConferenceEcho: h.ariStasisStartContextEcho,
 	}
 
 	handler := mapType[cn.Data["CONTEXT"]]

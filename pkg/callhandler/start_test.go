@@ -2,8 +2,6 @@ package callhandler
 
 import (
 	"encoding/json"
-	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -17,68 +15,47 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
-type matchAction struct {
-	action action.Action
-}
-
-func isSameAction(a *action.Action) gomock.Matcher {
-	return &matchAction{
-		action: *a,
-	}
-}
-
-func (a *matchAction) Matches(x interface{}) bool {
-	compAction := x.(*action.Action)
-	act := a.action
-	act.TMExecute = compAction.TMExecute
-	return reflect.DeepEqual(&act, compAction)
-}
-
-func (a *matchAction) String() string {
-	return fmt.Sprintf("%v", a.action)
-}
-
 func TestGetService(t *testing.T) {
 	type test struct {
-		name          string
-		channel       *channel.Channel
-		expectService service
+		name       string
+		channel    *channel.Channel
+		expectType call.Type
 	}
 
 	tests := []test{
 		{
-			"normal",
-			&channel.Channel{
-				Data: map[string]interface{}{
-					"CONTEXT": contextIncomingVoip,
-					"DOMAIN":  domainEcho,
-				},
-			},
-			svcEcho,
-		},
-		{
-			"normal",
+			"normal echo",
 			&channel.Channel{
 				Data: map[string]interface{}{
 					"CONTEXT": contextIncomingCall,
 					"DOMAIN":  domainEcho,
 				},
 			},
-			svcEcho,
+			call.TypeEcho,
+		},
+		{
+			"normal conference soft",
+			&channel.Channel{
+				Data: map[string]interface{}{
+					"CONTEXT": contextIncomingCall,
+					"DOMAIN":  domainConference,
+				},
+			},
+			call.TypeConference,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service := getService(tt.channel)
-			if service != tt.expectService {
-				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectService, service)
+			service := getType(tt.channel)
+			if service != tt.expectType {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectType, service)
 			}
 		})
 	}
 }
 
-func TestServiceEchoStart(t *testing.T) {
+func TestTypeEchoStart(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -105,6 +82,10 @@ func TestServiceEchoStart(t *testing.T) {
 				ID:         "f82007c4-92e2-11ea-a3e2-138ed7e90501",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "PJSIP/in-voipbin-00000948",
+				Data: map[string]interface{}{
+					"CONTEXT": "call-in",
+					"DOMAIN":  "echo.voipbin.net",
+				},
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
@@ -134,21 +115,84 @@ func TestServiceEchoStart(t *testing.T) {
 				Next:   action.IDEnd,
 			}
 
-			// type actionMatcher interface{}
-			// (a *actionMatcher)Matches()
-
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 
-			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), isSameAction(action)).Return(nil)
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 
-			// mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 			mockConf.EXPECT().Start(conference.TypeEcho, gomock.Any())
-			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), option.Duration, isSameAction(action))
+			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), option.Duration, action)
 
-			h.serviceEchoStart(tt.channel)
+			h.Start(tt.channel)
+		})
+	}
+}
+
+func TestTypeConferenceStart(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name       string
+		channel    *channel.Channel
+		call       *call.Call
+		conference *conference.Conference
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&channel.Channel{
+				ID:         "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Name:       "PJSIP/in-voipbin-00000999",
+				Data: map[string]interface{}{
+					"CONTEXT": "call-in",
+					"DOMAIN":  "conference.voipbin.net",
+				},
+				DestinationNumber: "bad943d8-9b59-11ea-b409-4ba263721f17",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ChannelID:  "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
+				Type:       call.TypeConference,
+				Direction:  call.DirectionIncoming,
+			},
+			&conference.Conference{
+				ID:   uuid.FromStringOrNil("bad943d8-9b59-11ea-b409-4ba263721f17"),
+				Type: conference.TypeConference,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.conference, nil)
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutConference).Return(nil)
+			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+
+			// actionExecuteConferenceJoin part.
+			// just pass it.
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockConf.EXPECT().Join(gomock.Any(), gomock.Any()).Return(nil)
+
+			h.Start(tt.channel)
 		})
 	}
 }

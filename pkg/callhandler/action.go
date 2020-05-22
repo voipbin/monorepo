@@ -15,10 +15,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// setAction sets the action to the call
+func (h *callHandler) setAction(c *call.Call, a *action.Action) error {
+	// set action
+	if err := h.db.CallSetAction(context.Background(), c.ID, a); err != nil {
+		return fmt.Errorf("could not set the action for call. call: %s, err: %v", c.ID, err)
+	}
+	promCallActionTotal.WithLabelValues(string(a.Type)).Inc()
+
+	return nil
+}
+
+// ActionExecute execute the action withe the call
 func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	switch a.Type {
 	case action.TypeEcho:
 		return h.actionExecuteEcho(c, a)
+
+	case action.TypeConferenceJoin:
+		return h.actionExecuteConferenceJoin(c, a)
 
 	default:
 		return fmt.Errorf("no action handle found. type: %s", a.Type)
@@ -117,7 +132,7 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	var option action.OptionEcho
 	if err := json.Unmarshal(act.Option, &option); err != nil {
 		log.Errorf("could not parse the option. err: %v", err)
-		return fmt.Errorf("could not parse option. action: %v, err: %v", a, err)
+		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
 	}
 
 	// set default duration if it is not set correctly
@@ -134,7 +149,7 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	act.Option = rawOption
 
 	// set action
-	if err := h.db.CallSetAction(context.Background(), c.ID, &act); err != nil {
+	if err := h.setAction(c, &act); err != nil {
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
@@ -152,6 +167,50 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
+	}
+
+	return nil
+}
+
+// actionExecuteConferenceJoin executes the action type ConferenceJoin
+func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action) error {
+	// copy the action
+	act := *a
+
+	// set current time
+	act.TMExecute = getCurTime()
+
+	log := log.WithFields(
+		log.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionConferenceJoin
+	if err := json.Unmarshal(act.Option, &option); err != nil {
+		log.Errorf("could not parse the option. err: %v", err)
+		return fmt.Errorf("could not parse option. action: %v, err: %v", a, err)
+	}
+	cfID := uuid.FromStringOrNil(option.ConferenceID)
+
+	// set option
+	rawOption, err := json.Marshal(option)
+	if err != nil {
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not marshal the action option. err: %v", err)
+	}
+	act.Option = rawOption
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	if err := h.confHandler.Join(cfID, c.ID); err != nil {
+		log.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
+		h.ActionNext(c)
 	}
 
 	return nil
