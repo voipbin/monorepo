@@ -12,15 +12,15 @@ Usage of ./asterisk-proxy:
   -ari_addr string
         The asterisk-proxy connects to this asterisk ari service address (default "localhost:8088")
   -ari_application string
-        The asterisk-proxy uses this asterisk ari application name. (default "asterisk-proxy")
+        The asterisk-proxy uses this asterisk ari application name. (default "voipbin")
   -ari_subscribe_all string
         The asterisk-proxy uses this asterisk subscribe all option. (default "true")
   -rabbit_addr string
         The asterisk-proxy connect to rabbitmq address. (default "amqp://guest:guest@localhost:5672")
-  -rabbit_queue_arievent string
-        The asterisk-proxy sends the ARI event to this rabbitmq queue name. (default "asterisk_ari_event")
-  -rabbit_queue_arirequest string
-        The asterisk-proxy gets the ARI request from this rabbitmq queue name. (default "asterisk_ari_request-<asterisk id>")
+  -rabbit_queue_listen string
+        Comma separated asterisk-proxy's listen request queue name. (default "asterisk.<asterisk_id>.request,asterisk.call.request")
+  -rabbit_queue_publish string
+        The asterisk-proxy sends the ARI event to this rabbitmq queue name. The queue must be created before. (default "asterisk.all.event")
 ```
 
 example
