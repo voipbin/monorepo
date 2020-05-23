@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/voip/asterisk-proxy/internal/rabbitmq"
+	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
 )
 
 var (
@@ -47,7 +47,7 @@ func sendRequest(m *rabbitmq.Request) (int, string, error) {
 		"request": m,
 	}).Debug("Sending ARI request.")
 
-	req, err := http.NewRequest(m.Method, url, strings.NewReader(m.Data))
+	req, err := http.NewRequest(string(m.Method), url, strings.NewReader(m.Data))
 	if err != nil {
 		return 0, "", err
 	}
@@ -78,17 +78,12 @@ func sendRequest(m *rabbitmq.Request) (int, string, error) {
 }
 
 // RequestHandler handles RPC request message
-func RequestHandler(request string) (string, error) {
-	// parse
-	m, err := parse([]byte(request))
-	if err != nil {
-		return "", err
-	}
-
+func RequestHandler(request *rabbitmq.Request) (*rabbitmq.Response, error) {
 	// send the request to Asterisk
-	statusCode, resData, err := sendRequest(m)
+	// statusCode, resData, err := sendRequest(m)
+	statusCode, resData, err := sendRequest(request)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	response := &rabbitmq.Response{
@@ -97,10 +92,5 @@ func RequestHandler(request string) (string, error) {
 		Data:       resData,
 	}
 
-	res, err := json.Marshal(response)
-	if err != nil {
-		return "", err
-	}
-
-	return string(res), nil
+	return response, nil
 }

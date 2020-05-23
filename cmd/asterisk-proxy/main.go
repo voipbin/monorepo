@@ -5,46 +5,42 @@ import (
 	"fmt"
 	"log/syslog"
 	"net/url"
+	"strings"
 	"time"
 
-	"gitlab.com/voipbin/voip/asterisk-proxy/internal/rabbitmq"
 	"gitlab.com/voipbin/voip/asterisk-proxy/internal/rpc"
+	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
 
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
-
-	"github.com/streadway/amqp"
 )
 
 var ariAddr = flag.String("ari_addr", "localhost:8088", "The asterisk-proxy connects to this asterisk ari service address")
 var ariAccount = flag.String("ari_account", "asterisk:asterisk", "The asterisk-proxy uses this asterisk ari account info. id:password")
 var ariSubscribeAll = flag.String("ari_subscribe_all", "true", "The asterisk-proxy uses this asterisk subscribe all option.")
-var ariApplication = flag.String("ari_application", "asterisk-proxy", "The asterisk-proxy uses this asterisk ari application name.")
+var ariApplication = flag.String("ari_application", "voipbin", "The asterisk-proxy uses this asterisk ari application name.")
 
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "The asterisk-proxy connect to rabbitmq address.")
-var rabbitQueueARIEvent = flag.String("rabbit_queue_arievent", "asterisk_ari_event", "The asterisk-proxy sends the ARI event to this rabbitmq queue name.")
-var rabbitQueueARIRequest = flag.String("rabbit_queue_arirequest", "asterisk_ari_request-<asterisk id>", "The asterisk-proxy gets the ARI request from this rabbitmq queue name.")
+var rabbitQueueListenRequest = flag.String("rabbit_queue_listen", "asterisk.<asterisk_id>.request,asterisk.call.request", "Comma separated asterisk-proxy's listen request queue name.")
+var rabbitQueuePublishEvent = flag.String("rabbit_queue_publish", "asterisk.all.event", "The asterisk-proxy sends the ARI event to this rabbitmq queue name. The queue must be created before.")
 
 // create message buffer
 var chARIEvent = make(chan []byte, 1024000)
-var chRabbitMQReconnect = make(chan bool)
-
-// logger for global
-// var log = logrus.New()
 
 func main() {
 	initProcess()
 
-	// asterisk ari message receiver
-	go recevieARIEvent()
+	// connect to rabbitmq
+	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
 
-	// push the message into rabbitmq
-	go handleARIEvent()
+	// handle events from the asterisk
+	go handleEvent(rabbitSock)
 
-	// handle ARI request to Asterisk
-	go handleARIRequest()
+	// handle request from the request queue
+	go handleRequest(rabbitSock)
 
 	forever := make(chan bool)
 	<-forever
@@ -60,13 +56,21 @@ func initProcess() {
 	hook, err := lSyslog.NewSyslogHook("", "", syslog.LOG_INFO, "")
 	if err == nil {
 		log.AddHook(hook)
-		// log.Hooks.Add(hook)
 	}
 
-	rabbitmq.Initiate()
+	// rabbitmq.Initiate()
 	rpc.Initiate(*ariAddr, *ariAccount)
 
 	log.Info("asterisk-proxy has initiated.")
+}
+
+func handleEvent(rabbitSock rabbitmq.Rabbit) {
+	// asterisk ari message receiver
+	go recevieARIEvent()
+
+	// push the message into rabbitmq
+	go handleARIEvent(rabbitSock)
+
 }
 
 // connectARI connects to Asterisk's ARI websocket.
@@ -132,73 +136,38 @@ func recevieARIEvent() {
 	}
 }
 
-// connectRabbitMQ connects to the gvien rabbitMQ address.
-// returned *amqp.Connection must be closed after use.
-func connectRabbitMQ(addr string) *amqp.Connection {
-	for {
-		// connect to rabbit mq
-		conn, err := amqp.Dial(addr)
-		if err == nil {
-			// connected.
-			return conn
-		}
-
-		log.Errorf("Could not connect to RabbitMQ. addr: %s, err: %v", addr, err)
-		time.Sleep(1 * time.Second)
-	}
-}
-
 // handleARIEvent handles rabbitMQ connection and message delivery.
-func handleARIEvent() {
+func handleARIEvent(rabbitSock rabbitmq.Rabbit) {
 	for {
-		// connect to rabbitmq
-		conn := connectRabbitMQ(*rabbitAddr)
-		defer conn.Close()
-
-		// create channel
-		ch, err := conn.Channel()
-		if err != nil {
-			log.Errorf("Could not create a channel for RabbitMQ send. err: %v", err)
-
-			time.Sleep(time.Second * 1)
-			continue
+		select {
+		case msg := <-chARIEvent:
+			event := &rabbitmq.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     string(msg),
+			}
+			go rabbitSock.PublishEvent(*rabbitQueuePublishEvent, event)
 		}
-		defer ch.Close()
-
-		publishMessage()
-
-		<-chRabbitMQReconnect
-		time.Sleep(time.Second * 1)
 	}
 }
 
 // handleARIRequest handles Asterisk request through the rabbit RPC.
-func handleARIRequest() {
-	// connect new queue.
-	q := rabbitmq.NewQueue(*rabbitAddr, *rabbitQueueARIRequest, false)
-	go func(q *rabbitmq.Queue) {
+func handleRequest(rabbitSock rabbitmq.Rabbit) {
+	queues := strings.Split(*rabbitQueueListenRequest, ",")
+	for _, queue := range queues {
+		log.Debugf("Declaring request queue. queue: %s", queue)
+		if err := rabbitSock.QueueDeclare(queue, false, false, false, false); err != nil {
+			logrus.WithFields(
+				logrus.Fields{
+					"queue": queue,
+				}).Errorf("Could not declare the queue. err: %v", err)
+		}
+	}
+
+	go func(rabbitmq.Rabbit) {
 		for {
-			q.ConsumeRPC("", rpc.RequestHandler)
+			rabbitSock.ConsumeRPC("", "asterisk-proxy", rpc.RequestHandler)
 			time.Sleep(time.Second * 1)
 		}
-	}(q)
-}
-
-// consumeMessage publish the Asterisk ARI event to the queue.
-func publishMessage() {
-	q := rabbitmq.NewQueue(*rabbitAddr, *rabbitQueueARIEvent, true)
-
-	go func(*rabbitmq.Queue) {
-		for {
-			select {
-			case msg := <-chARIEvent:
-				event := &rabbitmq.Event{
-					Type:     "ari_event",
-					DataType: "application/json",
-					Data:     string(msg),
-				}
-				q.PublishMessage(event)
-			}
-		}
-	}(q)
+	}(rabbitSock)
 }

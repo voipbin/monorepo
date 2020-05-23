@@ -7,7 +7,8 @@ import (
 	"net/url"
 	"testing"
 
-	"gitlab.com/voipbin/voip/asterisk-proxy/internal/rabbitmq"
+	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
+	// "gitlab.com/voipbin/voip/asterisk-proxy/internal/rabbitmq"
 )
 
 func TestInitiate(t *testing.T) {
@@ -170,14 +171,21 @@ func TestRequestHandler(t *testing.T) {
 	url := fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
 	Initiate(url, "asterisk:asterisk")
 
-	m := `{
-		"url": "/channels/create",
-		"method": "POST",
-		"data": "{ \"endpoint\": \"PJSIP/pchero-voip/sip:test@127.0.0.1\", \"app\": \"voipbin_test\", \"appArgs\": \"\", \"channelId\": \"03102122-7895-11ea-9721-63dc96d187a1\", \"callerId\": \"test\" }",
-		"data_type": "application/json"
-	}`
+	// m := `{
+	// 	"url": "/channels/create",
+	// 	"method": "POST",
+	// 	"data": "{ \"endpoint\": \"PJSIP/pchero-voip/sip:test@127.0.0.1\", \"app\": \"voipbin_test\", \"appArgs\": \"\", \"channelId\": \"03102122-7895-11ea-9721-63dc96d187a1\", \"callerId\": \"test\" }",
+	// 	"data_type": "application/json"
+	// }`
 
-	_, err := RequestHandler(m)
+	request := &rabbitmq.Request{
+		URI:      "/channels/create",
+		Method:   "POST",
+		Data:     "{ \"endpoint\": \"PJSIP/pchero-voip/sip:test@127.0.0.1\", \"app\": \"voipbin_test\", \"appArgs\": \"\", \"channelId\": \"03102122-7895-11ea-9721-63dc96d187a1\", \"callerId\": \"test\" }",
+		DataType: "application/json",
+	}
+
+	_, err := RequestHandler(request)
 	if err != nil {
 		t.Errorf("Wront match. expect: ok, got: %v", err)
 	}
