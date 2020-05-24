@@ -139,8 +139,7 @@ func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.
 	}
 
 	// create target
-	var requestTargetPrefix = "asterisk_ari_request"
-	target := fmt.Sprintf("%s-%s", requestTargetPrefix, asteriskID)
+	target := fmt.Sprintf("asterisk.%s.request", asteriskID)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()

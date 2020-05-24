@@ -16,8 +16,6 @@ Usage of ./call-manager:
         rabbitmq exchange name for delayed messaging. (default "bin-manager.delay")
   -rabbit_queue_arievent string
         rabbitmq asterisk ari event queue name. (default "asterisk_ari_event")
-  -rabbit_queue_arirequest string
-        rabbitmq asterisk ari request queue prefix. (default "asterisk_ari_request")
   -rabbit_queue_flow string
         rabbitmq queue name for flow request (default "bin-manager.flow-manager.request")
   -rabbit_queue_listen string

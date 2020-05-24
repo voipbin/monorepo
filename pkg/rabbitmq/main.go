@@ -80,7 +80,6 @@ type rabbit struct {
 
 	errorChannel chan *amqp.Error
 	connection   *amqp.Connection
-	channel      *amqp.Channel
 	closed       bool
 
 	queues     map[string]*queue
@@ -95,7 +94,8 @@ type queue struct {
 	exclusive  bool
 	noWait     bool
 
-	qeueue *amqp.Queue
+	channel *amqp.Channel
+	qeueue  *amqp.Queue
 }
 
 type queueBind struct {
@@ -115,6 +115,8 @@ type exchange struct {
 	internal   bool
 	noWait     bool
 	args       amqp.Table
+
+	channel *amqp.Channel
 }
 
 // CbMsgConsume is func prototype for message read callback.
@@ -153,7 +155,6 @@ func (r *rabbit) Close() {
 	}).Info("Close the rabbitmq connection.")
 
 	r.closed = true
-	r.channel.Close()
 	r.connection.Close()
 }
 
@@ -185,15 +186,6 @@ func (r *rabbit) connect() {
 			continue
 		}
 		r.connection = conn
-
-		// set channel
-		r.channel, err = r.connection.Channel()
-		if err != nil {
-			log.Errorf("Could not create a channel. Will retry again after 1 sec. err: %v", err)
-			time.Sleep(time.Second * 1)
-			r.connection.Close()
-			continue
-		}
 
 		// set error channel
 		r.errorChannel = make(chan *amqp.Error)

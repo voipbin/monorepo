@@ -1,6 +1,8 @@
 package rabbitmq
 
 import (
+	"fmt"
+
 	"github.com/streadway/amqp"
 )
 
@@ -19,13 +21,23 @@ func (r *rabbit) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, 
 		return 0, nil
 	}
 
-	return r.channel.QueueDelete(name, ifUnused, ifEmpty, noWait)
+	_, err := queue.channel.QueueDelete(name, ifUnused, ifEmpty, noWait)
+	if err != nil {
+		return 0, err
+	}
+
+	return 0, nil
 }
 
 // QueueDeclare declares the rabbitmq queue using name and add it to the queues.
 func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error {
+	channel, err := r.connection.Channel()
+	if err != nil {
+		return err
+	}
+
 	// declare the queue
-	q, err := r.channel.QueueDeclare(
+	q, err := channel.QueueDeclare(
 		name,       // name
 		durable,    // durable
 		autoDelete, // delete when unused
@@ -43,7 +55,9 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 		autoDelete: autoDelete,
 		exclusive:  exclusive,
 		noWait:     noWait,
-		qeueue:     &q,
+
+		channel: channel,
+		qeueue:  &q,
 	}
 
 	return nil
@@ -51,7 +65,12 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 
 // QueueBind binds queue and exchange with a key
 func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
-	if err := r.channel.QueueBind(name, key, exchange, noWait, args); err != nil {
+	queue := r.queueGet(name)
+	if queue == nil {
+		return fmt.Errorf("no queue found")
+	}
+
+	if err := queue.channel.QueueBind(name, key, exchange, noWait, args); err != nil {
 		return err
 	}
 
