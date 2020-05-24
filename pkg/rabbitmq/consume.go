@@ -11,13 +11,13 @@ import (
 // ConsumeMessage consumes message
 // If the queueName was not defined, then defines with default values.
 func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error {
-	q := r.queueGet(queueName)
-	if q == nil {
-		return fmt.Errorf("no queue found")
+	queue := r.queueGet(queueName)
+	if queue == nil {
+		return fmt.Errorf("queue not found")
 	}
 
-	messages, err := r.channel.Consume(
-		q.name,       // queue
+	messages, err := queue.channel.Consume(
+		queueName,    // queue
 		consumerName, // messageConsumer
 		true,         // auto-ack
 		false,        // exclusive
@@ -49,13 +49,13 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 
 // ConsumeRPC consumes RPC message
 func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) error {
-	q := r.queueGet(queueName)
-	if q == nil {
-		return fmt.Errorf("no queue found")
+	queue := r.queueGet(queueName)
+	if queue == nil {
+		return fmt.Errorf("queue not found")
 	}
 
-	messages, err := r.channel.Consume(
-		q.name,       // queue
+	messages, err := queue.channel.Consume(
+		queueName,    // queue
 		consumerName, // messageConsumer
 		true,         // auto-ack
 		false,        // exclusive
@@ -90,32 +90,34 @@ func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) 
 
 		// reply response
 		if message.ReplyTo != "" {
-			channel, err := r.connection.Channel()
-			if err != nil {
-				log.Errorf("Could not create a channel. err: %v", err)
-				continue
-			}
-			defer channel.Close()
+			func() {
+				channel, err := r.connection.Channel()
+				if err != nil {
+					log.Errorf("Could not create a channel. err: %v", err)
+					return
+				}
+				defer channel.Close()
 
-			resMsg, err := json.Marshal(res)
-			if err != nil {
-				log.Errorf("Could not marshal the response. res: %v, err: %v", res, err)
-				continue
-			}
+				resMsg, err := json.Marshal(res)
+				if err != nil {
+					log.Errorf("Could not marshal the response. res: %v, err: %v", res, err)
+					return
+				}
 
-			if err := channel.Publish(
-				"",              // exchange
-				message.ReplyTo, // routing key
-				false,           // mandatory
-				false,           // immediate
-				amqp.Publishing{
-					ContentType:   "text/plain",
-					CorrelationId: message.CorrelationId,
-					Body:          resMsg,
-				}); err != nil {
-				log.Errorf("Could not reply the message. message: %v, err: %v", res, err)
-				continue
-			}
+				if err := channel.Publish(
+					"",              // exchange
+					message.ReplyTo, // routing key
+					false,           // mandatory
+					false,           // immediate
+					amqp.Publishing{
+						ContentType:   "text/plain",
+						CorrelationId: message.CorrelationId,
+						Body:          resMsg,
+					}); err != nil {
+					log.Errorf("Could not reply the message. message: %v, err: %v", res, err)
+					return
+				}
+			}()
 		}
 	}
 

@@ -44,7 +44,7 @@ func TestAstChannelAnswer(t *testing.T) {
 			"00:11:22:33:44:55",
 			"5734c890-7f6e-11ea-9520-6f774800cd74",
 
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			"/ari/channels/5734c890-7f6e-11ea-9520-6f774800cd74/answer",
 			rabbitmq.RequestMethodPost,
 		},
@@ -105,7 +105,7 @@ func TestAstChannelContinue(t *testing.T) {
 			"testlabel",
 
 			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/continue",
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
 			`{"context":"test-context","extension":"testcall","priority":1,"label":"testlabel"}`,
 		},
@@ -119,7 +119,7 @@ func TestAstChannelContinue(t *testing.T) {
 			"",
 
 			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/continue",
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
 			`{"context":"test-context","extension":"testcall","priority":1,"label":""}`,
 		},
@@ -177,7 +177,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 			"test-value",
 
 			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/variable",
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
 
 			`{"variable":"test-variable","value":"test-value"}`,
@@ -190,7 +190,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 			"",
 
 			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/variable",
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
 			`{"variable":"test-variable","value":""}`,
 		},
@@ -246,7 +246,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 			ari.ChannelCauseNormalClearing,
 
 			"/ari/channels/ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodDelete,
 			`{"reason_code":"16"}`,
 		},
@@ -313,7 +313,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			channel.SnoopDirectionIn,
 
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
 			`{"spy":"in","whisper":"in","app":"voipbin","appArgs":"test","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`,
 		},
@@ -327,7 +327,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			channel.SnoopDirectionNone,
 
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
 			`{"spy":"in","app":"voipbin","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`,
 		},
@@ -341,7 +341,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			channel.SnoopDirectionBoth,
 
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
 			`{"whisper":"both","app":"voipbin","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`,
 		},
@@ -400,7 +400,7 @@ func TestAstChannelGet(t *testing.T) {
 				Data:       `{"id":"1589711094.100","name":"PJSIP/call-in-00000019","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"8872616","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=xt1GqgsEfG,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-17T10:24:54.396+0000","language":"en"}`,
 			},
 
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			&rabbitmq.Request{
 				URI:      "/ari/channels/1589711094.100",
 				Method:   rabbitmq.RequestMethodGet,
@@ -478,7 +478,7 @@ func TestAstChannelDTMF(t *testing.T) {
 				StatusCode: 200,
 			},
 
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			&rabbitmq.Request{
 				URI:      "/ari/channels/6d11e7c2-9a69-11ea-95af-eb4a15c08df1/dtmf",
 				Method:   rabbitmq.RequestMethodPost,
@@ -499,7 +499,7 @@ func TestAstChannelDTMF(t *testing.T) {
 				StatusCode: 200,
 			},
 
-			"asterisk_ari_request-00:11:22:33:44:55",
+			"asterisk.00:11:22:33:44:55.request",
 			&rabbitmq.Request{
 				URI:      "/ari/channels/6d11e7c2-9a69-11ea-95af-eb4a15c08df1/dtmf",
 				Method:   rabbitmq.RequestMethodPost,
