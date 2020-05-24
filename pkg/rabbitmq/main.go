@@ -1,6 +1,6 @@
 package rabbitmq
 
-//go:generate mockgen -destination ./mock_rabbitmq_rabbit.go -package rabbitmq gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq Rabbit
+//go:generate mockgen -destination ./mock_rabbitmq_rabbit.go -package rabbitmq gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq Rabbit
 
 import (
 	"context"
