@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log/syslog"
@@ -11,11 +12,15 @@ import (
 	"gitlab.com/voipbin/voip/asterisk-proxy/internal/rpc"
 	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
 )
+
+var asteriskID = flag.String("asterisk_id", "00:11:22:33:44:55", "The asterisk id")
+var asteriskAddressInternal = flag.String("asterisk_address_internal", "127.0.0.1:5060", "The asterisk internal ip address")
 
 var ariAddr = flag.String("ari_addr", "localhost:8088", "The asterisk-proxy connects to this asterisk ari service address")
 var ariAccount = flag.String("ari_account", "asterisk:asterisk", "The asterisk-proxy uses this asterisk ari account info. id:password")
@@ -26,6 +31,9 @@ var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672",
 var rabbitQueueListenRequest = flag.String("rabbit_queue_listen", "asterisk.<asterisk_id>.request,asterisk.call.request", "Comma separated asterisk-proxy's listen request queue name.")
 var rabbitQueuePublishEvent = flag.String("rabbit_queue_publish", "asterisk.all.event", "The asterisk-proxy sends the ARI event to this rabbitmq queue name. The queue must be created before.")
 
+var redisAddr = flag.String("redis_addr", "localhost:6379", "The redis address for data caching")
+var redisDB = flag.Int("redis_db", 0, "The redis database for caching")
+
 // create message buffer
 var chARIEvent = make(chan []byte, 1024000)
 
@@ -33,6 +41,7 @@ func main() {
 	initProcess()
 
 	// connect to rabbitmq
+	logrus.Debugf("test: %s", *rabbitAddr)
 	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
@@ -45,6 +54,11 @@ func main() {
 	// handle request from the request queue
 	if err := handleRequest(rabbitSock); err != nil {
 		logrus.Errorf("Could not initiate the request handler. err: %v", err)
+		return
+	}
+
+	if err := handleProxyInfo(*redisAddr, *redisDB, *asteriskID, *asteriskAddressInternal); err != nil {
+		logrus.Errorf("Could not initiate proxy info handler. err: %v", err)
 		return
 	}
 
@@ -180,17 +194,25 @@ func handleRequest(rabbitSock rabbitmq.Rabbit) error {
 		}(rabbitSock, queue)
 
 	}
+	return nil
+}
 
-	// for {
-	// 	rabbitSock.ConsumeRPC("", "asterisk-proxy", rpc.RequestHandler)
-	// 	time.Sleep(time.Second * 1)
-	// }
+// handleProxyInfo updates the ipaddress for every 3 min
+func handleProxyInfo(addr string, db int, id, internalAddress string) error {
+	client := redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: "",
+		DB:       db,
+	})
 
-	// go func(sock rabbitmq.Rabbit) {
-	// 	for {
-	// 		sock.ConsumeRPC("", "asterisk-proxy", rpc.RequestHandler)
-	// 		// time.Sleep(time.Second * 1)
-	// 	}
-	// }(rabbitSock)
+	// update internal address
+	key := fmt.Sprintf("asterisk.%s.address-internal", id)
+	go func() {
+		for {
+			client.Set(context.Background(), key, internalAddress, time.Hour*24)
+			time.Sleep(time.Minute * 5)
+		}
+	}()
+
 	return nil
 }
