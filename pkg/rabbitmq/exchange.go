@@ -8,7 +8,12 @@ const (
 
 // ExchangeDeclare declares an exchange
 func (r *rabbit) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error {
-	if err := r.channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args); err != nil {
+	channel, err := r.connection.Channel()
+	if err != nil {
+		return err
+	}
+
+	if err := channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args); err != nil {
 		return err
 	}
 
@@ -20,6 +25,8 @@ func (r *rabbit) ExchangeDeclare(name, kind string, durable, autoDelete, interna
 		internal:   internal,
 		noWait:     noWait,
 		args:       args,
+
+		channel: channel,
 	}
 
 	return nil
@@ -30,5 +37,5 @@ func (r *rabbit) ExchangeDeclareForDelay(name string, durable, autoDelete, inter
 	args := make(amqp.Table)
 	args["x-delayed-type"] = "direct"
 
-	return r.channel.ExchangeDeclare(name, exchangeKindDelay, durable, autoDelete, internal, noWait, args)
+	return r.ExchangeDeclare(name, exchangeKindDelay, durable, autoDelete, internal, noWait, args)
 }

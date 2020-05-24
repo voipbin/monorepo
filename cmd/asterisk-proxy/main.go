@@ -37,10 +37,16 @@ func main() {
 	rabbitSock.Connect()
 
 	// handle events from the asterisk
-	go handleEvent(rabbitSock)
+	if err := handleEvent(rabbitSock); err != nil {
+		logrus.Errorf("Could not initiate the event handler. err: %v", err)
+		return
+	}
 
 	// handle request from the request queue
-	go handleRequest(rabbitSock)
+	if err := handleRequest(rabbitSock); err != nil {
+		logrus.Errorf("Could not initiate the request handler. err: %v", err)
+		return
+	}
 
 	forever := make(chan bool)
 	<-forever
@@ -64,12 +70,14 @@ func initProcess() {
 	log.Info("asterisk-proxy has initiated.")
 }
 
-func handleEvent(rabbitSock rabbitmq.Rabbit) {
+func handleEvent(rabbitSock rabbitmq.Rabbit) error {
 	// asterisk ari message receiver
 	go recevieARIEvent()
 
 	// push the message into rabbitmq
 	go handleARIEvent(rabbitSock)
+
+	return nil
 
 }
 
@@ -152,22 +160,37 @@ func handleARIEvent(rabbitSock rabbitmq.Rabbit) {
 }
 
 // handleARIRequest handles Asterisk request through the rabbit RPC.
-func handleRequest(rabbitSock rabbitmq.Rabbit) {
+func handleRequest(rabbitSock rabbitmq.Rabbit) error {
 	queues := strings.Split(*rabbitQueueListenRequest, ",")
 	for _, queue := range queues {
-		log.Debugf("Declaring request queue. queue: %s", queue)
+		log.Debugf("Declaring request queue. queue: %s, sock: %v", queue, rabbitSock)
 		if err := rabbitSock.QueueDeclare(queue, false, false, false, false); err != nil {
 			logrus.WithFields(
 				logrus.Fields{
 					"queue": queue,
 				}).Errorf("Could not declare the queue. err: %v", err)
+			return err
 		}
+
+		go func(sock rabbitmq.Rabbit, name string) {
+			for {
+				sock.ConsumeRPC(name, "", rpc.RequestHandler)
+				time.Sleep(time.Second * 1)
+			}
+		}(rabbitSock, queue)
+
 	}
 
-	go func(rabbitmq.Rabbit) {
-		for {
-			rabbitSock.ConsumeRPC("", "asterisk-proxy", rpc.RequestHandler)
-			time.Sleep(time.Second * 1)
-		}
-	}(rabbitSock)
+	// for {
+	// 	rabbitSock.ConsumeRPC("", "asterisk-proxy", rpc.RequestHandler)
+	// 	time.Sleep(time.Second * 1)
+	// }
+
+	// go func(sock rabbitmq.Rabbit) {
+	// 	for {
+	// 		sock.ConsumeRPC("", "asterisk-proxy", rpc.RequestHandler)
+	// 		// time.Sleep(time.Second * 1)
+	// 	}
+	// }(rabbitSock)
+	return nil
 }
