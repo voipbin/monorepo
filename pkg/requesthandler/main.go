@@ -89,6 +89,7 @@ type RequestHandler interface {
 	// asterisk channels
 	AstChannelAnswer(asteriskID, channelID string) error
 	AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error
+	AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string) error
 	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
 	AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error
 	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)

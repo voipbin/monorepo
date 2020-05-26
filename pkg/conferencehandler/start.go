@@ -95,7 +95,7 @@ func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference,
 		})
 	log.Debug("Created bridge.")
 
-	// create a conference record
+	// create a conference
 	if err := h.createConference(ctx, cf); err != nil {
 		return nil, fmt.Errorf("could not create a conference. err: %v", err)
 	}

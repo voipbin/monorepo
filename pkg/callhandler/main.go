@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
@@ -35,6 +36,7 @@ type CallHandler interface {
 type callHandler struct {
 	reqHandler  requesthandler.RequestHandler
 	db          dbhandler.DBHandler
+	cache       cachehandler.CacheHandler
 	confHandler conferencehandler.ConferenceHandler
 }
 
@@ -87,12 +89,13 @@ func init() {
 }
 
 // NewCallHandler returns new service handler
-func NewCallHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) CallHandler {
+func NewCallHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) CallHandler {
 
 	h := &callHandler{
 		reqHandler:  r,
-		db:          d,
-		confHandler: conferencehandler.NewConferHandler(r, d),
+		db:          db,
+		cache:       cache,
+		confHandler: conferencehandler.NewConferHandler(r, db, cache),
 	}
 
 	return h

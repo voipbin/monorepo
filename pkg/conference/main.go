@@ -24,12 +24,13 @@ type Conference struct {
 // Type conference types
 type Type string
 
-// List of conference types
+// List of conference(bridge) types
 const (
 	TypeNone       Type = ""
 	TypeEcho       Type = "echo"       // conference for echoing.
 	TypeTransfer   Type = "transfer"   // conference for simple transfer
 	TypeConference Type = "conference" // conference for more than 3 calls join
+	TypeJoining    Type = "joining"    // conference for joining to the other conference
 )
 
 // Status type

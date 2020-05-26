@@ -7,6 +7,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
@@ -21,6 +22,7 @@ type ListenHandler interface {
 type listenHandler struct {
 	rabbitSock rabbitmq.Rabbit
 	db         dbhandler.DBHandler
+	cache      cachehandler.CacheHandler
 
 	reqHandler  requesthandler.RequestHandler
 	callHandler callhandler.CallHandler
@@ -69,10 +71,11 @@ func simpleResponse(code int) *rabbitmq.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(rabbitSock rabbitmq.Rabbit, db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) ListenHandler {
+func NewListenHandler(rabbitSock rabbitmq.Rabbit, db dbhandler.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:  rabbitSock,
 		db:          db,
+		cache:       cache,
 		reqHandler:  reqHandler,
 		callHandler: callHandler,
 	}

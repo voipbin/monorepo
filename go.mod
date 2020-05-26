@@ -3,6 +3,7 @@ module gitlab.com/voipbin/bin-manager/call-manager
 go 1.14
 
 require (
+	github.com/go-redis/redis/v8 v8.0.0-beta.2
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/mock v1.4.3

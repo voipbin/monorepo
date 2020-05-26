@@ -12,6 +12,7 @@ import (
 	joonix "github.com/joonix/log"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/listenhandler"
@@ -42,6 +43,11 @@ var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prom
 // args for database
 var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for call-manager.")
 
+// args for redis
+var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
+var redisPassword = flag.String("redis_password", "", "redis password")
+var redisDB = flag.Int("redis_db", 1, "redis database.")
+
 // workerCount
 var workerCount = flag.Int("worker_count", 3, "counts of workers")
 
@@ -65,8 +71,15 @@ func main() {
 	}
 	defer sqlDB.Close()
 
+	// connect to cache
+	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
+	if err := cache.Connect(); err != nil {
+		log.Errorf("Could not connect to cache server. err: %v", err)
+		return
+	}
+
 	for i := 0; i < *workerCount; i++ {
-		run(sqlDB)
+		run(sqlDB, cache)
 	}
 	<-chDone
 
@@ -125,19 +138,19 @@ func initProm(endpoint, listen string) {
 }
 
 // NewWorker creates worker interface
-func run(db *sql.DB) error {
-	if err := runARI(db); err != nil {
+func run(db *sql.DB, cache cachehandler.CacheHandler) error {
+	if err := runARI(db, cache); err != nil {
 		return err
 	}
 
-	if err := runListen(db); err != nil {
+	if err := runListen(db, cache); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func runARI(sqlDB *sql.DB) error {
+func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB)
 
@@ -152,8 +165,8 @@ func runARI(sqlDB *sql.DB) error {
 		*rabbitQueueFlowRequest,
 	)
 
-	callHandler := callhandler.NewCallHandler(reqHandler, db)
-	ariHandler := arihandler.NewARIHandler(rabbitSock, db, reqHandler, callHandler)
+	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)
+	ariHandler := arihandler.NewARIHandler(rabbitSock, db, cache, reqHandler, callHandler)
 
 	// run
 	if err := ariHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
@@ -163,7 +176,7 @@ func runARI(sqlDB *sql.DB) error {
 	return nil
 }
 
-func runListen(sqlDB *sql.DB) error {
+func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB)
 
@@ -179,8 +192,8 @@ func runListen(sqlDB *sql.DB) error {
 		*rabbitQueueFlowRequest,
 	)
 
-	callHandler := callhandler.NewCallHandler(reqHandler, db)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, reqHandler, callHandler)
+	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
