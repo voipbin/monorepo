@@ -121,6 +121,20 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelContinue(arg0, arg1, arg2, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelContinue", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelContinue), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
+// AstChannelCreate mocks base method
+func (m *MockRequestHandler) AstChannelCreate(arg0, arg1, arg2, arg3, arg4, arg5, arg6 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelCreate", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelCreate indicates an expected call of AstChannelCreate
+func (mr *MockRequestHandlerMockRecorder) AstChannelCreate(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelCreate", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelCreate), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+}
+
 // AstChannelCreateSnoop mocks base method
 func (m *MockRequestHandler) AstChannelCreateSnoop(arg0, arg1, arg2, arg3 string, arg4, arg5 channel.SnoopDirection) error {
 	m.ctrl.T.Helper()

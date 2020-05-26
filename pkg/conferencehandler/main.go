@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
@@ -33,6 +34,7 @@ type ConferenceHandler interface {
 type conferenceHandler struct {
 	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
+	cache      cachehandler.CacheHandler
 }
 
 // Contexts of conference types
@@ -92,11 +94,12 @@ func init() {
 }
 
 // NewConferHandler returns new service handler
-func NewConferHandler(r requesthandler.RequestHandler, d dbhandler.DBHandler) ConferenceHandler {
+func NewConferHandler(req requesthandler.RequestHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) ConferenceHandler {
 
 	h := &conferenceHandler{
-		reqHandler: r,
-		db:         d,
+		reqHandler: req,
+		db:         db,
+		cache:      cache,
 	}
 
 	return h
@@ -110,8 +113,8 @@ func (h *conferenceHandler) leaveTypeEcho(c *call.Call) error {
 
 // generateBridgeName generates the bridge name for conference
 // all of conference created bridge must use this function for bridge's name.
-func generateBridgeName(cType conference.Type, id uuid.UUID) string {
-	res := fmt.Sprintf("conference_type=%s,conference_id=%s", cType, id.String())
+func generateBridgeName(conferenceType conference.Type, conferenceID uuid.UUID) string {
+	res := fmt.Sprintf("conference_type=%s,conference_id=%s", conferenceType, conferenceID.String())
 
 	return res
 }

@@ -49,7 +49,7 @@ type Type string
 // List of types
 const (
 	TypeMixing     Type = "mixing"
-	TypeDTMFEvents Type = "demf_events"
+	TypeDTMFEvents Type = "dtmf_events"
 	TypeProxyMedia Type = "proxy_media"
 	TypeHolding    Type = "holding"
 	TypeVideoSFU   Type = "video_sfu"

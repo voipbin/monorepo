@@ -520,3 +520,61 @@ func TestAstChannelDTMF(t *testing.T) {
 		})
 	}
 }
+
+func TestAstChannelCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
+
+	type test struct {
+		name           string
+		asterisk       string
+		chanelID       string
+		appArgs        string
+		endpoint       string
+		otherChannelID string
+		originator     string
+		formats        string
+		response       *rabbitmq.Response
+
+		expectTarget  string
+		expectRequest *rabbitmq.Request
+	}
+
+	tests := []test{
+		{
+			"normal test",
+			"00:11:22:33:44:55",
+			"adf2ec1a-9ee6-11ea-9d2e-33da3e3b92a3",
+			"",
+			"PJSIP/call-out/sip:test@test.com:5060",
+			"",
+			"",
+			"",
+			&rabbitmq.Response{
+				StatusCode: 200,
+			},
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmq.Request{
+				URI:      "/ari/channels/create",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     `{"endpoint":"PJSIP/call-out/sip:test@test.com:5060","app":"voipbin","channelId":"adf2ec1a-9ee6-11ea-9d2e-33da3e3b92a3"}`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			err := reqHandler.AstChannelCreate(tt.asterisk, tt.chanelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

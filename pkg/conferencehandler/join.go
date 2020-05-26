@@ -2,45 +2,71 @@ package conferencehandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 )
 
 func (h *conferenceHandler) createEndpointTarget(ctx context.Context, cf *conference.Conference) (string, error) {
+	// get bridge
+	bridge, err := h.db.BridgeGet(ctx, cf.BridgeID)
+	if err != nil {
+		return "", err
+	}
 
-	return "", nil
+	// get bridge asterisk's address
+	address, err := h.cache.AsteriskAddressInternerGet(ctx, bridge.AsteriskID)
+	if err != nil {
+		return "", err
+	}
 
-	// // get bridge
-	// b, err := h.db.BridgeGet(ctx, cf.BridgeID)
-	// if err != nil {
-	// 	return "", err
-	// }
+	res := fmt.Sprintf("PJSIP/conf-join/sip:%s@%s:5060", bridge.ID, address)
 
-	// // get bridge asterisk's ip
-
+	return res, nil
 }
 
-func (h *conferenceHandler) Join(id, callID uuid.UUID) error {
+// Join handler call's join request.
+// 1. Creates a bridge(conference joining type) and put the call's channel into the bridge
+// 2. Creates a new channel for joining to the conference.
+func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	ctx := context.Background()
 
 	log := logrus.WithFields(
 		logrus.Fields{
-			"conference": id,
+			"conference": conferenceID,
 			"call":       callID,
 		})
 	log.Info("Starting to join the call to the conference.")
 
-	// create a bridge
-
-	// put the call's channel into the bridge
-
 	// get conference
-	cf, err := h.db.ConferenceGet(ctx, id)
+	cf, err := h.db.ConferenceGet(ctx, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference. err: %v", err)
 		return err
+	}
+
+	// get call
+	c, err := h.db.CallGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// create a bridge
+	bridgeID := uuid.Must(uuid.NewV4()).String()
+	bridgeName := generateBridgeName(conference.TypeJoining, conferenceID)
+	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, bridge.TypeMixing); err != nil {
+		return fmt.Errorf("could not create a bridge for conference joining. err: %v", err)
+	}
+
+	// put the call's channel into the bridge
+	// put the channel into the bridge
+	if err := h.reqHandler.AstBridgeAddChannel(c.AsteriskID, bridgeID, c.ChannelID, "", false, false); err != nil {
+		h.reqHandler.AstBridgeDelete(c.AsteriskID, bridgeID)
+		return fmt.Errorf("could not add the channel into the the bridge. bridge: %s", bridgeID)
 	}
 
 	// create a dial string
@@ -51,7 +77,20 @@ func (h *conferenceHandler) Join(id, callID uuid.UUID) error {
 	}
 	log.Debugf("Created dial destination. destination: %s", dialDestination)
 
+	// create a channel args
+	args := fmt.Sprintf("CONTEXT=%s,CONFERENCE_ID=%s,BRIDGE_ID=%s,CALL_ID=%s",
+		contextConferenceJoining,
+		cf.ID.String(),
+		cf.BridgeID,
+		c.ID.String(),
+	)
+
 	// create a another channel with joining context
+	channelID := uuid.Must(uuid.NewV4())
+	if err := h.reqHandler.AstChannelCreate(c.AsteriskID, channelID.String(), args, dialDestination, "", "", ""); err != nil {
+		log.Errorf("Could not create a channel for joining. err: %v", err)
+		return err
+	}
 
 	return nil
 }

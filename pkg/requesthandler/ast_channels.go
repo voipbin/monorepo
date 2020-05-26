@@ -107,6 +107,43 @@ func (r *requestHandler) AstChannelVariableSet(asteriskID, channelID, variable, 
 	return nil
 }
 
+// AstChannelCreate sends the request for create a channel
+func (r *requestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string) error {
+	uri := "/ari/channels/create"
+
+	type Data struct {
+		Endpoint       string `json:"endpoint,omitempty"`
+		App            string `json:"app"`
+		AppArgs        string `json:"appArgs,omitempty"`
+		ChannelID      string `json:"channelId,omitempty"`
+		OtherChannelID string `json:"otherChannelId,omitempty"`
+		Originator     string `json:"originator,omitempty"`
+		Formats        string `json:"formats,omitempty"`
+	}
+
+	m, err := json.Marshal(Data{
+		endpoint,
+		defaultAstStasisApp,
+		appArgs,
+		channelID,
+		otherChannelID,
+		originator,
+		formats,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(asteriskID, uri, rabbitmq.RequestMethodPost, resourceAstChannels, requestTimeoutDefault, ContentTypeJSON, string(m))
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
 // AstChannelCreateSnoop sends the request for create a snoop channel
 func (r *requestHandler) AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error {
 	url := fmt.Sprintf("/ari/channels/%s/snoop", channelID)

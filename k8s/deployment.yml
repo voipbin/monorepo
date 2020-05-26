@@ -46,6 +46,10 @@ spec:
             - 'asterisk.all.event'
             - '-rabbit_queue_flow'
             - 'bin-manager.flow-manager.request'
+            - '-redisAddr'
+            - '10.164.15.220:6379'
+            - '-redis_db'
+            - '1'
           ports:
             - name: metrics
               protocol: "TCP"

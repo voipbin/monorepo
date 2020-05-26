@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
@@ -35,6 +36,7 @@ type ARIHandler interface {
 
 type ariHandler struct {
 	db         db.DBHandler
+	cache      cachehandler.CacheHandler
 	rabbitSock rabbitmq.Rabbit
 
 	reqHandler  requesthandler.RequestHandler
@@ -76,15 +78,16 @@ func init() {
 }
 
 // NewARIHandler create EventHandler
-func NewARIHandler(sock rabbitmq.Rabbit, db db.DBHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) ARIHandler {
+func NewARIHandler(sock rabbitmq.Rabbit, db db.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) ARIHandler {
 	handler := &ariHandler{
 		rabbitSock: sock,
 		db:         db,
+		cache:      cache,
 	}
 
 	handler.reqHandler = reqHandler
 	handler.callHandler = callHandler
-	handler.confHandler = conferencehandler.NewConferHandler(reqHandler, db)
+	handler.confHandler = conferencehandler.NewConferHandler(reqHandler, db, cache)
 
 	return handler
 }

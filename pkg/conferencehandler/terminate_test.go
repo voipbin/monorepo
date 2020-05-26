@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
@@ -59,7 +60,8 @@ func TestTerminate(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := NewConferHandler(mockReq, mockDB)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewConferHandler(mockReq, mockDB, mockCache)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
