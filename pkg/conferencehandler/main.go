@@ -21,6 +21,7 @@ type ConferenceHandler interface {
 	ARIStasisStart(cn *channel.Channel) error
 
 	Start(cType conference.Type, c *call.Call) (*conference.Conference, error)
+	Stop(id uuid.UUID) error
 
 	Join(id, callID uuid.UUID) error
 	Joined(id, callID uuid.UUID) error

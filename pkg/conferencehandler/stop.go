@@ -19,15 +19,6 @@ func (h *conferenceHandler) Stop(id uuid.UUID) error {
 			"conference": id.String(),
 		}).Info("Stopping conference.")
 
-	// set the status to stopping
-	if err := h.db.ConferenceSetStatus(ctx, id, conference.StatusStopping); err != nil {
-		log.WithFields(
-			log.Fields{
-				"conference": id.String(),
-			}).Warnf("Could not update the status for conference stopping. err: %v", err)
-		return err
-	}
-
 	// get conference
 	cf, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
@@ -35,6 +26,25 @@ func (h *conferenceHandler) Stop(id uuid.UUID) error {
 			log.Fields{
 				"conference": id.String(),
 			}).Warnf("Could not get conference for stop. err: %v", err)
+		return err
+	}
+
+	// if the conference is already terminated or stopping, just return at here
+	if cf.Status == conference.StatusTerminated || cf.Status == conference.StatusStopping {
+		log.WithFields(
+			log.Fields{
+				"conference": id.String(),
+			}).Infof("The conference is already terminated or being terminated. status: %s", cf.Status)
+
+		return nil
+	}
+
+	// set the status to stopping
+	if err := h.db.ConferenceSetStatus(ctx, id, conference.StatusStopping); err != nil {
+		log.WithFields(
+			log.Fields{
+				"conference": id.String(),
+			}).Warnf("Could not update the status for conference stopping. err: %v", err)
 		return err
 	}
 
