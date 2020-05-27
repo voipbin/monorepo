@@ -121,6 +121,20 @@ func (mr *MockConferenceHandlerMockRecorder) Start(arg0, arg1 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockConferenceHandler)(nil).Start), arg0, arg1)
 }
 
+// Stop mocks base method
+func (m *MockConferenceHandler) Stop(arg0 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Stop", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Stop indicates an expected call of Stop
+func (mr *MockConferenceHandlerMockRecorder) Stop(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockConferenceHandler)(nil).Stop), arg0)
+}
+
 // Terminate mocks base method
 func (m *MockConferenceHandler) Terminate(arg0 uuid.UUID) error {
 	m.ctrl.T.Helper()

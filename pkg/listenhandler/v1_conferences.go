@@ -2,7 +2,9 @@ package listenhandler
 
 import (
 	"encoding/json"
+	"strings"
 
+	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
@@ -35,4 +37,20 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq
 	}
 
 	return res, nil
+}
+
+// processV1ConferencesPost handles /v1/conferences/<id> request
+func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if err := h.conferenceHandler.Stop(id); err != nil {
+		return simpleResponse(400), nil
+	}
+
+	return simpleResponse(200), nil
 }
