@@ -113,8 +113,9 @@ func (h *conferenceHandler) leaveTypeEcho(c *call.Call) error {
 
 // generateBridgeName generates the bridge name for conference
 // all of conference created bridge must use this function for bridge's name.
-func generateBridgeName(conferenceType conference.Type, conferenceID uuid.UUID) string {
-	res := fmt.Sprintf("conference_type=%s,conference_id=%s", conferenceType, conferenceID.String())
+// joining: true if the bridge is for joining to the other conference
+func generateBridgeName(conferenceType conference.Type, conferenceID uuid.UUID, joining bool) string {
+	res := fmt.Sprintf("conference_type=%s,conference_id=%s,joining=%t", conferenceType, conferenceID.String(), joining)
 
 	return res
 }

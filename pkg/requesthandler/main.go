@@ -24,6 +24,12 @@ var (
 	ContentTypeJSON = "application/json"
 )
 
+// group asterisk id
+var (
+	AsteriskIDCall       = "call"       // asterisk-call
+	AsteriskIDConference = "conference" // asterisk-conference
+)
+
 const requestTimeoutDefault int = 3 // default request timeout
 
 // default stasis application name.
