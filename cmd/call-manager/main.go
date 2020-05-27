@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
@@ -193,7 +194,8 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	)
 
 	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler)
+	conferenceHandler := conferencehandler.NewConferHandler(reqHandler, db, cache)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler, conferenceHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

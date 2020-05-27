@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
@@ -31,13 +32,12 @@ func (h *conferenceHandler) Start(cType conference.Type, c *call.Call) (*confere
 	log := log.WithFields(
 		log.Fields{
 			"conference_type": cType,
-			"call":            c.ID.String(),
 		})
 	log.Info("Start conference.")
 
 	mapHandler := map[conference.Type]func(*call.Call) (*conference.Conference, error){
-		// conference.TypeConference: h.startConferTypeConference,
-		conference.TypeEcho: h.startTypeEcho,
+		conference.TypeConference: h.startTypeConference,
+		conference.TypeEcho:       h.startTypeEcho,
 		// conference.TypeTransfer:   h.startConferTypeTransfer,
 	}
 
@@ -56,11 +56,50 @@ func (h *conferenceHandler) startTypeTransfer(cf *conference.Conference, c *call
 	return nil
 }
 
-// startTypeConference
-func (h *conferenceHandler) startTypeConference(cf *conference.Conference, c *call.Call) error {
+// startTypeConference inits the conference for conference type.
+func (h *conferenceHandler) startTypeConference(c *call.Call) (*conference.Conference, error) {
+	ctx := context.Background()
+	conferenceID := uuid.Must(uuid.NewV4())
 
-	// todo: ????
-	return nil
+	log := log.WithFields(
+		log.Fields{
+			"conference": conferenceID.String(),
+			"type":       conference.TypeEcho,
+		})
+	log.Debug("Starting conference.")
+
+	// create a bridge for conference
+	bridgeID := uuid.Must(uuid.NewV4()).String()
+	bridgeName := generateBridgeName(conference.TypeConference, conferenceID, false)
+	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, bridge.TypeMixing); err != nil {
+		log.Errorf("Could not create a bridge for a conference. err: %v", err)
+		return nil, err
+	}
+
+	// create a conference
+	cf := conference.NewConference(conferenceID, conference.TypeConference, bridgeID, bridgeName, "")
+	cf.BridgeID = bridgeID
+	cf.BridgeIDs = append(cf.BridgeIDs, bridgeID)
+
+	log = log.WithFields(
+		logrus.Fields{
+			"bridge": bridgeID,
+		})
+	log.Debug("Created bridge.")
+
+	// create a conference to database
+	if err := h.createConference(ctx, cf); err != nil {
+		log.Errorf("Could not create a conference. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.ConferenceGet(ctx, conferenceID)
+	if err != nil {
+		log.Errorf("Could not get a created conference. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // startTypeEcho
@@ -81,7 +120,7 @@ func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference,
 
 	// create a bridge and add to conference
 	bridgeID := uuid.Must(uuid.NewV4()).String()
-	bridgeName := generateBridgeName(conference.TypeEcho, id)
+	bridgeName := generateBridgeName(conference.TypeEcho, id, false)
 	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, bridge.TypeMixing); err != nil {
 		return nil, fmt.Errorf("could not create a bridge for echo conference. err: %v", err)
 	}

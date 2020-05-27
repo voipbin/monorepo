@@ -30,7 +30,6 @@ const (
 	TypeEcho       Type = "echo"       // conference for echoing.
 	TypeTransfer   Type = "transfer"   // conference for simple transfer
 	TypeConference Type = "conference" // conference for more than 3 calls join
-	TypeJoining    Type = "joining"    // conference for joining to the other conference
 )
 
 // Status type

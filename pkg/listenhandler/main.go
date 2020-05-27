@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
@@ -24,8 +25,9 @@ type listenHandler struct {
 	db         dbhandler.DBHandler
 	cache      cachehandler.CacheHandler
 
-	reqHandler  requesthandler.RequestHandler
-	callHandler callhandler.CallHandler
+	reqHandler        requesthandler.RequestHandler
+	callHandler       callhandler.CallHandler
+	conferenceHandler conferencehandler.ConferenceHandler
 }
 
 var (
@@ -39,6 +41,9 @@ var (
 	regV1CallsID              = regexp.MustCompile("/v1/calls/" + regUUID)
 	regV1CallsIDHealth        = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check")
 	regV1CallsIDActionTimeout = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
+
+	// conferences
+	regV1Conferences = regexp.MustCompile("/v1/conferences")
 )
 
 var (
@@ -71,13 +76,21 @@ func simpleResponse(code int) *rabbitmq.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(rabbitSock rabbitmq.Rabbit, db dbhandler.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) ListenHandler {
+func NewListenHandler(
+	rabbitSock rabbitmq.Rabbit,
+	db dbhandler.DBHandler,
+	cache cachehandler.CacheHandler,
+	reqHandler requesthandler.RequestHandler,
+	callHandler callhandler.CallHandler,
+	conferenceHandler conferencehandler.ConferenceHandler,
+) ListenHandler {
 	h := &listenHandler{
-		rabbitSock:  rabbitSock,
-		db:          db,
-		cache:       cache,
-		reqHandler:  reqHandler,
-		callHandler: callHandler,
+		rabbitSock:        rabbitSock,
+		db:                db,
+		cache:             cache,
+		reqHandler:        reqHandler,
+		callHandler:       callHandler,
+		conferenceHandler: conferenceHandler,
 	}
 
 	return h
@@ -144,6 +157,11 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDActionTimeoutPost(m)
 		requestType = "/v1/calls/action-timeout"
+
+	// conferences
+	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+		response, err = h.processV1ConferencesPost(m)
+		requestType = "/v1/conferences"
 
 	default:
 		logrus.WithFields(
