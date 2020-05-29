@@ -55,9 +55,15 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 		return err
 	}
 
-	// create a bridge
+	// answer the call. it is safe to call this for answered call.
+	if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
+		log.Errorf("Could not answer the call. err: %v", err)
+		return err
+	}
+
+	// create a joining bridge
 	bridgeID := uuid.Must(uuid.NewV4()).String()
-	bridgeName := generateBridgeName(conference.TypeConference, conferenceID, true)
+	bridgeName := generateBridgeName(conference.TypeNone, conferenceID, true)
 	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, bridge.TypeMixing); err != nil {
 		return fmt.Errorf("could not create a bridge for conference joining. err: %v", err)
 	}
@@ -78,10 +84,13 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	log.Debugf("Created dial destination. destination: %s", dialDestination)
 
 	// create a channel args
+	// CONFERENCE_ID: The conference ID which this channel belongs to.
+	// BRIDGE_ID: The bridge ID where this channel entered after StasisStart.
+	// CALL_ID: The call ID which this channel has related with.
 	args := fmt.Sprintf("CONTEXT=%s,CONFERENCE_ID=%s,BRIDGE_ID=%s,CALL_ID=%s",
-		contextConferenceJoining,
+		contextConferenceJoin,
 		cf.ID.String(),
-		cf.BridgeID,
+		bridgeID,
 		c.ID.String(),
 	)
 

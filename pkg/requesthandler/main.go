@@ -63,6 +63,7 @@ const (
 	resourceAstChannels         resource = "ast/channels"
 	resourceAstChannelsAnswer   resource = "ast/channels/answer"
 	resourceAstChannelsContinue resource = "ast/channels/continue"
+	resourceAstChannelsDial     resource = "ast/channels/dial"
 	resourceAstChannelsHangup   resource = "ast/channels/hangup"
 	resourceAstChannelsSnoop    resource = "ast/channels/snoop"
 	resourceAstChannelsVar      resource = "ast/channels/var"
@@ -97,6 +98,7 @@ type RequestHandler interface {
 	AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error
 	AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string) error
 	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
+	AstChannelDial(asteriskID, channelID, caller string, timeout int) error
 	AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error
 	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error

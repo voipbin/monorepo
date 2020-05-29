@@ -578,3 +578,55 @@ func TestAstChannelCreate(t *testing.T) {
 		})
 	}
 }
+
+func TestAstChannelDial(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
+
+	type test struct {
+		name     string
+		asterisk string
+		chanelID string
+		caller   string
+		timeout  int
+		response *rabbitmq.Response
+
+		expectTarget  string
+		expectRequest *rabbitmq.Request
+	}
+
+	tests := []test{
+		{
+			"empty caller",
+			"00:11:22:33:44:55",
+			"83a188ba-a060-11ea-a777-038b061dfbc3",
+			"",
+			30,
+			&rabbitmq.Response{
+				StatusCode: 200,
+			},
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmq.Request{
+				URI:      "/ari/channels/83a188ba-a060-11ea-a777-038b061dfbc3/dial",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     `{"timeout":30}`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			err := reqHandler.AstChannelDial(tt.asterisk, tt.chanelID, tt.caller, tt.timeout)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
