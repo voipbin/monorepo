@@ -230,3 +230,30 @@ func (r *requestHandler) AstChannelDTMF(asteriskID, channelID string, digit stri
 	}
 	return nil
 }
+
+// AstChannelDial dials the channel to the endpoint
+func (r *requestHandler) AstChannelDial(asteriskID, channelID, caller string, timeout int) error {
+	url := fmt.Sprintf("/ari/channels/%s/dial", channelID)
+
+	type Data struct {
+		Caller  string `json:"caller,omitempty"`
+		Timeout int    `json:"timeout,omitempty"`
+	}
+
+	m, err := json.Marshal(Data{
+		caller,
+		timeout,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsDial, requestTimeoutDefault, ContentTypeJSON, string(m))
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}

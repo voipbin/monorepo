@@ -41,7 +41,7 @@ type conferenceHandler struct {
 // Contexts of conference types
 const (
 	contextConferenceEcho     string = "conf-echo"
-	contextConferenceJoining  string = "conf-joining"
+	contextConferenceJoin     string = "conf-join"
 	contextConferenceIncoming string = "conf-in"
 )
 

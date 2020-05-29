@@ -163,6 +163,20 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelDTMF(arg0, arg1, arg2, arg3,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelDTMF", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelDTMF), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
+// AstChannelDial mocks base method
+func (m *MockRequestHandler) AstChannelDial(arg0, arg1, arg2 string, arg3 int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelDial", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelDial indicates an expected call of AstChannelDial
+func (mr *MockRequestHandlerMockRecorder) AstChannelDial(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelDial", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelDial), arg0, arg1, arg2, arg3)
+}
+
 // AstChannelGet mocks base method
 func (m *MockRequestHandler) AstChannelGet(arg0, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()

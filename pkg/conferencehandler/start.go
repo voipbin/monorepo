@@ -64,7 +64,7 @@ func (h *conferenceHandler) startTypeConference(c *call.Call) (*conference.Confe
 	log := log.WithFields(
 		log.Fields{
 			"conference": conferenceID.String(),
-			"type":       conference.TypeEcho,
+			"type":       conference.TypeConference,
 		})
 	log.Debug("Starting conference.")
 
