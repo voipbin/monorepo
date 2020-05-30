@@ -59,6 +59,15 @@ const (
 	SnoopDirectionIn   SnoopDirection = "in"   // snoop the channel incoming
 )
 
+// ContextType represent channel's context type.
+type ContextType string
+
+// List of ContextType types.
+const (
+	ContextTypeConference ContextType = "conf"
+	ContextTypeCall       ContextType = "call"
+)
+
 // NewChannelByChannelCreated creates Channel based on ARI ChannelCreated event
 func NewChannelByChannelCreated(e *ari.ChannelCreated) *Channel {
 	c := NewChannelByChannel(&e.Channel)
@@ -115,5 +124,23 @@ func getTech(name string) Tech {
 		return TechSIP
 	default:
 		return TechNone
+	}
+}
+
+// GetContext returns context of the channel
+func (c *Channel) GetContext() string {
+	return c.Data["CONTEXT"].(string)
+}
+
+// GetContextType returns type of context
+func (c *Channel) GetContextType() ContextType {
+	context := c.GetContext()
+
+	tmp := strings.Split(context, "-")[0]
+	switch tmp {
+	case string(ContextTypeConference):
+		return ContextTypeConference
+	default:
+		return ContextTypeCall
 	}
 }

@@ -81,3 +81,25 @@ func (h *conferenceHandler) hangupAllChannelsInBridge(bridge *bridge.Bridge) {
 		}
 	}
 }
+
+// removeAllChannelsInBridge remove the all channels in the bridge
+func (h *conferenceHandler) removeAllChannelsInBridge(bridge *bridge.Bridge) {
+	log.WithFields(
+		log.Fields{
+			"asterisk": bridge.AsteriskID,
+			"bridge":   bridge.ID,
+			"channels": bridge.ChannelIDs,
+		}).Debug("Hanging up all channels in the bridge.")
+
+	// destroy all the channels in the bridge
+	for _, channelID := range bridge.ChannelIDs {
+		if err := h.reqHandler.AstBridgeRemoveChannel(bridge.AsteriskID, bridge.ID, channelID); err != nil {
+			log.WithFields(
+				log.Fields{
+					"asterisk": bridge.AsteriskID,
+					"bridge":   bridge.ID,
+					"channel":  channelID,
+				}).Debugf("Could not hangup the channel. err: %v", err)
+		}
+	}
+}

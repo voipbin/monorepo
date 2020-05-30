@@ -179,7 +179,7 @@ func (h *ariHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt inte
 		return err
 	}
 
-	return h.callHandler.ARIChannelLeftBridge(cn, bridge)
+	return h.confHandler.ARIChannelLeftBridge(cn, bridge)
 }
 
 // eventHandlerChannelStateChange handels ChannelStateChange ARI event

@@ -7,6 +7,7 @@ package conferencehandler
 import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	conference "gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
@@ -34,6 +35,20 @@ func NewMockConferenceHandler(ctrl *gomock.Controller) *MockConferenceHandler {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockConferenceHandler) EXPECT() *MockConferenceHandlerMockRecorder {
 	return m.recorder
+}
+
+// ARIChannelLeftBridge mocks base method
+func (m *MockConferenceHandler) ARIChannelLeftBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIChannelLeftBridge", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIChannelLeftBridge indicates an expected call of ARIChannelLeftBridge
+func (mr *MockConferenceHandlerMockRecorder) ARIChannelLeftBridge(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockConferenceHandler)(nil).ARIChannelLeftBridge), arg0, arg1)
 }
 
 // ARIStasisStart mocks base method

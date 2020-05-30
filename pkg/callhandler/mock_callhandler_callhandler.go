@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	reflect "reflect"
 )
@@ -104,6 +105,20 @@ func (m *MockCallHandler) ARIStasisStart(arg0 *channel.Channel) error {
 func (mr *MockCallHandlerMockRecorder) ARIStasisStart(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockCallHandler)(nil).ARIStasisStart), arg0)
+}
+
+// ActionNext mocks base method
+func (m *MockCallHandler) ActionNext(arg0 *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActionNext", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActionNext indicates an expected call of ActionNext
+func (mr *MockCallHandlerMockRecorder) ActionNext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionNext", reflect.TypeOf((*MockCallHandler)(nil).ActionNext), arg0)
 }
 
 // ActionTimeout mocks base method

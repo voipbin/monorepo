@@ -19,6 +19,7 @@ create table cm_bridges(
   -- conference info
   conference_id   binary(16),   -- conference's id
   conference_type varchar(255), -- conference's type
+  conference_join boolean,      -- true it this bridge is joining
 
   -- timestamps
   tm_create datetime(6),  --

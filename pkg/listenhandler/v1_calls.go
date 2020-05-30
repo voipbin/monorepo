@@ -105,3 +105,32 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmq.Request) (
 
 	return res, nil
 }
+
+// processV1CallsIDGet handles /v1/calls/<id>/action-next request
+func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	var a action.Action
+	if err := json.Unmarshal([]byte(m.Data), &a); err != nil {
+		return simpleResponse(404), nil
+	}
+
+	c, err := h.db.CallGet(context.Background(), id)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	if err := h.callHandler.ActionNext(c); err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmq.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}

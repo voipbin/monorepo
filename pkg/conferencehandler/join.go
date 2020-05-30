@@ -58,27 +58,34 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	// answer the call. it is safe to call this for answered call.
 	if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
 		log.Errorf("Could not answer the call. err: %v", err)
+
 		return err
 	}
 
 	// create a joining bridge
 	bridgeID := uuid.Must(uuid.NewV4()).String()
-	bridgeName := generateBridgeName(conference.TypeNone, conferenceID, true)
+	bridgeName := generateBridgeName(cf.Type, conferenceID, true)
 	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, bridge.TypeMixing); err != nil {
-		return fmt.Errorf("could not create a bridge for conference joining. err: %v", err)
+		log.Errorf("Could not create a bridge for conference joining. err: %v", err)
+
+		return err
 	}
 
 	// put the call's channel into the bridge
 	// put the channel into the bridge
 	if err := h.reqHandler.AstBridgeAddChannel(c.AsteriskID, bridgeID, c.ChannelID, "", false, false); err != nil {
+		log.Errorf("Could not add the channel into the the bridge. bridge: %s, err: %v", bridgeID, err)
+
 		h.reqHandler.AstBridgeDelete(c.AsteriskID, bridgeID)
-		return fmt.Errorf("could not add the channel into the the bridge. bridge: %s", bridgeID)
+		return err
 	}
 
 	// create a dial string
 	dialDestination, err := h.createEndpointTarget(ctx, cf)
 	if err != nil {
 		log.Errorf("Could not create a dial destination. err: %v", err)
+
+		h.reqHandler.AstBridgeDelete(c.AsteriskID, bridgeID)
 		return err
 	}
 	log.Debugf("Created dial destination. destination: %s", dialDestination)
@@ -98,6 +105,8 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	channelID := uuid.Must(uuid.NewV4())
 	if err := h.reqHandler.AstChannelCreate(c.AsteriskID, channelID.String(), args, dialDestination, "", "", ""); err != nil {
 		log.Errorf("Could not create a channel for joining. err: %v", err)
+
+		h.reqHandler.AstBridgeDelete(c.AsteriskID, bridgeID)
 		return err
 	}
 

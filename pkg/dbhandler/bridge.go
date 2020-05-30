@@ -28,6 +28,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 
 		conference_id,
 		conference_type,
+		conference_join,
 
 		tm_create
 	) values(
@@ -35,7 +36,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		?, ?, ?, ?,
 		?, ?,
 		?,
-		?, ?,
+		?, ?, ?,
 		?
 		)
 	`
@@ -62,6 +63,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 
 		b.ConferenceID.Bytes(),
 		b.ConferenceType,
+		b.ConferenceJoin,
 
 		b.TMCreate,
 	)
@@ -94,6 +96,7 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 
 		conference_id,
 		conference_type,
+		conference_join,
 
 		coalesce(tm_create, '') as tm_create,
 		coalesce(tm_update, '') as tm_update,
@@ -133,6 +136,7 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 
 		&res.ConferenceID,
 		&res.ConferenceType,
+		&res.ConferenceJoin,
 
 		&res.TMCreate,
 		&res.TMUpdate,
