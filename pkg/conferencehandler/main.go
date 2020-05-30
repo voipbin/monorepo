@@ -4,14 +4,16 @@ package conferencehandler
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
@@ -19,6 +21,7 @@ import (
 type ConferenceHandler interface {
 	// ari event handlers
 	ARIStasisStart(cn *channel.Channel) error
+	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
 
 	Start(cType conference.Type, c *call.Call) (*conference.Conference, error)
 	Stop(id uuid.UUID) error
@@ -114,9 +117,19 @@ func (h *conferenceHandler) leaveTypeEcho(c *call.Call) error {
 
 // generateBridgeName generates the bridge name for conference
 // all of conference created bridge must use this function for bridge's name.
-// joining: true if the bridge is for joining to the other conference
-func generateBridgeName(conferenceType conference.Type, conferenceID uuid.UUID, joining bool) string {
-	res := fmt.Sprintf("conference_type=%s,conference_id=%s,joining=%t", conferenceType, conferenceID.String(), joining)
+// join: true if the bridge is for joining to the other conference
+func generateBridgeName(conferenceType conference.Type, conferenceID uuid.UUID, join bool) string {
+	res := fmt.Sprintf("conference_type=%s,conference_id=%s,join=%t", conferenceType, conferenceID.String(), join)
 
 	return res
+}
+
+// isContextConf returns true if
+func isContextConf(contextType string) bool {
+	tmp := strings.Split(contextType, "-")[0]
+	if tmp == "conf" {
+		return true
+	}
+
+	return false
 }

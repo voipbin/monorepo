@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
@@ -29,6 +30,7 @@ type CallHandler interface {
 	Hangup(cn *channel.Channel) error
 	UpdateStatus(cn *channel.Channel) error
 
+	ActionNext(c *call.Call) error
 	ActionTimeout(callID uuid.UUID, a *action.Action) error
 }
 

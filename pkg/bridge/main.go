@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -29,6 +30,7 @@ type Bridge struct {
 	// conference info
 	ConferenceID   uuid.UUID
 	ConferenceType conference.Type
+	ConferenceJoin bool
 
 	TMCreate string
 	TMUpdate string
@@ -76,6 +78,7 @@ func NewBridgeByBridgeCreated(e *ari.BridgeCreated) *Bridge {
 
 		ConferenceID:   uuid.Nil,
 		ConferenceType: conference.TypeNone,
+		ConferenceJoin: false,
 
 		TMCreate: string(e.Timestamp),
 	}
@@ -86,6 +89,9 @@ func NewBridgeByBridgeCreated(e *ari.BridgeCreated) *Bridge {
 	}
 	if mapParse["conference_type"] != "" {
 		b.ConferenceType = conference.Type(mapParse["conference_type"])
+	}
+	if mapParse["join"] != "" {
+		b.ConferenceJoin, _ = strconv.ParseBool(mapParse["join"])
 	}
 
 	return b

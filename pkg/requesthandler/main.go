@@ -68,9 +68,11 @@ const (
 	resourceAstChannelsSnoop    resource = "ast/channels/snoop"
 	resourceAstChannelsVar      resource = "ast/channels/var"
 
-	resourceCallCalls          resource = "call/calls"
-	resourceCallCallsHealth    resource = "call/calls/health"
-	resourceCallChannelsHealth resource = "call/channels/health"
+	resourceCallCalls              resource = "call/calls"
+	resourceCallCallsActionNext    resource = "call/calls/action-next"
+	resourceCallCallsActionTimeout resource = "call/calls/action-timeout"
+	resourceCallCallsHealth        resource = "call/calls/health"
+	resourceCallChannelsHealth     resource = "call/channels/health"
 
 	resourceFlowsActions resource = "flows/actions"
 )
@@ -90,6 +92,7 @@ type RequestHandler interface {
 	AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error
 
 	CallCallHealth(id uuid.UUID, delay, retryCount int) error
+	CallCallActionNext(id uuid.UUID) error
 	CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
 	CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 

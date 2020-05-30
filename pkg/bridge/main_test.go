@@ -89,6 +89,25 @@ func TestNewBridgeByBridgeCreated(t *testing.T) {
 				TMCreate:       "2020-05-03T21:35:02.809",
 			},
 		},
+		{
+			"joining type",
+			`{"type":"BridgeCreated","timestamp":"2020-05-29T16:06:41.715+0000","bridge":{"id":"00a1dc4b-ad3c-4ceb-93c2-378452e4032c","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"conference_type=conference,conference_id=ef556f3f-ea0b-416f-bae1-91c38865aa3b,join=true","channels":[],"creationtime":"2020-05-29T16:06:41.715+0000","video_mode":"none"},"asterisk_id":"42:01:0a:a4:00:03","application":"test"}`,
+			&Bridge{
+				AsteriskID:     "42:01:0a:a4:00:03",
+				ID:             "00a1dc4b-ad3c-4ceb-93c2-378452e4032c",
+				Name:           "conference_type=conference,conference_id=ef556f3f-ea0b-416f-bae1-91c38865aa3b,join=true",
+				Type:           TypeMixing,
+				Tech:           TechSimple,
+				Class:          "stasis",
+				Creator:        "Stasis",
+				VideoMode:      "none",
+				ChannelIDs:     []string{},
+				ConferenceID:   uuid.FromStringOrNil("ef556f3f-ea0b-416f-bae1-91c38865aa3b"),
+				ConferenceType: conference.TypeConference,
+				ConferenceJoin: true,
+				TMCreate:       "2020-05-29T16:06:41.715",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -101,7 +120,7 @@ func TestNewBridgeByBridgeCreated(t *testing.T) {
 
 			bridge := NewBridgeByBridgeCreated(e)
 			if !reflect.DeepEqual(tt.expectBridge, bridge) {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectBridge, bridge)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectBridge, bridge)
 			}
 		})
 	}
@@ -121,6 +140,15 @@ func TestParseBridgeName(t *testing.T) {
 			map[string]string{
 				"type":          "echo",
 				"conference_id": "eae05bf2-9311-11ea-bdbf-d393f883e80f",
+			},
+		},
+		{
+			"joining true",
+			"type=conference,conference_id=9d21f58a-a237-11ea-b1f9-e74d37d1177c,joining=true",
+			map[string]string{
+				"type":          "conference",
+				"conference_id": "9d21f58a-a237-11ea-b1f9-e74d37d1177c",
+				"joining":       "true",
 			},
 		},
 	}

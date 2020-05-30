@@ -8,6 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
@@ -240,6 +241,15 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := ariHandler{
+		db:          mockDB,
+		rabbitSock:  mockSock,
+		reqHandler:  mockRequest,
+		callHandler: mockCall,
+		confHandler: mockConf,
+	}
 
 	type test struct {
 		name    string
@@ -269,20 +279,13 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
-				db:          mockDB,
-				rabbitSock:  mockSock,
-				reqHandler:  mockRequest,
-				callHandler: mockCall,
-			}
-
 			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, tt.channel.AsteriskID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "")
 			mockDB.EXPECT().BridgeRemoveChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
-			mockCall.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
+			mockConf.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

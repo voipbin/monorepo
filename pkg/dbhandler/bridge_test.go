@@ -85,6 +85,26 @@ func TestBridgeCreate(t *testing.T) {
 				TMCreate:       "2020-04-18T03:22:17.995000",
 			},
 		},
+		{
+			"conference join true",
+			&bridge.Bridge{
+				AsteriskID:     "3e:50:6b:43:bb:30",
+				ID:             "9c1197d8-a24e-11ea-8653-c74c75be39d3",
+				ConferenceID:   uuid.FromStringOrNil("a0ec47a8-a24e-11ea-9868-c3c17aa422cd"),
+				ConferenceType: conference.TypeNone,
+				ConferenceJoin: true,
+				TMCreate:       "2020-04-18T03:22:17.995000",
+			},
+			&bridge.Bridge{
+				AsteriskID:     "3e:50:6b:43:bb:30",
+				ID:             "9c1197d8-a24e-11ea-8653-c74c75be39d3",
+				ChannelIDs:     []string{},
+				ConferenceID:   uuid.FromStringOrNil("a0ec47a8-a24e-11ea-9868-c3c17aa422cd"),
+				ConferenceType: conference.TypeNone,
+				ConferenceJoin: true,
+				TMCreate:       "2020-04-18T03:22:17.995000",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -101,7 +121,7 @@ func TestBridgeCreate(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectBridge, res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectBridge, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectBridge, res)
 			}
 		})
 	}

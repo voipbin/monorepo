@@ -55,7 +55,25 @@ func (r *requestHandler) CallCallActionTimeout(id uuid.UUID, delay int, a *actio
 		return err
 	}
 
-	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallCallsHealth, requestTimeoutDefault, delay, ContentTypeJSON, string(m))
+	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallCallsActionTimeout, requestTimeoutDefault, delay, ContentTypeJSON, string(m))
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		return nil
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// CallCallActionNext sends the request for call's action next.
+//
+// delay: millisecond
+func (r *requestHandler) CallCallActionNext(id uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/action-next", id)
+
+	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallCallsActionNext, requestTimeoutDefault, 0, ContentTypeJSON, "")
 	switch {
 	case err != nil:
 		return err

@@ -67,6 +67,11 @@ func (h *callHandler) ARIChannelLeftBridge(cn *channel.Channel, bridge *bridge.B
 			"bridge":   bridge.ID,
 		})
 
+	// this channel is not for the call.
+	if getContextType(cn.Data["CONTEXT"]) != contextTypeCall {
+		return h.confHandler.ARIChannelLeftBridge(cn, bridge)
+	}
+
 	cnContext := cn.Data["CONTEXT"]
 	if cnContext == nil || cnContext != contextIncomingCall {
 		log.Debug("The channel is not for the call.")

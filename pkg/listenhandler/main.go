@@ -40,6 +40,7 @@ var (
 	// calls
 	regV1CallsID              = regexp.MustCompile("/v1/calls/" + regUUID)
 	regV1CallsIDHealth        = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check")
+	regV1CallsIDActionNext    = regexp.MustCompile("/v1/calls/" + regUUID + "/action-next")
 	regV1CallsIDActionTimeout = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
 
 	// conferences
@@ -154,6 +155,10 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 	case regV1CallsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDHealthPost(m)
 		requestType = "/v1/calls/health-check"
+
+	case regV1CallsIDActionNext.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+		response, err = h.processV1CallsIDActionNextPost(m)
+		requestType = "/v1/calls/action-next"
 
 	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDActionTimeoutPost(m)
