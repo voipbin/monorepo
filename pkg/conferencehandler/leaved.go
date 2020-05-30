@@ -2,49 +2,74 @@ package conferencehandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 )
 
-// Leaved handle
-func (h *conferenceHandler) Leaved(id, callID uuid.UUID) error {
-	ctx := context.Background()
+// leaved handles event the channel has left from the bridge
+// when the channel has left from the bridge, we have to check below 3 things in respetively.
+// becuase if we handle these together, the code will be messed up.
+// channel
+// bridge
+// conference
+func (h *conferenceHandler) leaved(cn *channel.Channel, br *bridge.Bridge) error {
 
-	log := log.WithFields(
-		log.Fields{
-			"conference": id.String(),
-			"Call":       callID.String(),
-		})
-	log.Debug("The call has leaved from the conference.")
-
-	if err := h.db.ConferenceRemoveCallID(ctx, id, callID); err != nil {
-		log.Errorf("Could not remove the call id from the conference. err: %v", err)
-		return err
+	// channel handle
+	if err := h.leavedChannel(cn, br); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseInterworking)
 	}
 
-	cf, err := h.db.ConferenceGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get conference info. conference: %s, err: %v", id, err)
-		return err
-	}
-	promConferenceLeaveTotal.WithLabelValues(string(cf.Type)).Inc()
+	// bridge handle
+	h.leavedBridge(cn, br)
 
-	// evaluate the conference is terminatable
-	if h.isTerminatable(ctx, id) == true {
-		log.Info("This conference is ended. Terminating the conference.")
-		return h.Terminate(id)
+	// conference handle
+	h.leavedConference(cn, br)
+
+	return nil
+}
+
+func (h *conferenceHandler) leavedChannel(cn *channel.Channel, br *bridge.Bridge) error {
+
+	switch cn.GetContextType() {
+	// conference
+	case channel.ContextTypeConference:
+		return h.leavedChannelConf(cn, br)
+
+	// call
+	case channel.ContextTypeCall:
+		return h.leavedChannelCall(cn, br)
 	}
 
 	return nil
 }
 
-// leaved handle
-func (h *conferenceHandler) leaved(cn *channel.Channel, br *bridge.Bridge) error {
+func (h *conferenceHandler) leavedChannelConf(cn *channel.Channel, br *bridge.Bridge) error {
+	switch cn.GetContext() {
+
+	case contextConferenceIncoming:
+		// nothing to do
+		return nil
+
+	case contextConferenceEcho, contextConferenceJoin:
+		h.removeAllChannelsInBridge(br)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return nil
+
+	default:
+		return fmt.Errorf("could not find context handler. asterisk: %s, channel: %s, bridge: %s", cn.AsteriskID, cn.ID, br.ID)
+
+	}
+}
+
+// leavedChannelCall handle
+func (h *conferenceHandler) leavedChannelCall(cn *channel.Channel, br *bridge.Bridge) error {
 	ctx := context.Background()
 
 	log := logrus.WithFields(
@@ -56,8 +81,6 @@ func (h *conferenceHandler) leaved(cn *channel.Channel, br *bridge.Bridge) error
 			"bridge":          br.ID,
 		},
 	)
-
-	id := br.ConferenceID
 
 	// get call info
 	c, err := h.db.CallGetByChannelIDAndAsteriskID(ctx, cn.ID, cn.AsteriskID)
@@ -81,25 +104,53 @@ func (h *conferenceHandler) leaved(cn *channel.Channel, br *bridge.Bridge) error
 	log.Debug("The call has been leaved from the conference.")
 
 	// remove the call from the conference
-	if err := h.db.ConferenceRemoveCallID(ctx, id, c.ID); err != nil {
+	if err := h.db.ConferenceRemoveCallID(ctx, br.ConferenceID, c.ID); err != nil {
 		log.Errorf("Could not remove the call id from the conference. err: %v", err)
 		return err
 	}
 	promConferenceLeaveTotal.WithLabelValues(string(br.ConferenceType)).Inc()
 
-	// send a call action next after all has done
+	// send a call action next
 	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
-		log.Errorf("Could not send the call action next request.")
+		log.Debugf("Could not send the call action next request. err: %v", err)
 		return err
 	}
 
-	// evaluate the conference is terminatable
-	if h.isTerminatable(ctx, id) == true {
-		log.Info("This conference is ended. Terminating the conference.")
-		return h.Terminate(id)
+	return nil
+}
+
+func (h *conferenceHandler) leavedBridge(cn *channel.Channel, br *bridge.Bridge) {
+	if br.ConferenceJoin == false {
+		return
 	}
 
-	return nil
+	if len(br.ChannelIDs) > 0 {
+		return
+	}
+
+	if err := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); err != nil {
+		logrus.WithFields(
+			logrus.Fields{
+				"conference": br.ConferenceID,
+				"bridge":     br.ID,
+			}).Errorf("could not delete the bridge. err: %v", err)
+	}
+
+	return
+}
+
+func (h *conferenceHandler) leavedConference(cn *channel.Channel, br *bridge.Bridge) {
+	if cn.GetContextType() != channel.ContextTypeCall {
+		// nothing to do here
+		return
+	}
+
+	if h.isTerminatable(context.Background(), br.ConferenceID) == false {
+		// the conference is not finished yet.
+		return
+	}
+
+	h.Terminate(br.ConferenceID)
 }
 
 // isTerminatable returns true if the given conference is terminatable
@@ -108,9 +159,6 @@ func (h *conferenceHandler) isTerminatable(ctx context.Context, id uuid.UUID) bo
 	// get conference
 	cf, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
-		// the call has removed already.
-		// we don't need to advertise the err at here.
-		// just write log
 		log.WithFields(
 			log.Fields{
 				"conference": id.String(),
@@ -119,13 +167,15 @@ func (h *conferenceHandler) isTerminatable(ctx context.Context, id uuid.UUID) bo
 	}
 
 	// check there's more calls or not
-	callCnt := len(cf.CallIDs)
-
 	switch cf.Type {
 	case conference.TypeEcho:
-		if callCnt <= 0 {
+		if len(cf.CallIDs) <= 0 {
 			return true
 		}
+
+	case conference.TypeConference:
+		return false
+
 	default:
 		return true
 	}

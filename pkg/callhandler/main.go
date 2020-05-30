@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
@@ -22,8 +21,6 @@ import (
 type CallHandler interface {
 	ARIChannelDestroyed(cn *channel.Channel) error
 	ARIChannelDtmfReceived(cn *channel.Channel, digit string, duration int) error
-	ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error
-	ARIChannelLeftBridge(cn *channel.Channel, bridge *bridge.Bridge) error
 	ARIStasisStart(cn *channel.Channel) error
 
 	Start(cn *channel.Channel) error

@@ -3,8 +3,10 @@ package conferencehandler
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 )
 
@@ -76,4 +78,30 @@ func (h *conferenceHandler) ariStasisStartcontextIn(cn *channel.Channel) error {
 	}
 
 	return nil
+}
+
+func (h *conferenceHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
+	logrus.WithFields(
+		logrus.Fields{
+			"channel":         cn.ID,
+			"asterisk_id":     cn.AsteriskID,
+			"data":            cn.Data,
+			"bridge":          br.ID,
+			"conference":      br.ConferenceID,
+			"conference_type": br.ConferenceType,
+			"conference_join": br.ConferenceJoin,
+		}).Debug("The conferencehandler handling the ARIChannelLeftBridge.")
+
+	return h.leaved(cn, br)
+
+}
+
+// ARIChannelEnteredBridge is called when the channel handler received ChannelEnteredBridge.
+func (h *conferenceHandler) ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error {
+	if cn.GetContextType() == channel.ContextTypeConference {
+		// nothing to do here
+		return nil
+	}
+
+	return h.joined(cn, bridge)
 }
