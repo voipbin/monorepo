@@ -124,7 +124,7 @@ func (h *ariHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt i
 		return err
 	}
 
-	return h.callHandler.ARIChannelEnteredBridge(cn, bridge)
+	return h.confHandler.ARIChannelEnteredBridge(cn, bridge)
 }
 
 // eventHandlerChannelLeftBridge handles ChannelLeftBridge ARI event

@@ -182,6 +182,15 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 	mockSock := rabbitmq.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := ariHandler{
+		db:          mockDB,
+		rabbitSock:  mockSock,
+		reqHandler:  mockRequest,
+		callHandler: mockCall,
+		confHandler: mockConf,
+	}
 
 	type test struct {
 		name    string
@@ -211,20 +220,13 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
-				db:          mockDB,
-				rabbitSock:  mockSock,
-				reqHandler:  mockRequest,
-				callHandler: mockCall,
-			}
-
 			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, tt.channel.AsteriskID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, tt.bridge.ID)
 			mockDB.EXPECT().BridgeAddChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
-			mockCall.EXPECT().ARIChannelEnteredBridge(tt.channel, tt.bridge).Return(nil)
+			mockConf.EXPECT().ARIChannelEnteredBridge(tt.channel, tt.bridge).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

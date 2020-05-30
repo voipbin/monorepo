@@ -8,7 +8,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	reflect "reflect"
@@ -63,34 +62,6 @@ func (m *MockCallHandler) ARIChannelDtmfReceived(arg0 *channel.Channel, arg1 str
 func (mr *MockCallHandlerMockRecorder) ARIChannelDtmfReceived(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelDtmfReceived", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelDtmfReceived), arg0, arg1, arg2)
-}
-
-// ARIChannelEnteredBridge mocks base method
-func (m *MockCallHandler) ARIChannelEnteredBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIChannelEnteredBridge", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ARIChannelEnteredBridge indicates an expected call of ARIChannelEnteredBridge
-func (mr *MockCallHandlerMockRecorder) ARIChannelEnteredBridge(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelEnteredBridge", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelEnteredBridge), arg0, arg1)
-}
-
-// ARIChannelLeftBridge mocks base method
-func (m *MockCallHandler) ARIChannelLeftBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIChannelLeftBridge", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ARIChannelLeftBridge indicates an expected call of ARIChannelLeftBridge
-func (mr *MockCallHandlerMockRecorder) ARIChannelLeftBridge(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelLeftBridge), arg0, arg1)
 }
 
 // ARIStasisStart mocks base method

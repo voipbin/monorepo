@@ -21,16 +21,14 @@ import (
 type ConferenceHandler interface {
 	// ari event handlers
 	ARIStasisStart(cn *channel.Channel) error
+	ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error
 	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
 
 	Start(cType conference.Type, c *call.Call) (*conference.Conference, error)
 	Stop(id uuid.UUID) error
 
 	Join(id, callID uuid.UUID) error
-	Joined(id, callID uuid.UUID) error
-
 	Leave(id, callID uuid.UUID) error
-	Leaved(id, callID uuid.UUID) error
 	Terminate(id uuid.UUID) error
 }
 

@@ -37,6 +37,20 @@ func (m *MockConferenceHandler) EXPECT() *MockConferenceHandlerMockRecorder {
 	return m.recorder
 }
 
+// ARIChannelEnteredBridge mocks base method
+func (m *MockConferenceHandler) ARIChannelEnteredBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIChannelEnteredBridge", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIChannelEnteredBridge indicates an expected call of ARIChannelEnteredBridge
+func (mr *MockConferenceHandlerMockRecorder) ARIChannelEnteredBridge(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelEnteredBridge", reflect.TypeOf((*MockConferenceHandler)(nil).ARIChannelEnteredBridge), arg0, arg1)
+}
+
 // ARIChannelLeftBridge mocks base method
 func (m *MockConferenceHandler) ARIChannelLeftBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()
@@ -79,20 +93,6 @@ func (mr *MockConferenceHandlerMockRecorder) Join(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockConferenceHandler)(nil).Join), arg0, arg1)
 }
 
-// Joined mocks base method
-func (m *MockConferenceHandler) Joined(arg0, arg1 uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Joined", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Joined indicates an expected call of Joined
-func (mr *MockConferenceHandlerMockRecorder) Joined(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Joined", reflect.TypeOf((*MockConferenceHandler)(nil).Joined), arg0, arg1)
-}
-
 // Leave mocks base method
 func (m *MockConferenceHandler) Leave(arg0, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -105,20 +105,6 @@ func (m *MockConferenceHandler) Leave(arg0, arg1 uuid.UUID) error {
 func (mr *MockConferenceHandlerMockRecorder) Leave(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leave", reflect.TypeOf((*MockConferenceHandler)(nil).Leave), arg0, arg1)
-}
-
-// Leaved mocks base method
-func (m *MockConferenceHandler) Leaved(arg0, arg1 uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Leaved", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Leaved indicates an expected call of Leaved
-func (mr *MockConferenceHandlerMockRecorder) Leaved(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockConferenceHandler)(nil).Leaved), arg0, arg1)
 }
 
 // Start mocks base method
