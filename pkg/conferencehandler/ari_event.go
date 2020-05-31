@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
@@ -20,8 +19,8 @@ func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel) error {
 
 	handler := mapType[cn.Data["CONTEXT"]]
 	if handler == nil {
-		log.WithFields(
-			log.Fields{
+		logrus.WithFields(
+			logrus.Fields{
 				"channel":     cn.ID,
 				"asterisk_id": cn.AsteriskID,
 				"data":        cn.Data,
@@ -67,7 +66,7 @@ func (h *conferenceHandler) ariStasisStartcontextJoin(cn *channel.Channel) error
 func (h *conferenceHandler) ariStasisStartcontextIn(cn *channel.Channel) error {
 	// answer the call. it is safe to call this for answered call.
 	if err := h.reqHandler.AstChannelAnswer(cn.AsteriskID, cn.ID); err != nil {
-		log.Errorf("Could not answer the call. err: %v", err)
+		logrus.Errorf("Could not answer the call. err: %v", err)
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
 		return err
 	}
@@ -81,19 +80,7 @@ func (h *conferenceHandler) ariStasisStartcontextIn(cn *channel.Channel) error {
 }
 
 func (h *conferenceHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
-	logrus.WithFields(
-		logrus.Fields{
-			"channel":         cn.ID,
-			"asterisk_id":     cn.AsteriskID,
-			"data":            cn.Data,
-			"bridge":          br.ID,
-			"conference":      br.ConferenceID,
-			"conference_type": br.ConferenceType,
-			"conference_join": br.ConferenceJoin,
-		}).Debug("The conferencehandler handling the ARIChannelLeftBridge.")
-
 	return h.leaved(cn, br)
-
 }
 
 // ARIChannelEnteredBridge is called when the channel handler received ChannelEnteredBridge.
