@@ -123,7 +123,7 @@ func TestJoin(t *testing.T) {
 		mockReq.EXPECT().AstBridgeAddChannel(tt.call.AsteriskID, gomock.Any(), tt.call.ChannelID, "", false, false).Return(nil)
 		mockDB.EXPECT().BridgeGet(gomock.Any(), gomock.Any()).Return(tt.bridgeJoining, nil)
 		mockCache.EXPECT().AsteriskAddressInternerGet(gomock.Any(), gomock.Any()).Return("", nil)
-		mockReq.EXPECT().AstChannelCreate(tt.bridgeJoining.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "", "").Return(nil)
+		mockReq.EXPECT().AstChannelCreate(tt.bridgeJoining.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "", gomock.Any()).Return(nil)
 
 		if err := h.Join(tt.conference.ID, tt.call.ID); err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)

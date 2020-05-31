@@ -82,6 +82,9 @@ func (h *conferenceHandler) leavedChannelCall(cn *channel.Channel, br *bridge.Br
 		},
 	)
 
+	// remove all other channel in the same bridge
+	h.removeAllChannelsInBridge(br)
+
 	// get call info
 	c, err := h.db.CallGetByChannelIDAndAsteriskID(ctx, cn.ID, cn.AsteriskID)
 	if err != nil {
