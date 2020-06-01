@@ -126,7 +126,7 @@ func TestProcessV1ConferencesIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConf.EXPECT().Stop(tt.id).Return(nil)
+			mockConf.EXPECT().Terminate(tt.id, gomock.Any()).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

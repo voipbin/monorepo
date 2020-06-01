@@ -48,7 +48,20 @@ func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmq.Request) (*rabb
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	if err := h.conferenceHandler.Stop(id); err != nil {
+	type Data struct {
+		Reason string `json:"reason,omitempty"`
+	}
+
+	var data Data
+	if m.Data != "" {
+		if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+			return nil, err
+		}
+	} else {
+		data.Reason = ""
+	}
+
+	if err := h.conferenceHandler.Terminate(id, data.Reason); err != nil {
 		return simpleResponse(400), nil
 	}
 

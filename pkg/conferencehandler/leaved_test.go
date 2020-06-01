@@ -183,8 +183,7 @@ func TestLeavedConferenceTypeEcho(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.bridge.ConferenceID).Return(tt.conference, nil)
-			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.bridge.ConferenceID).Return(tt.conference, nil)
+			mockReq.EXPECT().CallConferenceTerminate(tt.bridge.ConferenceID, "normal terminating", requesthandler.DelayNow).Return(nil)
 
 			h.leavedConference(tt.channel, tt.bridge)
 		})

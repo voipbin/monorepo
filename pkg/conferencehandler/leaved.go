@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
 // leaved handles event the channel has left from the bridge
@@ -153,7 +154,15 @@ func (h *conferenceHandler) leavedConference(cn *channel.Channel, br *bridge.Bri
 		return
 	}
 
-	h.Terminate(br.ConferenceID)
+	if err := h.reqHandler.CallConferenceTerminate(br.ConferenceID, "normal terminating", requesthandler.DelayNow); err != nil {
+		logrus.WithFields(
+			logrus.Fields{
+				"conference": br.ConferenceID,
+				"bridge":     br.ID,
+				"asterisk":   br.AsteriskID,
+			},
+		).Errorf("Could not send the conference terminate request. err: %v", err)
+	}
 }
 
 // isTerminatable returns true if the given conference is terminatable

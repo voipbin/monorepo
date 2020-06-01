@@ -39,7 +39,7 @@ type Status string
 const (
 	StatusStarting    Status = "starting"
 	StatusProgressing Status = "progressing"
-	StatusStopping    Status = "stopping"
+	StatusTerminating Status = "terminating"
 	StatusTerminated  Status = "terminated"
 )
 

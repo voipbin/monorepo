@@ -1,7 +1,6 @@
 package conferencehandler
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -15,11 +14,19 @@ import (
 )
 
 func TestTerminate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewConferHandler(mockReq, mockDB, mockCache)
+
 	type test struct {
-		name            string
-		id              uuid.UUID
-		conference      *conference.Conference
-		expectBridgeIDs []string
+		name       string
+		id         uuid.UUID
+		conference *conference.Conference
+		bridges    []*bridge.Bridge
 	}
 
 	tests := []test{
@@ -31,7 +38,7 @@ func TestTerminate(t *testing.T) {
 				Type:      conference.TypeEcho,
 				BridgeIDs: []string{},
 			},
-			[]string{},
+			[]*bridge.Bridge{},
 		},
 		{
 			"1 bridge ids",
@@ -41,7 +48,12 @@ func TestTerminate(t *testing.T) {
 				Type:      conference.TypeEcho,
 				BridgeIDs: []string{"c9977272-9240-11ea-a692-f370484c30f1"},
 			},
-			[]string{"c9977272-9240-11ea-a692-f370484c30f1"},
+			[]*bridge.Bridge{
+				{
+					ID:         "c9977272-9240-11ea-a692-f370484c30f1",
+					AsteriskID: "00:11:22:33:44:55",
+				},
+			},
 		},
 		{
 			"2 bridge ids",
@@ -51,27 +63,30 @@ func TestTerminate(t *testing.T) {
 				Type:      conference.TypeEcho,
 				BridgeIDs: []string{"76149278-9241-11ea-9ab3-4baddc693eae", "7b67c790-9241-11ea-aebd-332e45a6ebde"},
 			},
-			[]string{"76149278-9241-11ea-9ab3-4baddc693eae", "7b67c790-9241-11ea-aebd-332e45a6ebde"},
+			[]*bridge.Bridge{
+				{
+					ID:         "76149278-9241-11ea-9ab3-4baddc693eae",
+					AsteriskID: "00:11:22:33:44:55",
+				},
+				{
+					ID:         "7b67c790-9241-11ea-aebd-332e45a6ebde",
+					AsteriskID: "00:11:22:33:44:55",
+				},
+			},
 		},
 	}
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewConferHandler(mockReq, mockDB, mockCache)
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.id)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.id).Return(tt.conference, nil)
-			for _, bridgeID := range tt.expectBridgeIDs {
-				mockDB.EXPECT().BridgeGet(gomock.Any(), bridgeID).Return(nil, fmt.Errorf("test"))
+			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.id, conference.StatusTerminating).Return(nil)
+			for i, bridgeID := range tt.conference.BridgeIDs {
+				mockDB.EXPECT().BridgeGet(gomock.Any(), bridgeID).Return(tt.bridges[i], nil)
+				mockReq.EXPECT().AstBridgeDelete(tt.bridges[i].AsteriskID, tt.bridges[i].ID).Return(nil)
 			}
+			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
 
-			if err := h.Terminate(tt.id); err != nil {
+			if err := h.Terminate(tt.id, "normal terminating"); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
