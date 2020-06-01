@@ -44,8 +44,9 @@ var (
 	regV1CallsIDActionTimeout = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
 
 	// conferences
-	regV1Conferences   = regexp.MustCompile("/v1/conferences")
-	regV1ConferencesID = regexp.MustCompile("/v1/conferences/" + regUUID)
+	regV1ConferencesIDCallsID = regexp.MustCompile("/v1/conferences/" + regUUID + "/calls/" + regUUID)
+	regV1ConferencesID        = regexp.MustCompile("/v1/conferences/" + regUUID)
+	regV1Conferences          = regexp.MustCompile("/v1/conferences")
 )
 
 var (
@@ -164,13 +165,17 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 		response, err = h.processV1CallsIDActionTimeoutPost(m)
 		requestType = "/v1/calls/action-timeout"
 
-	// conferences
-	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
-		response, err = h.processV1ConferencesPost(m)
-		requestType = "/v1/conferences"
+		// conferences
+	case regV1ConferencesIDCallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
+		response, err = h.processV1ConferencesIDCallsIDDelete(m)
+		requestType = "/v1/conferences/calls"
 
 	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDDelete(m)
+		requestType = "/v1/conferences"
+
+	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+		response, err = h.processV1ConferencesPost(m)
 		requestType = "/v1/conferences"
 
 	default:
