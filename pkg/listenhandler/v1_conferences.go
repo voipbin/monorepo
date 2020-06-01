@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/request"
 )
 
 // processV1ConferencesPost handles /v1/conferences request
@@ -45,14 +46,9 @@ func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmq.Request) (*rabb
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	type Data struct {
-		Reason string `json:"reason,omitempty"`
-	}
-
-	var data Data
+	var data request.V1DataConferencesIDDelete
 	if m.Data != "" {
 		if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 			return nil, err

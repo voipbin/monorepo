@@ -9,6 +9,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/request"
 )
 
 // processV1AsterisksIDChannelsIDHealthPost handles /v1/asterisks/<id>/channels/<id>/health-check request
@@ -27,13 +28,7 @@ func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmq.Req
 		return nil, fmt.Errorf("could not unescape the asterisk id. err: %v", err)
 	}
 
-	type Data struct {
-		RetryCount    int `json:"retry_count"`
-		RetryCountMax int `json:"retry_count_max"`
-		Delay         int `json:"delay"`
-	}
-
-	var data Data
+	var data request.V1DataAsterisksIDChannelsIDHealth
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 		return nil, err
 	}
