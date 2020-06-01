@@ -25,9 +25,9 @@ type ConferenceHandler interface {
 	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
 
 	Start(cType conference.Type, c *call.Call) (*conference.Conference, error)
-	Join(id, callID uuid.UUID) error
-	Leave(id, callID uuid.UUID) error
-	Terminate(id uuid.UUID, reason string) error
+	Join(conferenceID, callID uuid.UUID) error
+	Leave(conferenceID, callID uuid.UUID) error
+	Terminate(conferenceID uuid.UUID, reason string) error
 }
 
 // conferenceHandler structure for service handle

@@ -40,7 +40,7 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq
 	return res, nil
 }
 
-// processV1ConferencesPost handles /v1/conferences/<id> request
+// processV1ConferencesIDDelete handles /v1/conferences/<id> DELETE request
 func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmq.Request) (*rabbitmq.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -58,6 +58,26 @@ func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmq.Request) (*rabb
 	}
 
 	if err := h.conferenceHandler.Terminate(id, data.Reason); err != nil {
+		return simpleResponse(400), nil
+	}
+
+	return simpleResponse(200), nil
+}
+
+// processV1ConferencesIDCallsIDDelete handles /v1/conferences/<id>/calls/<id> DELETE request
+func (h *listenHandler) processV1ConferencesIDCallsIDDelete(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 6 {
+		return simpleResponse(400), nil
+	}
+	cfID := uuid.FromStringOrNil(uriItems[3])
+	callID := uuid.FromStringOrNil(uriItems[5])
+
+	if cfID == uuid.Nil || callID == uuid.Nil {
+		return simpleResponse(400), nil
+	}
+
+	if err := h.conferenceHandler.Leave(cfID, callID); err != nil {
 		return simpleResponse(400), nil
 	}
 

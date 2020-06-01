@@ -139,3 +139,64 @@ func TestProcessV1ConferencesIDDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:        mockSock,
+		db:                mockDB,
+		reqHandler:        mockReq,
+		callHandler:       mockCall,
+		conferenceHandler: mockConf,
+	}
+
+	type test struct {
+		name         string
+		conferenceID uuid.UUID
+		callID       uuid.UUID
+		request      *rabbitmq.Request
+
+		expectRes *rabbitmq.Response
+	}
+
+	tests := []test{
+		{
+			"conference type",
+			uuid.FromStringOrNil("ebabdcaa-a45a-11ea-9bcb-8b169d520839"),
+			uuid.FromStringOrNil("55338534-a45a-11ea-8754-838b14c2b227"),
+			&rabbitmq.Request{
+				URI:      "/v1/conferences/ebabdcaa-a45a-11ea-9bcb-8b169d520839/calls/55338534-a45a-11ea-8754-838b14c2b227",
+				Method:   rabbitmq.RequestMethodDelete,
+				DataType: "application/json",
+				Data:     "",
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockConf.EXPECT().Leave(tt.conferenceID, tt.callID).Return(nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match. exepct: 200, got: %v", res)
+			}
+		})
+	}
+}
