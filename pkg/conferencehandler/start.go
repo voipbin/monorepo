@@ -99,6 +99,11 @@ func (h *conferenceHandler) startTypeConference(c *call.Call) (*conference.Confe
 		return nil, err
 	}
 
+	// send 24 hours timeout
+	if err := h.reqHandler.CallConferenceTerminate(conferenceID, "timeout", requesthandler.DelayHour*24); err != nil {
+		log.Errorf("Could not start conference timeout. err: %v", err)
+	}
+
 	return res, nil
 }
 

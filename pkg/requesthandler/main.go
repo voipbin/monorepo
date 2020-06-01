@@ -32,6 +32,14 @@ var (
 
 const requestTimeoutDefault int = 3 // default request timeout
 
+// delay units
+const (
+	DelayNow    int = 0
+	DelaySecond int = 1000
+	DelayMinute int = DelaySecond * 60
+	DelayHour   int = DelayMinute * 60
+)
+
 // default stasis application name.
 // normally, we don't need to use this, because proxy will set this automatically.
 // but, some of Asterisk ARI required application name. this is for that.
@@ -91,11 +99,6 @@ type RequestHandler interface {
 	AstBridgeDelete(asteriskID, bridgeID string) error
 	AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error
 
-	CallCallHealth(id uuid.UUID, delay, retryCount int) error
-	CallCallActionNext(id uuid.UUID) error
-	CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
-	CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
-
 	// asterisk channels
 	AstChannelAnswer(asteriskID, channelID string) error
 	AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error
@@ -106,6 +109,15 @@ type RequestHandler interface {
 	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
 	AstChannelVariableSet(asteriskID, channelID, variable, value string) error
+
+	// call
+	CallCallHealth(id uuid.UUID, delay, retryCount int) error
+	CallCallActionNext(id uuid.UUID) error
+	CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
+	CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
+
+	// conference
+	CallConferenceTerminate(conferenceID uuid.UUID, reason string, delay int) error
 
 	// flow actions
 	FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
@@ -206,7 +218,7 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMeth
 	return res, nil
 }
 
-// SendARIRequest send a request to the Asterisk-proxy and return the response
+// sendRequestCall send a request to the Asterisk-proxy and return the response
 // timeout second
 // delayed millisecond
 func (r *requestHandler) sendRequestCall(uri string, method rabbitmq.RequestMethod, resource resource, timeout, delayed int, dataType, data string) (*rabbitmq.Response, error) {
@@ -264,7 +276,7 @@ func (r *requestHandler) sendRequest(ctx context.Context, target string, resourc
 }
 
 // sendDelayedRequest sends the delayed request to the target
-// delay unit is ms.
+// delay unit is millisecond.
 func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, resource resource, delay int, req *rabbitmq.Request) error {
 
 	start := time.Now()

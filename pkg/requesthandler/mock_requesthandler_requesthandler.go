@@ -276,6 +276,20 @@ func (mr *MockRequestHandlerMockRecorder) CallChannelHealth(arg0, arg1, arg2, ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallChannelHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallChannelHealth), arg0, arg1, arg2, arg3, arg4)
 }
 
+// CallConferenceTerminate mocks base method
+func (m *MockRequestHandler) CallConferenceTerminate(arg0 uuid.UUID, arg1 string, arg2 int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallConferenceTerminate", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallConferenceTerminate indicates an expected call of CallConferenceTerminate
+func (mr *MockRequestHandlerMockRecorder) CallConferenceTerminate(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceTerminate", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceTerminate), arg0, arg1, arg2)
+}
+
 // FlowActionGet mocks base method
 func (m *MockRequestHandler) FlowActionGet(arg0, arg1 uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()
