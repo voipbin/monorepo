@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/request"
 )
 
 // CallCallsHealth sends the request for call health-check
@@ -44,12 +45,10 @@ func (r *requestHandler) CallCallHealth(id uuid.UUID, delay, retryCount int) err
 func (r *requestHandler) CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error {
 	uri := fmt.Sprintf("/v1/calls/%s/action-timeout", id)
 
-	type Data struct {
-		action.Action
-	}
-
-	m, err := json.Marshal(Data{
-		*a,
+	m, err := json.Marshal(request.V1DataCallsIDActionTimeout{
+		ActionID:   a.ID,
+		ActionType: a.Type,
+		TMExecute:  a.TMExecute,
 	})
 	if err != nil {
 		return err

@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/request"
 )
 
 // processV1CallsIDGet handles /v1/calls/<id> request
@@ -49,14 +50,9 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmq.Request) (*rabbit
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	type Data struct {
-		RetryCount int `json:"retry_count"`
-		Delay      int `json:"delay"`
-	}
 
-	var data Data
+	var data request.V1DataCallsIDHealth
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 		return nil, err
 	}
@@ -85,17 +81,24 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmq.Request) (*rabbit
 // processV1CallsIDGet handles /v1/calls/<id>/action-timeout request
 func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
+
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	var a action.Action
-	if err := json.Unmarshal([]byte(m.Data), &a); err != nil {
-		return simpleResponse(404), nil
+
+	var data request.V1DataCallsIDActionTimeout
+	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+		return nil, err
 	}
 
-	if err := h.callHandler.ActionTimeout(id, &a); err != nil {
+	action := &action.Action{
+		ID:        data.ActionID,
+		Type:      data.ActionType,
+		TMExecute: data.TMExecute,
+	}
+
+	if err := h.callHandler.ActionTimeout(id, action); err != nil {
 		return simpleResponse(404), nil
 	}
 

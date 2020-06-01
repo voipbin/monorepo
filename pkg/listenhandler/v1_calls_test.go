@@ -101,7 +101,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 				URI:      "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/action-timeout",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     `{"id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "type": "echo", "tm_execute": "2020-05-03T21:35:02.809"}`,
+				Data:     `{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.809"}`,
 			},
 			&action.Action{
 				ID:        uuid.FromStringOrNil("ec4c8192-994b-11ea-ab64-9b63b984b7c4"),
@@ -118,7 +118,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().ActionTimeout(tt.id, tt.action)
+			mockCall.EXPECT().ActionTimeout(tt.id, tt.action).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
