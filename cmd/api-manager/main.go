@@ -1,76 +1,43 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"os"
-	"time"
+	"flag"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	joonix "github.com/joonix/log"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/api-manager/api"
+	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/database"
 )
 
-var (
-	router = gin.Default()
-)
+var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
 
-// User sample
-type User struct {
-	ID       uint64 `json:"id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-var user = User{
-	ID:       1,
-	Username: "username",
-	Password: "password",
-}
+var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
 
 func main() {
-	fmt.Println("hello world")
-	router.Post("/login", Login)
-	logrus.Error(router.Run(":8080"))
+
+	db, err := database.Init(*dsn)
+	if err != nil {
+		logrus.Errorf("Could not initiate database. err: %v", err)
+		return
+	}
+
+	app := gin.Default()
+	app.Use(database.Inject(db))
+	app.Use(middleware.JWTMiddleware())
+
+	// apply api router
+	api.ApplyRoutes(app)
+
+	app.Run(":" + "8080")
 }
 
-// Login handles below request
-// /login
-func Login(c *gin.Context) {
-	var u User
-	if err := c.ShouldBindJSON(&u); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, "Invalid json provided")
-		return
-	}
+func init() {
+	flag.Parse()
 
-	// compare the user from the request, with the one we defined:
-	if user.Username != u.Username || user.Password != u.Password {
-		c.JSON(http.StatusUnauthorized, "Please provide valid login details")
-		return
-	}
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
 
-	token, err := CreateToken(user.ID)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, token)
-}
-
-// CreateToken creates jwt for user
-func CreateToken(userid uint64) (string, error) {
-	// creating access token
-	os.Setenv("ACCESS_SECRET", "skldjfsdlkflslje") // this should be in an env file
-	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
-	atClaims["user_id"] = userid
-	atClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
-	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-	token, err := at.SignedString([]byte(os.Getenv("ACCESS_TOKEN")))
-	if err != nil {
-		return "", nil
-	}
-
-	return token, nil
+	middleware.Init(*jwtKey)
 }
