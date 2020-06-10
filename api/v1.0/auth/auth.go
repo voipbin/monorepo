@@ -35,7 +35,7 @@ func register(c *gin.Context) {
 	// check existancy
 	var exists models.User
 	if err := db.Where("username = ?", body.Username).First(&exists).Error; err == nil {
-		logrus.Debug("The given user is already exsits. username: %s", body.Username)
+		logrus.Debugf("The given user is already exsits. username: %s", body.Username)
 		c.AbortWithStatus(409)
 		return
 	}
@@ -78,8 +78,8 @@ func register(c *gin.Context) {
 func login(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	type RequestBody struct {
-		Username string `json:"username" binding"required"`
-		Password string `json:"password" binding"required"`
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
 	}
 
 	var body RequestBody
