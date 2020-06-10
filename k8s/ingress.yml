@@ -1,0 +1,10 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: api-manager
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "api-manager-static-ip"
+spec:
+  backend:
+    serviceName: api-manager
+    servicePort: 80

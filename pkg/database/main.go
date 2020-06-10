@@ -3,7 +3,7 @@ package database
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/mysql" // imported for gorm
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/database/models"
 )
 

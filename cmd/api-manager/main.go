@@ -30,7 +30,7 @@ func main() {
 	// apply api router
 	api.ApplyRoutes(app)
 
-	app.Run(":" + "8080")
+	app.Run(":" + "80")
 }
 
 func init() {
