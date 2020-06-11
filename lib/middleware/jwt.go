@@ -59,22 +59,30 @@ func validateToken(tokenString string) (common.JSON, error) {
 // JWT Token can be passed as cooke, or Authorization header
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// get token from the cookie
 		tokenString, err := c.Cookie("token")
 		if err != nil {
-			// try reading HTTP header
-			authorization := c.Request.Header.Get("Authorization")
-			if authorization == "" {
-				c.Next()
-				return
-			}
 
-			sp := strings.Split(authorization, "Bearer ")
-			if len(sp) < 1 {
-				// invalid
-				c.Next()
-				return
+			// get token from the url query
+			tokenString = c.Query("token")
+			if tokenString == "" {
+
+				// get token from the http header
+				// try reading HTTP header
+				authorization := c.Request.Header.Get("Authorization")
+				if authorization == "" {
+					c.Next()
+					return
+				}
+
+				sp := strings.Split(authorization, "Bearer ")
+				if len(sp) < 2 {
+					// invalid
+					c.Next()
+					return
+				}
+				tokenString = sp[1]
 			}
-			tokenString = sp[1]
 		}
 
 		tokenData, err := validateToken(tokenString)
