@@ -8,7 +8,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 )
 
 // CallCreate creates new call record.

@@ -1,6 +1,6 @@
 package arihandler
 
-//go:generate mockgen -destination ./mock_arihandler_arihandler.go -package arihandler gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler ARIHandler
+//go:generate mockgen -destination ./mock_arihandler_arihandler.go -package arihandler -source ./main.go ARIHandler
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
