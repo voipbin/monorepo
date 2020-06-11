@@ -9,11 +9,18 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager/api"
 	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/database"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
 )
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
 
 var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
+
+var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
+var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
+var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
+var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 func main() {
 
@@ -23,8 +30,16 @@ func main() {
 		return
 	}
 
+	sock := rabbitmq.NewRabbit(*rabbitAddr)
+	sock.Connect()
+
 	app := gin.Default()
+
+	// injects
 	app.Use(database.Inject(db))
+	app.Use(requesthandler.Inject(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest))
+
+	// set jwt middleware
 	app.Use(middleware.JWTMiddleware())
 
 	// apply api router
@@ -36,8 +51,12 @@ func main() {
 func init() {
 	flag.Parse()
 
+	// init log
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
 
+	// init middleware
 	middleware.Init(*jwtKey)
+
+	// init
 }

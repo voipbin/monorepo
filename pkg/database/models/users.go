@@ -29,6 +29,6 @@ func (u *User) Serialize() common.JSON {
 
 // Read reads the user info
 func (u *User) Read(m common.JSON) {
-	u.ID = uint64(m["id"].(uint64))
+	u.ID = uint64(m["id"].(float64))
 	u.Username = m["username"].(string)
 }

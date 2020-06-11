@@ -9,5 +9,13 @@ import (
 func ApplyRoutes(r *gin.Engine) {
 	api := r.Group("/")
 
+	api.GET("ping", ping)
+
 	apiv1.ApplyRoutes(api)
+}
+
+func ping(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
 }
