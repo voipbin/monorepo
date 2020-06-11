@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
-	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"

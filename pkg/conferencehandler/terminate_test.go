@@ -5,10 +5,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )

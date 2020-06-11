@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 )
 
 func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration int) error {

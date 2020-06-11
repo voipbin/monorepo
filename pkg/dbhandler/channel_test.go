@@ -7,8 +7,8 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 )
 
 func TestChannelCreate(t *testing.T) {

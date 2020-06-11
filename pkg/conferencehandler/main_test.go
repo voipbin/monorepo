@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 )
 
 func TestGenerateBridgeName(t *testing.T) {

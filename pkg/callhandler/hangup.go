@@ -3,8 +3,8 @@ package callhandler
 import (
 	"context"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 )
 
 // Start starts the call service

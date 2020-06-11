@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 )
 
 func TestNewBridgeByBridgeCreated(t *testing.T) {

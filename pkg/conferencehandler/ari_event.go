@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 )
 
 func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel) error {

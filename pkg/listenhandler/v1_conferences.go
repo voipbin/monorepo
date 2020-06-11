@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/request"
 )

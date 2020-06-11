@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 )
 
 // ChannelCreate creates new channel record and returns the created channel record.

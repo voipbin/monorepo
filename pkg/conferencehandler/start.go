@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 
 	"github.com/sirupsen/logrus"

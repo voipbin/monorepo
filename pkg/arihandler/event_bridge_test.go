@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"

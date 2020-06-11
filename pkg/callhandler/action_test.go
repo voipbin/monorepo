@@ -6,9 +6,9 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/call"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )

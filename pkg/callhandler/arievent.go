@@ -1,7 +1,7 @@
 package callhandler
 
 import (
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 )
 
 // ARIStasisStart is called when the channel handler received StasisStart.

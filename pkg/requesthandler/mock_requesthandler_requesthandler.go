@@ -8,9 +8,9 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
-	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
+	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	reflect "reflect"
 )
 

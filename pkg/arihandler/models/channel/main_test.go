@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 )
 
 func TestGetTech(t *testing.T) {

@@ -7,10 +7,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 

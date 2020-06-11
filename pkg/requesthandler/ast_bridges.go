@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
 
