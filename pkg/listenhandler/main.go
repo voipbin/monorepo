@@ -165,13 +165,17 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 		response, err = h.processV1CallsIDActionTimeoutPost(m)
 		requestType = "/v1/calls/action-timeout"
 
-		// conferences
+	// conferences
 	case regV1ConferencesIDCallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDCallsIDDelete(m)
 		requestType = "/v1/conferences/calls"
 
 	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDDelete(m)
+		requestType = "/v1/conferences"
+
+	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
+		response, err = h.processV1ConferencesIDGet(m)
 		requestType = "/v1/conferences"
 
 	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
