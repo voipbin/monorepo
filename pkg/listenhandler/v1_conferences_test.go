@@ -59,7 +59,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       `{"ID":"d82ce190-9fe8-11ea-aec8-973901dd28fa","Type":"conference","BridgeID":"f1354268-9fe8-11ea-b693-3761800b29d5","Status":"","Name":"","Detail":"","Data":null,"BridgeIDs":["f1354268-9fe8-11ea-b693-3761800b29d5"],"CallIDs":null,"TMCreate":"","TMUpdate":"","TMDelete":""}`,
+				Data:       `{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"bridge_ids":["f1354268-9fe8-11ea-b693-3761800b29d5"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 			},
 		},
 	}
@@ -75,8 +75,9 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match. exepct: 200, got: %v", res)
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
 			}
+
 		})
 	}
 }
@@ -196,6 +197,69 @@ func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match. exepct: 200, got: %v", res)
+			}
+		})
+	}
+}
+
+func TestProcessV1ConferencesIDGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:        mockSock,
+		db:                mockDB,
+		reqHandler:        mockReq,
+		callHandler:       mockCall,
+		conferenceHandler: mockConf,
+	}
+
+	type test struct {
+		name    string
+		request *rabbitmq.Request
+
+		expectConference *conference.Conference
+		expectRes        *rabbitmq.Response
+	}
+
+	tests := []test{
+		{
+			"conference type",
+			&rabbitmq.Request{
+				URI:    "/v1/conferences/e2951d7c-ac2d-11ea-8d4b-aff0e70476d6",
+				Method: rabbitmq.RequestMethodGet,
+			},
+			&conference.Conference{
+				ID:        uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
+				Type:      conference.TypeConference,
+				BridgeID:  "fea1c22c-ac2d-11ea-8a08-7f5cb36f279a",
+				BridgeIDs: []string{"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a"},
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				Data:       `{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"bridge_ids":["fea1c22c-ac2d-11ea-8a08-7f5cb36f279a"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.expectConference.ID).Return(tt.expectConference, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 
@@ -62,6 +63,32 @@ func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmq.Request) (*rabb
 	}
 
 	return simpleResponse(200), nil
+}
+
+// processV1ConferencesIDGet handles /v1/conferences/<id> GET request
+func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	cf, err := h.db.ConferenceGet(context.Background(), id)
+	if err != nil {
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := json.Marshal(cf)
+	if err != nil {
+		return simpleResponse(400), nil
+	}
+
+	res := &rabbitmq.Response{
+		StatusCode: 200,
+		Data:       string(tmp),
+	}
+
+	return res, nil
 }
 
 // processV1ConferencesIDCallsIDDelete handles /v1/conferences/<id>/calls/<id> DELETE request
