@@ -4,21 +4,21 @@ import uuid "github.com/gofrs/uuid"
 
 // Conference type
 type Conference struct {
-	ID       uuid.UUID
-	Type     Type
-	BridgeID string
+	ID       uuid.UUID `json:"id"`
+	Type     Type      `json:"type"`
+	BridgeID string    `json:"bridge_id"`
 
-	Status Status
-	Name   string
-	Detail string
-	Data   []map[string]interface{}
+	Status Status                   `json:"status"`
+	Name   string                   `json:"name"`
+	Detail string                   `json:"detail"`
+	Data   []map[string]interface{} `json:"data"`
 
-	BridgeIDs []string
-	CallIDs   []uuid.UUID
+	BridgeIDs []string    `json:"bridge_ids"`
+	CallIDs   []uuid.UUID `json:"call_ids"`
 
-	TMCreate string
-	TMUpdate string
-	TMDelete string
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
 }
 
 // Type conference types

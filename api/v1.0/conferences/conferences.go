@@ -3,15 +3,14 @@ package conferences
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
 )
 
 // ApplyRoutes applies router to the gin Engine
 func ApplyRoutes(r *gin.RouterGroup) {
-	conf := r.Group("/conferences", middleware.Authorized)
+	conferences := r.Group("/conferences")
 
-	conf.GET("/:id", conferencesIDGET)
+	conferences.GET("/:id", conferencesIDGET)
 }
 
 func conferencesIDGET(c *gin.Context) {
