@@ -60,11 +60,10 @@ func conferencesIDDELETE(c *gin.Context) {
 
 	// send a request to call
 	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
-	res, err := requestHandler.CallConferenceDelete(ID)
-	if err != nil || res == nil {
+	if err := requestHandler.CallConferenceDelete(ID); err != nil {
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.JSON(200, res)
+	c.AbortWithStatus(200)
 }

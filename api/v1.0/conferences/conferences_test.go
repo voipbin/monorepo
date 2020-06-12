@@ -146,7 +146,7 @@ func TestConferencesIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockReq.EXPECT().CallConferenceDelete(tt.conference.ID).Return(tt.conference, nil)
+			mockReq.EXPECT().CallConferenceDelete(tt.conference.ID).Return(nil)
 
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/conferences/%s", tt.conference.ID), nil)
 

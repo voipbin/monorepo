@@ -80,7 +80,7 @@ type RequestHandler interface {
 
 	// conference
 	CallConferenceCreate(conferenceType conference.Type) (*conference.Conference, error)
-	CallConferenceDelete(conferenceID uuid.UUID) (*conference.Conference, error)
+	CallConferenceDelete(conferenceID uuid.UUID) error
 	CallConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error)
 
 	// flow actions
