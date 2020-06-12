@@ -13,6 +13,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	conferences.POST("", conferencesPOST)
 	conferences.GET("/:id", conferencesIDGET)
+	conferences.DELETE("/:id", conferencesIDDELETE)
 }
 
 func conferencesPOST(c *gin.Context) {
@@ -45,6 +46,21 @@ func conferencesIDGET(c *gin.Context) {
 	// send a request to call
 	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
 	res, err := requestHandler.CallConferenceGet(ID)
+	if err != nil || res == nil {
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func conferencesIDDELETE(c *gin.Context) {
+	// get id
+	ID := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	// send a request to call
+	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
+	res, err := requestHandler.CallConferenceDelete(ID)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
 		return

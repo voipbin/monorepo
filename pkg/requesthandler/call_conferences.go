@@ -35,6 +35,31 @@ func (r *requestHandler) CallConferenceGet(conferenceID uuid.UUID) (*conference.
 	return &conference, nil
 }
 
+// CallConferenceDelete sends a request to call-manager
+// to deleting a conference.
+// it returns deleted conference if it succeed.
+func (r *requestHandler) CallConferenceDelete(conferenceID uuid.UUID) (*conference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
+
+	res, err := r.sendRequestCall(uri, models.RequestMethodDelete, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, "")
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var conference conference.Conference
+	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
+		return nil, err
+	}
+
+	return &conference, nil
+}
+
 // CallConferenceCreate sends a request to call-manager
 // to creating a conference.
 // it returns created conference if it succeed.

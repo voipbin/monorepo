@@ -79,9 +79,9 @@ type RequestHandler interface {
 	// CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
 	// conference
-	CallConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error)
 	CallConferenceCreate(conferenceType conference.Type) (*conference.Conference, error)
-	// CallConferenceTerminate(conferenceID uuid.UUID, reason string, delay int) error
+	CallConferenceDelete(conferenceID uuid.UUID) (*conference.Conference, error)
+	CallConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error)
 
 	// flow actions
 	// FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
