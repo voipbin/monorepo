@@ -50,12 +50,11 @@ func (mr *MockRequestHandlerMockRecorder) CallConferenceCreate(conferenceType in
 }
 
 // CallConferenceDelete mocks base method
-func (m *MockRequestHandler) CallConferenceDelete(conferenceID uuid.UUID) (*conference.Conference, error) {
+func (m *MockRequestHandler) CallConferenceDelete(conferenceID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallConferenceDelete", conferenceID)
-	ret0, _ := ret[0].(*conference.Conference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // CallConferenceDelete indicates an expected call of CallConferenceDelete
