@@ -48,3 +48,18 @@ func (mr *MockRequestHandlerMockRecorder) CallConferenceGet(conferenceID interfa
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceGet), conferenceID)
 }
+
+// CallConferenceCreate mocks base method
+func (m *MockRequestHandler) CallConferenceCreate(conferenceType conference.Type) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallConferenceCreate", conferenceType)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallConferenceCreate indicates an expected call of CallConferenceCreate
+func (mr *MockRequestHandlerMockRecorder) CallConferenceCreate(conferenceType interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceCreate), conferenceType)
+}
