@@ -80,6 +80,7 @@ type RequestHandler interface {
 
 	// conference
 	CallConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error)
+	CallConferenceCreate(conferenceType conference.Type) (*conference.Conference, error)
 	// CallConferenceTerminate(conferenceID uuid.UUID, reason string, delay int) error
 
 	// flow actions

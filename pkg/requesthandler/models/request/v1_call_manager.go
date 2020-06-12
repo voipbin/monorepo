@@ -1,5 +1,7 @@
 package request
 
+import "gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
+
 // V1DataAsterisksIDChannelsIDHealth is
 // v1 data type request struct for
 // AsterisksIDChannelsIDHealth
@@ -24,4 +26,11 @@ type V1DataCallsIDHealth struct {
 // /v1/conferences/<id>" DELETE
 type V1DataConferencesIDDelete struct {
 	Reason string `json:"reason,omitempty"`
+}
+
+// V1DataConferencesCreate is
+// v1 data type request struct for
+// /v1/conferences" POST
+type V1DataConferencesCreate struct {
+	Type conference.Type `json:"type"`
 }
