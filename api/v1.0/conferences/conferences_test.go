@@ -112,3 +112,49 @@ func TestConferencesPOST(t *testing.T) {
 		})
 	}
 }
+
+func TestConferencesIDDELETE(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	type test struct {
+		name       string
+		conference *conference.Conference
+	}
+
+	tests := []test{
+		{
+			"simple test",
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("requestHandler", mockReq)
+			})
+			setupServer(r)
+
+			mockReq.EXPECT().CallConferenceDelete(tt.conference.ID).Return(tt.conference, nil)
+
+			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/conferences/%s", tt.conference.ID), nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+		})
+	}
+}
