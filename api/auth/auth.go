@@ -13,13 +13,13 @@ import (
 // ApplyRoutes applies router to the gin Engine
 func ApplyRoutes(r *gin.RouterGroup) {
 	auth := r.Group("/auth")
-	auth.POST("/register", register)
+	auth.POST("/register", middleware.Authorized, register)
 	auth.POST("/login", login)
 }
 
 func register(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
-	logrus.Debug("registering.")
+	logrus.Debug("registering a new user.")
 
 	type RequestBody struct {
 		Username string `json:"username" binding:"required"`
@@ -76,6 +76,8 @@ func register(c *gin.Context) {
 }
 
 func login(c *gin.Context) {
+	logrus.Debug("Login.")
+
 	db := c.MustGet("db").(*gorm.DB)
 	type RequestBody struct {
 		Username string `json:"username" binding:"required"`

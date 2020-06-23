@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"gitlab.com/voipbin/bin-manager/api-manager/api/auth"
 	apiv1 "gitlab.com/voipbin/bin-manager/api-manager/api/v1.0"
 )
 
@@ -11,6 +12,7 @@ func ApplyRoutes(r *gin.Engine) {
 
 	api.GET("ping", ping)
 
+	auth.ApplyRoutes(api)
 	apiv1.ApplyRoutes(api)
 }
 
