@@ -1,0 +1,19 @@
+@import "mixin";
+
+html, body {
+	color: $main-color;
+	font-size: $main-font-size;
+	letter-spacing: 0.5px;
+
+	.no-animation {
+		* {
+			@include no-animation();
+		}
+	}
+}
+
+input {
+	outline: none;
+}
+
+@import "misc";
