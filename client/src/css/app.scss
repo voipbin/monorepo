@@ -1,0 +1,46 @@
+$fa-font-path: "~font-awesome/fonts";
+@import "~font-awesome/scss/font-awesome";
+
+$icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";
+@import "~bootstrap-sass/assets/stylesheets/bootstrap";
+
+@import "variables";
+@import "shared/base";
+
+html {
+  background: url("https://source.unsplash.com/2560x1440/?forest,mountain") center no-repeat fixed;
+}
+
+body {
+  background: rgba(#000000, 0.6);
+  padding: 0px 20px 20px 20px;
+  min-height: 100vh;
+}
+
+.navbar-brand {
+  font-size: 1.5em;
+  img {
+    display: inline-block;
+    width: 50px;
+  }
+}
+
+#root {
+  h2 {
+    margin-top: 0px;
+  }
+
+  h4 {
+    margin-top: 20px;
+  }
+}
+
+.btn-action {
+  outline: none;
+  border: none;
+}
+
+
+@import "main-window";
+@import "call-window";
+@import "call-modal";
