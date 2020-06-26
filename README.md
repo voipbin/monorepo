@@ -1,3 +1,0 @@
-## meet
-
-meet.voipbin.net
