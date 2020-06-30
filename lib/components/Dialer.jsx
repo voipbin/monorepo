@@ -45,7 +45,7 @@ export default class Dialer extends React.Component
 				>
 					<div className='uri-container'>
 						<TextField
-							hintText='SIP URI or username'
+							hintText='Conference ID'
 							fullWidth
 							disabled={!this._canCall()}
 							value={state.uri}
@@ -54,7 +54,7 @@ export default class Dialer extends React.Component
 					</div>
 
 					<RaisedButton
-						label='Call'
+						label='Join'
 						primary
 						disabled={!this._canCall() || !state.uri}
 						onClick={this.handleClickCall.bind(this)}

@@ -68,7 +68,7 @@ export default class Phone extends React.Component
 								anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
 								targetOrigin={{ horizontal: 'right', vertical: 'top' }}
 							>
-								<CopyToClipboard text={invitationLink}
+								{/* <CopyToClipboard text={invitationLink}
 									onCopy={this.handleMenuCopyInvitationLink.bind(this)}
 								>
 									<MenuItem
@@ -81,7 +81,7 @@ export default class Phone extends React.Component
 									<MenuItem
 										primaryText='Copy my SIP URI'
 									/>
-								</CopyToClipboard>
+								</CopyToClipboard> */}
 								<MenuItem
 									primaryText='Exit'
 									onClick={this.handleMenuExit.bind(this)}
@@ -138,6 +138,7 @@ export default class Phone extends React.Component
 					password              : settings.password,
 					'display_name'        : settings.display_name,
 					sockets               : [ socket ],
+					'register'            : false,
 					'registrar_server'    : settings.registrar_server,
 					'contact_uri'         : settings.contact_uri,
 					'authorization_user'  : settings.authorization_user,
@@ -149,8 +150,7 @@ export default class Phone extends React.Component
 			// TODO: For testing.
 			window.UA = this._ua;
 		}
-		catch (error)
-		{
+		catch (error) {
 			this.props.onNotify(
 				{
 					level   : 'error',
@@ -362,26 +362,28 @@ export default class Phone extends React.Component
 				mediaConstraints :
 				{
 					audio : true,
-					video : true
+					video : false
+					// video : true
 				},
 				rtcOfferConstraints :
 				{
 					offerToReceiveAudio : 1,
-					offerToReceiveVideo : 1
+					// offerToReceiveVideo : 1
+					offerToReceiveVideo : 0
 				}
 			});
 		logger.debug('test session: %s', JSON.stringify(session.C))
 		logger.debug('test session: %s', JSON.stringify(session.connection))
 
-		session.on('icecandidate', (data) =>
-		{
-			logger.debug('test icecandidate: %s', JSON.stringify(data.candidate))
-		})
+		// session.on('icecandidate', (data) =>
+		// {
+		// 	logger.debug('test icecandidate: %s', JSON.stringify(data.candidate))
+		// });
 
-		session.on('sdp', (data) =>
-		{
-			logger.debug('test sdp: %s', JSON.stringify(data.sdp))
-		})
+		// session.on('sdp', (data) =>
+		// {
+		// 	logger.debug('test sdp: %s', JSON.stringify(data.sdp))
+		// });
 
 		session.on('connecting', () =>
 		{
@@ -418,6 +420,12 @@ export default class Phone extends React.Component
 			audioPlayer.stop('ringback');
 			audioPlayer.play('answered');
 		});
+
+		// session.on('reinvite', (data) =>
+		// {
+		// 	logger.debug('test reinvite: %s', JSON.stringify(data.request.body))
+		// });
+
 	}
 
 	handleAnswerIncoming()
