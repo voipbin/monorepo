@@ -17,7 +17,7 @@ export default class Logo extends React.Component
 		return (
 			<div data-component='Logo' className={size}>
 				<h1>
-					<span className='colorized'>TRYIT</span>J<span className='small'>S</span>SIP
+					<span className='colorized'>MEET</span>.V<span className='small'>oIP</span>BIN.net
 				</h1>
 			</div>
 		);
