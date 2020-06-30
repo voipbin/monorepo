@@ -45,14 +45,14 @@ export default class Login extends React.Component
 					</div>
 
 					<form action='' onSubmit={this.handleSubmit.bind(this)}>
-						<div className='settings-icon-container'>
+						{/* <div className='settings-icon-container'>
 							<SettingsIcon
 								className='icon'
 								color='#666'
 								hoverColor='#333'
 								onClick={this.handleClickSettings.bind(this)}
 							/>
-						</div>
+						</div> */}
 
 						<div className='form-container'>
 							<TextField
@@ -62,7 +62,7 @@ export default class Login extends React.Component
 								fullWidth
 								onChange={this.handleChangeName.bind(this)}
 							/>
-							<FlatButton
+							{/* <FlatButton
 								label='Reset'
 								primary
 								style={{
@@ -70,7 +70,7 @@ export default class Login extends React.Component
 									margin  : '20px auto 0 auto'
 								}}
 								onClick={this.handleClickReset.bind(this)}
-							/>
+							/> */}
 						</div>
 					</form>
 
