@@ -71,7 +71,7 @@ func (h *conferenceHandler) startTypeConference(c *call.Call) (*conference.Confe
 	// create a bridge for conference
 	bridgeID := uuid.Must(uuid.NewV4()).String()
 	bridgeName := generateBridgeName(conference.TypeConference, conferenceID, false)
-	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, bridge.TypeMixing); err != nil {
+	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeVideoSFU}); err != nil {
 		log.Errorf("Could not create a bridge for a conference. err: %v", err)
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference,
 	// create a bridge and add to conference
 	bridgeID := uuid.Must(uuid.NewV4()).String()
 	bridgeName := generateBridgeName(conference.TypeEcho, id, false)
-	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, bridge.TypeMixing); err != nil {
+	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing}); err != nil {
 		return nil, fmt.Errorf("could not create a bridge for echo conference. err: %v", err)
 	}
 

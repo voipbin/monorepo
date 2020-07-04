@@ -3,13 +3,14 @@ package requesthandler
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
 
 // AstBridgeCreate sends the bridge create request
-func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType bridge.Type) error {
+func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeTypes []bridge.Type) error {
 	url := fmt.Sprint("/ari/bridges")
 
 	type Data struct {
@@ -18,8 +19,13 @@ func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string
 		Name     string `json:"name"`
 	}
 
+	tmpList := []string{}
+	for _, bridgeType := range bridgeTypes {
+		tmpList = append(tmpList, string(bridgeType))
+	}
+
 	m, err := json.Marshal(Data{
-		string(bridgeType),
+		strings.Join(tmpList, ","),
 		bridgeID,
 		bridgeName,
 	})

@@ -43,7 +43,7 @@ func TestStartTypeEcho(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), bridge.TypeMixing).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing}).Return(nil)
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionIn, channel.SnoopDirectionNone)
 			mockReq.EXPECT().AstBridgeAddChannel(tt.call.AsteriskID, gomock.Any(), tt.call.ChannelID, "", false, false).Return(nil)
@@ -88,7 +88,7 @@ func TestStartTypeConference(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstBridgeCreate(requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), bridge.TypeMixing).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeVideoSFU}).Return(nil)
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.conference, nil)
 			mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), "timeout", requesthandler.DelayHour*24).Return(nil)

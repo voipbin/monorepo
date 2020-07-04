@@ -52,7 +52,7 @@ func (mr *MockRequestHandlerMockRecorder) AstBridgeAddChannel(arg0, arg1, arg2, 
 }
 
 // AstBridgeCreate mocks base method
-func (m *MockRequestHandler) AstBridgeCreate(arg0, arg1, arg2 string, arg3 bridge.Type) error {
+func (m *MockRequestHandler) AstBridgeCreate(arg0, arg1, arg2 string, arg3 []bridge.Type) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstBridgeCreate", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
