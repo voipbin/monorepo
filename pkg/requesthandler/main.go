@@ -95,7 +95,7 @@ func init() {
 type RequestHandler interface {
 	// asterisk bridges
 	AstBridgeAddChannel(asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error
-	AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType bridge.Type) error
+	AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType []bridge.Type) error
 	AstBridgeDelete(asteriskID, bridgeID string) error
 	AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error
 
