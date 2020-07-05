@@ -88,7 +88,7 @@ func TestStartTypeConference(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstBridgeCreate(requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeVideoSFU}).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.conference, nil)
 			mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), "timeout", requesthandler.DelayHour*24).Return(nil)
