@@ -71,7 +71,7 @@ func (h *conferenceHandler) startTypeConference(c *call.Call) (*conference.Confe
 	// create a bridge for conference
 	bridgeID := uuid.Must(uuid.NewV4()).String()
 	bridgeName := generateBridgeName(conference.TypeConference, conferenceID, false)
-	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeVideoSFU}); err != nil {
+	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); err != nil {
 		log.Errorf("Could not create a bridge for a conference. err: %v", err)
 		return nil, err
 	}
