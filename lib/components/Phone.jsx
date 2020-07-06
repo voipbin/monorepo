@@ -292,8 +292,10 @@ export default class Phone extends React.Component
 					});
 			});
 
-			session.on('accepted', () =>
+			session.on('accepted', (data) =>
 			{
+				logger.debug('test accepted: %s', JSON.stringify(data.response));
+
 				audioPlayer.stop('ringing');
 				this.setState(
 					{
@@ -301,6 +303,12 @@ export default class Phone extends React.Component
 						incomingSession : null
 					});
 			});
+
+			session.on('confirmed', (data) =>
+			{
+				logger.debug('test confirmed: %s', JSON.stringify(data.response));
+			});
+
 		});
 
 		this._ua.start();
@@ -362,14 +370,14 @@ export default class Phone extends React.Component
 				mediaConstraints :
 				{
 					audio : true,
-					video : false
-					// video : true
+					// video : false
+					video : true
 				},
 				rtcOfferConstraints :
 				{
 					offerToReceiveAudio : 1,
-					// offerToReceiveVideo : 1
-					offerToReceiveVideo : 0
+					offerToReceiveVideo : 1
+					// offerToReceiveVideo : 0
 				}
 			});
 		logger.debug('test session: %s', JSON.stringify(session.C))
