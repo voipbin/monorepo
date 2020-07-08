@@ -383,20 +383,39 @@ export default class Phone extends React.Component
 		logger.debug('test session: %s', JSON.stringify(session.C))
 		logger.debug('test session: %s', JSON.stringify(session.connection))
 
-		// session.on('icecandidate', (data) =>
-		// {
-		// 	logger.debug('test icecandidate: %s', JSON.stringify(data.candidate))
-		// });
+		session.connection.addEventListener("track", e => {
+			logger.debug('test added another track!')
+		}, false);
 
-		// session.on('sdp', (data) =>
-		// {
-		// 	logger.debug('test sdp: %s', JSON.stringify(data.sdp))
-		// });
-
-		session.on('connecting', () =>
+		session.on('icecandidate', (data) =>
 		{
+			logger.debug('test icecandidate: %s', JSON.stringify(data.candidate))
+			data.ready()
+		});
+
+		session.on('sdp', (data) =>
+		{
+			logger.debug('test sdp: %s', JSON.stringify(data.sdp))
+		});
+
+		session.on('connecting', (data) =>
+		{
+			logger.debug('test connecting: %s', JSON.stringify(data.sdp))
+
 			this.setState({ session });
 		});
+
+		session.on('sending', (data) =>
+		{
+			logger.debug('test sending: %s', JSON.stringify(data.sdp))
+
+			// data.request.body = 'change body'
+			// logger.debug('test sending change body: %s', JSON.stringify(data.sdp))
+
+			// data.sdp = 'change sdp'
+			// logger.debug('test sending change sdp: %s', JSON.stringify(data.sdp))
+		});
+
 
 		session.on('progress', () =>
 		{
