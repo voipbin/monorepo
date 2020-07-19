@@ -712,6 +712,18 @@ body {
   z-index: -1 !important;
   opacity: 0;
 }
+#tryit-jssip-container [data-component='Session'] > video.remote-view {
+  height: 100%;
+  width: 100%;
+  margin: 0 auto;
+  display: block;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
 #tryit-jssip-container [data-component='Session'] > .no-remote-video-info {
   position: absolute;
   left: 0;
