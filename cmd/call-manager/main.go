@@ -49,9 +49,6 @@ var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
-// workerCount
-var workerCount = flag.Int("worker_count", 3, "counts of workers")
-
 type worker struct {
 	rabbitSock rabbitmq.Rabbit
 
@@ -79,9 +76,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < *workerCount; i++ {
-		run(sqlDB, cache)
-	}
+	run(sqlDB, cache)
 	<-chDone
 
 	return
