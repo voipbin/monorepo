@@ -61,9 +61,13 @@ export default class Session extends React.Component
 						muted
 					/>
 
+					<div ref='remoteView' className='remote-view'></div>
+					{/* <div ref='remoteView' className='remote-video'></div> */}
+
 					<video
 						ref='remoteVideo'
-						className={classnames('remote-video', { hidden: noRemoteVideo })}
+						// className={classnames('remote-video', { hidden: noRemoteVideo })}
+						className={classnames('remote-video', { hidden: true })}
 						autoPlay
 					/>
 
@@ -116,6 +120,10 @@ export default class Session extends React.Component
 		const peerconnection = session.connection;
 		const localStream = peerconnection.getLocalStreams()[0];
 		const remoteStream = peerconnection.getRemoteStreams()[0];
+		const remoteStreams = new Map();
+
+		window.remoteStreams = new Map();
+		window.remoteVideos = new Map();
 
 		// Handle local stream
 		if (localStream)
@@ -261,9 +269,31 @@ export default class Session extends React.Component
 			}
 		});
 
-		peerconnection.addEventListener('addstream', (event) =>
+	// 	peerconnection.addEventListener('addstream', (event) =>
+	// 	{
+	// 		logger.debug('peerconnection "addstream" event');
+
+	// 		if (!this._mounted)
+	// 		{
+	// 			logger.error('_handleRemoteStream() | component not mounted');
+
+	// 			return;
+	// 		}
+
+	// 		this._handleRemoteStream(event.stream);
+	// 	});
+	// }
+
+		peerconnection.addEventListener('track', (event) =>
 		{
-			logger.debug('peerconnection "addstream" event');
+			logger.debug('peerconnection "track" event. event: %o', event);
+			logger.debug('stream: %o', event.streams[0]);
+
+
+			const remoteStreams = window.remoteStreams;
+			const stream = event.streams[0]
+			remoteStreams.set(stream.id, stream);
+			logger.debug('streams: %o', remoteStreams);
 
 			if (!this._mounted)
 			{
@@ -272,9 +302,13 @@ export default class Session extends React.Component
 				return;
 			}
 
-			this._handleRemoteStream(event.stream);
+			// this._handleRemoteStream(stream);
+
+			this._updateMediaView();
 		});
 	}
+
+
 
 	componentWillUnmount()
 	{
@@ -314,10 +348,11 @@ export default class Session extends React.Component
 		// Display remote stream
 		remoteVideo.srcObject = stream;
 
-		this._checkRemoteVideo(stream);
+		// this._checkRemoteVideo(stream);
 
 		stream.addEventListener('addtrack', (event) =>
 		{
+			logger.debug('remote stream "addtrack" event [%o]', event);
 			const track = event.track;
 
 			if (remoteVideo.srcObject !== stream)
@@ -328,7 +363,7 @@ export default class Session extends React.Component
 			// Refresh remote video
 			remoteVideo.srcObject = stream;
 
-			this._checkRemoteVideo(stream);
+			// this._checkRemoteVideo(stream);
 
 			track.addEventListener('ended', () =>
 			{
@@ -346,23 +381,158 @@ export default class Session extends React.Component
 			// Refresh remote video
 			remoteVideo.srcObject = stream;
 
-			this._checkRemoteVideo(stream);
+			// this._checkRemoteVideo(stream);
 		});
+
 	}
 
-	_checkRemoteVideo(stream)
-	{
-		if (!this._mounted)
-		{
-			logger.error('_checkRemoteVideo() | component not mounted');
+	// _checkRemoteVideo(stream)
+	// {
+	// 	if (!this._mounted)
+	// 	{
+	// 		logger.error('_checkRemoteVideo() | component not mounted');
 
+	// 		return;
+	// 	}
+
+	// 	const videoTrack = stream.getVideoTracks()[0];
+
+	// 	this.setState({ remoteHasVideo: Boolean(videoTrack) });
+	// }
+
+	_handleRemoteMediaStream(stream)
+	{
+		logger.debug('_handleRemoteStream() [stream:%o]', stream);
+
+		const remoteVideo = this.refs.remoteVideo;
+
+		// Display remote stream
+		remoteVideo.srcObject = stream;
+
+		// this._checkRemoteVideo(stream);
+
+		stream.addEventListener('addtrack', (event) =>
+		{
+			logger.debug('remote stream "addtrack" event [%o]', event);
+			const track = event.track;
+
+			if (remoteVideo.srcObject !== stream)
+				return;
+
+			logger.debug('remote stream "addtrack" event [track:%o]', track);
+
+			// Refresh remote video
+			remoteVideo.srcObject = stream;
+
+			// this._checkRemoteVideo(stream);
+
+			track.addEventListener('ended', () =>
+			{
+				logger.debug('remote track "ended" event [track:%o]', track);
+			});
+		});
+
+		stream.addEventListener('removetrack', () =>
+		{
+			if (remoteVideo.srcObject !== stream)
+				return;
+
+			logger.debug('remote stream "removetrack" event');
+
+			// Refresh remote video
+			remoteVideo.srcObject = stream;
+
+			// this._checkRemoteVideo(stream);
+		});
+
+	}
+
+
+	_checkRemoteMedia()
+	{
+		const streams = window.remoteStreams;
+
+		if (!this._mounted) {
+			logger.error('_checkRemoteVideo() | component not mounted');
 			return;
 		}
 
-		const videoTrack = stream.getVideoTracks()[0];
-
-		this.setState({ remoteHasVideo: Boolean(videoTrack) });
+		if (streams.size > 0) {
+			this.setState({ remoteHasVideo: true });
+		}
+		else {
+			this.setState({ remoteHasVideo: false });
+		}
 	}
+
+	_calcWidth(count) {
+		if (count <= 1) {
+			return '100%';
+		}
+		else if (count == 2) {
+			return '50%';
+		}
+		else if (count == 3 || count == 4) {
+			return '45%';
+		}
+		else {
+			return '25%';
+		}
+	}
+
+	_calcHeight(count) {
+		if (count < 4) {
+			return '100%';
+		}
+		else {
+			return '30%';
+		}
+	}
+
+	_updateMediaView()
+	{
+		const streams = window.remoteStreams;
+		const videos = window.remoteVideos;
+
+		logger.debug('updateMediaView. streams: %o', streams);
+		const remoteView = this.refs.remoteView;
+		remoteView.innerHTML = '';
+
+		this._checkRemoteMedia()
+
+		const width = this._calcWidth(streams.size);
+		const height = this._calcHeight(streams.size);
+
+
+		for (let [key, stream] of streams) {
+			logger.debug('updateMediaView stream. %o: %o', key, stream);
+
+			let video = document.createElement("video");
+			video.style.width = width;
+			// video.style.height = height;
+			video.autoplay = true;
+			video.srcObject = stream;
+
+			// videos
+			let tracks = stream.getVideoTracks();
+			for (let i = 0; i < tracks.length; i++) {
+				tracks[i].enabled = true;
+			}
+
+			// audio
+			tracks = stream.getAudioTracks();
+			for (let i = 0; i < tracks.length; i++) {
+				tracks[i].enabled = true;
+			}
+
+			remoteView.appendChild(video);
+		}
+
+		// for(var i = 0; i < streams.length; i++) {
+		// 	logger.debug('updateMediaView stream: %o', streams[i]);
+		// }
+	}
+
 }
 
 Session.propTypes =
