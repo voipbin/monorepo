@@ -119,7 +119,15 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 		return nil, ErrNotFound
 	}
 
-	return h.channelGetFromRow(row)
+	res, err := h.channelGetFromRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	// update cache
+	h.cache.ChannelSet(ctx, res)
+
+	return res, nil
 }
 
 // ChannelGet returns channel.
@@ -168,7 +176,15 @@ func (h *handler) ChannelGetByID(ctx context.Context, id string) (*channel.Chann
 		return nil, ErrNotFound
 	}
 
-	return h.channelGetFromRow(row)
+	res, err := h.channelGetFromRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	// update cache
+	h.cache.ChannelSet(ctx, res)
+
+	return res, nil
 }
 
 // channelGetFromRow gets the channel from the row.
@@ -234,7 +250,7 @@ func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id strin
 
 	go func() {
 		for {
-			channel, err := h.ChannelGet(ctx, id)
+			channel, err := h.ChannelGetFromCache(ctx, id)
 			if err != nil {
 				time.Sleep(defaultDelayTimeout)
 				continue
@@ -264,7 +280,7 @@ func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id string) (*chann
 
 	go func() {
 		for {
-			channel, err := h.ChannelGet(ctx, id)
+			channel, err := h.ChannelGetFromCache(ctx, id)
 			if err != nil {
 				time.Sleep(defaultDelayTimeout)
 				continue
@@ -421,4 +437,21 @@ func (h *handler) ChannelSetDataAndStasis(ctx context.Context, id string, data m
 	}
 
 	return nil
+}
+
+// ChannelGetFromCache returns channel from the cache if possible.
+func (h *handler) ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error) {
+
+	// get from cache
+	if res, err := h.cache.ChannelGet(ctx, id); err == nil {
+		return res, nil
+	}
+
+	// get from db
+	res, err := h.ChannelGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

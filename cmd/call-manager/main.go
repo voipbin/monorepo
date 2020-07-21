@@ -148,7 +148,7 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 
 func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// dbhandler
-	db := dbhandler.NewHandler(sqlDB)
+	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
 	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)
@@ -174,7 +174,7 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// dbhandler
-	db := dbhandler.NewHandler(sqlDB)
+	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
 	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)

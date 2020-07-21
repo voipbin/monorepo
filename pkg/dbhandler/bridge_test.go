@@ -109,7 +109,7 @@ func TestBridgeCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. BridgeCreate expect: ok, got: %v", err)
@@ -156,7 +156,7 @@ func TestBridgeEnd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -208,7 +208,7 @@ func TestBridgeEnd(t *testing.T) {
 
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
-// 			h := NewHandler(dbTest)
+// 			h := NewHandler(dbTest, nil)
 
 // 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 // 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -253,7 +253,7 @@ func TestBridgeGetUntilTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -299,7 +299,7 @@ func TestBridgeGetUntilTimeoutError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			start := time.Now()
 
@@ -338,7 +338,7 @@ func TestBridgeIsExist(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -369,7 +369,7 @@ func TestBridgeIsExistError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			start := time.Now()
 

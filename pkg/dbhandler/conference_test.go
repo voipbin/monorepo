@@ -67,7 +67,7 @@ func TestConferenceCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			if err := h.ConferenceCreate(context.Background(), tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

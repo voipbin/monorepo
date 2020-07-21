@@ -339,7 +339,7 @@ func TestEventHandlerChannelDtmfReceived(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
+			mockDB.EXPECT().ChannelGetFromCache(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
 			mockCall.EXPECT().ARIChannelDtmfReceived(tt.channel, tt.digit, tt.duration).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
