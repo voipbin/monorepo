@@ -39,7 +39,7 @@ func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmq.Req
 		})
 	log.Debugf("Received health-check request. retry: %d, retry_max: %d, delay: %d", data.RetryCount, data.RetryCountMax, data.Delay)
 
-	channel, err := h.db.ChannelGet(ctx, asteriskID, channelID)
+	channel, err := h.db.ChannelGet(ctx, channelID)
 	if err != nil {
 		logrus.WithFields(
 			logrus.Fields{

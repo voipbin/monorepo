@@ -13,7 +13,7 @@ import (
 
 // CallCreate creates new call record.
 func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
-	q := `insert into cm_calls(
+	q := `insert into calls(
 		id,
 		asterisk_id,
 		channel_id,
@@ -122,7 +122,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		coalesce(tm_hangup, '') as tm_hangup
 
 	from
-		cm_calls
+		calls
 	where
 		id = ?
 	`
@@ -176,7 +176,7 @@ func (h *handler) CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID
 		coalesce(tm_hangup, '') as tm_hangup
 
 	from
-		cm_calls
+		calls
 	where
 		channel_id = ? and asterisk_id = ?
 	`
@@ -255,7 +255,7 @@ func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStat
 	// prepare
 	q := `
 	update
-		cm_calls
+		calls
 	set
 		status = ?,
 		tm_update = ?,
@@ -277,7 +277,7 @@ func (h *handler) callSetStatusProgressing(ctx context.Context, id uuid.UUID, tm
 	// prepare
 	q := `
 	update
-		cm_calls
+		calls
 	set
 		status = ?,
 		tm_update = ?,
@@ -299,7 +299,7 @@ func (h *handler) callSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	// prepare
 	q := `
 	update
-		cm_calls
+		calls
 	set
 		status = ?,
 		tm_update = ?
@@ -334,7 +334,7 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 	// prepare
 	q := `
 	update
-		cm_calls
+		calls
 	set
 		status = ?,
 		hangup_by = ?,
@@ -359,7 +359,7 @@ func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	// prepare
 	q := `
 	update
-		cm_calls
+		calls
 	set
 		flow_id = ?,
 		tm_update = ?
@@ -381,7 +381,7 @@ func (h *handler) CallSetConferenceID(ctx context.Context, id, conferenceID uuid
 	// prepare
 	q := `
 	update
-		cm_calls
+		calls
 	set
 		conference_id = ?,
 		tm_update = ?
@@ -403,7 +403,7 @@ func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *actio
 	// prepare
 	q := `
 	update
-		cm_calls
+		calls
 	set
 		action = ?,
 		tm_update = ?

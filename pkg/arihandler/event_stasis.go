@@ -20,7 +20,7 @@ func (h *ariHandler) eventHandlerStasisStart(ctx context.Context, evt interface{
 			"stasis":   e.Application,
 		})
 
-	if h.db.ChannelIsExist(e.Channel.ID, e.AsteriskID, defaultExistTimeout) == false {
+	if h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) == false {
 		log.Error("The given channel is not in our database.")
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no channel found")
@@ -35,13 +35,13 @@ func (h *ariHandler) eventHandlerStasisStart(ctx context.Context, evt interface{
 
 	// update data and stasis
 	log.Debug("Updating channel stasis.")
-	if err := h.db.ChannelSetDataAndStasis(ctx, e.AsteriskID, e.Channel.ID, data, stasis); err != nil {
+	if err := h.db.ChannelSetDataAndStasis(ctx, e.Channel.ID, data, stasis); err != nil {
 		// something went wrong. Hangup at here.
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
 	}
 
-	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
+	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
@@ -54,7 +54,7 @@ func (h *ariHandler) eventHandlerStasisStart(ctx context.Context, evt interface{
 func (h *ariHandler) eventHandlerStasisEnd(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisEnd)
 
-	if err := h.db.ChannelSetStasis(ctx, e.AsteriskID, e.Channel.ID, ""); err != nil {
+	if err := h.db.ChannelSetStasis(ctx, e.Channel.ID, ""); err != nil {
 		// nothing we can do here
 		return err
 	}

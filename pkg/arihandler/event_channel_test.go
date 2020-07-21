@@ -110,8 +110,8 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 			}
 
 			cn := &channel.Channel{}
-			mockDB.EXPECT().ChannelEnd(gomock.Any(), tt.expectAsteriskID, tt.expectChannelID, tt.expectTimestamp, tt.expectHangup).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectAsteriskID, tt.expectChannelID).Return(cn, nil)
+			mockDB.EXPECT().ChannelEnd(gomock.Any(), tt.expectChannelID, tt.expectTimestamp, tt.expectHangup).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(cn, nil)
 			mockCall.EXPECT().ARIChannelDestroyed(cn).Return(nil)
 
 			h.processEvent(tt.event)
@@ -163,8 +163,8 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 				callHandler: mockSvc,
 			}
 
-			mockDB.EXPECT().ChannelSetState(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expectTmUpdate, tt.expactState).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectAsterisID, tt.expectChannelID).Return(nil, nil)
+			mockDB.EXPECT().ChannelSetState(gomock.Any(), tt.expectChannelID, tt.expectTmUpdate, tt.expactState).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(nil, nil)
 			mockSvc.EXPECT().UpdateStatus(nil).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
@@ -220,11 +220,11 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, tt.channel.AsteriskID, defaultExistTimeout).Return(true)
+			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, tt.bridge.ID)
+			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.ID, tt.bridge.ID)
 			mockDB.EXPECT().BridgeAddChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
 			mockConf.EXPECT().ARIChannelEnteredBridge(tt.channel, tt.bridge).Return(nil)
 
@@ -281,11 +281,11 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, tt.channel.AsteriskID, defaultExistTimeout).Return(true)
+			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "")
+			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.ID, "")
 			mockDB.EXPECT().BridgeRemoveChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
 			mockConf.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
 
@@ -339,7 +339,7 @@ func TestEventHandlerChannelDtmfReceived(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
 			mockCall.EXPECT().ARIChannelDtmfReceived(tt.channel, tt.digit, tt.duration).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {

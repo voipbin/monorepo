@@ -1,4 +1,4 @@
-create table cm_conferences(
+create table conferences(
   -- identity
   id    binary(16),       -- id
   type  varchar(255),     -- type
@@ -21,4 +21,4 @@ create table cm_conferences(
   primary key(id)
 );
 
-create index idx_cm_conferences_create on cm_conferences(tm_create);
+create index idx_conferences_create on conferences(tm_create);

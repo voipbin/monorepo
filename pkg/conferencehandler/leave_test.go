@@ -54,7 +54,7 @@ func TestLeave(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(tt.channel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
 			mockReq.EXPECT().AstBridgeRemoveChannel(tt.channel.AsteriskID, tt.channel.BridgeID, tt.channel.ID).Return(nil)
 
 			h.Leave(tt.conference.ID, tt.call.ID)

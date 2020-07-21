@@ -41,11 +41,11 @@ func (h *ariHandler) eventHandlerChannelCreated(ctx context.Context, evt interfa
 func (h *ariHandler) eventHandlerChannelDestroyed(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelDestroyed)
 
-	if err := h.db.ChannelEnd(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), e.Cause); err != nil {
+	if err := h.db.ChannelEnd(ctx, e.Channel.ID, string(e.Timestamp), e.Cause); err != nil {
 		return err
 	}
 
-	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
+	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (h *ariHandler) eventHandlerChannelDestroyed(ctx context.Context, evt inter
 func (h *ariHandler) eventHandlerChannelDtmfReceived(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelDtmfReceived)
 
-	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
+	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (h *ariHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt i
 			"stasis":   e.Application,
 		})
 
-	if h.db.ChannelIsExist(e.Channel.ID, e.AsteriskID, defaultExistTimeout) == false {
+	if h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) == false {
 		log.Error("The given channel is not in our database.")
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no channel found")
@@ -98,7 +98,7 @@ func (h *ariHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt i
 	}
 
 	// set channel's bridge id
-	if err := h.db.ChannelSetBridgeID(ctx, e.AsteriskID, e.Channel.ID, e.Bridge.ID); err != nil {
+	if err := h.db.ChannelSetBridgeID(ctx, e.Channel.ID, e.Bridge.ID); err != nil {
 		log.Errorf("Could not set the bridge id to the channel. err: %v", err)
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
@@ -111,7 +111,7 @@ func (h *ariHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt i
 		return err
 	}
 
-	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
+	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
@@ -140,7 +140,7 @@ func (h *ariHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt inte
 			"stasis":   e.Application,
 		})
 
-	if h.db.ChannelIsExist(e.Channel.ID, e.AsteriskID, defaultExistTimeout) == false {
+	if h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) == false {
 		log.Error("The given channel is not in our database.")
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no channel found")
@@ -153,7 +153,7 @@ func (h *ariHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt inte
 	}
 
 	// set channel's bridge id to empty
-	if err := h.db.ChannelSetBridgeID(ctx, e.AsteriskID, e.Channel.ID, ""); err != nil {
+	if err := h.db.ChannelSetBridgeID(ctx, e.Channel.ID, ""); err != nil {
 		log.Errorf("Could not reset the channel's bridge id. err: %v", err)
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
@@ -166,7 +166,7 @@ func (h *ariHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt inte
 		return err
 	}
 
-	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
+	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
@@ -187,11 +187,11 @@ func (h *ariHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt inte
 func (h *ariHandler) eventHandlerChannelStateChange(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelStateChange)
 
-	if err := h.db.ChannelSetState(ctx, e.AsteriskID, e.Channel.ID, string(e.Timestamp), e.Channel.State); err != nil {
+	if err := h.db.ChannelSetState(ctx, e.Channel.ID, string(e.Timestamp), e.Channel.State); err != nil {
 		return err
 	}
 
-	cn, err := h.db.ChannelGet(ctx, e.AsteriskID, e.Channel.ID)
+	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
 		return err
 	}

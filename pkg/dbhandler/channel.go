@@ -13,7 +13,7 @@ import (
 
 // ChannelCreate creates new channel record and returns the created channel record.
 func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) error {
-	q := `insert into cm_channels(
+	q := `insert into channels(
 		asterisk_id,
 		id,
 		name,
@@ -74,7 +74,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 }
 
 // ChannelGet returns channel.
-func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*channel.Channel, error) {
+func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, error) {
 
 	// prepare
 	q := `select
@@ -104,12 +104,12 @@ func (h *handler) ChannelGet(ctx context.Context, asteriskID, id string) (*chann
 	coalesce(tm_end, '') as tm_end
 
 	from
-		cm_channels
+		channels
 	where
-		id = ? and asterisk_id = ?
+		id = ?
 	`
 
-	row, err := h.db.Query(q, id, asteriskID)
+	row, err := h.db.Query(q, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChannelGet. err: %v", err)
 	}
@@ -153,7 +153,7 @@ func (h *handler) ChannelGetByID(ctx context.Context, id string) (*channel.Chann
 	coalesce(tm_end, '') as tm_end
 
 	from
-		cm_channels
+		channels
 	where
 		id = ?
 	`
@@ -215,12 +215,12 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 }
 
 // ChannelIsExist returns true if the channel exist within timeout.
-func (h *handler) ChannelIsExist(id, asteriskID string, timeout time.Duration) bool {
+func (h *handler) ChannelIsExist(id string, timeout time.Duration) bool {
 	// check the channel is exists
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	_, err := h.ChannelGetUntilTimeout(ctx, id, asteriskID)
+	_, err := h.ChannelGetUntilTimeout(ctx, id)
 	if err != nil {
 		return false
 	}
@@ -228,13 +228,13 @@ func (h *handler) ChannelIsExist(id, asteriskID string, timeout time.Duration) b
 }
 
 // ChannelGetUntilTimeoutWithStasis gets the stasis channel until the ctx is timed out.
-func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id, asteriskID string) (*channel.Channel, error) {
+func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error) {
 
 	chanChannel := make(chan *channel.Channel)
 
 	go func() {
 		for {
-			channel, err := h.ChannelGet(ctx, asteriskID, id)
+			channel, err := h.ChannelGet(ctx, id)
 			if err != nil {
 				time.Sleep(defaultDelayTimeout)
 				continue
@@ -258,13 +258,13 @@ func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id, aste
 }
 
 // ChannelGetUntilTimeout gets the channel until the ctx is timed out.
-func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id, asteriskID string) (*channel.Channel, error) {
+func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error) {
 
 	chanChannel := make(chan *channel.Channel)
 
 	go func() {
 		for {
-			channel, err := h.ChannelGet(ctx, asteriskID, id)
+			channel, err := h.ChannelGet(ctx, id)
 			if err != nil {
 				time.Sleep(defaultDelayTimeout)
 				continue
@@ -283,15 +283,14 @@ func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id, asteriskID str
 }
 
 // ChannelSetData sets the data
-func (h *handler) ChannelSetData(ctx context.Context, asteriskID, id string, data map[string]interface{}) error {
+func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error {
 	//prepare
 	q := `
-	update cm_channels set
+	update channels set
 		data = ?,
 		tm_update = ?
 	where
-		asterisk_id = ?
-		and id = ?
+		id = ?
 	`
 
 	tmpData, err := json.Marshal(data)
@@ -299,7 +298,7 @@ func (h *handler) ChannelSetData(ctx context.Context, asteriskID, id string, dat
 		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetData. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, tmpData, getCurTime(), asteriskID, id)
+	_, err = h.db.Exec(q, tmpData, getCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetData. err: %v", err)
 	}
@@ -308,18 +307,17 @@ func (h *handler) ChannelSetData(ctx context.Context, asteriskID, id string, dat
 }
 
 // ChannelSetStasis sets the stasis
-func (h *handler) ChannelSetStasis(ctx context.Context, asteriskID, id, stasis string) error {
+func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error {
 	//prepare
 	q := `
-	update cm_channels set
+	update channels set
 		stasis = ?,
 		tm_update = ?
 	where
-		asterisk_id = ?
-		and id = ?
+		id = ?
 	`
 
-	_, err := h.db.Exec(q, stasis, getCurTime(), asteriskID, id)
+	_, err := h.db.Exec(q, stasis, getCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetStasis. err: %v", err)
 	}
@@ -327,35 +325,33 @@ func (h *handler) ChannelSetStasis(ctx context.Context, asteriskID, id, stasis s
 	return nil
 }
 
-func (h *handler) ChannelSetState(ctx context.Context, asteriskID, id, timestamp string, state ari.ChannelState) error {
+func (h *handler) ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error {
 
 	var q string
 	switch state {
 	case ari.ChannelStateUp:
 		q = `
-		update cm_channels set
+		update channels set
 			state = ?,
 			tm_update = ?,
 			tm_answer = ?
 		where
-			asterisk_id = ?
-			and id = ?
+			id = ?
 		`
 	case ari.ChannelStateRing, ari.ChannelStateRinging:
 		q = `
-		update cm_channels set
+		update channels set
 			state = ?,
 			tm_update = ?,
 			tm_ringing = ?
 		where
-			asterisk_id = ?
-			and id = ?
+			id = ?
 		`
 	default:
 		return fmt.Errorf("no match state. ChannelSetState. state: %s", state)
 	}
 
-	_, err := h.db.Exec(q, string(state), timestamp, timestamp, asteriskID, id)
+	_, err := h.db.Exec(q, string(state), timestamp, timestamp, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetState. err: %v", err)
 	}
@@ -364,18 +360,17 @@ func (h *handler) ChannelSetState(ctx context.Context, asteriskID, id, timestamp
 }
 
 // ChannelSetBridgeID sets the bridge_id
-func (h *handler) ChannelSetBridgeID(ctx context.Context, asteriskID, id, bridgeID string) error {
+func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error {
 	//prepare
 	q := `
-	update cm_channels set
+	update channels set
 		bridge_id = ?,
 		tm_update = ?
 	where
-		asterisk_id = ?
-		and id = ?
+		id = ?
 	`
 
-	_, err := h.db.Exec(q, bridgeID, getCurTime(), asteriskID, id)
+	_, err := h.db.Exec(q, bridgeID, getCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetBridgeID. err: %v", err)
 	}
@@ -384,19 +379,18 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, asteriskID, id, bridge
 }
 
 // ChannelEnd updates the channel end.
-func (h *handler) ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup ari.ChannelCause) error {
+func (h *handler) ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error {
 	// prepare
 	q := `
-	update cm_channels set
+	update channels set
 		hangup_cause = ?,
 		tm_update = ?,
 		tm_end = ?
 	where
-		asterisk_id = ?
-		and id = ?
+		id = ?
 	`
 
-	_, err := h.db.Exec(q, hangup, timestamp, timestamp, asteriskID, id)
+	_, err := h.db.Exec(q, hangup, timestamp, timestamp, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelEnd. err: %v", err)
 	}
@@ -405,16 +399,15 @@ func (h *handler) ChannelEnd(ctx context.Context, asteriskID, id, timestamp stri
 }
 
 // ChannelSetDataAndStasis sets the data and stasis
-func (h *handler) ChannelSetDataAndStasis(ctx context.Context, asteriskID, id string, data map[string]interface{}, stasis string) error {
+func (h *handler) ChannelSetDataAndStasis(ctx context.Context, id string, data map[string]interface{}, stasis string) error {
 	//prepare
 	q := `
-	update cm_channels set
+	update channels set
 		data = ?,
 		stasis = ?,
 		tm_update = ?
 	where
-		asterisk_id = ?
-		and id = ?
+		id = ?
 	`
 
 	tmpData, err := json.Marshal(data)
@@ -422,7 +415,7 @@ func (h *handler) ChannelSetDataAndStasis(ctx context.Context, asteriskID, id st
 		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetDataAndStasis. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, tmpData, stasis, getCurTime(), asteriskID, id)
+	_, err = h.db.Exec(q, tmpData, stasis, getCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetDataAndStasis. err: %v", err)
 	}
