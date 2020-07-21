@@ -270,32 +270,32 @@ func (mr *MockDBHandlerMockRecorder) ChannelCreate(arg0, arg1 interface{}) *gomo
 }
 
 // ChannelEnd mocks base method
-func (m *MockDBHandler) ChannelEnd(arg0 context.Context, arg1, arg2, arg3 string, arg4 ari.ChannelCause) error {
+func (m *MockDBHandler) ChannelEnd(arg0 context.Context, arg1, arg2 string, arg3 ari.ChannelCause) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelEnd", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "ChannelEnd", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelEnd indicates an expected call of ChannelEnd
-func (mr *MockDBHandlerMockRecorder) ChannelEnd(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelEnd(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelEnd", reflect.TypeOf((*MockDBHandler)(nil).ChannelEnd), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelEnd", reflect.TypeOf((*MockDBHandler)(nil).ChannelEnd), arg0, arg1, arg2, arg3)
 }
 
 // ChannelGet mocks base method
-func (m *MockDBHandler) ChannelGet(arg0 context.Context, arg1, arg2 string) (*channel.Channel, error) {
+func (m *MockDBHandler) ChannelGet(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelGet", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ChannelGet", arg0, arg1)
 	ret0, _ := ret[0].(*channel.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChannelGet indicates an expected call of ChannelGet
-func (mr *MockDBHandlerMockRecorder) ChannelGet(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGet", reflect.TypeOf((*MockDBHandler)(nil).ChannelGet), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGet", reflect.TypeOf((*MockDBHandler)(nil).ChannelGet), arg0, arg1)
 }
 
 // ChannelGetByID mocks base method
@@ -314,117 +314,117 @@ func (mr *MockDBHandlerMockRecorder) ChannelGetByID(arg0, arg1 interface{}) *gom
 }
 
 // ChannelGetUntilTimeout mocks base method
-func (m *MockDBHandler) ChannelGetUntilTimeout(arg0 context.Context, arg1, arg2 string) (*channel.Channel, error) {
+func (m *MockDBHandler) ChannelGetUntilTimeout(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelGetUntilTimeout", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ChannelGetUntilTimeout", arg0, arg1)
 	ret0, _ := ret[0].(*channel.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChannelGetUntilTimeout indicates an expected call of ChannelGetUntilTimeout
-func (mr *MockDBHandlerMockRecorder) ChannelGetUntilTimeout(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelGetUntilTimeout(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetUntilTimeout", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetUntilTimeout), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetUntilTimeout", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetUntilTimeout), arg0, arg1)
 }
 
 // ChannelGetUntilTimeoutWithStasis mocks base method
-func (m *MockDBHandler) ChannelGetUntilTimeoutWithStasis(arg0 context.Context, arg1, arg2 string) (*channel.Channel, error) {
+func (m *MockDBHandler) ChannelGetUntilTimeoutWithStasis(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelGetUntilTimeoutWithStasis", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ChannelGetUntilTimeoutWithStasis", arg0, arg1)
 	ret0, _ := ret[0].(*channel.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChannelGetUntilTimeoutWithStasis indicates an expected call of ChannelGetUntilTimeoutWithStasis
-func (mr *MockDBHandlerMockRecorder) ChannelGetUntilTimeoutWithStasis(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelGetUntilTimeoutWithStasis(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetUntilTimeoutWithStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetUntilTimeoutWithStasis), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetUntilTimeoutWithStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetUntilTimeoutWithStasis), arg0, arg1)
 }
 
 // ChannelIsExist mocks base method
-func (m *MockDBHandler) ChannelIsExist(arg0, arg1 string, arg2 time.Duration) bool {
+func (m *MockDBHandler) ChannelIsExist(arg0 string, arg1 time.Duration) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelIsExist", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ChannelIsExist", arg0, arg1)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // ChannelIsExist indicates an expected call of ChannelIsExist
-func (mr *MockDBHandlerMockRecorder) ChannelIsExist(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelIsExist(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelIsExist", reflect.TypeOf((*MockDBHandler)(nil).ChannelIsExist), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelIsExist", reflect.TypeOf((*MockDBHandler)(nil).ChannelIsExist), arg0, arg1)
 }
 
 // ChannelSetBridgeID mocks base method
-func (m *MockDBHandler) ChannelSetBridgeID(arg0 context.Context, arg1, arg2, arg3 string) error {
+func (m *MockDBHandler) ChannelSetBridgeID(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSetBridgeID", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "ChannelSetBridgeID", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelSetBridgeID indicates an expected call of ChannelSetBridgeID
-func (mr *MockDBHandlerMockRecorder) ChannelSetBridgeID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelSetBridgeID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetBridgeID), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetBridgeID), arg0, arg1, arg2)
 }
 
 // ChannelSetData mocks base method
-func (m *MockDBHandler) ChannelSetData(arg0 context.Context, arg1, arg2 string, arg3 map[string]interface{}) error {
+func (m *MockDBHandler) ChannelSetData(arg0 context.Context, arg1 string, arg2 map[string]interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSetData", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "ChannelSetData", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelSetData indicates an expected call of ChannelSetData
-func (mr *MockDBHandlerMockRecorder) ChannelSetData(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelSetData(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetData), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetData), arg0, arg1, arg2)
 }
 
 // ChannelSetDataAndStasis mocks base method
-func (m *MockDBHandler) ChannelSetDataAndStasis(arg0 context.Context, arg1, arg2 string, arg3 map[string]interface{}, arg4 string) error {
+func (m *MockDBHandler) ChannelSetDataAndStasis(arg0 context.Context, arg1 string, arg2 map[string]interface{}, arg3 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSetDataAndStasis", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "ChannelSetDataAndStasis", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelSetDataAndStasis indicates an expected call of ChannelSetDataAndStasis
-func (mr *MockDBHandlerMockRecorder) ChannelSetDataAndStasis(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelSetDataAndStasis(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDataAndStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDataAndStasis), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDataAndStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDataAndStasis), arg0, arg1, arg2, arg3)
 }
 
 // ChannelSetStasis mocks base method
-func (m *MockDBHandler) ChannelSetStasis(arg0 context.Context, arg1, arg2, arg3 string) error {
+func (m *MockDBHandler) ChannelSetStasis(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSetStasis", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "ChannelSetStasis", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelSetStasis indicates an expected call of ChannelSetStasis
-func (mr *MockDBHandlerMockRecorder) ChannelSetStasis(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelSetStasis(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetStasis), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetStasis), arg0, arg1, arg2)
 }
 
 // ChannelSetState mocks base method
-func (m *MockDBHandler) ChannelSetState(arg0 context.Context, arg1, arg2, arg3 string, arg4 ari.ChannelState) error {
+func (m *MockDBHandler) ChannelSetState(arg0 context.Context, arg1, arg2 string, arg3 ari.ChannelState) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSetState", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "ChannelSetState", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelSetState indicates an expected call of ChannelSetState
-func (mr *MockDBHandlerMockRecorder) ChannelSetState(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelSetState(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetState", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetState), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetState", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetState), arg0, arg1, arg2, arg3)
 }
 
 // ConferenceAddCallID mocks base method

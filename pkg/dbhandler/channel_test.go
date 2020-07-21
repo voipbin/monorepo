@@ -81,7 +81,7 @@ func TestChannelCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGet(context.Background(), tt.channel.AsteriskID, tt.channel.ID)
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -126,7 +126,7 @@ func TestChannelGet(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGet(context.Background(), tt.expectChannel.AsteriskID, tt.expectChannel.ID)
+			resChannel, err := h.ChannelGet(context.Background(), tt.expectChannel.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok , got: %v", err)
 			}
@@ -223,7 +223,7 @@ func TestChannelStasisGetUntilTimeout(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.ID, tt.channel.AsteriskID)
+			resChannel, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok , got: %v", err)
 			}
@@ -266,7 +266,7 @@ func TestChannelStasisGetUntilTimeoutError(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
 			defer cancel()
 
-			_, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.ID, tt.channel.AsteriskID)
+			_, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.ID)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
@@ -316,11 +316,11 @@ func TestChannelEnd(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.ChannelEnd(context.Background(), tt.channel.AsteriskID, tt.channel.ID, tt.timestamp, tt.hangup); err != nil {
+			if err := h.ChannelEnd(context.Background(), tt.channel.ID, tt.timestamp, tt.hangup); err != nil {
 				t.Errorf("Wrong match. expect: ok , got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGet(context.Background(), tt.channel.AsteriskID, tt.channel.ID)
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
 			}
@@ -395,11 +395,11 @@ func TestChannelSetState(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.ChannelSetState(context.Background(), tt.channel.AsteriskID, tt.channel.ID, tt.timestamp, tt.state); err != nil {
+			if err := h.ChannelSetState(context.Background(), tt.channel.ID, tt.timestamp, tt.state); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGet(context.Background(), tt.channel.AsteriskID, tt.channel.ID)
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
 			}
@@ -451,11 +451,11 @@ func TestChannelSetStasis(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.ChannelSetStasis(context.Background(), tt.channel.AsteriskID, tt.channel.ID, tt.stasis); err != nil {
+			if err := h.ChannelSetStasis(context.Background(), tt.channel.ID, tt.stasis); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGet(context.Background(), tt.channel.AsteriskID, tt.channel.ID)
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
 			}
@@ -531,11 +531,11 @@ func TestChannelSetData(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.ChannelSetData(context.Background(), tt.channel.AsteriskID, tt.channel.ID, tt.data); err != nil {
+			if err := h.ChannelSetData(context.Background(), tt.channel.ID, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGet(context.Background(), tt.channel.AsteriskID, tt.channel.ID)
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
 			}
@@ -616,11 +616,11 @@ func TestChannelSetDataAndStasis(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.ChannelSetDataAndStasis(context.Background(), tt.channel.AsteriskID, tt.channel.ID, tt.data, tt.stasis); err != nil {
+			if err := h.ChannelSetDataAndStasis(context.Background(), tt.channel.ID, tt.data, tt.stasis); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGet(context.Background(), tt.channel.AsteriskID, tt.channel.ID)
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
 			}
@@ -691,11 +691,11 @@ func TestChannelSetBridgeID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.ChannelSetBridgeID(context.Background(), tt.channel.AsteriskID, tt.channel.ID, tt.bridgeID); err != nil {
+			if err := h.ChannelSetBridgeID(context.Background(), tt.channel.ID, tt.bridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			resChannel, err := h.ChannelGet(context.Background(), tt.channel.AsteriskID, tt.channel.ID)
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
 			}
@@ -744,7 +744,7 @@ func TestChannelGetUntilTimeout(t *testing.T) {
 				}
 			}()
 
-			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.ID, tt.channel.AsteriskID)
+			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -786,7 +786,7 @@ func TestChannelGetUntilTimeoutError(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
 			defer cancel()
 
-			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.ID, tt.channel.AsteriskID)
+			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.ID)
 			if err == nil {
 				t.Errorf("Wrong match. expect: err, got: ok")
 			}

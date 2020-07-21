@@ -38,17 +38,17 @@ type DBHandler interface {
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
 
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
-	ChannelEnd(ctx context.Context, asteriskID, id, timestamp string, hangup ari.ChannelCause) error
-	ChannelGet(ctx context.Context, asteriskID, id string) (*channel.Channel, error)
+	ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error
+	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetByID(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelGetUntilTimeout(ctx context.Context, id, asteriskID string) (*channel.Channel, error)
-	ChannelGetUntilTimeoutWithStasis(ctx context.Context, id, asteriskID string) (*channel.Channel, error)
-	ChannelSetBridgeID(ctx context.Context, asteriskID, id, bridgeID string) error
-	ChannelSetData(ctx context.Context, asteriskID, id string, data map[string]interface{}) error
-	ChannelSetDataAndStasis(ctx context.Context, asteriskID, id string, data map[string]interface{}, stasis string) error
-	ChannelIsExist(id, asteriskID string, timeout time.Duration) bool
-	ChannelSetStasis(ctx context.Context, asteriskID, id, stasis string) error
-	ChannelSetState(ctx context.Context, asteriskID, id, timestamp string, state ari.ChannelState) error
+	ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error)
+	ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error)
+	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error
+	ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error
+	ChannelSetDataAndStasis(ctx context.Context, id string, data map[string]interface{}, stasis string) error
+	ChannelIsExist(id string, timeout time.Duration) bool
+	ChannelSetStasis(ctx context.Context, id, stasis string) error
+	ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error
 
 	ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error

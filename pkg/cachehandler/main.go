@@ -6,6 +6,8 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 )
 
 type handler struct {
@@ -21,6 +23,12 @@ type CacheHandler interface {
 	Connect() error
 
 	AsteriskAddressInternerGet(ctx context.Context, id string) (string, error)
+
+	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
+	ChannelSet(ctx context.Context, channel *channel.Channel) error
+
+	BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error)
+	BridgeSet(ctx context.Context, bridge *bridge.Bridge) error
 }
 
 // NewHandler creates DBHandler

@@ -65,9 +65,9 @@ func TestEventHandlerStasisStart(t *testing.T) {
 			channel := &channel.Channel{
 				Data: map[string]interface{}{},
 			}
-			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, tt.expectAsterisID, gomock.Any()).Return(true)
-			mockDB.EXPECT().ChannelSetDataAndStasis(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expactData, tt.expectStasis).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectAsterisID, tt.expectChannelID).Return(channel, nil)
+			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, gomock.Any()).Return(true)
+			mockDB.EXPECT().ChannelSetDataAndStasis(gomock.Any(), tt.expectChannelID, tt.expactData, tt.expectStasis).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(channel, nil)
 			mockCall.EXPECT().ARIStasisStart(channel).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
@@ -119,7 +119,7 @@ func TestEventHandlerStasisEnd(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockDB.EXPECT().ChannelSetStasis(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, tt.expectStasis).Return(nil)
+			mockDB.EXPECT().ChannelSetStasis(gomock.Any(), tt.expectChannelID, tt.expectStasis).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

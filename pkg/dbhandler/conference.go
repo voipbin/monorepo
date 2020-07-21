@@ -12,7 +12,7 @@ import (
 
 // ConferenceCreate creates a new conference record.
 func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
-	q := `insert into cm_conferences(
+	q := `insert into conferences(
 		id,
 		type,
 		bridge_id,
@@ -94,7 +94,7 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 		coalesce(tm_delete, '') as tm_delete
 
 	from
-		cm_conferences
+		conferences
 	where
 		id = ?
 	`
@@ -159,7 +159,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error {
 	// prepare
 	q := `
-	update cm_conferences set
+	update conferences set
 		call_ids = json_array_append(
 			call_ids,
 			'$',
@@ -182,7 +182,7 @@ func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID)
 func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error {
 	// prepare
 	q := `
-	update cm_conferences set
+	update conferences set
 		call_ids = json_remove(
 			call_ids, replace(
 				json_search(
@@ -211,7 +211,7 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error {
 	//prepare
 	q := `
-	update cm_conferences set
+	update conferences set
 		status = ?,
 		tm_update = ?
 	where
@@ -230,7 +230,7 @@ func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status 
 func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update cm_conferences set
+	update conferences set
 		status = ?,
 		tm_delete = ?
 	where

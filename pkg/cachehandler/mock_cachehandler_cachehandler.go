@@ -7,6 +7,8 @@ package cachehandler
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	reflect "reflect"
 )
 
@@ -46,6 +48,64 @@ func (m *MockCacheHandler) AsteriskAddressInternerGet(arg0 context.Context, arg1
 func (mr *MockCacheHandlerMockRecorder) AsteriskAddressInternerGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AsteriskAddressInternerGet", reflect.TypeOf((*MockCacheHandler)(nil).AsteriskAddressInternerGet), arg0, arg1)
+}
+
+// BridgeGet mocks base method
+func (m *MockCacheHandler) BridgeGet(arg0 context.Context, arg1 string) (*bridge.Bridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeGet", arg0, arg1)
+	ret0, _ := ret[0].(*bridge.Bridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BridgeGet indicates an expected call of BridgeGet
+func (mr *MockCacheHandlerMockRecorder) BridgeGet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGet", reflect.TypeOf((*MockCacheHandler)(nil).BridgeGet), arg0, arg1)
+}
+
+// BridgeSet mocks base method
+func (m *MockCacheHandler) BridgeSet(arg0 context.Context, arg1 *bridge.Bridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeSet", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BridgeSet indicates an expected call of BridgeSet
+func (mr *MockCacheHandlerMockRecorder) BridgeSet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeSet", reflect.TypeOf((*MockCacheHandler)(nil).BridgeSet), arg0, arg1)
+}
+
+// ChannelGet mocks base method
+func (m *MockCacheHandler) ChannelGet(arg0 context.Context, arg1 string) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelGet", arg0, arg1)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelGet indicates an expected call of ChannelGet
+func (mr *MockCacheHandlerMockRecorder) ChannelGet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGet", reflect.TypeOf((*MockCacheHandler)(nil).ChannelGet), arg0, arg1)
+}
+
+// ChannelSet mocks base method
+func (m *MockCacheHandler) ChannelSet(arg0 context.Context, arg1 *channel.Channel) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSet", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSet indicates an expected call of ChannelSet
+func (mr *MockCacheHandlerMockRecorder) ChannelSet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSet", reflect.TypeOf((*MockCacheHandler)(nil).ChannelSet), arg0, arg1)
 }
 
 // Connect mocks base method
