@@ -313,6 +313,21 @@ func (mr *MockDBHandlerMockRecorder) ChannelGetByID(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetByID", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetByID), arg0, arg1)
 }
 
+// ChannelGetFromCache mocks base method
+func (m *MockDBHandler) ChannelGetFromCache(arg0 context.Context, arg1 string) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelGetFromCache", arg0, arg1)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelGetFromCache indicates an expected call of ChannelGetFromCache
+func (mr *MockDBHandlerMockRecorder) ChannelGetFromCache(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetFromCache), arg0, arg1)
+}
+
 // ChannelGetUntilTimeout mocks base method
 func (m *MockDBHandler) ChannelGetUntilTimeout(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()

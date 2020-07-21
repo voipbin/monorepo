@@ -26,7 +26,7 @@ func (h *conferenceHandler) Leave(id, callID uuid.UUID) error {
 	}
 
 	// get channel
-	channel, err := h.db.ChannelGet(ctx, call.ChannelID)
+	channel, err := h.db.ChannelGetFromCache(ctx, call.ChannelID)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
 		return err

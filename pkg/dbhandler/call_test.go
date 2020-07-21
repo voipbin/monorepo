@@ -93,7 +93,7 @@ func TestCallCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			tt.call.ID = tt.id
 			tt.call.FlowID = tt.flowID
@@ -168,7 +168,7 @@ func TestCallSetStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			tt.call.ID = tt.id
 			tt.call.FlowID = tt.flowID
@@ -278,7 +278,7 @@ func TestCallGetByChannelIDAndAsteriskID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			tt.call.ID = tt.id
 			tt.call.FlowID = tt.flowID
@@ -357,7 +357,7 @@ func TestCallCallSetHangup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			tt.call.ID = tt.id
 			tt.expectCall.ID = tt.id
@@ -431,7 +431,7 @@ func TestCallSetFlowID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -502,7 +502,7 @@ func TestCallSetConferenceID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -630,7 +630,7 @@ func TestCallSetAction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, nil)
 
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 )
@@ -41,6 +42,7 @@ type DBHandler interface {
 	ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetByID(ctx context.Context, id string) (*channel.Channel, error)
+	ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error
@@ -60,7 +62,8 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
-	db *sql.DB
+	db    *sql.DB
+	cache cachehandler.CacheHandler
 }
 
 // handler errors
@@ -71,9 +74,10 @@ var (
 const defaultDelayTimeout = time.Millisecond * 30
 
 // NewHandler creates DBHandler
-func NewHandler(db *sql.DB) DBHandler {
+func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		db: db,
+		db:    db,
+		cache: cache,
 	}
 	return h
 }
