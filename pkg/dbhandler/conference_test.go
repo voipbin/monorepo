@@ -2,14 +2,22 @@ package dbhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 )
 
 func TestConferenceCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name string
 
@@ -67,12 +75,14 @@ func TestConferenceCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
+			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
 			if err := h.ConferenceCreate(context.Background(), tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(nil, fmt.Errorf(""))
 			res, err := h.ConferenceGet(context.Background(), tt.conference.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
