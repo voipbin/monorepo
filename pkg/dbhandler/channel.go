@@ -267,6 +267,7 @@ func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id strin
 			}
 
 			chanRes <- tmp
+			return
 		}
 	}()
 
@@ -298,6 +299,7 @@ func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id string) (*chann
 			}
 
 			chanRes <- tmp
+			return
 		}
 	}()
 

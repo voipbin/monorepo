@@ -248,6 +248,7 @@ func (h *handler) BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge
 			}
 
 			chanRes <- tmp
+			return
 		}
 	}()
 

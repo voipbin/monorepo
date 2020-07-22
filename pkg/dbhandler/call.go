@@ -142,6 +142,9 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		return nil, fmt.Errorf("could not get call. CallGet, err: %v", err)
 	}
 
+	// update cache
+	h.cache.CallSet(ctx, res)
+
 	return res, nil
 }
 
@@ -195,6 +198,9 @@ func (h *handler) CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID
 	if err != nil {
 		return nil, fmt.Errorf("could not get call. CallGetByChannelIDAndAsteriskID, err: %v", err)
 	}
+
+	// update cache
+	h.cache.CallSet(ctx, res)
 
 	return res, nil
 }
@@ -422,4 +428,21 @@ func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *actio
 	}
 
 	return nil
+}
+
+// CallGetFromCache returns call from the cache if possible.
+func (h *handler) CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+
+	// get from cache
+	if res, err := h.cache.CallGet(ctx, id); err == nil {
+		return res, nil
+	}
+
+	// get from db
+	res, err := h.CallGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

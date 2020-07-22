@@ -831,7 +831,8 @@ func TestChannelGetUntilTimeout(t *testing.T) {
 				}
 			}()
 
-			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil).AnyTimes()
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any()).AnyTimes()
 
 			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.ID)
 			if err != nil {
