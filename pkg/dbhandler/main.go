@@ -44,6 +44,7 @@ type DBHandler interface {
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetByID(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error)
+	ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error
@@ -52,6 +53,7 @@ type DBHandler interface {
 	ChannelIsExist(id string, timeout time.Duration) bool
 	ChannelSetStasis(ctx context.Context, id, stasis string) error
 	ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error
+	ChannelUpdateCache(ctx context.Context, id string) error
 
 	ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error

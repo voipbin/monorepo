@@ -70,64 +70,26 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 		return fmt.Errorf("dbhandler: Could not execute query. err: %v", err)
 	}
 
+	// update the cache
+	h.ChannelUpdateCache(ctx, channel.ID)
+
 	return nil
 }
 
 // ChannelGet returns channel.
 func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, error) {
 
-	// prepare
-	q := `select
-	asterisk_id,
-  id,
-  name,
-  tech,
-
-  src_name,
-  src_number,
-  dst_name,
-  dst_number,
-
-  state,
-	data,
-	stasis,
-	bridge_id,
-
-  dial_result,
-  hangup_cause,
-
-	coalesce(tm_create, '') as tm_create,
-	coalesce(tm_update, '') as tm_update,
-
-	coalesce(tm_answer, '') as tm_answer,
-	coalesce(tm_ringing, '') as tm_ringing,
-	coalesce(tm_end, '') as tm_end
-
-	from
-		channels
-	where
-		id = ?
-	`
-
-	row, err := h.db.Query(q, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ChannelGet. err: %v", err)
-	}
-	defer row.Close()
-
-	if row.Next() == false {
-		return nil, ErrNotFound
+	res, err := h.ChannelGetFromCache(ctx, id)
+	if err == nil {
+		return res, nil
 	}
 
-	res, err := h.channelGetFromRow(row)
-	if err != nil {
-		return nil, err
+	res, err = h.ChannelGetFromDB(ctx, id)
+	if err == nil {
+		return res, nil
 	}
 
-	// update cache
-	h.cache.ChannelSet(ctx, res)
-
-	return res, nil
+	return nil, err
 }
 
 // ChannelGet returns channel.
@@ -180,9 +142,6 @@ func (h *handler) ChannelGetByID(ctx context.Context, id string) (*channel.Chann
 	if err != nil {
 		return nil, err
 	}
-
-	// update cache
-	h.cache.ChannelSet(ctx, res)
 
 	return res, nil
 }
@@ -255,7 +214,7 @@ func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id strin
 				return
 			}
 
-			tmp, err := h.ChannelGetFromCache(ctx, id)
+			tmp, err := h.ChannelGet(ctx, id)
 			if err != nil {
 				time.Sleep(defaultDelayTimeout)
 				continue
@@ -292,7 +251,7 @@ func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id string) (*chann
 				return
 			}
 
-			tmp, err := h.ChannelGetFromCache(ctx, id)
+			tmp, err := h.ChannelGet(ctx, id)
 			if err != nil {
 				time.Sleep(defaultDelayTimeout)
 				continue
@@ -333,6 +292,9 @@ func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string
 		return fmt.Errorf("could not execute. ChannelSetData. err: %v", err)
 	}
 
+	// update the cache
+	h.ChannelUpdateCache(ctx, id)
+
 	return nil
 }
 
@@ -351,6 +313,9 @@ func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetStasis. err: %v", err)
 	}
+
+	// update the cache
+	h.ChannelUpdateCache(ctx, id)
 
 	return nil
 }
@@ -386,6 +351,9 @@ func (h *handler) ChannelSetState(ctx context.Context, id, timestamp string, sta
 		return fmt.Errorf("could not execute. ChannelSetState. err: %v", err)
 	}
 
+	// update the cache
+	h.ChannelUpdateCache(ctx, id)
+
 	return nil
 }
 
@@ -404,6 +372,9 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) e
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetBridgeID. err: %v", err)
 	}
+
+	// update the cache
+	h.ChannelUpdateCache(ctx, id)
 
 	return nil
 }
@@ -424,6 +395,9 @@ func (h *handler) ChannelEnd(ctx context.Context, id, timestamp string, hangup a
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelEnd. err: %v", err)
 	}
+
+	// update the cache
+	h.ChannelUpdateCache(ctx, id)
 
 	return nil
 }
@@ -450,6 +424,9 @@ func (h *handler) ChannelSetDataAndStasis(ctx context.Context, id string, data m
 		return fmt.Errorf("could not execute. ChannelSetDataAndStasis. err: %v", err)
 	}
 
+	// update the cache
+	h.ChannelUpdateCache(ctx, id)
+
 	return nil
 }
 
@@ -457,15 +434,79 @@ func (h *handler) ChannelSetDataAndStasis(ctx context.Context, id string, data m
 func (h *handler) ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error) {
 
 	// get from cache
-	if res, err := h.cache.ChannelGet(ctx, id); err == nil {
-		return res, nil
-	}
-
-	// get from db
-	res, err := h.ChannelGet(ctx, id)
+	res, err := h.cache.ChannelGet(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return res, nil
+}
+
+// ChannelGetFromDB returns channel from the DB.
+func (h *handler) ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error) {
+
+	// prepare
+	q := `select
+	asterisk_id,
+  id,
+  name,
+  tech,
+
+  src_name,
+  src_number,
+  dst_name,
+  dst_number,
+
+  state,
+	data,
+	stasis,
+	bridge_id,
+
+  dial_result,
+  hangup_cause,
+
+	coalesce(tm_create, '') as tm_create,
+	coalesce(tm_update, '') as tm_update,
+
+	coalesce(tm_answer, '') as tm_answer,
+	coalesce(tm_ringing, '') as tm_ringing,
+	coalesce(tm_end, '') as tm_end
+
+	from
+		channels
+	where
+		id = ?
+	`
+
+	row, err := h.db.Query(q, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ChannelGet. err: %v", err)
+	}
+	defer row.Close()
+
+	if row.Next() == false {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.channelGetFromRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// ChannelUpdateCache gets the channel from the DB and update the cache.
+func (h *handler) ChannelUpdateCache(ctx context.Context, id string) error {
+
+	res, err := h.ChannelGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.cache.ChannelSet(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
 }
