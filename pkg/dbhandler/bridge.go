@@ -152,6 +152,9 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 		res.ChannelIDs = []string{}
 	}
 
+	// update cache
+	h.cache.BridgeSet(ctx, res)
+
 	return res, nil
 }
 
@@ -229,24 +232,30 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 // BridgeGetUntilTimeout gets the bridge until the ctx is timed out.
 func (h *handler) BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error) {
 
-	chanBridge := make(chan *bridge.Bridge)
+	chanRes := make(chan *bridge.Bridge)
+	stop := false
 
 	go func() {
 		for {
-			res, err := h.BridgeGet(ctx, id)
+			if stop == true {
+				return
+			}
+
+			tmp, err := h.BridgeGetFromCache(ctx, id)
 			if err != nil {
 				time.Sleep(defaultDelayTimeout)
 				continue
 			}
 
-			chanBridge <- res
+			chanRes <- tmp
 		}
 	}()
 
 	select {
-	case res := <-chanBridge:
+	case res := <-chanRes:
 		return res, nil
 	case <-ctx.Done():
+		stop = true
 		return nil, fmt.Errorf("could not get bridge. err: tiemout")
 	}
 }
@@ -262,4 +271,21 @@ func (h *handler) BridgeIsExist(id string, timeout time.Duration) bool {
 		return false
 	}
 	return true
+}
+
+// BridgeGetFromCache returns bridge from the cache if possible.
+func (h *handler) BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error) {
+
+	// get from cache
+	if res, err := h.cache.BridgeGet(ctx, id); err == nil {
+		return res, nil
+	}
+
+	// get from db
+	res, err := h.BridgeGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

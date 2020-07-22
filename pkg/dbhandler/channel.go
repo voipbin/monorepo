@@ -246,29 +246,35 @@ func (h *handler) ChannelIsExist(id string, timeout time.Duration) bool {
 // ChannelGetUntilTimeoutWithStasis gets the stasis channel until the ctx is timed out.
 func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error) {
 
-	chanChannel := make(chan *channel.Channel)
+	chanRes := make(chan *channel.Channel)
+	stop := false
 
 	go func() {
 		for {
-			channel, err := h.ChannelGetFromCache(ctx, id)
+			if stop == true {
+				return
+			}
+
+			tmp, err := h.ChannelGetFromCache(ctx, id)
 			if err != nil {
 				time.Sleep(defaultDelayTimeout)
 				continue
 			}
 
-			if channel.Stasis == "" {
+			if tmp.Stasis == "" {
 				time.Sleep(defaultDelayTimeout)
 				continue
 			}
 
-			chanChannel <- channel
+			chanRes <- tmp
 		}
 	}()
 
 	select {
-	case res := <-chanChannel:
+	case res := <-chanRes:
 		return res, nil
 	case <-ctx.Done():
+		stop = true
 		return nil, fmt.Errorf("could not get channel. err: tiemout")
 	}
 }
@@ -276,24 +282,30 @@ func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id strin
 // ChannelGetUntilTimeout gets the channel until the ctx is timed out.
 func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error) {
 
-	chanChannel := make(chan *channel.Channel)
+	chanRes := make(chan *channel.Channel)
+	stop := false
 
 	go func() {
 		for {
-			channel, err := h.ChannelGetFromCache(ctx, id)
+			if stop == true {
+				return
+			}
+
+			tmp, err := h.ChannelGetFromCache(ctx, id)
 			if err != nil {
 				time.Sleep(defaultDelayTimeout)
 				continue
 			}
 
-			chanChannel <- channel
+			chanRes <- tmp
 		}
 	}()
 
 	select {
-	case res := <-chanChannel:
+	case res := <-chanRes:
 		return res, nil
 	case <-ctx.Done():
+		stop = true
 		return nil, fmt.Errorf("could not get channel. err: tiemout")
 	}
 }

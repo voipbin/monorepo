@@ -81,7 +81,7 @@ func TestTerminate(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.id).Return(tt.conference, nil)
 			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.id, conference.StatusTerminating).Return(nil)
 			for i, bridgeID := range tt.conference.BridgeIDs {
-				mockDB.EXPECT().BridgeGet(gomock.Any(), bridgeID).Return(tt.bridges[i], nil)
+				mockDB.EXPECT().BridgeGetFromCache(gomock.Any(), bridgeID).Return(tt.bridges[i], nil)
 				mockReq.EXPECT().AstBridgeDelete(tt.bridges[i].AsteriskID, tt.bridges[i].ID).Return(nil)
 			}
 			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
