@@ -6,13 +6,20 @@ import (
 	"testing"
 
 	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func TestCallCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name   string
 		id     uuid.UUID
@@ -93,7 +100,7 @@ func TestCallCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			tt.call.ID = tt.id
 			tt.call.FlowID = tt.flowID
@@ -103,6 +110,8 @@ func TestCallCreate(t *testing.T) {
 			if err := h.CallCreate(context.Background(), &tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
@@ -118,6 +127,11 @@ func TestCallCreate(t *testing.T) {
 }
 
 func TestCallSetStatus(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name     string
 		id       uuid.UUID
@@ -168,7 +182,7 @@ func TestCallSetStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			tt.call.ID = tt.id
 			tt.call.FlowID = tt.flowID
@@ -184,6 +198,8 @@ func TestCallSetStatus(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
+
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -198,6 +214,11 @@ func TestCallSetStatus(t *testing.T) {
 }
 
 func TestCallGetByChannelIDAndAsteriskID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name   string
 		id     uuid.UUID
@@ -278,7 +299,7 @@ func TestCallGetByChannelIDAndAsteriskID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			tt.call.ID = tt.id
 			tt.call.FlowID = tt.flowID
@@ -288,6 +309,8 @@ func TestCallGetByChannelIDAndAsteriskID(t *testing.T) {
 			if err := h.CallCreate(context.Background(), &tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 
 			res, err := h.CallGetByChannelIDAndAsteriskID(context.Background(), tt.call.ChannelID, tt.call.AsteriskID)
 			if err != nil {
@@ -303,6 +326,11 @@ func TestCallGetByChannelIDAndAsteriskID(t *testing.T) {
 }
 
 func TestCallCallSetHangup(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name     string
 		id       uuid.UUID
@@ -357,7 +385,7 @@ func TestCallCallSetHangup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			tt.call.ID = tt.id
 			tt.expectCall.ID = tt.id
@@ -370,6 +398,8 @@ func TestCallCallSetHangup(t *testing.T) {
 			if err := h.CallSetHangup(context.Background(), tt.id, tt.reason, tt.hangupBy, tt.tmUpdate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
@@ -384,6 +414,11 @@ func TestCallCallSetHangup(t *testing.T) {
 }
 
 func TestCallSetFlowID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name   string
 		flowID uuid.UUID
@@ -431,7 +466,7 @@ func TestCallSetFlowID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -440,6 +475,8 @@ func TestCallSetFlowID(t *testing.T) {
 			if err := h.CallSetFlowID(context.Background(), tt.call.ID, tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
@@ -455,6 +492,11 @@ func TestCallSetFlowID(t *testing.T) {
 }
 
 func TestCallSetConferenceID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name         string
 		conferenceID uuid.UUID
@@ -502,7 +544,7 @@ func TestCallSetConferenceID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -511,6 +553,8 @@ func TestCallSetConferenceID(t *testing.T) {
 			if err := h.CallSetConferenceID(context.Background(), tt.call.ID, tt.conferenceID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
@@ -526,6 +570,11 @@ func TestCallSetConferenceID(t *testing.T) {
 }
 
 func TestCallSetAction(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name   string
 		call   *call.Call
@@ -630,7 +679,7 @@ func TestCallSetAction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -639,6 +688,8 @@ func TestCallSetAction(t *testing.T) {
 			if err := h.CallSetAction(context.Background(), tt.call.ID, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {

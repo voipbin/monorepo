@@ -286,8 +286,8 @@ func TestBridgeGetUntilTimeout(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
 			defer cancel()
 
-			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any()).AnyTimes()
+			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 
 			_, err := h.BridgeGetUntilTimeout(ctx, tt.bridge.ID)
 			if err != nil {

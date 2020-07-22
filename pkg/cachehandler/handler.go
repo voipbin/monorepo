@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 )
 
 // getSerialize returns cached serialized info.
@@ -87,6 +90,52 @@ func (h *handler) BridgeSet(ctx context.Context, bridge *bridge.Bridge) error {
 	key := fmt.Sprintf("bridge:%s", bridge.ID)
 
 	if err := h.setSerialize(ctx, key, bridge); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CallGet returns cached call info
+func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+	key := fmt.Sprintf("call:%s", id)
+
+	var res call.Call
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallSet sets the bridge info into the cache.
+func (h *handler) CallSet(ctx context.Context, call *call.Call) error {
+	key := fmt.Sprintf("call:%s", call.ID)
+
+	if err := h.setSerialize(ctx, key, call); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ConferenceGet returns conference call info
+func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	key := fmt.Sprintf("conference:%s", id)
+
+	var res conference.Conference
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallSet sets the bridge info into the cache.
+func (h *handler) ConferenceSet(ctx context.Context, conference *conference.Conference) error {
+	key := fmt.Sprintf("conference:%s", conference.ID)
+
+	if err := h.setSerialize(ctx, key, conference); err != nil {
 		return err
 	}
 
