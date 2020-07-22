@@ -57,8 +57,11 @@ type DBHandler interface {
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error
 	ConferenceEnd(ctx context.Context, id uuid.UUID) error
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
+	ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
+	ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
+	ConferenceUpdateCache(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler
