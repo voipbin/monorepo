@@ -98,6 +98,21 @@ func (mr *MockDBHandlerMockRecorder) BridgeGet(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGet", reflect.TypeOf((*MockDBHandler)(nil).BridgeGet), arg0, arg1)
 }
 
+// BridgeGetFromCache mocks base method
+func (m *MockDBHandler) BridgeGetFromCache(arg0 context.Context, arg1 string) (*bridge.Bridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeGetFromCache", arg0, arg1)
+	ret0, _ := ret[0].(*bridge.Bridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BridgeGetFromCache indicates an expected call of BridgeGetFromCache
+func (mr *MockDBHandlerMockRecorder) BridgeGetFromCache(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).BridgeGetFromCache), arg0, arg1)
+}
+
 // BridgeGetUntilTimeout mocks base method
 func (m *MockDBHandler) BridgeGetUntilTimeout(arg0 context.Context, arg1 string) (*bridge.Bridge, error) {
 	m.ctrl.T.Helper()

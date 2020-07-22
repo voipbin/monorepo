@@ -2,16 +2,24 @@ package dbhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 )
 
 func TestBridgeCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name         string
 		bridge       *bridge.Bridge
@@ -109,11 +117,13 @@ func TestBridgeCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. BridgeCreate expect: ok, got: %v", err)
 			}
+
+			mockCache.EXPECT().BridgeSet(gomock.Any(), tt.expectBridge)
 
 			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
 			if err != nil {
@@ -128,6 +138,11 @@ func TestBridgeCreate(t *testing.T) {
 }
 
 func TestBridgeEnd(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name         string
 		bridge       *bridge.Bridge
@@ -156,7 +171,7 @@ func TestBridgeEnd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -165,6 +180,8 @@ func TestBridgeEnd(t *testing.T) {
 			if err := h.BridgeEnd(context.Background(), tt.bridge.ID, tt.timestamp); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 
 			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
 			if err != nil {
@@ -232,6 +249,11 @@ func TestBridgeEnd(t *testing.T) {
 // }
 
 func TestBridgeGetUntilTimeout(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name string
 
@@ -253,7 +275,7 @@ func TestBridgeGetUntilTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -263,6 +285,9 @@ func TestBridgeGetUntilTimeout(t *testing.T) {
 
 			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
 			defer cancel()
+
+			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any()).AnyTimes()
 
 			_, err := h.BridgeGetUntilTimeout(ctx, tt.bridge.ID)
 			if err != nil {
@@ -278,6 +303,11 @@ func TestBridgeGetUntilTimeout(t *testing.T) {
 }
 
 func TestBridgeGetUntilTimeoutError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name string
 
@@ -299,12 +329,14 @@ func TestBridgeGetUntilTimeoutError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			start := time.Now()
 
 			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
 			defer cancel()
+
+			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 
 			_, err := h.BridgeGetUntilTimeout(ctx, tt.bridge.ID)
 			if err == nil {
@@ -320,6 +352,11 @@ func TestBridgeGetUntilTimeoutError(t *testing.T) {
 }
 
 func TestBridgeIsExist(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name   string
 		bridge *bridge.Bridge
@@ -338,11 +375,14 @@ func TestBridgeIsExist(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any()).AnyTimes()
 
 			res := h.BridgeIsExist(tt.bridge.ID, time.Second*1)
 			if res != true {
@@ -353,6 +393,11 @@ func TestBridgeIsExist(t *testing.T) {
 }
 
 func TestBridgeIsExistError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name    string
 		id      string
@@ -369,9 +414,12 @@ func TestBridgeIsExistError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, nil)
+			h := NewHandler(dbTest, mockCache)
 
 			start := time.Now()
+
+			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any()).AnyTimes()
 
 			res := h.BridgeIsExist(tt.id, tt.timeout)
 			if res != false {

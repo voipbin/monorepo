@@ -25,6 +25,7 @@ type DBHandler interface {
 	BridgeCreate(ctx context.Context, b *bridge.Bridge) error
 	BridgeEnd(ctx context.Context, id, timestamp string) error
 	BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error)
+	BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeIsExist(id string, timeout time.Duration) bool
 	BridgeRemoveChannelID(ctx context.Context, id, channelID string) error
