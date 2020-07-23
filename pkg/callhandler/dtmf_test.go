@@ -58,7 +58,7 @@ func TestDTMFReceived(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().CallGetByChannelIDAndAsteriskID(gomock.Any(), tt.channel.ID, tt.channel.AsteriskID).Return(tt.call, nil)
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockReq.EXPECT().AstChannelDTMF(tt.call.AsteriskID, tt.call.ChannelID, tt.digit, tt.duration, 0, 0, 0)
 
 			h.DTMFReceived(tt.channel, tt.digit, tt.duration)

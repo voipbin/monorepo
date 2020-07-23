@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -107,12 +108,12 @@ func TestCallCreate(t *testing.T) {
 			tt.expectCall.ID = tt.id
 			tt.expectCall.FlowID = tt.flowID
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), &tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -190,16 +191,17 @@ func TestCallSetStatus(t *testing.T) {
 			tt.expectCall.FlowID = tt.flowID
 			tt.expectCall.TMUpdate = tt.tmUpdate
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetStatus(context.Background(), tt.id, tt.status, tt.tmUpdate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -213,7 +215,7 @@ func TestCallSetStatus(t *testing.T) {
 	}
 }
 
-func TestCallGetByChannelIDAndAsteriskID(t *testing.T) {
+func TestCallGetByChannelID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -306,13 +308,12 @@ func TestCallGetByChannelIDAndAsteriskID(t *testing.T) {
 			tt.expectCall.ID = tt.id
 			tt.expectCall.FlowID = tt.flowID
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), &tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-
-			res, err := h.CallGetByChannelIDAndAsteriskID(context.Background(), tt.call.ChannelID, tt.call.AsteriskID)
+			res, err := h.CallGetByChannelID(context.Background(), tt.call.ChannelID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -391,16 +392,17 @@ func TestCallCallSetHangup(t *testing.T) {
 			tt.expectCall.ID = tt.id
 			tt.expectCall.TMUpdate = tt.tmUpdate
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetHangup(context.Background(), tt.id, tt.reason, tt.hangupBy, tt.tmUpdate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -468,16 +470,17 @@ func TestCallSetFlowID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetFlowID(context.Background(), tt.call.ID, tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -546,16 +549,17 @@ func TestCallSetConferenceID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetConferenceID(context.Background(), tt.call.ID, tt.conferenceID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -681,16 +685,17 @@ func TestCallSetAction(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetAction(context.Background(), tt.call.ID, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

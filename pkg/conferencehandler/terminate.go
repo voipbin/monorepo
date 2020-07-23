@@ -50,7 +50,7 @@ func (h *conferenceHandler) Terminate(id uuid.UUID, reason string) error {
 	for _, bridgeID := range cf.BridgeIDs {
 
 		// get bridge
-		bridge, err := h.db.BridgeGetFromCache(ctx, bridgeID)
+		bridge, err := h.db.BridgeGet(ctx, bridgeID)
 		if err != nil {
 			log.WithFields(
 				logrus.Fields{

@@ -87,69 +87,30 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 		return fmt.Errorf("could not execute. CallCreate. err: %v", err)
 	}
 
+	// update the cache
+	h.CallUpdateCache(ctx, call.ID)
+
 	return nil
 }
 
 // CallGet returns call.
 func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 
-	// prepare
-	q := `
-	select
-		id,
-		asterisk_id,
-		channel_id,
-		flow_id,
-		conference_id,
-		type,
-
-		source,
-		destination,
-
-		status,
-		data,
-		action,
-		direction,
-		hangup_by,
-		hangup_reason,
-
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-
-		coalesce(tm_progressing, '') as tm_progressing,
-		coalesce(tm_ringing, '') as tm_ringing,
-		coalesce(tm_hangup, '') as tm_hangup
-
-	from
-		calls
-	where
-		id = ?
-	`
-
-	row, err := h.db.Query(q, id.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("could not query. CallGet. err: %v", err)
-	}
-	defer row.Close()
-
-	if row.Next() == false {
-		return nil, ErrNotFound
+	res, err := h.CallGetFromCache(ctx, id)
+	if err == nil {
+		return res, nil
 	}
 
-	res, err := h.callGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not get call. CallGet, err: %v", err)
+	res, err = h.CallGetFromDB(ctx, id)
+	if err == nil {
+		return res, nil
 	}
 
-	// update cache
-	h.cache.CallSet(ctx, res)
-
-	return res, nil
+	return nil, err
 }
 
 // CallGet returns call.
-func (h *handler) CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID, asteriskID string) (*call.Call, error) {
+func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error) {
 
 	// prepare
 	q := `
@@ -181,12 +142,12 @@ func (h *handler) CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID
 	from
 		calls
 	where
-		channel_id = ? and asterisk_id = ?
+		channel_id = ?
 	`
 
-	row, err := h.db.Query(q, channelID, asteriskID)
+	row, err := h.db.Query(q, channelID)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CallGetByChannelIDAndAsteriskID. err: %v", err)
+		return nil, fmt.Errorf("could not query. CallGetByChannelID. err: %v", err)
 	}
 	defer row.Close()
 
@@ -196,11 +157,8 @@ func (h *handler) CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID
 
 	res, err := h.callGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. CallGetByChannelIDAndAsteriskID, err: %v", err)
+		return nil, fmt.Errorf("could not get call. CallGetByChannelID, err: %v", err)
 	}
-
-	// update cache
-	h.cache.CallSet(ctx, res)
 
 	return res, nil
 }
@@ -275,6 +233,9 @@ func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStat
 		return fmt.Errorf("could not execute. CallSetStatusRinging. err: %v", err)
 	}
 
+	// update the cache
+	h.CallUpdateCache(ctx, id)
+
 	return nil
 }
 
@@ -297,6 +258,9 @@ func (h *handler) callSetStatusProgressing(ctx context.Context, id uuid.UUID, tm
 		return fmt.Errorf("could not execute. callSetStatusProgressing. err: %v", err)
 	}
 
+	// update the cache
+	h.CallUpdateCache(ctx, id)
+
 	return nil
 }
 
@@ -317,6 +281,9 @@ func (h *handler) callSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	if err != nil {
 		return fmt.Errorf("could not execute. callSetStatus. err: %v", err)
 	}
+
+	// update the cache
+	h.CallUpdateCache(ctx, id)
 
 	return nil
 }
@@ -356,6 +323,9 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 		return fmt.Errorf("could not execute. CallSetHangup. err: %v", err)
 	}
 
+	// update the cache
+	h.CallUpdateCache(ctx, id)
+
 	return nil
 }
 
@@ -378,6 +348,9 @@ func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 		return fmt.Errorf("could not execute. CallSetFlowID. err: %v", err)
 	}
 
+	// update the cache
+	h.CallUpdateCache(ctx, id)
+
 	return nil
 }
 
@@ -399,6 +372,9 @@ func (h *handler) CallSetConferenceID(ctx context.Context, id, conferenceID uuid
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetConferenceID. err: %v", err)
 	}
+
+	// update the cache
+	h.CallUpdateCache(ctx, id)
 
 	return nil
 }
@@ -427,22 +403,90 @@ func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *actio
 		return fmt.Errorf("could not execute. CallSetAction. err: %v", err)
 	}
 
+	// update the cache
+	h.CallUpdateCache(ctx, id)
+
 	return nil
 }
 
-// CallGetFromCache returns call from the cache if possible.
+// CallGetFromCache returns call from the cache.
 func (h *handler) CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 
 	// get from cache
-	if res, err := h.cache.CallGet(ctx, id); err == nil {
-		return res, nil
-	}
-
-	// get from db
-	res, err := h.CallGet(ctx, id)
+	res, err := h.cache.CallGet(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return res, nil
+}
+
+// CallGetFromDB returns call from the DB.
+func (h *handler) CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+
+	// prepare
+	q := `
+	select
+		id,
+		asterisk_id,
+		channel_id,
+		flow_id,
+		conference_id,
+		type,
+
+		source,
+		destination,
+
+		status,
+		data,
+		action,
+		direction,
+		hangup_by,
+		hangup_reason,
+
+
+		coalesce(tm_create, '') as tm_create,
+		coalesce(tm_update, '') as tm_update,
+
+		coalesce(tm_progressing, '') as tm_progressing,
+		coalesce(tm_ringing, '') as tm_ringing,
+		coalesce(tm_hangup, '') as tm_hangup
+
+	from
+		calls
+	where
+		id = ?
+	`
+
+	row, err := h.db.Query(q, id.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CallGet. err: %v", err)
+	}
+	defer row.Close()
+
+	if row.Next() == false {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.callGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get call. CallGet, err: %v", err)
+	}
+
+	return res, nil
+}
+
+// CallUpdateCache gets the call from the DB and update the cache.
+func (h *handler) CallUpdateCache(ctx context.Context, id uuid.UUID) error {
+
+	res, err := h.CallGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.cache.CallSet(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
 }

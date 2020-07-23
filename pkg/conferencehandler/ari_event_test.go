@@ -65,7 +65,7 @@ import (
 
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
-// 			mockDB.EXPECT().CallGetByChannelIDAndAsteriskID(gomock.Any(), tt.channel.ID, tt.channel.AsteriskID).Return(tt.call, nil)
+// 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID, tt.channel.AsteriskID).Return(tt.call, nil)
 // 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.call.ID, uuid.Nil)
 // 			mockDB.EXPECT().ConferenceRemoveCallID(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 // 			mockReq.EXPECT().CallCallActionNext(gomock.Any()).Return(nil)
@@ -128,7 +128,7 @@ func TestARIChannelEnteredBridge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallGetByChannelIDAndAsteriskID(gomock.Any(), tt.channel.ID, tt.channel.AsteriskID).Return(tt.call, nil)
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.call.ID, tt.bridge.ConferenceID)
 			mockDB.EXPECT().ConferenceAddCallID(gomock.Any(), tt.bridge.ConferenceID, tt.call.ID).Return(nil)
 

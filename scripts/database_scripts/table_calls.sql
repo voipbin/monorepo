@@ -33,6 +33,7 @@ create table calls(
   primary key(id)
 );
 
+create index idx_calls_channelid on calls(channel_id);
 create index idx_calls_flowid on calls(flow_id);
 create index idx_calls_create on calls(tm_create);
 create index idx_calls_hangup on calls(tm_hangup);

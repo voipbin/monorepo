@@ -22,7 +22,7 @@ func (h *callHandler) UpdateStatus(cn *channel.Channel) error {
 	}
 
 	// get call
-	c, err := h.db.CallGetByChannelIDAndAsteriskID(ctx, cn.ID, cn.AsteriskID)
+	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err == dbhandler.ErrNotFound {
 		return nil
 	} else if err != nil {
