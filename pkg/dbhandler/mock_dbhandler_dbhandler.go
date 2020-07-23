@@ -343,6 +343,21 @@ func (mr *MockDBHandlerMockRecorder) ChannelGetFromCache(arg0, arg1 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetFromCache), arg0, arg1)
 }
 
+// ChannelGetFromDB mocks base method
+func (m *MockDBHandler) ChannelGetFromDB(arg0 context.Context, arg1 string) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelGetFromDB", arg0, arg1)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelGetFromDB indicates an expected call of ChannelGetFromDB
+func (mr *MockDBHandlerMockRecorder) ChannelGetFromDB(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetFromDB), arg0, arg1)
+}
+
 // ChannelGetUntilTimeout mocks base method
 func (m *MockDBHandler) ChannelGetUntilTimeout(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
@@ -455,6 +470,20 @@ func (m *MockDBHandler) ChannelSetState(arg0 context.Context, arg1, arg2 string,
 func (mr *MockDBHandlerMockRecorder) ChannelSetState(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetState", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetState), arg0, arg1, arg2, arg3)
+}
+
+// ChannelUpdateCache mocks base method
+func (m *MockDBHandler) ChannelUpdateCache(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelUpdateCache", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelUpdateCache indicates an expected call of ChannelUpdateCache
+func (mr *MockDBHandlerMockRecorder) ChannelUpdateCache(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelUpdateCache", reflect.TypeOf((*MockDBHandler)(nil).ChannelUpdateCache), arg0, arg1)
 }
 
 // ConferenceAddCallID mocks base method

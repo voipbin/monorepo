@@ -61,7 +61,7 @@ func (h *ariHandler) eventHandlerChannelDestroyed(ctx context.Context, evt inter
 func (h *ariHandler) eventHandlerChannelDtmfReceived(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelDtmfReceived)
 
-	cn, err := h.db.ChannelGetFromCache(ctx, e.Channel.ID)
+	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
 		return err
 	}

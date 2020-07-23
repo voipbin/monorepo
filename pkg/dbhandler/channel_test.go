@@ -85,12 +85,12 @@ func TestChannelCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), tt.expectChannel)
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChannelSet(gomock.Any(), tt.expectChannel)
-
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
 			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -137,12 +137,12 @@ func TestChannelGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.queryChannel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChannelSet(gomock.Any(), tt.expectChannel)
-
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.expectChannel.ID).Return(nil, fmt.Errorf(""))
 			resChannel, err := h.ChannelGet(context.Background(), tt.expectChannel.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok , got: %v", err)
@@ -189,11 +189,10 @@ func TestChannelGetByID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.queryChannel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
-			mockCache.EXPECT().ChannelSet(gomock.Any(), tt.expectChannel)
 
 			resChannel, err := h.ChannelGetByID(context.Background(), tt.expectChannel.ID)
 			if err != nil {
@@ -248,13 +247,12 @@ func TestChannelStasisGetUntilTimeout(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), tt.timeout)
 			defer cancel()
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().ChannelSet(gomock.Any(), tt.expectChannel).AnyTimes()
-
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
 			resChannel, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok , got: %v", err)
@@ -296,6 +294,7 @@ func TestChannelStasisGetUntilTimeoutError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -304,8 +303,6 @@ func TestChannelStasisGetUntilTimeoutError(t *testing.T) {
 			defer cancel()
 
 			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any()).AnyTimes()
-
 			_, err := h.ChannelGetUntilTimeoutWithStasis(ctx, tt.channel.ID)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
@@ -357,16 +354,17 @@ func TestChannelEnd(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
 			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelEnd(context.Background(), tt.channel.ID, tt.timestamp, tt.hangup); err != nil {
 				t.Errorf("Wrong match. expect: ok , got: %v", err)
 			}
 
-			mockCache.EXPECT().ChannelSet(gomock.Any(), tt.expectChannel)
-
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
 			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
@@ -443,16 +441,17 @@ func TestChannelSetState(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
 			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetState(context.Background(), tt.channel.ID, tt.timestamp, tt.state); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChannelSet(gomock.Any(), tt.expectChannel)
-
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
 			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
@@ -506,16 +505,17 @@ func TestChannelSetStasis(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
 			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetStasis(context.Background(), tt.channel.ID, tt.stasis); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
 			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
@@ -593,16 +593,17 @@ func TestChannelSetData(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
 			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetData(context.Background(), tt.channel.ID, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
 			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
@@ -685,16 +686,17 @@ func TestChannelSetDataAndStasis(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
 			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetDataAndStasis(context.Background(), tt.channel.ID, tt.data, tt.stasis); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
 			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
@@ -767,16 +769,17 @@ func TestChannelSetBridgeID(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
 			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetBridgeID(context.Background(), tt.channel.ID, tt.bridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
 			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
@@ -826,14 +829,13 @@ func TestChannelGetUntilTimeout(t *testing.T) {
 
 			go func() {
 				time.Sleep(time.Millisecond * 10)
+				mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 				if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}()
 
 			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any()).AnyTimes()
-
 			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -882,7 +884,6 @@ func TestChannelGetUntilTimeoutError(t *testing.T) {
 			defer cancel()
 
 			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-
 			_, err := h.ChannelGetUntilTimeout(ctx, tt.channel.ID)
 			if err == nil {
 				t.Errorf("Wrong match. expect: err, got: ok")
