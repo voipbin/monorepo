@@ -26,23 +26,27 @@ type DBHandler interface {
 	BridgeEnd(ctx context.Context, id, timestamp string) error
 	BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error)
+	BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeIsExist(id string, timeout time.Duration) bool
 	BridgeRemoveChannelID(ctx context.Context, id, channelID string) error
+	BridgeUpdateCache(ctx context.Context, id string) error
 
 	CallCreate(ctx context.Context, call *call.Call) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
-	CallGetByChannelIDAndAsteriskID(ctx context.Context, channelID, asteriskID string) (*call.Call, error)
+	CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error)
+	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
+	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
 	CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error
 	CallSetConferenceID(ctx context.Context, id, conferenceID uuid.UUID) error
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
+	CallUpdateCache(ctx context.Context, id uuid.UUID) error
 
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
 	ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelGetByID(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error)

@@ -155,57 +155,6 @@ func TestChannelGet(t *testing.T) {
 	}
 }
 
-func TestChannelGetByID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	type test struct {
-		name string
-
-		queryChannel  *channel.Channel
-		expectChannel *channel.Channel
-	}
-
-	tests := []test{
-		{
-			"test normal",
-			&channel.Channel{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "6f14fc58-90aa-11ea-b845-2b3bddc0e1cf",
-				TMCreate:   "2020-04-18T03:22:17.995000",
-			},
-			&channel.Channel{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "6f14fc58-90aa-11ea-b845-2b3bddc0e1cf",
-				Data:       map[string]interface{}{},
-				TMCreate:   "2020-04-18T03:22:17.995000",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
-
-			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-			if err := h.ChannelCreate(context.Background(), tt.queryChannel); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			resChannel, err := h.ChannelGetByID(context.Background(), tt.expectChannel.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok , got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectChannel, resChannel) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectChannel, resChannel)
-			}
-		})
-	}
-}
-
 func TestChannelStasisGetUntilTimeout(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

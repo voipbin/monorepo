@@ -71,11 +71,167 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		return fmt.Errorf("could not execute. BridgeCreate. err: %v", err)
 	}
 
+	// update the cache
+	h.BridgeUpdateCache(ctx, b.ID)
+
 	return nil
 }
 
 // BridgeGet returns bridge.
 func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error) {
+
+	res, err := h.BridgeGetFromCache(ctx, id)
+	if err == nil {
+		return res, nil
+	}
+
+	res, err = h.BridgeGetFromDB(ctx, id)
+	if err == nil {
+		return res, nil
+	}
+
+	return nil, err
+}
+
+// BridgeEnd updates the bridge end.
+func (h *handler) BridgeEnd(ctx context.Context, id, timestamp string) error {
+	// prepare
+	q := `
+	update bridges set
+		tm_update = ?,
+		tm_delete = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, getCurTime(), timestamp, id)
+	if err != nil {
+		return fmt.Errorf("could not execute. BridgeEnd. err: %v", err)
+	}
+
+	// update the cache
+	h.BridgeUpdateCache(ctx, id)
+
+	return nil
+}
+
+// BridgeAddChannel adds the channel to the bridge.
+func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) error {
+	// prepare
+	q := `
+	update bridges set
+		channel_ids = json_array_append(
+			channel_ids,
+			'$',
+			?
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, channelID, getCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. BridgeAddChannelID. err: %v", err)
+	}
+
+	// update the cache
+	h.BridgeUpdateCache(ctx, id)
+
+	return nil
+}
+
+// BridgeRemoveChannelID removes the channel from the bridge.
+func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID string) error {
+	// prepare
+	q := `
+	update bridges set
+		channel_ids = json_remove(
+			channel_ids, replace(
+				json_search(
+					channel_ids,
+					'one',
+					?
+				),
+				'"',
+				''
+			)
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, channelID, getCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. BridgeRemoveChannelID. err: %v", err)
+	}
+
+	// update the cache
+	h.BridgeUpdateCache(ctx, id)
+
+	return nil
+}
+
+// BridgeGetUntilTimeout gets the bridge until the ctx is timed out.
+func (h *handler) BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error) {
+
+	chanRes := make(chan *bridge.Bridge)
+	stop := false
+
+	go func() {
+		for {
+			if stop == true {
+				return
+			}
+
+			tmp, err := h.BridgeGet(ctx, id)
+			if err != nil {
+				time.Sleep(defaultDelayTimeout)
+				continue
+			}
+
+			chanRes <- tmp
+			return
+		}
+	}()
+
+	select {
+	case res := <-chanRes:
+		return res, nil
+	case <-ctx.Done():
+		stop = true
+		return nil, fmt.Errorf("could not get bridge. err: tiemout")
+	}
+}
+
+// BridgeIsExist returns true if the bridge exist within timeout.
+func (h *handler) BridgeIsExist(id string, timeout time.Duration) bool {
+	// check the channel is exists
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	_, err := h.BridgeGetUntilTimeout(ctx, id)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// BridgeGetFromCache returns bridge from the cache.
+func (h *handler) BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error) {
+
+	// get from cache
+	res, err := h.cache.BridgeGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// BridgeGetFromDB returns bridge from the DB.
+func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridge, error) {
 
 	// prepare
 	q := `
@@ -152,141 +308,20 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 		res.ChannelIDs = []string{}
 	}
 
-	// update cache
-	h.cache.BridgeSet(ctx, res)
-
 	return res, nil
 }
 
-// BridgeEnd updates the bridge end.
-func (h *handler) BridgeEnd(ctx context.Context, id, timestamp string) error {
-	// prepare
-	q := `
-	update bridges set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
+// BridgeUpdateCache gets the bridge from the DB and update the cache.
+func (h *handler) BridgeUpdateCache(ctx context.Context, id string) error {
 
-	_, err := h.db.Exec(q, getCurTime(), timestamp, id)
+	res, err := h.BridgeGetFromDB(ctx, id)
 	if err != nil {
-		return fmt.Errorf("could not execute. BridgeEnd. err: %v", err)
+		return err
+	}
+
+	if err := h.cache.BridgeSet(ctx, res); err != nil {
+		return err
 	}
 
 	return nil
-}
-
-// BridgeAddChannel adds the channel to the bridge.
-func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) error {
-	// prepare
-	q := `
-	update bridges set
-		channel_ids = json_array_append(
-			channel_ids,
-			'$',
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, channelID, getCurTime(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. BridgeAddChannelID. err: %v", err)
-	}
-
-	return nil
-}
-
-// BridgeRemoveChannelID removes the channel from the bridge.
-func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID string) error {
-	// prepare
-	q := `
-	update bridges set
-		channel_ids = json_remove(
-			channel_ids, replace(
-				json_search(
-					channel_ids,
-					'one',
-					?
-				),
-				'"',
-				''
-			)
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, channelID, getCurTime(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. BridgeRemoveChannelID. err: %v", err)
-	}
-
-	return nil
-}
-
-// BridgeGetUntilTimeout gets the bridge until the ctx is timed out.
-func (h *handler) BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error) {
-
-	chanRes := make(chan *bridge.Bridge)
-	stop := false
-
-	go func() {
-		for {
-			if stop == true {
-				return
-			}
-
-			tmp, err := h.BridgeGetFromCache(ctx, id)
-			if err != nil {
-				time.Sleep(defaultDelayTimeout)
-				continue
-			}
-
-			chanRes <- tmp
-			return
-		}
-	}()
-
-	select {
-	case res := <-chanRes:
-		return res, nil
-	case <-ctx.Done():
-		stop = true
-		return nil, fmt.Errorf("could not get bridge. err: tiemout")
-	}
-}
-
-// BridgeIsExist returns true if the bridge exist within timeout.
-func (h *handler) BridgeIsExist(id string, timeout time.Duration) bool {
-	// check the channel is exists
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	_, err := h.BridgeGetUntilTimeout(ctx, id)
-	if err != nil {
-		return false
-	}
-	return true
-}
-
-// BridgeGetFromCache returns bridge from the cache if possible.
-func (h *handler) BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error) {
-
-	// get from cache
-	if res, err := h.cache.BridgeGet(ctx, id); err == nil {
-		return res, nil
-	}
-
-	// get from db
-	res, err := h.BridgeGet(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
 }

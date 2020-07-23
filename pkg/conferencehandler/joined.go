@@ -22,7 +22,7 @@ func (h *conferenceHandler) joined(cn *channel.Channel, br *bridge.Bridge) error
 	log.Debug("The call has joined into the conference.")
 
 	// get call
-	c, err := h.db.CallGetByChannelIDAndAsteriskID(ctx, cn.ID, cn.AsteriskID)
+	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
 		log.Errorf("Could not find a call for channel. err: %v", err)
 

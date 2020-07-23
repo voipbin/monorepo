@@ -10,7 +10,7 @@ import (
 func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration int) error {
 	ctx := context.Background()
 
-	c, err := h.db.CallGetByChannelIDAndAsteriskID(ctx, cn.ID, cn.AsteriskID)
+	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
 		return err
 	}

@@ -54,7 +54,7 @@ func TestCreateEndpointTarget(t *testing.T) {
 
 	for _, tt := range tests {
 
-		mockDB.EXPECT().BridgeGetFromCache(gomock.Any(), tt.conference.BridgeID).Return(tt.bridge, nil)
+		mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridge, nil)
 		mockCache.EXPECT().AsteriskAddressInternerGet(gomock.Any(), tt.bridge.AsteriskID).Return(tt.asteriskAddress, nil)
 
 		res, err := h.createEndpointTarget(context.Background(), tt.conference)
@@ -121,7 +121,7 @@ func TestJoin(t *testing.T) {
 		mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 		mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU}).Return(nil)
 		mockReq.EXPECT().AstBridgeAddChannel(tt.call.AsteriskID, gomock.Any(), tt.call.ChannelID, "", false, false).Return(nil)
-		mockDB.EXPECT().BridgeGetFromCache(gomock.Any(), gomock.Any()).Return(tt.bridgeJoining, nil)
+		mockDB.EXPECT().BridgeGet(gomock.Any(), gomock.Any()).Return(tt.bridgeJoining, nil)
 		mockCache.EXPECT().AsteriskAddressInternerGet(gomock.Any(), gomock.Any()).Return("", nil)
 		mockReq.EXPECT().AstChannelCreate(tt.bridgeJoining.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "", gomock.Any()).Return(nil)
 

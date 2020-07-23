@@ -87,7 +87,7 @@ func (h *conferenceHandler) leavedChannelCall(cn *channel.Channel, br *bridge.Br
 	h.removeAllChannelsInBridge(br)
 
 	// get call info
-	c, err := h.db.CallGetByChannelIDAndAsteriskID(ctx, cn.ID, cn.AsteriskID)
+	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
 		return err

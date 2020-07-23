@@ -12,7 +12,7 @@ import (
 
 func (h *conferenceHandler) createEndpointTarget(ctx context.Context, cf *conference.Conference) (string, error) {
 	// get bridge
-	bridge, err := h.db.BridgeGetFromCache(ctx, cf.BridgeID)
+	bridge, err := h.db.BridgeGet(ctx, cf.BridgeID)
 	if err != nil {
 		return "", err
 	}

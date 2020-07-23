@@ -92,60 +92,6 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 	return nil, err
 }
 
-// ChannelGet returns channel.
-func (h *handler) ChannelGetByID(ctx context.Context, id string) (*channel.Channel, error) {
-
-	// prepare
-	q := `select
-	asterisk_id,
-  id,
-  name,
-  tech,
-
-  src_name,
-  src_number,
-  dst_name,
-  dst_number,
-
-  state,
-	data,
-	stasis,
-	bridge_id,
-
-  dial_result,
-  hangup_cause,
-
-	coalesce(tm_create, '') as tm_create,
-	coalesce(tm_update, '') as tm_update,
-
-	coalesce(tm_answer, '') as tm_answer,
-	coalesce(tm_ringing, '') as tm_ringing,
-	coalesce(tm_end, '') as tm_end
-
-	from
-		channels
-	where
-		id = ?
-	`
-
-	row, err := h.db.Query(q, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ChannelGetByID. err: %v", err)
-	}
-	defer row.Close()
-
-	if row.Next() == false {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.channelGetFromRow(row)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
 // channelGetFromRow gets the channel from the row.
 func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 	var data string
