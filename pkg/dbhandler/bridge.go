@@ -72,7 +72,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 	}
 
 	// update the cache
-	h.BridgeUpdateCache(ctx, b.ID)
+	h.BridgeUpdateToCache(ctx, b.ID)
 
 	return nil
 }
@@ -86,11 +86,14 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 	}
 
 	res, err = h.BridgeGetFromDB(ctx, id)
-	if err == nil {
-		return res, nil
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, err
+	// set to the cache
+	h.BridgeSetToCache(ctx, res)
+
+	return res, nil
 }
 
 // BridgeEnd updates the bridge end.
@@ -110,7 +113,7 @@ func (h *handler) BridgeEnd(ctx context.Context, id, timestamp string) error {
 	}
 
 	// update the cache
-	h.BridgeUpdateCache(ctx, id)
+	h.BridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -136,7 +139,7 @@ func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) 
 	}
 
 	// update the cache
-	h.BridgeUpdateCache(ctx, id)
+	h.BridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -168,7 +171,7 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 	}
 
 	// update the cache
-	h.BridgeUpdateCache(ctx, id)
+	h.BridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -311,15 +314,24 @@ func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 	return res, nil
 }
 
-// BridgeUpdateCache gets the bridge from the DB and update the cache.
-func (h *handler) BridgeUpdateCache(ctx context.Context, id string) error {
+// BridgeUpdateToCache gets the bridge from the DB and update the cache.
+func (h *handler) BridgeUpdateToCache(ctx context.Context, id string) error {
 
 	res, err := h.BridgeGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.cache.BridgeSet(ctx, res); err != nil {
+	if err := h.BridgeSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// BridgeSetToCache sets the given bridge to the cache
+func (h *handler) BridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) error {
+	if err := h.cache.BridgeSet(ctx, bridge); err != nil {
 		return err
 	}
 

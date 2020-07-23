@@ -30,7 +30,8 @@ type DBHandler interface {
 	BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeIsExist(id string, timeout time.Duration) bool
 	BridgeRemoveChannelID(ctx context.Context, id, channelID string) error
-	BridgeUpdateCache(ctx context.Context, id string) error
+	BridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) error
+	BridgeUpdateToCache(ctx context.Context, id string) error
 
 	CallCreate(ctx context.Context, call *call.Call) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
@@ -42,7 +43,8 @@ type DBHandler interface {
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
-	CallUpdateCache(ctx context.Context, id uuid.UUID) error
+	CallSetToCache(ctx context.Context, call *call.Call) error
+	CallUpdateToCache(ctx context.Context, id uuid.UUID) error
 
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
 	ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error
@@ -57,7 +59,8 @@ type DBHandler interface {
 	ChannelIsExist(id string, timeout time.Duration) bool
 	ChannelSetStasis(ctx context.Context, id, stasis string) error
 	ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error
-	ChannelUpdateCache(ctx context.Context, id string) error
+	ChannelSetToCache(ctx context.Context, channel *channel.Channel) error
+	ChannelUpdateToCache(ctx context.Context, id string) error
 
 	ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error
@@ -67,7 +70,8 @@ type DBHandler interface {
 	ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
-	ConferenceUpdateCache(ctx context.Context, id uuid.UUID) error
+	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
+	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler

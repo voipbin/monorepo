@@ -114,6 +114,7 @@ func TestCallCreate(t *testing.T) {
 			}
 
 			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -202,6 +203,7 @@ func TestCallSetStatus(t *testing.T) {
 			}
 
 			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -403,6 +405,7 @@ func TestCallCallSetHangup(t *testing.T) {
 			}
 
 			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -481,6 +484,7 @@ func TestCallSetFlowID(t *testing.T) {
 			}
 
 			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -560,6 +564,7 @@ func TestCallSetConferenceID(t *testing.T) {
 			}
 
 			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -696,6 +701,7 @@ func TestCallSetAction(t *testing.T) {
 			}
 
 			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

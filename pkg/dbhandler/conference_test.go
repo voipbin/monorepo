@@ -83,6 +83,7 @@ func TestConferenceCreate(t *testing.T) {
 			}
 
 			mockCache.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
 			res, err := h.ConferenceGet(context.Background(), tt.conference.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

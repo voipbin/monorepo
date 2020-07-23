@@ -71,7 +71,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 	}
 
 	// update the cache
-	h.ChannelUpdateCache(ctx, channel.ID)
+	h.ChannelUpdateToCache(ctx, channel.ID)
 
 	return nil
 }
@@ -85,11 +85,14 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 	}
 
 	res, err = h.ChannelGetFromDB(ctx, id)
-	if err == nil {
-		return res, nil
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, err
+	// set to the cache
+	h.ChannelSetToCache(ctx, res)
+
+	return res, nil
 }
 
 // channelGetFromRow gets the channel from the row.
@@ -239,7 +242,7 @@ func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string
 	}
 
 	// update the cache
-	h.ChannelUpdateCache(ctx, id)
+	h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -261,7 +264,7 @@ func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error
 	}
 
 	// update the cache
-	h.ChannelUpdateCache(ctx, id)
+	h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -298,7 +301,7 @@ func (h *handler) ChannelSetState(ctx context.Context, id, timestamp string, sta
 	}
 
 	// update the cache
-	h.ChannelUpdateCache(ctx, id)
+	h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -320,7 +323,7 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) e
 	}
 
 	// update the cache
-	h.ChannelUpdateCache(ctx, id)
+	h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -343,7 +346,7 @@ func (h *handler) ChannelEnd(ctx context.Context, id, timestamp string, hangup a
 	}
 
 	// update the cache
-	h.ChannelUpdateCache(ctx, id)
+	h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -371,7 +374,7 @@ func (h *handler) ChannelSetDataAndStasis(ctx context.Context, id string, data m
 	}
 
 	// update the cache
-	h.ChannelUpdateCache(ctx, id)
+	h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -442,15 +445,24 @@ func (h *handler) ChannelGetFromDB(ctx context.Context, id string) (*channel.Cha
 	return res, nil
 }
 
-// ChannelUpdateCache gets the channel from the DB and update the cache.
-func (h *handler) ChannelUpdateCache(ctx context.Context, id string) error {
+// ChannelUpdateToCache gets the channel from the DB and update the cache.
+func (h *handler) ChannelUpdateToCache(ctx context.Context, id string) error {
 
 	res, err := h.ChannelGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.cache.ChannelSet(ctx, res); err != nil {
+	if err := h.ChannelSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ChannelSetToCache sets the given channel to the cache
+func (h *handler) ChannelSetToCache(ctx context.Context, channel *channel.Channel) error {
+	if err := h.cache.ChannelSet(ctx, channel); err != nil {
 		return err
 	}
 

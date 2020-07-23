@@ -125,6 +125,7 @@ func TestBridgeCreate(t *testing.T) {
 			}
 
 			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
 			if err != nil {
 				t.Errorf("Wrong match. BridgeGet expect: ok, got: %v", err)
@@ -184,6 +185,7 @@ func TestBridgeEnd(t *testing.T) {
 			}
 
 			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -289,6 +291,7 @@ func TestBridgeGetUntilTimeout(t *testing.T) {
 			defer cancel()
 
 			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 			_, err := h.BridgeGetUntilTimeout(ctx, tt.bridge.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -382,6 +385,7 @@ func TestBridgeIsExist(t *testing.T) {
 			}
 
 			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 			res := h.BridgeIsExist(tt.bridge.ID, time.Second*1)
 			if res != true {
 				t.Errorf("Wrong match. expect: true, got: false")

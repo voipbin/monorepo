@@ -69,7 +69,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 	}
 
 	// update the cache
-	h.ConferenceUpdateCache(ctx, cf.ID)
+	h.ConferenceUpdateToCache(ctx, cf.ID)
 
 	return nil
 }
@@ -83,11 +83,14 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 	}
 
 	res, err = h.ConferenceGetFromDB(ctx, id)
-	if err == nil {
-		return res, nil
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, err
+	// set to the cache
+	h.ConferenceSetToCache(ctx, res)
+
+	return res, nil
 }
 
 // conferenceGetFromRow gets the call from the row.
@@ -150,7 +153,7 @@ func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID)
 	}
 
 	// update the cache
-	h.ConferenceUpdateCache(ctx, id)
+	h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -182,7 +185,7 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 	}
 
 	// update the cache
-	h.ConferenceUpdateCache(ctx, id)
+	h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -204,7 +207,7 @@ func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status 
 	}
 
 	// update the cache
-	h.ConferenceUpdateCache(ctx, id)
+	h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -226,7 +229,7 @@ func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 	}
 
 	// update the cache
-	h.ConferenceUpdateCache(ctx, id)
+	h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -288,15 +291,24 @@ func (h *handler) ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*confe
 	return res, nil
 }
 
-// ConferenceUpdateCache gets the conference from the DB and update the cache.
-func (h *handler) ConferenceUpdateCache(ctx context.Context, id uuid.UUID) error {
+// ConferenceUpdateToCache gets the conference from the DB and update the cache.
+func (h *handler) ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
 	res, err := h.ConferenceGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.cache.ConferenceSet(ctx, res); err != nil {
+	if err := h.ConferenceSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ConferenceSetToCache sets the given conference to the cache
+func (h *handler) ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error {
+	if err := h.cache.ConferenceSet(ctx, conference); err != nil {
 		return err
 	}
 
