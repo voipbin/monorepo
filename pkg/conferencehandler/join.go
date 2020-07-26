@@ -65,7 +65,7 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	// create a joining bridge
 	bridgeID := uuid.Must(uuid.NewV4()).String()
 	bridgeName := generateBridgeName(cf.Type, conferenceID, true)
-	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); err != nil {
+	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing}); err != nil {
 		log.Errorf("Could not create a bridge for conference joining. err: %v", err)
 
 		return err
