@@ -275,9 +275,16 @@ export default class Session extends React.Component
 		{
 			logger.debug('peerconnection "track" event. event: %o', event);
 			logger.debug('stream: %o', event.streams[0]);
+			logger.debug('peerconnection: %o', peerconnection);
+
 
 			const remoteStreams = window.remoteStreams;
 			const stream = event.streams[0]
+
+			if (peerconnection.getLocalStreams()[0] == stream) {
+				logger.debug('peerconnection: local stream');
+				return;
+			}
 
 			for (let stream of event.streams) {
 				remoteStreams.set(stream.id, stream);
@@ -293,6 +300,18 @@ export default class Session extends React.Component
 
 			this._updateMediaView();
 		});
+
+		peerconnection.onremovestream = function (event) {
+			logger.debug('onremovestream: ' + event.stream.id);
+			// that._remotes.remove(event.stream);
+		};
+
+
+		// peerconnection.on('removestream', (event) =>
+		// {
+		// 	logger.debug('removestream event. %o', event);
+		// });
+
 	}
 
 	componentWillUnmount()
@@ -478,34 +497,70 @@ export default class Session extends React.Component
 		const remoteAudios = this.refs.remoteAudios;
 		remoteAudios.innerHTML = '';
 
-		// videos
 		for (let [key, stream] of streams) {
-			logger.debug('update remote video stream stream. %o: %o', key, stream);
+			logger.debug('update audio video stream stream. %o: %o', key, stream);
+			logger.debug('audios: %d, videos: %d', stream.getAudioTracks().length, stream.getVideoTracks().length);
 
-			let video = document.createElement("video");
-			video.style.width = width;
-			// video.style.height = height;
-			video.autoplay = true;
-			video.srcObject = stream;
+			if (stream.getAudioTracks().length > 0) {
+				// audio
+				let audio = document.createElement("audio");
+				audio.autoplay = true;
+				audio.srcObject = stream;
+				let tracks = stream.getAudioTracks();
+				for (let i = 0; i < tracks.length; i++) {
+					tracks[i].enabled = true;
+				}
 
-			// videos
-			let tracks = stream.getVideoTracks();
-			for (let i = 0; i < tracks.length; i++) {
-				tracks[i].enabled = true;
+				remoteAudios.appendChild(audio);
 			}
+			else {
+				// videos
+				let video = document.createElement("video");
+				video.style.width = width;
+				// video.style.height = height;
+				video.autoplay = true;
+				video.srcObject = stream;
 
-			// audio
-			let audio = document.createElement("audio");
-			audio.autoplay = true;
-			audio.srcObject = stream;
-			tracks = stream.getAudioTracks();
-			for (let i = 0; i < tracks.length; i++) {
-				tracks[i].enabled = true;
+				// videos
+				let tracks = stream.getVideoTracks();
+				for (let i = 0; i < tracks.length; i++) {
+					tracks[i].enabled = true;
+				}
+				remoteView.appendChild(video);
 			}
-
-			remoteView.appendChild(video);
-			remoteAudios.appendChild(audio);
 		}
+
+
+
+		// for (let [key, stream] of streams) {
+		// 	logger.debug('update audio video stream stream. %o: %o', key, stream);
+
+		// 	// audio
+		// 	let audio = document.createElement("audio");
+		// 	audio.autoplay = true;
+		// 	audio.srcObject = stream;
+		// 	tracks = stream.getAudioTracks();
+		// 	for (let i = 0; i < tracks.length; i++) {
+		// 		tracks[i].enabled = true;
+		// 	}
+
+		// 	remoteView.appendChild(video);
+		// 	remoteAudios.appendChild(audio);
+		// }
+
+		// // videos
+		// let video = document.createElement("video");
+		// video.style.width = width;
+		// // video.style.height = height;
+		// video.autoplay = true;
+		// video.srcObject = stream;
+
+		// // videos
+		// let tracks = stream.getVideoTracks();
+		// for (let i = 0; i < tracks.length; i++) {
+		// 	tracks[i].enabled = true;
+		// }
+
 
 	}
 
