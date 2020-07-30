@@ -28,9 +28,14 @@ func (h *callHandler) setAction(c *call.Call, a *action.Action) error {
 
 // ActionExecute execute the action withe the call
 func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
+	log.Debugf("Executing the action. call: %s, action: %s", c.ID, a.Type)
+
 	switch a.Type {
 	case action.TypeEcho:
 		return h.actionExecuteEcho(c, a)
+
+	case action.TypeStreamEcho:
+		return h.actionExecuteStreamEcho(c, a)
 
 	case action.TypeConferenceJoin:
 		return h.actionExecuteConferenceJoin(c, a)
@@ -211,6 +216,53 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 	if err := h.confHandler.Join(cfID, c.ID); err != nil {
 		log.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
 		h.ActionNext(c)
+	}
+
+	return nil
+}
+
+// actionExecuteStreamEcho executes the action type stream_echo
+// stream_echo does not support timeout and it's blocking action.
+// need to set the channel timeout before call this action.
+func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) error {
+	// copy the action
+	act := *a
+
+	// set current time
+	act.TMExecute = getCurTime()
+
+	log := log.WithFields(
+		log.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+	log.Debug("Executing action.")
+
+	var option action.OptionStreamEcho
+	if err := json.Unmarshal(act.Option, &option); err != nil {
+		log.Errorf("could not parse the option. err: %v", err)
+		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+	}
+
+	// set option
+	rawOption, err := json.Marshal(option)
+	if err != nil {
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not marshal the action option. err: %v", err)
+	}
+	act.Option = rawOption
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	// continue the extension
+	if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-stream_echo", "s", 1, ""); err != nil {
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
 	return nil

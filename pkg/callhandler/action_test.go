@@ -117,3 +117,54 @@ func TestActionExecuteConferenceJoin(t *testing.T) {
 		})
 	}
 }
+
+func TestActionExecuteStreamEcho(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name          string
+		call          *call.Call
+		action        *action.Action
+		expectAction  *action.Action
+		expectTimeout int
+	}
+
+	tests := []test{
+		{
+			"empty action",
+			&call.Call{},
+			&action.Action{
+				Type:   action.TypeStreamEcho,
+				Option: []byte(`{}`),
+			},
+			&action.Action{
+				Type:   action.TypeStreamEcho,
+				ID:     uuid.Nil,
+				Option: []byte(`{}`),
+			},
+			180 * 1000,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
+			mockReq.EXPECT().AstChannelContinue(tt.call.AsteriskID, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
