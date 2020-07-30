@@ -24,6 +24,7 @@ const (
 const (
 	domainEcho       = "echo.voipbin.net"
 	domainConference = "conference.voipbin.net"
+	domainSipService = "sip-service.voipbin.net"
 )
 
 // default max timeout for each services. sec.
@@ -53,6 +54,9 @@ func (h *callHandler) Start(cn *channel.Channel) error {
 
 	case call.TypeConference:
 		return h.typeConferenceStart(cn)
+
+	case call.TypeSipService:
+		return h.typeSipServiceStart(cn)
 
 	default:
 		// call.TypeNone will get to here.
@@ -89,12 +93,15 @@ func getTypeContextIncomingCall(cn *channel.Channel) call.Type {
 	case domainConference:
 		return call.TypeConference
 
+	case domainSipService:
+		return call.TypeSipService
+
 	default:
 		return call.TypeNone
 	}
 }
 
-// stasisStartServiceEcho handles echo domain request.
+// stasisStartServiceEcho handles echo calltype request.
 func (h *callHandler) typeEchoStart(cn *channel.Channel) error {
 	ctx := context.Background()
 
@@ -159,7 +166,7 @@ func (h *callHandler) typeEchoStart(cn *channel.Channel) error {
 	return h.ActionExecute(c, action)
 }
 
-// serviceConferenceStart handles conferencer type start.
+// serviceConferenceStart handles conference calltype start.
 func (h *callHandler) typeConferenceStart(cn *channel.Channel) error {
 	ctx := context.Background()
 	cfID := uuid.FromStringOrNil(cn.DestinationNumber)
@@ -233,4 +240,75 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel) error {
 
 	// execute action
 	return h.ActionExecute(c, action)
+}
+
+// typeSipServiceStart handles sip-service calltype request.
+func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
+	ctx := context.Background()
+
+	log := log.WithFields(
+		log.Fields{
+			"channel":  cn.ID,
+			"asterisk": cn.AsteriskID,
+		})
+
+	// set absolute timeout for 300 sec
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
+	// create a call
+	c := call.NewCallByChannel(cn, call.TypeEcho, call.DirectionIncoming)
+	if err := h.createCall(ctx, c); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+	log = log.WithFields(
+		logrus.Fields{
+			"call":      c.ID,
+			"type":      c.Type,
+			"direction": c.Direction,
+		})
+	log.Debug("Created a call.")
+
+	// set flowid
+	// because this call type support only 1 action, we don't set any valid call-flow id here
+	if err := h.db.CallSetFlowID(ctx, c.ID, uuid.Nil); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
+	}
+
+	var act *action.Action = nil
+	switch c.Destination.Target {
+	case string(action.TypeEcho):
+		// create an option for action echo
+		// create default option for echo
+		option := action.OptionEcho{
+			Duration: 180 * 1000, // duration 180 sec
+			DTMF:     true,
+		}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+			return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+		}
+
+		// create an action
+		act = &action.Action{
+			ID:     action.IDBegin,
+			Type:   action.TypeEcho,
+			Option: opt,
+			Next:   action.IDEnd,
+		}
+	}
+
+	c, err := h.db.CallGet(ctx, c.ID)
+	if err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("Could not get created call info. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
+	}
+
+	// execute action
+	return h.ActionExecute(c, act)
 }
