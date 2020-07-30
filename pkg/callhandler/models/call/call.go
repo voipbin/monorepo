@@ -46,9 +46,10 @@ type Type string
 // List of CallType
 const (
 	TypeNone       Type = ""
-	TypeFlow       Type = "flow"
-	TypeEcho       Type = "echo"
-	TypeConference Type = "conference"
+	TypeFlow       Type = "flow"        // executing the call-flow
+	TypeEcho       Type = "echo"        // echo service only. Will be depricated.
+	TypeConference Type = "conference"  // conference call.
+	TypeSipService Type = "sip-service" // sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.
 )
 
 // AddressType type
