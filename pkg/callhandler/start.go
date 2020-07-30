@@ -31,6 +31,7 @@ const (
 const (
 	defaultMaxTimeoutEcho       = "300"   // maximum call duration for service echo. 5 min
 	defaultMaxTimeoutConference = "10800" // maximum call duration for service conf-soft. 3 hours
+	defaultMaxTimeoutSipService = "300"   // maximum call duration for service sip-service. 5 min
 )
 
 func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
@@ -253,7 +254,7 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		})
 
 	// set absolute timeout for 300 sec
-	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho); err != nil {
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
@@ -281,6 +282,8 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 
 	var act *action.Action = nil
 	switch c.Destination.Target {
+
+	// echo
 	case string(action.TypeEcho):
 		// create an option for action echo
 		// create default option for echo
@@ -298,6 +301,23 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		act = &action.Action{
 			ID:     action.IDBegin,
 			Type:   action.TypeEcho,
+			Option: opt,
+			Next:   action.IDEnd,
+		}
+
+	// stream_echo
+	case string(action.TypeStreamEcho):
+		option := action.OptionStreamEcho{}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+			return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+		}
+
+		// create an action
+		act = &action.Action{
+			ID:     action.IDBegin,
+			Type:   action.TypeStreamEcho,
 			Option: opt,
 			Next:   action.IDEnd,
 		}

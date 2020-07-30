@@ -197,7 +197,7 @@ func TestTypeConferenceStart(t *testing.T) {
 	}
 }
 
-func TestTypeSipServiceStart(t *testing.T) {
+func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -228,7 +228,7 @@ func TestTypeSipServiceStart(t *testing.T) {
 					"CONTEXT": "call-in",
 					"DOMAIN":  "sip-service.voipbin.net",
 				},
-				DestinationNumber: "echo",
+				DestinationNumber: string(action.TypeEcho),
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
@@ -267,6 +267,70 @@ func TestTypeSipServiceStart(t *testing.T) {
 
 			mockConf.EXPECT().Start(conference.TypeEcho, gomock.Any())
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), option.Duration, action)
+
+			h.Start(tt.channel)
+		})
+	}
+}
+
+func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name         string
+		channel      *channel.Channel
+		call         *call.Call
+		expectAction *action.Action
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&channel.Channel{
+				ID:         "b1d1bf90-d2b3-11ea-8a02-035ed6a04322",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Name:       "PJSIP/in-voipbin-00000948",
+				Data: map[string]interface{}{
+					"CONTEXT": "call-in",
+					"DOMAIN":  "sip-service.voipbin.net",
+				},
+				DestinationNumber: string(action.TypeStreamEcho),
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("bca4d8c6-d2b3-11ea-b5ba-1fba0632c531"),
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ChannelID:  "b1d1bf90-d2b3-11ea-8a02-035ed6a04322",
+				Type:       call.TypeSipService,
+				Direction:  call.DirectionIncoming,
+			},
+			&action.Action{
+				ID:     action.IDBegin,
+				Type:   action.TypeStreamEcho,
+				Option: []byte("{}"),
+				Next:   action.IDEnd,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
+			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
+			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 			h.Start(tt.channel)
 		})
