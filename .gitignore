@@ -1,3 +1,4 @@
 vendor
 call-manager
+.vscode
 !cmd/*
