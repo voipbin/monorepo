@@ -46,17 +46,23 @@ spec:
             # - '2'
             - '-jwt_key'
             - 'voipbin'
+            - '-ssl_private'
+            - './etc/ssl/privkey.pem'
+            - '-ssl_cert'
+            - './etc/ssl/cert.pem'
+
           ports:
             - name: metrics
               protocol: "TCP"
               containerPort: 2112
             - name: service
               protocol: "TCP"
-              containerPort: 80
+              containerPort: 443
           readinessProbe:
             httpGet:
               path: /ping
-              port: 80
+              port: 443
+              scheme: HTTPS
           resources:
             limits:
               cpu: "50m"

@@ -6,11 +6,8 @@ commonLabels:
 
 resources:
   - namespace.yml
-  # - clusterRole.yml
-  # - config-map.yml
   - deployment.yml
   - service.yml
-  - ingress.yml
 
 images:
 - name: api-manager-image

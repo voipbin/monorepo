@@ -4,12 +4,14 @@ metadata:
   name: api-manager
   # annotations:
   #   cloud.google.com/load-balancer-type: "Internal"
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "api-manager-static-ip"
 
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: api-manager
   ports:
-  - port: 80
-    targetPort: 80
+  - port: 443
+    targetPort: 443
     protocol: TCP
