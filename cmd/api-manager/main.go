@@ -15,6 +15,9 @@ import (
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
 
+var sslKey = flag.String("ssl_private", "./etc/ssl/prikey.pem", "Private key file for ssl connection.")
+var sslCert = flag.String("ssl_cert", "./etc/ssl/cert.pem", "Cert key file for ssl connection.")
+
 var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
 
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
@@ -45,7 +48,8 @@ func main() {
 	// apply api router
 	api.ApplyRoutes(app)
 
-	app.Run(":" + "80")
+	logrus.Debug("Starting the api service.")
+	app.RunTLS(":443", *sslCert, *sslKey)
 }
 
 func init() {
@@ -57,6 +61,4 @@ func init() {
 
 	// init middleware
 	middleware.Init(*jwtKey)
-
-	// init
 }
