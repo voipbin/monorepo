@@ -62,6 +62,21 @@ export default class Login extends React.Component
 								fullWidth
 								onChange={this.handleChangeName.bind(this)}
 							/>
+							<TextField
+								floatingLabelText='Username'
+								value={settings.api_username || ''}
+								errorText={state.errors.name}
+								fullWidth
+								onChange={this.handleChangeApiUsername.bind(this)}
+							/>
+							<TextField
+								floatingLabelText='Password'
+								value={settings.api_password || ''}
+								errorText={state.errors.name}
+								fullWidth
+								type='password'
+								onChange={this.handleChangeApiPassword.bind(this)}
+							/>
 							{/* <FlatButton
 								label='Reset'
 								primary
@@ -107,6 +122,30 @@ export default class Login extends React.Component
 		this.setState({ settings, errors });
 	}
 
+	handleChangeApiUsername(event)
+	{
+		const settings = this.state.settings;
+		const errors = this.state.errors;
+		const val = event.target.value;
+
+		settings['api_username'] = val;
+		errors.name = null;
+
+		this.setState({ settings, errors });
+	}
+
+	handleChangeApiPassword(event)
+	{
+		const settings = this.state.settings;
+		const errors = this.state.errors;
+		const val = event.target.value;
+
+		settings['api_password'] = val;
+		errors.name = null;
+
+		this.setState({ settings, errors });
+	}
+
 	handleClickReset()
 	{
 		logger.debug('handleClickReset()');
@@ -126,7 +165,22 @@ export default class Login extends React.Component
 
 	handleSubmitClick()
 	{
+		const settings = this.state.settings;
+
 		logger.debug('handleSubmitClick()');
+
+		// do login
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", 'https://api.voipbin.net/auth/login', false);
+		xmlhttp.setRequestHeader("Content-Type", "application/json");
+		var sendData = '{"username": "' + settings.api_username +'", "password": "' + settings.api_password + '"}';
+    xmlhttp.send(sendData);
+
+		// set token
+		logger.debug(xmlhttp.responseText);
+		var res = JSON.parse(xmlhttp.responseText);
+		logger.debug('API token: ' + res.token);
+		settings.api_token = res.token;
 
 		this._checkForm();
 	}
