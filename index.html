@@ -21,12 +21,12 @@
 let phone;
 
 window.onload = function() {
-	document.getElementById("accountId").placeholder = "video";
+	document.getElementById("accountId").placeholder = "cmp-voipbin";
 	document.getElementById("accountName").value = "";
-	document.getElementById("accountPassword").placeholder = "video";
-	document.getElementById("accountHost").placeholder = "conference.voipbin.net";
+	document.getElementById("accountPassword").placeholder = "";
+	document.getElementById("accountHost").placeholder = "sip-service.voipbin.net";
 	document.getElementById("accountRegister").checked = false;
-	document.getElementById("extension").placeholder = "test";
+	document.getElementById("extension").placeholder = "stream_echo";
 
 	document.getElementById("connect").value = "Connect";
 	document.getElementById("connect").disabled = false;
@@ -283,8 +283,13 @@ window.onunload = function() {
 	</head>
 	<body>
 		<header>
-			<p><marquee behavior="alternate">Welcome to Cyber Mega Phone 2K Ultimate Dynamic Edition</marquee></p>
+			<p>Welcome to cmp-voipbin.herokuapp.com</p>
 		</header>
+		<div>
+			<h2>sip-service.voipbin.net</h2>
+			<p>echo: echo the voice.</p>
+			<p>stream_echo: echo the video and voice.</p>
+		</div>
 		<div class="connection">
 			<input type="button" id="account" class="account" value="Account" onclick="accountShow()" />
 			<input type="button" id="connect" class="connect" value="Connect" />
