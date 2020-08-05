@@ -37,6 +37,12 @@ The app allows entering settings via an HTTP form in the Login section. However,
 Check the commented code in the [index.html](./index.html) and fill it as needed.
 
 
+## Test
+```
+$ gulp live --fix
+```
+
+
 ## Notes
 
 * If you run this web application into your own domain, you will also need to set your own SIP/WebSocket servers. The SIP servers running at the public demo won't accept connections origins other than `https://tryit.jssip.net`.
