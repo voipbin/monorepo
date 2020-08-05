@@ -9,20 +9,17 @@ import UserChip from './UserChip';
 
 const logger = new Logger('Dialer');
 
-export default class Dialer extends React.Component
-{
-	constructor(props)
-	{
+export default class Dialer extends React.Component {
+	constructor(props) {
 		super(props);
 
 		this.state =
 		{
-			uri : props.callme || ''
+			uri: props.callme || ''
 		};
 	}
 
-	render()
-	{
+	render() {
 		const state = this.state;
 		const props = this.props;
 		const settings = props.settings;
@@ -44,19 +41,28 @@ export default class Dialer extends React.Component
 					onSubmit={this.handleSubmit.bind(this)}
 				>
 					<div className='uri-container'>
+						<RaisedButton
+							label='Start a new conference'
+							primary
+							disabled={!settings.api_token}
+							onClick={this.handleCreateConference.bind(this)}
+						/>
+					</div>
+
+					<div className='uri-container'>
 						<TextField
 							hintText='Conference ID'
 							fullWidth
 							disabled={!this._canCall()}
-							value={state.uri}
-							onChange={this.handleUriChange.bind(this)}
+							value={state.destination}
+							onChange={this.handleDestinationChange.bind(this)}
 						/>
 					</div>
 
 					<RaisedButton
 						label='Join'
 						primary
-						disabled={!this._canCall() || !state.uri}
+						disabled={!this._canCall() || !state.destination}
 						onClick={this.handleClickCall.bind(this)}
 					/>
 				</form>
@@ -64,13 +70,15 @@ export default class Dialer extends React.Component
 		);
 	}
 
-	handleUriChange(event)
-	{
+	handleDestinationChange(event) {
+		this.setState({ destination: event.target.value });
+	}
+
+	handleUriChange(event) {
 		this.setState({ uri: event.target.value });
 	}
 
-	handleSubmit(event)
-	{
+	handleSubmit(event) {
 		logger.debug('handleSubmit()');
 
 		event.preventDefault();
@@ -81,25 +89,42 @@ export default class Dialer extends React.Component
 		this._doCall();
 	}
 
-	handleClickCall()
-	{
+	handleClickCall() {
 		logger.debug('handleClickCall()');
 
 		this._doCall();
 	}
 
-	_doCall()
-	{
-		const uri = this.state.uri;
+	handleCreateConference() {
+		const settings = this.props.settings;
+		logger.debug('Creating a new conference')
 
-		logger.debug('_doCall() [uri:"%s"]', uri);
+		// send the conference create request
+		if (settings.api_token != null) {
+			var xmlhttp = new XMLHttpRequest();
+			xmlhttp.open("POST", 'https://api.voipbin.net/v1.0/conferences' + '?token=' + settings.api_token, false);
+			xmlhttp.setRequestHeader("Content-Type", "application/json");
+			var sendData = '{"type": "conference"}';
+			xmlhttp.send(sendData);
 
-		this.setState({ uri: '' });
-		this.props.onCall(uri);
+			// set token
+			logger.debug(xmlhttp.responseText);
+			var res = JSON.parse(xmlhttp.responseText);
+
+			// update the uri
+			this.setState({ destination: res.id });
+		}
 	}
 
-	_canCall()
-	{
+	_doCall() {
+		const destination = this.state.destination;
+
+		logger.debug('_doCall() [destination:"%s"]', destination);
+
+		this.props.onCall(destination);
+	}
+
+	_canCall() {
 		const props = this.props;
 
 		return (
@@ -111,9 +136,9 @@ export default class Dialer extends React.Component
 
 Dialer.propTypes =
 {
-	settings : PropTypes.object.isRequired,
-	status   : PropTypes.string.isRequired,
-	busy     : PropTypes.bool.isRequired,
-	callme   : PropTypes.string,
-	onCall   : PropTypes.func.isRequired
+	settings: PropTypes.object.isRequired,
+	status: PropTypes.string.isRequired,
+	busy: PropTypes.bool.isRequired,
+	callme: PropTypes.string,
+	onCall: PropTypes.func.isRequired
 };

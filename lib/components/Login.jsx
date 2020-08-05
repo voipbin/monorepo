@@ -169,18 +169,20 @@ export default class Login extends React.Component
 
 		logger.debug('handleSubmitClick()');
 
-		// do login
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", 'https://api.voipbin.net/auth/login', false);
-		xmlhttp.setRequestHeader("Content-Type", "application/json");
-		var sendData = '{"username": "' + settings.api_username +'", "password": "' + settings.api_password + '"}';
-    xmlhttp.send(sendData);
+		// do login if the username and password is not empty
+		if (settings.api_username != null && settings.api_password != null) {
+			var xmlhttp = new XMLHttpRequest();
+			xmlhttp.open("POST", 'https://api.voipbin.net/auth/login', false);
+			xmlhttp.setRequestHeader("Content-Type", "application/json");
+			var sendData = '{"username": "' + settings.api_username +'", "password": "' + settings.api_password + '"}';
+			xmlhttp.send(sendData);
 
-		// set token
-		logger.debug(xmlhttp.responseText);
-		var res = JSON.parse(xmlhttp.responseText);
-		logger.debug('API token: ' + res.token);
-		settings.api_token = res.token;
+			// set token
+			logger.debug(xmlhttp.responseText);
+			var res = JSON.parse(xmlhttp.responseText);
+			logger.debug('API token: ' + res.token);
+			settings.api_token = res.token;
+		}
 
 		this._checkForm();
 	}
