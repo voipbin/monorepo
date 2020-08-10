@@ -27,12 +27,16 @@ func TestStartTypeEcho(t *testing.T) {
 
 	type test struct {
 		name string
+		cf   *conference.Conference
 		call *call.Call
 	}
 
 	tests := []test{
 		{
 			"normal",
+			&conference.Conference{
+				Type: conference.TypeEcho,
+			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("59195730-934f-11ea-a50e-8f40de0b9810"),
 				AsteriskID: "80:fa:5b:5e:da:81",
@@ -49,7 +53,7 @@ func TestStartTypeEcho(t *testing.T) {
 			mockReq.EXPECT().AstBridgeAddChannel(tt.call.AsteriskID, gomock.Any(), tt.call.ChannelID, "", false, false).Return(nil)
 			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 
-			h.startTypeEcho(tt.call)
+			h.startTypeEcho(tt.cf, tt.call)
 		})
 	}
 }
@@ -68,6 +72,7 @@ func TestStartTypeConference(t *testing.T) {
 
 	type test struct {
 		name       string
+		reqConf    *conference.Conference
 		call       *call.Call
 		conference *conference.Conference
 	}
@@ -75,6 +80,9 @@ func TestStartTypeConference(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
+			&conference.Conference{
+				Type: conference.TypeConference,
+			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("0f6dcf3e-a412-11ea-8197-f7feaeb4c806"),
 				AsteriskID: "80:fa:5b:5e:da:81",
@@ -91,9 +99,12 @@ func TestStartTypeConference(t *testing.T) {
 			mockReq.EXPECT().AstBridgeCreate(requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU}).Return(nil)
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.conference, nil)
-			mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), "timeout", requesthandler.DelayHour*24).Return(nil)
 
-			h.startTypeConference(tt.call)
+			if tt.reqConf.Timeout > 0 {
+				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), "timeout", tt.reqConf.Timeout*1000).Return(nil)
+			}
+
+			h.startTypeConference(tt.reqConf, tt.call)
 		})
 	}
 }

@@ -34,17 +34,16 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 
 	type test struct {
 		name    string
-		id      uuid.UUID
 		request *rabbitmq.Request
 
+		expectReqConf    *conference.Conference
 		expectConference *conference.Conference
 		expectRes        *rabbitmq.Response
 	}
 
 	tests := []test{
 		{
-			"conference type",
-			uuid.FromStringOrNil("1a94c1e6-982e-11ea-9298-43412daaf0da"),
+			"conference basic",
 			&rabbitmq.Request{
 				URI:      "/v1/conferences",
 				Method:   rabbitmq.RequestMethodPost,
@@ -52,14 +51,122 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Data:     `{"type": "conference"}`,
 			},
 			&conference.Conference{
+				Type: conference.TypeConference,
+			},
+			&conference.Conference{
 				ID:        uuid.FromStringOrNil("d82ce190-9fe8-11ea-aec8-973901dd28fa"),
 				Type:      conference.TypeConference,
 				BridgeID:  "f1354268-9fe8-11ea-b693-3761800b29d5",
 				BridgeIDs: []string{"f1354268-9fe8-11ea-b693-3761800b29d5"},
+				Timeout:   0,
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       `{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"bridge_ids":["f1354268-9fe8-11ea-b693-3761800b29d5"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+				Data:       `{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"bridge_ids":["f1354268-9fe8-11ea-b693-3761800b29d5"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			},
+		},
+		{
+			"conference with all items",
+			&rabbitmq.Request{
+				URI:      "/v1/conferences",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     `{"type": "conference", "name": "test conference all items", "detail": "test conference with all tiems detail", "timeout": 180}`,
+			},
+			&conference.Conference{
+				Type:    conference.TypeConference,
+				Name:    "test conference all items",
+				Detail:  "test conference with all tiems detail",
+				Timeout: 180,
+			},
+			&conference.Conference{
+				ID:        uuid.FromStringOrNil("2a835238-da9c-11ea-bc7b-eb2f57685ad6"),
+				Type:      conference.TypeConference,
+				BridgeID:  "2f84ff66-da9c-11ea-9b90-83a7346c3e97",
+				BridgeIDs: []string{"2f84ff66-da9c-11ea-9b90-83a7346c3e97"},
+				Name:      "test conference all items",
+				Detail:    "test conference with all tiems detail",
+				Timeout:   180,
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				Data:       `{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","type":"conference","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"bridge_ids":["2f84ff66-da9c-11ea-9b90-83a7346c3e97"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			},
+		},
+		{
+			"conference with timeout",
+			&rabbitmq.Request{
+				URI:      "/v1/conferences",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     `{"type": "conference", "timeout": 180}`,
+			},
+			&conference.Conference{
+				Type:    conference.TypeConference,
+				Timeout: 180,
+			},
+			&conference.Conference{
+				ID:        uuid.FromStringOrNil("3402e154-da9a-11ea-a52b-2781af28f74d"),
+				Type:      conference.TypeConference,
+				BridgeID:  "3a6486ba-da9a-11ea-8a39-03999d98a404",
+				BridgeIDs: []string{"3a6486ba-da9a-11ea-8a39-03999d98a404"},
+				Timeout:   180,
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				Data:       `{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","type":"conference","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"bridge_ids":["3a6486ba-da9a-11ea-8a39-03999d98a404"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			},
+		},
+		{
+			"conference with name",
+			&rabbitmq.Request{
+				URI:      "/v1/conferences",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     `{"type": "conference", "name": "test conference"}`,
+			},
+			&conference.Conference{
+				Type: conference.TypeConference,
+				Name: "test conference",
+			},
+			&conference.Conference{
+				ID:        uuid.FromStringOrNil("9179b768-da9a-11ea-b583-c7592caaa090"),
+				Type:      conference.TypeConference,
+				BridgeID:  "95f5b53a-da9a-11ea-92be-23fad8a8b229",
+				BridgeIDs: []string{"95f5b53a-da9a-11ea-92be-23fad8a8b229"},
+				Name:      "test conference",
+				Timeout:   0,
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				Data:       `{"id":"9179b768-da9a-11ea-b583-c7592caaa090","type":"conference","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference","detail":"","data":null,"timeout":0,"bridge_ids":["95f5b53a-da9a-11ea-92be-23fad8a8b229"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			},
+		},
+		{
+			"conference with name and detail",
+			&rabbitmq.Request{
+				URI:      "/v1/conferences",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     `{"type": "conference", "name": "test conference", "detail": "test conference detail"}`,
+			},
+			&conference.Conference{
+				Type:   conference.TypeConference,
+				Name:   "test conference",
+				Detail: "test conference detail",
+			},
+			&conference.Conference{
+				ID:        uuid.FromStringOrNil("c8fa873a-da9a-11ea-97f0-fff8a6d8aa21"),
+				Type:      conference.TypeConference,
+				BridgeID:  "cdc9898c-da9a-11ea-8b27-c77718b25ab9",
+				BridgeIDs: []string{"cdc9898c-da9a-11ea-8b27-c77718b25ab9"},
+				Name:      "test conference",
+				Detail:    "test conference detail",
+				Timeout:   0,
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				Data:       `{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","type":"conference","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"bridge_ids":["cdc9898c-da9a-11ea-8b27-c77718b25ab9"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 			},
 		},
 	}
@@ -67,7 +174,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConf.EXPECT().Start(conference.TypeConference, nil).Return(tt.expectConference, nil)
+			mockConf.EXPECT().Start(tt.expectReqConf, nil).Return(tt.expectConference, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -230,7 +337,7 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 
 	tests := []test{
 		{
-			"conference type",
+			"conference basic",
 			&rabbitmq.Request{
 				URI:    "/v1/conferences/e2951d7c-ac2d-11ea-8d4b-aff0e70476d6",
 				Method: rabbitmq.RequestMethodGet,
@@ -243,7 +350,7 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       `{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"bridge_ids":["fea1c22c-ac2d-11ea-8a08-7f5cb36f279a"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+				Data:       `{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"timeout":0,"bridge_ids":["fea1c22c-ac2d-11ea-8a08-7f5cb36f279a"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 			},
 		},
 	}

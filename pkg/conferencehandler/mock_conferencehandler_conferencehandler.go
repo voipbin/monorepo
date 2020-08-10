@@ -108,7 +108,7 @@ func (mr *MockConferenceHandlerMockRecorder) Leave(arg0, arg1 interface{}) *gomo
 }
 
 // Start mocks base method
-func (m *MockConferenceHandler) Start(arg0 conference.Type, arg1 *call.Call) (*conference.Conference, error) {
+func (m *MockConferenceHandler) Start(arg0 *conference.Conference, arg1 *call.Call) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", arg0, arg1)
 	ret0, _ := ret[0].(*conference.Conference)

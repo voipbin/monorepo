@@ -1,6 +1,8 @@
 package conference
 
-import uuid "github.com/gofrs/uuid"
+import (
+	uuid "github.com/gofrs/uuid"
+)
 
 // Conference type
 type Conference struct {
@@ -8,10 +10,12 @@ type Conference struct {
 	Type     Type      `json:"type"`
 	BridgeID string    `json:"bridge_id"`
 
-	Status Status                   `json:"status"`
-	Name   string                   `json:"name"`
-	Detail string                   `json:"detail"`
-	Data   []map[string]interface{} `json:"data"`
+	Status Status `json:"status"`
+
+	Name    string                 `json:"name"`
+	Detail  string                 `json:"detail"`
+	Data    map[string]interface{} `json:"data"`
+	Timeout int                    `json:"timeout"` // timeout. second
 
 	BridgeIDs []string    `json:"bridge_ids"`
 	CallIDs   []uuid.UUID `json:"call_ids"`
@@ -43,15 +47,17 @@ const (
 	StatusTerminated  Status = "terminated"
 )
 
-// NewConference creates a new conference
-func NewConference(id uuid.UUID, cType Type, bridgeID, name, detail string) *Conference {
+// NewConference creates a new conference with given request conference
+func NewConference(id uuid.UUID, cType Type, bridgeID string, req *Conference) *Conference {
 	cf := &Conference{
 		ID:       id,
 		Type:     cType,
 		BridgeID: bridgeID,
 
-		Name:   name,
-		Detail: detail,
+		Name:    req.Name,
+		Detail:  req.Detail,
+		Data:    req.Data,
+		Timeout: req.Timeout,
 
 		BridgeIDs: []string{},
 		CallIDs:   []uuid.UUID{},

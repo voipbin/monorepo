@@ -27,26 +27,26 @@ func (h *conferenceHandler) createConference(ctx context.Context, cf *conference
 	return nil
 }
 
-func (h *conferenceHandler) Start(cType conference.Type, c *call.Call) (*conference.Conference, error) {
+func (h *conferenceHandler) Start(reqConf *conference.Conference, c *call.Call) (*conference.Conference, error) {
 
 	log := log.WithFields(
 		log.Fields{
-			"conference_type": cType,
+			"conference_type": reqConf.Type,
 		})
 	log.Info("Start conference.")
 
-	mapHandler := map[conference.Type]func(*call.Call) (*conference.Conference, error){
+	mapHandler := map[conference.Type]func(*conference.Conference, *call.Call) (*conference.Conference, error){
 		conference.TypeConference: h.startTypeConference,
 		conference.TypeEcho:       h.startTypeEcho,
 		// conference.TypeTransfer:   h.startConferTypeTransfer,
 	}
 
-	handler := mapHandler[cType]
+	handler := mapHandler[reqConf.Type]
 	if handler == nil {
-		return nil, fmt.Errorf("could not find conference handler. type: %s", cType)
+		return nil, fmt.Errorf("could not find conference handler. type: %s", reqConf.Type)
 	}
 
-	return handler(c)
+	return handler(reqConf, c)
 }
 
 // startTypeTransfer handles transfer conference
@@ -57,7 +57,7 @@ func (h *conferenceHandler) startTypeTransfer(cf *conference.Conference, c *call
 }
 
 // startTypeConference inits the conference for conference type.
-func (h *conferenceHandler) startTypeConference(c *call.Call) (*conference.Conference, error) {
+func (h *conferenceHandler) startTypeConference(req *conference.Conference, c *call.Call) (*conference.Conference, error) {
 	ctx := context.Background()
 	conferenceID := uuid.Must(uuid.NewV4())
 
@@ -76,8 +76,8 @@ func (h *conferenceHandler) startTypeConference(c *call.Call) (*conference.Confe
 		return nil, err
 	}
 
-	// create a conference
-	cf := conference.NewConference(conferenceID, conference.TypeConference, bridgeID, bridgeName, "")
+	// create a conference with given requested conference info
+	cf := conference.NewConference(conferenceID, conference.TypeConference, bridgeID, req)
 	cf.BridgeID = bridgeID
 	cf.BridgeIDs = append(cf.BridgeIDs, bridgeID)
 
@@ -99,9 +99,11 @@ func (h *conferenceHandler) startTypeConference(c *call.Call) (*conference.Confe
 		return nil, err
 	}
 
-	// send 24 hours timeout
-	if err := h.reqHandler.CallConferenceTerminate(conferenceID, "timeout", requesthandler.DelayHour*24); err != nil {
-		log.Errorf("Could not start conference timeout. err: %v", err)
+	// set the timeout if it was set
+	if cf.Timeout > 0 {
+		if err := h.reqHandler.CallConferenceTerminate(conferenceID, "timeout", cf.Timeout*1000); err != nil {
+			log.Errorf("Could not start conference timeout. err: %v", err)
+		}
 	}
 
 	return res, nil
@@ -109,7 +111,7 @@ func (h *conferenceHandler) startTypeConference(c *call.Call) (*conference.Confe
 
 // startTypeEcho
 // echo conference makes a bridge and create a snoop channel and put the bridge together.
-func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference, error) {
+func (h *conferenceHandler) startTypeEcho(req *conference.Conference, c *call.Call) (*conference.Conference, error) {
 	ctx := context.Background()
 
 	// create a conference
@@ -130,7 +132,7 @@ func (h *conferenceHandler) startTypeEcho(c *call.Call) (*conference.Conference,
 		return nil, fmt.Errorf("could not create a bridge for echo conference. err: %v", err)
 	}
 
-	cf := conference.NewConference(id, conference.TypeEcho, bridgeID, "echo", "action echo")
+	cf := conference.NewConference(id, conference.TypeEcho, bridgeID, req)
 	cf.BridgeIDs = append(cf.BridgeIDs, bridgeID)
 
 	log = log.WithFields(
