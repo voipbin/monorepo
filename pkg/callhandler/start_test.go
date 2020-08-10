@@ -70,9 +70,10 @@ func TestTypeEchoStart(t *testing.T) {
 	}
 
 	type test struct {
-		name    string
-		channel *channel.Channel
-		call    *call.Call
+		name          string
+		channel       *channel.Channel
+		call          *call.Call
+		expectReqConf *conference.Conference
 	}
 
 	tests := []test{
@@ -93,6 +94,12 @@ func TestTypeEchoStart(t *testing.T) {
 				ChannelID:  "f82007c4-92e2-11ea-a3e2-138ed7e90501",
 				Type:       call.TypeEcho,
 				Direction:  call.DirectionIncoming,
+			},
+			&conference.Conference{
+				Type:    conference.TypeEcho,
+				Name:    "echo",
+				Detail:  "action echo",
+				Timeout: 180,
 			},
 		},
 	}
@@ -122,7 +129,7 @@ func TestTypeEchoStart(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 
-			mockConf.EXPECT().Start(conference.TypeEcho, gomock.Any())
+			mockConf.EXPECT().Start(tt.expectReqConf, gomock.Any())
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), option.Duration, action)
 
 			h.Start(tt.channel)
@@ -265,7 +272,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 
-			mockConf.EXPECT().Start(conference.TypeEcho, gomock.Any())
+			mockConf.EXPECT().Start(gomock.Any(), gomock.Any())
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), option.Duration, action)
 
 			h.Start(tt.channel)

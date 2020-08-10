@@ -3,12 +3,13 @@ package callhandler
 import (
 	"testing"
 
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
@@ -33,6 +34,7 @@ func TestActionExecuteEcho(t *testing.T) {
 		action        *action.Action
 		expectAction  *action.Action
 		expectTimeout int
+		expectReqConf *conference.Conference
 	}
 
 	tests := []test{
@@ -49,6 +51,12 @@ func TestActionExecuteEcho(t *testing.T) {
 				Option: []byte(`{"duration":180000,"dtmf":false}`),
 			},
 			180 * 1000,
+			&conference.Conference{
+				Type:    conference.TypeEcho,
+				Name:    "echo",
+				Detail:  "action echo",
+				Timeout: 180,
+			},
 		},
 	}
 
@@ -56,7 +64,7 @@ func TestActionExecuteEcho(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
-			mockConf.EXPECT().Start(conference.TypeEcho, tt.call).Return(nil, nil)
+			mockConf.EXPECT().Start(tt.expectReqConf, tt.call).Return(nil, nil)
 			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, tt.expectTimeout, tt.expectAction)
 
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {

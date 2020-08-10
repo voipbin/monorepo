@@ -160,7 +160,13 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	}
 
 	// start echo conference
-	conf, err := h.confHandler.Start(conference.TypeEcho, c)
+	reqConf := &conference.Conference{
+		Type:    conference.TypeEcho,
+		Name:    "echo",
+		Detail:  "action echo",
+		Timeout: 180, // 3 minutes
+	}
+	conf, err := h.confHandler.Start(reqConf, c)
 	if err != nil {
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not start a conference for call. call: %s, conference_type: %s, err: %v", c.ID, conference.TypeEcho, err)

@@ -15,7 +15,11 @@ import (
 func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
 
 	type Data struct {
-		Type conference.Type `json:"type"`
+		Type    conference.Type        `json:"type"`
+		Name    string                 `json:"name"`
+		Detail  string                 `json:"detail"`
+		Timeout int                    `json:"timeout"`
+		Data    map[string]interface{} `json:"data"`
 	}
 
 	var data Data
@@ -23,7 +27,17 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq
 		return nil, err
 	}
 
-	cf, err := h.conferenceHandler.Start(data.Type, nil)
+	// create a request conference
+	reqConf := &conference.Conference{
+		Type:    data.Type,
+		Name:    data.Name,
+		Detail:  data.Detail,
+		Timeout: data.Timeout,
+		Data:    data.Data,
+	}
+
+	// create a conference
+	cf, err := h.conferenceHandler.Start(reqConf, nil)
 	if err != nil {
 		return simpleResponse(400), nil
 	}

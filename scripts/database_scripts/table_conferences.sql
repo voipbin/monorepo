@@ -9,6 +9,7 @@ create table conferences(
   name    varchar(255),   -- conference's name
   detail  text,           -- conference's detail description
   data    json,           -- additional data
+  timeout int,            -- timeout. second
 
   bridge_ids json, -- bridges related with this conference
   call_ids   json, -- calls in the conference
