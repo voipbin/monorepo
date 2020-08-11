@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
@@ -106,8 +107,6 @@ func NewConferHandler(req requesthandler.RequestHandler, db dbhandler.DBHandler,
 }
 
 func (h *conferenceHandler) leaveTypeEcho(c *call.Call) error {
-	// cf := h.db.
-
 	return nil
 }
 
