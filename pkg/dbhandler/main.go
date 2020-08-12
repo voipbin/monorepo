@@ -10,6 +10,7 @@ import (
 	"time"
 
 	uuid "github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
@@ -69,6 +70,7 @@ type DBHandler interface {
 	ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
+	ConferenceSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
 	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
 	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error

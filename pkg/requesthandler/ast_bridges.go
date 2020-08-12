@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
@@ -55,6 +56,27 @@ func (r *requestHandler) AstBridgeDelete(asteriskID, bridgeID string) error {
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
 	return nil
+}
+
+// AstBridgeGet sends the bridge get request
+func (r *requestHandler) AstBridgeGet(asteriskID, bridgeID string) (*bridge.Bridge, error) {
+	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodGet, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, "")
+	switch {
+	case err != nil:
+		return nil, err
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	tmpBridge, err := ari.ParseBridge([]byte(res.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	bridge := bridge.NewBridgeByARIBridge(tmpBridge)
+	return bridge, nil
 }
 
 // AstBridgeAddChannel sends the request for adding the channel to the bridge

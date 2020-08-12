@@ -6,8 +6,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
 func (h *conferenceHandler) createEndpointTarget(ctx context.Context, cf *conference.Conference) (string, error) {
@@ -62,6 +65,23 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 		return err
 	}
 
+	// check the conference bridge exists
+	if cf.BridgeID == "" || h.isBridgeExist(ctx, cf.BridgeID) != true {
+		// the conference's bridge has gone somehow.
+		// we need to create a new bridge for this conference.
+		if err := h.createConferenceBridge(ctx, conference.TypeConference, cf.ID); err != nil {
+			log.Errorf("Could not create a conference bridge. err: %v", err)
+			return err
+		}
+
+		// get updated conference
+		cf, err = h.db.ConferenceGet(ctx, conferenceID)
+		if err != nil {
+			log.Errorf("Could not get conference after bridge update. err: %v", err)
+			return err
+		}
+	}
+
 	// create a joining bridge
 	bridgeID := uuid.Must(uuid.NewV4()).String()
 	bridgeName := generateBridgeName(cf.Type, conferenceID, true)
@@ -107,6 +127,44 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 		log.Errorf("Could not create a channel for joining. err: %v", err)
 
 		h.reqHandler.AstBridgeDelete(c.AsteriskID, bridgeID)
+		return err
+	}
+
+	return nil
+}
+
+// isBridgeExist returns true if the given bridge does exist
+func (h *conferenceHandler) isBridgeExist(ctx context.Context, id string) bool {
+	br, err := h.db.BridgeGet(ctx, id)
+	if err != nil {
+		return false
+	}
+
+	if br.TMDelete != "" {
+		return false
+	}
+
+	// get bridge from the asterisk
+	_, err = h.reqHandler.AstBridgeGet(br.AsteriskID, br.ID)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// createConferenceBridge creates the bridge for conferencing
+func (h *conferenceHandler) createConferenceBridge(ctx context.Context, conferenceType conference.Type, id uuid.UUID) error {
+	bridgeID := uuid.Must(uuid.NewV4()).String()
+	bridgeName := generateBridgeName(conference.TypeConference, id, false)
+	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU}); err != nil {
+		log.Errorf("Could not create a bridge for a conference. err: %v", err)
+		return err
+	}
+
+	// set new bridge id to the conference
+	if err := h.db.ConferenceSetBridgeID(ctx, id, bridgeID); err != nil {
+		log.Errorf("Could not set the new bridge id for a conference. err: %v", err)
 		return err
 	}
 

@@ -70,7 +70,7 @@ const (
 
 // NewChannelByChannelCreated creates Channel based on ARI ChannelCreated event
 func NewChannelByChannelCreated(e *ari.ChannelCreated) *Channel {
-	c := NewChannelByChannel(&e.Channel)
+	c := NewChannelByARIChannel(&e.Channel)
 	c.AsteriskID = e.AsteriskID
 	c.TMCreate = string(e.Timestamp)
 
@@ -79,15 +79,15 @@ func NewChannelByChannelCreated(e *ari.ChannelCreated) *Channel {
 
 // NewChannelByStasisStart creats a Channel based on ARI StasisStart event
 func NewChannelByStasisStart(e *ari.StasisStart) *Channel {
-	c := NewChannelByChannel(&e.Channel)
+	c := NewChannelByARIChannel(&e.Channel)
 	c.AsteriskID = e.AsteriskID
 	c.TMCreate = string(e.Timestamp)
 
 	return c
 }
 
-// NewChannelByChannel returns partial of channel struct
-func NewChannelByChannel(e *ari.Channel) *Channel {
+// NewChannelByARIChannel returns partial of channel struct
+func NewChannelByARIChannel(e *ari.Channel) *Channel {
 	tech := getTech(e.Name)
 	c := &Channel{
 		ID:   e.ID,

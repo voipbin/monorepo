@@ -1,5 +1,7 @@
 package ari
 
+import "encoding/json"
+
 // Bridge ARI event types
 type Bridge struct {
 	ID   string `json:"id"`
@@ -28,4 +30,16 @@ type BridgeCreated struct {
 type BridgeDestroyed struct {
 	Event
 	Bridge Bridge `json:"bridge"`
+}
+
+// ParseBridge parses message into Brdige struct
+func ParseBridge(message []byte) (*Bridge, error) {
+	res := &Bridge{}
+
+	err := json.Unmarshal(message, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

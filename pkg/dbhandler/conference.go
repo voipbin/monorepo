@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 )
 
@@ -190,7 +191,7 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 	return nil
 }
 
-// ConferenceSetStatus sets status
+// ConferenceSetStatus sets the status
 func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error {
 	//prepare
 	q := `
@@ -204,6 +205,28 @@ func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status 
 	_, err := h.db.Exec(q, status, getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetStatus. err: %v", err)
+	}
+
+	// update the cache
+	h.ConferenceUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ConferenceSetBridgeID sets the bridge id
+func (h *handler) ConferenceSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error {
+	//prepare
+	q := `
+	update conferences set
+		bridge_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, bridgeID, getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConferenceSetBridgeID. err: %v", err)
 	}
 
 	// update the cache

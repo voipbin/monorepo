@@ -687,6 +687,20 @@ func (mr *MockDBHandlerMockRecorder) ConferenceRemoveCallID(arg0, arg1, arg2 int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRemoveCallID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceRemoveCallID), arg0, arg1, arg2)
 }
 
+// ConferenceSetBridgeID mocks base method
+func (m *MockDBHandler) ConferenceSetBridgeID(arg0 context.Context, arg1 uuid.UUID, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceSetBridgeID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceSetBridgeID indicates an expected call of ConferenceSetBridgeID
+func (mr *MockDBHandlerMockRecorder) ConferenceSetBridgeID(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetBridgeID), arg0, arg1, arg2)
+}
+
 // ConferenceSetStatus mocks base method
 func (m *MockDBHandler) ConferenceSetStatus(arg0 context.Context, arg1 uuid.UUID, arg2 conference.Status) error {
 	m.ctrl.T.Helper()

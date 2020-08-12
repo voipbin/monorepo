@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
@@ -96,7 +97,7 @@ func TestJoin(t *testing.T) {
 			&conference.Conference{
 				ID:       uuid.FromStringOrNil("89856980-9f1c-11ea-a2e8-272863862e18"),
 				Type:     conference.TypeConference,
-				BridgeID: "f8057224-9f1c-11ea-93f2-673d5005610b",
+				BridgeID: "a5c525ec-dca0-11ea-b139-17780451d9da",
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("00b8301e-9f1d-11ea-a08e-038ccf4318cd"),
@@ -110,7 +111,7 @@ func TestJoin(t *testing.T) {
 			},
 			&bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
-				ID:         "48f9992e-9f1f-11ea-84f7-f39855ff99ee",
+				ID:         "a5c525ec-dca0-11ea-b139-17780451d9da",
 			},
 		},
 	}
@@ -119,6 +120,8 @@ func TestJoin(t *testing.T) {
 		mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 		mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 		mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+		mockDB.EXPECT().BridgeGet(gomock.Any(), tt.birdgeConference.ID).Return(tt.birdgeConference, nil)
+		mockReq.EXPECT().AstBridgeGet(tt.birdgeConference.AsteriskID, tt.birdgeConference.ID).Return(nil, nil)
 		mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
 		mockReq.EXPECT().AstBridgeAddChannel(tt.call.AsteriskID, gomock.Any(), tt.call.ChannelID, "", false, false).Return(nil)
 		mockDB.EXPECT().BridgeGet(gomock.Any(), gomock.Any()).Return(tt.bridgeJoining, nil)

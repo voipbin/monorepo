@@ -162,3 +162,43 @@ func TestParseBridgeDestroyed(t *testing.T) {
 		})
 	}
 }
+
+func TestParseBridge(t *testing.T) {
+	type test struct {
+		name        string
+		message     string
+		expectParse *Bridge
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			`{"id":"3e6eec96-fabe-4041-870d-e1daee11aafb","technology":"softmix","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"conference_type=conference,conference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7,join=false","channels":[],"creationtime":"2020-08-10T22:50:28.085+0000","video_mode":"sfu"}`,
+			&Bridge{
+				ID:            "3e6eec96-fabe-4041-870d-e1daee11aafb",
+				Name:          "conference_type=conference,conference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7,join=false",
+				Technology:    "softmix",
+				BridgeType:    "mixing",
+				BridgeClass:   "stasis",
+				Creator:       "Stasis",
+				VideoMode:     "sfu",
+				VideoSourceID: "",
+				Channels:      []string{},
+				CreationTime:  "2020-08-10T22:50:28.085+0000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bridge, err := ParseBridge([]byte(tt.message))
+			if err != nil {
+				t.Errorf("Wront match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectParse, bridge) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectParse, bridge)
+			}
+		})
+	}
+}
