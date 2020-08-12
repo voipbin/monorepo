@@ -79,6 +79,21 @@ func (mr *MockRequestHandlerMockRecorder) AstBridgeDelete(arg0, arg1 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeDelete", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeDelete), arg0, arg1)
 }
 
+// AstBridgeGet mocks base method
+func (m *MockRequestHandler) AstBridgeGet(arg0, arg1 string) (*bridge.Bridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstBridgeGet", arg0, arg1)
+	ret0, _ := ret[0].(*bridge.Bridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AstBridgeGet indicates an expected call of AstBridgeGet
+func (mr *MockRequestHandlerMockRecorder) AstBridgeGet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeGet", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeGet), arg0, arg1)
+}
+
 // AstBridgeRemoveChannel mocks base method
 func (m *MockRequestHandler) AstBridgeRemoveChannel(arg0, arg1, arg2 string) error {
 	m.ctrl.T.Helper()

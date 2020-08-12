@@ -5,14 +5,14 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
-
-	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 )
 
 // createConference is handy function for creating a conference.
@@ -77,9 +77,7 @@ func (h *conferenceHandler) startTypeConference(req *conference.Conference, c *c
 	}
 
 	// create a conference with given requested conference info
-	cf := conference.NewConference(conferenceID, conference.TypeConference, bridgeID, req)
-	cf.BridgeID = bridgeID
-	cf.BridgeIDs = append(cf.BridgeIDs, bridgeID)
+	cf := conference.NewConference(conferenceID, conference.TypeConference, "", req)
 
 	log = log.WithFields(
 		logrus.Fields{

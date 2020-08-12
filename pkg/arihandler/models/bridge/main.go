@@ -42,7 +42,8 @@ type Tech string
 
 // List of Tech types
 const (
-	TechSimple Tech = "simple_bridge"
+	TechSimple  Tech = "simple_bridge"
+	TechSoftmix Tech = "softmix"
 )
 
 // Type shows bridge's type
@@ -115,4 +116,42 @@ func parseBridgeName(bridgeName string) map[string]string {
 	}
 
 	return res
+}
+
+// NewBridgeByARIBridge returns partial of bridge struct
+func NewBridgeByARIBridge(e *ari.Bridge) *Bridge {
+
+	b := &Bridge{
+		ID:   e.ID,
+		Name: e.Name,
+
+		// info
+		Type: Type(e.BridgeType),
+		Tech: Tech(e.Technology),
+
+		Class:   e.BridgeClass,
+		Creator: e.Creator,
+
+		VideoMode:     e.VideoMode,
+		VideoSourceID: e.VideoSourceID,
+
+		ChannelIDs: e.Channels,
+
+		ConferenceID:   uuid.Nil,
+		ConferenceType: conference.TypeNone,
+		ConferenceJoin: false,
+	}
+
+	mapParse := parseBridgeName(b.Name)
+	if mapParse["conference_id"] != "" {
+		b.ConferenceID = uuid.FromStringOrNil(mapParse["conference_id"])
+	}
+	if mapParse["conference_type"] != "" {
+		b.ConferenceType = conference.Type(mapParse["conference_type"])
+	}
+	if mapParse["join"] != "" {
+		b.ConferenceJoin, _ = strconv.ParseBool(mapParse["join"])
+	}
+
+	return b
 }

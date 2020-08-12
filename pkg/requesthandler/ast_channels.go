@@ -194,7 +194,7 @@ func (r *requestHandler) AstChannelGet(asteriskID, channelID string) (*channel.C
 		return nil, err
 	}
 
-	channel := channel.NewChannelByChannel(tmpChannel)
+	channel := channel.NewChannelByARIChannel(tmpChannel)
 	return channel, nil
 }
 

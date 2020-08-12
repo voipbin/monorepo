@@ -7,15 +7,15 @@ import (
 	"fmt"
 	"time"
 
+	uuid "github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
-
-	uuid "github.com/gofrs/uuid"
-	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
 )
 
 // contents type
@@ -97,6 +97,7 @@ type RequestHandler interface {
 	AstBridgeAddChannel(asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error
 	AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType []bridge.Type) error
 	AstBridgeDelete(asteriskID, bridgeID string) error
+	AstBridgeGet(asteriskID, bridgeID string) (*bridge.Bridge, error)
 	AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error
 
 	// asterisk channels
