@@ -6,13 +6,13 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
-
-	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 )
 
 // StasisStart event's context types
@@ -32,6 +32,11 @@ const (
 	defaultMaxTimeoutEcho       = "300"   // maximum call duration for service echo. 5 min
 	defaultMaxTimeoutConference = "10800" // maximum call duration for service conf-soft. 3 hours
 	defaultMaxTimeoutSipService = "300"   // maximum call duration for service sip-service. 5 min
+)
+
+// default sip service option variables
+const (
+	DefaultSipServiceOptionConferenceID = "037a20b9-d11d-4b63-a135-ae230cafd495" // default conference ID for conference@sip-service
 )
 
 func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
@@ -318,6 +323,25 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		act = &action.Action{
 			ID:     action.IDBegin,
 			Type:   action.TypeStreamEcho,
+			Option: opt,
+			Next:   action.IDEnd,
+		}
+
+	// conference_join
+	case string(action.TypeConferenceJoin):
+		option := action.OptionConferenceJoin{
+			ConferenceID: DefaultSipServiceOptionConferenceID,
+		}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+			return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+		}
+
+		// create an action
+		act = &action.Action{
+			ID:     action.IDBegin,
+			Type:   action.TypeConferenceJoin,
 			Option: opt,
 			Next:   action.IDEnd,
 		}
