@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
-
-	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 )
 
 // setAction sets the action to the call
@@ -47,6 +47,8 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 // ActionNext Execute next action
 func (h *callHandler) ActionNext(c *call.Call) error {
+	ctx := context.Background()
+
 	log := log.WithFields(
 		logrus.Fields{
 			"call": c.ID,
@@ -57,6 +59,7 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 	case c.Action.Next == action.IDEnd:
 		// last action
 		log.Debug("End of call flow. No more next action left.")
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return nil
 
@@ -67,12 +70,14 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 				"action_current": c.Action.ID.String(),
 				"action_next":    c.Action.Next.String(),
 			}).Warning("Loop detected. Current and the next action id is the same.")
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return nil
 
 	case c.FlowID == uuid.Nil:
 		// invalid flow id
 		log.Info("The call's flow id is not valid. Hanging up the call.")
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
@@ -81,6 +86,7 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 	action, err := h.reqHandler.FlowActionGet(c.FlowID, c.Action.Next)
 	if err != nil {
 		log.Errorf("Could not get next flow action. err: %v", err)
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return err
 	}
@@ -121,6 +127,8 @@ func (h *callHandler) ActionTimeout(callID uuid.UUID, a *action.Action) error {
 
 // actionExecuteEcho executes the action type echo
 func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
+	ctx := context.Background()
+
 	// copy the action
 	act := *a
 
@@ -148,6 +156,7 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	// set option
 	rawOption, err := json.Marshal(option)
 	if err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not marshal the action option. err: %v", err)
 	}
@@ -155,6 +164,7 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 
 	// set action
 	if err := h.setAction(c, &act); err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
@@ -168,6 +178,7 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	}
 	conf, err := h.confHandler.Start(reqConf, c)
 	if err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not start a conference for call. call: %s, conference_type: %s, err: %v", c.ID, conference.TypeEcho, err)
 	}
@@ -176,6 +187,7 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	// set timeout
 	// send delayed message for ti
 	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
@@ -185,6 +197,8 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 
 // actionExecuteConferenceJoin executes the action type ConferenceJoin
 func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action) error {
+	ctx := context.Background()
+
 	// copy the action
 	act := *a
 
@@ -208,6 +222,7 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 	// set option
 	rawOption, err := json.Marshal(option)
 	if err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not marshal the action option. err: %v", err)
 	}
@@ -215,6 +230,7 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 
 	// set action
 	if err := h.setAction(c, &act); err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
@@ -231,6 +247,8 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 // stream_echo does not support timeout and it's blocking action.
 // need to set the channel timeout before call this action.
 func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) error {
+	ctx := context.Background()
+
 	// copy the action
 	act := *a
 
@@ -254,6 +272,7 @@ func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) er
 	// set option
 	rawOption, err := json.Marshal(option)
 	if err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not marshal the action option. err: %v", err)
 	}
@@ -261,12 +280,14 @@ func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) er
 
 	// set action
 	if err := h.setAction(c, &act); err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
 	// continue the extension
 	if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-stream_echo", "s", 1, ""); err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}

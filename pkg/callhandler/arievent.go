@@ -1,6 +1,8 @@
 package callhandler
 
 import (
+	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 )
 
@@ -19,11 +21,15 @@ func (h *callHandler) ARIStasisStart(cn *channel.Channel) error {
 func (h *callHandler) ARIChannelDestroyed(cn *channel.Channel) error {
 	contextType := getContextType(cn.Data["CONTEXT"])
 	switch contextType {
-	case contextTypeConference:
-		return h.confHandler.ARIStasisStart(cn)
 	case contextTypeCall:
 		return h.Hangup(cn)
+	case contextTypeConference:
+		// we don't do anything at here.
+		// because for the conference context type, ChannelLeftBridge event handle will
+		// handle the channel termination.
+		return nil
 	default:
+		logrus.Warnf("Could not find correct event handler. event: %v", cn)
 		return nil
 	}
 }

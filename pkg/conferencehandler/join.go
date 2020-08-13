@@ -69,6 +69,8 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	if cf.BridgeID == "" || h.isBridgeExist(ctx, cf.BridgeID) != true {
 		// the conference's bridge has gone somehow.
 		// we need to create a new bridge for this conference.
+		log.Infof("Could not find valid conference bridge. Creating a new bridge for the conference. bridge: %s", cf.BridgeID)
+
 		if err := h.createConferenceBridge(ctx, conference.TypeConference, cf.ID); err != nil {
 			log.Errorf("Could not create a conference bridge. err: %v", err)
 			return err

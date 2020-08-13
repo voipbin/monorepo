@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 )
@@ -293,6 +294,17 @@ func (h *handler) callSetStatus(ctx context.Context, id uuid.UUID, status call.S
 
 // CallSetStatus sets the call status
 func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmStatus string) error {
+
+	// get call info
+	c, err := h.CallGet(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// validate changable status
+	if call.IsUpdatableStatus(c.Status, status) == false {
+		return fmt.Errorf("The given status is not updatable. old: %s, new: %s", c.Status, status)
+	}
 
 	switch status {
 	case call.StatusRinging:
