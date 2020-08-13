@@ -100,10 +100,8 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 
 // getCurTime return current utc time string
 func getCurTime() string {
-	date := time.Date(2018, 01, 12, 22, 51, 48, 324359102, time.UTC)
-
-	res := date.String()
-	res = strings.TrimSuffix(res, " +0000 UTC")
+	now := time.Now().UTC().String()
+	res := strings.TrimSuffix(now, " +0000 UTC")
 
 	return res
 }
