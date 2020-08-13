@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
@@ -102,10 +103,8 @@ func NewCallHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, cac
 
 // getCurTime return current utc time string
 func getCurTime() string {
-	date := time.Date(2018, 01, 12, 22, 51, 48, 324359102, time.UTC)
-
-	res := date.String()
-	res = strings.TrimSuffix(res, " +0000 UTC")
+	now := time.Now().UTC().String()
+	res := strings.TrimSuffix(now, " +0000 UTC")
 
 	return res
 }
