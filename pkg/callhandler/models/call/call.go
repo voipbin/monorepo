@@ -256,21 +256,21 @@ func CalculateHangupReason(lastStatus Status, cause ari.ChannelCause) HangupReas
 	// Hangup reason calculate table
 	//
 	// +----------------------+-------+-----------------------+
-	// | last status					| cuase	| hangup reason					|
+	// | last status          | cause | hangup reason         |
 	// |----------------------+-------+-----------------------+
-	// | StatusDialing				| ?			| HangupReasonFailed		|
-	// | StatusRinging				| ?			| HangupReasonBusy			|
-	// |											| ?			| HangupReasonTimeout		|
-	// |											| ?			| HangupReasonUnanswer	|
-	// |											| ?			| HanupgReasonDialout		|
+	// | StatusDialing        | ?     | HangupReasonFailed    |
+	// | StatusRinging        | ?     | HangupReasonBusy      |
+	// |                      | ?     | HangupReasonTimeout   |
+	// |                      | ?     | HangupReasonUnanswer  |
+	// |                      | ?     | HanupgReasonDialout   |
 	// +----------------------+-------+-----------------------+
-	// | StatusProgressing		| *			| HangupReasonNormal		|
+	// | StatusProgressing    | *     | HangupReasonNormal    |
 	// +----------------------+-------+-----------------------+
-	// | StatusTerminating		| * 		| HangupReasonNormal		|
+	// | StatusTerminating    | *     | HangupReasonNormal    |
 	// +----------------------+-------+-----------------------+
-	// | StatusCanceling			| * 		| HangupReasonCanceled	|
+	// | StatusCanceling      | *     | HangupReasonCanceled  |
 	// +----------------------+-------+-----------------------+
-	// | StatusHangup					| * 		| HangupReasonNormal		|
+	// | StatusHangup         | *     | HangupReasonNormal    |
 	// +----------------------+-------+-----------------------+
 
 	switch lastStatus {
@@ -289,21 +289,21 @@ func CalculateHangupBy(lastStatus Status) HangupBy {
 	// Hangup by calculate table
 	//
 	// +----------------------+-----------------+
-	// | last status					| Hangup by				|
+	// | last status          | Hangup by       |
 	// |----------------------+-----------------+
-	// | StatusDialing				| HangupByRemote	|
-	// | StatusRinging				| 								|
-	// | StatusProgressing		|									|
+	// | StatusDialing        | HangupByRemote  |
+	// | StatusRinging        |                 |
+	// | StatusProgressing    |                 |
+	// | StatusHangup         |                 |
 	// +----------------------+-----------------+
-	// | StatusTerminating		| HangupByLocal		|
-	// | StatusCanceling			|									|
-	// | StatusHangup					|									|
+	// | StatusTerminating    | HangupByLocal   |
+	// | StatusCanceling      |                 |
 	// +----------------------+-----------------+
 
 	switch lastStatus {
-	case StatusDialing, StatusRinging, StatusProgressing:
+	case StatusDialing, StatusRinging, StatusProgressing, StatusHangup:
 		return HangupByRemote
-	case StatusTerminating, StatusCanceling, StatusHangup:
+	case StatusTerminating, StatusCanceling:
 		return HangupByLocal
 	default:
 		return HangupByRemote
@@ -330,19 +330,19 @@ func IsUpdatableStatus(oldStatus, newStatus Status) bool {
 	// StatusTerminating -> StatusHangup
 
 	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
-	// | old \ new					| StatusDialing	| StatusRinging	| StatusProgressing	| StatusTerminating	| StatusCanceling	| StatusHangup	|
+	// | old \ new          | StatusDialing	| StatusRinging	| StatusProgressing	| StatusTerminating	| StatusCanceling | StatusHangup  |
 	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
-	// | StatusDialing			| 			x				| 			o				|					o					|					o					|					o				|				o				|
+	// | StatusDialing      |      x        |       o       |         o         |         o         |        o        |       o       |
 	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
-	// | StatusRinging			|				x				| 			x				|					o					|					o					|					o				|				o				|
+	// | StatusRinging      |      x        |       x       |         o         |         o         |        o        |       o       |
 	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
-	// | StatusProgressing	|				x				| 			x				|					x					|					o					|					x				|				o				|
+	// | StatusProgressing  |      x        |       x       |         x         |         o         |        x        |       o       |
 	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
-	// | StatusTerminating	|				x				| 			x				|					x					|					x					|					x				|				o				|
+	// | StatusTerminating  |      x        |       x       |         x         |         x         |        x        |       o       |
 	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
-	// | StatusCanceling		|				x				| 			x				|					x					|					x					|					x				|				o				|
+	// | StatusCanceling    |      x        |       x       |         x         |         x         |        x        |       o       |
 	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
-	// | StatusHangup				|				x				| 			x				|					x					|					x					|					x				|				x				|
+	// | StatusHangup       |      x        |       x       |         x         |         x         |        x        |       x       |
 	// |--------------------+---------------+---------------+-------------------+-------------------+-----------------+---------------+
 
 	mapOldStatusDialing := map[Status]bool{

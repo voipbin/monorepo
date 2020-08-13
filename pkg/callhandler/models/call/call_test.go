@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	uuid "github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 )
@@ -207,7 +208,7 @@ func TestCalculateHangupBy(t *testing.T) {
 		{"last status progressing", StatusProgressing, HangupByRemote},
 		{"last status terminating", StatusTerminating, HangupByLocal},
 		{"last status canceling", StatusCanceling, HangupByLocal},
-		{"last status hangup", StatusHangup, HangupByLocal},
+		{"last status hangup", StatusHangup, HangupByRemote},
 	}
 
 	for _, tt := range tests {

@@ -8,11 +8,11 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	_ "github.com/mattn/go-sqlite3"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func TestCallCreate(t *testing.T) {
@@ -197,6 +197,7 @@ func TestCallSetStatus(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.call, nil)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetStatus(context.Background(), tt.id, tt.status, tt.tmUpdate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
