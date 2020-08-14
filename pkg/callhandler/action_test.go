@@ -3,18 +3,18 @@ package callhandler
 import (
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
-
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
-func TestActionExecuteEcho(t *testing.T) {
+func TestActionExecuteEchoLegacy(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -42,11 +42,11 @@ func TestActionExecuteEcho(t *testing.T) {
 			"empty action",
 			&call.Call{},
 			&action.Action{
-				Type:   action.TypeEcho,
+				Type:   action.TypeEchoLegacy,
 				Option: []byte(`{}`),
 			},
 			&action.Action{
-				Type:   action.TypeEcho,
+				Type:   action.TypeEchoLegacy,
 				ID:     uuid.Nil,
 				Option: []byte(`{"duration":180000,"dtmf":false}`),
 			},

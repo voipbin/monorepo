@@ -300,7 +300,7 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		// create an option for action echo
 		// create default option for echo
 		option := action.OptionEcho{
-			Duration: 180 * 1000, // duration 180 sec
+			Duration: 300 * 1000, // duration 300 sec
 			DTMF:     true,
 		}
 		opt, err := json.Marshal(option)
@@ -314,6 +314,29 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		act = &action.Action{
 			ID:     action.IDBegin,
 			Type:   action.TypeEcho,
+			Option: opt,
+			Next:   action.IDEnd,
+		}
+
+	// echo_legacy
+	case string(action.TypeEchoLegacy):
+		// create an option for action echo
+		// create default option for echo
+		option := action.OptionEcho{
+			Duration: 180 * 1000, // duration 180 sec
+			DTMF:     true,
+		}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
+			h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+			return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+		}
+
+		// create an action
+		act = &action.Action{
+			ID:     action.IDBegin,
+			Type:   action.TypeEchoLegacy,
 			Option: opt,
 			Next:   action.IDEnd,
 		}

@@ -34,6 +34,9 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	case action.TypeEcho:
 		return h.actionExecuteEcho(c, a)
 
+	case action.TypeEchoLegacy:
+		return h.actionExecuteEchoLegacy(c, a)
+
 	case action.TypeStreamEcho:
 		return h.actionExecuteStreamEcho(c, a)
 
@@ -126,7 +129,7 @@ func (h *callHandler) ActionTimeout(callID uuid.UUID, a *action.Action) error {
 }
 
 // actionExecuteEcho executes the action type echo
-func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteEchoLegacy(c *call.Call, a *action.Action) error {
 	ctx := context.Background()
 
 	// copy the action
@@ -190,6 +193,60 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
+	}
+
+	return nil
+}
+
+// actionExecuteEcho executes the action type echo
+func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
+	ctx := context.Background()
+
+	// copy the action
+	act := *a
+
+	// set current time
+	act.TMExecute = getCurTime()
+
+	log := log.WithFields(
+		log.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionEcho
+	if err := json.Unmarshal(act.Option, &option); err != nil {
+		log.Errorf("could not parse the option. err: %v", err)
+		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+	}
+
+	// set default duration if it is not set correctly
+	if option.Duration <= 0 {
+		option.Duration = 180 * 1000 // default duration 180 sec
+	}
+
+	// set option
+	rawOption, err := json.Marshal(option)
+	if err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not marshal the action option. err: %v", err)
+	}
+	act.Option = rawOption
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	// continue the extension
+	if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-echo", "s", 1, ""); err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
 	return nil
