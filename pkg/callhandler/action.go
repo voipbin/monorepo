@@ -28,7 +28,7 @@ func (h *callHandler) setAction(c *call.Call, a *action.Action) error {
 
 // ActionExecute execute the action withe the call
 func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
-	log.Debugf("Executing the action. call: %s, action: %s", c.ID, a.Type)
+	logrus.Debugf("Executing the action. call: %s, action: %s", c.ID, a.Type)
 
 	switch a.Type {
 	case action.TypeEcho:
