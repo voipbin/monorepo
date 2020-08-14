@@ -56,7 +56,8 @@ type Type string
 
 // List of Action types
 const (
-	TypeEcho           Type = "echo"        // echo the voice and dtmf only
+	TypeEcho           Type = "echo" // echo the voice and dtmf only
+	TypeEchoLegacy     Type = "echo_legacy"
 	TypeStreamEcho     Type = "stream_echo" // echo the stream(video/voice)
 	TypeAnswer         Type = "answer"
 	TypeConferenceJoin Type = "conference_join"
