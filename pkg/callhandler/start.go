@@ -272,7 +272,7 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 	}
 
 	// create a call
-	c := call.NewCallByChannel(cn, call.TypeEcho, call.DirectionIncoming)
+	c := call.NewCallByChannel(cn, call.TypeSipService, call.DirectionIncoming)
 	if err := h.createCall(ctx, c); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
