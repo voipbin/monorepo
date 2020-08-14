@@ -23,14 +23,13 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		detail,
 		data,
 
-		bridge_ids,
 		call_ids,
 
 		tm_create
 	) values(
 		?, ?, ?,
 		?, ?, ?, ?,
-		?, ?,
+		?, 
 		?
 		)
 	`
@@ -38,11 +37,6 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 	data, err := json.Marshal(cf.Data)
 	if err != nil {
 		return fmt.Errorf("could not marshal data. ConferenceCreate. err: %v", err)
-	}
-
-	bridgeIDs, err := json.Marshal(cf.BridgeIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal bridges. ConferenceCreate. err: %v", err)
 	}
 
 	callIDs, err := json.Marshal(cf.CallIDs)
@@ -60,7 +54,6 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		cf.Detail,
 		data,
 
-		bridgeIDs,
 		callIDs,
 
 		getCurTime(),
@@ -97,7 +90,6 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 // conferenceGetFromRow gets the call from the row.
 func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, error) {
 	var data string
-	var bridges string
 	var calls string
 	res := &conference.Conference{}
 	if err := row.Scan(
@@ -110,7 +102,6 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		&res.Detail,
 		&data,
 
-		&bridges,
 		&calls,
 
 		&res.TMCreate,
@@ -122,9 +113,6 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the data. conferenceGetFromRow. err: %v", err)
-	}
-	if err := json.Unmarshal([]byte(bridges), &res.BridgeIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the source. conferenceGetFromRow. err: %v", err)
 	}
 	if err := json.Unmarshal([]byte(calls), &res.CallIDs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the destination. conferenceGetFromRow. err: %v", err)
@@ -284,7 +272,6 @@ func (h *handler) ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*confe
 		detail,
 		data,
 
-		bridge_ids,
 		call_ids,
 
 		coalesce(tm_create, '') as tm_create,

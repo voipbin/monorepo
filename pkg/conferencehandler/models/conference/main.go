@@ -17,8 +17,7 @@ type Conference struct {
 	Data    map[string]interface{} `json:"data"`
 	Timeout int                    `json:"timeout"` // timeout. second
 
-	BridgeIDs []string    `json:"bridge_ids"`
-	CallIDs   []uuid.UUID `json:"call_ids"`
+	CallIDs []uuid.UUID `json:"call_ids"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
@@ -59,8 +58,7 @@ func NewConference(id uuid.UUID, cType Type, bridgeID string, req *Conference) *
 		Data:    req.Data,
 		Timeout: req.Timeout,
 
-		BridgeIDs: []string{},
-		CallIDs:   []uuid.UUID{},
+		CallIDs: []uuid.UUID{},
 	}
 
 	return cf

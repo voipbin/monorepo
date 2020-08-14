@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
@@ -26,52 +27,46 @@ func TestTerminate(t *testing.T) {
 		name       string
 		id         uuid.UUID
 		conference *conference.Conference
-		bridges    []*bridge.Bridge
+		bridge     *bridge.Bridge
 	}
 
 	tests := []test{
 		{
-			"empty bridge ids",
+			"empty channels in the bridge",
 			uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
 			&conference.Conference{
-				ID:        uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
-				Type:      conference.TypeEcho,
-				BridgeIDs: []string{},
+				ID:   uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
+				Type: conference.TypeEcho,
 			},
-			[]*bridge.Bridge{},
+			&bridge.Bridge{
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ID:         "86918a90-ddc1-11ea-87cb-87d08ecc726f",
+			},
 		},
 		{
-			"1 bridge ids",
+			"1 channel in the bridge",
 			uuid.FromStringOrNil("c33adf04-9240-11ea-a8ed-0fa57555db3b"),
 			&conference.Conference{
-				ID:        uuid.FromStringOrNil("c33adf04-9240-11ea-a8ed-0fa57555db3b"),
-				Type:      conference.TypeEcho,
-				BridgeIDs: []string{"c9977272-9240-11ea-a692-f370484c30f1"},
+				ID:   uuid.FromStringOrNil("c33adf04-9240-11ea-a8ed-0fa57555db3b"),
+				Type: conference.TypeEcho,
 			},
-			[]*bridge.Bridge{
-				{
-					ID:         "c9977272-9240-11ea-a692-f370484c30f1",
-					AsteriskID: "00:11:22:33:44:55",
-				},
+			&bridge.Bridge{
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ID:         "96b34a94-ddc1-11ea-9cec-0fed666dd9a0",
+				ChannelIDs: []string{"ed33a850-ddc1-11ea-9fec-77bf9bede781"},
 			},
 		},
 		{
 			"2 bridge ids",
 			uuid.FromStringOrNil("71a286e6-9241-11ea-8241-874ac5255e40"),
 			&conference.Conference{
-				ID:        uuid.FromStringOrNil("71a286e6-9241-11ea-8241-874ac5255e40"),
-				Type:      conference.TypeEcho,
-				BridgeIDs: []string{"76149278-9241-11ea-9ab3-4baddc693eae", "7b67c790-9241-11ea-aebd-332e45a6ebde"},
+				ID:   uuid.FromStringOrNil("71a286e6-9241-11ea-8241-874ac5255e40"),
+				Type: conference.TypeEcho,
 			},
-			[]*bridge.Bridge{
-				{
-					ID:         "76149278-9241-11ea-9ab3-4baddc693eae",
-					AsteriskID: "00:11:22:33:44:55",
-				},
-				{
-					ID:         "7b67c790-9241-11ea-aebd-332e45a6ebde",
-					AsteriskID: "00:11:22:33:44:55",
-				},
+			&bridge.Bridge{
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ID:         "93927722-ddc1-11ea-9d16-9be45d7d613d",
+				ChannelIDs: []string{"f5ddfac8-ddc1-11ea-8ec9-97793f123bb6", "f26014c6-ddc1-11ea-8b4f-939795e34a19"},
 			},
 		},
 	}
@@ -80,9 +75,9 @@ func TestTerminate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.id).Return(tt.conference, nil)
 			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.id, conference.StatusTerminating).Return(nil)
-			for i, bridgeID := range tt.conference.BridgeIDs {
-				mockDB.EXPECT().BridgeGet(gomock.Any(), bridgeID).Return(tt.bridges[i], nil)
-				mockReq.EXPECT().AstBridgeDelete(tt.bridges[i].AsteriskID, tt.bridges[i].ID).Return(nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridge, nil)
+			for _, id := range tt.bridge.ChannelIDs {
+				mockReq.EXPECT().AstBridgeRemoveChannel(tt.bridge.AsteriskID, tt.bridge.ID, id)
 			}
 			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
 

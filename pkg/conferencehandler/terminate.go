@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
@@ -28,10 +29,7 @@ func (h *conferenceHandler) Terminate(id uuid.UUID, reason string) error {
 
 	// if the conference is already terminated or stopping, just return at here
 	if cf.Status == conference.StatusTerminated || cf.Status == conference.StatusTerminating {
-		logrus.WithFields(
-			logrus.Fields{
-				"conference": id.String(),
-			}).Infof("The conference is already terminated or being terminated. status: %s", cf.Status)
+		log.Infof("The conference is already terminated or being terminated. status: %s", cf.Status)
 
 		return nil
 	}
@@ -39,44 +37,17 @@ func (h *conferenceHandler) Terminate(id uuid.UUID, reason string) error {
 
 	// set the status to stopping
 	if err := h.db.ConferenceSetStatus(ctx, id, conference.StatusTerminating); err != nil {
-		log.WithFields(
-			logrus.Fields{
-				"conference": id.String(),
-			}).Warnf("Could not update the status for conference stopping. err: %v", err)
+		log.Warnf("Could not update the status for conference stopping. err: %v", err)
 		return err
 	}
 
-	// loop the bridge
-	for _, bridgeID := range cf.BridgeIDs {
-
-		// get bridge
-		bridge, err := h.db.BridgeGet(ctx, bridgeID)
-		if err != nil {
-			log.WithFields(
-				logrus.Fields{
-					"conference": id.String(),
-					"bridge":     bridgeID,
-				}).Errorf("Could not get bridge.")
-			continue
-		}
-
-		// we don't hangup the channels in the bridge here.
-		// because if the bridge has deleted, all the channels will be left from the bridge,
-		// and then the ChannelLeftBridge event will be published.
-		// then the ChannelLeftBridge event handler handles the channels.
-		// the ChannelLeftBridge will hangup the channel or do the next actions depends on the
-		// each channels
-
-		// destroy the bridge
-		if err := h.reqHandler.AstBridgeDelete(bridge.AsteriskID, bridge.ID); err != nil {
-			log.WithFields(
-				logrus.Fields{
-					"conference": id.String(),
-					"bridge":     bridge.ID,
-				}).Errorf("could not delete the bridge. err: %v", err)
-			continue
-		}
+	// remove all channels from the conference bridge
+	br, err := h.db.BridgeGet(ctx, cf.BridgeID)
+	if err != nil {
+		log.Errorf("Could not get bridge info. bridge: %s, err: %v", cf.BridgeID, err)
+		return err
 	}
+	h.removeAllChannelsInBridge(br)
 
 	// update conference status to terminated
 	if err := h.db.ConferenceEnd(ctx, id); err != nil {

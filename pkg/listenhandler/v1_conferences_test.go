@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
@@ -54,15 +55,14 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Type: conference.TypeConference,
 			},
 			&conference.Conference{
-				ID:        uuid.FromStringOrNil("d82ce190-9fe8-11ea-aec8-973901dd28fa"),
-				Type:      conference.TypeConference,
-				BridgeID:  "f1354268-9fe8-11ea-b693-3761800b29d5",
-				BridgeIDs: []string{"f1354268-9fe8-11ea-b693-3761800b29d5"},
-				Timeout:   0,
+				ID:       uuid.FromStringOrNil("d82ce190-9fe8-11ea-aec8-973901dd28fa"),
+				Type:     conference.TypeConference,
+				BridgeID: "f1354268-9fe8-11ea-b693-3761800b29d5",
+				Timeout:  0,
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       `{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"bridge_ids":["f1354268-9fe8-11ea-b693-3761800b29d5"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+				Data:       `{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 			},
 		},
 		{
@@ -80,17 +80,16 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Timeout: 180,
 			},
 			&conference.Conference{
-				ID:        uuid.FromStringOrNil("2a835238-da9c-11ea-bc7b-eb2f57685ad6"),
-				Type:      conference.TypeConference,
-				BridgeID:  "2f84ff66-da9c-11ea-9b90-83a7346c3e97",
-				BridgeIDs: []string{"2f84ff66-da9c-11ea-9b90-83a7346c3e97"},
-				Name:      "test conference all items",
-				Detail:    "test conference with all tiems detail",
-				Timeout:   180,
+				ID:       uuid.FromStringOrNil("2a835238-da9c-11ea-bc7b-eb2f57685ad6"),
+				Type:     conference.TypeConference,
+				BridgeID: "2f84ff66-da9c-11ea-9b90-83a7346c3e97",
+				Name:     "test conference all items",
+				Detail:   "test conference with all tiems detail",
+				Timeout:  180,
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       `{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","type":"conference","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"bridge_ids":["2f84ff66-da9c-11ea-9b90-83a7346c3e97"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+				Data:       `{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","type":"conference","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 			},
 		},
 		{
@@ -106,15 +105,14 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Timeout: 180,
 			},
 			&conference.Conference{
-				ID:        uuid.FromStringOrNil("3402e154-da9a-11ea-a52b-2781af28f74d"),
-				Type:      conference.TypeConference,
-				BridgeID:  "3a6486ba-da9a-11ea-8a39-03999d98a404",
-				BridgeIDs: []string{"3a6486ba-da9a-11ea-8a39-03999d98a404"},
-				Timeout:   180,
+				ID:       uuid.FromStringOrNil("3402e154-da9a-11ea-a52b-2781af28f74d"),
+				Type:     conference.TypeConference,
+				BridgeID: "3a6486ba-da9a-11ea-8a39-03999d98a404",
+				Timeout:  180,
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       `{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","type":"conference","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"bridge_ids":["3a6486ba-da9a-11ea-8a39-03999d98a404"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+				Data:       `{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","type":"conference","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 			},
 		},
 		{
@@ -130,16 +128,15 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Name: "test conference",
 			},
 			&conference.Conference{
-				ID:        uuid.FromStringOrNil("9179b768-da9a-11ea-b583-c7592caaa090"),
-				Type:      conference.TypeConference,
-				BridgeID:  "95f5b53a-da9a-11ea-92be-23fad8a8b229",
-				BridgeIDs: []string{"95f5b53a-da9a-11ea-92be-23fad8a8b229"},
-				Name:      "test conference",
-				Timeout:   0,
+				ID:       uuid.FromStringOrNil("9179b768-da9a-11ea-b583-c7592caaa090"),
+				Type:     conference.TypeConference,
+				BridgeID: "95f5b53a-da9a-11ea-92be-23fad8a8b229",
+				Name:     "test conference",
+				Timeout:  0,
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       `{"id":"9179b768-da9a-11ea-b583-c7592caaa090","type":"conference","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference","detail":"","data":null,"timeout":0,"bridge_ids":["95f5b53a-da9a-11ea-92be-23fad8a8b229"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+				Data:       `{"id":"9179b768-da9a-11ea-b583-c7592caaa090","type":"conference","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 			},
 		},
 		{
@@ -156,17 +153,16 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Detail: "test conference detail",
 			},
 			&conference.Conference{
-				ID:        uuid.FromStringOrNil("c8fa873a-da9a-11ea-97f0-fff8a6d8aa21"),
-				Type:      conference.TypeConference,
-				BridgeID:  "cdc9898c-da9a-11ea-8b27-c77718b25ab9",
-				BridgeIDs: []string{"cdc9898c-da9a-11ea-8b27-c77718b25ab9"},
-				Name:      "test conference",
-				Detail:    "test conference detail",
-				Timeout:   0,
+				ID:       uuid.FromStringOrNil("c8fa873a-da9a-11ea-97f0-fff8a6d8aa21"),
+				Type:     conference.TypeConference,
+				BridgeID: "cdc9898c-da9a-11ea-8b27-c77718b25ab9",
+				Name:     "test conference",
+				Detail:   "test conference detail",
+				Timeout:  0,
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       `{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","type":"conference","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"bridge_ids":["cdc9898c-da9a-11ea-8b27-c77718b25ab9"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+				Data:       `{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","type":"conference","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 			},
 		},
 	}
@@ -343,14 +339,13 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 				Method: rabbitmq.RequestMethodGet,
 			},
 			&conference.Conference{
-				ID:        uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
-				Type:      conference.TypeConference,
-				BridgeID:  "fea1c22c-ac2d-11ea-8a08-7f5cb36f279a",
-				BridgeIDs: []string{"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a"},
+				ID:       uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
+				Type:     conference.TypeConference,
+				BridgeID: "fea1c22c-ac2d-11ea-8a08-7f5cb36f279a",
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       `{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"timeout":0,"bridge_ids":["fea1c22c-ac2d-11ea-8a08-7f5cb36f279a"],"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+				Data:       `{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 			},
 		},
 	}
