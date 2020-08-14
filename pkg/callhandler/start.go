@@ -265,6 +265,7 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		})
 
 	// set absolute timeout for 300 sec
+	log.Debugf("Setting absolute timeout for sip-service type call")
 	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
@@ -292,8 +293,35 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
 	}
 
-	var act *action.Action = nil
+	// get action for sip-service
+	act, err := h.getSipServiceAction(ctx, c, cn)
+	if err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("Could not get action handle for sip-service. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
+	// get updated call info
+	c, err = h.db.CallGet(ctx, c.ID)
+	if err != nil {
+		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("Could not get created call info. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
+	}
+
+	// execute action
+	return h.ActionExecute(c, act)
+}
+
+// getSipServiceAction returns sip-service action handler by the call's destination.
+func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn *channel.Channel) (*action.Action, error) {
+	var resAct *action.Action = nil
+
 	switch c.Destination.Target {
+
+	default:
+		logrus.Warnf("Could not find correct sip-service handler. Use default handler. target: %s", c.Destination.Target)
+		fallthrough
 
 	// echo
 	case string(action.TypeEcho):
@@ -305,13 +333,11 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-			h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-			return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+			return nil, fmt.Errorf("Could not marshal the option echo. action: %s, err: %v", action.TypeEcho, err)
 		}
 
 		// create an action
-		act = &action.Action{
+		resAct = &action.Action{
 			ID:     action.IDBegin,
 			Type:   action.TypeEcho,
 			Option: opt,
@@ -320,21 +346,19 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 
 	// echo_legacy
 	case string(action.TypeEchoLegacy):
-		// create an option for action echo
-		// create default option for echo
+		// create an option for action echo_legacy
+		// create default option for echo_legacy
 		option := action.OptionEcho{
 			Duration: 180 * 1000, // duration 180 sec
 			DTMF:     true,
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-			h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-			return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeEchoLegacy, err)
 		}
 
 		// create an action
-		act = &action.Action{
+		resAct = &action.Action{
 			ID:     action.IDBegin,
 			Type:   action.TypeEchoLegacy,
 			Option: opt,
@@ -346,13 +370,11 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		option := action.OptionStreamEcho{}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-			h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-			return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeStreamEcho, err)
 		}
 
 		// create an action
-		act = &action.Action{
+		resAct = &action.Action{
 			ID:     action.IDBegin,
 			Type:   action.TypeStreamEcho,
 			Option: opt,
@@ -366,13 +388,11 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-			h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-			return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeConferenceJoin, err)
 		}
 
 		// create an action
-		act = &action.Action{
+		resAct = &action.Action{
 			ID:     action.IDBegin,
 			Type:   action.TypeConferenceJoin,
 			Option: opt,
@@ -380,13 +400,5 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 		}
 	}
 
-	c, err := h.db.CallGet(ctx, c.ID)
-	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not get created call info. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
-	}
-
-	// execute action
-	return h.ActionExecute(c, act)
+	return resAct, nil
 }
