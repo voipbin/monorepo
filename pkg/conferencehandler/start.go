@@ -131,8 +131,6 @@ func (h *conferenceHandler) startTypeEcho(req *conference.Conference, c *call.Ca
 	}
 
 	cf := conference.NewConference(id, conference.TypeEcho, bridgeID, req)
-	cf.BridgeIDs = append(cf.BridgeIDs, bridgeID)
-
 	log = log.WithFields(
 		logrus.Fields{
 			"bridge": bridgeID,

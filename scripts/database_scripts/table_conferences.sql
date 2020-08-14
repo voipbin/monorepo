@@ -11,7 +11,6 @@ create table conferences(
   data    json,           -- additional data
   timeout int,            -- timeout. second
 
-  bridge_ids json, -- bridges related with this conference
   call_ids   json, -- calls in the conference
 
   -- timestamps
