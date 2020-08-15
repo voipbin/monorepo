@@ -97,7 +97,7 @@ func TestNewChannelByStasisStart(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			`{"type":"StasisStart","timestamp":"2020-05-10T07:11:05.479+0000","args":["CONTEXT=in-voipbin","SIP_CALLID=1578514523-1170819966-743482919","SIP_PAI=","SIP_PRIVACY=","DOMAIN=echo.voipbin.net","SOURCE=45.249.91.194"],"channel":{"id":"1589094665.1053","name":"PJSIP/in-voipbin-0000015e","state":"Ring","caller":{"name":"","number":"2000000"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"9103011442037694942","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1578514523-1170819966-743482919,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=45.249.91.194"},"creationtime":"2020-05-10T07:11:05.477+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			`{"type":"StasisStart","timestamp":"2020-05-10T07:11:05.479+0000","args":["CONTEXT=in-voipbin","SIP_CALLID=1578514523-1170819966-743482919","SIP_PAI=","SIP_PRIVACY=","DOMAIN=sip-service.voipbin.net","SOURCE=45.249.91.194"],"channel":{"id":"1589094665.1053","name":"PJSIP/in-voipbin-0000015e","state":"Ring","caller":{"name":"","number":"2000000"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"9103011442037694942","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1578514523-1170819966-743482919,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=45.249.91.194"},"creationtime":"2020-05-10T07:11:05.477+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
 			&Channel{
 				AsteriskID: "42:01:0a:a4:00:05",
 				ID:         "1589094665.1053",

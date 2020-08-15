@@ -51,7 +51,7 @@ func TestParseError(t *testing.T) {
 }
 
 func TestArgsMapUnmarshalJSON(t *testing.T) {
-	m := `["CONTEXT=test_context", "DOMAIN=echo.voipbin.net"]`
+	m := `["CONTEXT=test_context", "DOMAIN=sip-service.voipbin.net"]`
 
 	res := ArgsMap{}
 	if err := json.Unmarshal([]byte(m), &res); err != nil {
@@ -61,8 +61,8 @@ func TestArgsMapUnmarshalJSON(t *testing.T) {
 	if res["CONTEXT"] != "test_context" {
 		t.Errorf("Wrong match. expact: text_context, got: %s", res["CONTEXT"])
 	}
-	if res["DOMAIN"] != "echo.voipbin.net" {
-		t.Errorf("Wrong match. expact: echo.voipbin.net, got: %s", res["DOMAIN"])
+	if res["DOMAIN"] != "sip-service.voipbin.net" {
+		t.Errorf("Wrong match. expact: sip-service.voipbin.net, got: %s", res["DOMAIN"])
 	}
 }
 
@@ -73,8 +73,8 @@ func TestArgsMapUnmarshalJSONError(t *testing.T) {
 	}
 
 	tests := []test{
-		{"wrong list", `["CONTEXT=test_context", "DOMAIN=echo.voipbin.net"`},
-		{"wrong item", `["CONTEXT=test_context", "DOMAIN=echo.voipbin.net]`},
+		{"wrong list", `["CONTEXT=test_context", "DOMAIN=sip-service.voipbin.net"`},
+		{"wrong item", `["CONTEXT=test_context", "DOMAIN=sip-service.voipbin.net]`},
 	}
 
 	for _, tt := range tests {

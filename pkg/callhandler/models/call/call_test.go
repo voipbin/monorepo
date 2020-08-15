@@ -234,14 +234,14 @@ func TestNewCallByChannel(t *testing.T) {
 		{
 			"normarl",
 			`{"type":"ChannelCreated","timestamp":"2020-05-02T20:56:51.498+0000","channel":{"id":"1588453011.231","name":"PJSIP/in-voipbin-00000074","state":"Ring","caller":{"name":"","number":"3001"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"9901146812420898","priority":1,"app_name":"","app_data":""},"creationtime":"2020-05-02T20:56:51.498+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
-			TypeEcho,
+			TypeSipService,
 			DirectionIncoming,
 
 			&Call{
 				AsteriskID: "42:01:0a:a4:00:03",
 				ChannelID:  "1588453011.231",
 				FlowID:     uuid.Nil,
-				Type:       TypeEcho,
+				Type:       TypeSipService,
 
 				Status: StatusRinging,
 
