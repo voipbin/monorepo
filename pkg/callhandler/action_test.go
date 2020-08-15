@@ -39,7 +39,7 @@ func TestActionExecuteEchoLegacy(t *testing.T) {
 
 	tests := []test{
 		{
-			"empty action",
+			"empty option",
 			&call.Call{},
 			&action.Action{
 				Type:   action.TypeEchoLegacy,
@@ -98,7 +98,7 @@ func TestActionExecuteConferenceJoin(t *testing.T) {
 
 	tests := []test{
 		{
-			"empty action",
+			"empty option",
 			&call.Call{},
 			&action.Action{
 				Type:   action.TypeConferenceJoin,
@@ -150,7 +150,7 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 
 	tests := []test{
 		{
-			"empty action",
+			"empty option",
 			&call.Call{},
 			&action.Action{
 				Type:   action.TypeStreamEcho,
@@ -170,6 +170,62 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelContinue(tt.call.AsteriskID, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionExecuteAnswer(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name          string
+		call          *call.Call
+		action        *action.Action
+		expectAction  *action.Action
+		expectTimeout int
+	}
+
+	tests := []test{
+		{
+			"empty option",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("4371b0d6-df48-11ea-9a8c-177968c165e9"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "5b21353a-df48-11ea-8207-6fc0fa36a3fe",
+			},
+			&action.Action{
+				Type:   action.TypeAnswer,
+				Option: []byte(`{}`),
+			},
+			&action.Action{
+				Type:   action.TypeAnswer,
+				ID:     uuid.Nil,
+				Option: []byte(`{}`),
+			},
+			180 * 1000,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
+			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, 10, tt.expectAction).Return(nil)
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

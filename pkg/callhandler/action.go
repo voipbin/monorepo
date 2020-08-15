@@ -30,22 +30,33 @@ func (h *callHandler) setAction(c *call.Call, a *action.Action) error {
 func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	logrus.Debugf("Executing the action. call: %s, action: %s", c.ID, a.Type)
 
+	var err error
 	switch a.Type {
-	case action.TypeEcho:
-		return h.actionExecuteEcho(c, a)
-
-	case action.TypeEchoLegacy:
-		return h.actionExecuteEchoLegacy(c, a)
-
-	case action.TypeStreamEcho:
-		return h.actionExecuteStreamEcho(c, a)
+	case action.TypeAnswer:
+		err = h.actionExecuteAnswer(c, a)
 
 	case action.TypeConferenceJoin:
-		return h.actionExecuteConferenceJoin(c, a)
+		err = h.actionExecuteConferenceJoin(c, a)
+
+	case action.TypeEcho:
+		err = h.actionExecuteEcho(c, a)
+
+	case action.TypeEchoLegacy:
+		err = h.actionExecuteEchoLegacy(c, a)
+
+	case action.TypeStreamEcho:
+		err = h.actionExecuteStreamEcho(c, a)
 
 	default:
-		return fmt.Errorf("no action handle found. type: %s", a.Type)
+		err = fmt.Errorf("no action handle found. type: %s", a.Type)
 	}
+
+	//  if the action execution has failed hangup the call here
+	if err != nil {
+		h.db.CallSetStatus(context.Background(), c.ID, call.StatusTerminating, getCurTime())
+		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+	}
+	return err
 }
 
 // ActionNext Execute next action
@@ -128,10 +139,54 @@ func (h *callHandler) ActionTimeout(callID uuid.UUID, a *action.Action) error {
 	return nil
 }
 
+// actionExecuteAnswer executes the action type answer
+func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error {
+	// copy the action
+	act := *a
+
+	// set current time
+	act.TMExecute = getCurTime()
+
+	log := log.WithFields(
+		log.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionAnswer
+	if err := json.Unmarshal(act.Option, &option); err != nil {
+		log.Errorf("could not parse the option. err: %v", err)
+		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+	}
+
+	// set option
+	rawOption, err := json.Marshal(option)
+	if err != nil {
+		return fmt.Errorf("could not marshal the action option. err: %v", err)
+	}
+	act.Option = rawOption
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
+		return fmt.Errorf("could not answer the call. err: %v", err)
+	}
+
+	// set timeout
+	// send delayed message for next action execution after 10 ms.
+	if err := h.reqHandler.CallCallActionTimeout(c.ID, 10, &act); err != nil {
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
+	}
+
+	return nil
+}
+
 // actionExecuteEcho executes the action type echo
 func (h *callHandler) actionExecuteEchoLegacy(c *call.Call, a *action.Action) error {
-	ctx := context.Background()
-
 	// copy the action
 	act := *a
 
@@ -159,16 +214,12 @@ func (h *callHandler) actionExecuteEchoLegacy(c *call.Call, a *action.Action) er
 	// set option
 	rawOption, err := json.Marshal(option)
 	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not marshal the action option. err: %v", err)
 	}
 	act.Option = rawOption
 
 	// set action
 	if err := h.setAction(c, &act); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
@@ -181,8 +232,6 @@ func (h *callHandler) actionExecuteEchoLegacy(c *call.Call, a *action.Action) er
 	}
 	conf, err := h.confHandler.Start(reqConf, c)
 	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not start a conference for call. call: %s, conference_type: %s, err: %v", c.ID, conference.TypeEcho, err)
 	}
 	log.Debugf("Conference started. conf: %v", conf)
@@ -190,8 +239,6 @@ func (h *callHandler) actionExecuteEchoLegacy(c *call.Call, a *action.Action) er
 	// set timeout
 	// send delayed message for ti
 	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -200,8 +247,6 @@ func (h *callHandler) actionExecuteEchoLegacy(c *call.Call, a *action.Action) er
 
 // actionExecuteEcho executes the action type echo
 func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
-	ctx := context.Background()
-
 	// copy the action
 	act := *a
 
@@ -229,23 +274,17 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	// set option
 	rawOption, err := json.Marshal(option)
 	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not marshal the action option. err: %v", err)
 	}
 	act.Option = rawOption
 
 	// set action
 	if err := h.setAction(c, &act); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
 	// continue the extension
 	if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-echo", "s", 1, ""); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -254,8 +293,6 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 
 // actionExecuteConferenceJoin executes the action type ConferenceJoin
 func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action) error {
-	ctx := context.Background()
-
 	// copy the action
 	act := *a
 
@@ -279,22 +316,18 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 	// set option
 	rawOption, err := json.Marshal(option)
 	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not marshal the action option. err: %v", err)
 	}
 	act.Option = rawOption
 
 	// set action
 	if err := h.setAction(c, &act); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
 	if err := h.confHandler.Join(cfID, c.ID); err != nil {
 		log.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
-		h.ActionNext(c)
+		return fmt.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
 	}
 
 	return nil
@@ -304,8 +337,6 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 // stream_echo does not support timeout and it's blocking action.
 // need to set the channel timeout before call this action.
 func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) error {
-	ctx := context.Background()
-
 	// copy the action
 	act := *a
 
@@ -329,23 +360,17 @@ func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) er
 	// set option
 	rawOption, err := json.Marshal(option)
 	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not marshal the action option. err: %v", err)
 	}
 	act.Option = rawOption
 
 	// set action
 	if err := h.setAction(c, &act); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
 	// continue the extension
 	if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-stream_echo", "s", 1, ""); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 

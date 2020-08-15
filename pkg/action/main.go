@@ -56,12 +56,22 @@ type Type string
 
 // List of Action types
 const (
+	TypeAnswer         Type = "answer"
+	TypeConferenceJoin Type = "conference_join"
 	TypeEcho           Type = "echo" // echo the voice and dtmf only
 	TypeEchoLegacy     Type = "echo_legacy"
 	TypeStreamEcho     Type = "stream_echo" // echo the stream(video/voice)
-	TypeAnswer         Type = "answer"
-	TypeConferenceJoin Type = "conference_join"
 )
+
+// OptionAnswer defines action answer's option.
+type OptionAnswer struct {
+	// no option
+}
+
+// OptionConferenceJoin defines action conference_join's option.
+type OptionConferenceJoin struct {
+	ConferenceID string `json:"conference_id"`
+}
 
 // OptionEcho defines action echo's option.
 type OptionEcho struct {
@@ -72,9 +82,4 @@ type OptionEcho struct {
 // OptionStreamEcho defines action stream_echo's option.
 type OptionStreamEcho struct {
 	// no option
-}
-
-// OptionConferenceJoin defines action conference_join's option.
-type OptionConferenceJoin struct {
-	ConferenceID string `json:"conference_id"`
 }
