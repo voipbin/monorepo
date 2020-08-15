@@ -29,10 +29,10 @@ func TestGetService(t *testing.T) {
 			&channel.Channel{
 				Data: map[string]interface{}{
 					"CONTEXT": contextIncomingCall,
-					"DOMAIN":  domainEcho,
+					"DOMAIN":  domainSipService,
 				},
 			},
-			call.TypeEcho,
+			call.TypeSipService,
 		},
 		{
 			"normal conference soft",
@@ -95,7 +95,7 @@ func TestTypeEchoStart(t *testing.T) {
 				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
 				AsteriskID: "80:fa:5b:5e:da:81",
 				ChannelID:  "f82007c4-92e2-11ea-a3e2-138ed7e90501",
-				Type:       call.TypeEcho,
+				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
 			},
 			&action.Action{
@@ -227,7 +227,7 @@ func TestTypeSipServiceStartSvcEchoLegacy(t *testing.T) {
 				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
 				AsteriskID: "80:fa:5b:5e:da:81",
 				ChannelID:  "f82007c4-92e2-11ea-a3e2-138ed7e90501",
-				Type:       call.TypeEcho,
+				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
 			},
 		},

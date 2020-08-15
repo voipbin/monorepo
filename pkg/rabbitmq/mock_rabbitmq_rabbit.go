@@ -6,59 +6,60 @@ package rabbitmq
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	amqp "github.com/streadway/amqp"
-	reflect "reflect"
 )
 
-// MockRabbit is a mock of Rabbit interface
+// MockRabbit is a mock of Rabbit interface.
 type MockRabbit struct {
 	ctrl     *gomock.Controller
 	recorder *MockRabbitMockRecorder
 }
 
-// MockRabbitMockRecorder is the mock recorder for MockRabbit
+// MockRabbitMockRecorder is the mock recorder for MockRabbit.
 type MockRabbitMockRecorder struct {
 	mock *MockRabbit
 }
 
-// NewMockRabbit creates a new mock instance
+// NewMockRabbit creates a new mock instance.
 func NewMockRabbit(ctrl *gomock.Controller) *MockRabbit {
 	mock := &MockRabbit{ctrl: ctrl}
 	mock.recorder = &MockRabbitMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRabbit) EXPECT() *MockRabbitMockRecorder {
 	return m.recorder
 }
 
-// Close mocks base method
+// Close mocks base method.
 func (m *MockRabbit) Close() {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Close")
 }
 
-// Close indicates an expected call of Close
+// Close indicates an expected call of Close.
 func (mr *MockRabbitMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockRabbit)(nil).Close))
 }
 
-// Connect mocks base method
+// Connect mocks base method.
 func (m *MockRabbit) Connect() {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Connect")
 }
 
-// Connect indicates an expected call of Connect
+// Connect indicates an expected call of Connect.
 func (mr *MockRabbitMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockRabbit)(nil).Connect))
 }
 
-// ConsumeMessage mocks base method
+// ConsumeMessage mocks base method.
 func (m *MockRabbit) ConsumeMessage(arg0, arg1 string, arg2 CbMsgConsume) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConsumeMessage", arg0, arg1, arg2)
@@ -66,13 +67,13 @@ func (m *MockRabbit) ConsumeMessage(arg0, arg1 string, arg2 CbMsgConsume) error 
 	return ret0
 }
 
-// ConsumeMessage indicates an expected call of ConsumeMessage
+// ConsumeMessage indicates an expected call of ConsumeMessage.
 func (mr *MockRabbitMockRecorder) ConsumeMessage(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeMessage", reflect.TypeOf((*MockRabbit)(nil).ConsumeMessage), arg0, arg1, arg2)
 }
 
-// ConsumeRPC mocks base method
+// ConsumeRPC mocks base method.
 func (m *MockRabbit) ConsumeRPC(arg0, arg1 string, arg2 CbMsgRPC) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConsumeRPC", arg0, arg1, arg2)
@@ -80,13 +81,13 @@ func (m *MockRabbit) ConsumeRPC(arg0, arg1 string, arg2 CbMsgRPC) error {
 	return ret0
 }
 
-// ConsumeRPC indicates an expected call of ConsumeRPC
+// ConsumeRPC indicates an expected call of ConsumeRPC.
 func (mr *MockRabbitMockRecorder) ConsumeRPC(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeRPC", reflect.TypeOf((*MockRabbit)(nil).ConsumeRPC), arg0, arg1, arg2)
 }
 
-// ExchangeDeclare mocks base method
+// ExchangeDeclare mocks base method.
 func (m *MockRabbit) ExchangeDeclare(arg0, arg1 string, arg2, arg3, arg4, arg5 bool, arg6 amqp.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExchangeDeclare", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
@@ -94,13 +95,13 @@ func (m *MockRabbit) ExchangeDeclare(arg0, arg1 string, arg2, arg3, arg4, arg5 b
 	return ret0
 }
 
-// ExchangeDeclare indicates an expected call of ExchangeDeclare
+// ExchangeDeclare indicates an expected call of ExchangeDeclare.
 func (mr *MockRabbitMockRecorder) ExchangeDeclare(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExchangeDeclare", reflect.TypeOf((*MockRabbit)(nil).ExchangeDeclare), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
-// ExchangeDeclareForDelay mocks base method
+// ExchangeDeclareForDelay mocks base method.
 func (m *MockRabbit) ExchangeDeclareForDelay(arg0 string, arg1, arg2, arg3, arg4 bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExchangeDeclareForDelay", arg0, arg1, arg2, arg3, arg4)
@@ -108,13 +109,13 @@ func (m *MockRabbit) ExchangeDeclareForDelay(arg0 string, arg1, arg2, arg3, arg4
 	return ret0
 }
 
-// ExchangeDeclareForDelay indicates an expected call of ExchangeDeclareForDelay
+// ExchangeDeclareForDelay indicates an expected call of ExchangeDeclareForDelay.
 func (mr *MockRabbitMockRecorder) ExchangeDeclareForDelay(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExchangeDeclareForDelay", reflect.TypeOf((*MockRabbit)(nil).ExchangeDeclareForDelay), arg0, arg1, arg2, arg3, arg4)
 }
 
-// GetURL mocks base method
+// GetURL mocks base method.
 func (m *MockRabbit) GetURL() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetURL")
@@ -122,13 +123,13 @@ func (m *MockRabbit) GetURL() string {
 	return ret0
 }
 
-// GetURL indicates an expected call of GetURL
+// GetURL indicates an expected call of GetURL.
 func (mr *MockRabbitMockRecorder) GetURL() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetURL", reflect.TypeOf((*MockRabbit)(nil).GetURL))
 }
 
-// PublishEvent mocks base method
+// PublishEvent mocks base method.
 func (m *MockRabbit) PublishEvent(arg0 string, arg1 *Event) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishEvent", arg0, arg1)
@@ -136,13 +137,13 @@ func (m *MockRabbit) PublishEvent(arg0 string, arg1 *Event) error {
 	return ret0
 }
 
-// PublishEvent indicates an expected call of PublishEvent
+// PublishEvent indicates an expected call of PublishEvent.
 func (mr *MockRabbitMockRecorder) PublishEvent(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEvent", reflect.TypeOf((*MockRabbit)(nil).PublishEvent), arg0, arg1)
 }
 
-// PublishExchangeDelayedRequest mocks base method
+// PublishExchangeDelayedRequest mocks base method.
 func (m *MockRabbit) PublishExchangeDelayedRequest(arg0, arg1 string, arg2 *Request, arg3 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeDelayedRequest", arg0, arg1, arg2, arg3)
@@ -150,13 +151,13 @@ func (m *MockRabbit) PublishExchangeDelayedRequest(arg0, arg1 string, arg2 *Requ
 	return ret0
 }
 
-// PublishExchangeDelayedRequest indicates an expected call of PublishExchangeDelayedRequest
+// PublishExchangeDelayedRequest indicates an expected call of PublishExchangeDelayedRequest.
 func (mr *MockRabbitMockRecorder) PublishExchangeDelayedRequest(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishExchangeDelayedRequest", reflect.TypeOf((*MockRabbit)(nil).PublishExchangeDelayedRequest), arg0, arg1, arg2, arg3)
 }
 
-// PublishExchangeRequest mocks base method
+// PublishExchangeRequest mocks base method.
 func (m *MockRabbit) PublishExchangeRequest(arg0, arg1 string, arg2 *Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeRequest", arg0, arg1, arg2)
@@ -164,13 +165,13 @@ func (m *MockRabbit) PublishExchangeRequest(arg0, arg1 string, arg2 *Request) er
 	return ret0
 }
 
-// PublishExchangeRequest indicates an expected call of PublishExchangeRequest
+// PublishExchangeRequest indicates an expected call of PublishExchangeRequest.
 func (mr *MockRabbitMockRecorder) PublishExchangeRequest(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishExchangeRequest", reflect.TypeOf((*MockRabbit)(nil).PublishExchangeRequest), arg0, arg1, arg2)
 }
 
-// PublishRPC mocks base method
+// PublishRPC mocks base method.
 func (m *MockRabbit) PublishRPC(arg0 context.Context, arg1 string, arg2 *Request) (*Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishRPC", arg0, arg1, arg2)
@@ -179,13 +180,13 @@ func (m *MockRabbit) PublishRPC(arg0 context.Context, arg1 string, arg2 *Request
 	return ret0, ret1
 }
 
-// PublishRPC indicates an expected call of PublishRPC
+// PublishRPC indicates an expected call of PublishRPC.
 func (mr *MockRabbitMockRecorder) PublishRPC(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishRPC", reflect.TypeOf((*MockRabbit)(nil).PublishRPC), arg0, arg1, arg2)
 }
 
-// PublishRequest mocks base method
+// PublishRequest mocks base method.
 func (m *MockRabbit) PublishRequest(arg0 string, arg1 *Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishRequest", arg0, arg1)
@@ -193,13 +194,13 @@ func (m *MockRabbit) PublishRequest(arg0 string, arg1 *Request) error {
 	return ret0
 }
 
-// PublishRequest indicates an expected call of PublishRequest
+// PublishRequest indicates an expected call of PublishRequest.
 func (mr *MockRabbitMockRecorder) PublishRequest(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishRequest", reflect.TypeOf((*MockRabbit)(nil).PublishRequest), arg0, arg1)
 }
 
-// QueueBind mocks base method
+// QueueBind mocks base method.
 func (m *MockRabbit) QueueBind(arg0, arg1, arg2 string, arg3 bool, arg4 amqp.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueBind", arg0, arg1, arg2, arg3, arg4)
@@ -207,13 +208,13 @@ func (m *MockRabbit) QueueBind(arg0, arg1, arg2 string, arg3 bool, arg4 amqp.Tab
 	return ret0
 }
 
-// QueueBind indicates an expected call of QueueBind
+// QueueBind indicates an expected call of QueueBind.
 func (mr *MockRabbitMockRecorder) QueueBind(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueBind", reflect.TypeOf((*MockRabbit)(nil).QueueBind), arg0, arg1, arg2, arg3, arg4)
 }
 
-// QueueDeclare mocks base method
+// QueueDeclare mocks base method.
 func (m *MockRabbit) QueueDeclare(arg0 string, arg1, arg2, arg3, arg4 bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueDeclare", arg0, arg1, arg2, arg3, arg4)
@@ -221,7 +222,7 @@ func (m *MockRabbit) QueueDeclare(arg0 string, arg1, arg2, arg3, arg4 bool) erro
 	return ret0
 }
 
-// QueueDeclare indicates an expected call of QueueDeclare
+// QueueDeclare indicates an expected call of QueueDeclare.
 func (mr *MockRabbitMockRecorder) QueueDeclare(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueDeclare", reflect.TypeOf((*MockRabbit)(nil).QueueDeclare), arg0, arg1, arg2, arg3, arg4)

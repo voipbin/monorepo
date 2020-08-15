@@ -5,39 +5,40 @@
 package conferencehandler
 
 import (
+	reflect "reflect"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	conference "gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
-	reflect "reflect"
 )
 
-// MockConferenceHandler is a mock of ConferenceHandler interface
+// MockConferenceHandler is a mock of ConferenceHandler interface.
 type MockConferenceHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockConferenceHandlerMockRecorder
 }
 
-// MockConferenceHandlerMockRecorder is the mock recorder for MockConferenceHandler
+// MockConferenceHandlerMockRecorder is the mock recorder for MockConferenceHandler.
 type MockConferenceHandlerMockRecorder struct {
 	mock *MockConferenceHandler
 }
 
-// NewMockConferenceHandler creates a new mock instance
+// NewMockConferenceHandler creates a new mock instance.
 func NewMockConferenceHandler(ctrl *gomock.Controller) *MockConferenceHandler {
 	mock := &MockConferenceHandler{ctrl: ctrl}
 	mock.recorder = &MockConferenceHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockConferenceHandler) EXPECT() *MockConferenceHandlerMockRecorder {
 	return m.recorder
 }
 
-// ARIChannelEnteredBridge mocks base method
+// ARIChannelEnteredBridge mocks base method.
 func (m *MockConferenceHandler) ARIChannelEnteredBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ARIChannelEnteredBridge", arg0, arg1)
@@ -45,13 +46,13 @@ func (m *MockConferenceHandler) ARIChannelEnteredBridge(arg0 *channel.Channel, a
 	return ret0
 }
 
-// ARIChannelEnteredBridge indicates an expected call of ARIChannelEnteredBridge
+// ARIChannelEnteredBridge indicates an expected call of ARIChannelEnteredBridge.
 func (mr *MockConferenceHandlerMockRecorder) ARIChannelEnteredBridge(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelEnteredBridge", reflect.TypeOf((*MockConferenceHandler)(nil).ARIChannelEnteredBridge), arg0, arg1)
 }
 
-// ARIChannelLeftBridge mocks base method
+// ARIChannelLeftBridge mocks base method.
 func (m *MockConferenceHandler) ARIChannelLeftBridge(arg0 *channel.Channel, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ARIChannelLeftBridge", arg0, arg1)
@@ -59,13 +60,13 @@ func (m *MockConferenceHandler) ARIChannelLeftBridge(arg0 *channel.Channel, arg1
 	return ret0
 }
 
-// ARIChannelLeftBridge indicates an expected call of ARIChannelLeftBridge
+// ARIChannelLeftBridge indicates an expected call of ARIChannelLeftBridge.
 func (mr *MockConferenceHandlerMockRecorder) ARIChannelLeftBridge(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockConferenceHandler)(nil).ARIChannelLeftBridge), arg0, arg1)
 }
 
-// ARIStasisStart mocks base method
+// ARIStasisStart mocks base method.
 func (m *MockConferenceHandler) ARIStasisStart(arg0 *channel.Channel) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ARIStasisStart", arg0)
@@ -73,13 +74,13 @@ func (m *MockConferenceHandler) ARIStasisStart(arg0 *channel.Channel) error {
 	return ret0
 }
 
-// ARIStasisStart indicates an expected call of ARIStasisStart
+// ARIStasisStart indicates an expected call of ARIStasisStart.
 func (mr *MockConferenceHandlerMockRecorder) ARIStasisStart(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockConferenceHandler)(nil).ARIStasisStart), arg0)
 }
 
-// Join mocks base method
+// Join mocks base method.
 func (m *MockConferenceHandler) Join(arg0, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Join", arg0, arg1)
@@ -87,13 +88,13 @@ func (m *MockConferenceHandler) Join(arg0, arg1 uuid.UUID) error {
 	return ret0
 }
 
-// Join indicates an expected call of Join
+// Join indicates an expected call of Join.
 func (mr *MockConferenceHandlerMockRecorder) Join(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockConferenceHandler)(nil).Join), arg0, arg1)
 }
 
-// Leave mocks base method
+// Leave mocks base method.
 func (m *MockConferenceHandler) Leave(arg0, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Leave", arg0, arg1)
@@ -101,13 +102,13 @@ func (m *MockConferenceHandler) Leave(arg0, arg1 uuid.UUID) error {
 	return ret0
 }
 
-// Leave indicates an expected call of Leave
+// Leave indicates an expected call of Leave.
 func (mr *MockConferenceHandlerMockRecorder) Leave(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leave", reflect.TypeOf((*MockConferenceHandler)(nil).Leave), arg0, arg1)
 }
 
-// Start mocks base method
+// Start mocks base method.
 func (m *MockConferenceHandler) Start(arg0 *conference.Conference, arg1 *call.Call) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", arg0, arg1)
@@ -116,13 +117,13 @@ func (m *MockConferenceHandler) Start(arg0 *conference.Conference, arg1 *call.Ca
 	return ret0, ret1
 }
 
-// Start indicates an expected call of Start
+// Start indicates an expected call of Start.
 func (mr *MockConferenceHandlerMockRecorder) Start(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockConferenceHandler)(nil).Start), arg0, arg1)
 }
 
-// Terminate mocks base method
+// Terminate mocks base method.
 func (m *MockConferenceHandler) Terminate(arg0 uuid.UUID, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Terminate", arg0, arg1)
@@ -130,7 +131,7 @@ func (m *MockConferenceHandler) Terminate(arg0 uuid.UUID, arg1 string) error {
 	return ret0
 }
 
-// Terminate indicates an expected call of Terminate
+// Terminate indicates an expected call of Terminate.
 func (mr *MockConferenceHandlerMockRecorder) Terminate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockConferenceHandler)(nil).Terminate), arg0, arg1)

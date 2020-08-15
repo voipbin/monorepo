@@ -6,6 +6,9 @@ package dbhandler
 
 import (
 	context "context"
+	reflect "reflect"
+	time "time"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
@@ -14,34 +17,32 @@ import (
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	conference "gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
-	reflect "reflect"
-	time "time"
 )
 
-// MockDBHandler is a mock of DBHandler interface
+// MockDBHandler is a mock of DBHandler interface.
 type MockDBHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockDBHandlerMockRecorder
 }
 
-// MockDBHandlerMockRecorder is the mock recorder for MockDBHandler
+// MockDBHandlerMockRecorder is the mock recorder for MockDBHandler.
 type MockDBHandlerMockRecorder struct {
 	mock *MockDBHandler
 }
 
-// NewMockDBHandler creates a new mock instance
+// NewMockDBHandler creates a new mock instance.
 func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 	mock := &MockDBHandler{ctrl: ctrl}
 	mock.recorder = &MockDBHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
-// BridgeAddChannelID mocks base method
+// BridgeAddChannelID mocks base method.
 func (m *MockDBHandler) BridgeAddChannelID(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeAddChannelID", arg0, arg1, arg2)
@@ -49,13 +50,13 @@ func (m *MockDBHandler) BridgeAddChannelID(arg0 context.Context, arg1, arg2 stri
 	return ret0
 }
 
-// BridgeAddChannelID indicates an expected call of BridgeAddChannelID
+// BridgeAddChannelID indicates an expected call of BridgeAddChannelID.
 func (mr *MockDBHandlerMockRecorder) BridgeAddChannelID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeAddChannelID", reflect.TypeOf((*MockDBHandler)(nil).BridgeAddChannelID), arg0, arg1, arg2)
 }
 
-// BridgeCreate mocks base method
+// BridgeCreate mocks base method.
 func (m *MockDBHandler) BridgeCreate(arg0 context.Context, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeCreate", arg0, arg1)
@@ -63,13 +64,13 @@ func (m *MockDBHandler) BridgeCreate(arg0 context.Context, arg1 *bridge.Bridge) 
 	return ret0
 }
 
-// BridgeCreate indicates an expected call of BridgeCreate
+// BridgeCreate indicates an expected call of BridgeCreate.
 func (mr *MockDBHandlerMockRecorder) BridgeCreate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeCreate", reflect.TypeOf((*MockDBHandler)(nil).BridgeCreate), arg0, arg1)
 }
 
-// BridgeEnd mocks base method
+// BridgeEnd mocks base method.
 func (m *MockDBHandler) BridgeEnd(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeEnd", arg0, arg1, arg2)
@@ -77,13 +78,13 @@ func (m *MockDBHandler) BridgeEnd(arg0 context.Context, arg1, arg2 string) error
 	return ret0
 }
 
-// BridgeEnd indicates an expected call of BridgeEnd
+// BridgeEnd indicates an expected call of BridgeEnd.
 func (mr *MockDBHandlerMockRecorder) BridgeEnd(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeEnd", reflect.TypeOf((*MockDBHandler)(nil).BridgeEnd), arg0, arg1, arg2)
 }
 
-// BridgeGet mocks base method
+// BridgeGet mocks base method.
 func (m *MockDBHandler) BridgeGet(arg0 context.Context, arg1 string) (*bridge.Bridge, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeGet", arg0, arg1)
@@ -92,13 +93,13 @@ func (m *MockDBHandler) BridgeGet(arg0 context.Context, arg1 string) (*bridge.Br
 	return ret0, ret1
 }
 
-// BridgeGet indicates an expected call of BridgeGet
+// BridgeGet indicates an expected call of BridgeGet.
 func (mr *MockDBHandlerMockRecorder) BridgeGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGet", reflect.TypeOf((*MockDBHandler)(nil).BridgeGet), arg0, arg1)
 }
 
-// BridgeGetFromCache mocks base method
+// BridgeGetFromCache mocks base method.
 func (m *MockDBHandler) BridgeGetFromCache(arg0 context.Context, arg1 string) (*bridge.Bridge, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeGetFromCache", arg0, arg1)
@@ -107,13 +108,13 @@ func (m *MockDBHandler) BridgeGetFromCache(arg0 context.Context, arg1 string) (*
 	return ret0, ret1
 }
 
-// BridgeGetFromCache indicates an expected call of BridgeGetFromCache
+// BridgeGetFromCache indicates an expected call of BridgeGetFromCache.
 func (mr *MockDBHandlerMockRecorder) BridgeGetFromCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).BridgeGetFromCache), arg0, arg1)
 }
 
-// BridgeGetFromDB mocks base method
+// BridgeGetFromDB mocks base method.
 func (m *MockDBHandler) BridgeGetFromDB(arg0 context.Context, arg1 string) (*bridge.Bridge, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeGetFromDB", arg0, arg1)
@@ -122,13 +123,13 @@ func (m *MockDBHandler) BridgeGetFromDB(arg0 context.Context, arg1 string) (*bri
 	return ret0, ret1
 }
 
-// BridgeGetFromDB indicates an expected call of BridgeGetFromDB
+// BridgeGetFromDB indicates an expected call of BridgeGetFromDB.
 func (mr *MockDBHandlerMockRecorder) BridgeGetFromDB(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).BridgeGetFromDB), arg0, arg1)
 }
 
-// BridgeGetUntilTimeout mocks base method
+// BridgeGetUntilTimeout mocks base method.
 func (m *MockDBHandler) BridgeGetUntilTimeout(arg0 context.Context, arg1 string) (*bridge.Bridge, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeGetUntilTimeout", arg0, arg1)
@@ -137,13 +138,13 @@ func (m *MockDBHandler) BridgeGetUntilTimeout(arg0 context.Context, arg1 string)
 	return ret0, ret1
 }
 
-// BridgeGetUntilTimeout indicates an expected call of BridgeGetUntilTimeout
+// BridgeGetUntilTimeout indicates an expected call of BridgeGetUntilTimeout.
 func (mr *MockDBHandlerMockRecorder) BridgeGetUntilTimeout(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGetUntilTimeout", reflect.TypeOf((*MockDBHandler)(nil).BridgeGetUntilTimeout), arg0, arg1)
 }
 
-// BridgeIsExist mocks base method
+// BridgeIsExist mocks base method.
 func (m *MockDBHandler) BridgeIsExist(arg0 string, arg1 time.Duration) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeIsExist", arg0, arg1)
@@ -151,13 +152,13 @@ func (m *MockDBHandler) BridgeIsExist(arg0 string, arg1 time.Duration) bool {
 	return ret0
 }
 
-// BridgeIsExist indicates an expected call of BridgeIsExist
+// BridgeIsExist indicates an expected call of BridgeIsExist.
 func (mr *MockDBHandlerMockRecorder) BridgeIsExist(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeIsExist", reflect.TypeOf((*MockDBHandler)(nil).BridgeIsExist), arg0, arg1)
 }
 
-// BridgeRemoveChannelID mocks base method
+// BridgeRemoveChannelID mocks base method.
 func (m *MockDBHandler) BridgeRemoveChannelID(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeRemoveChannelID", arg0, arg1, arg2)
@@ -165,13 +166,13 @@ func (m *MockDBHandler) BridgeRemoveChannelID(arg0 context.Context, arg1, arg2 s
 	return ret0
 }
 
-// BridgeRemoveChannelID indicates an expected call of BridgeRemoveChannelID
+// BridgeRemoveChannelID indicates an expected call of BridgeRemoveChannelID.
 func (mr *MockDBHandlerMockRecorder) BridgeRemoveChannelID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeRemoveChannelID", reflect.TypeOf((*MockDBHandler)(nil).BridgeRemoveChannelID), arg0, arg1, arg2)
 }
 
-// BridgeSetToCache mocks base method
+// BridgeSetToCache mocks base method.
 func (m *MockDBHandler) BridgeSetToCache(arg0 context.Context, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeSetToCache", arg0, arg1)
@@ -179,13 +180,13 @@ func (m *MockDBHandler) BridgeSetToCache(arg0 context.Context, arg1 *bridge.Brid
 	return ret0
 }
 
-// BridgeSetToCache indicates an expected call of BridgeSetToCache
+// BridgeSetToCache indicates an expected call of BridgeSetToCache.
 func (mr *MockDBHandlerMockRecorder) BridgeSetToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeSetToCache", reflect.TypeOf((*MockDBHandler)(nil).BridgeSetToCache), arg0, arg1)
 }
 
-// BridgeUpdateToCache mocks base method
+// BridgeUpdateToCache mocks base method.
 func (m *MockDBHandler) BridgeUpdateToCache(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BridgeUpdateToCache", arg0, arg1)
@@ -193,13 +194,13 @@ func (m *MockDBHandler) BridgeUpdateToCache(arg0 context.Context, arg1 string) e
 	return ret0
 }
 
-// BridgeUpdateToCache indicates an expected call of BridgeUpdateToCache
+// BridgeUpdateToCache indicates an expected call of BridgeUpdateToCache.
 func (mr *MockDBHandlerMockRecorder) BridgeUpdateToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).BridgeUpdateToCache), arg0, arg1)
 }
 
-// CallCreate mocks base method
+// CallCreate mocks base method.
 func (m *MockDBHandler) CallCreate(arg0 context.Context, arg1 *call.Call) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallCreate", arg0, arg1)
@@ -207,13 +208,13 @@ func (m *MockDBHandler) CallCreate(arg0 context.Context, arg1 *call.Call) error 
 	return ret0
 }
 
-// CallCreate indicates an expected call of CallCreate
+// CallCreate indicates an expected call of CallCreate.
 func (mr *MockDBHandlerMockRecorder) CallCreate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockDBHandler)(nil).CallCreate), arg0, arg1)
 }
 
-// CallGet mocks base method
+// CallGet mocks base method.
 func (m *MockDBHandler) CallGet(arg0 context.Context, arg1 uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGet", arg0, arg1)
@@ -222,13 +223,13 @@ func (m *MockDBHandler) CallGet(arg0 context.Context, arg1 uuid.UUID) (*call.Cal
 	return ret0, ret1
 }
 
-// CallGet indicates an expected call of CallGet
+// CallGet indicates an expected call of CallGet.
 func (mr *MockDBHandlerMockRecorder) CallGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGet", reflect.TypeOf((*MockDBHandler)(nil).CallGet), arg0, arg1)
 }
 
-// CallGetByChannelID mocks base method
+// CallGetByChannelID mocks base method.
 func (m *MockDBHandler) CallGetByChannelID(arg0 context.Context, arg1 string) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGetByChannelID", arg0, arg1)
@@ -237,13 +238,13 @@ func (m *MockDBHandler) CallGetByChannelID(arg0 context.Context, arg1 string) (*
 	return ret0, ret1
 }
 
-// CallGetByChannelID indicates an expected call of CallGetByChannelID
+// CallGetByChannelID indicates an expected call of CallGetByChannelID.
 func (mr *MockDBHandlerMockRecorder) CallGetByChannelID(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetByChannelID", reflect.TypeOf((*MockDBHandler)(nil).CallGetByChannelID), arg0, arg1)
 }
 
-// CallGetFromCache mocks base method
+// CallGetFromCache mocks base method.
 func (m *MockDBHandler) CallGetFromCache(arg0 context.Context, arg1 uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGetFromCache", arg0, arg1)
@@ -252,13 +253,13 @@ func (m *MockDBHandler) CallGetFromCache(arg0 context.Context, arg1 uuid.UUID) (
 	return ret0, ret1
 }
 
-// CallGetFromCache indicates an expected call of CallGetFromCache
+// CallGetFromCache indicates an expected call of CallGetFromCache.
 func (mr *MockDBHandlerMockRecorder) CallGetFromCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).CallGetFromCache), arg0, arg1)
 }
 
-// CallGetFromDB mocks base method
+// CallGetFromDB mocks base method.
 func (m *MockDBHandler) CallGetFromDB(arg0 context.Context, arg1 uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGetFromDB", arg0, arg1)
@@ -267,13 +268,13 @@ func (m *MockDBHandler) CallGetFromDB(arg0 context.Context, arg1 uuid.UUID) (*ca
 	return ret0, ret1
 }
 
-// CallGetFromDB indicates an expected call of CallGetFromDB
+// CallGetFromDB indicates an expected call of CallGetFromDB.
 func (mr *MockDBHandlerMockRecorder) CallGetFromDB(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).CallGetFromDB), arg0, arg1)
 }
 
-// CallSetAction mocks base method
+// CallSetAction mocks base method.
 func (m *MockDBHandler) CallSetAction(arg0 context.Context, arg1 uuid.UUID, arg2 *action.Action) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallSetAction", arg0, arg1, arg2)
@@ -281,13 +282,13 @@ func (m *MockDBHandler) CallSetAction(arg0 context.Context, arg1 uuid.UUID, arg2
 	return ret0
 }
 
-// CallSetAction indicates an expected call of CallSetAction
+// CallSetAction indicates an expected call of CallSetAction.
 func (mr *MockDBHandlerMockRecorder) CallSetAction(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetAction", reflect.TypeOf((*MockDBHandler)(nil).CallSetAction), arg0, arg1, arg2)
 }
 
-// CallSetConferenceID mocks base method
+// CallSetConferenceID mocks base method.
 func (m *MockDBHandler) CallSetConferenceID(arg0 context.Context, arg1, arg2 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallSetConferenceID", arg0, arg1, arg2)
@@ -295,13 +296,13 @@ func (m *MockDBHandler) CallSetConferenceID(arg0 context.Context, arg1, arg2 uui
 	return ret0
 }
 
-// CallSetConferenceID indicates an expected call of CallSetConferenceID
+// CallSetConferenceID indicates an expected call of CallSetConferenceID.
 func (mr *MockDBHandlerMockRecorder) CallSetConferenceID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetConferenceID", reflect.TypeOf((*MockDBHandler)(nil).CallSetConferenceID), arg0, arg1, arg2)
 }
 
-// CallSetFlowID mocks base method
+// CallSetFlowID mocks base method.
 func (m *MockDBHandler) CallSetFlowID(arg0 context.Context, arg1, arg2 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallSetFlowID", arg0, arg1, arg2)
@@ -309,13 +310,13 @@ func (m *MockDBHandler) CallSetFlowID(arg0 context.Context, arg1, arg2 uuid.UUID
 	return ret0
 }
 
-// CallSetFlowID indicates an expected call of CallSetFlowID
+// CallSetFlowID indicates an expected call of CallSetFlowID.
 func (mr *MockDBHandlerMockRecorder) CallSetFlowID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetFlowID", reflect.TypeOf((*MockDBHandler)(nil).CallSetFlowID), arg0, arg1, arg2)
 }
 
-// CallSetHangup mocks base method
+// CallSetHangup mocks base method.
 func (m *MockDBHandler) CallSetHangup(arg0 context.Context, arg1 uuid.UUID, arg2 call.HangupReason, arg3 call.HangupBy, arg4 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallSetHangup", arg0, arg1, arg2, arg3, arg4)
@@ -323,13 +324,13 @@ func (m *MockDBHandler) CallSetHangup(arg0 context.Context, arg1 uuid.UUID, arg2
 	return ret0
 }
 
-// CallSetHangup indicates an expected call of CallSetHangup
+// CallSetHangup indicates an expected call of CallSetHangup.
 func (mr *MockDBHandlerMockRecorder) CallSetHangup(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetHangup", reflect.TypeOf((*MockDBHandler)(nil).CallSetHangup), arg0, arg1, arg2, arg3, arg4)
 }
 
-// CallSetStatus mocks base method
+// CallSetStatus mocks base method.
 func (m *MockDBHandler) CallSetStatus(arg0 context.Context, arg1 uuid.UUID, arg2 call.Status, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallSetStatus", arg0, arg1, arg2, arg3)
@@ -337,13 +338,13 @@ func (m *MockDBHandler) CallSetStatus(arg0 context.Context, arg1 uuid.UUID, arg2
 	return ret0
 }
 
-// CallSetStatus indicates an expected call of CallSetStatus
+// CallSetStatus indicates an expected call of CallSetStatus.
 func (mr *MockDBHandlerMockRecorder) CallSetStatus(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetStatus", reflect.TypeOf((*MockDBHandler)(nil).CallSetStatus), arg0, arg1, arg2, arg3)
 }
 
-// CallSetToCache mocks base method
+// CallSetToCache mocks base method.
 func (m *MockDBHandler) CallSetToCache(arg0 context.Context, arg1 *call.Call) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallSetToCache", arg0, arg1)
@@ -351,13 +352,13 @@ func (m *MockDBHandler) CallSetToCache(arg0 context.Context, arg1 *call.Call) er
 	return ret0
 }
 
-// CallSetToCache indicates an expected call of CallSetToCache
+// CallSetToCache indicates an expected call of CallSetToCache.
 func (mr *MockDBHandlerMockRecorder) CallSetToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetToCache", reflect.TypeOf((*MockDBHandler)(nil).CallSetToCache), arg0, arg1)
 }
 
-// CallUpdateToCache mocks base method
+// CallUpdateToCache mocks base method.
 func (m *MockDBHandler) CallUpdateToCache(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallUpdateToCache", arg0, arg1)
@@ -365,13 +366,13 @@ func (m *MockDBHandler) CallUpdateToCache(arg0 context.Context, arg1 uuid.UUID) 
 	return ret0
 }
 
-// CallUpdateToCache indicates an expected call of CallUpdateToCache
+// CallUpdateToCache indicates an expected call of CallUpdateToCache.
 func (mr *MockDBHandlerMockRecorder) CallUpdateToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).CallUpdateToCache), arg0, arg1)
 }
 
-// ChannelCreate mocks base method
+// ChannelCreate mocks base method.
 func (m *MockDBHandler) ChannelCreate(arg0 context.Context, arg1 *channel.Channel) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelCreate", arg0, arg1)
@@ -379,13 +380,13 @@ func (m *MockDBHandler) ChannelCreate(arg0 context.Context, arg1 *channel.Channe
 	return ret0
 }
 
-// ChannelCreate indicates an expected call of ChannelCreate
+// ChannelCreate indicates an expected call of ChannelCreate.
 func (mr *MockDBHandlerMockRecorder) ChannelCreate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelCreate", reflect.TypeOf((*MockDBHandler)(nil).ChannelCreate), arg0, arg1)
 }
 
-// ChannelEnd mocks base method
+// ChannelEnd mocks base method.
 func (m *MockDBHandler) ChannelEnd(arg0 context.Context, arg1, arg2 string, arg3 ari.ChannelCause) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelEnd", arg0, arg1, arg2, arg3)
@@ -393,13 +394,13 @@ func (m *MockDBHandler) ChannelEnd(arg0 context.Context, arg1, arg2 string, arg3
 	return ret0
 }
 
-// ChannelEnd indicates an expected call of ChannelEnd
+// ChannelEnd indicates an expected call of ChannelEnd.
 func (mr *MockDBHandlerMockRecorder) ChannelEnd(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelEnd", reflect.TypeOf((*MockDBHandler)(nil).ChannelEnd), arg0, arg1, arg2, arg3)
 }
 
-// ChannelGet mocks base method
+// ChannelGet mocks base method.
 func (m *MockDBHandler) ChannelGet(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelGet", arg0, arg1)
@@ -408,13 +409,13 @@ func (m *MockDBHandler) ChannelGet(arg0 context.Context, arg1 string) (*channel.
 	return ret0, ret1
 }
 
-// ChannelGet indicates an expected call of ChannelGet
+// ChannelGet indicates an expected call of ChannelGet.
 func (mr *MockDBHandlerMockRecorder) ChannelGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGet", reflect.TypeOf((*MockDBHandler)(nil).ChannelGet), arg0, arg1)
 }
 
-// ChannelGetFromCache mocks base method
+// ChannelGetFromCache mocks base method.
 func (m *MockDBHandler) ChannelGetFromCache(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelGetFromCache", arg0, arg1)
@@ -423,13 +424,13 @@ func (m *MockDBHandler) ChannelGetFromCache(arg0 context.Context, arg1 string) (
 	return ret0, ret1
 }
 
-// ChannelGetFromCache indicates an expected call of ChannelGetFromCache
+// ChannelGetFromCache indicates an expected call of ChannelGetFromCache.
 func (mr *MockDBHandlerMockRecorder) ChannelGetFromCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetFromCache), arg0, arg1)
 }
 
-// ChannelGetFromDB mocks base method
+// ChannelGetFromDB mocks base method.
 func (m *MockDBHandler) ChannelGetFromDB(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelGetFromDB", arg0, arg1)
@@ -438,13 +439,13 @@ func (m *MockDBHandler) ChannelGetFromDB(arg0 context.Context, arg1 string) (*ch
 	return ret0, ret1
 }
 
-// ChannelGetFromDB indicates an expected call of ChannelGetFromDB
+// ChannelGetFromDB indicates an expected call of ChannelGetFromDB.
 func (mr *MockDBHandlerMockRecorder) ChannelGetFromDB(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetFromDB), arg0, arg1)
 }
 
-// ChannelGetUntilTimeout mocks base method
+// ChannelGetUntilTimeout mocks base method.
 func (m *MockDBHandler) ChannelGetUntilTimeout(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelGetUntilTimeout", arg0, arg1)
@@ -453,13 +454,13 @@ func (m *MockDBHandler) ChannelGetUntilTimeout(arg0 context.Context, arg1 string
 	return ret0, ret1
 }
 
-// ChannelGetUntilTimeout indicates an expected call of ChannelGetUntilTimeout
+// ChannelGetUntilTimeout indicates an expected call of ChannelGetUntilTimeout.
 func (mr *MockDBHandlerMockRecorder) ChannelGetUntilTimeout(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetUntilTimeout", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetUntilTimeout), arg0, arg1)
 }
 
-// ChannelGetUntilTimeoutWithStasis mocks base method
+// ChannelGetUntilTimeoutWithStasis mocks base method.
 func (m *MockDBHandler) ChannelGetUntilTimeoutWithStasis(arg0 context.Context, arg1 string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelGetUntilTimeoutWithStasis", arg0, arg1)
@@ -468,13 +469,13 @@ func (m *MockDBHandler) ChannelGetUntilTimeoutWithStasis(arg0 context.Context, a
 	return ret0, ret1
 }
 
-// ChannelGetUntilTimeoutWithStasis indicates an expected call of ChannelGetUntilTimeoutWithStasis
+// ChannelGetUntilTimeoutWithStasis indicates an expected call of ChannelGetUntilTimeoutWithStasis.
 func (mr *MockDBHandlerMockRecorder) ChannelGetUntilTimeoutWithStasis(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetUntilTimeoutWithStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetUntilTimeoutWithStasis), arg0, arg1)
 }
 
-// ChannelIsExist mocks base method
+// ChannelIsExist mocks base method.
 func (m *MockDBHandler) ChannelIsExist(arg0 string, arg1 time.Duration) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelIsExist", arg0, arg1)
@@ -482,13 +483,13 @@ func (m *MockDBHandler) ChannelIsExist(arg0 string, arg1 time.Duration) bool {
 	return ret0
 }
 
-// ChannelIsExist indicates an expected call of ChannelIsExist
+// ChannelIsExist indicates an expected call of ChannelIsExist.
 func (mr *MockDBHandlerMockRecorder) ChannelIsExist(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelIsExist", reflect.TypeOf((*MockDBHandler)(nil).ChannelIsExist), arg0, arg1)
 }
 
-// ChannelSetBridgeID mocks base method
+// ChannelSetBridgeID mocks base method.
 func (m *MockDBHandler) ChannelSetBridgeID(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelSetBridgeID", arg0, arg1, arg2)
@@ -496,13 +497,13 @@ func (m *MockDBHandler) ChannelSetBridgeID(arg0 context.Context, arg1, arg2 stri
 	return ret0
 }
 
-// ChannelSetBridgeID indicates an expected call of ChannelSetBridgeID
+// ChannelSetBridgeID indicates an expected call of ChannelSetBridgeID.
 func (mr *MockDBHandlerMockRecorder) ChannelSetBridgeID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetBridgeID), arg0, arg1, arg2)
 }
 
-// ChannelSetData mocks base method
+// ChannelSetData mocks base method.
 func (m *MockDBHandler) ChannelSetData(arg0 context.Context, arg1 string, arg2 map[string]interface{}) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelSetData", arg0, arg1, arg2)
@@ -510,13 +511,13 @@ func (m *MockDBHandler) ChannelSetData(arg0 context.Context, arg1 string, arg2 m
 	return ret0
 }
 
-// ChannelSetData indicates an expected call of ChannelSetData
+// ChannelSetData indicates an expected call of ChannelSetData.
 func (mr *MockDBHandlerMockRecorder) ChannelSetData(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetData), arg0, arg1, arg2)
 }
 
-// ChannelSetDataAndStasis mocks base method
+// ChannelSetDataAndStasis mocks base method.
 func (m *MockDBHandler) ChannelSetDataAndStasis(arg0 context.Context, arg1 string, arg2 map[string]interface{}, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelSetDataAndStasis", arg0, arg1, arg2, arg3)
@@ -524,13 +525,13 @@ func (m *MockDBHandler) ChannelSetDataAndStasis(arg0 context.Context, arg1 strin
 	return ret0
 }
 
-// ChannelSetDataAndStasis indicates an expected call of ChannelSetDataAndStasis
+// ChannelSetDataAndStasis indicates an expected call of ChannelSetDataAndStasis.
 func (mr *MockDBHandlerMockRecorder) ChannelSetDataAndStasis(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDataAndStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDataAndStasis), arg0, arg1, arg2, arg3)
 }
 
-// ChannelSetStasis mocks base method
+// ChannelSetStasis mocks base method.
 func (m *MockDBHandler) ChannelSetStasis(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelSetStasis", arg0, arg1, arg2)
@@ -538,13 +539,13 @@ func (m *MockDBHandler) ChannelSetStasis(arg0 context.Context, arg1, arg2 string
 	return ret0
 }
 
-// ChannelSetStasis indicates an expected call of ChannelSetStasis
+// ChannelSetStasis indicates an expected call of ChannelSetStasis.
 func (mr *MockDBHandlerMockRecorder) ChannelSetStasis(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetStasis), arg0, arg1, arg2)
 }
 
-// ChannelSetState mocks base method
+// ChannelSetState mocks base method.
 func (m *MockDBHandler) ChannelSetState(arg0 context.Context, arg1, arg2 string, arg3 ari.ChannelState) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelSetState", arg0, arg1, arg2, arg3)
@@ -552,13 +553,13 @@ func (m *MockDBHandler) ChannelSetState(arg0 context.Context, arg1, arg2 string,
 	return ret0
 }
 
-// ChannelSetState indicates an expected call of ChannelSetState
+// ChannelSetState indicates an expected call of ChannelSetState.
 func (mr *MockDBHandlerMockRecorder) ChannelSetState(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetState", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetState), arg0, arg1, arg2, arg3)
 }
 
-// ChannelSetToCache mocks base method
+// ChannelSetToCache mocks base method.
 func (m *MockDBHandler) ChannelSetToCache(arg0 context.Context, arg1 *channel.Channel) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelSetToCache", arg0, arg1)
@@ -566,13 +567,13 @@ func (m *MockDBHandler) ChannelSetToCache(arg0 context.Context, arg1 *channel.Ch
 	return ret0
 }
 
-// ChannelSetToCache indicates an expected call of ChannelSetToCache
+// ChannelSetToCache indicates an expected call of ChannelSetToCache.
 func (mr *MockDBHandlerMockRecorder) ChannelSetToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetToCache", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetToCache), arg0, arg1)
 }
 
-// ChannelUpdateToCache mocks base method
+// ChannelUpdateToCache mocks base method.
 func (m *MockDBHandler) ChannelUpdateToCache(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelUpdateToCache", arg0, arg1)
@@ -580,13 +581,13 @@ func (m *MockDBHandler) ChannelUpdateToCache(arg0 context.Context, arg1 string) 
 	return ret0
 }
 
-// ChannelUpdateToCache indicates an expected call of ChannelUpdateToCache
+// ChannelUpdateToCache indicates an expected call of ChannelUpdateToCache.
 func (mr *MockDBHandlerMockRecorder) ChannelUpdateToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).ChannelUpdateToCache), arg0, arg1)
 }
 
-// ConferenceAddCallID mocks base method
+// ConferenceAddCallID mocks base method.
 func (m *MockDBHandler) ConferenceAddCallID(arg0 context.Context, arg1, arg2 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceAddCallID", arg0, arg1, arg2)
@@ -594,13 +595,13 @@ func (m *MockDBHandler) ConferenceAddCallID(arg0 context.Context, arg1, arg2 uui
 	return ret0
 }
 
-// ConferenceAddCallID indicates an expected call of ConferenceAddCallID
+// ConferenceAddCallID indicates an expected call of ConferenceAddCallID.
 func (mr *MockDBHandlerMockRecorder) ConferenceAddCallID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddCallID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddCallID), arg0, arg1, arg2)
 }
 
-// ConferenceCreate mocks base method
+// ConferenceCreate mocks base method.
 func (m *MockDBHandler) ConferenceCreate(arg0 context.Context, arg1 *conference.Conference) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceCreate", arg0, arg1)
@@ -608,13 +609,13 @@ func (m *MockDBHandler) ConferenceCreate(arg0 context.Context, arg1 *conference.
 	return ret0
 }
 
-// ConferenceCreate indicates an expected call of ConferenceCreate
+// ConferenceCreate indicates an expected call of ConferenceCreate.
 func (mr *MockDBHandlerMockRecorder) ConferenceCreate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceCreate", reflect.TypeOf((*MockDBHandler)(nil).ConferenceCreate), arg0, arg1)
 }
 
-// ConferenceEnd mocks base method
+// ConferenceEnd mocks base method.
 func (m *MockDBHandler) ConferenceEnd(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceEnd", arg0, arg1)
@@ -622,13 +623,13 @@ func (m *MockDBHandler) ConferenceEnd(arg0 context.Context, arg1 uuid.UUID) erro
 	return ret0
 }
 
-// ConferenceEnd indicates an expected call of ConferenceEnd
+// ConferenceEnd indicates an expected call of ConferenceEnd.
 func (mr *MockDBHandlerMockRecorder) ConferenceEnd(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceEnd", reflect.TypeOf((*MockDBHandler)(nil).ConferenceEnd), arg0, arg1)
 }
 
-// ConferenceGet mocks base method
+// ConferenceGet mocks base method.
 func (m *MockDBHandler) ConferenceGet(arg0 context.Context, arg1 uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGet", arg0, arg1)
@@ -637,13 +638,13 @@ func (m *MockDBHandler) ConferenceGet(arg0 context.Context, arg1 uuid.UUID) (*co
 	return ret0, ret1
 }
 
-// ConferenceGet indicates an expected call of ConferenceGet
+// ConferenceGet indicates an expected call of ConferenceGet.
 func (mr *MockDBHandlerMockRecorder) ConferenceGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGet), arg0, arg1)
 }
 
-// ConferenceGetFromCache mocks base method
+// ConferenceGetFromCache mocks base method.
 func (m *MockDBHandler) ConferenceGetFromCache(arg0 context.Context, arg1 uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGetFromCache", arg0, arg1)
@@ -652,13 +653,13 @@ func (m *MockDBHandler) ConferenceGetFromCache(arg0 context.Context, arg1 uuid.U
 	return ret0, ret1
 }
 
-// ConferenceGetFromCache indicates an expected call of ConferenceGetFromCache
+// ConferenceGetFromCache indicates an expected call of ConferenceGetFromCache.
 func (mr *MockDBHandlerMockRecorder) ConferenceGetFromCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetFromCache), arg0, arg1)
 }
 
-// ConferenceGetFromDB mocks base method
+// ConferenceGetFromDB mocks base method.
 func (m *MockDBHandler) ConferenceGetFromDB(arg0 context.Context, arg1 uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGetFromDB", arg0, arg1)
@@ -667,13 +668,13 @@ func (m *MockDBHandler) ConferenceGetFromDB(arg0 context.Context, arg1 uuid.UUID
 	return ret0, ret1
 }
 
-// ConferenceGetFromDB indicates an expected call of ConferenceGetFromDB
+// ConferenceGetFromDB indicates an expected call of ConferenceGetFromDB.
 func (mr *MockDBHandlerMockRecorder) ConferenceGetFromDB(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetFromDB), arg0, arg1)
 }
 
-// ConferenceRemoveCallID mocks base method
+// ConferenceRemoveCallID mocks base method.
 func (m *MockDBHandler) ConferenceRemoveCallID(arg0 context.Context, arg1, arg2 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceRemoveCallID", arg0, arg1, arg2)
@@ -681,13 +682,13 @@ func (m *MockDBHandler) ConferenceRemoveCallID(arg0 context.Context, arg1, arg2 
 	return ret0
 }
 
-// ConferenceRemoveCallID indicates an expected call of ConferenceRemoveCallID
+// ConferenceRemoveCallID indicates an expected call of ConferenceRemoveCallID.
 func (mr *MockDBHandlerMockRecorder) ConferenceRemoveCallID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRemoveCallID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceRemoveCallID), arg0, arg1, arg2)
 }
 
-// ConferenceSetBridgeID mocks base method
+// ConferenceSetBridgeID mocks base method.
 func (m *MockDBHandler) ConferenceSetBridgeID(arg0 context.Context, arg1 uuid.UUID, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceSetBridgeID", arg0, arg1, arg2)
@@ -695,13 +696,13 @@ func (m *MockDBHandler) ConferenceSetBridgeID(arg0 context.Context, arg1 uuid.UU
 	return ret0
 }
 
-// ConferenceSetBridgeID indicates an expected call of ConferenceSetBridgeID
+// ConferenceSetBridgeID indicates an expected call of ConferenceSetBridgeID.
 func (mr *MockDBHandlerMockRecorder) ConferenceSetBridgeID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetBridgeID), arg0, arg1, arg2)
 }
 
-// ConferenceSetStatus mocks base method
+// ConferenceSetStatus mocks base method.
 func (m *MockDBHandler) ConferenceSetStatus(arg0 context.Context, arg1 uuid.UUID, arg2 conference.Status) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceSetStatus", arg0, arg1, arg2)
@@ -709,13 +710,13 @@ func (m *MockDBHandler) ConferenceSetStatus(arg0 context.Context, arg1 uuid.UUID
 	return ret0
 }
 
-// ConferenceSetStatus indicates an expected call of ConferenceSetStatus
+// ConferenceSetStatus indicates an expected call of ConferenceSetStatus.
 func (mr *MockDBHandlerMockRecorder) ConferenceSetStatus(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetStatus", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetStatus), arg0, arg1, arg2)
 }
 
-// ConferenceSetToCache mocks base method
+// ConferenceSetToCache mocks base method.
 func (m *MockDBHandler) ConferenceSetToCache(arg0 context.Context, arg1 *conference.Conference) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceSetToCache", arg0, arg1)
@@ -723,13 +724,13 @@ func (m *MockDBHandler) ConferenceSetToCache(arg0 context.Context, arg1 *confere
 	return ret0
 }
 
-// ConferenceSetToCache indicates an expected call of ConferenceSetToCache
+// ConferenceSetToCache indicates an expected call of ConferenceSetToCache.
 func (mr *MockDBHandlerMockRecorder) ConferenceSetToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetToCache", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetToCache), arg0, arg1)
 }
 
-// ConferenceUpdateToCache mocks base method
+// ConferenceUpdateToCache mocks base method.
 func (m *MockDBHandler) ConferenceUpdateToCache(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceUpdateToCache", arg0, arg1)
@@ -737,7 +738,7 @@ func (m *MockDBHandler) ConferenceUpdateToCache(arg0 context.Context, arg1 uuid.
 	return ret0
 }
 
-// ConferenceUpdateToCache indicates an expected call of ConferenceUpdateToCache
+// ConferenceUpdateToCache indicates an expected call of ConferenceUpdateToCache.
 func (mr *MockDBHandlerMockRecorder) ConferenceUpdateToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).ConferenceUpdateToCache), arg0, arg1)

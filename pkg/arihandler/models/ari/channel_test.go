@@ -15,7 +15,7 @@ func TestParseChannel(t *testing.T) {
 	tests := []test{
 		{
 			"test normal",
-			`{"id":"1589706755.0","name":"PJSIP/call-in-00000000","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"8872616","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=NfD0bqG~ys,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-17T09:12:35.988+0000","language":"en"}`,
+			`{"id":"1589706755.0","name":"PJSIP/call-in-00000000","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"8872616","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=NfD0bqG~ys,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-17T09:12:35.988+0000","language":"en"}`,
 			&Channel{
 				ID:           "1589706755.0",
 				Name:         "PJSIP/call-in-00000000",
@@ -32,7 +32,7 @@ func TestParseChannel(t *testing.T) {
 					Exten:    "8872616",
 					Priority: 2,
 					AppName:  "Stasis",
-					AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=NfD0bqG~ys,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161",
+					AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=NfD0bqG~ys,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161",
 				},
 			},
 		},
@@ -174,7 +174,7 @@ func TestParseChannelStateChange(t *testing.T) {
 	tests := []test{
 		{
 			"normal test",
-			`{"type":"ChannelStateChange","timestamp":"2020-04-25T14:14:18.872+0000","channel":{"id":"1587824058.4108","name":"PJSIP/in-voipbin-00000fc8","state":"Up","caller":{"name":"","number":"1001"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"+46842002310","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1839956265-1792916014-1999965658,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=45.151.255.178"},"creationtime":"2020-04-25T14:14:18.670+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
+			`{"type":"ChannelStateChange","timestamp":"2020-04-25T14:14:18.872+0000","channel":{"id":"1587824058.4108","name":"PJSIP/in-voipbin-00000fc8","state":"Up","caller":{"name":"","number":"1001"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"+46842002310","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1839956265-1792916014-1999965658,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=45.151.255.178"},"creationtime":"2020-04-25T14:14:18.670+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
 		},
 	}
 
@@ -357,7 +357,7 @@ func TestParseChannelDtmfReceived(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			`{"type":"ChannelDtmfReceived","timestamp":"2020-05-20T06:40:45.663+0000","digit":"9","duration_ms":100,"channel":{"id":"1589956827.6285","name":"PJSIP/call-in-00000633","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"9912321321","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=n1kN7Utaj-,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-20T06:40:27.599+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
+			`{"type":"ChannelDtmfReceived","timestamp":"2020-05-20T06:40:45.663+0000","digit":"9","duration_ms":100,"channel":{"id":"1589956827.6285","name":"PJSIP/call-in-00000633","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"9912321321","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=n1kN7Utaj-,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-20T06:40:27.599+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`,
 			&ChannelDtmfReceived{
 				Event{
 					Type:        EventTypeChannelDtmfReceived,
@@ -382,7 +382,7 @@ func TestParseChannelDtmfReceived(t *testing.T) {
 						Exten:    "9912321321",
 						Priority: 2,
 						AppName:  "Stasis",
-						AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=n1kN7Utaj-,SIP_PAI=,SIP_PRIVACY=,DOMAIN=echo.voipbin.net,SOURCE=213.127.79.161",
+						AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=n1kN7Utaj-,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161",
 					},
 				},
 			},

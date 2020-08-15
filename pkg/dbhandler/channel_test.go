@@ -526,13 +526,13 @@ func TestChannelSetData(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				TMCreate:   "2020-04-20T03:22:17.995000",
 			},
-			map[string]interface{}{"DOMAIN": "echo.voipbin.net", "SOURCE": "213.127.79.161", "CONTEXT": "in-voipbin", "SIP_PAI": "", "SIP_CALLID": "AWV705JjED", "SIP_PRIVACY": ""},
+			map[string]interface{}{"DOMAIN": "sip-service.voipbin.net", "SOURCE": "213.127.79.161", "CONTEXT": "in-voipbin", "SIP_PAI": "", "SIP_CALLID": "AWV705JjED", "SIP_PRIVACY": ""},
 			&channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "77f761e4-8fd8-11ea-ab40-37a48b9e8971",
 				State:      ari.ChannelStateRing,
 				Data: map[string]interface{}{
-					"DOMAIN":      "echo.voipbin.net",
+					"DOMAIN":      "sip-service.voipbin.net",
 					"SOURCE":      "213.127.79.161",
 					"CONTEXT":     "in-voipbin",
 					"SIP_PAI":     "",
@@ -618,14 +618,14 @@ func TestChannelSetDataAndStasis(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				TMCreate:   "2020-04-20T03:22:17.995000",
 			},
-			map[string]interface{}{"DOMAIN": "echo.voipbin.net", "SOURCE": "213.127.79.161", "CONTEXT": "in-voipbin", "SIP_PAI": "", "SIP_CALLID": "AWV705JjED", "SIP_PRIVACY": ""},
+			map[string]interface{}{"DOMAIN": "sip-service.voipbin.net", "SOURCE": "213.127.79.161", "CONTEXT": "in-voipbin", "SIP_PAI": "", "SIP_CALLID": "AWV705JjED", "SIP_PRIVACY": ""},
 			"voipbin",
 			&channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "de94c572-8fd8-11ea-8a51-cfff145aaab5",
 				State:      ari.ChannelStateRing,
 				Data: map[string]interface{}{
-					"DOMAIN":      "echo.voipbin.net",
+					"DOMAIN":      "sip-service.voipbin.net",
 					"SOURCE":      "213.127.79.161",
 					"CONTEXT":     "in-voipbin",
 					"SIP_PAI":     "",

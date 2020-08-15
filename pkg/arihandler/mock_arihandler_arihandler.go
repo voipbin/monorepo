@@ -5,34 +5,35 @@
 package arihandler
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockARIHandler is a mock of ARIHandler interface
+// MockARIHandler is a mock of ARIHandler interface.
 type MockARIHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockARIHandlerMockRecorder
 }
 
-// MockARIHandlerMockRecorder is the mock recorder for MockARIHandler
+// MockARIHandlerMockRecorder is the mock recorder for MockARIHandler.
 type MockARIHandlerMockRecorder struct {
 	mock *MockARIHandler
 }
 
-// NewMockARIHandler creates a new mock instance
+// NewMockARIHandler creates a new mock instance.
 func NewMockARIHandler(ctrl *gomock.Controller) *MockARIHandler {
 	mock := &MockARIHandler{ctrl: ctrl}
 	mock.recorder = &MockARIHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockARIHandler) EXPECT() *MockARIHandlerMockRecorder {
 	return m.recorder
 }
 
-// Run mocks base method
+// Run mocks base method.
 func (m *MockARIHandler) Run(queue, receiver string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Run", queue, receiver)
@@ -40,7 +41,7 @@ func (m *MockARIHandler) Run(queue, receiver string) error {
 	return ret0
 }
 
-// Run indicates an expected call of Run
+// Run indicates an expected call of Run.
 func (mr *MockARIHandlerMockRecorder) Run(queue, receiver interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockARIHandler)(nil).Run), queue, receiver)

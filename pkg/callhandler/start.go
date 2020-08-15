@@ -22,7 +22,6 @@ const (
 
 // domain types
 const (
-	domainEcho       = "echo.voipbin.net"
 	domainConference = "conference.voipbin.net"
 	domainSipService = "sip-service.voipbin.net"
 )
@@ -55,9 +54,6 @@ func (h *callHandler) Start(cn *channel.Channel) error {
 	cType := getType(cn)
 
 	switch cType {
-	case call.TypeEcho:
-		return h.typeEchoStart(cn)
-
 	case call.TypeConference:
 		return h.typeConferenceStart(cn)
 
@@ -93,9 +89,6 @@ func getTypeContextIncomingCall(cn *channel.Channel) call.Type {
 	// so we have to distinguish them using the requested domain name.
 	domain := cn.Data["DOMAIN"]
 	switch domain {
-	case domainEcho:
-		return call.TypeEcho
-
 	case domainConference:
 		return call.TypeConference
 
@@ -123,7 +116,7 @@ func (h *callHandler) typeEchoStart(cn *channel.Channel) error {
 		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	c := call.NewCallByChannel(cn, call.TypeEcho, call.DirectionIncoming)
+	c := call.NewCallByChannel(cn, call.TypeSipService, call.DirectionIncoming)
 	if err := h.createCall(ctx, c); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
