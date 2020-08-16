@@ -1,12 +1,13 @@
-package arihandler
+package eventhandler
 
 import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
@@ -53,7 +54,7 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,
@@ -103,7 +104,7 @@ func TestEventHandlerBridgeDestroyed(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,

@@ -11,7 +11,7 @@ import (
 
 	joonix "github.com/joonix/log"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
@@ -52,7 +52,7 @@ var redisDB = flag.Int("redis_db", 1, "redis database.")
 type worker struct {
 	rabbitSock rabbitmq.Rabbit
 
-	ariHandler    arihandler.ARIHandler
+	eventHandler    eventhandler.EventHandler
 	reqHandler    requesthandler.RequestHandler
 	callHandler   callhandler.CallHandler
 	listenHandler listenhandler.ListenHandler
@@ -162,11 +162,11 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	)
 
 	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)
-	ariHandler := arihandler.NewARIHandler(rabbitSock, db, cache, reqHandler, callHandler)
+	eventHandler := eventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, callHandler)
 
 	// run
-	if err := ariHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
-		log.Errorf("Could not run the arihandler correctly. err: %v", err)
+	if err := eventHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
+		log.Errorf("Could not run the eventhandler correctly. err: %v", err)
 	}
 
 	return nil

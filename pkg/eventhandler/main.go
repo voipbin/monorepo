@@ -1,6 +1,6 @@
-package arihandler
+package eventhandler
 
-//go:generate mockgen -destination ./mock_arihandler_arihandler.go -package arihandler -source ./main.go ARIHandler
+//go:generate mockgen -destination ./mock_eventhandler_eventhandler.go -package eventhandler -source ./main.go EventHandler
 
 import (
 	"context"
@@ -12,11 +12,11 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	db "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
@@ -30,12 +30,12 @@ type ARIEvent struct {
 	event       interface{}
 }
 
-// ARIHandler intreface for ARI request handler
-type ARIHandler interface {
+// EventHandler intreface for ARI request handler
+type EventHandler interface {
 	Run(queue, receiver string) error
 }
 
-type ariHandler struct {
+type eventHandler struct {
 	db         db.DBHandler
 	cache      cachehandler.CacheHandler
 	rabbitSock rabbitmq.Rabbit
@@ -88,9 +88,9 @@ func init() {
 
 }
 
-// NewARIHandler create EventHandler
-func NewARIHandler(sock rabbitmq.Rabbit, db db.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) ARIHandler {
-	handler := &ariHandler{
+// NewEventHandler create EventHandler
+func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) EventHandler {
+	handler := &eventHandler{
 		rabbitSock: sock,
 		db:         db,
 		cache:      cache,
@@ -104,7 +104,7 @@ func NewARIHandler(sock rabbitmq.Rabbit, db db.DBHandler, cache cachehandler.Cac
 }
 
 // Run starts to receive ARI event and process it.
-func (h *ariHandler) Run(queue, receiver string) error {
+func (h *eventHandler) Run(queue, receiver string) error {
 	// create queue for ari event receive
 	log.WithFields(log.Fields{
 		"queue": queue,
@@ -129,7 +129,7 @@ func (h *ariHandler) Run(queue, receiver string) error {
 }
 
 // processEvent processes received ARI event
-func (h *ariHandler) processEvent(m *rabbitmq.Event) error {
+func (h *eventHandler) processEvent(m *rabbitmq.Event) error {
 	if m.Type != "ari_event" {
 		return fmt.Errorf("Wrong event type recevied. type: %s", m.Type)
 	}

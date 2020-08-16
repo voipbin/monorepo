@@ -1,13 +1,13 @@
-package arihandler
+package eventhandler
 
 import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
 
-	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
+	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
@@ -48,8 +48,8 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// h := NewARIHandler(mockSock, mockDB, mockRequest, mockSvc)
-			h := ariHandler{
+			// h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,
@@ -102,8 +102,8 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// h := NewARIHandler(mockSock, mockDB, mockRequest, mockCall)
-			h := ariHandler{
+			// h := NewEventHandler(mockSock, mockDB, mockRequest, mockCall)
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,
@@ -157,7 +157,7 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,
@@ -185,7 +185,7 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
-	h := ariHandler{
+	h := eventHandler{
 		db:          mockDB,
 		rabbitSock:  mockSock,
 		reqHandler:  mockRequest,
@@ -246,7 +246,7 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
-	h := ariHandler{
+	h := eventHandler{
 		db:          mockDB,
 		rabbitSock:  mockSock,
 		reqHandler:  mockRequest,
@@ -333,7 +333,7 @@ func TestEventHandlerChannelDtmfReceived(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,
@@ -424,7 +424,7 @@ func TestEventHandlerChannelVarsetTransport(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,
@@ -501,7 +501,7 @@ func TestEventHandlerChannelVarsetDirection(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,
