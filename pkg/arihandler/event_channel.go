@@ -203,3 +203,17 @@ func (h *ariHandler) eventHandlerChannelStateChange(ctx context.Context, evt int
 
 	return nil
 }
+
+// eventHandlerChannelCreated handels ChannelCreated ARI event
+func (h *ariHandler) eventHandlerChannelVarset(ctx context.Context, evt interface{}) error {
+	e := evt.(*ari.ChannelVarset)
+
+	switch e.Variable {
+	case "VB-TRANSPORT":
+		if err := h.db.ChannelSetTransport(ctx, e.Channel.ID, channel.Transport(e.Value)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

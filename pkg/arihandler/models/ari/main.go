@@ -27,6 +27,7 @@ const (
 	EventTypeChannelHangupRequest EventType = "ChannelHangupRequest"
 	EventTypeChannelLeftBridge    EventType = "ChannelLeftBridge"
 	EventTypeChannelStateChange   EventType = "ChannelStateChange"
+	EventTypeChannelVarset        EventType = "ChannelVarset"
 	EventTypeStasisEnd            EventType = "StasisEnd"
 	EventTypeStasisStart          EventType = "StasisStart"
 )
@@ -56,6 +57,7 @@ func Parse(message []byte) (*Event, interface{}, error) {
 		EventTypeChannelHangupRequest: &ChannelHangupRequest{},
 		EventTypeChannelLeftBridge:    &ChannelLeftBridge{},
 		EventTypeChannelStateChange:   &ChannelStateChange{},
+		EventTypeChannelVarset:        &ChannelVarset{},
 		EventTypeStasisEnd:            &StasisEnd{},
 		EventTypeStasisStart:          &StasisStart{},
 	}

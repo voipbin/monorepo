@@ -100,6 +100,14 @@ type ChannelDtmfReceived struct {
 	Channel  Channel `json:"channel"`
 }
 
+// ChannelVarset ARI event struct
+type ChannelVarset struct {
+	Event
+	Variable string  `json:"variable"`
+	Value    string  `json:"value"`
+	Channel  Channel `json:"channel"`
+}
+
 // ParseChannel parses message into Channel struct
 func ParseChannel(message []byte) (*Channel, error) {
 	res := &Channel{}

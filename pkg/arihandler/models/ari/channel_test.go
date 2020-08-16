@@ -412,3 +412,69 @@ func TestParseChannelDtmfReceived(t *testing.T) {
 	}
 
 }
+
+func TestParseChannelVarset(t *testing.T) {
+	type test struct {
+		name        string
+		message     string
+		expectEvent *ChannelVarset
+	}
+
+	tests := []test{
+		{
+			"normal",
+			`{"variable":"STASISSTATUS","value":"","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.80042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"test"}`,
+			&ChannelVarset{
+				Event{
+					Type:        EventTypeChannelVarset,
+					Application: "test",
+					Timestamp:   "2020-08-16T00:52:39.218",
+					AsteriskID:  "42:01:0a:a4:0f:ce",
+				},
+				"STASISSTATUS",
+				"",
+				Channel{
+					ID:           "instance-asterisk-production-europe-west4-a-1-1597539159.80042",
+					Name:         "PJSIP/call-in-00004fb4",
+					Language:     "en",
+					CreationTime: "2020-08-16T00:52:39.214",
+					State:        "Ring",
+					Caller: CallerID{
+						Name:   "",
+						Number: "7trunk",
+					},
+					Dialplan: DialplanCEP{
+						Context:  "call-in",
+						Exten:    "34967970028",
+						Priority: 3,
+						AppName:  "Stasis",
+						AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event, evt, err := Parse([]byte(tt.message))
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if event.Type != EventTypeChannelVarset {
+				t.Errorf("Wrong match. expect: %s, got: %s", EventTypeChannelVarset, event.Type)
+			}
+
+			e := evt.(*ChannelVarset)
+			if e.Type != EventTypeChannelVarset {
+				t.Errorf("Wrong match. expect: %s, got: %s", EventTypeChannelVarset, e.Type)
+			}
+
+			if reflect.DeepEqual(tt.expectEvent, e) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectEvent, e)
+			}
+		})
+	}
+
+}

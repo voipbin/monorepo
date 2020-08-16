@@ -1,9 +1,10 @@
 create table channels(
   -- identity
-  id          varchar(255),       -- channel id
+  id          varchar(255), -- channel id
   asterisk_id varchar(255), -- Asterisk id
-  name        varchar(255),       -- channel name
-  tech        varchar(255),       -- channel driver. pjsip, snoop, sip, ...
+  name        varchar(255), -- channel name
+  tech        varchar(255), -- channel driver. pjsip, snoop, sip, ...
+  transport   varchar(255), -- transport type. udp, tcp, tls, wss, ...
 
   -- src/dst
   src_name    varchar(255), -- source name

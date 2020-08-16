@@ -13,6 +13,7 @@ type Channel struct {
 	AsteriskID string
 	Name       string
 	Tech       Tech
+	Transport  Transport
 
 	// source/destination
 	SourceName        string
@@ -46,6 +47,18 @@ const (
 	TechPJSIP Tech = "pjsip"
 	TechSIP   Tech = "sip"
 	TechSnoop Tech = "snoop"
+)
+
+// Transport represent channel's transport type.
+type Transport string
+
+// List of Transport types
+const (
+	TransportNone Transport = ""
+	TransportUDP  Transport = "udp"
+	TransportTCP  Transport = "tcp"
+	TransportTLS  Transport = "tls"
+	TransportWSS  Transport = "wss"
 )
 
 // SnoopDirection represents possible values for channel snoop
