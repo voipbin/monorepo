@@ -32,12 +32,17 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 
 		dial_result,
 		hangup_cause,
+		
+		direction,
+
 		tm_create
 	) values(
 		?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, ?
+		?, ?, 
+		?,
+		?
 		)
 	`
 
@@ -65,6 +70,8 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 
 		channel.DialResult,
 		channel.HangupCause,
+
+		channel.Direction,
 
 		channel.TMCreate,
 	)
@@ -120,6 +127,8 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 
 		&res.DialResult,
 		&res.HangupCause,
+
+		&res.Direction,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -331,7 +340,7 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) e
 	return nil
 }
 
-// ChannelSetTransport sets the transport
+// ChannelSetTransport sets the channel's transport
 func (h *handler) ChannelSetTransport(ctx context.Context, id string, transport channel.Transport) error {
 	//prepare
 	q := `
@@ -345,6 +354,28 @@ func (h *handler) ChannelSetTransport(ctx context.Context, id string, transport 
 	_, err := h.db.Exec(q, transport, getCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetTransport. err: %v", err)
+	}
+
+	// update the cache
+	h.ChannelUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ChannelSetDirection sets the channel's direction
+func (h *handler) ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error {
+	//prepare
+	q := `
+	update channels set
+		direction = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, direction, getCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetDirection. err: %v", err)
 	}
 
 	// update the cache
@@ -439,6 +470,8 @@ func (h *handler) ChannelGetFromDB(ctx context.Context, id string) (*channel.Cha
 
 	dial_result,
 	hangup_cause,
+
+	direction,
 
 	coalesce(tm_create, '') as tm_create,
 	coalesce(tm_update, '') as tm_update,

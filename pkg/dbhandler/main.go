@@ -58,6 +58,7 @@ type DBHandler interface {
 	ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error
 	ChannelSetDataAndStasis(ctx context.Context, id string, data map[string]interface{}, stasis string) error
 	ChannelIsExist(id string, timeout time.Duration) bool
+	ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error
 	ChannelSetStasis(ctx context.Context, id, stasis string) error
 	ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error
 	ChannelSetToCache(ctx context.Context, channel *channel.Channel) error

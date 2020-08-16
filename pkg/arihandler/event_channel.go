@@ -213,6 +213,24 @@ func (h *ariHandler) eventHandlerChannelVarset(ctx context.Context, evt interfac
 		if err := h.db.ChannelSetTransport(ctx, e.Channel.ID, channel.Transport(e.Value)); err != nil {
 			return err
 		}
+
+	case "VB-DIRECTION":
+		if err := h.db.ChannelSetDirection(ctx, e.Channel.ID, channel.Direction(e.Value)); err != nil {
+			return err
+		}
+
+	default:
+		return nil
+	}
+
+	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
+	if err != nil {
+		return err
+	}
+
+	// increase metric
+	if cn.Direction != channel.DirectionNone && cn.Transport != channel.TransportNone {
+		promChannelTransportAndDirection.WithLabelValues(string(cn.Transport), string(cn.Direction)).Inc()
 	}
 
 	return nil
