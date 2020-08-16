@@ -10,8 +10,8 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
+	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 )
 
 // MockCallHandler is a mock of CallHandler interface.

@@ -12,11 +12,11 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
-	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	conference "gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
+	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
+	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

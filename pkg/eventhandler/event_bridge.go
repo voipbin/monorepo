@@ -1,15 +1,15 @@
-package arihandler
+package eventhandler
 
 import (
 	"context"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
+	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
 )
 
-func (h *ariHandler) eventHandlerBridgeCreated(ctx context.Context, evt interface{}) error {
+func (h *eventHandler) eventHandlerBridgeCreated(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.BridgeCreated)
 
 	b := bridge.NewBridgeByBridgeCreated(e)
@@ -20,7 +20,7 @@ func (h *ariHandler) eventHandlerBridgeCreated(ctx context.Context, evt interfac
 	return nil
 }
 
-func (h *ariHandler) eventHandlerBridgeDestroyed(ctx context.Context, evt interface{}) error {
+func (h *eventHandler) eventHandlerBridgeDestroyed(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.BridgeDestroyed)
 
 	log := log.WithFields(

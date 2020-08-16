@@ -9,10 +9,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/bridge"
-	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	conference "gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
+	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 )
 
 // MockConferenceHandler is a mock of ConferenceHandler interface.

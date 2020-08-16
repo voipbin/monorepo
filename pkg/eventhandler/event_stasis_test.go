@@ -1,10 +1,10 @@
-package arihandler
+package eventhandler
 
 import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
-	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
+	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
@@ -55,7 +55,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,
@@ -112,7 +112,7 @@ func TestEventHandlerStasisEnd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ariHandler{
+			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
 				reqHandler:  mockRequest,
