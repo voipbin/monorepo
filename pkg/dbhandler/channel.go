@@ -18,6 +18,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 		id,
 		name,
 		tech,
+		transport,
 
 		src_name,
 		src_number,
@@ -33,7 +34,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 		hangup_cause,
 		tm_create
 	) values(
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?
@@ -50,6 +51,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 		channel.ID,
 		channel.Name,
 		channel.Tech,
+		channel.Transport,
 
 		channel.SourceName,
 		channel.SourceNumber,
@@ -104,6 +106,7 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 		&res.ID,
 		&res.Name,
 		&res.Tech,
+		&res.Transport,
 
 		&res.SourceName,
 		&res.SourceNumber,
@@ -328,6 +331,28 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) e
 	return nil
 }
 
+// ChannelSetTransport sets the transport
+func (h *handler) ChannelSetTransport(ctx context.Context, id string, transport channel.Transport) error {
+	//prepare
+	q := `
+	update channels set
+		transport = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, transport, getCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetTransport. err: %v", err)
+	}
+
+	// update the cache
+	h.ChannelUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // ChannelEnd updates the channel end.
 func (h *handler) ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error {
 	// prepare
@@ -397,22 +422,23 @@ func (h *handler) ChannelGetFromDB(ctx context.Context, id string) (*channel.Cha
 	// prepare
 	q := `select
 	asterisk_id,
-  id,
-  name,
-  tech,
+	id,
+	name,
+	tech,
+	transport,
 
-  src_name,
-  src_number,
-  dst_name,
-  dst_number,
+	src_name,
+	src_number,
+	dst_name,
+	dst_number,
 
-  state,
+	state,
 	data,
 	stasis,
 	bridge_id,
 
-  dial_result,
-  hangup_cause,
+	dial_result,
+	hangup_cause,
 
 	coalesce(tm_create, '') as tm_create,
 	coalesce(tm_update, '') as tm_update,

@@ -9,6 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/arihandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
@@ -734,6 +735,74 @@ func TestChannelSetBridgeID(t *testing.T) {
 
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetBridgeID(context.Background(), tt.channel.ID, tt.bridgeID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
+			if err != nil {
+				t.Errorf("Could not get channel. err: %v", err)
+			}
+
+			resChannel.TMUpdate = ""
+			if reflect.DeepEqual(tt.expectChannel, resChannel) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectChannel, resChannel)
+			}
+		})
+	}
+}
+
+func TestChannelSetTransport(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name string
+
+		channel   *channel.Channel
+		transport channel.Transport
+
+		expectChannel *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"empty transport",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "c2c1af52-df5d-11ea-baf4-d74f0edf14ca",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.TransportNone,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "c2c1af52-df5d-11ea-baf4-d74f0edf14ca",
+				State:      ari.ChannelStateRing,
+				Data:       map[string]interface{}{},
+				BridgeID:   "",
+				Transport:  channel.TransportNone,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
+
+			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelSetTransport(ctx, tt.channel.ID, tt.transport); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
