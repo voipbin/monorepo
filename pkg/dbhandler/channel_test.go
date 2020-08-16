@@ -788,6 +788,82 @@ func TestChannelSetTransport(t *testing.T) {
 				TMCreate:   "2020-04-20T03:22:17.995000",
 			},
 		},
+		{
+			"transport udp",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "c195c006-dfd4-11ea-bce1-4f26873b0e52",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.TransportUDP,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "c195c006-dfd4-11ea-bce1-4f26873b0e52",
+				State:      ari.ChannelStateRing,
+				Data:       map[string]interface{}{},
+				BridgeID:   "",
+				Transport:  channel.TransportUDP,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+		{
+			"transport tcp",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "f1dccb92-dfd4-11ea-b939-af4793639f6f",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.TransportTCP,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "f1dccb92-dfd4-11ea-b939-af4793639f6f",
+				State:      ari.ChannelStateRing,
+				Data:       map[string]interface{}{},
+				BridgeID:   "",
+				Transport:  channel.TransportTCP,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+		{
+			"transport tls",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "fcde0f88-dfd4-11ea-891f-83b8884c8f7c",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.TransportTLS,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "fcde0f88-dfd4-11ea-891f-83b8884c8f7c",
+				State:      ari.ChannelStateRing,
+				Data:       map[string]interface{}{},
+				BridgeID:   "",
+				Transport:  channel.TransportTLS,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+		{
+			"transport wss",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "097db27a-dfd5-11ea-b567-df9894d124cc",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.TransportWSS,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "097db27a-dfd5-11ea-b567-df9894d124cc",
+				State:      ari.ChannelStateRing,
+				Data:       map[string]interface{}{},
+				BridgeID:   "",
+				Transport:  channel.TransportWSS,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -803,6 +879,112 @@ func TestChannelSetTransport(t *testing.T) {
 
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetTransport(ctx, tt.channel.ID, tt.transport); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
+			if err != nil {
+				t.Errorf("Could not get channel. err: %v", err)
+			}
+
+			resChannel.TMUpdate = ""
+			if reflect.DeepEqual(tt.expectChannel, resChannel) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectChannel, resChannel)
+			}
+		})
+	}
+}
+
+func TestChannelSetDirection(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name string
+
+		channel   *channel.Channel
+		direction channel.Direction
+
+		expectChannel *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"empty direction",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "ca2738ea-dfd3-11ea-8083-971809e1ac12",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.DirectionNone,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "ca2738ea-dfd3-11ea-8083-971809e1ac12",
+				State:      ari.ChannelStateRing,
+				Data:       map[string]interface{}{},
+				BridgeID:   "",
+				Direction:  channel.DirectionNone,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+		{
+			"incoming",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "1db9f1d2-dfd4-11ea-b001-7bdfb0d41751",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.DirectionIncoming,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "1db9f1d2-dfd4-11ea-b001-7bdfb0d41751",
+				State:      ari.ChannelStateRing,
+				Data:       map[string]interface{}{},
+				BridgeID:   "",
+				Direction:  channel.DirectionIncoming,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+		{
+			"outgoing",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "5dd41c2e-dfd5-11ea-abd7-ef8fe2a633c4",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.DirectionOutgoing,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "5dd41c2e-dfd5-11ea-abd7-ef8fe2a633c4",
+				State:      ari.ChannelStateRing,
+				Data:       map[string]interface{}{},
+				BridgeID:   "",
+				Direction:  channel.DirectionOutgoing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
+
+			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelSetDirection(ctx, tt.channel.ID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

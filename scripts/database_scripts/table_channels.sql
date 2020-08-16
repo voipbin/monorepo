@@ -21,6 +21,8 @@ create table channels(
   dial_result       varchar(255), -- dial result. answer, busy, cancel, ...
   hangup_cause      int,          -- hangup cause code.
 
+  direction varchar(255), -- channel's direction. incoming, outgoing
+
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --

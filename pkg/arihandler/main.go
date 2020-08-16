@@ -68,12 +68,22 @@ var (
 		},
 		[]string{"asterisk_id", "type"},
 	)
+
+	promChannelTransportAndDirection = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "channel_transport_direction_total",
+			Help:      "Total number of channel's transport and direction.",
+		},
+		[]string{"transport", "direction"},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(
 		promARIEventTotal,
 		promARIProcessTime,
+		promChannelTransportAndDirection,
 	)
 
 }

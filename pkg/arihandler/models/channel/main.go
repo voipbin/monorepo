@@ -29,6 +29,8 @@ type Channel struct {
 	DialResult  string
 	HangupCause ari.ChannelCause
 
+	Direction Direction
+
 	TMCreate string
 	TMUpdate string
 
@@ -59,6 +61,16 @@ const (
 	TransportTCP  Transport = "tcp"
 	TransportTLS  Transport = "tls"
 	TransportWSS  Transport = "wss"
+)
+
+// Direction represent channel's direction.
+type Direction string
+
+// List of Direction types
+const (
+	DirectionNone     Direction = ""
+	DirectionIncoming Direction = "incoming"
+	DirectionOutgoing Direction = "outgoing"
 )
 
 // SnoopDirection represents possible values for channel snoop
