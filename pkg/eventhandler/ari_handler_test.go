@@ -1,11 +1,15 @@
-package main
+package eventhandler
 
 import (
 	"fmt"
 	"net/http"
+	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
+
+	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
 )
 
 var upgrader = websocket.Upgrader{} // use default options
@@ -39,5 +43,25 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			break
 		}
+	}
+}
+
+func TestEventARIRun(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockRabbit := rabbitmq.NewMockRabbit(mc)
+
+	// create mock asterisk
+	addr := "127.0.0.1:8080"
+	mockAsterisk(addr)
+
+	eventHandler := eventHandler{
+		rabbitSock: mockRabbit,
+		ariAddr:    "127.0.0.1:8080",
+	}
+
+	if err := eventHandler.eventARIConnect(); err != nil {
+		t.Errorf("Expected ok, but got an error. err: %v", err)
 	}
 }

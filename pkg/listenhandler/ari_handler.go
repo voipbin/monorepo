@@ -1,0 +1,67 @@
+package listenhandler
+
+import (
+	"encoding/base64"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
+	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
+)
+
+// ariSendRequestToAsterisk sends the request to the Asterisk's ARI.
+// returns status_code, response_message, error
+func (h *listenHandler) ariSendRequestToAsterisk(m *rabbitmq.Request) (int, string, error) {
+	url := fmt.Sprintf("http://%s%s", h.ariAddr, m.URI)
+	logrus.WithFields(logrus.Fields{
+		"request": m,
+	}).Debug("Sending ARI request.")
+
+	req, err := http.NewRequest(string(m.Method), url, strings.NewReader(m.Data))
+	if err != nil {
+		return 0, "", err
+	}
+
+	// basic auth
+	auth := base64.StdEncoding.EncodeToString([]byte(h.ariAccount))
+	req.Header.Add("Authorization", "Basic "+auth)
+
+	// content-type
+	if m.DataType != "" {
+		req.Header.Set("Content-Type", m.DataType)
+	}
+
+	// send
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, "", err
+	}
+
+	res, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return 0, "", err
+	}
+
+	return resp.StatusCode, string(res), nil
+}
+
+func (h *listenHandler) listenHandlerARI(request *rabbitmq.Request) (*rabbitmq.Response, error) {
+	// send the request to Asterisk
+	statusCode, resData, err := h.ariSendRequestToAsterisk(request)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &rabbitmq.Response{
+		StatusCode: statusCode,
+		DataType:   "application/json",
+		Data:       resData,
+	}
+
+	return response, nil
+}
