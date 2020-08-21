@@ -10,9 +10,9 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 )
 
 // StasisStart event's context types
@@ -312,16 +312,33 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 
 	switch c.Destination.Target {
 
+	// answer
+	case string(action.TypeAnswer):
+		// create an option for action answer
+		option := action.OptionAnswer{}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeAnswer, err)
+		}
+
+		// create an action
+		resAct = &action.Action{
+			ID:     action.IDBegin,
+			Type:   action.TypeAnswer,
+			Option: opt,
+			Next:   action.IDEnd,
+		}
+
+	// default
 	default:
 		logrus.Warnf("Could not find correct sip-service handler. Use default handler. target: %s", c.Destination.Target)
 		fallthrough
 
 	// echo
 	case string(action.TypeEcho):
-		// create an option for action echo
 		// create default option for echo
 		option := action.OptionEcho{
-			Duration: 300 * 1000, // duration 300 sec
+			Duration: 180 * 1000, // duration 300 sec
 			DTMF:     true,
 		}
 		opt, err := json.Marshal(option)

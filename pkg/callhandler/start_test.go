@@ -8,11 +8,11 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
@@ -101,7 +101,7 @@ func TestTypeEchoStart(t *testing.T) {
 			&action.Action{
 				ID:     action.IDBegin,
 				Type:   action.TypeEcho,
-				Option: []byte(`{"duration":300000,"dtmf":true}`),
+				Option: []byte(`{"duration":180000,"dtmf":true}`),
 				Next:   action.IDEnd,
 			},
 		},
@@ -190,6 +190,78 @@ func TestTypeConferenceStart(t *testing.T) {
 	}
 }
 
+func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name    string
+		channel *channel.Channel
+		call    *call.Call
+	}
+
+	tests := []test{
+		{
+			"echo service",
+			&channel.Channel{
+				ID:         "48a5446a-e3b1-11ea-b837-83239d9eb45f",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Name:       "PJSIP/in-voipbin-00000950",
+				Data: map[string]interface{}{
+					"CONTEXT": "call-in",
+					"DOMAIN":  "sip-service.voipbin.net",
+				},
+				DestinationNumber: string(action.TypeAnswer),
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("4d609f5e-e3b1-11ea-b803-ef0912b904ff"),
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ChannelID:  "48a5446a-e3b1-11ea-b837-83239d9eb45f",
+				Type:       call.TypeSipService,
+				Direction:  call.DirectionIncoming,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			option := action.OptionAnswer{}
+			opt, err := json.Marshal(option)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			action := &action.Action{
+				ID:     action.IDBegin,
+				Type:   action.TypeAnswer,
+				Option: opt,
+				Next:   action.IDEnd,
+			}
+
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
+			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
+			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, 10, action).Return(nil)
+
+			h.Start(tt.channel)
+		})
+	}
+}
+
 func TestTypeSipServiceStartSvcEchoLegacy(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -266,81 +338,79 @@ func TestTypeSipServiceStartSvcEchoLegacy(t *testing.T) {
 	}
 }
 
-// func TestTypeSipServiceStartSvcEcho(t *testing.T) {
-// 	mc := gomock.NewController(t)
-// 	defer mc.Finish()
+func TestTypeSipServiceStartSvcEcho(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-// 	mockReq := requesthandler.NewMockRequestHandler(mc)
-// 	mockDB := dbhandler.NewMockDBHandler(mc)
-// 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
-// 	h := &callHandler{
-// 		reqHandler:  mockReq,
-// 		db:          mockDB,
-// 		confHandler: mockConf,
-// 	}
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
 
-// 	type test struct {
-// 		name    string
-// 		channel *channel.Channel
-// 		call    *call.Call
-// 	}
+	type test struct {
+		name    string
+		channel *channel.Channel
+		call    *call.Call
+	}
 
-// 	tests := []test{
-// 		{
-// 			"echo service",
-// 			&channel.Channel{
-// 				ID:         "f82007c4-92e2-11ea-a3e2-138ed7e90501",
-// 				AsteriskID: "80:fa:5b:5e:da:81",
-// 				Name:       "PJSIP/in-voipbin-00000948",
-// 				Data: map[string]interface{}{
-// 					"CONTEXT": "call-in",
-// 					"DOMAIN":  "sip-service.voipbin.net",
-// 				},
-// 				DestinationNumber: string(action.TypeEcho),
-// 			},
-// 			&call.Call{
-// 				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
-// 				AsteriskID: "80:fa:5b:5e:da:81",
-// 				ChannelID:  "f82007c4-92e2-11ea-a3e2-138ed7e90501",
-// 				Type:       call.TypeEcho,
-// 				Direction:  call.DirectionIncoming,
-// 			},
-// 		},
-// 	}
+	tests := []test{
+		{
+			"echo service",
+			&channel.Channel{
+				ID:         "f82007c4-92e2-11ea-a3e2-138ed7e90501",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Name:       "PJSIP/in-voipbin-00000948",
+				Data: map[string]interface{}{
+					"CONTEXT": "call-in",
+					"DOMAIN":  "sip-service.voipbin.net",
+				},
+				DestinationNumber: string(action.TypeEcho),
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ChannelID:  "f82007c4-92e2-11ea-a3e2-138ed7e90501",
+				Type:       call.TypeSipService,
+				Direction:  call.DirectionIncoming,
+			},
+		},
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			option := action.OptionEcho{
-// 				Duration: 180 * 1000,
-// 				DTMF:     true,
-// 			}
-// 			opt, err := json.Marshal(option)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			option := action.OptionEcho{
+				Duration: 180 * 1000,
+				DTMF:     true,
+			}
+			opt, err := json.Marshal(option)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 
-// 			action := &action.Action{
-// 				ID:     action.IDBegin,
-// 				Type:   action.TypeEcho,
-// 				Option: opt,
-// 				Next:   action.IDEnd,
-// 			}
+			action := &action.Action{
+				ID:     action.IDBegin,
+				Type:   action.TypeEcho,
+				Option: opt,
+				Next:   action.IDEnd,
+			}
 
-// 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
-// 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
-// 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
-// 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
+			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 
-// 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
+			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-// 			mockConf.EXPECT().Start(gomock.Any(), gomock.Any())
-// 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), option.Duration, action)
-
-// 			h.Start(tt.channel)
-// 		})
-// 	}
-// }
+			h.Start(tt.channel)
+		})
+	}
+}
 
 func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 	mc := gomock.NewController(t)
