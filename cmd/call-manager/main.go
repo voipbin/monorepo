@@ -11,11 +11,11 @@ import (
 
 	joonix "github.com/joonix/log"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
@@ -52,7 +52,7 @@ var redisDB = flag.Int("redis_db", 1, "redis database.")
 type worker struct {
 	rabbitSock rabbitmq.Rabbit
 
-	eventHandler    eventhandler.EventHandler
+	eventHandler  eventhandler.EventHandler
 	reqHandler    requesthandler.RequestHandler
 	callHandler   callhandler.CallHandler
 	listenHandler listenhandler.ListenHandler

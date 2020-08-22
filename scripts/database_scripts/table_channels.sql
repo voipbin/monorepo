@@ -4,7 +4,10 @@ create table channels(
   asterisk_id varchar(255), -- Asterisk id
   name        varchar(255), -- channel name
   tech        varchar(255), -- channel driver. pjsip, snoop, sip, ...
-  transport   varchar(255), -- transport type. udp, tcp, tls, wss, ...
+
+  -- sip info
+  sip_call_id     varchar(255), -- sip call id.
+  sip_transport   varchar(255), -- sip transport type. udp, tcp, tls, wss, ...
 
   -- src/dst
   src_name    varchar(255), -- source name
@@ -24,8 +27,8 @@ create table channels(
   direction varchar(255), -- channel's direction. incoming, outgoing
 
   -- timestamps
-  tm_create datetime(6),  --
-  tm_update datetime(6),  --
+  tm_create datetime(6),  -- created timestamp
+  tm_update datetime(6),  -- last updated timestamp
 
   tm_answer datetime(6),  -- answer timestamp
   tm_ringing datetime(6), -- rining timestamp
@@ -37,3 +40,4 @@ create table channels(
 create index idx_channels_create on channels(tm_create);
 create index idx_channels_src_number on channels(src_number);
 create index idx_channels_dst_number on channels(dst_number);
+create index idx_channels_sip_call_id on channels(sip_call_id);

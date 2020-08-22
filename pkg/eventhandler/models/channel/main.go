@@ -13,7 +13,10 @@ type Channel struct {
 	AsteriskID string
 	Name       string
 	Tech       Tech
-	Transport  Transport
+
+	// sip information
+	SIPCallID    string       // sip's call id
+	SIPTransport SIPTransport // sip's transport
 
 	// source/destination
 	SourceName        string
@@ -51,16 +54,16 @@ const (
 	TechSnoop Tech = "snoop"
 )
 
-// Transport represent channel's transport type.
-type Transport string
+// SIPTransport represent channel's sip transport type.
+type SIPTransport string
 
-// List of Transport types
+// List of SIPTransport types
 const (
-	TransportNone Transport = ""
-	TransportUDP  Transport = "udp"
-	TransportTCP  Transport = "tcp"
-	TransportTLS  Transport = "tls"
-	TransportWSS  Transport = "wss"
+	SIPTransportNone SIPTransport = ""
+	SIPTransportUDP  SIPTransport = "udp"
+	SIPTransportTCP  SIPTransport = "tcp"
+	SIPTransportTLS  SIPTransport = "tls"
+	SIPTransportWSS  SIPTransport = "wss"
 )
 
 // Direction represent channel's direction.

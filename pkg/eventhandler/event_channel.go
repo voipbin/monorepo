@@ -209,28 +209,39 @@ func (h *eventHandler) eventHandlerChannelVarset(ctx context.Context, evt interf
 	e := evt.(*ari.ChannelVarset)
 
 	switch e.Variable {
-	case "VB-TRANSPORT":
-		if err := h.db.ChannelSetTransport(ctx, e.Channel.ID, channel.Transport(e.Value)); err != nil {
-			return err
-		}
-
 	case "VB-DIRECTION":
 		if err := h.db.ChannelSetDirection(ctx, e.Channel.ID, channel.Direction(e.Value)); err != nil {
 			return err
 		}
+		// increase metric
+		cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
+		if err != nil {
+			return err
+		}
+		if cn.Direction != channel.DirectionNone && cn.SIPTransport != channel.SIPTransportNone {
+			promChannelTransportAndDirection.WithLabelValues(string(cn.SIPTransport), string(cn.Direction)).Inc()
+		}
+
+	case "VB-SIP_CALLID":
+		if err := h.db.ChannelSetSIPCallID(ctx, e.Channel.ID, e.Value); err != nil {
+			return err
+		}
+
+	case "VB-SIP_TRANSPORT":
+		if err := h.db.ChannelSetSIPTransport(ctx, e.Channel.ID, channel.SIPTransport(e.Value)); err != nil {
+			return err
+		}
+		// increase metric
+		cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
+		if err != nil {
+			return err
+		}
+		if cn.Direction != channel.DirectionNone && cn.SIPTransport != channel.SIPTransportNone {
+			promChannelTransportAndDirection.WithLabelValues(string(cn.SIPTransport), string(cn.Direction)).Inc()
+		}
 
 	default:
 		return nil
-	}
-
-	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
-	if err != nil {
-		return err
-	}
-
-	// increase metric
-	if cn.Direction != channel.DirectionNone && cn.Transport != channel.TransportNone {
-		promChannelTransportAndDirection.WithLabelValues(string(cn.Transport), string(cn.Direction)).Inc()
 	}
 
 	return nil

@@ -545,6 +545,34 @@ func (mr *MockDBHandlerMockRecorder) ChannelSetDirection(arg0, arg1, arg2 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDirection", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDirection), arg0, arg1, arg2)
 }
 
+// ChannelSetSIPCallID mocks base method.
+func (m *MockDBHandler) ChannelSetSIPCallID(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetSIPCallID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetSIPCallID indicates an expected call of ChannelSetSIPCallID.
+func (mr *MockDBHandlerMockRecorder) ChannelSetSIPCallID(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetSIPCallID", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetSIPCallID), arg0, arg1, arg2)
+}
+
+// ChannelSetSIPTransport mocks base method.
+func (m *MockDBHandler) ChannelSetSIPTransport(arg0 context.Context, arg1 string, arg2 channel.SIPTransport) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetSIPTransport", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetSIPTransport indicates an expected call of ChannelSetSIPTransport.
+func (mr *MockDBHandlerMockRecorder) ChannelSetSIPTransport(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetSIPTransport", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetSIPTransport), arg0, arg1, arg2)
+}
+
 // ChannelSetStasis mocks base method.
 func (m *MockDBHandler) ChannelSetStasis(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
@@ -585,20 +613,6 @@ func (m *MockDBHandler) ChannelSetToCache(arg0 context.Context, arg1 *channel.Ch
 func (mr *MockDBHandlerMockRecorder) ChannelSetToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetToCache", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetToCache), arg0, arg1)
-}
-
-// ChannelSetTransport mocks base method.
-func (m *MockDBHandler) ChannelSetTransport(arg0 context.Context, arg1 string, arg2 channel.Transport) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSetTransport", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ChannelSetTransport indicates an expected call of ChannelSetTransport.
-func (mr *MockDBHandlerMockRecorder) ChannelSetTransport(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetTransport", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetTransport), arg0, arg1, arg2)
 }
 
 // ChannelUpdateToCache mocks base method.
