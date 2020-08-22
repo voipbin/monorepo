@@ -16,7 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
-func TestGetService(t *testing.T) {
+func TestGetTypeContextIncomingCall(t *testing.T) {
 	type test struct {
 		name       string
 		channel    *channel.Channel
@@ -25,32 +25,39 @@ func TestGetService(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal echo",
+			"normal conference",
 			&channel.Channel{
 				Data: map[string]interface{}{
-					"CONTEXT": contextIncomingCall,
-					"DOMAIN":  domainSipService,
+					"DOMAIN": "conference.voipbin.net",
+				},
+			},
+			call.TypeConference,
+		},
+		{
+			"normal sip-service",
+			&channel.Channel{
+				Data: map[string]interface{}{
+					"DOMAIN": "sip-service.voipbin.net",
 				},
 			},
 			call.TypeSipService,
 		},
 		{
-			"normal conference soft",
+			"None type",
 			&channel.Channel{
 				Data: map[string]interface{}{
-					"CONTEXT": contextIncomingCall,
-					"DOMAIN":  domainConference,
+					"DOMAIN": "randome-invalid-domain.voipbin.net",
 				},
 			},
-			call.TypeConference,
+			call.TypeNone,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service := getType(tt.channel)
-			if service != tt.expectType {
-				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectType, service)
+			res := getTypeContextIncomingCall(tt.channel)
+			if res != tt.expectType {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectType, res)
 			}
 		})
 	}
@@ -113,10 +120,10 @@ func TestTypeEchoStart(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			// mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 			h.Start(tt.channel)
 		})
@@ -406,6 +413,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 			h.Start(tt.channel)
 		})
@@ -456,7 +464,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			&action.Action{
 				ID:     action.IDBegin,
 				Type:   action.TypeStreamEcho,
-				Option: []byte("{}"),
+				Option: []byte(`{"duration":180000}`),
 				Next:   action.IDEnd,
 			},
 		},
@@ -470,6 +478,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 			h.Start(tt.channel)
 		})

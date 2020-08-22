@@ -68,6 +68,8 @@ const (
 	resourceAstBridgesAddChannel    resource = "ast/bridges/addchannel"
 	resourceAstBridgesRemoveChannel resource = "ast/bridges/removechannel"
 
+	resourceAstAMI resource = "ast/ami"
+
 	resourceAstChannels         resource = "ast/channels"
 	resourceAstChannelsAnswer   resource = "ast/channels/answer"
 	resourceAstChannelsContinue resource = "ast/channels/continue"
@@ -93,6 +95,10 @@ func init() {
 
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
+
+	// asterisk AMI
+	AstAMIRedirect(asteriskID, channelID, context, exten, priority string) error
+
 	// asterisk bridges
 	AstBridgeAddChannel(asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error
 	AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType []bridge.Type) error
