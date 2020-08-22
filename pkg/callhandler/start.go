@@ -17,7 +17,9 @@ import (
 
 // StasisStart event's context types
 const (
-	contextIncomingCall = "call-in"
+	contextIncomingCall    = "call-in"
+	contextOutgoingCall    = "call-out"
+	contextFromServiceCall = "call-svc"
 )
 
 // domain types
@@ -50,8 +52,44 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
 // Start starts the call service
 func (h *callHandler) Start(cn *channel.Channel) error {
 
-	// get service
-	cType := getType(cn)
+	// check the stasis's context
+	switch cn.Data["CONTEXT"] {
+
+	case contextFromServiceCall:
+		return h.startHandlerContextFromServiceCall(cn)
+
+	case contextIncomingCall:
+		return h.startHandlerContextIncomingCall(cn)
+
+	case contextOutgoingCall:
+		return h.startHandlerContextOutgoingCall(cn)
+
+	default:
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return fmt.Errorf("no route found for stasisstart. asterisk_id: %s, channel_id: %s", cn.AsteriskID, cn.ID)
+	}
+}
+
+// startHandlerContextFromServiceCall handles contextFromServiceCall context type of StasisStart event.
+func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel) error {
+	logrus.Infof("Executing startHandlerContextFromServiceCall. channel: %s", cn.ID)
+
+	// get call by the channel id
+	c, err := h.db.CallGetByChannelID(context.Background(), cn.ID)
+	if err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return err
+	}
+
+	return h.ActionNext(c)
+}
+
+// startHandlerContextIncomingCall handles contextIncomingCall context type of StasisStart event.
+func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel) error {
+	logrus.Infof("Executing startHandlerContextIncomingCall. channel: %s", cn.ID)
+
+	// get call type
+	cType := getTypeContextIncomingCall(cn)
 
 	switch cType {
 	case call.TypeConference:
@@ -68,19 +106,12 @@ func (h *callHandler) Start(cn *channel.Channel) error {
 	}
 }
 
-// getType returns correct service type
-// it checks context first,
-// then checks another event arguments for getting service
-func getType(cn *channel.Channel) call.Type {
-	context := cn.Data["CONTEXT"]
+// startHandlerContextOutgoingCall handles contextOutgoingCall context type of StasisStart event.
+func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel) error {
+	logrus.Infof("Executing startHandlerContextOutgoingCall. channel: %s", cn.ID)
 
-	switch context {
-	case contextIncomingCall:
-		return getTypeContextIncomingCall(cn)
-
-	default:
-		return call.TypeNone
-	}
+	// do nothing here
+	return nil
 }
 
 // getTypeContextIncomingCall returns the service type for incoming call context
@@ -377,7 +408,9 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 
 	// stream_echo
 	case string(action.TypeStreamEcho):
-		option := action.OptionStreamEcho{}
+		option := action.OptionStreamEcho{
+			Duration: 180 * 1000,
+		}
 		opt, err := json.Marshal(option)
 		if err != nil {
 			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeStreamEcho, err)

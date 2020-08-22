@@ -10,9 +10,16 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
+)
+
+// Redirect options for timeout action
+const (
+	redirectTimeoutContext  = "svc-stasis"
+	redirectTimeoutExten    = "s"
+	redirectTimeoutPriority = "1"
 )
 
 // setAction sets the action to the call
@@ -112,11 +119,12 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 func (h *callHandler) ActionTimeout(callID uuid.UUID, a *action.Action) error {
 	ctx := context.Background()
 
-	log := log.WithFields(
+	log := logrus.WithFields(
 		logrus.Fields{
 			"call":   callID,
 			"action": a.ID,
 		})
+	log.Infof("The call's action has timed out.")
 
 	c, err := h.db.CallGet(ctx, callID)
 	if err != nil {
@@ -128,15 +136,26 @@ func (h *callHandler) ActionTimeout(callID uuid.UUID, a *action.Action) error {
 		return fmt.Errorf("no not match action")
 	}
 
-	// execute the ActionNext with goroutine here
-	// and because the action timeout process is already done, return the nil right next.
-	go func() {
-		if err := h.ActionNext(c); err != nil {
-			log.Errorf("Could not execute the next action. err: %v", err)
-		}
-	}()
+	// get channel
+	cn, err := h.db.ChannelGet(ctx, c.ChannelID)
+	if err != nil {
+		return err
+	}
 
-	return nil
+	// check the channel is in the stasis.
+	// if the channel is not in the stasis, send the AMI redirect request.
+	switch cn.Stasis {
+
+	// not in the stasis
+	// need to be redirected to the redirectTimeoutContext.
+	case "":
+		return h.reqHandler.AstAMIRedirect(cn.AsteriskID, cn.ID, redirectTimeoutContext, redirectTimeoutExten, redirectTimeoutPriority)
+
+	// in the stasis
+	// send a request for the execute next call action
+	default:
+		return h.reqHandler.CallCallActionNext(c.ID)
+	}
 }
 
 // actionExecuteAnswer executes the action type answer
@@ -288,6 +307,12 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
+	// set timeout
+	// send delayed message for next action execution after 10 ms.
+	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
+	}
+
 	return nil
 }
 
@@ -357,6 +382,11 @@ func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) er
 		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
 	}
 
+	// set default duration if it is not set correctly
+	if option.Duration <= 0 {
+		option.Duration = 180 * 1000 // default duration 180 sec
+	}
+
 	// set option
 	rawOption, err := json.Marshal(option)
 	if err != nil {
@@ -372,6 +402,12 @@ func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) er
 	// continue the extension
 	if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-stream_echo", "s", 1, ""); err != nil {
 		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, act.ID, err)
+	}
+
+	// set timeout
+	// send delayed message for next action execution after 10 ms.
+	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
 	return nil

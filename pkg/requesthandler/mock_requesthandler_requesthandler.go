@@ -38,6 +38,20 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
 }
 
+// AstAMIRedirect mocks base method.
+func (m *MockRequestHandler) AstAMIRedirect(arg0, arg1, arg2, arg3, arg4 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstAMIRedirect", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstAMIRedirect indicates an expected call of AstAMIRedirect.
+func (mr *MockRequestHandlerMockRecorder) AstAMIRedirect(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAMIRedirect", reflect.TypeOf((*MockRequestHandler)(nil).AstAMIRedirect), arg0, arg1, arg2, arg3, arg4)
+}
+
 // AstBridgeAddChannel mocks base method.
 func (m *MockRequestHandler) AstBridgeAddChannel(arg0, arg1, arg2, arg3 string, arg4, arg5 bool) error {
 	m.ctrl.T.Helper()

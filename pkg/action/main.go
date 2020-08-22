@@ -81,5 +81,5 @@ type OptionEcho struct {
 
 // OptionStreamEcho defines action stream_echo's option.
 type OptionStreamEcho struct {
-	// no option
+	Duration int `json:"duration"`
 }
