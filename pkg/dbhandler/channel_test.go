@@ -10,9 +10,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
 
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 )
 
 func TestChannelCreate(t *testing.T) {
@@ -753,7 +753,7 @@ func TestChannelSetBridgeID(t *testing.T) {
 	}
 }
 
-func TestChannelSetTransport(t *testing.T) {
+func TestChannelSetSIPTransport(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -762,8 +762,8 @@ func TestChannelSetTransport(t *testing.T) {
 	type test struct {
 		name string
 
-		channel   *channel.Channel
-		transport channel.Transport
+		channel      *channel.Channel
+		sipTransport channel.SIPTransport
 
 		expectChannel *channel.Channel
 	}
@@ -773,94 +773,162 @@ func TestChannelSetTransport(t *testing.T) {
 			"empty transport",
 			&channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "c2c1af52-df5d-11ea-baf4-d74f0edf14ca",
+				ID:         "fbded60a-e46e-11ea-902e-df33108e8067",
 				State:      ari.ChannelStateRing,
 				TMCreate:   "2020-04-20T03:22:17.995000",
 			},
-			channel.TransportNone,
+			channel.SIPTransportNone,
 			&channel.Channel{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "c2c1af52-df5d-11ea-baf4-d74f0edf14ca",
-				State:      ari.ChannelStateRing,
-				Data:       map[string]interface{}{},
-				BridgeID:   "",
-				Transport:  channel.TransportNone,
-				TMCreate:   "2020-04-20T03:22:17.995000",
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ID:           "fbded60a-e46e-11ea-902e-df33108e8067",
+				State:        ari.ChannelStateRing,
+				Data:         map[string]interface{}{},
+				BridgeID:     "",
+				SIPTransport: channel.SIPTransportNone,
+				TMCreate:     "2020-04-20T03:22:17.995000",
 			},
 		},
 		{
 			"transport udp",
 			&channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "c195c006-dfd4-11ea-bce1-4f26873b0e52",
+				ID:         "02aafd92-e46f-11ea-b2fa-47bf7497a896",
 				State:      ari.ChannelStateRing,
 				TMCreate:   "2020-04-20T03:22:17.995000",
 			},
-			channel.TransportUDP,
+			channel.SIPTransportUDP,
 			&channel.Channel{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "c195c006-dfd4-11ea-bce1-4f26873b0e52",
-				State:      ari.ChannelStateRing,
-				Data:       map[string]interface{}{},
-				BridgeID:   "",
-				Transport:  channel.TransportUDP,
-				TMCreate:   "2020-04-20T03:22:17.995000",
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ID:           "02aafd92-e46f-11ea-b2fa-47bf7497a896",
+				State:        ari.ChannelStateRing,
+				Data:         map[string]interface{}{},
+				BridgeID:     "",
+				SIPTransport: channel.SIPTransportUDP,
+				TMCreate:     "2020-04-20T03:22:17.995000",
 			},
 		},
 		{
 			"transport tcp",
 			&channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "f1dccb92-dfd4-11ea-b939-af4793639f6f",
+				ID:         "08c3dc4e-e46f-11ea-9485-9b1b4d3b6eff",
 				State:      ari.ChannelStateRing,
 				TMCreate:   "2020-04-20T03:22:17.995000",
 			},
-			channel.TransportTCP,
+			channel.SIPTransportTCP,
 			&channel.Channel{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "f1dccb92-dfd4-11ea-b939-af4793639f6f",
-				State:      ari.ChannelStateRing,
-				Data:       map[string]interface{}{},
-				BridgeID:   "",
-				Transport:  channel.TransportTCP,
-				TMCreate:   "2020-04-20T03:22:17.995000",
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ID:           "08c3dc4e-e46f-11ea-9485-9b1b4d3b6eff",
+				State:        ari.ChannelStateRing,
+				Data:         map[string]interface{}{},
+				BridgeID:     "",
+				SIPTransport: channel.SIPTransportTCP,
+				TMCreate:     "2020-04-20T03:22:17.995000",
 			},
 		},
 		{
 			"transport tls",
 			&channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "fcde0f88-dfd4-11ea-891f-83b8884c8f7c",
+				ID:         "0de1d6cc-e46f-11ea-b74a-8367c248db58",
 				State:      ari.ChannelStateRing,
 				TMCreate:   "2020-04-20T03:22:17.995000",
 			},
-			channel.TransportTLS,
+			channel.SIPTransportTLS,
 			&channel.Channel{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "fcde0f88-dfd4-11ea-891f-83b8884c8f7c",
-				State:      ari.ChannelStateRing,
-				Data:       map[string]interface{}{},
-				BridgeID:   "",
-				Transport:  channel.TransportTLS,
-				TMCreate:   "2020-04-20T03:22:17.995000",
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ID:           "0de1d6cc-e46f-11ea-b74a-8367c248db58",
+				State:        ari.ChannelStateRing,
+				Data:         map[string]interface{}{},
+				BridgeID:     "",
+				SIPTransport: channel.SIPTransportTLS,
+				TMCreate:     "2020-04-20T03:22:17.995000",
 			},
 		},
 		{
 			"transport wss",
 			&channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "097db27a-dfd5-11ea-b567-df9894d124cc",
+				ID:         "14465b0a-e46f-11ea-bde1-7bd4574e50ee",
 				State:      ari.ChannelStateRing,
 				TMCreate:   "2020-04-20T03:22:17.995000",
 			},
-			channel.TransportWSS,
+			channel.SIPTransportWSS,
+			&channel.Channel{
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ID:           "14465b0a-e46f-11ea-bde1-7bd4574e50ee",
+				State:        ari.ChannelStateRing,
+				Data:         map[string]interface{}{},
+				BridgeID:     "",
+				SIPTransport: channel.SIPTransportWSS,
+				TMCreate:     "2020-04-20T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
+
+			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelSetSIPTransport(ctx, tt.channel.ID, tt.sipTransport); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
+			if err != nil {
+				t.Errorf("Could not get channel. err: %v", err)
+			}
+
+			resChannel.TMUpdate = ""
+			if reflect.DeepEqual(tt.expectChannel, resChannel) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectChannel, resChannel)
+			}
+		})
+	}
+}
+
+func TestChannelSetSIPCallID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name string
+
+		channel   *channel.Channel
+		sipCallID string
+
+		expectChannel *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"normal",
 			&channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "097db27a-dfd5-11ea-b567-df9894d124cc",
+				ID:         "865526ea-e46f-11ea-8149-5b36febf5766",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			"8b647c44-e46f-11ea-8015-97545f4bc809",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "865526ea-e46f-11ea-8149-5b36febf5766",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
 				BridgeID:   "",
-				Transport:  channel.TransportWSS,
+				SIPCallID:  "8b647c44-e46f-11ea-8015-97545f4bc809",
 				TMCreate:   "2020-04-20T03:22:17.995000",
 			},
 		},
@@ -878,7 +946,7 @@ func TestChannelSetTransport(t *testing.T) {
 			}
 
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-			if err := h.ChannelSetTransport(ctx, tt.channel.ID, tt.transport); err != nil {
+			if err := h.ChannelSetSIPCallID(ctx, tt.channel.ID, tt.sipCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

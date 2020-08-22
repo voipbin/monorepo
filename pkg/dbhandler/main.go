@@ -12,12 +12,12 @@ import (
 	uuid "github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 )
 
 // DBHandler interface for call_manager database handle
@@ -59,10 +59,11 @@ type DBHandler interface {
 	ChannelSetDataAndStasis(ctx context.Context, id string, data map[string]interface{}, stasis string) error
 	ChannelIsExist(id string, timeout time.Duration) bool
 	ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error
+	ChannelSetSIPCallID(ctx context.Context, id string, sipID string) error
+	ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
 	ChannelSetStasis(ctx context.Context, id, stasis string) error
 	ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error
 	ChannelSetToCache(ctx context.Context, channel *channel.Channel) error
-	ChannelSetTransport(ctx context.Context, id string, transport channel.Transport) error
 	ChannelUpdateToCache(ctx context.Context, id string) error
 
 	ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error

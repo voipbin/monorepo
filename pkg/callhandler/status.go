@@ -3,9 +3,9 @@ package callhandler
 import (
 	"context"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 
 	log "github.com/sirupsen/logrus"
 )
