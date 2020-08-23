@@ -2,7 +2,6 @@ package conferencehandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -53,19 +52,19 @@ func (h *conferenceHandler) leavedChannel(cn *channel.Channel, br *bridge.Bridge
 }
 
 func (h *conferenceHandler) leavedChannelConf(cn *channel.Channel, br *bridge.Bridge) error {
-	switch cn.GetContext() {
+	switch cn.GetContextType() {
 
-	case contextConferenceIncoming:
+	case channel.ContextTypeConference:
 		// nothing to do
 		return nil
 
-	case contextConferenceEcho, contextConferenceJoin:
+	// case contextConferenceEcho, contextConferenceJoin:
+
+	default:
 		h.removeAllChannelsInBridge(br)
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return nil
-
-	default:
-		return fmt.Errorf("could not find context handler. asterisk: %s, channel: %s, bridge: %s", cn.AsteriskID, cn.ID, br.ID)
+		// return fmt.Errorf("could not find context handler. asterisk: %s, channel: %s, bridge: %s", cn.AsteriskID, cn.ID, br.ID)
 
 	}
 }

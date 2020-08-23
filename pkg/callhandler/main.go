@@ -22,9 +22,9 @@ import (
 type CallHandler interface {
 	ARIChannelDestroyed(cn *channel.Channel) error
 	ARIChannelDtmfReceived(cn *channel.Channel, digit string, duration int) error
-	ARIStasisStart(cn *channel.Channel) error
+	ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error
 
-	Start(cn *channel.Channel) error
+	Start(cn *channel.Channel, data map[string]interface{}) error
 	Hangup(cn *channel.Channel) error
 	UpdateStatus(cn *channel.Channel) error
 

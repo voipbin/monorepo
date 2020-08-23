@@ -266,6 +266,29 @@ func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string
 	return nil
 }
 
+// ChannelSetDataItem sets the item into the channel's data
+func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error {
+	//prepare
+	q := fmt.Sprintf("update channels set data = json_set(data, '$.%s', ?), tm_update = ? where id = ?", key)
+
+	// `
+	// update channels set
+	// 	data = json_set(data, '$.?', ?),
+	// 	tm_update = ?
+	// where
+	// 	id = ?
+	// `
+	_, err := h.db.Exec(q, value, getCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetDataItem. err: %v", err)
+	}
+
+	// update the cache
+	h.ChannelUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // ChannelSetStasis sets the stasis
 func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error {
 	//prepare

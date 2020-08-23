@@ -35,7 +35,7 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 
 	// update data and stasis
 	log.Debug("Updating channel stasis.")
-	if err := h.db.ChannelSetDataAndStasis(ctx, e.Channel.ID, data, stasis); err != nil {
+	if err := h.db.ChannelSetStasis(ctx, e.Channel.ID, stasis); err != nil {
 		// something went wrong. Hangup at here.
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
@@ -47,7 +47,7 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 		return err
 	}
 
-	return h.callHandler.ARIStasisStart(cn)
+	return h.callHandler.ARIStasisStart(cn, data)
 }
 
 // eventHandlerStasisEnd handles StasisEnd ARI event

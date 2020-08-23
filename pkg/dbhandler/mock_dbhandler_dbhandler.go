@@ -531,6 +531,20 @@ func (mr *MockDBHandlerMockRecorder) ChannelSetDataAndStasis(arg0, arg1, arg2, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDataAndStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDataAndStasis), arg0, arg1, arg2, arg3)
 }
 
+// ChannelSetDataItem mocks base method.
+func (m *MockDBHandler) ChannelSetDataItem(arg0 context.Context, arg1, arg2 string, arg3 interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetDataItem", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetDataItem indicates an expected call of ChannelSetDataItem.
+func (mr *MockDBHandlerMockRecorder) ChannelSetDataItem(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDataItem", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDataItem), arg0, arg1, arg2, arg3)
+}
+
 // ChannelSetDirection mocks base method.
 func (m *MockDBHandler) ChannelSetDirection(arg0 context.Context, arg1 string, arg2 channel.Direction) error {
 	m.ctrl.T.Helper()
@@ -742,6 +756,20 @@ func (m *MockDBHandler) ConferenceSetBridgeID(arg0 context.Context, arg1 uuid.UU
 func (mr *MockDBHandlerMockRecorder) ConferenceSetBridgeID(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetBridgeID), arg0, arg1, arg2)
+}
+
+// ConferenceSetData mocks base method.
+func (m *MockDBHandler) ConferenceSetData(arg0 context.Context, arg1 uuid.UUID, arg2 map[string]interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceSetData", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceSetData indicates an expected call of ConferenceSetData.
+func (mr *MockDBHandlerMockRecorder) ConferenceSetData(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetData", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetData), arg0, arg1, arg2)
 }
 
 // ConferenceSetStatus mocks base method.

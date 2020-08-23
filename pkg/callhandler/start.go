@@ -50,28 +50,28 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
 }
 
 // Start starts the call service
-func (h *callHandler) Start(cn *channel.Channel) error {
+func (h *callHandler) Start(cn *channel.Channel, data map[string]interface{}) error {
 
 	// check the stasis's context
-	switch cn.Data["CONTEXT"] {
+	switch data["context"].(string) {
 
 	case contextFromServiceCall:
-		return h.startHandlerContextFromServiceCall(cn)
+		return h.startHandlerContextFromServiceCall(cn, data)
 
 	case contextIncomingCall:
-		return h.startHandlerContextIncomingCall(cn)
+		return h.startHandlerContextIncomingCall(cn, data)
 
 	case contextOutgoingCall:
-		return h.startHandlerContextOutgoingCall(cn)
+		return h.startHandlerContextOutgoingCall(cn, data)
 
 	default:
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
-		return fmt.Errorf("no route found for stasisstart. asterisk_id: %s, channel_id: %s", cn.AsteriskID, cn.ID)
+		return fmt.Errorf("no route found for stasisstart. asterisk_id: %s, channel_id: %s, data: %v", cn.AsteriskID, cn.ID, data)
 	}
 }
 
 // startHandlerContextFromServiceCall handles contextFromServiceCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel) error {
+func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel, data map[string]interface{}) error {
 	logrus.Infof("Executing startHandlerContextFromServiceCall. channel: %s", cn.ID)
 
 	// get call by the channel id
@@ -85,18 +85,18 @@ func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel) er
 }
 
 // startHandlerContextIncomingCall handles contextIncomingCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel) error {
+func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data map[string]interface{}) error {
 	logrus.Infof("Executing startHandlerContextIncomingCall. channel: %s", cn.ID)
 
 	// get call type
-	cType := getTypeContextIncomingCall(cn)
+	cType := getTypeContextIncomingCall(data["domain"].(string))
 
 	switch cType {
 	case call.TypeConference:
-		return h.typeConferenceStart(cn)
+		return h.typeConferenceStart(cn, data)
 
 	case call.TypeSipService:
-		return h.typeSipServiceStart(cn)
+		return h.typeSipServiceStart(cn, data)
 
 	default:
 		// call.TypeNone will get to here.
@@ -107,18 +107,17 @@ func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel) error
 }
 
 // startHandlerContextOutgoingCall handles contextOutgoingCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel) error {
-	logrus.Infof("Executing startHandlerContextOutgoingCall. channel: %s", cn.ID)
+func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data map[string]interface{}) error {
+	logrus.Infof("Executing startHandlerContextOutgoingCall. channel: %s, data: %v", cn.ID, data)
 
 	// do nothing here
 	return nil
 }
 
 // getTypeContextIncomingCall returns the service type for incoming call context
-func getTypeContextIncomingCall(cn *channel.Channel) call.Type {
+func getTypeContextIncomingCall(domain string) call.Type {
 	// all of the incoming calls are hitting the same context.
 	// so we have to distinguish them using the requested domain name.
-	domain := cn.Data["DOMAIN"]
 	switch domain {
 	case domainConference:
 		return call.TypeConference
@@ -147,7 +146,7 @@ func (h *callHandler) typeEchoStart(cn *channel.Channel) error {
 		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	c := call.NewCallByChannel(cn, call.TypeSipService, call.DirectionIncoming)
+	c := call.NewCallByChannel(cn, call.TypeSipService, call.DirectionIncoming, map[string]interface{}{})
 	if err := h.createCall(ctx, c); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
@@ -200,7 +199,7 @@ func (h *callHandler) typeEchoStart(cn *channel.Channel) error {
 }
 
 // serviceConferenceStart handles conference calltype start.
-func (h *callHandler) typeConferenceStart(cn *channel.Channel) error {
+func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]interface{}) error {
 	ctx := context.Background()
 	cfID := uuid.FromStringOrNil(cn.DestinationNumber)
 
@@ -227,7 +226,7 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel) error {
 	}
 
 	// create a call
-	c := call.NewCallByChannel(cn, call.TypeConference, call.DirectionIncoming)
+	c := call.NewCallByChannel(cn, call.TypeConference, call.DirectionIncoming, data)
 	if err := h.createCall(ctx, c); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
@@ -279,7 +278,7 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel) error {
 }
 
 // typeSipServiceStart handles sip-service calltype request.
-func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
+func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]interface{}) error {
 	ctx := context.Background()
 
 	log := log.WithFields(
@@ -296,7 +295,7 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel) error {
 	}
 
 	// create a call
-	c := call.NewCallByChannel(cn, call.TypeSipService, call.DirectionIncoming)
+	c := call.NewCallByChannel(cn, call.TypeSipService, call.DirectionIncoming, data)
 	if err := h.createCall(ctx, c); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
