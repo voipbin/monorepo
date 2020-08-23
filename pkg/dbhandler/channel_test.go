@@ -486,6 +486,126 @@ func TestChannelSetStasis(t *testing.T) {
 	}
 }
 
+func TestChannelSetType(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name string
+
+		channel *channel.Channel
+		cType   channel.Type
+
+		expectChannel *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"type none",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "6dac9dec-e548-11ea-945f-7b58ec7f18f5",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.TypeNone,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "6dac9dec-e548-11ea-945f-7b58ec7f18f5",
+				State:      ari.ChannelStateRing,
+				Type:       channel.TypeNone,
+				Data:       map[string]interface{}{},
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+		{
+			"type call",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "a9891886-e548-11ea-bd56-2f7c4e2675d0",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.TypeCall,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "a9891886-e548-11ea-bd56-2f7c4e2675d0",
+				State:      ari.ChannelStateRing,
+				Type:       channel.TypeCall,
+				Data:       map[string]interface{}{},
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+		{
+			"type conf",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "b88dea32-e548-11ea-8fd0-9f74b211e14a",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.TypeConf,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "b88dea32-e548-11ea-8fd0-9f74b211e14a",
+				State:      ari.ChannelStateRing,
+				Type:       channel.TypeConf,
+				Data:       map[string]interface{}{},
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+		{
+			"type join",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "c6e3c3b8-e548-11ea-b3d1-131c49931114",
+				State:      ari.ChannelStateRing,
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+			channel.TypeJoin,
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "c6e3c3b8-e548-11ea-b3d1-131c49931114",
+				State:      ari.ChannelStateRing,
+				Type:       channel.TypeJoin,
+				Data:       map[string]interface{}{},
+				TMCreate:   "2020-04-20T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			// prepare
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelSetType(context.Background(), tt.channel.ID, tt.cType); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
+			if err != nil {
+				t.Errorf("Could not get channel. err: %v", err)
+			}
+
+			resChannel.TMUpdate = ""
+			if reflect.DeepEqual(tt.expectChannel, resChannel) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectChannel, resChannel)
+			}
+		})
+	}
+}
+
 func TestChannelSetData(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

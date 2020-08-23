@@ -629,3 +629,95 @@ func TestEventHandlerChannelVarsetSIPDataItem(t *testing.T) {
 		})
 	}
 }
+
+func TestEventHandlerChannelVarsetVBTYPE(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockRequest := requesthandler.NewMockRequestHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+
+	type test struct {
+		name    string
+		event   *rabbitmq.Event
+		channel *channel.Channel
+		cType   channel.Type
+	}
+
+	tests := []test{
+		{
+			"None",
+			&rabbitmq.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     `{"variable":"VB-TYPE","value":"","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-e42907e8-e549-11ea-8744-dfde41483063","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`,
+			},
+			&channel.Channel{
+				ID:         "instance-asterisk-production-europe-west4-a-1-e42907e8-e549-11ea-8744-dfde41483063",
+				AsteriskID: "42:01:0a:a4:0f:ce",
+				Type:       channel.TypeNone,
+			},
+			channel.TypeNone,
+		},
+		{
+			"call",
+			&rabbitmq.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     `{"variable":"VB-TYPE","value":"call","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-dac9f91e-e549-11ea-9491-e315e9ebdc0a","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`,
+			},
+			&channel.Channel{
+				ID:         "instance-asterisk-production-europe-west4-a-1-dac9f91e-e549-11ea-9491-e315e9ebdc0a",
+				AsteriskID: "42:01:0a:a4:0f:ce",
+				Type:       channel.TypeCall,
+			},
+			channel.TypeCall,
+		},
+		{
+			"conf",
+			&rabbitmq.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     `{"variable":"VB-TYPE","value":"conf","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-cf436148-e549-11ea-813a-036e5febe4ac","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`,
+			},
+			&channel.Channel{
+				ID:         "instance-asterisk-production-europe-west4-a-1-cf436148-e549-11ea-813a-036e5febe4ac",
+				AsteriskID: "42:01:0a:a4:0f:ce",
+				Type:       channel.TypeConf,
+			},
+			channel.TypeConf,
+		},
+		{
+			"join",
+			&rabbitmq.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     `{"variable":"VB-TYPE","value":"join","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-c39d269e-e549-11ea-856a-db4440c2c2fe","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`,
+			},
+			&channel.Channel{
+				ID:         "instance-asterisk-production-europe-west4-a-1-c39d269e-e549-11ea-856a-db4440c2c2fe",
+				AsteriskID: "42:01:0a:a4:0f:ce",
+				Type:       channel.TypeJoin,
+			},
+			channel.TypeJoin,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := eventHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockRequest,
+				callHandler: mockCall,
+			}
+
+			mockDB.EXPECT().ChannelSetType(gomock.Any(), tt.channel.ID, tt.cType).Return(nil)
+			if err := h.processEvent(tt.event); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

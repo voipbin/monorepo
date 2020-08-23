@@ -17,6 +17,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 		asterisk_id,
 		id,
 		name,
+		type,
 		tech,
 
 		sip_call_id,
@@ -39,7 +40,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 
 		tm_create
 	) values(
-		?, ?, ?, ?, 
+		?, ?, ?, ?, ?,
 		?, ?, 
 		?, ?, ?, ?,
 		?, ?, ?, ?,
@@ -58,6 +59,7 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 		channel.AsteriskID,
 		channel.ID,
 		channel.Name,
+		channel.Type,
 		channel.Tech,
 
 		channel.SIPCallID,
@@ -117,6 +119,7 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 		&res.AsteriskID,
 		&res.ID,
 		&res.Name,
+		&res.Type,
 		&res.Tech,
 
 		&res.SIPCallID,
@@ -385,6 +388,28 @@ func (h *handler) ChannelSetDirection(ctx context.Context, id string, direction 
 	return nil
 }
 
+// ChannelSetType sets the bridge_id
+func (h *handler) ChannelSetType(ctx context.Context, id string, cType channel.Type) error {
+	//prepare
+	q := `
+	update channels set
+		type = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, string(cType), getCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetType. err: %v", err)
+	}
+
+	// update the cache
+	h.ChannelUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // ChannelSetSIPTransport sets the channel's sip_transport
 func (h *handler) ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error {
 	//prepare
@@ -500,6 +525,7 @@ func (h *handler) ChannelGetFromDB(ctx context.Context, id string) (*channel.Cha
 	asterisk_id,
 	id,
 	name,
+	type,
 	tech,
 
 	sip_call_id,

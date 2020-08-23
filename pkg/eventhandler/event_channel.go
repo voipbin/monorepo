@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
@@ -253,6 +254,12 @@ func (h *eventHandler) eventHandlerChannelVarset(ctx context.Context, evt interf
 		}
 		if cn.Direction != channel.DirectionNone && cn.SIPTransport != channel.SIPTransportNone {
 			promChannelTransportAndDirection.WithLabelValues(string(cn.SIPTransport), string(cn.Direction)).Inc()
+		}
+
+	case "VB-TYPE":
+		logrus.Debugf("Setting channel's type. channel: %s, type: %s", e.Channel.ID, e.Value)
+		if err := h.db.ChannelSetType(ctx, e.Channel.ID, channel.Type(e.Value)); err != nil {
+			return err
 		}
 
 	default:

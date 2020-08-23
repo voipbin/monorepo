@@ -86,7 +86,13 @@ func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel, da
 
 // startHandlerContextIncomingCall handles contextIncomingCall context type of StasisStart event.
 func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data map[string]interface{}) error {
-	logrus.Infof("Executing startHandlerContextIncomingCall. channel: %s", cn.ID)
+	logrus.Infof("Executing startHandlerContextIncomingCall. channel: %s, data: %v", cn.ID, data)
+
+	// set channel's type call.
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeCall)); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
 
 	// get call type
 	cType := getTypeContextIncomingCall(data["domain"].(string))
@@ -109,6 +115,12 @@ func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data 
 // startHandlerContextOutgoingCall handles contextOutgoingCall context type of StasisStart event.
 func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data map[string]interface{}) error {
 	logrus.Infof("Executing startHandlerContextOutgoingCall. channel: %s, data: %v", cn.ID, data)
+
+	// set channel's type call.
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeCall)); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
 
 	// do nothing here
 	return nil
@@ -380,27 +392,6 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		resAct = &action.Action{
 			ID:     action.IDBegin,
 			Type:   action.TypeEcho,
-			Option: opt,
-			Next:   action.IDEnd,
-		}
-
-	// echo_legacy
-	case string(action.TypeEchoLegacy):
-		// create an option for action echo_legacy
-		// create default option for echo_legacy
-		option := action.OptionEcho{
-			Duration: 180 * 1000, // duration 180 sec
-			DTMF:     true,
-		}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeEchoLegacy, err)
-		}
-
-		// create an action
-		resAct = &action.Action{
-			ID:     action.IDBegin,
-			Type:   action.TypeEchoLegacy,
 			Option: opt,
 			Next:   action.IDEnd,
 		}

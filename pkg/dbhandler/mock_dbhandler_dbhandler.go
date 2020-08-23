@@ -629,6 +629,20 @@ func (mr *MockDBHandlerMockRecorder) ChannelSetToCache(arg0, arg1 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetToCache", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetToCache), arg0, arg1)
 }
 
+// ChannelSetType mocks base method.
+func (m *MockDBHandler) ChannelSetType(arg0 context.Context, arg1 string, arg2 channel.Type) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetType", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetType indicates an expected call of ChannelSetType.
+func (mr *MockDBHandlerMockRecorder) ChannelSetType(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetType", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetType), arg0, arg1, arg2)
+}
+
 // ChannelUpdateToCache mocks base method.
 func (m *MockDBHandler) ChannelUpdateToCache(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()

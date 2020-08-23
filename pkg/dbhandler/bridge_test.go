@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
@@ -63,7 +64,7 @@ func TestBridgeCreate(t *testing.T) {
 				AsteriskID:     "3e:50:6b:43:bb:30",
 				ID:             "5149007a-9316-11ea-9de0-5f9cb2e8c235",
 				ConferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
-				ConferenceType: conference.TypeEcho,
+				ConferenceType: conference.TypeConference,
 				TMCreate:       "2020-04-18T03:22:17.995000",
 			},
 			&bridge.Bridge{
@@ -71,7 +72,7 @@ func TestBridgeCreate(t *testing.T) {
 				ID:             "5149007a-9316-11ea-9de0-5f9cb2e8c235",
 				ChannelIDs:     []string{},
 				ConferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
-				ConferenceType: conference.TypeEcho,
+				ConferenceType: conference.TypeConference,
 				TMCreate:       "2020-04-18T03:22:17.995000",
 			},
 		},
@@ -198,58 +199,6 @@ func TestBridgeEnd(t *testing.T) {
 		})
 	}
 }
-
-// func TestBridgeAddChannel(t *testing.T) {
-// 	type test struct {
-// 		name         string
-// 		bridge       *bridge.Bridge
-// 		channelID    string
-// 		expectBridge *bridge.Bridge
-// 	}
-
-// 	tests := []test{
-// 		{
-// 			"test normal",
-// 			&bridge.Bridge{
-// 				AsteriskID: "3e:50:6b:43:bb:30",
-// 				ID:         "2b45f6ee-917c-11ea-9caa-17f6fdd51eda",
-// 				TMCreate:   "2020-04-18T03:22:17.995000",
-// 			},
-// 			"3fd26c3c-917c-11ea-a8a0-93d5d27da96a",
-// 			&bridge.Bridge{
-// 				AsteriskID: "3e:50:6b:43:bb:30",
-// 				ID:         "2b45f6ee-917c-11ea-9caa-17f6fdd51eda",
-// 				Channels:   []string{"3fd26c3c-917c-11ea-a8a0-93d5d27da96a"},
-// 				TMCreate:   "2020-04-18T03:22:17.995000",
-// 				TMDelete:   "2020-04-18T05:22:17.995000",
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			h := NewHandler(dbTest, nil)
-
-// 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if err := h.BridgeAddChannel(context.Background(), tt.bridge.ID, tt.channelID); err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			res.TMUpdate = ""
-// 			if reflect.DeepEqual(tt.expectBridge, res) == false {
-// 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectBridge, res)
-// 			}
-// 		})
-// 	}
-// }
 
 func TestBridgeGetUntilTimeout(t *testing.T) {
 	mc := gomock.NewController(t)

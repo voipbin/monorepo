@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
@@ -37,8 +36,6 @@ func (h *conferenceHandler) Start(reqConf *conference.Conference, c *call.Call) 
 
 	mapHandler := map[conference.Type]func(*conference.Conference, *call.Call) (*conference.Conference, error){
 		conference.TypeConference: h.startTypeConference,
-		conference.TypeEcho:       h.startTypeEcho,
-		// conference.TypeTransfer:   h.startConferTypeTransfer,
 	}
 
 	handler := mapHandler[reqConf.Type]
@@ -105,73 +102,4 @@ func (h *conferenceHandler) startTypeConference(req *conference.Conference, c *c
 	}
 
 	return res, nil
-}
-
-// startTypeEcho
-// echo conference makes a bridge and create a snoop channel and put the bridge together.
-func (h *conferenceHandler) startTypeEcho(req *conference.Conference, c *call.Call) (*conference.Conference, error) {
-	ctx := context.Background()
-
-	// create a conference
-	id := uuid.Must(uuid.NewV4())
-
-	log := log.WithFields(
-		log.Fields{
-			"call":       c.ID.String(),
-			"conference": id.String(),
-			"type":       conference.TypeEcho,
-		})
-	log.Debug("Starting conference.")
-
-	// create a bridge and add to conference
-	bridgeID := uuid.Must(uuid.NewV4()).String()
-	bridgeName := generateBridgeName(conference.TypeEcho, id, false)
-	if err := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing}); err != nil {
-		return nil, fmt.Errorf("could not create a bridge for echo conference. err: %v", err)
-	}
-
-	cf := conference.NewConference(id, conference.TypeEcho, bridgeID, req)
-	log = log.WithFields(
-		logrus.Fields{
-			"bridge": bridgeID,
-		})
-	log.Debug("Created bridge.")
-
-	// create a conference
-	if err := h.createConference(ctx, cf); err != nil {
-		return nil, fmt.Errorf("could not create a conference. err: %v", err)
-	}
-
-	// create a snoop channel
-	args := fmt.Sprintf("context=%s,conference_id=%s,bridge_id=%s,call_id=%s",
-		contextConferenceEcho,
-		cf.ID.String(),
-		bridgeID,
-		c.ID.String(),
-	)
-	snoopID := uuid.Must(uuid.NewV4())
-	if err := h.reqHandler.AstChannelCreateSnoop(
-		c.AsteriskID,
-		c.ChannelID,
-		snoopID.String(),
-		args,
-		channel.SnoopDirectionIn,   // spy:in
-		channel.SnoopDirectionNone, // whisper:nil
-	); err != nil {
-		return nil, fmt.Errorf("could not create a snopp channel for echo conference. err: %v", err)
-	}
-
-	// put the channel into the bridge
-	if err := h.reqHandler.AstBridgeAddChannel(c.AsteriskID, bridgeID, c.ChannelID, "", false, false); err != nil {
-		h.reqHandler.AstBridgeDelete(c.AsteriskID, bridgeID)
-		return nil, fmt.Errorf("could not add the channel into the the bridge. bridge: %s", bridgeID)
-	}
-
-	// answer
-	if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
-		h.reqHandler.AstBridgeDelete(c.AsteriskID, bridgeID)
-		return nil, fmt.Errorf("could not answer the channel. err: %v", err)
-	}
-
-	return cf, nil
 }

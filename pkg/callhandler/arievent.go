@@ -19,12 +19,12 @@ func (h *callHandler) ARIStasisStart(cn *channel.Channel, data map[string]interf
 
 // ARIChannelDestroyed handles ChannelDestroyed ARI event
 func (h *callHandler) ARIChannelDestroyed(cn *channel.Channel) error {
-	switch cn.GetContextType() {
 
-	case channel.ContextTypeCall:
+	switch cn.Type {
+	case channel.TypeCall:
 		return h.Hangup(cn)
 
-	case channel.ContextTypeConference:
+	case channel.TypeConf, channel.TypeJoin:
 		// we don't do anything at here.
 		// because for the conference context type, ChannelLeftBridge event handle will
 		// handle the channel termination.
@@ -33,6 +33,7 @@ func (h *callHandler) ARIChannelDestroyed(cn *channel.Channel) error {
 	default:
 		logrus.Warnf("Could not find correct event handler. event: %v", cn)
 		return nil
+
 	}
 }
 

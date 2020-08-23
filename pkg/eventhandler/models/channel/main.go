@@ -12,6 +12,7 @@ type Channel struct {
 	ID         string
 	AsteriskID string
 	Name       string
+	Type       Type
 	Tech       Tech
 
 	// sip information
@@ -52,6 +53,17 @@ const (
 	TechPJSIP Tech = "pjsip"
 	TechSIP   Tech = "sip"
 	TechSnoop Tech = "snoop"
+)
+
+// Type represent channel's type.
+type Type string
+
+// List of Context types
+const (
+	TypeNone Type = "" // the type has not defined yet.
+	TypeCall Type = "call"
+	TypeConf Type = "conf"
+	TypeJoin Type = "join"
 )
 
 // SIPTransport represent channel's sip transport type.
@@ -152,25 +164,5 @@ func getTech(name string) Tech {
 		return TechSIP
 	default:
 		return TechNone
-	}
-}
-
-// // GetContext returns context of the channel
-// func (c *Channel) GetContext() string {
-// 	return c.Data["CONTEXT"].(string)
-// }
-
-// GetContextType returns type of context
-func (c *Channel) GetContextType() ContextType {
-	tmp, ok := c.Data["context_type"]
-	if !ok {
-		return ContextTypeCall
-	}
-
-	switch tmp.(string) {
-	case string(ContextTypeConference):
-		return ContextTypeConference
-	default:
-		return ContextTypeCall
 	}
 }

@@ -3,6 +3,7 @@ create table channels(
   id          varchar(255), -- channel id
   asterisk_id varchar(255), -- Asterisk id
   name        varchar(255), -- channel name
+  type        varchar(255), -- channel's type. this context sets by call/conference handler.
   tech        varchar(255), -- channel driver. pjsip, snoop, sip, ...
 
   -- sip info

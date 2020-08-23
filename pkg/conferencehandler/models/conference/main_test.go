@@ -19,16 +19,16 @@ func TestNewConference(t *testing.T) {
 	tests := []test{
 		{
 			"normal echo",
-			TypeEcho,
+			TypeConference,
 			"c9e43a42-9bf7-11ea-b110-bbb4c8d9c1de",
 			&Conference{
-				Type:   TypeEcho,
+				Type:   TypeConference,
 				Name:   "test conference",
 				Detail: "simple conference for test",
 			},
 			&Conference{
 				ID:       uuid.FromStringOrNil("54c3e73e-9bfd-11ea-8bb8-7fc0647db6b5"),
-				Type:     TypeEcho,
+				Type:     TypeConference,
 				BridgeID: "c9e43a42-9bf7-11ea-b110-bbb4c8d9c1de",
 				Name:     "test conference",
 				Detail:   "simple conference for test",

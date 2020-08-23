@@ -58,8 +58,7 @@ type Type string
 const (
 	TypeAnswer         Type = "answer"
 	TypeConferenceJoin Type = "conference_join"
-	TypeEcho           Type = "echo" // echo the voice and dtmf only
-	TypeEchoLegacy     Type = "echo_legacy"
+	TypeEcho           Type = "echo"        // echo the voice and dtmf only
 	TypeStreamEcho     Type = "stream_echo" // echo the stream(video/voice)
 )
 

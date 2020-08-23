@@ -64,6 +64,7 @@ type DBHandler interface {
 	ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
 	ChannelSetStasis(ctx context.Context, id, stasis string) error
 	ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error
+	ChannelSetType(ctx context.Context, id string, cType channel.Type) error
 	ChannelSetToCache(ctx context.Context, channel *channel.Channel) error
 	ChannelUpdateToCache(ctx context.Context, id string) error
 

@@ -36,37 +36,11 @@ func TestTerminate(t *testing.T) {
 			uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
 			&conference.Conference{
 				ID:   uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
-				Type: conference.TypeEcho,
+				Type: conference.TypeConference,
 			},
 			&bridge.Bridge{
 				AsteriskID: "80:fa:5b:5e:da:81",
 				ID:         "86918a90-ddc1-11ea-87cb-87d08ecc726f",
-			},
-		},
-		{
-			"1 channel in the bridge",
-			uuid.FromStringOrNil("c33adf04-9240-11ea-a8ed-0fa57555db3b"),
-			&conference.Conference{
-				ID:   uuid.FromStringOrNil("c33adf04-9240-11ea-a8ed-0fa57555db3b"),
-				Type: conference.TypeEcho,
-			},
-			&bridge.Bridge{
-				AsteriskID: "80:fa:5b:5e:da:81",
-				ID:         "96b34a94-ddc1-11ea-9cec-0fed666dd9a0",
-				ChannelIDs: []string{"ed33a850-ddc1-11ea-9fec-77bf9bede781"},
-			},
-		},
-		{
-			"2 bridge ids",
-			uuid.FromStringOrNil("71a286e6-9241-11ea-8241-874ac5255e40"),
-			&conference.Conference{
-				ID:   uuid.FromStringOrNil("71a286e6-9241-11ea-8241-874ac5255e40"),
-				Type: conference.TypeEcho,
-			},
-			&bridge.Bridge{
-				AsteriskID: "80:fa:5b:5e:da:81",
-				ID:         "93927722-ddc1-11ea-9d16-9be45d7d613d",
-				ChannelIDs: []string{"f5ddfac8-ddc1-11ea-8ec9-97793f123bb6", "f26014c6-ddc1-11ea-8b4f-939795e34a19"},
 			},
 		},
 	}

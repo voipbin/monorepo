@@ -38,11 +38,10 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 		{
 			"call normal destroy",
 			&channel.Channel{
-				ID: "31384bbc-dd97-11ea-9e42-433e5113c783",
-				Data: map[string]interface{}{
-					"context_type": "call",
-				},
+				ID:          "31384bbc-dd97-11ea-9e42-433e5113c783",
+				Data:        map[string]interface{}{},
 				HangupCause: ari.ChannelCauseNormalClearing,
+				Type:        channel.TypeCall,
 			},
 			&call.Call{
 				ChannelID: "31384bbc-dd97-11ea-9e42-433e5113c783",
@@ -85,10 +84,9 @@ func TestARIChannelDestroyedContextTypeConference(t *testing.T) {
 		{
 			"conference normal destroy",
 			&channel.Channel{
-				ID: "78ff0ed4-dd7b-11ea-9add-dbca62f7e8b9",
-				Data: map[string]interface{}{
-					"context_type": "conf",
-				},
+				ID:          "78ff0ed4-dd7b-11ea-9add-dbca62f7e8b9",
+				Data:        map[string]interface{}{},
+				Type:        channel.TypeConf,
 				HangupCause: ari.ChannelCauseNormalClearing,
 			},
 		},
