@@ -5,26 +5,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
-
-// func TestSetSock(t *testing.T) {
-// 	mc := gomock.NewController(t)
-// 	defer mc.Finish()
-
-// 	mockSock := rabbitmq.NewMockRabbit(mc)
-// 	if mockSock == nil {
-// 		t.Errorf("Error")
-// 	}
-
-// 	reqHandler := NewRequestHandler(mockSock)
-
-// 	if reqHandler == nil {
-// 		t.Errorf("Wrong match. expact: true, got: false")
-// 	}
-// }
 
 func TestAstChannelAnswer(t *testing.T) {
 

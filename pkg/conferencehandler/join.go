@@ -131,6 +131,7 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 		h.reqHandler.AstBridgeDelete(c.AsteriskID, bridgeID)
 		return err
 	}
+	log.Debugf("Created a join channel for conference joining. id: %s", channelID)
 
 	return nil
 }

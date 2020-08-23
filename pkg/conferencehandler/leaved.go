@@ -38,35 +38,38 @@ func (h *conferenceHandler) leaved(cn *channel.Channel, br *bridge.Bridge) error
 
 func (h *conferenceHandler) leavedChannel(cn *channel.Channel, br *bridge.Bridge) error {
 
-	switch cn.GetContextType() {
-	// conference
-	case channel.ContextTypeConference:
+	switch cn.Type {
+	case channel.TypeCall:
+		return h.leavedChannelCall(cn, br)
+
+	case channel.TypeConf, channel.TypeJoin:
 		return h.leavedChannelConf(cn, br)
 
-	// call
-	case channel.ContextTypeCall:
-		return h.leavedChannelCall(cn, br)
+	default:
+		logrus.Warnf("Could not find correct event handler. channel: %s, bridge: %s, type: %s", cn.ID, br.ID, cn.Type)
 	}
 
 	return nil
 }
 
 func (h *conferenceHandler) leavedChannelConf(cn *channel.Channel, br *bridge.Bridge) error {
-	switch cn.GetContextType() {
 
-	case channel.ContextTypeConference:
-		// nothing to do
+	switch cn.Type {
+	case channel.TypeConf:
+		// nothing todo
 		return nil
 
-	// case contextConferenceEcho, contextConferenceJoin:
-
-	default:
+	case channel.TypeJoin:
 		h.removeAllChannelsInBridge(br)
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return nil
-		// return fmt.Errorf("could not find context handler. asterisk: %s, channel: %s, bridge: %s", cn.AsteriskID, cn.ID, br.ID)
 
+	default:
+		logrus.Warnf("Could not find correct event handler. channel: %s, bridge: %s, type: %s", cn.ID, br.ID, cn.Type)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 	}
+
+	return nil
 }
 
 // leavedChannelCall handle
@@ -144,7 +147,7 @@ func (h *conferenceHandler) leavedBridge(cn *channel.Channel, br *bridge.Bridge)
 }
 
 func (h *conferenceHandler) leavedConference(cn *channel.Channel, br *bridge.Bridge) {
-	if cn.GetContextType() != channel.ContextTypeCall {
+	if cn.Type != channel.TypeCall {
 		// nothing to do here
 		return
 	}
@@ -180,17 +183,10 @@ func (h *conferenceHandler) isTerminatable(ctx context.Context, id uuid.UUID) bo
 
 	// check there's more calls or not
 	switch cf.Type {
-	case conference.TypeEcho:
-		if len(cf.CallIDs) <= 0 {
-			return true
-		}
-
 	case conference.TypeConference:
 		return false
 
 	default:
 		return true
 	}
-
-	return false
 }

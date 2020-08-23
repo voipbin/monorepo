@@ -63,9 +63,6 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 
 			mockDB.EXPECT().BridgeCreate(gomock.Any(), tt.expectBridge)
 
-			// mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.expectAsterisID, tt.expectChannelID, "")
-			// mockDB.EXPECT().BridgeRemoveChannelID(gomock.Any(), tt.expectBridgeID, tt.expectChannelID)
-
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

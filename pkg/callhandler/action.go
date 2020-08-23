@@ -11,7 +11,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 )
 
@@ -47,9 +46,6 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 	case action.TypeEcho:
 		err = h.actionExecuteEcho(c, a)
-
-	case action.TypeEchoLegacy:
-		err = h.actionExecuteEchoLegacy(c, a)
 
 	case action.TypeStreamEcho:
 		err = h.actionExecuteStreamEcho(c, a)
@@ -198,66 +194,6 @@ func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error 
 	// set timeout
 	// send delayed message for next action execution after 10 ms.
 	if err := h.reqHandler.CallCallActionTimeout(c.ID, 10, &act); err != nil {
-		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
-	}
-
-	return nil
-}
-
-// actionExecuteEcho executes the action type echo
-func (h *callHandler) actionExecuteEchoLegacy(c *call.Call, a *action.Action) error {
-	// copy the action
-	act := *a
-
-	// set current time
-	act.TMExecute = getCurTime()
-
-	log := log.WithFields(
-		log.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
-
-	var option action.OptionEcho
-	if err := json.Unmarshal(act.Option, &option); err != nil {
-		log.Errorf("could not parse the option. err: %v", err)
-		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
-	}
-
-	// set default duration if it is not set correctly
-	if option.Duration <= 0 {
-		option.Duration = 180 * 1000 // default duration 180 sec
-	}
-
-	// set option
-	rawOption, err := json.Marshal(option)
-	if err != nil {
-		return fmt.Errorf("could not marshal the action option. err: %v", err)
-	}
-	act.Option = rawOption
-
-	// set action
-	if err := h.setAction(c, &act); err != nil {
-		return fmt.Errorf("could not set the action for call. err: %v", err)
-	}
-
-	// start echo conference
-	reqConf := &conference.Conference{
-		Type:    conference.TypeEcho,
-		Name:    "echo",
-		Detail:  "action echo",
-		Timeout: 180, // 3 minutes
-	}
-	conf, err := h.confHandler.Start(reqConf, c)
-	if err != nil {
-		return fmt.Errorf("could not start a conference for call. call: %s, conference_type: %s, err: %v", c.ID, conference.TypeEcho, err)
-	}
-	log.Debugf("Conference started. conf: %v", conf)
-
-	// set timeout
-	// send delayed message for ti
-	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 

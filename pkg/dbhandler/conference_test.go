@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 )
@@ -27,21 +28,6 @@ func TestConferenceCreate(t *testing.T) {
 
 	tests := []test{
 		{
-			"type echo",
-			&conference.Conference{
-				ID:     uuid.FromStringOrNil("eb8e31ec-9162-11ea-ba76-cbd8f42249bd"),
-				Type:   conference.TypeEcho,
-				Name:   "test type echo",
-				Detail: "test type echo detail",
-			},
-			&conference.Conference{
-				ID:     uuid.FromStringOrNil("eb8e31ec-9162-11ea-ba76-cbd8f42249bd"),
-				Type:   conference.TypeEcho,
-				Name:   "test type echo",
-				Detail: "test type echo detail",
-			},
-		},
-		{
 			"type conference",
 			&conference.Conference{
 				ID:     uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
@@ -54,21 +40,6 @@ func TestConferenceCreate(t *testing.T) {
 				Type:   conference.TypeConference,
 				Name:   "test type conference",
 				Detail: "test type conference detail",
-			},
-		},
-		{
-			"type transfer",
-			&conference.Conference{
-				ID:     uuid.FromStringOrNil("483a5dee-9163-11ea-95c5-cbea96d71f7b"),
-				Type:   conference.TypeTransfer,
-				Name:   "test type transfer",
-				Detail: "test type transfer detail",
-			},
-			&conference.Conference{
-				ID:     uuid.FromStringOrNil("483a5dee-9163-11ea-95c5-cbea96d71f7b"),
-				Type:   conference.TypeTransfer,
-				Name:   "test type transfer",
-				Detail: "test type transfer detail",
 			},
 		},
 	}

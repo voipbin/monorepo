@@ -13,7 +13,6 @@ import (
 func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
 
 	mapType := map[interface{}]func(*channel.Channel, map[string]interface{}) error{
-		contextConferenceEcho:     h.ariStasisStartContextEcho,
 		contextConferenceJoin:     h.ariStasisStartContextJoin,
 		contextConferenceIncoming: h.ariStasisStartContextIncoming,
 	}
@@ -31,31 +30,10 @@ func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]
 	return handler(cn, data)
 }
 
-// ariStasisStartContextEcho handles the call which has CONTEXT=conf-echo in the StasisStart argument.
-func (h *conferenceHandler) ariStasisStartContextEcho(cn *channel.Channel, data map[string]interface{}) error {
-	if _, ok := data["bridge_id"]; !ok {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
-		return nil
-	}
-
-	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-CONTEXT_TYPE", "conf"); err != nil {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
-		return fmt.Errorf("could not set channel var. id: %s, asterisk: %s, bridge: %s, err: %v", cn.ID, cn.AsteriskID, cn.DestinationNumber, err)
-	}
-
-	// add the created snoop channel into the bridge
-	if err := h.reqHandler.AstBridgeAddChannel(cn.AsteriskID, data["bridge_id"].(string), cn.ID, "", false, false); err != nil {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
-		return fmt.Errorf("could not add the snoop channel into the bridge. id: %s, bridge: %s", cn.ID, data["bridge_id"])
-	}
-
-	return nil
-}
-
 // ariStasisStartContextJoin handles the call which has CONTEXT=conf-join in the StasisStart argument.
 func (h *conferenceHandler) ariStasisStartContextJoin(cn *channel.Channel, data map[string]interface{}) error {
 
-	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-CONTEXT_TYPE", "conf"); err != nil {
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeJoin)); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
 		return fmt.Errorf("could not set channel var. id: %s, asterisk: %s, bridge: %s, err: %v", cn.ID, cn.AsteriskID, cn.DestinationNumber, err)
 	}
@@ -76,7 +54,7 @@ func (h *conferenceHandler) ariStasisStartContextJoin(cn *channel.Channel, data 
 // ariStasisStartContextIncoming handles the call which has CONTEXT=conf-in in the StasisStart argument.
 func (h *conferenceHandler) ariStasisStartContextIncoming(cn *channel.Channel, data map[string]interface{}) error {
 
-	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-CONTEXT_TYPE", "conf"); err != nil {
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeConf)); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
 		return fmt.Errorf("could not set channel var. id: %s, asterisk: %s, bridge: %s, err: %v", cn.ID, cn.AsteriskID, cn.DestinationNumber, err)
 	}
@@ -102,10 +80,13 @@ func (h *conferenceHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge
 
 // ARIChannelEnteredBridge is called when the channel handler received ChannelEnteredBridge.
 func (h *conferenceHandler) ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error {
-	if cn.GetContextType() == channel.ContextTypeConference {
-		// nothing to do here
-		return nil
+
+	// if the call type has joined to the bridge,
+	// we have to call the joined handler for add the call info to the conference.
+	if cn.Type == channel.TypeCall {
+		return h.joined(cn, bridge)
 	}
 
-	return h.joined(cn, bridge)
+	// do nothing for other types
+	return nil
 }
