@@ -67,17 +67,17 @@ func (mr *MockConferenceHandlerMockRecorder) ARIChannelLeftBridge(arg0, arg1 int
 }
 
 // ARIStasisStart mocks base method.
-func (m *MockConferenceHandler) ARIStasisStart(arg0 *channel.Channel) error {
+func (m *MockConferenceHandler) ARIStasisStart(arg0 *channel.Channel, arg1 map[string]interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIStasisStart", arg0)
+	ret := m.ctrl.Call(m, "ARIStasisStart", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ARIStasisStart indicates an expected call of ARIStasisStart.
-func (mr *MockConferenceHandlerMockRecorder) ARIStasisStart(arg0 interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) ARIStasisStart(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockConferenceHandler)(nil).ARIStasisStart), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockConferenceHandler)(nil).ARIStasisStart), arg0, arg1)
 }
 
 // Join mocks base method.

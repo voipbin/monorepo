@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
@@ -36,18 +37,15 @@ func TestEventHandlerStasisStart(t *testing.T) {
 			&rabbitmq.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
-				Data:     `{"type":"StasisStart","timestamp":"2020-04-25T00:27:18.342+0000","args":["CONTEXT=in-voipbin","SIP_CALLID=8juJJyujlS","SIP_PAI=","SIP_PRIVACY=","DOMAIN=sip-service.voipbin.net","SOURCE=213.127.79.161"],"channel":{"id":"1587774438.2390","name":"PJSIP/in-voipbin-00000948","state":"Ring","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"1234234324","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=8juJJyujlS,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-04-25T00:27:18.341+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
+				Data:     `{"type":"StasisStart","timestamp":"2020-04-25T00:27:18.342+0000","args":["context=call-in","domain=sip-service.voipbin.net","source=213.127.79.161"],"channel":{"id":"1587774438.2390","name":"PJSIP/in-voipbin-00000948","state":"Ring","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"1234234324","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=8juJJyujlS,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-04-25T00:27:18.341+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
 			},
 
 			"42:01:0a:a4:00:03",
 			"1587774438.2390",
 			map[string]interface{}{
-				"CONTEXT":     "in-voipbin",
-				"DOMAIN":      "sip-service.voipbin.net",
-				"SIP_CALLID":  "8juJJyujlS",
-				"SIP_PAI":     "",
-				"SIP_PRIVACY": "",
-				"SOURCE":      "213.127.79.161",
+				"context": "call-in",
+				"domain":  "sip-service.voipbin.net",
+				"source":  "213.127.79.161",
 			},
 			"voipbin",
 		},
@@ -66,9 +64,9 @@ func TestEventHandlerStasisStart(t *testing.T) {
 				Data: map[string]interface{}{},
 			}
 			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, gomock.Any()).Return(true)
-			mockDB.EXPECT().ChannelSetDataAndStasis(gomock.Any(), tt.expectChannelID, tt.expactData, tt.expectStasis).Return(nil)
+			mockDB.EXPECT().ChannelSetStasis(gomock.Any(), tt.expectChannelID, tt.expectStasis).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(channel, nil)
-			mockCall.EXPECT().ARIStasisStart(channel).Return(nil)
+			mockCall.EXPECT().ARIStasisStart(channel, tt.expactData).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

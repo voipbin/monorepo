@@ -54,10 +54,11 @@ type DBHandler interface {
 	ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error)
+	ChannelIsExist(id string, timeout time.Duration) bool
 	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error
 	ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error
 	ChannelSetDataAndStasis(ctx context.Context, id string, data map[string]interface{}, stasis string) error
-	ChannelIsExist(id string, timeout time.Duration) bool
+	ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error
 	ChannelSetSIPCallID(ctx context.Context, id string, sipID string) error
 	ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
@@ -74,6 +75,7 @@ type DBHandler interface {
 	ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
+	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
 	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
 	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error

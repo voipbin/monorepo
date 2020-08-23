@@ -66,31 +66,31 @@ func (mr *MockCallHandlerMockRecorder) ARIChannelDtmfReceived(cn, digit, duratio
 }
 
 // ARIStasisStart mocks base method.
-func (m *MockCallHandler) ARIStasisStart(cn *channel.Channel) error {
+func (m *MockCallHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIStasisStart", cn)
+	ret := m.ctrl.Call(m, "ARIStasisStart", cn, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ARIStasisStart indicates an expected call of ARIStasisStart.
-func (mr *MockCallHandlerMockRecorder) ARIStasisStart(cn interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) ARIStasisStart(cn, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockCallHandler)(nil).ARIStasisStart), cn)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockCallHandler)(nil).ARIStasisStart), cn, data)
 }
 
 // Start mocks base method.
-func (m *MockCallHandler) Start(cn *channel.Channel) error {
+func (m *MockCallHandler) Start(cn *channel.Channel, data map[string]interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", cn)
+	ret := m.ctrl.Call(m, "Start", cn, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockCallHandlerMockRecorder) Start(cn interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) Start(cn, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockCallHandler)(nil).Start), cn)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockCallHandler)(nil).Start), cn, data)
 }
 
 // Hangup mocks base method.

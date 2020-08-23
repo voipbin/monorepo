@@ -7,27 +7,29 @@ import (
 )
 
 // ARIStasisStart is called when the channel handler received StasisStart.
-func (h *callHandler) ARIStasisStart(cn *channel.Channel) error {
-	contextType := getContextType(cn.Data["CONTEXT"])
+func (h *callHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
+	contextType := getContextType(data["context"])
 	switch contextType {
 	case contextTypeConference:
-		return h.confHandler.ARIStasisStart(cn)
+		return h.confHandler.ARIStasisStart(cn, data)
 	default:
-		return h.Start(cn)
+		return h.Start(cn, data)
 	}
 }
 
 // ARIChannelDestroyed handles ChannelDestroyed ARI event
 func (h *callHandler) ARIChannelDestroyed(cn *channel.Channel) error {
-	contextType := getContextType(cn.Data["CONTEXT"])
-	switch contextType {
-	case contextTypeCall:
+	switch cn.GetContextType() {
+
+	case channel.ContextTypeCall:
 		return h.Hangup(cn)
-	case contextTypeConference:
+
+	case channel.ContextTypeConference:
 		// we don't do anything at here.
 		// because for the conference context type, ChannelLeftBridge event handle will
 		// handle the channel termination.
 		return nil
+
 	default:
 		logrus.Warnf("Could not find correct event handler. event: %v", cn)
 		return nil

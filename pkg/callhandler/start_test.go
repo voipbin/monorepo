@@ -19,43 +19,31 @@ import (
 func TestGetTypeContextIncomingCall(t *testing.T) {
 	type test struct {
 		name       string
-		channel    *channel.Channel
+		domain     string
 		expectType call.Type
 	}
 
 	tests := []test{
 		{
 			"normal conference",
-			&channel.Channel{
-				Data: map[string]interface{}{
-					"DOMAIN": "conference.voipbin.net",
-				},
-			},
+			"conference.voipbin.net",
 			call.TypeConference,
 		},
 		{
 			"normal sip-service",
-			&channel.Channel{
-				Data: map[string]interface{}{
-					"DOMAIN": "sip-service.voipbin.net",
-				},
-			},
+			"sip-service.voipbin.net",
 			call.TypeSipService,
 		},
 		{
 			"None type",
-			&channel.Channel{
-				Data: map[string]interface{}{
-					"DOMAIN": "randome-invalid-domain.voipbin.net",
-				},
-			},
+			"randome-invalid-domain.voipbin.net",
 			call.TypeNone,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := getTypeContextIncomingCall(tt.channel)
+			res := getTypeContextIncomingCall(tt.domain)
 			if res != tt.expectType {
 				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectType, res)
 			}
@@ -80,23 +68,23 @@ func TestTypeEchoStart(t *testing.T) {
 	type test struct {
 		name         string
 		channel      *channel.Channel
+		data         map[string]interface{}
 		call         *call.Call
 		expectAction *action.Action
-		// expectReqConf *conference.Conference
 	}
 
 	tests := []test{
 		{
 			"normal",
 			&channel.Channel{
-				ID:         "f82007c4-92e2-11ea-a3e2-138ed7e90501",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Name:       "PJSIP/in-voipbin-00000948",
-				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
-					"DOMAIN":  "sip-service.voipbin.net",
-				},
+				ID:                "f82007c4-92e2-11ea-a3e2-138ed7e90501",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: string(action.TypeEcho),
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
@@ -125,7 +113,7 @@ func TestTypeEchoStart(t *testing.T) {
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-			h.Start(tt.channel)
+			h.Start(tt.channel, tt.data)
 		})
 	}
 }
@@ -147,6 +135,7 @@ func TestTypeConferenceStart(t *testing.T) {
 	type test struct {
 		name       string
 		channel    *channel.Channel
+		data       map[string]interface{}
 		call       *call.Call
 		conference *conference.Conference
 	}
@@ -155,14 +144,14 @@ func TestTypeConferenceStart(t *testing.T) {
 		{
 			"normal",
 			&channel.Channel{
-				ID:         "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Name:       "PJSIP/in-voipbin-00000999",
-				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
-					"DOMAIN":  "conference.voipbin.net",
-				},
+				ID:                "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000999",
 				DestinationNumber: "bad943d8-9b59-11ea-b409-4ba263721f17",
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "conference.voipbin.net",
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
@@ -192,7 +181,7 @@ func TestTypeConferenceStart(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockConf.EXPECT().Join(gomock.Any(), gomock.Any()).Return(nil)
 
-			h.Start(tt.channel)
+			h.Start(tt.channel, tt.data)
 		})
 	}
 }
@@ -214,6 +203,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 	type test struct {
 		name    string
 		channel *channel.Channel
+		data    map[string]interface{}
 		call    *call.Call
 	}
 
@@ -221,14 +211,14 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 		{
 			"echo service",
 			&channel.Channel{
-				ID:         "48a5446a-e3b1-11ea-b837-83239d9eb45f",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Name:       "PJSIP/in-voipbin-00000950",
-				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
-					"DOMAIN":  "sip-service.voipbin.net",
-				},
+				ID:                "48a5446a-e3b1-11ea-b837-83239d9eb45f",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000950",
 				DestinationNumber: string(action.TypeAnswer),
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("4d609f5e-e3b1-11ea-b803-ef0912b904ff"),
@@ -264,7 +254,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, 10, action).Return(nil)
 
-			h.Start(tt.channel)
+			h.Start(tt.channel, tt.data)
 		})
 	}
 }
@@ -286,6 +276,7 @@ func TestTypeSipServiceStartSvcEchoLegacy(t *testing.T) {
 	type test struct {
 		name    string
 		channel *channel.Channel
+		data    map[string]interface{}
 		call    *call.Call
 	}
 
@@ -293,14 +284,14 @@ func TestTypeSipServiceStartSvcEchoLegacy(t *testing.T) {
 		{
 			"echo service",
 			&channel.Channel{
-				ID:         "f82007c4-92e2-11ea-a3e2-138ed7e90501",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Name:       "PJSIP/in-voipbin-00000948",
-				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
-					"DOMAIN":  "sip-service.voipbin.net",
-				},
+				ID:                "f82007c4-92e2-11ea-a3e2-138ed7e90501",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: string(action.TypeEchoLegacy),
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
@@ -340,7 +331,7 @@ func TestTypeSipServiceStartSvcEchoLegacy(t *testing.T) {
 			mockConf.EXPECT().Start(gomock.Any(), gomock.Any())
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), option.Duration, action)
 
-			h.Start(tt.channel)
+			h.Start(tt.channel, tt.data)
 		})
 	}
 }
@@ -362,6 +353,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 	type test struct {
 		name    string
 		channel *channel.Channel
+		data    map[string]interface{}
 		call    *call.Call
 	}
 
@@ -369,14 +361,14 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 		{
 			"echo service",
 			&channel.Channel{
-				ID:         "f82007c4-92e2-11ea-a3e2-138ed7e90501",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Name:       "PJSIP/in-voipbin-00000948",
-				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
-					"DOMAIN":  "sip-service.voipbin.net",
-				},
+				ID:                "f82007c4-92e2-11ea-a3e2-138ed7e90501",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: string(action.TypeEcho),
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
@@ -415,7 +407,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-			h.Start(tt.channel)
+			h.Start(tt.channel, tt.data)
 		})
 	}
 }
@@ -437,6 +429,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 	type test struct {
 		name         string
 		channel      *channel.Channel
+		data         map[string]interface{}
 		call         *call.Call
 		expectAction *action.Action
 	}
@@ -445,14 +438,14 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 		{
 			"normal",
 			&channel.Channel{
-				ID:         "b1d1bf90-d2b3-11ea-8a02-035ed6a04322",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Name:       "PJSIP/in-voipbin-00000948",
-				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
-					"DOMAIN":  "sip-service.voipbin.net",
-				},
+				ID:                "b1d1bf90-d2b3-11ea-8a02-035ed6a04322",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: string(action.TypeStreamEcho),
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("bca4d8c6-d2b3-11ea-b5ba-1fba0632c531"),
@@ -480,7 +473,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-			h.Start(tt.channel)
+			h.Start(tt.channel, tt.data)
 		})
 	}
 }
@@ -502,6 +495,7 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 	type test struct {
 		name         string
 		channel      *channel.Channel
+		data         map[string]interface{}
 		call         *call.Call
 		expectAction *action.Action
 	}
@@ -510,14 +504,14 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 		{
 			"normal",
 			&channel.Channel{
-				ID:         "3098c01e-dcee-11ea-b8a3-4be6fd851ab3",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Name:       "PJSIP/in-voipbin-00000949",
-				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
-					"DOMAIN":  "sip-service.voipbin.net",
-				},
+				ID:                "3098c01e-dcee-11ea-b8a3-4be6fd851ab3",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000949",
 				DestinationNumber: string(action.TypeConferenceJoin),
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("38431800-dcee-11ea-b172-eb53386a16d4"),
@@ -544,7 +538,7 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockConf.EXPECT().Join(uuid.FromStringOrNil("037a20b9-d11d-4b63-a135-ae230cafd495"), tt.call.ID)
 
-			h.Start(tt.channel)
+			h.Start(tt.channel, tt.data)
 		})
 	}
 }

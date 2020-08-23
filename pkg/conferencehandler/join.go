@@ -116,7 +116,7 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	// CONFERENCE_ID: The conference ID which this channel belongs to.
 	// BRIDGE_ID: The bridge ID where this channel entered after StasisStart.
 	// CALL_ID: The call ID which this channel has related with.
-	args := fmt.Sprintf("CONTEXT=%s,CONFERENCE_ID=%s,BRIDGE_ID=%s,CALL_ID=%s",
+	args := fmt.Sprintf("context=%s,conference_id=%s,bridge_id=%s,call_id=%s",
 		contextConferenceJoin,
 		cf.ID.String(),
 		bridgeID,

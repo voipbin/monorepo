@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
@@ -113,7 +114,7 @@ func TestLeavedConferenceTypeConference(t *testing.T) {
 				ID:         "9cad54d0-a2c5-11ea-8936-47d2d40af59c",
 				AsteriskID: "00:11:22:33:44:55",
 				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
+					"context_type": "call",
 				},
 			},
 			&bridge.Bridge{
@@ -164,7 +165,7 @@ func TestLeavedConferenceTypeEcho(t *testing.T) {
 				ID:         "9cad54d0-a2c5-11ea-8936-47d2d40af59c",
 				AsteriskID: "00:11:22:33:44:55",
 				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
+					"context_type": "call",
 				},
 			},
 			&bridge.Bridge{

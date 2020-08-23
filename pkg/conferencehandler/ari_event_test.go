@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
@@ -113,7 +114,7 @@ func TestARIChannelEnteredBridge(t *testing.T) {
 				ID:         "f7fb3c7a-9565-11ea-976f-c7f5e818313e",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Data: map[string]interface{}{
-					"CONTEXT": "call-in",
+					"context_type": "call",
 				},
 			},
 			&bridge.Bridge{

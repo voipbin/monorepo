@@ -223,6 +223,33 @@ func (h *handler) ConferenceSetBridgeID(ctx context.Context, id uuid.UUID, bridg
 	return nil
 }
 
+// ConferenceSetData sets the data
+func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error {
+	//prepare
+	q := `
+	update conference set
+		data = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	tmpData, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("dbhandler: Could not marshal. ConferenceSetData. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q, tmpData, getCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ConferenceSetData. err: %v", err)
+	}
+
+	// update the cache
+	h.ConferenceUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // ConferenceEnd ends the conference
 func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 	//prepare

@@ -1,9 +1,8 @@
 package call
 
 import (
-	"strings"
-
 	uuid "github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
@@ -151,16 +150,11 @@ func NewCall(
 }
 
 // NewCallByChannel creates a Call and return it.
-func NewCallByChannel(cn *channel.Channel, cType Type, direction Direction) *Call {
+func NewCallByChannel(cn *channel.Channel, cType Type, direction Direction, data map[string]interface{}) *Call {
 	// create a call
 	source := CreateAddressByChannelSource(cn)
 	destination := CreateAddressByChannelDestination(cn)
 	status := GetStatusByChannelState(cn.State)
-	data := map[string]interface{}{}
-
-	for k, v := range cn.Data {
-		data[strings.ToLower(k)] = v
-	}
 
 	c := NewCall(
 		uuid.Must(uuid.NewV4()),

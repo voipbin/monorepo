@@ -143,7 +143,7 @@ func (h *conferenceHandler) startTypeEcho(req *conference.Conference, c *call.Ca
 	}
 
 	// create a snoop channel
-	args := fmt.Sprintf("CONTEXT=%s,CONFERENCE_ID=%s,BRIDGE_ID=%s,CALL_ID=%s",
+	args := fmt.Sprintf("context=%s,conference_id=%s,bridge_id=%s,call_id=%s",
 		contextConferenceEcho,
 		cf.ID.String(),
 		bridgeID,

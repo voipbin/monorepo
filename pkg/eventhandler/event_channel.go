@@ -209,6 +209,11 @@ func (h *eventHandler) eventHandlerChannelVarset(ctx context.Context, evt interf
 	e := evt.(*ari.ChannelVarset)
 
 	switch e.Variable {
+	case "VB-CONTEXT_TYPE":
+		if err := h.db.ChannelSetDataItem(ctx, e.Channel.ID, "context_type", e.Value); err != nil {
+			return err
+		}
+
 	case "VB-DIRECTION":
 		if err := h.db.ChannelSetDirection(ctx, e.Channel.ID, channel.Direction(e.Value)); err != nil {
 			return err
@@ -224,6 +229,16 @@ func (h *eventHandler) eventHandlerChannelVarset(ctx context.Context, evt interf
 
 	case "VB-SIP_CALLID":
 		if err := h.db.ChannelSetSIPCallID(ctx, e.Channel.ID, e.Value); err != nil {
+			return err
+		}
+
+	case "VB-SIP_PAI":
+		if err := h.db.ChannelSetDataItem(ctx, e.Channel.ID, "sip_pai", e.Value); err != nil {
+			return err
+		}
+
+	case "VB-SIP_PRIVACY":
+		if err := h.db.ChannelSetDataItem(ctx, e.Channel.ID, "sip_privacy", e.Value); err != nil {
 			return err
 		}
 

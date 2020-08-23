@@ -155,17 +155,19 @@ func getTech(name string) Tech {
 	}
 }
 
-// GetContext returns context of the channel
-func (c *Channel) GetContext() string {
-	return c.Data["CONTEXT"].(string)
-}
+// // GetContext returns context of the channel
+// func (c *Channel) GetContext() string {
+// 	return c.Data["CONTEXT"].(string)
+// }
 
 // GetContextType returns type of context
 func (c *Channel) GetContextType() ContextType {
-	context := c.GetContext()
+	tmp, ok := c.Data["context_type"]
+	if !ok {
+		return ContextTypeCall
+	}
 
-	tmp := strings.Split(context, "-")[0]
-	switch tmp {
+	switch tmp.(string) {
 	case string(ContextTypeConference):
 		return ContextTypeConference
 	default:
