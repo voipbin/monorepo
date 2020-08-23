@@ -271,13 +271,6 @@ func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string,
 	//prepare
 	q := fmt.Sprintf("update channels set data = json_set(data, '$.%s', ?), tm_update = ? where id = ?", key)
 
-	// `
-	// update channels set
-	// 	data = json_set(data, '$.?', ?),
-	// 	tm_update = ?
-	// where
-	// 	id = ?
-	// `
 	_, err := h.db.Exec(q, value, getCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetDataItem. err: %v", err)
