@@ -5,13 +5,10 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
 // createConference is handy function for creating a conference.
@@ -65,22 +62,9 @@ func (h *conferenceHandler) startTypeConference(req *conference.Conference, c *c
 		})
 	log.Debug("Starting conference.")
 
-	// create a bridge for conference
-	bridgeID := uuid.Must(uuid.NewV4()).String()
-	bridgeName := generateBridgeName(conference.TypeConference, conferenceID, false)
-	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU}); err != nil {
-		log.Errorf("Could not create a bridge for a conference. err: %v", err)
-		return nil, err
-	}
-
 	// create a conference with given requested conference info
 	cf := conference.NewConference(conferenceID, conference.TypeConference, "", req)
-
-	log = log.WithFields(
-		logrus.Fields{
-			"bridge": bridgeID,
-		})
-	log.Debug("Created bridge.")
+	log.Debug("Created a conference.")
 
 	// create a conference to database
 	if err := h.createConference(ctx, cf); err != nil {
