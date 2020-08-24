@@ -125,7 +125,7 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 
 	// create a another channel with joining context
 	channelID := uuid.Must(uuid.NewV4())
-	if err := h.reqHandler.AstChannelCreate(c.AsteriskID, channelID.String(), args, dialDestination, "", "", "ulaw,alaw,opus,vp8,vp9"); err != nil {
+	if err := h.reqHandler.AstChannelCreate(c.AsteriskID, channelID.String(), args, dialDestination, "", "", ""); err != nil {
 		log.Errorf("Could not create a channel for joining. err: %v", err)
 
 		h.reqHandler.AstBridgeDelete(c.AsteriskID, bridgeID)
