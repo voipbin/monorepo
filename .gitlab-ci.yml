@@ -39,8 +39,14 @@ vet:
 
 test:
   stage: test
+  artifacts:
+    name: $CI_COMMIT_REF_NAME"
+    expire_in: 8 hours
+    paths:
+      - cp.html
   script:
-    - go test -v $(go list ./...)
+    - go test -coverprofile cp.out -v $(go list ./...)
+    - go tool cover -html=cp.out -o cp.html
   
 build:
   stage: build
