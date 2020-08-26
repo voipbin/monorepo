@@ -394,3 +394,70 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 		})
 	}
 }
+
+func TestTypeSipServiceStartSvcPlay(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name         string
+		channel      *channel.Channel
+		data         map[string]interface{}
+		call         *call.Call
+		expectAction *action.Action
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&channel.Channel{
+				ID:                "b6721d82-e71d-11ea-a38d-5fa75c625072",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000949",
+				DestinationNumber: string(action.TypePlay),
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "sip-service.voipbin.net",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("bc143ba8-e71d-11ea-8a07-9fd9990c98e4"),
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ChannelID:  "b6721d82-e71d-11ea-a38d-5fa75c625072",
+				Type:       call.TypeSipService,
+				Direction:  call.DirectionIncoming,
+			},
+			&action.Action{
+				ID:     action.IDBegin,
+				Type:   action.TypePlay,
+				Option: []byte(`{"stream_url":["https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"]}`),
+				Next:   action.IDEnd,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID)
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
+			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
+			mockReq.EXPECT().AstChannelPlay(tt.call.AsteriskID, tt.call.ChannelID, tt.expectAction.ID, gomock.Any()).Return(nil)
+
+			h.Start(tt.channel, tt.data)
+		})
+	}
+}
