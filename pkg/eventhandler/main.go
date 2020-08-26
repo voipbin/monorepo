@@ -163,6 +163,7 @@ func (h *eventHandler) processEvent(m *rabbitmq.Event) error {
 		ari.EventTypeChannelLeftBridge:    h.eventHandlerChannelLeftBridge,
 		ari.EventTypeChannelStateChange:   h.eventHandlerChannelStateChange,
 		ari.EventTypeChannelVarset:        h.eventHandlerChannelVarset,
+		ari.EventTypePlaybackFinished:     h.eventHandlerPlaybackFinished,
 		ari.EventTypeStasisEnd:            h.eventHandlerStasisEnd,
 		ari.EventTypeStasisStart:          h.eventHandlerStasisStart,
 	}

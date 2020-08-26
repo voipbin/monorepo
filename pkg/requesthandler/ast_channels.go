@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
@@ -249,6 +251,35 @@ func (r *requestHandler) AstChannelDial(asteriskID, channelID, caller string, ti
 	}
 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsDial, requestTimeoutDefault, ContentTypeJSON, string(m))
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// AstChannelPlay plays the music file on the channel
+// The channelID will be used for playbackId as well.
+// medias string must be stared with sound:, recording:, number:, digits:, characters:, tone:.
+func (r *requestHandler) AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string) error {
+	url := fmt.Sprintf("/ari/channels/%s/play", channelID)
+
+	type Data struct {
+		Media      []string `json:"media"`
+		PlaybackID string   `json:"playbackId"`
+	}
+
+	m, err := json.Marshal(Data{
+		medias,
+		actionID.String(),
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsPlay, requestTimeoutDefault, ContentTypeJSON, string(m))
 	switch {
 	case err != nil:
 		return err

@@ -34,7 +34,12 @@ func (h *callHandler) setAction(c *call.Call, a *action.Action) error {
 
 // ActionExecute execute the action withe the call
 func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
-	logrus.Debugf("Executing the action. call: %s, action: %s", c.ID, a.Type)
+	log := logrus.WithFields(logrus.Fields{
+		"call":        c.ID,
+		"action":      a.ID,
+		"action_type": a.Type,
+	})
+	log.Debug("Executing the action.")
 
 	var err error
 	switch a.Type {
@@ -47,19 +52,24 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	case action.TypeEcho:
 		err = h.actionExecuteEcho(c, a)
 
+	case action.TypePlay:
+		err = h.actionExecutePlay(c, a)
+
 	case action.TypeStreamEcho:
 		err = h.actionExecuteStreamEcho(c, a)
 
 	default:
-		err = fmt.Errorf("no action handle found. type: %s", a.Type)
+		log.Errorf("Could not find action handle found. call: %s, action: %s, type: %s", c.ID, a.ID, a.Type)
+		err = fmt.Errorf("no action handler found")
 	}
 
-	//  if the action execution has failed hangup the call here
+	//  if the action execution has failed move to the next action
 	if err != nil {
-		h.db.CallSetStatus(context.Background(), c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		log.Errorf("Could not execute the action correctly. Move to next action. err: %v", err)
+		return h.reqHandler.CallCallActionNext(c.ID)
 	}
-	return err
+
+	return nil
 }
 
 // ActionNext Execute next action
@@ -76,17 +86,6 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 	case c.Action.Next == action.IDEnd:
 		// last action
 		log.Debug("End of call flow. No more next action left.")
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
-		return nil
-
-	case c.Action.ID == c.Action.Next:
-		// loop detected
-		log.WithFields(
-			logrus.Fields{
-				"action_current": c.Action.ID.String(),
-				"action_next":    c.Action.Next.String(),
-			}).Warning("Loop detected. Current and the next action id is the same.")
 		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
 		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 		return nil
@@ -289,6 +288,55 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 	if err := h.confHandler.Join(cfID, c.ID); err != nil {
 		log.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
 		return fmt.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
+	}
+
+	return nil
+}
+
+// actionExecutePlay executes the action type play
+func (h *callHandler) actionExecutePlay(c *call.Call, a *action.Action) error {
+	// copy the action
+	act := *a
+
+	// set current time
+	act.TMExecute = getCurTime()
+
+	log := log.WithFields(
+		log.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionPlay
+	if err := json.Unmarshal(act.Option, &option); err != nil {
+		log.Errorf("could not parse the option. err: %v", err)
+		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+	}
+
+	// set option
+	rawOption, err := json.Marshal(option)
+	if err != nil {
+		return fmt.Errorf("could not marshal the action option. err: %v", err)
+	}
+	act.Option = rawOption
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	// create a media string array
+	var medias []string
+	for _, streamURL := range option.StreamURL {
+		media := fmt.Sprintf("sound:%s", streamURL)
+		medias = append(medias, media)
+	}
+
+	// play
+	if err := h.reqHandler.AstChannelPlay(c.AsteriskID, c.ChannelID, act.ID, medias); err != nil {
+		log.Errorf("Could not play the media. media: %v, err: %v", medias, err)
+		return fmt.Errorf("could not play the media. err: %v", err)
 	}
 
 	return nil

@@ -236,6 +236,20 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelHangup(arg0, arg1, arg2 inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHangup", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHangup), arg0, arg1, arg2)
 }
 
+// AstChannelPlay mocks base method.
+func (m *MockRequestHandler) AstChannelPlay(arg0, arg1 string, arg2 uuid.UUID, arg3 []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelPlay", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelPlay indicates an expected call of AstChannelPlay.
+func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelPlay", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelPlay), arg0, arg1, arg2, arg3)
+}
+
 // AstChannelVariableSet mocks base method.
 func (m *MockRequestHandler) AstChannelVariableSet(arg0, arg1, arg2, arg3 string) error {
 	m.ctrl.T.Helper()

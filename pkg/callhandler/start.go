@@ -350,8 +350,9 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]i
 
 // getSipServiceAction returns sip-service action handler by the call's destination.
 func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn *channel.Channel) (*action.Action, error) {
-	var resAct *action.Action = nil
+	logrus.Debugf("Executing action for sip-service. call: %s, channel: %s, destination: %s", c.ID, cn.ID, cn.DestinationNumber)
 
+	var resAct *action.Action = nil
 	switch c.Destination.Target {
 
 	// answer
@@ -367,6 +368,24 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		resAct = &action.Action{
 			ID:     action.IDBegin,
 			Type:   action.TypeAnswer,
+			Option: opt,
+			Next:   action.IDEnd,
+		}
+
+	// conference_join
+	case string(action.TypeConferenceJoin):
+		option := action.OptionConferenceJoin{
+			ConferenceID: DefaultSipServiceOptionConferenceID,
+		}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeConferenceJoin, err)
+		}
+
+		// create an action
+		resAct = &action.Action{
+			ID:     action.IDBegin,
+			Type:   action.TypeConferenceJoin,
 			Option: opt,
 			Next:   action.IDEnd,
 		}
@@ -396,6 +415,29 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 			Next:   action.IDEnd,
 		}
 
+	// play
+	case string(action.TypePlay):
+		// answer the call first
+		if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
+			return nil, fmt.Errorf("could not answer the call. err: %v", err)
+		}
+
+		option := action.OptionPlay{
+			StreamURL: []string{"https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"},
+		}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypePlay, err)
+		}
+
+		// create an action
+		resAct = &action.Action{
+			ID:     action.IDBegin,
+			Type:   action.TypePlay,
+			Option: opt,
+			Next:   action.IDEnd,
+		}
+
 	// stream_echo
 	case string(action.TypeStreamEcho):
 		option := action.OptionStreamEcho{
@@ -414,23 +456,6 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 			Next:   action.IDEnd,
 		}
 
-	// conference_join
-	case string(action.TypeConferenceJoin):
-		option := action.OptionConferenceJoin{
-			ConferenceID: DefaultSipServiceOptionConferenceID,
-		}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeConferenceJoin, err)
-		}
-
-		// create an action
-		resAct = &action.Action{
-			ID:     action.IDBegin,
-			Type:   action.TypeConferenceJoin,
-			Option: opt,
-			Next:   action.IDEnd,
-		}
 	}
 
 	return resAct, nil

@@ -75,6 +75,7 @@ const (
 	resourceAstChannelsContinue resource = "ast/channels/continue"
 	resourceAstChannelsDial     resource = "ast/channels/dial"
 	resourceAstChannelsHangup   resource = "ast/channels/hangup"
+	resourceAstChannelsPlay     resource = "ast/channels/play"
 	resourceAstChannelsSnoop    resource = "ast/channels/snoop"
 	resourceAstChannelsVar      resource = "ast/channels/var"
 
@@ -115,6 +116,7 @@ type RequestHandler interface {
 	AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error
 	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
+	AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string) error
 	AstChannelVariableSet(asteriskID, channelID, variable, value string) error
 
 	// call

@@ -65,6 +65,20 @@ func (mr *MockCallHandlerMockRecorder) ARIChannelDtmfReceived(cn, digit, duratio
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelDtmfReceived", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelDtmfReceived), cn, digit, duration)
 }
 
+// ARIPlaybackFinished mocks base method.
+func (m *MockCallHandler) ARIPlaybackFinished(cn *channel.Channel, playbackID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIPlaybackFinished", cn, playbackID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIPlaybackFinished indicates an expected call of ARIPlaybackFinished.
+func (mr *MockCallHandlerMockRecorder) ARIPlaybackFinished(cn, playbackID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIPlaybackFinished", reflect.TypeOf((*MockCallHandler)(nil).ARIPlaybackFinished), cn, playbackID)
+}
+
 // ARIStasisStart mocks base method.
 func (m *MockCallHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
 	m.ctrl.T.Helper()

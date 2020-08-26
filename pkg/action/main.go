@@ -58,8 +58,9 @@ type Type string
 const (
 	TypeAnswer         Type = "answer"
 	TypeConferenceJoin Type = "conference_join"
-	TypeEcho           Type = "echo"        // echo the voice and dtmf only
-	TypeStreamEcho     Type = "stream_echo" // echo the stream(video/voice)
+	TypeEcho           Type = "echo"        // echo the voice
+	TypePlay           Type = "play"        // play the given file
+	TypeStreamEcho     Type = "stream_echo" // echo the stream(video/voice) and dtmf
 )
 
 // OptionAnswer defines action answer's option.
@@ -76,6 +77,11 @@ type OptionConferenceJoin struct {
 type OptionEcho struct {
 	Duration int  `json:"duration"` // echo duration. ms
 	DTMF     bool `json:"dtmf"`     // sending back the dtmf on/off
+}
+
+// OptionPlay defines action play's option.
+type OptionPlay struct {
+	StreamURL []string `json:"stream_url"` // stream url for media
 }
 
 // OptionStreamEcho defines action stream_echo's option.

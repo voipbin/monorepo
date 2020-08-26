@@ -22,6 +22,7 @@ import (
 type CallHandler interface {
 	ARIChannelDestroyed(cn *channel.Channel) error
 	ARIChannelDtmfReceived(cn *channel.Channel, digit string, duration int) error
+	ARIPlaybackFinished(cn *channel.Channel, playbackID string) error
 	ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error
 
 	Start(cn *channel.Channel, data map[string]interface{}) error
