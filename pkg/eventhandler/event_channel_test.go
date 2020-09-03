@@ -166,7 +166,7 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 
 			mockDB.EXPECT().ChannelSetState(gomock.Any(), tt.expectChannelID, tt.expectTmUpdate, tt.expactState).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(nil, nil)
-			mockSvc.EXPECT().UpdateStatus(nil).Return(nil)
+			mockSvc.EXPECT().ARIChannelStateChange(nil).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

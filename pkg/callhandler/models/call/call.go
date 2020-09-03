@@ -1,8 +1,10 @@
 package call
 
 import (
-	uuid "github.com/gofrs/uuid"
+	"fmt"
+	"reflect"
 
+	uuid "github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
@@ -11,32 +13,32 @@ import (
 // Call struct represent asterisk's channel information
 type Call struct {
 	// identity
-	ID         uuid.UUID
-	AsteriskID string
-	ChannelID  string
-	FlowID     uuid.UUID // flow id
-	ConfID     uuid.UUID // currently joined conference id
-	Type       Type
+	ID         uuid.UUID `json:"id"`
+	AsteriskID string    `json:"asterisk_id"`
+	ChannelID  string    `json:"channel_id"`
+	FlowID     uuid.UUID `json:"flow_id"` // flow id
+	ConfID     uuid.UUID `json:"conf_id"` // currently joined conference id
+	Type       Type      `json:"type"`
 
 	// source/destination
-	Source      *Address
-	Destination *Address
+	Source      Address `json:"source"`
+	Destination Address `json:"destination"`
 
 	// info
-	Status       Status
-	Data         map[string]interface{}
-	Action       action.Action
-	Direction    Direction
-	HangupBy     HangupBy
-	HangupReason HangupReason
+	Status       Status                 `json:"status"`
+	Data         map[string]interface{} `json:"data"`
+	Action       action.Action          `json:"action"`
+	Direction    Direction              `json:"direction"`
+	HangupBy     HangupBy               `json:"hangup_by"`
+	HangupReason HangupReason           `json:"hangup_reason"`
 
 	// timestamp
-	TMCreate string
-	TMUpdate string
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
 
-	TMProgressing string
-	TMRinging     string
-	TMHangup      string
+	TMProgressing string `json:"tm_progressing"`
+	TMRinging     string `json:"tm_ringing"`
+	TMHangup      string `json:"tm_hangup"`
 }
 
 // Type type
@@ -61,9 +63,9 @@ const (
 
 // Address contains source/destination detail info.
 type Address struct {
-	Type   AddressType // type of address
-	Target string      // parsed destination
-	Name   string      // parsed name
+	Type   AddressType `json:"type"`   // type of address
+	Target string      `json:"target"` // parsed destination
+	Name   string      `json:"name"`   // parsed name
 }
 
 // Status type
@@ -111,6 +113,28 @@ const (
 	HanupgReasonDialout  HangupReason = "dialout"  // The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).
 )
 
+// Test values
+const (
+	TestChannelID string = "00000000-0000-0000-0000-000000000000"
+)
+
+// Matches return true if the given items are the same
+func (a *Call) Matches(x interface{}) bool {
+	comp := x.(*Call)
+	c := *a
+
+	if c.ChannelID == TestChannelID {
+		c.ChannelID = comp.ChannelID
+	}
+	c.TMCreate = comp.TMCreate
+
+	return reflect.DeepEqual(c, *comp)
+}
+
+func (a *Call) String() string {
+	return fmt.Sprintf("%v", *a)
+}
+
 // NewCall creates a call struct and return it.
 func NewCall(
 	id uuid.UUID,
@@ -136,8 +160,8 @@ func NewCall(
 		FlowID:     flowID,
 		Type:       cType,
 
-		Source:      source,
-		Destination: destination,
+		Source:      *source,
+		Destination: *destination,
 
 		Status:    status,
 		Data:      data,
@@ -315,8 +339,8 @@ func IsUpdatableStatus(oldStatus, newStatus Status) bool {
 	// StatusDialing -> StatusHangup
 	// StatusRinging -> StatusProgressing
 	// StatusRinging -> StatusCanceling
-	// StatusDialing -> StatusTerminating
-	// StatusDialing -> StatusHangup
+	// StatusRinging -> StatusTerminating
+	// StatusRinging -> StatusHangup
 	// StatusProgressing -> StatusTerminating
 	// StatusProgressing -> StatusHangup
 	// StatusCanceling -> StatusHangup

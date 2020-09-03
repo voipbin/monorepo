@@ -2,6 +2,8 @@ package callhandler
 
 import (
 	"encoding/json"
+	"fmt"
+	reflect "reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -114,7 +116,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-			h.Start(tt.channel, tt.data)
+			h.StartCallHandle(tt.channel, tt.data)
 		})
 	}
 }
@@ -183,7 +185,7 @@ func TestTypeConferenceStart(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockConf.EXPECT().Join(gomock.Any(), gomock.Any()).Return(nil)
 
-			h.Start(tt.channel, tt.data)
+			h.StartCallHandle(tt.channel, tt.data)
 		})
 	}
 }
@@ -257,7 +259,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, 10, action).Return(nil)
 
-			h.Start(tt.channel, tt.data)
+			h.StartCallHandle(tt.channel, tt.data)
 		})
 	}
 }
@@ -324,7 +326,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-			h.Start(tt.channel, tt.data)
+			h.StartCallHandle(tt.channel, tt.data)
 		})
 	}
 }
@@ -390,7 +392,7 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockConf.EXPECT().Join(uuid.FromStringOrNil("037a20b9-d11d-4b63-a135-ae230cafd495"), tt.call.ID)
 
-			h.Start(tt.channel, tt.data)
+			h.StartCallHandle(tt.channel, tt.data)
 		})
 	}
 }
@@ -457,7 +459,91 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelPlay(tt.call.AsteriskID, tt.call.ChannelID, tt.expectAction.ID, gomock.Any()).Return(nil)
 
-			h.Start(tt.channel, tt.data)
+			h.StartCallHandle(tt.channel, tt.data)
+		})
+	}
+}
+
+func TestCreateCallOutgoing(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name        string
+		id          uuid.UUID
+		flowID      uuid.UUID
+		source      call.Address
+		destination call.Address
+
+		expectCall *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+			uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+			call.Address{
+				Type:   call.AddressTypeSIP,
+				Name:   "test",
+				Target: "testincoming@test.com",
+			},
+			call.Address{
+				Type:   call.AddressTypeSIP,
+				Name:   " test target",
+				Target: "testoutgoing@test.com",
+			},
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+				ChannelID: call.TestChannelID,
+				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+				Type:      call.TypeFlow,
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
+				Source: call.Address{
+					Type:   call.AddressTypeSIP,
+					Name:   "test",
+					Target: "testincoming@test.com",
+				},
+				Destination: call.Address{
+					Type:   call.AddressTypeSIP,
+					Name:   " test target",
+					Target: "testoutgoing@test.com",
+				},
+				Action: action.Action{
+					ID:   action.IDInit,
+					Next: action.IDBegin,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
+			mockReq.EXPECT().AstChannelCreate(requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s", contextOutgoingCall), fmt.Sprintf("pjsip/call-out/sip:%s", tt.destination.Target), "", "", "").Return(nil)
+
+			res, err := h.CreateCallOutgoing(tt.id, tt.flowID, tt.source, tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectCall) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+			}
 		})
 	}
 }

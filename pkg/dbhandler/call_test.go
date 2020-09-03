@@ -40,8 +40,8 @@ func TestCallCreate(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -53,8 +53,8 @@ func TestCallCreate(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -71,10 +71,10 @@ func TestCallCreate(t *testing.T) {
 				ChannelID:  "bd610e10-84ed-11ea-b6e1-ef9d10ec3de6",
 				Type:       call.TypeFlow,
 
-				Source: &call.Address{
+				Source: call.Address{
 					Type: call.AddressTypeSIP,
 				},
-				Destination: &call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -86,10 +86,10 @@ func TestCallCreate(t *testing.T) {
 				ChannelID:  "bd610e10-84ed-11ea-b6e1-ef9d10ec3de6",
 				Type:       call.TypeFlow,
 
-				Source: &call.Address{
+				Source: call.Address{
 					Type: call.AddressTypeSIP,
 				},
-				Destination: &call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -157,8 +157,8 @@ func TestCallSetStatus(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -170,8 +170,8 @@ func TestCallSetStatus(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionIncoming,
@@ -243,8 +243,8 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChannelID:  "2505d858-8687-11ea-8723-d35628256201",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -256,8 +256,8 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChannelID:  "2505d858-8687-11ea-8723-d35628256201",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -274,10 +274,10 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChannelID:  "2aa510da-8687-11ea-b1b4-3f62cf9e4def",
 				Type:       call.TypeFlow,
 
-				Source: &call.Address{
+				Source: call.Address{
 					Type: call.AddressTypeSIP,
 				},
-				Destination: &call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -289,10 +289,10 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChannelID:  "2aa510da-8687-11ea-b1b4-3f62cf9e4def",
 				Type:       call.TypeFlow,
 
-				Source: &call.Address{
+				Source: call.Address{
 					Type: call.AddressTypeSIP,
 				},
-				Destination: &call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -358,8 +358,8 @@ func TestCallCallSetHangup(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -371,8 +371,8 @@ func TestCallCallSetHangup(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusHangup,
 				Direction: call.DirectionIncoming,
@@ -443,8 +443,8 @@ func TestCallSetFlowID(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -459,8 +459,8 @@ func TestCallSetFlowID(t *testing.T) {
 
 				FlowID: uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -523,8 +523,8 @@ func TestCallSetConferenceID(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -539,8 +539,8 @@ func TestCallSetConferenceID(t *testing.T) {
 
 				ConfID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -603,8 +603,8 @@ func TestCallSetAction(t *testing.T) {
 				Type:       call.TypeFlow,
 				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -625,8 +625,8 @@ func TestCallSetAction(t *testing.T) {
 				Type:       call.TypeFlow,
 				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Action: action.Action{
 					ID:     uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
@@ -650,8 +650,8 @@ func TestCallSetAction(t *testing.T) {
 				Type:       call.TypeFlow,
 				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -671,8 +671,8 @@ func TestCallSetAction(t *testing.T) {
 				Type:       call.TypeFlow,
 				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
-				Source:      &call.Address{},
-				Destination: &call.Address{},
+				Source:      call.Address{},
+				Destination: call.Address{},
 
 				Action: action.Action{
 					ID:   uuid.FromStringOrNil("a1e3ff02-8d04-11ea-b30b-9fb57c4036f4"),

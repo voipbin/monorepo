@@ -271,8 +271,8 @@ func TestNewCallByChannel(t *testing.T) {
 			}
 
 			c.ID = uuid.Nil
-			c.Source = nil
-			c.Destination = nil
+			c.Source = Address{}
+			c.Destination = Address{}
 			c.Data = nil
 
 			if reflect.DeepEqual(*c, *tt.expectCall) != true {

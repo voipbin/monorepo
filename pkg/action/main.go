@@ -35,8 +35,9 @@ type Flow struct {
 
 // Predefined special IDs
 var (
-	IDBegin uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
-	IDEnd   uuid.UUID = uuid.Nil
+	IDInit  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001") // default action id for call initiating
+	IDBegin uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002") // default action id for call-flow begin
+	IDEnd   uuid.UUID = uuid.Nil                                                     // default action id for call-flow end
 )
 
 // Matches return true if the given items are the same

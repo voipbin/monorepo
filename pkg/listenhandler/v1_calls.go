@@ -7,12 +7,14 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/request"
 )
 
-// processV1CallsIDGet handles /v1/calls/<id> request
+// processV1CallsIDGet handles GET /v1/calls/<id> request
 func (h *listenHandler) processV1CallsIDGet(m *rabbitmq.Request) (*rabbitmq.Response, error) {
 	ctx := context.Background()
 
@@ -31,6 +33,48 @@ func (h *listenHandler) processV1CallsIDGet(m *rabbitmq.Request) (*rabbitmq.Resp
 	data, err := json.Marshal(c)
 	if err != nil {
 		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmq.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       string(data),
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDPost handles POST /v1/calls/<id> request
+// It creates a new call.
+func (h *listenHandler) processV1CallsIDPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+
+	var reqData request.V1DataCallsIDPost
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		// same call-id is already exsit
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	c, err := h.callHandler.CreateCallOutgoing(id, reqData.FlowID, reqData.Source, reqData.Destination)
+	if err != nil {
+		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", reqData.FlowID, reqData.Source, reqData.Destination, err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(c)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", c, err)
+		return simpleResponse(500), nil
 	}
 
 	res := &rabbitmq.Response{
