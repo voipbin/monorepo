@@ -65,6 +65,20 @@ func (mr *MockCallHandlerMockRecorder) ARIChannelDtmfReceived(cn, digit, duratio
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelDtmfReceived", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelDtmfReceived), cn, digit, duration)
 }
 
+// ARIChannelStateChange mocks base method.
+func (m *MockCallHandler) ARIChannelStateChange(cn *channel.Channel) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIChannelStateChange", cn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIChannelStateChange indicates an expected call of ARIChannelStateChange.
+func (mr *MockCallHandlerMockRecorder) ARIChannelStateChange(cn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelStateChange", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelStateChange), cn)
+}
+
 // ARIPlaybackFinished mocks base method.
 func (m *MockCallHandler) ARIPlaybackFinished(cn *channel.Channel, playbackID string) error {
 	m.ctrl.T.Helper()
@@ -93,18 +107,33 @@ func (mr *MockCallHandlerMockRecorder) ARIStasisStart(cn, data interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockCallHandler)(nil).ARIStasisStart), cn, data)
 }
 
-// Start mocks base method.
-func (m *MockCallHandler) Start(cn *channel.Channel, data map[string]interface{}) error {
+// CreateCallOutgoing mocks base method.
+func (m *MockCallHandler) CreateCallOutgoing(id, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", cn, data)
+	ret := m.ctrl.Call(m, "CreateCallOutgoing", id, flowID, source, destination)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCallOutgoing indicates an expected call of CreateCallOutgoing.
+func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(id, flowID, source, destination interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), id, flowID, source, destination)
+}
+
+// StartCallHandle mocks base method.
+func (m *MockCallHandler) StartCallHandle(cn *channel.Channel, data map[string]interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartCallHandle", cn, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Start indicates an expected call of Start.
-func (mr *MockCallHandlerMockRecorder) Start(cn, data interface{}) *gomock.Call {
+// StartCallHandle indicates an expected call of StartCallHandle.
+func (mr *MockCallHandlerMockRecorder) StartCallHandle(cn, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockCallHandler)(nil).Start), cn, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartCallHandle", reflect.TypeOf((*MockCallHandler)(nil).StartCallHandle), cn, data)
 }
 
 // Hangup mocks base method.
@@ -119,20 +148,6 @@ func (m *MockCallHandler) Hangup(cn *channel.Channel) error {
 func (mr *MockCallHandlerMockRecorder) Hangup(cn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockCallHandler)(nil).Hangup), cn)
-}
-
-// UpdateStatus mocks base method.
-func (m *MockCallHandler) UpdateStatus(cn *channel.Channel) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatus", cn)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateStatus indicates an expected call of UpdateStatus.
-func (mr *MockCallHandlerMockRecorder) UpdateStatus(cn interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockCallHandler)(nil).UpdateStatus), cn)
 }
 
 // ActionNext mocks base method.

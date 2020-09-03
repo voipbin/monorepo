@@ -8,8 +8,9 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/request"
 )
 
 // processV1AsterisksIDChannelsIDHealthPost handles /v1/asterisks/<id>/channels/<id>/health-check request

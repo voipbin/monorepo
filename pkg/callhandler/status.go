@@ -2,54 +2,27 @@ package callhandler
 
 import (
 	"context"
-
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 )
 
-// UpdateStatus updates the status and does actions.
-func (h *callHandler) UpdateStatus(cn *channel.Channel) error {
-	ctx := context.Background()
-
-	status := call.GetStatusByChannelState(cn.State)
-	if status != call.StatusRinging && status != call.StatusProgressing {
-		// the call cares only riniging/progressing at here.
-		// other statuses will be handled in the other func.
-		return nil
-	}
-
-	// get call
-	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
-	if err == dbhandler.ErrNotFound {
-		return nil
-	} else if err != nil {
-		return err
-	}
+// updateStatusRinging updates the call's status to ringing
+func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Channel, c *call.Call) error {
 
 	// check status is updatable
-	if call.IsUpdatableStatus(c.Status, status) == false {
+	if call.IsUpdatableStatus(c.Status, call.StatusRinging) == false {
 		log.WithFields(log.Fields{
 			"call_id":    c.ID,
 			"old_status": c.Status,
-			"new_status": status,
+			"new_status": call.StatusRinging,
 		}).Infof("The status is not updatable.")
-		return nil
+		return fmt.Errorf("status change is not possible. call: %s, old_status: %s, new_status: %s", c.ID, c.Status, call.StatusRinging)
 	}
 
-	// we care only ringing/progress at here.
-	if status == call.StatusRinging {
-		return h.statusRinging(ctx, cn, c)
-	} else if status == call.StatusProgressing {
-		return h.statusProgressing(ctx, cn, c)
-	}
-	return nil
-}
-
-// statusRinging updates the call's status to ringing
-func (h *callHandler) statusRinging(ctx context.Context, cn *channel.Channel, c *call.Call) error {
 	// update status
 	if err := h.db.CallSetStatus(ctx, c.ID, call.StatusRinging, cn.TMRinging); err != nil {
 		return err
@@ -57,8 +30,19 @@ func (h *callHandler) statusRinging(ctx context.Context, cn *channel.Channel, c 
 	return nil
 }
 
-// statusProgressing updates the call's status to progressing and does required actions.
-func (h *callHandler) statusProgressing(ctx context.Context, cn *channel.Channel, c *call.Call) error {
+// updateStatusProgressing updates the call's status to progressing and does required actions.
+func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.Channel, c *call.Call) error {
+
+	// check status is updatable
+	if call.IsUpdatableStatus(c.Status, call.StatusProgressing) == false {
+		log.WithFields(log.Fields{
+			"call_id":    c.ID,
+			"old_status": c.Status,
+			"new_status": call.StatusProgressing,
+		}).Infof("The status is not updatable.")
+		return fmt.Errorf("status change is not possible. call: %s, old_status: %s, new_status: %s", c.ID, c.Status, call.StatusProgressing)
+	}
+
 	// update status
 	if err := h.db.CallSetStatus(ctx, c.ID, call.StatusProgressing, cn.TMAnswer); err != nil {
 		return err
@@ -70,6 +54,5 @@ func (h *callHandler) statusProgressing(ctx context.Context, cn *channel.Channel
 	}
 
 	// todo: if the direciton is outgoing, we need to do some flow actions at here.
-
-	return nil
+	return h.ActionNext(c)
 }

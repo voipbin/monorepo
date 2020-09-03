@@ -22,12 +22,13 @@ import (
 type CallHandler interface {
 	ARIChannelDestroyed(cn *channel.Channel) error
 	ARIChannelDtmfReceived(cn *channel.Channel, digit string, duration int) error
+	ARIChannelStateChange(cn *channel.Channel) error
 	ARIPlaybackFinished(cn *channel.Channel, playbackID string) error
 	ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error
 
-	Start(cn *channel.Channel, data map[string]interface{}) error
+	CreateCallOutgoing(id uuid.UUID, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error)
+	StartCallHandle(cn *channel.Channel, data map[string]interface{}) error
 	Hangup(cn *channel.Channel) error
-	UpdateStatus(cn *channel.Channel) error
 
 	ActionNext(c *call.Call) error
 	ActionTimeout(callID uuid.UUID, a *action.Action) error

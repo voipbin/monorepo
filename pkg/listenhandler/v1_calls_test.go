@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
@@ -127,6 +128,123 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match. exepct: 200, got: %v", res)
+			}
+		})
+	}
+}
+
+func TestProcessV1CallsIDPost(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		db:          mockDB,
+		reqHandler:  mockReq,
+		callHandler: mockCall,
+	}
+
+	type test struct {
+		name      string
+		call      *call.Call
+		request   *rabbitmq.Request
+		expectRes *rabbitmq.Response
+	}
+
+	tests := []test{
+		{
+			"empty addresses",
+			&call.Call{
+				ID:          uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+				FlowID:      uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+				Source:      call.Address{},
+				Destination: call.Address{},
+			},
+
+			&rabbitmq.Request{
+				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     `{"flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {}, "destination": {}}`,
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       `{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
+			},
+		},
+		{
+			"source address",
+			&call.Call{
+				ID:     uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+				FlowID: uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+				Source: call.Address{
+					Type:   call.AddressTypeSIP,
+					Target: "test_source@127.0.0.1:5061",
+					Name:   "test_source",
+				},
+				Destination: call.Address{},
+			},
+
+			&rabbitmq.Request{
+				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     `{"flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {}}`,
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       `{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
+			},
+		},
+		{
+			"flow_id null",
+			&call.Call{
+				ID:     uuid.FromStringOrNil("f93eef0c-ed79-11ea-85cb-b39596cdf7ff"),
+				FlowID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+				Source: call.Address{
+					Type:   call.AddressTypeSIP,
+					Target: "test_source@127.0.0.1:5061",
+					Name:   "test_source",
+				},
+				Destination: call.Address{
+					Type:   call.AddressTypeSIP,
+					Target: "test_destination@127.0.0.1:5061",
+					Name:   "test_destination",
+				},
+			},
+
+			&rabbitmq.Request{
+				URI:      "/v1/calls/f93eef0c-ed79-11ea-85cb-b39596cdf7ff",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     `{"flow_id": "00000000-0000-0000-0000-000000000000","source": {"type": "sip","target": "test_source@127.0.0.1:5061","name": "test_source"},"destination": {"type": "sip","target": "test_destination@127.0.0.1:5061","name": "test_destination"}}`,
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       `{"id":"f93eef0c-ed79-11ea-85cb-b39596cdf7ff","asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"sip","target":"test_destination@127.0.0.1:5061","name":"test_destination"},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockCall.EXPECT().CreateCallOutgoing(tt.call.ID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

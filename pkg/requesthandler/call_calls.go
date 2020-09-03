@@ -5,9 +5,10 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/request"
 )
 
 // CallCallsHealth sends the request for call health-check

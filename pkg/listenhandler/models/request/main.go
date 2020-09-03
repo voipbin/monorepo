@@ -2,7 +2,9 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 )
 
 // V1DataAsterisksIDChannelsIDHealth is
@@ -13,6 +15,15 @@ type V1DataAsterisksIDChannelsIDHealth struct {
 	RetryCount    int `json:"retry_count"`
 	RetryCountMax int `json:"retry_count_max"`
 	Delay         int `json:"delay"`
+}
+
+// V1DataCallsIDPost is
+// v1 data type request struct for
+// /v1/calls/<id> POST
+type V1DataCallsIDPost struct {
+	FlowID      uuid.UUID    `json:"flow_id"`
+	Source      call.Address `json:"source"`
+	Destination call.Address `json:"destination"`
 }
 
 // V1DataCallsIDHealth is

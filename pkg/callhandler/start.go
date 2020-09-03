@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
 
 // StasisStart event's context types
@@ -49,8 +50,51 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
 	return nil
 }
 
-// Start starts the call service
-func (h *callHandler) Start(cn *channel.Channel, data map[string]interface{}) error {
+// CreateCallOutgoing creates a call for outgoing
+func (h *callHandler) CreateCallOutgoing(id uuid.UUID, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error) {
+	ctx := context.Background()
+
+	channelID := uuid.Must(uuid.NewV4()).String()
+	cTmp := &call.Call{
+		ID:          id,
+		ChannelID:   channelID,
+		FlowID:      flowID,
+		Type:        call.TypeFlow,
+		Status:      call.StatusDialing,
+		Direction:   call.DirectionOutgoing,
+		Source:      source,
+		Destination: destination,
+		Action: action.Action{
+			ID:   action.IDInit,
+			Next: action.IDBegin,
+		},
+		TMCreate: getCurTime(),
+	}
+
+	// create a call
+	if err := h.createCall(ctx, cTmp); err != nil {
+		return nil, err
+	}
+
+	// get created call
+	c, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	endpoint := fmt.Sprintf("pjsip/call-out/sip:%s", destination.Target)
+	appArgs := fmt.Sprintf("context=%s", contextOutgoingCall)
+
+	// create a channel
+	if err := h.reqHandler.AstChannelCreate(requesthandler.AsteriskIDCall, channelID, appArgs, endpoint, "", "", ""); err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+// StartCallHandle starts the call handle service
+func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]interface{}) error {
 
 	// check the stasis's context
 	switch data["context"].(string) {
@@ -118,6 +162,11 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 
 	// set channel's type call.
 	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeCall)); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
+	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, "", 30); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}

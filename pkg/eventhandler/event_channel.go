@@ -198,7 +198,7 @@ func (h *eventHandler) eventHandlerChannelStateChange(ctx context.Context, evt i
 		return err
 	}
 
-	if err := h.callHandler.UpdateStatus(cn); err != nil {
+	if err := h.callHandler.ARIChannelStateChange(cn); err != nil {
 		return err
 	}
 

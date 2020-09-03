@@ -7,6 +7,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
@@ -139,6 +140,14 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 	var err error
 	var response *rabbitmq.Response
 
+	logrus.WithFields(
+		logrus.Fields{
+			"uri":       m.URI,
+			"method":    m.Method,
+			"data_type": m.DataType,
+			"data":      m.Data,
+		}).Debug("Received request.")
+
 	start := time.Now()
 	switch {
 	// v1
@@ -149,10 +158,6 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 		requestType = "/v1/asterisks/channels/health-check"
 
 	// calls
-	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
-		response, err = h.processV1CallsIDGet(m)
-		requestType = "/v1/calls"
-
 	case regV1CallsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDHealthPost(m)
 		requestType = "/v1/calls/health-check"
@@ -164,6 +169,14 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDActionTimeoutPost(m)
 		requestType = "/v1/calls/action-timeout"
+
+	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
+		response, err = h.processV1CallsIDGet(m)
+		requestType = "/v1/calls"
+
+	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+		response, err = h.processV1CallsIDPost(m)
+		requestType = "/v1/calls"
 
 	// conferences
 	case regV1ConferencesIDCallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:

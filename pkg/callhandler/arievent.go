@@ -6,6 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 )
 
@@ -16,7 +18,7 @@ func (h *callHandler) ARIStasisStart(cn *channel.Channel, data map[string]interf
 	case contextTypeConference:
 		return h.confHandler.ARIStasisStart(cn, data)
 	default:
-		return h.Start(cn, data)
+		return h.StartCallHandle(cn, data)
 	}
 }
 
@@ -76,4 +78,31 @@ func (h *callHandler) ARIPlaybackFinished(cn *channel.Channel, playbackID string
 
 	// go to next action
 	return h.ActionNext(c)
+}
+
+func (h *callHandler) ARIChannelStateChange(cn *channel.Channel) error {
+	ctx := context.Background()
+
+	status := call.GetStatusByChannelState(cn.State)
+	if status != call.StatusRinging && status != call.StatusProgressing {
+		// the call cares only riniging/progressing at here.
+		// other statuses will be handled in the other func.
+		return nil
+	}
+
+	// get call
+	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
+	if err == dbhandler.ErrNotFound {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	// we care only ringing/progress at here.
+	if status == call.StatusRinging {
+		return h.updateStatusRinging(ctx, cn, c)
+	} else if status == call.StatusProgressing {
+		return h.updateStatusProgressing(ctx, cn, c)
+	}
+	return nil
 }
