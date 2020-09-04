@@ -4,6 +4,7 @@ package requesthandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
@@ -118,7 +120,7 @@ func NewRequestHandler(sock rabbitmq.Rabbit, exchangeDelay, queueCall, queueFlow
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
-func (r *requestHandler) sendRequestFlow(uri string, method models.RequestMethod, resource resource, timeout int, dataType, data string) (*models.Response, error) {
+func (r *requestHandler) sendRequestFlow(uri string, method models.RequestMethod, resource resource, timeout int, dataType string, data json.RawMessage) (*models.Response, error) {
 	log.WithFields(log.Fields{
 		"uri":       uri,
 		"method":    method,
@@ -155,7 +157,7 @@ func (r *requestHandler) sendRequestFlow(uri string, method models.RequestMethod
 // sendRequestCall send a request to the Asterisk-proxy and return the response
 // timeout second
 // delayed millisecond
-func (r *requestHandler) sendRequestCall(uri string, method models.RequestMethod, resource resource, timeout, delayed int, dataType, data string) (*models.Response, error) {
+func (r *requestHandler) sendRequestCall(uri string, method models.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*models.Response, error) {
 	log.WithFields(log.Fields{
 		"method":    method,
 		"uri":       uri,

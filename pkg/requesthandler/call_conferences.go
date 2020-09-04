@@ -17,7 +17,7 @@ import (
 func (r *requestHandler) CallConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, models.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, "")
+	res, err := r.sendRequestCall(uri, models.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
 	switch {
 	case err != nil:
 		return nil, err
@@ -42,7 +42,7 @@ func (r *requestHandler) CallConferenceGet(conferenceID uuid.UUID) (*conference.
 func (r *requestHandler) CallConferenceDelete(conferenceID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, models.RequestMethodDelete, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, "")
+	res, err := r.sendRequestCall(uri, models.RequestMethodDelete, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
 	switch {
 	case err != nil:
 		return err
@@ -72,7 +72,7 @@ func (r *requestHandler) CallConferenceCreate(userID uint64, conferenceType conf
 		return nil, err
 	}
 
-	res, err := r.sendRequestCall(uri, models.RequestMethodPost, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, string(m))
+	res, err := r.sendRequestCall(uri, models.RequestMethodPost, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
