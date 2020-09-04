@@ -34,8 +34,17 @@ spec:
             - ':2112'
             - '-rabbit_addr'
             - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
-            - '-rabbit_queue_request'
-            - 'flow_manager-request'
+            - '-rabbit_queue_listen'
+            - 'bin-manager.flow-manager.request'
+            - '-rabbit_queue_event'
+            - 'bin-manager.flow-manager.event'
+            - '-rabbit_exchange_delay'
+            - 'bin-manager.delay'
+            - '-redis_addr'
+            - '10.164.15.220:6379'
+            - '-redis_db'
+            - '1'
+
           ports:
             - name: metrics
               protocol: "TCP"

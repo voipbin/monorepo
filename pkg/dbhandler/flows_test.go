@@ -2,15 +2,23 @@ package dbhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 
-	flow "gitlab.com/voipbin/bin-manager/flow-manager/pkg/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
 )
 
 func TestFlowCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	type test struct {
 		name       string
 		flow       *flow.Flow
@@ -99,13 +107,16 @@ func TestFlowCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest)
+			h := NewHandler(dbTest, mockCache)
 
+			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
 			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.FlowGet(context.Background(), tt.flow.ID, tt.flow.Revision)
+			mockCache.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+			res, err := h.FlowGet(context.Background(), tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

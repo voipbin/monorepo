@@ -3,6 +3,7 @@ module gitlab.com/voipbin/bin-manager/flow-manager
 go 1.14
 
 require (
+	github.com/go-redis/redis/v8 v8.0.0-beta.9
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/mock v1.4.3

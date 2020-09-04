@@ -1,13 +1,14 @@
 package flowhandler
 
-//go:generate mockgen -destination ./mock_flowhandler_flowhandler.go -package flowhandler gitlab.com/voipbin/bin-manager/flow-manager/pkg/flow_handler FlowHandler
+//go:generate mockgen -destination ./mock_flowhandler_flowhandler.go -package flowhandler gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler FlowHandler
 
 import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	dbhandler "gitlab.com/voipbin/bin-manager/flow-manager/pkg/db_handler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flow"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
 )
 
 type flowHandler struct {
@@ -16,10 +17,10 @@ type flowHandler struct {
 
 // FlowHandler interface
 type FlowHandler interface {
-	FlowGet(ctx context.Context, id, revision uuid.UUID) (*flow.Flow, error)
+	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowCreate(ctx context.Context, flow *flow.Flow) (*flow.Flow, error)
 
-	ActionGet(ctx context.Context, flowID uuid.UUID, revision, actionID uuid.UUID) (*flow.Action, error)
+	ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*flow.Action, error)
 }
 
 // NewFlowHandler return FlowHandler
@@ -32,8 +33,8 @@ func NewFlowHandler(db dbhandler.DBHandler) FlowHandler {
 }
 
 // FlowGet returns flow
-func (h *flowHandler) FlowGet(ctx context.Context, id, revision uuid.UUID) (*flow.Flow, error) {
-	resFlow, err := h.db.FlowGet(ctx, id, revision)
+func (h *flowHandler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+	resFlow, err := h.db.FlowGet(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -44,13 +45,12 @@ func (h *flowHandler) FlowGet(ctx context.Context, id, revision uuid.UUID) (*flo
 // FlowCreate creates a flow
 func (h *flowHandler) FlowCreate(ctx context.Context, flow *flow.Flow) (*flow.Flow, error) {
 	flow.ID = uuid.Must(uuid.NewV4())
-	flow.Revision = uuid.Nil
 
 	if err := h.db.FlowCreate(ctx, flow); err != nil {
 		return nil, err
 	}
 
-	resFlow, err := h.FlowGet(ctx, flow.ID, flow.Revision)
+	resFlow, err := h.FlowGet(ctx, flow.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +59,8 @@ func (h *flowHandler) FlowCreate(ctx context.Context, flow *flow.Flow) (*flow.Fl
 }
 
 // FlowGet returns flow
-func (h *flowHandler) ActionGet(ctx context.Context, flowID uuid.UUID, revision, actionID uuid.UUID) (*flow.Action, error) {
-	flow, err := h.FlowGet(ctx, flowID, revision)
+func (h *flowHandler) ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*flow.Action, error) {
+	flow, err := h.FlowGet(ctx, flowID)
 	if err != nil {
 		return nil, err
 	}

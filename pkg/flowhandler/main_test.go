@@ -7,8 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	dbhandler "gitlab.com/voipbin/bin-manager/flow-manager/pkg/db_handler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flow"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
 )
 
 func TestFlowCreate(t *testing.T) {
@@ -35,7 +36,7 @@ func TestFlowCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any(), uuid.Nil).Return(&flow.Flow{}, nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
 
 			h.FlowCreate(context.Background(), &flow.Flow{})
 
@@ -66,9 +67,9 @@ func TestFlowGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
 
-			h.FlowGet(context.Background(), uuid.Must(uuid.NewV4()), uuid.Must(uuid.NewV4()))
+			h.FlowGet(context.Background(), uuid.Must(uuid.NewV4()))
 		})
 	}
 }
@@ -109,8 +110,8 @@ func TestActionGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID, tt.flow.Revision).Return(tt.flow, nil)
-			action, err := h.ActionGet(context.Background(), tt.flow.ID, tt.flow.Revision, tt.flow.Actions[0].ID)
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
+			action, err := h.ActionGet(context.Background(), tt.flow.ID, tt.flow.Actions[0].ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
