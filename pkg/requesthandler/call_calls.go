@@ -28,7 +28,7 @@ func (r *requestHandler) CallCallHealth(id uuid.UUID, delay, retryCount int) err
 		return err
 	}
 
-	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallCallsHealth, requestTimeoutDefault, delay, ContentTypeJSON, string(m))
+	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallCallsHealth, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -55,7 +55,7 @@ func (r *requestHandler) CallCallActionTimeout(id uuid.UUID, delay int, a *actio
 		return err
 	}
 
-	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallCallsActionTimeout, requestTimeoutDefault, delay, ContentTypeJSON, string(m))
+	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallCallsActionTimeout, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -73,7 +73,7 @@ func (r *requestHandler) CallCallActionTimeout(id uuid.UUID, delay int, a *actio
 func (r *requestHandler) CallCallActionNext(id uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/calls/%s/action-next", id)
 
-	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallCallsActionNext, requestTimeoutDefault, 0, ContentTypeJSON, "")
+	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallCallsActionNext, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

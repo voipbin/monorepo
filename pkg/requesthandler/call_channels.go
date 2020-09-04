@@ -28,7 +28,7 @@ func (r *requestHandler) CallChannelHealth(asteriskID, channelID string, delay, 
 		return err
 	}
 
-	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallChannelsHealth, requestTimeoutDefault, delay, ContentTypeJSON, string(m))
+	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodPost, resourceCallChannelsHealth, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

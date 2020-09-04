@@ -38,7 +38,7 @@ func TestAstBridgeGet(t *testing.T) {
 			&rabbitmq.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       `{"id":"3e6eec96-fabe-4041-870d-e1daee11aafb","technology":"softmix","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"conference_type=conference,conference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7,join=false","channels":[],"creationtime":"2020-08-10T22:50:28.085+0000","video_mode":"sfu"}`,
+				Data:       []byte(`{"id":"3e6eec96-fabe-4041-870d-e1daee11aafb","technology":"softmix","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"conference_type=conference,conference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7,join=false","channels":[],"creationtime":"2020-08-10T22:50:28.085+0000","video_mode":"sfu"}`),
 			},
 
 			"asterisk.00:11:22:33:44:55.request",
@@ -46,7 +46,7 @@ func TestAstBridgeGet(t *testing.T) {
 				URI:      "/ari/bridges/261a2496-dc28-11ea-b3b2-afa07bdffeb2",
 				Method:   rabbitmq.RequestMethodGet,
 				DataType: ContentTypeJSON,
-				Data:     "",
+				Data:     nil,
 			},
 			&bridge.Bridge{
 				ID:   "3e6eec96-fabe-4041-870d-e1daee11aafb",

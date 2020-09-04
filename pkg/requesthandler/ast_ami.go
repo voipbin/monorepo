@@ -8,10 +8,10 @@ import (
 )
 
 // parseAMIResponseData parses response data.
-func (r *requestHandler) parseAMIResponseData(data string) error {
+func (r *requestHandler) parseAMIResponseData(data []byte) error {
 
 	var resData map[string]string
-	if err := json.Unmarshal([]byte(data), &resData); err != nil {
+	if err := json.Unmarshal(data, &resData); err != nil {
 		return err
 	}
 
@@ -50,7 +50,7 @@ func (r *requestHandler) AstAMIRedirect(asteriskID, channelID, context, exten, p
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstAMI, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstAMI, requestTimeoutDefault, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
