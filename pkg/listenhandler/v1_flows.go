@@ -20,7 +20,7 @@ func (h *listenHandler) v1FlowsPost(req *rabbitmq.Request) (*rabbitmq.Response, 
 	ctx := context.Background()
 
 	flow := &flow.Flow{}
-	if err := json.Unmarshal([]byte(req.Data), flow); err != nil {
+	if err := json.Unmarshal(req.Data, flow); err != nil {
 		return nil, err
 	}
 
