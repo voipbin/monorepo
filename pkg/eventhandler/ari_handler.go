@@ -75,7 +75,7 @@ func (h *eventHandler) eventARIReceive() error {
 	event := &rabbitmq.Event{
 		Type:     "ari_event",
 		DataType: "application/json",
-		Data:     string(msgStr),
+		Data:     msgStr,
 	}
 
 	// send it to rabbitmq

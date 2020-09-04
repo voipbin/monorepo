@@ -4,33 +4,33 @@ package rabbitmq
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	log "github.com/sirupsen/logrus"
-
 	"github.com/streadway/amqp"
 )
 
 // Request struct
 type Request struct {
-	URI      string        `json:"uri"`
-	Method   RequestMethod `json:"method"`
-	DataType string        `json:"data_type"`
-	Data     string        `json:"data"`
+	URI      string          `json:"uri"`
+	Method   RequestMethod   `json:"method"`
+	DataType string          `json:"data_type"`
+	Data     json.RawMessage `json:"data"`
 }
 
 // Response struct
 type Response struct {
-	StatusCode int    `json:"status_code"`
-	DataType   string `json:"data_type"`
-	Data       string `json:"data"`
+	StatusCode int             `json:"status_code"`
+	DataType   string          `json:"data_type"`
+	Data       json.RawMessage `json:"data"`
 }
 
 // Event struct
 type Event struct {
-	Type     EventType `json:"type"`
-	DataType string    `json:"data_type"`
-	Data     string    `json:"data"`
+	Type     EventType       `json:"type"`
+	DataType string          `json:"data_type"`
+	Data     json.RawMessage `json:"data"`
 }
 
 // RequestMethod type
