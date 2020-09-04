@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/request"
@@ -58,11 +59,12 @@ func (r *requestHandler) CallConferenceDelete(conferenceID uuid.UUID) error {
 // CallConferenceCreate sends a request to call-manager
 // to creating a conference.
 // it returns created conference if it succeed.
-func (r *requestHandler) CallConferenceCreate(conferenceType conference.Type) (*conference.Conference, error) {
+func (r *requestHandler) CallConferenceCreate(userID uint64, conferenceType conference.Type) (*conference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences")
 
 	data := &request.V1DataConferencesCreate{
-		Type: conferenceType,
+		Type:   conferenceType,
+		UserID: userID,
 	}
 
 	m, err := json.Marshal(data)

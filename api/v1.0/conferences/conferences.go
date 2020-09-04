@@ -3,6 +3,9 @@ package conferences
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/api-manager/models"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
 )
@@ -28,9 +31,17 @@ func conferencesPOST(c *gin.Context) {
 		return
 	}
 
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	user := tmp.(models.User)
+
 	// send a request to call
 	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
-	res, err := requestHandler.CallConferenceCreate(requestBody.Type)
+	res, err := requestHandler.CallConferenceCreate(user.ID, requestBody.Type)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
 		return

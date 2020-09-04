@@ -8,9 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	joonix "github.com/joonix/log"
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/api-manager/api"
 	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/database"
+	"gitlab.com/voipbin/bin-manager/api-manager/models"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
 )
@@ -29,8 +30,7 @@ var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.dela
 
 func main() {
 
-	db, err := database.Init(*dsn)
-	if err != nil {
+	if err := models.Setup(*dsn); err != nil {
 		logrus.Errorf("Could not initiate database. err: %v", err)
 		return
 	}
@@ -56,7 +56,6 @@ func main() {
 	}))
 
 	// injects
-	app.Use(database.Inject(db))
 	app.Use(requesthandler.Inject(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest))
 
 	// set jwt middleware
