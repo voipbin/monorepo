@@ -1,7 +1,7 @@
-create table fm_flows(
+create table flows(
   -- identity
   id binary(16),
-  revision binary(16),
+  user_id int(10),
 
   name varchar(255),
   detail text,
@@ -13,5 +13,5 @@ create table fm_flows(
   tm_update datetime(6),  --
   tm_delete datetime(6),
 
-  primary key(id, revision)
+  primary key(id)
 )

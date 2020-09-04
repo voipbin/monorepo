@@ -48,9 +48,9 @@ func (h *handler) FlowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flo
 
 func (h *handler) FlowCreate(ctx context.Context, flow *flow.Flow) error {
 
-	q := `insert into fm_flows(
+	q := `insert into flows(
 		id,
-		revision,
+		user_id,
 		name,
 		detail,
 
@@ -75,7 +75,7 @@ func (h *handler) FlowCreate(ctx context.Context, flow *flow.Flow) error {
 
 	_, err = stmt.ExecContext(ctx,
 		flow.ID.Bytes(),
-		flow.Revision.Bytes(),
+		flow.UserID,
 
 		flow.Name,
 		flow.Detail,
@@ -100,7 +100,7 @@ func (h *handler) FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, 
 	q := `
 	select
 		id,
-		revision,
+		user_id,
 
 		name,
 		detail,
@@ -111,7 +111,7 @@ func (h *handler) FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, 
 		coalesce(tm_update, '') as tm_update,
 		coalesce(tm_delete, '') as tm_delete
 	from
-		fm_flows
+		flows
 	where
 		id = ?
 	`
@@ -137,7 +137,7 @@ func (h *handler) FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, 
 	res := &flow.Flow{}
 	if err := row.Scan(
 		&res.ID,
-		&res.Revision,
+		&res.UserID,
 
 		&res.Name,
 		&res.Detail,

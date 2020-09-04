@@ -109,7 +109,6 @@ response
     "action": "answer",
     "next_action": "93835308-880f-11ea-97f7-f71252fc3528",
     "flow_id": "3271831e-880f-11ea-bc66-4f3de31bc41e",
-    "flow_revision": "d96e918e-880f-11ea-accd-f3a1e1ceaddc",
     "data": {
       "action_version": "0.1"
     }

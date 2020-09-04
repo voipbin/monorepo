@@ -30,14 +30,12 @@ func TestFlowCreate(t *testing.T) {
 			"have no actions",
 			&flow.Flow{
 				ID:       uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
-				Revision: uuid.FromStringOrNil("38220a04-88e6-11ea-afad-d396a9216bc2"),
 				Name:     "test flow name",
 				Detail:   "test flow detail",
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&flow.Flow{
 				ID:       uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
-				Revision: uuid.FromStringOrNil("38220a04-88e6-11ea-afad-d396a9216bc2"),
 				Name:     "test flow name",
 				Detail:   "test flow detail",
 				TMCreate: "2020-04-18T03:22:17.995000",
@@ -46,10 +44,9 @@ func TestFlowCreate(t *testing.T) {
 		{
 			"have 1 action echo without option",
 			&flow.Flow{
-				ID:       uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
-				Revision: uuid.FromStringOrNil("4cb31e40-88e6-11ea-bcec-6b8ba312df8a"),
-				Name:     "test flow name",
-				Detail:   "test flow detail",
+				ID:     uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
+				Name:   "test flow name",
+				Detail: "test flow detail",
 				Actions: []flow.Action{
 					{
 						ID:   uuid.FromStringOrNil("9613a4e8-88e5-11ea-beeb-e7a27ea4b0f7"),
@@ -59,10 +56,9 @@ func TestFlowCreate(t *testing.T) {
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&flow.Flow{
-				ID:       uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
-				Revision: uuid.FromStringOrNil("4cb31e40-88e6-11ea-bcec-6b8ba312df8a"),
-				Name:     "test flow name",
-				Detail:   "test flow detail",
+				ID:     uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
+				Name:   "test flow name",
+				Detail: "test flow detail",
 				Actions: []flow.Action{
 					{
 						ID:   uuid.FromStringOrNil("9613a4e8-88e5-11ea-beeb-e7a27ea4b0f7"),
@@ -75,10 +71,9 @@ func TestFlowCreate(t *testing.T) {
 		{
 			"have 1 action echo with option",
 			&flow.Flow{
-				ID:       uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
-				Revision: uuid.FromStringOrNil("770e494e-88e6-11ea-96bd-8f025d41a99a"),
-				Name:     "test flow name",
-				Detail:   "test flow detail",
+				ID:     uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
+				Name:   "test flow name",
+				Detail: "test flow detail",
 				Actions: []flow.Action{
 					{
 						ID:     uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
@@ -89,10 +84,9 @@ func TestFlowCreate(t *testing.T) {
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&flow.Flow{
-				ID:       uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
-				Revision: uuid.FromStringOrNil("770e494e-88e6-11ea-96bd-8f025d41a99a"),
-				Name:     "test flow name",
-				Detail:   "test flow detail",
+				ID:     uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
+				Name:   "test flow name",
+				Detail: "test flow detail",
 				Actions: []flow.Action{
 					{
 						ID:     uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
@@ -123,7 +117,7 @@ func TestFlowCreate(t *testing.T) {
 			t.Logf("Created flow. flow: %v", res)
 
 			if reflect.DeepEqual(tt.expectFlow, res) == false {
-				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectFlow, res)
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectFlow, res)
 			}
 		})
 	}

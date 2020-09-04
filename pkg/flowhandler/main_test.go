@@ -92,8 +92,7 @@ func TestActionGet(t *testing.T) {
 		{
 			"test normal",
 			&flow.Flow{
-				ID:       uuid.Must(uuid.NewV4()),
-				Revision: uuid.Must(uuid.NewV4()),
+				ID: uuid.Must(uuid.NewV4()),
 				Actions: []flow.Action{
 					{
 						ID:   uuid.Must(uuid.NewV4()),

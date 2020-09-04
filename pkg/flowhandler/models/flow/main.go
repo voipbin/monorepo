@@ -12,11 +12,6 @@ var (
 	ActionIDFinish uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000")
 )
 
-// ????
-var (
-	FlowRevisionLatest uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
-)
-
 // Action struct
 type Action struct {
 	ID     uuid.UUID       `json:"id"`
@@ -27,8 +22,8 @@ type Action struct {
 
 // Flow struct
 type Flow struct {
-	ID       uuid.UUID `json:"id"`
-	Revision uuid.UUID `json:"revision"`
+	ID     uuid.UUID `json:"id"`
+	UserID int64     `json:"user_id"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
