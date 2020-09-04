@@ -29,22 +29,22 @@ func (h *listenHandler) listenHandlerAMI(request *rabbitmq.Request) (*rabbitmq.R
 
 // sendRequestToAsteriskAMI sends the request to the Asterisk's AMI.
 // returns status_code, response_message, error
-func (h *listenHandler) sendRequestToAsteriskAMI(m *rabbitmq.Request) (int, string, error) {
+func (h *listenHandler) sendRequestToAsteriskAMI(m *rabbitmq.Request) (int, []byte, error) {
 
 	var req map[string]string
-	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		return 0, "", err
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		return 0, nil, err
 	}
 
 	tmp, err := h.amiSock.Action(req)
 	if err != nil {
-		return 0, "", err
+		return 0, nil, err
 	}
 
 	res, err := json.Marshal(tmp)
 	if err != nil {
-		return 0, "", err
+		return 0, nil, err
 	}
 
-	return 200, string(res), nil
+	return 200, res, nil
 }

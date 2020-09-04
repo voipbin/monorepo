@@ -73,7 +73,7 @@ func TestARISendRequestToAsterisk(t *testing.T) {
 				URI:      "/channels?endpoint=pjsip/test@sippuas&app=test",
 				Method:   "POST",
 				DataType: "application/json",
-				Data:     "{\"endpoint\": \"pjsip/test@sippuas\", \"app\": \"test\"}",
+				Data:     []byte("{\"endpoint\": \"pjsip/test@sippuas\", \"app\": \"test\"}"),
 			},
 		},
 	}
