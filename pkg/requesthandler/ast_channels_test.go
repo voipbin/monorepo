@@ -51,9 +51,9 @@ func TestAstChannelAnswer(t *testing.T) {
 					URI:      tt.expectURI,
 					Method:   tt.expectMethod,
 					DataType: "",
-					Data:     "",
+					Data:     nil,
 				},
-			).Return(&rabbitmq.Response{StatusCode: 200, Data: ""}, nil)
+			).Return(&rabbitmq.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelAnswer(tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -77,7 +77,7 @@ func TestAstChannelContinue(t *testing.T) {
 		expectURI    string
 		expectQueue  string
 		expectMethod rabbitmq.RequestMethod
-		expectData   string
+		expectData   []byte
 	}
 
 	tests := []test{
@@ -93,7 +93,7 @@ func TestAstChannelContinue(t *testing.T) {
 			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/continue",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
-			`{"context":"test-context","extension":"testcall","priority":1,"label":"testlabel"}`,
+			[]byte(`{"context":"test-context","extension":"testcall","priority":1,"label":"testlabel"}`),
 		},
 		{
 			"has no label",
@@ -107,7 +107,7 @@ func TestAstChannelContinue(t *testing.T) {
 			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/continue",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
-			`{"context":"test-context","extension":"testcall","priority":1,"label":""}`,
+			[]byte(`{"context":"test-context","extension":"testcall","priority":1,"label":""}`),
 		},
 	}
 
@@ -129,7 +129,7 @@ func TestAstChannelContinue(t *testing.T) {
 					DataType: ContentTypeJSON,
 					Data:     tt.expectData,
 				},
-			).Return(&rabbitmq.Response{StatusCode: 200, Data: ""}, nil)
+			).Return(&rabbitmq.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelContinue(tt.asteriskID, tt.channelID, tt.context, tt.extension, tt.priority, tt.label)
 			if err != nil {
@@ -151,7 +151,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 		expectURI    string
 		expectQueue  string
 		expectMethod rabbitmq.RequestMethod
-		expectData   string
+		expectData   []byte
 	}
 
 	tests := []test{
@@ -166,7 +166,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
 
-			`{"variable":"test-variable","value":"test-value"}`,
+			[]byte(`{"variable":"test-variable","value":"test-value"}`),
 		},
 		{
 			"empty value",
@@ -178,7 +178,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/variable",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
-			`{"variable":"test-variable","value":""}`,
+			[]byte(`{"variable":"test-variable","value":""}`),
 		},
 	}
 
@@ -200,7 +200,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 					DataType: ContentTypeJSON,
 					Data:     tt.expectData,
 				},
-			).Return(&rabbitmq.Response{StatusCode: 200, Data: ""}, nil)
+			).Return(&rabbitmq.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelVariableSet(tt.asteriskID, tt.channelID, tt.variable, tt.value)
 			if err != nil {
@@ -221,7 +221,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 		expectURI    string
 		expectQueue  string
 		expectMethod rabbitmq.RequestMethod
-		expectData   string
+		expectData   []byte
 	}
 
 	tests := []test{
@@ -234,7 +234,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 			"/ari/channels/ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodDelete,
-			`{"reason_code":"16"}`,
+			[]byte(`{"reason_code":"16"}`),
 		},
 	}
 
@@ -256,7 +256,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 					DataType: ContentTypeJSON,
 					Data:     tt.expectData,
 				},
-			).Return(&rabbitmq.Response{StatusCode: 200, Data: ""}, nil)
+			).Return(&rabbitmq.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelHangup(tt.asteriskID, tt.channelID, tt.hangupCause)
 			if err != nil {
@@ -285,7 +285,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 		expectURI    string
 		expectQueue  string
 		expectMethod rabbitmq.RequestMethod
-		expectData   string
+		expectData   []byte
 	}
 
 	tests := []test{
@@ -301,7 +301,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
-			`{"spy":"in","whisper":"in","app":"voipbin","appArgs":"test","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`,
+			[]byte(`{"spy":"in","whisper":"in","app":"voipbin","appArgs":"test","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`),
 		},
 		{
 			"whisper is none",
@@ -315,7 +315,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
-			`{"spy":"in","app":"voipbin","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`,
+			[]byte(`{"spy":"in","app":"voipbin","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`),
 		},
 		{
 			"Spy is none",
@@ -329,7 +329,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmq.RequestMethodPost,
-			`{"whisper":"both","app":"voipbin","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`,
+			[]byte(`{"whisper":"both","app":"voipbin","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`),
 		},
 	}
 
@@ -345,7 +345,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 					DataType: ContentTypeJSON,
 					Data:     tt.expectData,
 				},
-			).Return(&rabbitmq.Response{StatusCode: 200, Data: ""}, nil)
+			).Return(&rabbitmq.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelCreateSnoop(tt.asteriskID, tt.channelID, tt.snoopID, tt.appArgs, tt.spy, tt.whisper)
 			if err != nil {
@@ -383,7 +383,7 @@ func TestAstChannelGet(t *testing.T) {
 			&rabbitmq.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       `{"id":"1589711094.100","name":"PJSIP/call-in-00000019","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"8872616","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=xt1GqgsEfG,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-17T10:24:54.396+0000","language":"en"}`,
+				Data:       []byte(`{"id":"1589711094.100","name":"PJSIP/call-in-00000019","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"8872616","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=xt1GqgsEfG,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-17T10:24:54.396+0000","language":"en"}`),
 			},
 
 			"asterisk.00:11:22:33:44:55.request",
@@ -391,7 +391,7 @@ func TestAstChannelGet(t *testing.T) {
 				URI:      "/ari/channels/1589711094.100",
 				Method:   rabbitmq.RequestMethodGet,
 				DataType: ContentTypeJSON,
-				Data:     "",
+				Data:     nil,
 			},
 			"/ari/channels/1589711094.100",
 			&channel.Channel{
@@ -469,7 +469,7 @@ func TestAstChannelDTMF(t *testing.T) {
 				URI:      "/ari/channels/6d11e7c2-9a69-11ea-95af-eb4a15c08df1/dtmf",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     `{"dtmf":"1","duration":100,"before":0,"between":0,"after":0}`,
+				Data:     []byte(`{"dtmf":"1","duration":100,"before":0,"between":0,"after":0}`),
 			},
 		},
 		{
@@ -490,7 +490,7 @@ func TestAstChannelDTMF(t *testing.T) {
 				URI:      "/ari/channels/6d11e7c2-9a69-11ea-95af-eb4a15c08df1/dtmf",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     `{"dtmf":"19827348","duration":100,"before":0,"between":0,"after":0}`,
+				Data:     []byte(`{"dtmf":"19827348","duration":100,"before":0,"between":0,"after":0}`),
 			},
 		},
 	}
@@ -548,7 +548,7 @@ func TestAstChannelCreate(t *testing.T) {
 				URI:      "/ari/channels/create",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     `{"endpoint":"PJSIP/call-out/sip:test@test.com:5060","app":"voipbin","channelId":"adf2ec1a-9ee6-11ea-9d2e-33da3e3b92a3"}`,
+				Data:     []byte(`{"endpoint":"PJSIP/call-out/sip:test@test.com:5060","app":"voipbin","channelId":"adf2ec1a-9ee6-11ea-9d2e-33da3e3b92a3"}`),
 			},
 		},
 	}
@@ -600,7 +600,7 @@ func TestAstChannelDial(t *testing.T) {
 				URI:      "/ari/channels/83a188ba-a060-11ea-a777-038b061dfbc3/dial",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     `{"timeout":30}`,
+				Data:     []byte(`{"timeout":30}`),
 			},
 		},
 	}
@@ -652,7 +652,7 @@ func TestAstChannelPlay(t *testing.T) {
 				URI:      "/ari/channels/94bcc2b4-e718-11ea-a8cf-e7d1a61482a8/play",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     `{"media":["sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"],"playbackId":"c44864cc-e7d9-11ea-923a-73e96775044d"}`,
+				Data:     []byte(`{"media":["sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"],"playbackId":"c44864cc-e7d9-11ea-923a-73e96775044d"}`),
 			},
 		},
 		{
@@ -670,7 +670,7 @@ func TestAstChannelPlay(t *testing.T) {
 				URI:      "/ari/channels/94bcc2b4-e718-11ea-a8cf-e7d1a61482a8/play",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     `{"media":["sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav","sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm-test.wav"],"playbackId":"dde1c518-e7d9-11ea-902a-2b04669d8a49"}`,
+				Data:     []byte(`{"media":["sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav","sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm-test.wav"],"playbackId":"dde1c518-e7d9-11ea-902a-2b04669d8a49"}`),
 			},
 		},
 	}

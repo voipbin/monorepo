@@ -38,7 +38,7 @@ func (h *listenHandler) processV1CallsIDGet(m *rabbitmq.Request) (*rabbitmq.Resp
 	res := &rabbitmq.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
-		Data:       string(data),
+		Data:       data,
 	}
 
 	return res, nil
@@ -80,7 +80,7 @@ func (h *listenHandler) processV1CallsIDPost(m *rabbitmq.Request) (*rabbitmq.Res
 	res := &rabbitmq.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
-		Data:       string(data),
+		Data:       data,
 	}
 
 	return res, nil

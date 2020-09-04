@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
@@ -40,7 +41,7 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 			&rabbitmq.Request{
 				URI:    "/v1/asterisks/42%3A01%3A0a%3Aa4%3A00%3A05/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
 				Method: rabbitmq.RequestMethodPost,
-				Data:   `{"retry_count": 0, "retry_count_max": 2, "delay": 10000}`,
+				Data:   []byte(`{"retry_count": 0, "retry_count_max": 2, "delay": 10000}`),
 			},
 		},
 	}

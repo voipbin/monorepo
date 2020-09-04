@@ -27,7 +27,7 @@ func TestAstAMIRedirect(t *testing.T) {
 		expectQueue  string
 		expectURI    string
 		expectMethod rabbitmq.RequestMethod
-		expectData   string
+		expectData   []byte
 	}
 
 	tests := []test{
@@ -43,7 +43,7 @@ func TestAstAMIRedirect(t *testing.T) {
 			"asterisk.00:11:22:33:44:55.request",
 			"/ami",
 			rabbitmq.RequestMethodPost,
-			`{"Action":"Redirect","Channel":"6b79ae28-e3f1-11ea-bf62-7f539c6300fc","Context":"svc-echo","Exten":"s","Priority":"1"}`,
+			[]byte(`{"Action":"Redirect","Channel":"6b79ae28-e3f1-11ea-bf62-7f539c6300fc","Context":"svc-echo","Exten":"s","Priority":"1"}`),
 		},
 	}
 
@@ -59,7 +59,7 @@ func TestAstAMIRedirect(t *testing.T) {
 					DataType: "application/json",
 					Data:     tt.expectData,
 				},
-			).Return(&rabbitmq.Response{StatusCode: 200, Data: `{"Response":"Success","Message":"Redirect successful"}`}, nil)
+			).Return(&rabbitmq.Response{StatusCode: 200, Data: []byte(`{"Response":"Success","Message":"Redirect successful"}`)}, nil)
 
 			err := reqHandler.AstAMIRedirect(tt.asteriskID, tt.channelID, tt.context, tt.exten, tt.priority)
 			if err != nil {

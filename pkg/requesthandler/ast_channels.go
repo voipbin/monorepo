@@ -16,7 +16,7 @@ import (
 func (r *requestHandler) AstChannelAnswer(asteriskID, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/answer", channelID)
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsAnswer, requestTimeoutDefault, "", "")
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsAnswer, requestTimeoutDefault, "", nil)
 	switch {
 	case err != nil:
 		return err
@@ -47,7 +47,7 @@ func (r *requestHandler) AstChannelContinue(asteriskID, channelID, context, ext 
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsContinue, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsContinue, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -72,7 +72,7 @@ func (r *requestHandler) AstChannelHangup(asteriskID, channelID string, code ari
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodDelete, resourceAstChannelsHangup, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodDelete, resourceAstChannelsHangup, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -99,7 +99,7 @@ func (r *requestHandler) AstChannelVariableSet(asteriskID, channelID, variable, 
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsVar, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsVar, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -136,7 +136,7 @@ func (r *requestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoi
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, uri, rabbitmq.RequestMethodPost, resourceAstChannels, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, uri, rabbitmq.RequestMethodPost, resourceAstChannels, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -169,7 +169,7 @@ func (r *requestHandler) AstChannelCreateSnoop(asteriskID, channelID, snoopID, a
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsSnoop, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsSnoop, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -183,7 +183,7 @@ func (r *requestHandler) AstChannelCreateSnoop(asteriskID, channelID, snoopID, a
 func (r *requestHandler) AstChannelGet(asteriskID, channelID string) (*channel.Channel, error) {
 	url := fmt.Sprintf("/ari/channels/%s", channelID)
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodGet, resourceAstChannels, requestTimeoutDefault, ContentTypeJSON, "")
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodGet, resourceAstChannels, requestTimeoutDefault, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -223,7 +223,7 @@ func (r *requestHandler) AstChannelDTMF(asteriskID, channelID string, digit stri
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsHangup, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsHangup, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -250,7 +250,7 @@ func (r *requestHandler) AstChannelDial(asteriskID, channelID, caller string, ti
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsDial, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsDial, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -279,7 +279,7 @@ func (r *requestHandler) AstChannelPlay(asteriskID string, channelID string, act
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsPlay, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstChannelsPlay, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

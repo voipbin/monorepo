@@ -50,7 +50,7 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq
 
 	res := &rabbitmq.Response{
 		StatusCode: 200,
-		Data:       string(tmp),
+		Data:       tmp,
 	}
 
 	return res, nil
@@ -65,7 +65,7 @@ func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmq.Request) (*rabb
 	id := uuid.FromStringOrNil(uriItems[3])
 
 	var data request.V1DataConferencesIDDelete
-	if m.Data != "" {
+	if m.Data != nil {
 		if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 			return nil, err
 		}
@@ -100,7 +100,7 @@ func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmq.Request) (*rabbitm
 
 	res := &rabbitmq.Response{
 		StatusCode: 200,
-		Data:       string(tmp),
+		Data:       tmp,
 	}
 
 	return res, nil

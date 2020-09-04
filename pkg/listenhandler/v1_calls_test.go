@@ -47,7 +47,7 @@ func TestProcessV1CallsIDHealthPost(t *testing.T) {
 			&rabbitmq.Request{
 				URI:    "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/health-check",
 				Method: rabbitmq.RequestMethodPost,
-				Data:   `{"retry_count": 0, "delay": 10}`,
+				Data:   []byte(`{"retry_count": 0, "delay": 10}`),
 			},
 		},
 	}
@@ -102,7 +102,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 				URI:      "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/action-timeout",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     `{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.809"}`,
+				Data:     []byte(`{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.809"}`),
 			},
 			&action.Action{
 				ID:        uuid.FromStringOrNil("ec4c8192-994b-11ea-ab64-9b63b984b7c4"),
@@ -170,12 +170,12 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     `{"flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {}, "destination": {}}`,
+				Data:     []byte(`{"flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {}, "destination": {}}`),
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       `{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
+				Data:       []byte(`{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
 			},
 		},
 		{
@@ -195,12 +195,12 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     `{"flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {}}`,
+				Data:     []byte(`{"flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {}}`),
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       `{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
+				Data:       []byte(`{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
 			},
 		},
 		{
@@ -224,12 +224,12 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/f93eef0c-ed79-11ea-85cb-b39596cdf7ff",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     `{"flow_id": "00000000-0000-0000-0000-000000000000","source": {"type": "sip","target": "test_source@127.0.0.1:5061","name": "test_source"},"destination": {"type": "sip","target": "test_destination@127.0.0.1:5061","name": "test_destination"}}`,
+				Data:     []byte(`{"flow_id": "00000000-0000-0000-0000-000000000000","source": {"type": "sip","target": "test_source@127.0.0.1:5061","name": "test_source"},"destination": {"type": "sip","target": "test_destination@127.0.0.1:5061","name": "test_destination"}}`),
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       `{"id":"f93eef0c-ed79-11ea-85cb-b39596cdf7ff","asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"sip","target":"test_destination@127.0.0.1:5061","name":"test_destination"},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
+				Data:       []byte(`{"id":"f93eef0c-ed79-11ea-85cb-b39596cdf7ff","asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"sip","target":"test_destination@127.0.0.1:5061","name":"test_destination"},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
 			},
 		},
 	}

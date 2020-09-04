@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
 
@@ -25,7 +26,7 @@ func (r *requestHandler) CallConferenceTerminate(conferenceID uuid.UUID, reason 
 		return err
 	}
 
-	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodDelete, resourceCallChannelsHealth, requestTimeoutDefault, delay, ContentTypeJSON, string(m))
+	res, err := r.sendRequestCall(uri, rabbitmq.RequestMethodDelete, resourceCallChannelsHealth, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

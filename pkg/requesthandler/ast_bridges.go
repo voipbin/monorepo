@@ -34,7 +34,7 @@ func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -48,7 +48,7 @@ func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string
 func (r *requestHandler) AstBridgeDelete(asteriskID, bridgeID string) error {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodDelete, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, string(""))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodDelete, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -62,7 +62,7 @@ func (r *requestHandler) AstBridgeDelete(asteriskID, bridgeID string) error {
 func (r *requestHandler) AstBridgeGet(asteriskID, bridgeID string) (*bridge.Bridge, error) {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodGet, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, "")
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodGet, resourceAstBridges, requestTimeoutDefault, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -100,7 +100,7 @@ func (r *requestHandler) AstBridgeAddChannel(asteriskID, bridgeID, channelID, ro
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridgesAddChannel, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridgesAddChannel, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -125,7 +125,7 @@ func (r *requestHandler) AstBridgeRemoveChannel(asteriskID, bridgeID, channelID 
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridgesRemoveChannel, requestTimeoutDefault, ContentTypeJSON, string(m))
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmq.RequestMethodPost, resourceAstBridgesRemoveChannel, requestTimeoutDefault, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

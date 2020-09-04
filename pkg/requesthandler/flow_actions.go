@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
@@ -13,7 +14,7 @@ func (r *requestHandler) FlowActionGet(flowID, actionID uuid.UUID) (*action.Acti
 
 	uri := fmt.Sprintf("/flows/%s/actions/%s", flowID, actionID)
 
-	res, err := r.sendRequestFlow(uri, rabbitmq.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, ContentTypeJSON, "")
+	res, err := r.sendRequestFlow(uri, rabbitmq.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}

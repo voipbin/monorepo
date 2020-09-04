@@ -155,7 +155,7 @@ func NewRequestHandler(sock rabbitmq.Rabbit, exchangeDelay, queueCall, queueFlow
 }
 
 // SendARIRequest send a request to the Asterisk-proxy and return the response
-func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.RequestMethod, resource resource, timeout int, dataType, data string) (*rabbitmq.Response, error) {
+func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmq.Response, error) {
 	log.WithFields(log.Fields{
 		"asterisk_id": asteriskID,
 		"method":      method,
@@ -193,7 +193,7 @@ func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmq.
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
-func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMethod, resource resource, timeout int, dataType, data string) (*rabbitmq.Response, error) {
+func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmq.Response, error) {
 	log.WithFields(log.Fields{
 		"uri":       uri,
 		"method":    method,
@@ -230,7 +230,7 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmq.RequestMeth
 // sendRequestCall send a request to the Asterisk-proxy and return the response
 // timeout second
 // delayed millisecond
-func (r *requestHandler) sendRequestCall(uri string, method rabbitmq.RequestMethod, resource resource, timeout, delayed int, dataType, data string) (*rabbitmq.Response, error) {
+func (r *requestHandler) sendRequestCall(uri string, method rabbitmq.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmq.Response, error) {
 	log.WithFields(log.Fields{
 		"method":    method,
 		"uri":       uri,
