@@ -11,12 +11,15 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	dbhandler "gitlab.com/voipbin/bin-manager/flow-manager/pkg/db_handler"
-	msgreceiver "gitlab.com/voipbin/bin-manager/flow-manager/pkg/msg_receiver"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/rabbitmq"
 )
 
 // channels
@@ -28,7 +31,9 @@ var logLevel = flag.Int("log_level", int(log.DebugLevel), "log level")
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueRequest = flag.String("rabbit_queue_request", "flow_manager-request", "rabbitmq asterisk ari event queue name.")
+var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.flow-manager.request", "rabbitmq queue name for request listen")
+var rabbitQueueEvent = flag.String("rabbit_queue_event", "bin-manager.flow-manager.event", "rabbitmq queue name for event notify")
+var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -36,6 +41,11 @@ var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prom
 
 // args for database
 var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for flow-manager.")
+
+// args for redis
+var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
+var redisPassword = flag.String("redis_password", "", "redis password")
+var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 func main() {
 	fmt.Printf("Hello world!\n")
@@ -46,16 +56,17 @@ func main() {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
-	dbHandler := dbhandler.NewHandler(db)
 
-	// run the message receiver
-	msgReceiver := msgreceiver.NewMsgReceiver(*rabbitAddr, dbHandler, *rabbitQueueRequest, "flow-manager")
-	if err := msgReceiver.Run(); err != nil {
-		log.Errorf("Could not run the message receiver. err: %v", err)
+	// connect to cache
+	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
+	if err := cache.Connect(); err != nil {
+		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
 	}
 
+	run(db, cache)
 	<-chDone
+
 	return
 }
 
@@ -107,4 +118,25 @@ func initProm(endpoint, listen string) {
 			break
 		}
 	}()
+}
+
+func run(db *sql.DB, cache cachehandler.CacheHandler) {
+	// rabbitmq handler
+	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	// database handler
+	dbHandler := dbhandler.NewHandler(db, cache)
+
+	// flow
+	flowHandler := flowhandler.NewFlowHandler(dbHandler)
+
+	// create and run the listen handler
+	// listen to the request queue
+	listenHandler := listenhandler.NewListenHandler(
+		rabbitSock,
+		dbHandler,
+		flowHandler,
+	)
+	listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay)
 }
