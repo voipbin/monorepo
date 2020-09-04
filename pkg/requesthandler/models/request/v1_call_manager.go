@@ -32,5 +32,6 @@ type V1DataConferencesIDDelete struct {
 // v1 data type request struct for
 // /v1/conferences" POST
 type V1DataConferencesCreate struct {
-	Type conference.Type `json:"type"`
+	Type   conference.Type `json:"type"`
+	UserID uint64          `json:"user_id"`
 }

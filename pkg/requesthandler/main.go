@@ -7,16 +7,14 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
-
-	// rabbitmq "gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
+	// rabbitmq "gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
 )
 
 // contents type
@@ -79,7 +77,7 @@ type RequestHandler interface {
 	// CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
 	// conference
-	CallConferenceCreate(conferenceType conference.Type) (*conference.Conference, error)
+	CallConferenceCreate(userID uint64, conferenceType conference.Type) (*conference.Conference, error)
 	CallConferenceDelete(conferenceID uuid.UUID) error
 	CallConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error)
 

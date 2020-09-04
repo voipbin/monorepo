@@ -8,8 +8,10 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+
 	"gitlab.com/voipbin/bin-manager/api-manager/lib/common"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/database/models"
+	"gitlab.com/voipbin/bin-manager/api-manager/models"
+	// "gitlab.com/voipbin/bin-manager/api-manager/pkg/database/models"
 )
 
 var secretKey []byte
@@ -20,7 +22,7 @@ func Init(key string) {
 }
 
 // GenerateToken generates jwt token
-func GenerateToken(data common.JSON) (string, error) {
+func GenerateToken(data map[string]interface{}) (string, error) {
 	// token is valid for 7 days
 	date := time.Now().Add(time.Hour * 24 * 7)
 
@@ -92,7 +94,7 @@ func JWTMiddleware() gin.HandlerFunc {
 		}
 
 		var user models.User
-		user.Read(tokenData["user"].(common.JSON))
+		user.Read(tokenData["user"].(map[string]interface{}))
 
 		c.Set("user", user)
 		c.Set("token_expire", tokenData["exp"])

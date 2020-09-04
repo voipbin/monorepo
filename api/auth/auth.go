@@ -2,12 +2,13 @@ package auth
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/api-manager/lib/common"
-	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/database/models"
 	"golang.org/x/crypto/bcrypt"
+
+	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
+	"gitlab.com/voipbin/bin-manager/api-manager/service/serviceauth"
+	"gitlab.com/voipbin/bin-manager/api-manager/service/serviceuser"
+	// "gitlab.com/voipbin/bin-manager/api-manager/models"
 )
 
 // ApplyRoutes applies router to the gin Engine
@@ -18,7 +19,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 }
 
 func register(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	// db := c.MustGet("db").(*gorm.DB)
 	logrus.Debug("registering a new user.")
 
 	type RequestBody struct {
@@ -32,53 +33,19 @@ func register(c *gin.Context) {
 		return
 	}
 
-	// check existancy
-	var exists models.User
-	if err := db.Where("username = ?", body.Username).First(&exists).Error; err == nil {
-		logrus.Debugf("The given user is already exsits. username: %s", body.Username)
-		c.AbortWithStatus(409)
-		return
-	}
-
-	hash, err := hash(body.Password)
+	// create an user
+	user, err := serviceuser.UserCreate(body.Username, body.Password)
 	if err != nil {
-		c.AbortWithStatus(500)
+		c.AbortWithStatus(400)
 		return
 	}
 
-	// create user
-	user := models.User{
-		Username:     body.Username,
-		PasswordHash: hash,
-
-		TMCreate: common.GetCurTime(),
-		TMUpdate: common.GetCurTime(),
-		TMDelete: models.MaxTimeStamp,
-	}
-
-	db.NewRecord(user)
-	db.Create(&user)
-
-	serialized := user.Serialize()
-	token, err := middleware.GenerateToken(serialized)
-	if err != nil {
-		logrus.Errorf("Could not generate token. err: %v", err)
-		c.AbortWithStatus(500)
-		return
-	}
-
-	c.SetCookie("token", token, 60*60*24*7, "/", "", false, true)
-
-	c.JSON(200, common.JSON{
-		"user":  user.Serialize(),
-		"token": token,
-	})
+	c.JSON(200, user)
 }
 
 func login(c *gin.Context) {
 	logrus.Debug("Login.")
 
-	db := c.MustGet("db").(*gorm.DB)
 	type RequestBody struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
@@ -90,31 +57,22 @@ func login(c *gin.Context) {
 		return
 	}
 
-	// get user
-	var user models.User
-	if err := db.Where("username = ?", body.Username).First(&user).Error; err != nil {
-		c.AbortWithStatus(404)
-		return
+	auth := serviceauth.Auth{
+		Username: body.Username,
+		Password: body.Password,
 	}
 
-	// verify password
-	if checkHash(body.Password, user.PasswordHash) != true {
-		c.AbortWithStatus(401)
-		return
-	}
-
-	serialized := user.Serialize()
-	token, err := middleware.GenerateToken(serialized)
+	token, err := auth.Login()
 	if err != nil {
-		logrus.Errorf("Could not create a jwt token. err: %v", err)
-		c.AbortWithStatus(500)
+		logrus.Debugf("Login failed. err: %v", err)
+		c.AbortWithStatus(400)
 		return
 	}
 
 	c.SetCookie("token", token, 60*60*24*7, "/", "", false, true)
-	c.JSON(200, common.JSON{
-		"user":  user.Serialize(),
-		"token": token,
+	c.JSON(200, map[string]interface{}{
+		"username": auth.Username,
+		"token":    token,
 	})
 
 }

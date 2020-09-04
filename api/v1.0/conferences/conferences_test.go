@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+
+	"gitlab.com/voipbin/bin-manager/api-manager/models"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
 )
@@ -74,12 +76,16 @@ func TestConferencesPOST(t *testing.T) {
 
 	type test struct {
 		name       string
+		user       models.User
 		conference *conference.Conference
 	}
 
 	tests := []test{
 		{
 			"conference type",
+			models.User{
+				ID: 1,
+			},
 			&conference.Conference{
 				ID:   uuid.FromStringOrNil("ee1e90cc-ac7a-11ea-8474-e740530b4266"),
 				Type: conference.TypeConference,
@@ -95,11 +101,12 @@ func TestConferencesPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set("requestHandler", mockReq)
+				c.Set("user", tt.user)
 			})
 			setupServer(r)
 
 			body := []byte(fmt.Sprintf(`{"type": "%s"}`, tt.conference.Type))
-			mockReq.EXPECT().CallConferenceCreate(tt.conference.Type).Return(tt.conference, nil)
+			mockReq.EXPECT().CallConferenceCreate(tt.user.ID, tt.conference.Type).Return(tt.conference, nil)
 
 			req, _ := http.NewRequest("POST", "/conferences", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
