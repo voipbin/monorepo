@@ -1,24 +1,12 @@
 package flow
 
 import (
-	"encoding/json"
+	"fmt"
+	"reflect"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
 )
-
-// static ActionID
-var (
-	ActionIDStart  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
-	ActionIDFinish uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000")
-)
-
-// Action struct
-type Action struct {
-	ID     uuid.UUID       `json:"id"`
-	Type   ActionType      `json:"type"`
-	Option json.RawMessage `json:"option,omitempty"`
-	Next   uuid.UUID       `json:"next"`
-}
 
 // Flow struct
 type Flow struct {
@@ -28,22 +16,23 @@ type Flow struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
-	Actions []Action `json:"actions"`
+	Actions []action.Action `json:"actions"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
 
-// ActionType type
-type ActionType string
+// Matches return true if the given items are the same
+func (a *Flow) Matches(x interface{}) bool {
+	comp := x.(*Flow)
+	c := *a
 
-// List of Action types
-const (
-	ActionTypeEcho ActionType = "echo"
-)
+	c.TMCreate = comp.TMCreate
 
-// ActionOptionEcho struct
-type ActionOptionEcho struct {
-	Duration int `json:"duration"`
+	return reflect.DeepEqual(c, *comp)
+}
+
+func (a *Flow) String() string {
+	return fmt.Sprintf("%v", *a)
 }

@@ -6,8 +6,10 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/listenhandler/request"
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/rabbitmq"
 )
 
@@ -16,21 +18,37 @@ func (h *listenHandler) v1FlowsIDGet(req *rabbitmq.Request) (*rabbitmq.Response,
 	return nil, nil
 }
 
+// v1FlowsPost handles /v1/flows POST request
+// creates a new flow with given data and return the created flow info.
 func (h *listenHandler) v1FlowsPost(req *rabbitmq.Request) (*rabbitmq.Response, error) {
 	ctx := context.Background()
 
-	flow := &flow.Flow{}
-	if err := json.Unmarshal(req.Data, flow); err != nil {
+	var reqData request.V1DataFlowPost
+	if err := json.Unmarshal(req.Data, &reqData); err != nil {
+		logrus.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
 
-	resFlow, err := h.flowHandler.FlowCreate(ctx, flow)
+	flow := &flow.Flow{
+		ID:      reqData.ID,
+		UserID:  reqData.UserID,
+		Name:    reqData.Name,
+		Detail:  reqData.Detail,
+		Actions: reqData.Actions,
+
+		TMCreate: getCurTime(),
+	}
+
+	// create flow
+	resFlow, err := h.flowHandler.FlowCreate(ctx, flow, reqData.Psersist)
 	if err != nil {
+		logrus.Errorf("Could not create anew flow. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(resFlow)
 	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 

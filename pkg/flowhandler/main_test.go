@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
 )
 
@@ -38,7 +39,7 @@ func TestFlowCreate(t *testing.T) {
 			mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
 
-			h.FlowCreate(context.Background(), &flow.Flow{})
+			h.FlowCreate(context.Background(), &flow.Flow{}, true)
 
 		})
 	}
@@ -93,14 +94,14 @@ func TestActionGet(t *testing.T) {
 			"test normal",
 			&flow.Flow{
 				ID: uuid.Must(uuid.NewV4()),
-				Actions: []flow.Action{
+				Actions: []action.Action{
 					{
 						ID:   uuid.Must(uuid.NewV4()),
-						Type: flow.ActionTypeEcho,
+						Type: action.TypeEcho,
 					},
 					{
 						ID:   uuid.Must(uuid.NewV4()),
-						Type: flow.ActionTypeEcho,
+						Type: action.TypeEcho,
 					},
 				},
 			},
