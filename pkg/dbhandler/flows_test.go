@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
 )
 
@@ -47,10 +48,10 @@ func TestFlowCreate(t *testing.T) {
 				ID:     uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
 				Name:   "test flow name",
 				Detail: "test flow detail",
-				Actions: []flow.Action{
+				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("9613a4e8-88e5-11ea-beeb-e7a27ea4b0f7"),
-						Type: flow.ActionTypeEcho,
+						Type: action.TypeEcho,
 					},
 				},
 				TMCreate: "2020-04-18T03:22:17.995000",
@@ -59,10 +60,10 @@ func TestFlowCreate(t *testing.T) {
 				ID:     uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
 				Name:   "test flow name",
 				Detail: "test flow detail",
-				Actions: []flow.Action{
+				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("9613a4e8-88e5-11ea-beeb-e7a27ea4b0f7"),
-						Type: flow.ActionTypeEcho,
+						Type: action.TypeEcho,
 					},
 				},
 				TMCreate: "2020-04-18T03:22:17.995000",
@@ -74,10 +75,10 @@ func TestFlowCreate(t *testing.T) {
 				ID:     uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
 				Name:   "test flow name",
 				Detail: "test flow detail",
-				Actions: []flow.Action{
+				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
-						Type:   flow.ActionTypeEcho,
+						Type:   action.TypeEcho,
 						Option: []byte(`{"duration":180}`),
 					},
 				},
@@ -87,10 +88,10 @@ func TestFlowCreate(t *testing.T) {
 				ID:     uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
 				Name:   "test flow name",
 				Detail: "test flow detail",
-				Actions: []flow.Action{
+				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
-						Type:   flow.ActionTypeEcho,
+						Type:   action.TypeEcho,
 						Option: []byte(`{"duration":180}`),
 					},
 				},

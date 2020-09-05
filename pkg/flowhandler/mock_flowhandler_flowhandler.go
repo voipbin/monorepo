@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	action "gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
 )
 
@@ -37,10 +38,10 @@ func (m *MockFlowHandler) EXPECT() *MockFlowHandlerMockRecorder {
 }
 
 // ActionGet mocks base method.
-func (m *MockFlowHandler) ActionGet(arg0 context.Context, arg1, arg2 uuid.UUID) (*flow.Action, error) {
+func (m *MockFlowHandler) ActionGet(arg0 context.Context, arg1, arg2 uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActionGet", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*flow.Action)
+	ret0, _ := ret[0].(*action.Action)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -52,18 +53,18 @@ func (mr *MockFlowHandlerMockRecorder) ActionGet(arg0, arg1, arg2 interface{}) *
 }
 
 // FlowCreate mocks base method.
-func (m *MockFlowHandler) FlowCreate(arg0 context.Context, arg1 *flow.Flow) (*flow.Flow, error) {
+func (m *MockFlowHandler) FlowCreate(arg0 context.Context, arg1 *flow.Flow, arg2 bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowCreate", arg0, arg1)
+	ret := m.ctrl.Call(m, "FlowCreate", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowCreate indicates an expected call of FlowCreate.
-func (mr *MockFlowHandlerMockRecorder) FlowCreate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFlowHandlerMockRecorder) FlowCreate(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockFlowHandler)(nil).FlowCreate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockFlowHandler)(nil).FlowCreate), arg0, arg1, arg2)
 }
 
 // FlowGet mocks base method.

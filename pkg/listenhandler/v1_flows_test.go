@@ -8,6 +8,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/rabbitmq"
 )
@@ -44,7 +45,7 @@ func TestFlowsGet(t *testing.T) {
 			&flow.Flow{
 				Name:    "test",
 				Detail:  "test detail",
-				Actions: []flow.Action{},
+				Actions: []action.Action{},
 			},
 		},
 		{
@@ -58,17 +59,62 @@ func TestFlowsGet(t *testing.T) {
 			&flow.Flow{
 				Name:   "test",
 				Detail: "test detail",
-				Actions: []flow.Action{
+				Actions: []action.Action{
 					{
-						Type: flow.ActionTypeEcho,
+						Type: action.TypeEcho,
 					},
 				},
 			},
-		}}
+		},
+		{
+			"has 2 actions",
+			&rabbitmq.Request{
+				URI:      "/v1/flows",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"test","detail":"test detail","actions":[{"type":"answer"},{"type":"echo"}]}`),
+			},
+			&flow.Flow{
+				Name:   "test",
+				Detail: "test detail",
+				Actions: []action.Action{
+					{
+						Type: action.TypeAnswer,
+					},
+					{
+						Type: action.TypeEcho,
+					},
+				},
+			},
+		},
+		{
+			"has 2 actions with user_id",
+			&rabbitmq.Request{
+				URI:      "/v1/flows",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"test","detail":"test detail","user_id":1,"actions":[{"type":"answer"},{"type":"echo"}]}`),
+			},
+			&flow.Flow{
+				Name:   "test",
+				Detail: "test detail",
+				UserID: 1,
+				Actions: []action.Action{
+					{
+						Type: action.TypeAnswer,
+					},
+					{
+						Type: action.TypeEcho,
+					},
+				},
+			},
+		},
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.expectFlow).Return(&flow.Flow{}, nil)
+			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.expectFlow, false).Return(&flow.Flow{}, nil)
+
 			h.processRequest(tt.request)
 		})
 	}

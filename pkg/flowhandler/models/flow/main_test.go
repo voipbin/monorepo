@@ -6,23 +6,25 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
 )
 
 func TestUnmarshalActionEcho(t *testing.T) {
 	type test struct {
 		name         string
 		message      string
-		expectAction *Action
-		expectOption *ActionOptionEcho
+		expectAction *action.Action
+		expectOption *action.OptionEcho
 	}
 
 	tests := []test{
 		{
 			"have no option",
 			`{"id": "58bd9a56-8974-11ea-9271-0be0134dbfbd", "type":"echo"}`,
-			&Action{
+			&action.Action{
 				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
-				Type: ActionTypeEcho,
+				Type: action.TypeEcho,
 				Next: uuid.Nil,
 			},
 			nil,
@@ -30,13 +32,13 @@ func TestUnmarshalActionEcho(t *testing.T) {
 		{
 			"have option duration",
 			`{"id": "58bd9a56-8974-11ea-9271-0be0134dbfbd", "type":"echo", "option":{"duration": 180}}`,
-			&Action{
+			&action.Action{
 				ID:     uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
-				Type:   ActionTypeEcho,
+				Type:   action.TypeEcho,
 				Option: []byte(`{"duration": 180}`),
 				Next:   uuid.Nil,
 			},
-			&ActionOptionEcho{
+			&action.OptionEcho{
 				Duration: 180,
 			},
 		},
@@ -44,19 +46,19 @@ func TestUnmarshalActionEcho(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var action Action
+			var act action.Action
 
-			if err := json.Unmarshal([]byte(tt.message), &action); err != nil {
+			if err := json.Unmarshal([]byte(tt.message), &act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if action.Type != ActionTypeEcho {
-				t.Errorf("Wrong match. expect: ok, got: %s", action.Type)
+			if act.Type != action.TypeEcho {
+				t.Errorf("Wrong match. expect: ok, got: %s", act.Type)
 			}
 
-			if action.Option != nil {
-				option := &ActionOptionEcho{}
-				json.Unmarshal(action.Option, &option)
+			if act.Option != nil {
+				option := &action.OptionEcho{}
+				json.Unmarshal(act.Option, &option)
 
 				if reflect.DeepEqual(option, tt.expectOption) != true {
 					t.Errorf("Wrong match. expect: %v, got: %v", tt.expectOption, option)
@@ -69,17 +71,17 @@ func TestUnmarshalActionEcho(t *testing.T) {
 func TestMarshalActionEcho(t *testing.T) {
 	type test struct {
 		name          string
-		action        *Action
-		option        *ActionOptionEcho
+		action        *action.Action
+		option        *action.OptionEcho
 		expectMessage string
 	}
 
 	tests := []test{
 		{
 			"have no option",
-			&Action{
+			&action.Action{
 				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
-				Type: ActionTypeEcho,
+				Type: action.TypeEcho,
 				Next: uuid.Nil,
 			},
 			nil,
@@ -87,12 +89,12 @@ func TestMarshalActionEcho(t *testing.T) {
 		},
 		{
 			"have option duration",
-			&Action{
+			&action.Action{
 				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
-				Type: ActionTypeEcho,
+				Type: action.TypeEcho,
 				Next: uuid.Nil,
 			},
-			&ActionOptionEcho{
+			&action.OptionEcho{
 				Duration: 180,
 			},
 			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","type":"echo","option":{"duration":180},"next":"00000000-0000-0000-0000-000000000000"}`,

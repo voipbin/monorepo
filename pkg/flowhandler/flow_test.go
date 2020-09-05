@@ -1,0 +1,84 @@
+package flowhandler
+
+import (
+	"context"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
+)
+
+func TestFlowCreatePersistTrue(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
+		name string
+		flow *flow.Flow
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("8bf11004-ef06-11ea-91ed-0ba639a6618b"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().FlowCreate(gomock.Any(), tt.flow).Return(nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
+
+			h.FlowCreate(ctx, tt.flow, true)
+		})
+	}
+}
+
+func TestFlowCreatePersistFalse(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
+		name string
+		flow *flow.Flow
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("ebb1b7a0-ef06-11ea-900b-d7f31a9b7baa"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().FlowSetToCache(gomock.Any(), tt.flow).Return(nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
+
+			h.FlowCreate(ctx, tt.flow, false)
+		})
+	}
+}
