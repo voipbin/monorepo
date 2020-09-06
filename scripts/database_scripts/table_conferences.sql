@@ -23,3 +23,4 @@ create table conferences(
 );
 
 create index idx_conferences_create on conferences(tm_create);
+create index idx_conferences_user_id on conferences(user_id);
