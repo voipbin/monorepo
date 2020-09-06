@@ -15,15 +15,7 @@ import (
 // processV1ConferencesPost handles /v1/conferences request
 func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
 
-	type Data struct {
-		Type    conference.Type        `json:"type"`
-		Name    string                 `json:"name"`
-		Detail  string                 `json:"detail"`
-		Timeout int                    `json:"timeout"`
-		Data    map[string]interface{} `json:"data"`
-	}
-
-	var data Data
+	var data request.V1DataConferencesIDPost
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 		return nil, err
 	}

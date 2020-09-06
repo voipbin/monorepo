@@ -5,6 +5,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 )
 
 // V1DataAsterisksIDChannelsIDHealth is
@@ -22,6 +23,7 @@ type V1DataAsterisksIDChannelsIDHealth struct {
 // /v1/calls/<id> POST
 type V1DataCallsIDPost struct {
 	FlowID      uuid.UUID    `json:"flow_id"`
+	UserID      uint64       `json:"user_id"`
 	Source      call.Address `json:"source"`
 	Destination call.Address `json:"destination"`
 }
@@ -49,4 +51,16 @@ type V1DataCallsIDActionTimeout struct {
 // /v1/conferences/<id>" DELETE
 type V1DataConferencesIDDelete struct {
 	Reason string `json:"reason,omitempty"`
+}
+
+// V1DataConferencesIDPost is
+// v1 data type request struct for
+// /v1/conferences/<id>" POST
+type V1DataConferencesIDPost struct {
+	Type    conference.Type        `json:"type"`
+	UserID  uint64                 `json:"user_id"`
+	Name    string                 `json:"name"`
+	Detail  string                 `json:"detail"`
+	Timeout int                    `json:"timeout"` // timeout. second
+	Data    map[string]interface{} `json:"data"`
 }
