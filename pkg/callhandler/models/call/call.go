@@ -14,6 +14,7 @@ import (
 type Call struct {
 	// identity
 	ID         uuid.UUID `json:"id"`
+	UserID     uint64    `json:"user_id"`
 	AsteriskID string    `json:"asterisk_id"`
 	ChannelID  string    `json:"channel_id"`
 	FlowID     uuid.UUID `json:"flow_id"` // flow id
@@ -40,6 +41,11 @@ type Call struct {
 	TMRinging     string `json:"tm_ringing"`
 	TMHangup      string `json:"tm_hangup"`
 }
+
+// fixed user id
+const (
+	UserIDAdmin uint64 = 1 // admin user id
+)
 
 // Type type
 type Type string
@@ -138,6 +144,7 @@ func (a *Call) String() string {
 // NewCall creates a call struct and return it.
 func NewCall(
 	id uuid.UUID,
+	userID uint64,
 	asteriskID string,
 	channelID string,
 	flowID uuid.UUID,
@@ -155,6 +162,7 @@ func NewCall(
 
 	c := &Call{
 		ID:         id,
+		UserID:     userID,
 		AsteriskID: asteriskID,
 		ChannelID:  channelID,
 		FlowID:     flowID,
@@ -174,28 +182,29 @@ func NewCall(
 }
 
 // NewCallByChannel creates a Call and return it.
-func NewCallByChannel(cn *channel.Channel, cType Type, direction Direction, data map[string]interface{}) *Call {
+func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction Direction, data map[string]interface{}) *Call {
 	// create a call
 	source := CreateAddressByChannelSource(cn)
 	destination := CreateAddressByChannelDestination(cn)
 	status := GetStatusByChannelState(cn.State)
 
-	c := NewCall(
-		uuid.Must(uuid.NewV4()),
-		cn.AsteriskID,
-		cn.ID,
-		uuid.Nil,
-		cType,
+	c := &Call{
+		ID:         uuid.Must(uuid.NewV4()),
+		UserID:     userID,
+		AsteriskID: cn.AsteriskID,
+		ChannelID:  cn.ID,
+		FlowID:     uuid.Nil,
+		Type:       cType,
 
-		source,
-		destination,
+		Source:      *source,
+		Destination: *destination,
 
-		status,
-		data,
-		direction,
+		Status:    status,
+		Data:      data,
+		Direction: direction,
 
-		string(cn.TMCreate),
-	)
+		TMCreate: string(cn.TMCreate),
+	}
 
 	return c
 }

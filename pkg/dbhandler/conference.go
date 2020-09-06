@@ -15,6 +15,7 @@ import (
 func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
 	q := `insert into conferences(
 		id,
+		user_id,
 		type,
 		bridge_id,
 
@@ -27,7 +28,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 		tm_create
 	) values(
-		?, ?, ?,
+		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, 
 		?
@@ -46,6 +47,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 	_, err = h.db.Exec(q,
 		cf.ID.Bytes(),
+		cf.UserID,
 		cf.Type,
 		cf.BridgeID,
 
@@ -94,6 +96,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 	res := &conference.Conference{}
 	if err := row.Scan(
 		&res.ID,
+		&res.UserID,
 		&res.Type,
 		&res.BridgeID,
 
@@ -291,6 +294,7 @@ func (h *handler) ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*confe
 	q := `
 	select
 		id,
+		user_id,
 		type,
 		bridge_id,
 

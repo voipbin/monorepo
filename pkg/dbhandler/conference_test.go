@@ -42,6 +42,23 @@ func TestConferenceCreate(t *testing.T) {
 				Detail: "test type conference detail",
 			},
 		},
+		{
+			"added user ID",
+			&conference.Conference{
+				ID:     uuid.FromStringOrNil("132d3c9e-f08f-11ea-8ed9-6f27c201eff3"),
+				UserID: 1,
+				Type:   conference.TypeConference,
+				Name:   "test type conference",
+				Detail: "test type conference detail",
+			},
+			&conference.Conference{
+				ID:     uuid.FromStringOrNil("132d3c9e-f08f-11ea-8ed9-6f27c201eff3"),
+				UserID: 1,
+				Type:   conference.TypeConference,
+				Name:   "test type conference",
+				Detail: "test type conference detail",
+			},
+		},
 	}
 
 	for _, tt := range tests {

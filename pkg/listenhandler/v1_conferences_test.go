@@ -49,20 +49,22 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				URI:      "/v1/conferences",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type": "conference"}`),
+				Data:     []byte(`{"user_id": 1, "type": "conference"}`),
 			},
 			&conference.Conference{
-				Type: conference.TypeConference,
+				UserID: 1,
+				Type:   conference.TypeConference,
 			},
 			&conference.Conference{
 				ID:       uuid.FromStringOrNil("d82ce190-9fe8-11ea-aec8-973901dd28fa"),
+				UserID:   1,
 				Type:     conference.TypeConference,
 				BridgeID: "f1354268-9fe8-11ea-b693-3761800b29d5",
 				Timeout:  0,
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","user_id":1,"type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -71,9 +73,10 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				URI:      "/v1/conferences",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type": "conference", "name": "test conference all items", "detail": "test conference with all tiems detail", "timeout": 180}`),
+				Data:     []byte(`{"user_id": 1, "type": "conference", "name": "test conference all items", "detail": "test conference with all tiems detail", "timeout": 180}`),
 			},
 			&conference.Conference{
+				UserID:  1,
 				Type:    conference.TypeConference,
 				Name:    "test conference all items",
 				Detail:  "test conference with all tiems detail",
@@ -81,6 +84,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:       uuid.FromStringOrNil("2a835238-da9c-11ea-bc7b-eb2f57685ad6"),
+				UserID:   1,
 				Type:     conference.TypeConference,
 				BridgeID: "2f84ff66-da9c-11ea-9b90-83a7346c3e97",
 				Name:     "test conference all items",
@@ -89,7 +93,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","type":"conference","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","user_id":1,"type":"conference","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -98,21 +102,23 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				URI:      "/v1/conferences",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type": "conference", "timeout": 180}`),
+				Data:     []byte(`{"user_id": 1, "type": "conference", "timeout": 180}`),
 			},
 			&conference.Conference{
+				UserID:  1,
 				Type:    conference.TypeConference,
 				Timeout: 180,
 			},
 			&conference.Conference{
 				ID:       uuid.FromStringOrNil("3402e154-da9a-11ea-a52b-2781af28f74d"),
+				UserID:   1,
 				Type:     conference.TypeConference,
 				BridgeID: "3a6486ba-da9a-11ea-8a39-03999d98a404",
 				Timeout:  180,
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","type":"conference","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","user_id":1,"type":"conference","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -121,14 +127,16 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				URI:      "/v1/conferences",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type": "conference", "name": "test conference"}`),
+				Data:     []byte(`{"user_id": 1, "type": "conference", "name": "test conference"}`),
 			},
 			&conference.Conference{
-				Type: conference.TypeConference,
-				Name: "test conference",
+				UserID: 1,
+				Type:   conference.TypeConference,
+				Name:   "test conference",
 			},
 			&conference.Conference{
 				ID:       uuid.FromStringOrNil("9179b768-da9a-11ea-b583-c7592caaa090"),
+				UserID:   1,
 				Type:     conference.TypeConference,
 				BridgeID: "95f5b53a-da9a-11ea-92be-23fad8a8b229",
 				Name:     "test conference",
@@ -136,7 +144,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"9179b768-da9a-11ea-b583-c7592caaa090","type":"conference","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"9179b768-da9a-11ea-b583-c7592caaa090","user_id":1,"type":"conference","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -145,15 +153,17 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				URI:      "/v1/conferences",
 				Method:   rabbitmq.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type": "conference", "name": "test conference", "detail": "test conference detail"}`),
+				Data:     []byte(`{"user_id": 1, "type": "conference", "name": "test conference", "detail": "test conference detail"}`),
 			},
 			&conference.Conference{
+				UserID: 1,
 				Type:   conference.TypeConference,
 				Name:   "test conference",
 				Detail: "test conference detail",
 			},
 			&conference.Conference{
 				ID:       uuid.FromStringOrNil("c8fa873a-da9a-11ea-97f0-fff8a6d8aa21"),
+				UserID:   1,
 				Type:     conference.TypeConference,
 				BridgeID: "cdc9898c-da9a-11ea-8b27-c77718b25ab9",
 				Name:     "test conference",
@@ -162,7 +172,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","type":"conference","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","user_id":1,"type":"conference","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -340,12 +350,13 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:       uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
+				UserID:   1,
 				Type:     conference.TypeConference,
 				BridgeID: "fea1c22c-ac2d-11ea-8a08-7f5cb36f279a",
 			},
 			&rabbitmq.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","user_id":1,"type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
