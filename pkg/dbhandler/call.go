@@ -16,6 +16,7 @@ import (
 func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 	q := `insert into calls(
 		id,
+		user_id,
 		asterisk_id,
 		channel_id,
 		flow_id,
@@ -36,7 +37,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 
 		tm_create
 	) values(
-		?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?,?,
 		?
@@ -64,6 +65,7 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 
 	_, err = h.db.Exec(q,
 		call.ID.Bytes(),
+		call.UserID,
 		call.AsteriskID,
 		call.ChannelID,
 		call.FlowID.Bytes(),
@@ -120,6 +122,7 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 	q := `
 	select
 		id,
+		user_id,
 		asterisk_id,
 		channel_id,
 		flow_id,
@@ -176,6 +179,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	res := &call.Call{}
 	if err := row.Scan(
 		&res.ID,
+		&res.UserID,
 		&res.AsteriskID,
 		&res.ChannelID,
 		&res.FlowID,
@@ -443,6 +447,7 @@ func (h *handler) CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, 
 	q := `
 	select
 		id,
+		user_id,
 		asterisk_id,
 		channel_id,
 		flow_id,

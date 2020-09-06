@@ -26,7 +26,7 @@ type CallHandler interface {
 	ARIPlaybackFinished(cn *channel.Channel, playbackID string) error
 	ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error
 
-	CreateCallOutgoing(id uuid.UUID, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error)
+	CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error)
 	StartCallHandle(cn *channel.Channel, data map[string]interface{}) error
 	Hangup(cn *channel.Channel) error
 

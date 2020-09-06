@@ -22,6 +22,7 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq
 
 	// create a request conference
 	reqConf := &conference.Conference{
+		UserID:  data.UserID,
 		Type:    data.Type,
 		Name:    data.Name,
 		Detail:  data.Detail,

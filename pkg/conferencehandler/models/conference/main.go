@@ -7,6 +7,7 @@ import (
 // Conference type
 type Conference struct {
 	ID       uuid.UUID `json:"id"`
+	UserID   uint64    `json:"user_id"`
 	Type     Type      `json:"type"`
 	BridgeID string    `json:"bridge_id"`
 

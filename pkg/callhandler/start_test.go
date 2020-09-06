@@ -481,6 +481,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 	type test struct {
 		name        string
 		id          uuid.UUID
+		userID      uint64
 		flowID      uuid.UUID
 		source      call.Address
 		destination call.Address
@@ -492,6 +493,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+			1,
 			uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
 			call.Address{
 				Type:   call.AddressTypeSIP,
@@ -506,6 +508,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 			&call.Call{
 				ID:        uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+				UserID:    1,
 				ChannelID: call.TestChannelID,
 				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
 				Type:      call.TypeFlow,
@@ -536,7 +539,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
 			mockReq.EXPECT().AstChannelCreate(requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s", contextOutgoingCall), fmt.Sprintf("pjsip/call-out/sip:%s", tt.destination.Target), "", "", "").Return(nil)
 
-			res, err := h.CreateCallOutgoing(tt.id, tt.flowID, tt.source, tt.destination)
+			res, err := h.CreateCallOutgoing(tt.id, tt.userID, tt.flowID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

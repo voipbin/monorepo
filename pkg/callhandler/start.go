@@ -51,12 +51,13 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
 }
 
 // CreateCallOutgoing creates a call for outgoing
-func (h *callHandler) CreateCallOutgoing(id uuid.UUID, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error) {
+func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error) {
 	ctx := context.Background()
 
 	channelID := uuid.Must(uuid.NewV4()).String()
 	cTmp := &call.Call{
 		ID:          id,
+		UserID:      userID,
 		ChannelID:   channelID,
 		FlowID:      flowID,
 		Type:        call.TypeFlow,
@@ -191,74 +192,6 @@ func getTypeContextIncomingCall(domain string) call.Type {
 	}
 }
 
-// stasisStartServiceEcho handles echo calltype request.
-func (h *callHandler) typeEchoStart(cn *channel.Channel) error {
-	ctx := context.Background()
-
-	log := log.WithFields(
-		log.Fields{
-			"channel":  cn.ID,
-			"asterisk": cn.AsteriskID,
-		})
-
-	// set absolute timeout for 300 sec
-	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho); err != nil {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
-	}
-
-	c := call.NewCallByChannel(cn, call.TypeSipService, call.DirectionIncoming, map[string]interface{}{})
-	if err := h.createCall(ctx, c); err != nil {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
-	}
-	log = log.WithFields(
-		logrus.Fields{
-			"call":      c.ID,
-			"type":      c.Type,
-			"direction": c.Direction,
-		})
-	log.Debug("The call has created.")
-
-	// set flowid
-	if err := h.db.CallSetFlowID(ctx, c.ID, uuid.Nil); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
-	}
-
-	// create an option for action echo
-	// create default option for echo
-	option := action.OptionEcho{
-		Duration: 180 * 1000, // duration 180 sec
-		DTMF:     true,
-	}
-	opt, err := json.Marshal(option)
-	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
-	}
-
-	// create an action
-	action := &action.Action{
-		ID:     action.IDBegin,
-		Type:   action.TypeEcho,
-		Option: opt,
-		Next:   action.IDEnd,
-	}
-
-	c, err = h.db.CallGet(ctx, c.ID)
-	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not get created call info. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
-	}
-
-	// execute action
-	return h.ActionExecute(c, action)
-}
-
 // serviceConferenceStart handles conference calltype start.
 func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]interface{}) error {
 	ctx := context.Background()
@@ -287,7 +220,7 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 	}
 
 	// create a call
-	c := call.NewCallByChannel(cn, call.TypeConference, call.DirectionIncoming, data)
+	c := call.NewCallByChannel(cn, cf.UserID, call.TypeConference, call.DirectionIncoming, data)
 	if err := h.createCall(ctx, c); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
@@ -356,7 +289,7 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]i
 	}
 
 	// create a call
-	c := call.NewCallByChannel(cn, call.TypeSipService, call.DirectionIncoming, data)
+	c := call.NewCallByChannel(cn, call.UserIDAdmin, call.TypeSipService, call.DirectionIncoming, data)
 	if err := h.createCall(ctx, c); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)

@@ -2,7 +2,6 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"

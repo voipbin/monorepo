@@ -65,7 +65,7 @@ func (h *listenHandler) processV1CallsIDPost(m *rabbitmq.Request) (*rabbitmq.Res
 		return simpleResponse(400), nil
 	}
 
-	c, err := h.callHandler.CreateCallOutgoing(id, reqData.FlowID, reqData.Source, reqData.Destination)
+	c, err := h.callHandler.CreateCallOutgoing(id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", reqData.FlowID, reqData.Source, reqData.Destination, err)
 		return simpleResponse(500), nil

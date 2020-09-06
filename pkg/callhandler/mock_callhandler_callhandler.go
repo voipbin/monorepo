@@ -108,18 +108,18 @@ func (mr *MockCallHandlerMockRecorder) ARIStasisStart(cn, data interface{}) *gom
 }
 
 // CreateCallOutgoing mocks base method.
-func (m *MockCallHandler) CreateCallOutgoing(id, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
+func (m *MockCallHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCallOutgoing", id, flowID, source, destination)
+	ret := m.ctrl.Call(m, "CreateCallOutgoing", id, userID, flowID, source, destination)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCallOutgoing indicates an expected call of CreateCallOutgoing.
-func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(id, flowID, source, destination interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(id, userID, flowID, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), id, flowID, source, destination)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), id, userID, flowID, source, destination)
 }
 
 // StartCallHandle mocks base method.
