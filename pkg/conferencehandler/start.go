@@ -23,7 +23,7 @@ func (h *conferenceHandler) createConference(ctx context.Context, cf *conference
 	return nil
 }
 
-func (h *conferenceHandler) Start(reqConf *conference.Conference, c *call.Call) (*conference.Conference, error) {
+func (h *conferenceHandler) Start(reqConf *conference.Conference) (*conference.Conference, error) {
 
 	log := log.WithFields(
 		log.Fields{
@@ -31,7 +31,7 @@ func (h *conferenceHandler) Start(reqConf *conference.Conference, c *call.Call) 
 		})
 	log.Info("Start conference.")
 
-	mapHandler := map[conference.Type]func(*conference.Conference, *call.Call) (*conference.Conference, error){
+	mapHandler := map[conference.Type]func(*conference.Conference) (*conference.Conference, error){
 		conference.TypeConference: h.startTypeConference,
 	}
 
@@ -40,7 +40,7 @@ func (h *conferenceHandler) Start(reqConf *conference.Conference, c *call.Call) 
 		return nil, fmt.Errorf("could not find conference handler. type: %s", reqConf.Type)
 	}
 
-	return handler(reqConf, c)
+	return handler(reqConf)
 }
 
 // startTypeTransfer handles transfer conference
@@ -51,20 +51,33 @@ func (h *conferenceHandler) startTypeTransfer(cf *conference.Conference, c *call
 }
 
 // startTypeConference inits the conference for conference type.
-func (h *conferenceHandler) startTypeConference(req *conference.Conference, c *call.Call) (*conference.Conference, error) {
+func (h *conferenceHandler) startTypeConference(req *conference.Conference) (*conference.Conference, error) {
 	ctx := context.Background()
 	conferenceID := uuid.Must(uuid.NewV4())
 
 	log := log.WithFields(
 		log.Fields{
 			"conference": conferenceID.String(),
+			"user_id":    req.UserID,
 			"type":       conference.TypeConference,
 		})
 	log.Debug("Starting conference.")
 
 	// create a conference with given requested conference info
-	cf := conference.NewConference(conferenceID, conference.TypeConference, "", req)
-	log.Debug("Created a conference.")
+	cf := &conference.Conference{
+		ID:       conferenceID,
+		Type:     conference.TypeConference,
+		BridgeID: "",
+
+		UserID:  req.UserID,
+		Name:    req.Name,
+		Detail:  req.Detail,
+		Data:    req.Data,
+		Timeout: req.Timeout,
+
+		CallIDs: []uuid.UUID{},
+	}
+	log.Debugf("Creating a conference. conference: %v", cf)
 
 	// create a conference to database
 	if err := h.createConference(ctx, cf); err != nil {
