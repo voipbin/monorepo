@@ -5,9 +5,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models"
+	"gitlab.com/voipbin/bin-manager/api-manager/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager/servicehandler"
 )
 
 // ApplyRoutes applies router to the gin Engine
@@ -22,7 +24,9 @@ func ApplyRoutes(r *gin.RouterGroup) {
 func conferencesPOST(c *gin.Context) {
 
 	type RequestBody struct {
-		Type conference.Type `json:"type" binding:"required"`
+		Type   conference.Type `json:"type" binding:"required"`
+		Name   string          `json:"name"`
+		Detail string          `json:"detail"`
 	}
 	var requestBody RequestBody
 
@@ -37,11 +41,10 @@ func conferencesPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	user := tmp.(models.User)
+	u := tmp.(user.User)
 
-	// send a request to call
-	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
-	res, err := requestHandler.CallConferenceCreate(user.ID, requestBody.Type)
+	servicehandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := servicehandler.ConferenceCreate(&u, requestBody.Type, requestBody.Name, requestBody.Detail)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
 		return

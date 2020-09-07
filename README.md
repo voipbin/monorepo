@@ -9,7 +9,24 @@ Usage of ./api-manager:
         database dsn (default "testid:testpassword@tcp(127.0.0.1:3306)/test")
   -jwt_key string
         key string for jwt hashing (default "voipbin")
-```
+  -rabbit_addr string
+        rabbitmq service address. (default "amqp://guest:guest@localhost:5672")
+  -rabbit_exchange_delay string
+        rabbitmq exchange name for delayed messaging. (default "bin-manager.delay")
+  -rabbit_queue_call string
+        rabbitmq queue name for request listen (default "bin-manager.call-manager.request")
+  -rabbit_queue_flow string
+        rabbitmq queue name for flow request (default "bin-manager.flow-manager.request")
+  -redis_addr string
+        redis address. (default "127.0.0.1:6379")
+  -redis_db int
+        redis database. (default 1)
+  -redis_password string
+        redis password
+  -ssl_cert string
+        Cert key file for ssl connection. (default "./etc/ssl/cert.pem")
+  -ssl_private string
+        Private key file for ssl connection. (default "./etc/ssl/prikey.pem")```
 
 # SSL
 * See detial at `./etc/ssl`.
