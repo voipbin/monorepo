@@ -7,14 +7,14 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmconference"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/request"
 )
 
 // CallConferenceGet sends a request to call-manager
 // to getting a conference information.
 // it returns created conference if it succeed.
-func (r *requestHandler) CallConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error) {
+func (r *requestHandler) CallConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
 	res, err := r.sendRequestCall(uri, models.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
@@ -28,7 +28,7 @@ func (r *requestHandler) CallConferenceGet(conferenceID uuid.UUID) (*conference.
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var conference conference.Conference
+	var conference cmconference.Conference
 	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
 		return nil, err
 	}
@@ -59,12 +59,15 @@ func (r *requestHandler) CallConferenceDelete(conferenceID uuid.UUID) error {
 // CallConferenceCreate sends a request to call-manager
 // to creating a conference.
 // it returns created conference if it succeed.
-func (r *requestHandler) CallConferenceCreate(userID uint64, conferenceType conference.Type) (*conference.Conference, error) {
+func (r *requestHandler) CallConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string) (*cmconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences")
 
-	data := &request.V1DataConferencesCreate{
-		Type:   conferenceType,
-		UserID: userID,
+	data := &request.V1DataConferencesIDPost{
+		Type:    conferenceType,
+		UserID:  userID,
+		Name:    name,
+		Detail:  detail,
+		Timeout: 86400, // 24 hour
 	}
 
 	m, err := json.Marshal(data)
@@ -83,7 +86,7 @@ func (r *requestHandler) CallConferenceCreate(userID uint64, conferenceType conf
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var conference conference.Conference
+	var conference cmconference.Conference
 	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
 		return nil, err
 	}

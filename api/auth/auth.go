@@ -3,12 +3,10 @@ package auth
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/bcrypt"
 
 	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager/service/serviceauth"
-	"gitlab.com/voipbin/bin-manager/api-manager/service/serviceuser"
-	// "gitlab.com/voipbin/bin-manager/api-manager/models"
+	"gitlab.com/voipbin/bin-manager/api-manager/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager/servicehandler"
 )
 
 // ApplyRoutes applies router to the gin Engine
@@ -34,7 +32,8 @@ func register(c *gin.Context) {
 	}
 
 	// create an user
-	user, err := serviceuser.UserCreate(body.Username, body.Password)
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	user, err := serviceHandler.UserCreate(body.Username, body.Password)
 	if err != nil {
 		c.AbortWithStatus(400)
 		return
@@ -44,8 +43,6 @@ func register(c *gin.Context) {
 }
 
 func login(c *gin.Context) {
-	logrus.Debug("Login.")
-
 	type RequestBody struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
@@ -57,32 +54,23 @@ func login(c *gin.Context) {
 		return
 	}
 
-	auth := serviceauth.Auth{
-		Username: body.Username,
-		Password: body.Password,
-	}
+	log := logrus.WithFields(logrus.Fields{
+		"username": body.Username,
+	})
+	log.Debugf("Logging in.")
 
-	token, err := auth.Login()
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	token, err := serviceHandler.AuthLogin(body.Username, body.Password)
 	if err != nil {
-		logrus.Debugf("Login failed. err: %v", err)
+		log.Debugf("Login failed. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
 	c.SetCookie("token", token, 60*60*24*7, "/", "", false, true)
 	c.JSON(200, map[string]interface{}{
-		"username": auth.Username,
+		"username": body.Username,
 		"token":    token,
 	})
 
-}
-
-func checkHash(password string, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-func hash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
-	return string(bytes), err
 }

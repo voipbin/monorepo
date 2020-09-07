@@ -15,7 +15,8 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmcall"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmconference"
 	// rabbitmq "gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
 )
 
@@ -59,6 +60,7 @@ var (
 type resource string
 
 const (
+	resourceCallCall       resource = "call/calls"
 	resourceCallConference resource = "call/conferences"
 
 	resourceFlowsActions resource = "flows/actions"
@@ -72,16 +74,17 @@ func init() {
 
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
-	// // call
+	// call
+	CallCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error)
 	// CallCallHealth(id uuid.UUID, delay, retryCount int) error
 	// CallCallActionNext(id uuid.UUID) error
 	// CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
 	// CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
 	// conference
-	CallConferenceCreate(userID uint64, conferenceType conference.Type) (*conference.Conference, error)
+	CallConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string) (*cmconference.Conference, error)
 	CallConferenceDelete(conferenceID uuid.UUID) error
-	CallConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error)
+	CallConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error)
 
 	// flow actions
 	// FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)

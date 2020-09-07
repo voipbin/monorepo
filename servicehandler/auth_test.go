@@ -1,32 +1,31 @@
-package models
+package servicehandler
 
 import "testing"
 
-func TestAuthGenerateHash(t *testing.T) {
+func TestGenerateHash(t *testing.T) {
 
 	type test struct {
-		name string
-		auth Auth
+		name     string
+		username string
+		password string
 	}
 
 	tests := []test{
 		{
 			"normal",
-			Auth{
-				Username: "test",
-				Password: "test",
-			},
+			"test",
+			"test",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := GenerateHash(tt.auth.Password)
+			res, err := generateHash(tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if tt.auth.checkHash(res) != true {
+			if checkHash(tt.password, res) != true {
 				t.Error("Wrong match. expect: true, got: false")
 			}
 		})

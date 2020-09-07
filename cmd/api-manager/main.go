@@ -1,19 +1,24 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager/api"
 	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager/models"
+	modelsApi "gitlab.com/voipbin/bin-manager/api-manager/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/api-manager/servicehandler"
 )
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
@@ -28,15 +33,38 @@ var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-
 var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
+// args for redis
+var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
+var redisPassword = flag.String("redis_password", "", "redis password")
+var redisDB = flag.Int("redis_db", 1, "redis database.")
+
 func main() {
 
-	if err := models.Setup(*dsn); err != nil {
-		logrus.Errorf("Could not initiate database. err: %v", err)
+	// connect to database
+	sqlDB, err := sql.Open("mysql", *dsn)
+	if err != nil {
+		logrus.Errorf("Could not access to database. err: %v", err)
+		return
+	}
+	defer sqlDB.Close()
+
+	// connect to cache
+	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
+	if err := cache.Connect(); err != nil {
+		logrus.Errorf("Could not connect to cache server. err: %v", err)
 		return
 	}
 
+	// dbhandler
+	db := dbhandler.NewHandler(sqlDB, cache)
+
+	// connect to rabbitmq
 	sock := rabbitmq.NewRabbit(*rabbitAddr)
 	sock.Connect()
+
+	// create servicehandler
+	requestHandler := requesthandler.NewRequestHandler(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest)
+	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db)
 
 	app := gin.Default()
 
@@ -54,6 +82,12 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	// inject servicehandler
+	app.Use(func(c *gin.Context) {
+		c.Set(modelsApi.OBJServiceHandler, serviceHandler)
+		c.Next()
+	})
 
 	// injects
 	app.Use(requesthandler.Inject(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest))
