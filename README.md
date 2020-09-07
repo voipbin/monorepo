@@ -47,4 +47,8 @@ Usage of ./api-manager:
 # Test
 ```
 $ curl -k https://api.voipbin.net/ping
+
+$ curl -k -X POST https://api.voipbin.net/auth/login -d '{"username":"test","password":"test"}' -v
+
+curl -k -X POST https://api.voipbin.net/v1.0/conferences\?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAwNDQ5MjQsInVzZXIiOnsiaWQiOjEsInVzZXJuYW1lIjoidGVzdCJ9fQ.UJR04FE7b00PRnjEt9kNy4f6DYyrZvZ_jpAVomqzNso -d '{"type":"conference", "name":"test conference"}' -v
 ```
