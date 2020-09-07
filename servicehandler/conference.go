@@ -31,8 +31,9 @@ func (h *servicHandler) ConferenceCreate(u *user.User, confType conference.Type,
 
 	// create conference
 	res := &conference.Conference{
-		ID:   conf.ID,
-		Type: conference.Type(conf.Type),
+		ID:     conf.ID,
+		Type:   conference.Type(conf.Type),
+		UserID: conf.UserID,
 
 		Status: conference.Status(conf.Status),
 		Name:   conf.Name,
