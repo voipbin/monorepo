@@ -31,7 +31,7 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq
 	}
 
 	// create a conference
-	cf, err := h.conferenceHandler.Start(reqConf, nil)
+	cf, err := h.conferenceHandler.Start(reqConf)
 	if err != nil {
 		return simpleResponse(400), nil
 	}

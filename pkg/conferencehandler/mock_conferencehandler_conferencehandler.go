@@ -9,7 +9,6 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	conference "gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
@@ -109,18 +108,18 @@ func (mr *MockConferenceHandlerMockRecorder) Leave(arg0, arg1 interface{}) *gomo
 }
 
 // Start mocks base method.
-func (m *MockConferenceHandler) Start(arg0 *conference.Conference, arg1 *call.Call) (*conference.Conference, error) {
+func (m *MockConferenceHandler) Start(arg0 *conference.Conference) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", arg0, arg1)
+	ret := m.ctrl.Call(m, "Start", arg0)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockConferenceHandlerMockRecorder) Start(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Start(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockConferenceHandler)(nil).Start), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockConferenceHandler)(nil).Start), arg0)
 }
 
 // Terminate mocks base method.

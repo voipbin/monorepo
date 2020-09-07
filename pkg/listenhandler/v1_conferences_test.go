@@ -180,7 +180,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConf.EXPECT().Start(tt.expectReqConf, nil).Return(tt.expectConference, nil)
+			mockConf.EXPECT().Start(tt.expectReqConf).Return(tt.expectConference, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -25,7 +25,7 @@ type ConferenceHandler interface {
 	ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error
 	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
 
-	Start(reqConf *conference.Conference, c *call.Call) (*conference.Conference, error)
+	Start(reqConf *conference.Conference) (*conference.Conference, error)
 	Join(conferenceID, callID uuid.UUID) error
 	Leave(conferenceID, callID uuid.UUID) error
 	Terminate(conferenceID uuid.UUID, reason string) error

@@ -45,20 +45,21 @@ const (
 	StatusTerminated  Status = "terminated"
 )
 
-// NewConference creates a new conference with given request conference
-func NewConference(id uuid.UUID, cType Type, bridgeID string, req *Conference) *Conference {
-	cf := &Conference{
-		ID:       id,
-		Type:     cType,
-		BridgeID: bridgeID,
+// // NewConference creates a new conference with given request conference
+// func NewConference(id uuid.UUID, cType Type, bridgeID string, req *Conference) *Conference {
+// 	cf := &Conference{
+// 		ID:       id,
+// 		Type:     cType,
+// 		BridgeID: bridgeID,
 
-		Name:    req.Name,
-		Detail:  req.Detail,
-		Data:    req.Data,
-		Timeout: req.Timeout,
+// 		UserID:  req.UserID,
+// 		Name:    req.Name,
+// 		Detail:  req.Detail,
+// 		Data:    req.Data,
+// 		Timeout: req.Timeout,
 
-		CallIDs: []uuid.UUID{},
-	}
+// 		CallIDs: []uuid.UUID{},
+// 	}
 
-	return cf
-}
+// 	return cf
+// }

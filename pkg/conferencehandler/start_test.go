@@ -27,7 +27,6 @@ func TestStartTypeConference(t *testing.T) {
 	type test struct {
 		name       string
 		reqConf    *conference.Conference
-		call       *call.Call
 		conference *conference.Conference
 	}
 
@@ -37,13 +36,19 @@ func TestStartTypeConference(t *testing.T) {
 			&conference.Conference{
 				Type: conference.TypeConference,
 			},
-			&call.Call{
-				ID:         uuid.FromStringOrNil("0f6dcf3e-a412-11ea-8197-f7feaeb4c806"),
-				AsteriskID: "80:fa:5b:5e:da:81",
-				ChannelID:  "13fecf8a-a412-11ea-9d1b-3b97be1ef739",
-			},
 			&conference.Conference{
 				ID: uuid.FromStringOrNil("325b9d9a-a413-11ea-a6d7-ef53544faeb3"),
+			},
+		},
+		{
+			"added user id",
+			&conference.Conference{
+				Type:   conference.TypeConference,
+				UserID: call.UserIDAdmin,
+			},
+			&conference.Conference{
+				ID:     uuid.FromStringOrNil("12cb0fd8-f148-11ea-b1c3-878d11a76a13"),
+				UserID: call.UserIDAdmin,
 			},
 		},
 	}
@@ -57,7 +62,7 @@ func TestStartTypeConference(t *testing.T) {
 				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), "timeout", tt.reqConf.Timeout*1000).Return(nil)
 			}
 
-			h.startTypeConference(tt.reqConf, tt.call)
+			h.startTypeConference(tt.reqConf)
 		})
 	}
 }
