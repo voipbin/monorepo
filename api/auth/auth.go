@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager/servicehandler"
 )
@@ -12,35 +11,34 @@ import (
 // ApplyRoutes applies router to the gin Engine
 func ApplyRoutes(r *gin.RouterGroup) {
 	auth := r.Group("/auth")
-	auth.POST("/register", middleware.Authorized, register)
+	// auth.POST("/register", middleware.Authorized, register)
 	auth.POST("/login", login)
 }
 
-func register(c *gin.Context) {
-	// db := c.MustGet("db").(*gorm.DB)
-	logrus.Debug("registering a new user.")
+// func register(c *gin.Context) {
+// 	logrus.Debug("registering a new user.")
 
-	type RequestBody struct {
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
+// 	type RequestBody struct {
+// 		Username string `json:"username" binding:"required"`
+// 		Password string `json:"password" binding:"required"`
+// 	}
 
-	var body RequestBody
-	if err := c.BindJSON(&body); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
+// 	var body RequestBody
+// 	if err := c.BindJSON(&body); err != nil {
+// 		c.AbortWithStatus(400)
+// 		return
+// 	}
 
-	// create an user
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
-	user, err := serviceHandler.UserCreate(body.Username, body.Password)
-	if err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
+// 	// create an user
+// 	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+// 	user, err := serviceHandler.UserCreate(body.Username, body.Password)
+// 	if err != nil {
+// 		c.AbortWithStatus(400)
+// 		return
+// 	}
 
-	c.JSON(200, user)
-}
+// 	c.JSON(200, user)
+// }
 
 func login(c *gin.Context) {
 	type RequestBody struct {

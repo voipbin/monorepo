@@ -97,16 +97,46 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceDelete(u, confID interface{}
 }
 
 // UserCreate mocks base method.
-func (m *MockServiceHandler) UserCreate(username, password string) (*user.User, error) {
+func (m *MockServiceHandler) UserCreate(username, password string, permission uint64) (*user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserCreate", username, password)
+	ret := m.ctrl.Call(m, "UserCreate", username, password, permission)
 	ret0, _ := ret[0].(*user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UserCreate indicates an expected call of UserCreate.
-func (mr *MockServiceHandlerMockRecorder) UserCreate(username, password interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) UserCreate(username, password, permission interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserCreate", reflect.TypeOf((*MockServiceHandler)(nil).UserCreate), username, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserCreate", reflect.TypeOf((*MockServiceHandler)(nil).UserCreate), username, password, permission)
+}
+
+// UserGet mocks base method.
+func (m *MockServiceHandler) UserGet(userID uint64) (*user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserGet", userID)
+	ret0, _ := ret[0].(*user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UserGet indicates an expected call of UserGet.
+func (mr *MockServiceHandlerMockRecorder) UserGet(userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGet", reflect.TypeOf((*MockServiceHandler)(nil).UserGet), userID)
+}
+
+// UserGets mocks base method.
+func (m *MockServiceHandler) UserGets() ([]*user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserGets")
+	ret0, _ := ret[0].([]*user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UserGets indicates an expected call of UserGets.
+func (mr *MockServiceHandlerMockRecorder) UserGets() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGets", reflect.TypeOf((*MockServiceHandler)(nil).UserGets))
 }

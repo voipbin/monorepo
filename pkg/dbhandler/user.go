@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
@@ -53,6 +54,8 @@ func (h *handler) UserGetFromDB(ctx context.Context, id uint64) (*user.User, err
 		username,
 		password_hash,
 
+		permission,
+
 		coalesce(tm_create, '') as tm_create,
 		coalesce(tm_update, '') as tm_update,
 		coalesce(tm_delete, '') as tm_delete
@@ -72,17 +75,29 @@ func (h *handler) UserGetFromDB(ctx context.Context, id uint64) (*user.User, err
 		return nil, ErrNotFound
 	}
 
+	res, err := h.userGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("dbhandler: Could not scan the row. UserGetFromDB. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// userGetFromRow gets the user from the row.
+func (h *handler) userGetFromRow(row *sql.Rows) (*user.User, error) {
 	res := &user.User{}
 	if err := row.Scan(
 		&res.ID,
 		&res.Username,
 		&res.PasswordHash,
 
+		&res.Permission,
+
 		&res.TMCreate,
 		&res.TMUpdate,
 		&res.TMDelete,
 	); err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. UserGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("dbhandler: Could not scan the row. userGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -106,6 +121,43 @@ func (h *handler) UserGet(ctx context.Context, id uint64) (*user.User, error) {
 	return res, nil
 }
 
+// UserGet returns user.
+func (h *handler) UserGets(ctx context.Context) ([]*user.User, error) {
+	// prepare
+	q := `
+	select
+		id,
+		username,
+		password_hash,
+
+		permission,
+
+		coalesce(tm_create, '') as tm_create,
+		coalesce(tm_update, '') as tm_update,
+		coalesce(tm_delete, '') as tm_delete
+	from
+		users
+	`
+
+	rows, err := h.db.Query(q)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. UserGetFromDB. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*user.User
+	for rows.Next() {
+		u, err := h.userGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. UserGetFromDB. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // UserCreate creates new user record and returns the created user record.
 func (h *handler) UserCreate(ctx context.Context, b *user.User) error {
 	q := `insert into users(
@@ -113,9 +165,12 @@ func (h *handler) UserCreate(ctx context.Context, b *user.User) error {
 		username,
 		password_hash,
 
+		permission,
+
 		tm_create
 	) values(
 		?, ?, ?,
+		?,
 		?
 		)
 	`
@@ -124,6 +179,8 @@ func (h *handler) UserCreate(ctx context.Context, b *user.User) error {
 		b.ID,
 		b.Username,
 		b.PasswordHash,
+
+		b.Permission,
 
 		b.TMCreate,
 	)
@@ -146,6 +203,8 @@ func (h *handler) UserGetByUsername(ctx context.Context, username string) (*user
 		username,
 		password_hash,
 
+		permission,
+
 		coalesce(tm_create, '') as tm_create,
 		coalesce(tm_update, '') as tm_update,
 		coalesce(tm_delete, '') as tm_delete
@@ -165,16 +224,8 @@ func (h *handler) UserGetByUsername(ctx context.Context, username string) (*user
 		return nil, ErrNotFound
 	}
 
-	res := &user.User{}
-	if err := row.Scan(
-		&res.ID,
-		&res.Username,
-		&res.PasswordHash,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	res, err := h.userGetFromRow(row)
+	if err != nil {
 		return nil, fmt.Errorf("dbhandler: Could not scan the row. UserGetByUsername. err: %v", err)
 	}
 

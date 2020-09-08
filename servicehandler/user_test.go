@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
 )
@@ -22,6 +23,7 @@ func TestUserCreate(t *testing.T) {
 
 		userName string
 		userPass string
+		userPerm uint64
 	}
 
 	tests := []test{
@@ -29,6 +31,7 @@ func TestUserCreate(t *testing.T) {
 			"normal",
 			"test username",
 			"test userpass",
+			uint64(user.PermissionNone),
 		},
 	}
 
@@ -43,7 +46,7 @@ func TestUserCreate(t *testing.T) {
 			mockDB.EXPECT().UserCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().UserGetByUsername(gomock.Any(), tt.userName)
 
-			_, err := h.UserCreate(tt.userName, tt.userPass)
+			_, err := h.UserCreate(tt.userName, tt.userPass, tt.userPerm)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}

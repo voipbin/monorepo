@@ -19,6 +19,7 @@ type DBHandler interface {
 	UserGet(ctx context.Context, id uint64) (*user.User, error)
 	UserGetFromDB(ctx context.Context, id uint64) (*user.User, error)
 	UserGetByUsername(ctx context.Context, username string) (*user.User, error)
+	UserGets(ctx context.Context) ([]*user.User, error)
 	UserSetToCache(ctx context.Context, u *user.User) error
 	UserUpdateToCache(ctx context.Context, id uint64) error
 }

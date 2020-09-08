@@ -1,6 +1,9 @@
 package servicehandler
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestGenerateHash(t *testing.T) {
 
@@ -12,9 +15,14 @@ func TestGenerateHash(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			"normal1",
 			"test",
 			"test",
+		},
+		{
+			"normal2",
+			"admin",
+			"admin",
 		},
 	}
 
@@ -24,6 +32,7 @@ func TestGenerateHash(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+			fmt.Printf("Res: %s\n", res)
 
 			if checkHash(tt.password, res) != true {
 				t.Error("Wrong match. expect: true, got: false")

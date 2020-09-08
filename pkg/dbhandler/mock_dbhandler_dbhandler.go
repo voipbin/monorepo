@@ -94,6 +94,21 @@ func (mr *MockDBHandlerMockRecorder) UserGetFromDB(arg0, arg1 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).UserGetFromDB), arg0, arg1)
 }
 
+// UserGets mocks base method.
+func (m *MockDBHandler) UserGets(arg0 context.Context) ([]*user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserGets", arg0)
+	ret0, _ := ret[0].([]*user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UserGets indicates an expected call of UserGets.
+func (mr *MockDBHandlerMockRecorder) UserGets(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGets", reflect.TypeOf((*MockDBHandler)(nil).UserGets), arg0)
+}
+
 // UserSetToCache mocks base method.
 func (m *MockDBHandler) UserSetToCache(arg0 context.Context, arg1 *user.User) error {
 	m.ctrl.T.Helper()
