@@ -5,6 +5,8 @@ create table users(
   username      varchar(255), -- username
   password_hash varchar(255), -- password hash
 
+  permission integer,
+
   tm_create datetime(6),
   tm_update datetime(6),
   tm_delete datetime(6)

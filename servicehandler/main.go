@@ -23,7 +23,9 @@ type ServiceHandler interface {
 	ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error)
 	ConferenceDelete(u *user.User, confID uuid.UUID) error
 
-	UserCreate(username, password string) (*user.User, error)
+	UserCreate(username, password string, permission uint64) (*user.User, error)
+	UserGet(userID uint64) (*user.User, error)
+	UserGets() ([]*user.User, error)
 }
 
 type servicHandler struct {

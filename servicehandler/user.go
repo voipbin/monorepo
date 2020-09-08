@@ -9,9 +9,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
 )
 
-func (h *servicHandler) UserCreate(username, password string) (*user.User, error) {
+func (h *servicHandler) UserCreate(username, password string, permission uint64) (*user.User, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"Username": username,
+		"Username":   username,
+		"Permission": permission,
 	})
 	log.Debug("Creating a new user.")
 
@@ -33,6 +34,7 @@ func (h *servicHandler) UserCreate(username, password string) (*user.User, error
 	u := &user.User{
 		Username:     username,
 		PasswordHash: hashPassword,
+		Permission:   user.Permission(permission),
 	}
 
 	if err := h.dbHandler.UserCreate(ctx, u); err != nil {
@@ -43,6 +45,30 @@ func (h *servicHandler) UserCreate(username, password string) (*user.User, error
 	res, err := h.dbHandler.UserGetByUsername(ctx, username)
 	if err != nil {
 		log.Errorf("Could not get created user info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UserGet returns user info of given userID.
+func (h *servicHandler) UserGet(userID uint64) (*user.User, error) {
+	ctx := context.Background()
+	res, err := h.dbHandler.UserGet(ctx, userID)
+	if err != nil {
+		logrus.Errorf("Could not get user info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UserGets returns list of all users
+func (h *servicHandler) UserGets() ([]*user.User, error) {
+	ctx := context.Background()
+	res, err := h.dbHandler.UserGets(ctx)
+	if err != nil {
+		logrus.Errorf("Could not get users info. err: %v", err)
 		return nil, err
 	}
 

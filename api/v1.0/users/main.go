@@ -1,0 +1,20 @@
+package users
+
+import "github.com/gin-gonic/gin"
+
+// ApplyRoutes applies router to the gin Engine
+func ApplyRoutes(r *gin.RouterGroup) {
+	users := r.Group("/users")
+
+	users.POST("", usersPOST)
+	users.GET("", usersGET)
+	// users.GET("/:id", conferencesIDGET)
+	// users.DELETE("/:id", conferencesIDDELETE)
+}
+
+// RequestBodyUsersPOST is rquest body define for POST /users
+type RequestBodyUsersPOST struct {
+	Username   string `json:"username" binding:"required"`
+	Password   string `json:"password" binding:"required"`
+	Permission uint64 `json:"permission"`
+}
