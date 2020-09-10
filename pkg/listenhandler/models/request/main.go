@@ -17,6 +17,16 @@ type V1DataAsterisksIDChannelsIDHealth struct {
 	Delay         int `json:"delay"`
 }
 
+// V1DataCallsPost is
+// v1 data type request struct for
+// /v1/calls POST
+type V1DataCallsPost struct {
+	FlowID      uuid.UUID    `json:"flow_id"`
+	UserID      uint64       `json:"user_id"`
+	Source      call.Address `json:"source"`
+	Destination call.Address `json:"destination"`
+}
+
 // V1DataCallsIDPost is
 // v1 data type request struct for
 // /v1/calls/<id> POST

@@ -39,6 +39,7 @@ var (
 	regV1AsterisksIDChannelsIDHealth = regexp.MustCompile("/v1/asterisks/(.*)/channels/(.*)/health-check")
 
 	// calls
+	regV1Calls                = regexp.MustCompile("/v1/calls")
 	regV1CallsID              = regexp.MustCompile("/v1/calls/" + regUUID)
 	regV1CallsIDHealth        = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check")
 	regV1CallsIDActionNext    = regexp.MustCompile("/v1/calls/" + regUUID + "/action-next")
@@ -176,6 +177,10 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 
 	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDPost(m)
+		requestType = "/v1/calls"
+
+	case regV1Calls.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+		response, err = h.processV1CallsPost(m)
 		requestType = "/v1/calls"
 
 	// conferences
