@@ -252,3 +252,120 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 		})
 	}
 }
+
+func TestProcessV1CallsPost(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		db:          mockDB,
+		reqHandler:  mockReq,
+		callHandler: mockCall,
+	}
+
+	type test struct {
+		name      string
+		call      *call.Call
+		request   *rabbitmq.Request
+		expectRes *rabbitmq.Response
+	}
+
+	tests := []test{
+		{
+			"empty addresses",
+			&call.Call{
+				ID:          uuid.FromStringOrNil("72d56d08-f3a8-11ea-9c0c-ef8258d54f42"),
+				UserID:      1,
+				FlowID:      uuid.FromStringOrNil("78fd1276-f3a8-11ea-9734-6735e73fd720"),
+				Source:      call.Address{},
+				Destination: call.Address{},
+			},
+			&rabbitmq.Request{
+				URI:      "/v1/calls",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"user_id": 1, "flow_id": "78fd1276-f3a8-11ea-9734-6735e73fd720", "source": {}, "destination": {}}`),
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"72d56d08-f3a8-11ea-9c0c-ef8258d54f42","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"78fd1276-f3a8-11ea-9734-6735e73fd720","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
+			},
+		},
+		{
+			"source address",
+			&call.Call{
+				ID:     uuid.FromStringOrNil("cd561ba6-f3a8-11ea-b7ac-57b19fa28e09"),
+				UserID: 1,
+				FlowID: uuid.FromStringOrNil("d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1"),
+				Source: call.Address{
+					Type:   call.AddressTypeSIP,
+					Target: "test_source@127.0.0.1:5061",
+					Name:   "test_source",
+				},
+				Destination: call.Address{},
+			},
+			&rabbitmq.Request{
+				URI:      "/v1/calls",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"user_id": 1, "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {}}`),
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"cd561ba6-f3a8-11ea-b7ac-57b19fa28e09","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
+			},
+		},
+		{
+			"flow_id null",
+			&call.Call{
+				ID:     uuid.FromStringOrNil("09b84a24-f3a9-11ea-80f6-d7e6af125065"),
+				UserID: 1,
+				FlowID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+				Source: call.Address{
+					Type:   call.AddressTypeSIP,
+					Target: "test_source@127.0.0.1:5061",
+					Name:   "test_source",
+				},
+				Destination: call.Address{
+					Type:   call.AddressTypeSIP,
+					Target: "test_destination@127.0.0.1:5061",
+					Name:   "test_destination",
+				},
+			},
+			&rabbitmq.Request{
+				URI:      "/v1/calls",
+				Method:   rabbitmq.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"user_id": 1, "flow_id": "00000000-0000-0000-0000-000000000000","source": {"type": "sip","target": "test_source@127.0.0.1:5061","name": "test_source"},"destination": {"type": "sip","target": "test_destination@127.0.0.1:5061","name": "test_destination"}}`),
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"09b84a24-f3a9-11ea-80f6-d7e6af125065","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"sip","target":"test_destination@127.0.0.1:5061","name":"test_destination"},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.call.UserID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

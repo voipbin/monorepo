@@ -24,15 +24,73 @@ func (h *listenHandler) processV1CallsIDGet(m *rabbitmq.Request) (*rabbitmq.Resp
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsIDGet.")
 
 	c, err := h.db.CallGet(ctx, id)
 	if err != nil {
 		return simpleResponse(404), nil
 	}
+	log.Debugf("Get call. call: %v", c)
 
 	data, err := json.Marshal(c)
 	if err != nil {
 		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmq.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CallsPost handles POST /v1/calls/<id> request
+// It creates a new call.
+func (h *listenHandler) processV1CallsPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 3 {
+		return simpleResponse(400), nil
+	}
+
+	// generate call id.
+	id := uuid.Must(uuid.NewV4())
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsPost.")
+
+	var reqData request.V1DataCallsPost
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		// same call-id is already exsit
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+	log = log.WithFields(logrus.Fields{
+		"user":        reqData.UserID,
+		"flow":        reqData.FlowID,
+		"source":      reqData.Source,
+		"destination": reqData.Destination,
+	})
+
+	log.Debug("Creating outgoing call.")
+	c, err := h.callHandler.CreateCallOutgoing(id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
+	if err != nil {
+		log.Debugf("Could not create a outgoing call. err: %v", err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Created outgoing call. call: %v", c)
+
+	data, err := json.Marshal(c)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", c, err)
+		return simpleResponse(500), nil
 	}
 
 	res := &rabbitmq.Response{
@@ -57,6 +115,7 @@ func (h *listenHandler) processV1CallsIDPost(m *rabbitmq.Request) (*rabbitmq.Res
 		logrus.Fields{
 			"id": id,
 		})
+	log.Debug("Executing processV1CallsIDPost.")
 
 	var reqData request.V1DataCallsIDPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
@@ -64,12 +123,20 @@ func (h *listenHandler) processV1CallsIDPost(m *rabbitmq.Request) (*rabbitmq.Res
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
+	log = log.WithFields(logrus.Fields{
+		"user":        reqData.UserID,
+		"flow":        reqData.FlowID,
+		"source":      reqData.Source,
+		"destination": reqData.Destination,
+	})
 
+	log.Debug("Creating outgoing call.")
 	c, err := h.callHandler.CreateCallOutgoing(id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", reqData.FlowID, reqData.Source, reqData.Destination, err)
 		return simpleResponse(500), nil
 	}
+	log.Debugf("Created outgoing call. call: %v", c)
 
 	data, err := json.Marshal(c)
 	if err != nil {
@@ -95,6 +162,11 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmq.Request) (*rabbit
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsIDHealthPost.")
 
 	var data request.V1DataCallsIDHealth
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
@@ -130,11 +202,21 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmq.Request) (
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsIDActionTimeoutPost.")
 
 	var data request.V1DataCallsIDActionTimeout
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 		return nil, err
 	}
+	log = log.WithFields(logrus.Fields{
+		"action":     data.ActionID,
+		"type":       data.ActionType,
+		"tm_execute": data.TMExecute,
+	})
 
 	action := &action.Action{
 		ID:        data.ActionID,
@@ -142,6 +224,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmq.Request) (
 		TMExecute: data.TMExecute,
 	}
 
+	log.Debug("Executing the action timeout.")
 	if err := h.callHandler.ActionTimeout(id, action); err != nil {
 		return simpleResponse(404), nil
 	}
@@ -161,6 +244,12 @@ func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmq.Request) (*ra
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsIDActionNextPost.")
+
 	var a action.Action
 	if err := json.Unmarshal([]byte(m.Data), &a); err != nil {
 		return simpleResponse(404), nil

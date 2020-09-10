@@ -53,6 +53,14 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
 // CreateCallOutgoing creates a call for outgoing
 func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error) {
 	ctx := context.Background()
+	log := logrus.WithFields(logrus.Fields{
+		"id":          id,
+		"user":        userID,
+		"flow":        flowID,
+		"source":      source,
+		"destination": destination,
+	})
+	log.Debug("Creating outgoing call.")
 
 	channelID := uuid.Must(uuid.NewV4()).String()
 	cTmp := &call.Call{
@@ -74,12 +82,14 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 
 	// create a call
 	if err := h.createCall(ctx, cTmp); err != nil {
+		log.Errorf("Could not create a call for outgoing call. err: %v", err)
 		return nil, err
 	}
 
 	// get created call
 	c, err := h.db.CallGet(ctx, id)
 	if err != nil {
+		log.Errorf("Could not get a created call for outgoing call. err: %v", err)
 		return nil, err
 	}
 
@@ -88,6 +98,7 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 
 	// create a channel
 	if err := h.reqHandler.AstChannelCreate(requesthandler.AsteriskIDCall, channelID, appArgs, endpoint, "", "", ""); err != nil {
+		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 		return nil, err
 	}
 
