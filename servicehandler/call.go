@@ -12,7 +12,7 @@ import (
 // CallCreate sends a request to call-manager
 // to creating a conference.
 // it returns created conference if it succeed.
-func (h *servicHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination string) (*call.Call, error) {
+func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":        u.ID,
 		"username":    u.Username,
@@ -23,17 +23,15 @@ func (h *servicHandler) CallCreate(u *user.User, flowID uuid.UUID, source, desti
 
 	// parse source/destination
 	addrSrc := cmcall.Address{
-		Type:   cmcall.AddressTypeSIP,
-		Target: source,
+		Type:   cmcall.AddressType(source.Type),
+		Target: source.Target,
+		Name:   source.Name,
 	}
 	addrDest := cmcall.Address{
-		Type:   cmcall.AddressTypeSIP,
-		Target: destination,
+		Type:   cmcall.AddressType(destination.Type),
+		Target: destination.Target,
+		Name:   destination.Name,
 	}
-	log = log.WithFields(logrus.Fields{
-		"source_address":      addrSrc,
-		"destination_address": addrDest,
-	})
 
 	// send request
 	log.Debug("Creating a new call.")
@@ -43,37 +41,8 @@ func (h *servicHandler) CallCreate(u *user.User, flowID uuid.UUID, source, desti
 		return nil, err
 	}
 
-	c := &call.Call{
-		ID:     res.ID,
-		UserID: res.UserID,
-		FlowID: res.FlowID,
-		ConfID: res.ConfID,
-		Type:   call.Type(res.Type),
-
-		Source: call.Address{
-			Type:   call.AddressType(res.Source.Type),
-			Name:   res.Source.Name,
-			Target: res.Source.Target,
-		},
-		Destination: call.Address{
-			Type:   call.AddressType(res.Destination.Type),
-			Name:   res.Destination.Name,
-			Target: res.Destination.Target,
-		},
-
-		Status: call.Status(res.Status),
-
-		Direction:    call.Direction(res.Direction),
-		HangupBy:     call.HangupBy(res.HangupBy),
-		HangupReason: call.HangupReason(res.HangupReason),
-
-		TMCreate: res.TMCreate,
-		TMUpdate: res.TMUpdate,
-
-		TMProgressing: res.TMProgressing,
-		TMRinging:     res.TMRinging,
-		TMHangup:      res.TMHangup,
-	}
+	// create call.Call
+	c := res.ConvertCall()
 
 	return c, err
 }

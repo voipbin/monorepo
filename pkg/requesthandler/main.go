@@ -13,10 +13,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/api-manager/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmcall"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmconference"
+	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/fmflow"
 	// rabbitmq "gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
 )
 
@@ -63,7 +65,8 @@ const (
 	resourceCallCall       resource = "call/calls"
 	resourceCallConference resource = "call/conferences"
 
-	resourceFlowsActions resource = "flows/actions"
+	resourceFlowActions resource = "flows/actions"
+	resourceFlowFlows   resource = "flows"
 )
 
 func init() {
@@ -88,6 +91,7 @@ type RequestHandler interface {
 
 	// flow actions
 	// FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
+	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error)
 }
 
 type requestHandler struct {
@@ -123,16 +127,16 @@ func NewRequestHandler(sock rabbitmq.Rabbit, exchangeDelay, queueCall, queueFlow
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
-func (r *requestHandler) sendRequestFlow(uri string, method models.RequestMethod, resource resource, timeout int, dataType string, data json.RawMessage) (*models.Response, error) {
+func (r *requestHandler) sendRequestFlow(uri string, method models.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*models.Response, error) {
 	log.WithFields(log.Fields{
-		"uri":       uri,
 		"method":    method,
+		"uri":       uri,
 		"data_type": dataType,
-		"data":      data,
-	}).Debugf("Sending request to Flow. data: %s", data)
+		"delayed":   delayed,
+	}).Debugf("Sending request to flow-manager. data: %s", data)
 
 	// creat a request message
-	m := &models.Request{
+	req := &models.Request{
 		URI:      uri,
 		Method:   method,
 		DataType: dataType,
@@ -142,19 +146,28 @@ func (r *requestHandler) sendRequestFlow(uri string, method models.RequestMethod
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 
-	target := "flow_manager-request"
-	res, err := r.sendRequest(ctx, target, resource, m)
-	if err != nil {
-		return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+	switch {
+	case delayed > 0:
+		// send scheduled message.
+		// we don't expect the response message here.
+		if err := r.sendDelayedRequest(ctx, r.exchangeDelay, r.queueFlow, resource, delayed, req); err != nil {
+			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
+		}
+		return nil, nil
+
+	default:
+		res, err := r.sendRequest(ctx, r.queueFlow, resource, req)
+		if err != nil {
+			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+		}
+
+		log.WithFields(log.Fields{
+			"method":      method,
+			"uri":         uri,
+			"status_code": res.StatusCode,
+		}).Debugf("Received result. data: %s", res.Data)
+		return res, nil
 	}
-
-	log.WithFields(log.Fields{
-		"uri":         uri,
-		"method":      method,
-		"status_code": res.StatusCode,
-	}).Debugf("Received result. data: %s", res.Data)
-
-	return res, nil
 }
 
 // sendRequestCall send a request to the Asterisk-proxy and return the response
@@ -183,7 +196,7 @@ func (r *requestHandler) sendRequestCall(uri string, method models.RequestMethod
 	case delayed > 0:
 		// send scheduled message.
 		// we don't expect the response message here.
-		if err := r.sendDelayedRequest(ctx, r.exchangeDelay, resource, delayed, req); err != nil {
+		if err := r.sendDelayedRequest(ctx, r.exchangeDelay, r.queueCall, resource, delayed, req); err != nil {
 			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
 		}
 		return nil, nil
@@ -216,10 +229,10 @@ func (r *requestHandler) sendRequest(ctx context.Context, target string, resourc
 
 // sendDelayedRequest sends the delayed request to the target
 // delay unit is millisecond.
-func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, resource resource, delay int, req *models.Request) error {
+func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, queue string, resource resource, delay int, req *models.Request) error {
 
 	start := time.Now()
-	err := r.sock.PublishExchangeDelayedRequest(r.exchangeDelay, r.queueCall, req, delay)
+	err := r.sock.PublishExchangeDelayedRequest(r.exchangeDelay, queue, req, delay)
 	elapsed := time.Since(start)
 	promRequestProcessTime.WithLabelValues(target, string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
 

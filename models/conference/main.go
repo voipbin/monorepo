@@ -2,7 +2,7 @@ package conference
 
 import uuid "github.com/gofrs/uuid"
 
-// Conference type
+// Conference type for client show
 type Conference struct {
 	ID     uuid.UUID `json:"id"`
 	UserID uint64    `json:"user_id"`

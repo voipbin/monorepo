@@ -26,8 +26,8 @@ func TestCallCreate(t *testing.T) {
 		name        string
 		user        *user.User
 		flowID      uuid.UUID
-		source      string
-		destination string
+		source      call.Address
+		destination call.Address
 		cmCall      *cmcall.Call
 		expectCall  call.Call
 	}
@@ -39,8 +39,14 @@ func TestCallCreate(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-			"testsource@test.com",
-			"testdestination@test.com",
+			call.Address{
+				Type:   call.AddressTypeSIP,
+				Target: "testsource@test.com",
+			},
+			call.Address{
+				Type:   call.AddressTypeSIP,
+				Target: "testdestination@test.com",
+			},
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
 				AsteriskID: "02:42:5d:f3:a7:05",
@@ -92,7 +98,7 @@ func TestCallCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := servicHandler{
+			h := serviceHandler{
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}

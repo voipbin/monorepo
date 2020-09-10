@@ -4,7 +4,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// Call struct represent asterisk's channel information
+// Call struct represent asterisk's channel information for client show
 type Call struct {
 	// identity
 	ID uuid.UUID `json:"id"`

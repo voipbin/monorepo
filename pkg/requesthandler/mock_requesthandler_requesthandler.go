@@ -9,8 +9,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	action "gitlab.com/voipbin/bin-manager/api-manager/models/action"
 	cmcall "gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmcall"
 	cmconference "gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmconference"
+	fmflow "gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/fmflow"
 )
 
 // MockRequestHandler is a mock of RequestHandler interface.
@@ -93,4 +95,19 @@ func (m *MockRequestHandler) CallConferenceGet(conferenceID uuid.UUID) (*cmconfe
 func (mr *MockRequestHandlerMockRecorder) CallConferenceGet(conferenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceGet), conferenceID)
+}
+
+// FMFlowCreate mocks base method.
+func (m *MockRequestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowCreate", userID, id, name, detail, actions, persist)
+	ret0, _ := ret[0].(*fmflow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMFlowCreate indicates an expected call of FMFlowCreate.
+func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(userID, id, name, detail, actions, persist interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), userID, id, name, detail, actions, persist)
 }

@@ -9,8 +9,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	action "gitlab.com/voipbin/bin-manager/api-manager/models/action"
 	call "gitlab.com/voipbin/bin-manager/api-manager/models/call"
 	conference "gitlab.com/voipbin/bin-manager/api-manager/models/conference"
+	flow "gitlab.com/voipbin/bin-manager/api-manager/models/flow"
 	user "gitlab.com/voipbin/bin-manager/api-manager/models/user"
 )
 
@@ -53,7 +55,7 @@ func (mr *MockServiceHandlerMockRecorder) AuthLogin(username, password interface
 }
 
 // CallCreate mocks base method.
-func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination string) (*call.Call, error) {
+func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallCreate", u, flowID, source, destination)
 	ret0, _ := ret[0].(*call.Call)
@@ -94,6 +96,21 @@ func (m *MockServiceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) er
 func (mr *MockServiceHandlerMockRecorder) ConferenceDelete(u, confID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceDelete", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceDelete), u, confID)
+}
+
+// FlowCreate mocks base method.
+func (m *MockServiceHandler) FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowCreate", u, id, name, detail, actions, persist)
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowCreate indicates an expected call of FlowCreate.
+func (mr *MockServiceHandlerMockRecorder) FlowCreate(u, id, name, detail, actions, persist interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockServiceHandler)(nil).FlowCreate), u, id, name, detail, actions, persist)
 }
 
 // UserCreate mocks base method.

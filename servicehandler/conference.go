@@ -12,7 +12,7 @@ import (
 )
 
 // ConferenceCreate is a service handler for conference creating.
-func (h *servicHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error) {
+func (h *serviceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user":     u.ID,
@@ -50,7 +50,7 @@ func (h *servicHandler) ConferenceCreate(u *user.User, confType conference.Type,
 }
 
 // ConferenceDelete is a service handler for conference creating.
-func (h *servicHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error {
+func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user":       u.ID,
