@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// Action struct
+// Action struct for client show
 type Action struct {
 	ID     uuid.UUID       `json:"id"`
 	Type   Type            `json:"type"`

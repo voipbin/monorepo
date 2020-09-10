@@ -5,8 +5,10 @@ package servicehandler
 import (
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/api-manager/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
@@ -15,27 +17,33 @@ import (
 
 // ServiceHandler is interface for service handle
 type ServiceHandler interface {
+	// auth handlers
 	AuthLogin(username, password string) (string, error)
 
 	// call handlers
-	CallCreate(u *user.User, flowID uuid.UUID, source, destination string) (*call.Call, error)
+	CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error)
 
+	// conference handlers
 	ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error)
 	ConferenceDelete(u *user.User, confID uuid.UUID) error
 
+	// flow handlers
+	FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
+
+	// user handlers
 	UserCreate(username, password string, permission uint64) (*user.User, error)
 	UserGet(userID uint64) (*user.User, error)
 	UserGets() ([]*user.User, error)
 }
 
-type servicHandler struct {
+type serviceHandler struct {
 	reqHandler requesthandler.RequestHandler
 	dbHandler  dbhandler.DBHandler
 }
 
 // NewServiceHandler return ServiceHandler interface
 func NewServiceHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler) ServiceHandler {
-	return &servicHandler{
+	return &serviceHandler{
 		reqHandler: reqHandler,
 		dbHandler:  dbHandler,
 	}

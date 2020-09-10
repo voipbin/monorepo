@@ -11,7 +11,7 @@ import (
 )
 
 // AuthLogin generate jwt token of an user
-func (h *servicHandler) AuthLogin(username, password string) (string, error) {
+func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
 	ctx := context.Background()
 
 	u, err := h.dbHandler.UserGetByUsername(ctx, username)

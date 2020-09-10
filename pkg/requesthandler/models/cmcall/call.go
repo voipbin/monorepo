@@ -3,6 +3,7 @@ package cmcall
 import (
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/api-manager/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmaction"
 )
 
@@ -109,3 +110,40 @@ const (
 	HangupReasonUnanswer HangupReason = "unanswer" // destination didn't answer until destination's timeout.
 	HanupgReasonDialout  HangupReason = "dialout"  // The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).
 )
+
+// ConvertCall returns call.Call from cmall.Call
+func (h *Call) ConvertCall() *call.Call {
+	c := &call.Call{
+		ID:     h.ID,
+		UserID: h.UserID,
+		FlowID: h.FlowID,
+		ConfID: h.ConfID,
+		Type:   call.Type(h.Type),
+
+		Source: call.Address{
+			Type:   call.AddressType(h.Source.Type),
+			Name:   h.Source.Name,
+			Target: h.Source.Target,
+		},
+		Destination: call.Address{
+			Type:   call.AddressType(h.Destination.Type),
+			Name:   h.Destination.Name,
+			Target: h.Destination.Target,
+		},
+
+		Status: call.Status(h.Status),
+
+		Direction:    call.Direction(h.Direction),
+		HangupBy:     call.HangupBy(h.HangupBy),
+		HangupReason: call.HangupReason(h.HangupReason),
+
+		TMCreate: h.TMCreate,
+		TMUpdate: h.TMUpdate,
+
+		TMProgressing: h.TMProgressing,
+		TMRinging:     h.TMRinging,
+		TMHangup:      h.TMHangup,
+	}
+
+	return c
+}

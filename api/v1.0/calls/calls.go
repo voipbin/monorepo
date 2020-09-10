@@ -2,31 +2,19 @@ package calls
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmconference"
+	"gitlab.com/voipbin/bin-manager/api-manager/servicehandler"
 )
 
-// ApplyRoutes applies router to the gin Engine
-func ApplyRoutes(r *gin.RouterGroup) {
-	conferences := r.Group("/conferences")
-
-	conferences.POST("", callsPOST)
-	// conferences.GET("/:id", conferencesIDGET)
-	// conferences.DELETE("/:id", conferencesIDDELETE)
-}
-
+// callsPOST handles POST /calls request.
+// It creates a temp flow and create a call with temp flow.
 func callsPOST(c *gin.Context) {
 
-	type RequestBody struct {
-		Source      string          `json:"type"`
-		Destination string          `json:"destination" binding:"required"`
-		Actions     []action.Action `json:"actions"`
-	}
-	var requestBody RequestBody
+	var requestBody RequestBodyCallsPOST
 
 	if err := c.BindJSON(&requestBody); err != nil {
 		c.AbortWithStatus(400)
@@ -39,20 +27,23 @@ func callsPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	user := tmp.(user.User)
+	u := tmp.(user.User)
 
-	// servicehandler := c.MustGet("servicehandler").(servicehandler.ServiceHandler)
+	// get service
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create flow
+	flow, err := serviceHandler.FlowCreate(&u, uuid.Nil, "temp", "tmp outbound flow", requestBody.Actions, false)
+	if err != nil {
+		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
 
 	// create call
-
-	// servicehandler.CallCreate(user.ID, )
-
-	// send a request to call
-	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
-	res, err := requestHandler.CallConferenceCreate(user.ID, cmconference.TypeConference, "", "")
-	if err != nil || res == nil {
+	res, err := serviceHandler.CallCreate(&u, flow.ID, requestBody.Source, requestBody.Destination)
+	if err != nil {
+		logrus.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
