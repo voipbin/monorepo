@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
 	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
 )
@@ -29,6 +30,7 @@ type CallHandler interface {
 	CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error)
 	StartCallHandle(cn *channel.Channel, data map[string]interface{}) error
 	Hangup(cn *channel.Channel) error
+	HangingUp(c *call.Call, cause ari.ChannelCause) error
 
 	ActionNext(c *call.Call) error
 	ActionTimeout(callID uuid.UUID, a *action.Action) error

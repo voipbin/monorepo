@@ -11,6 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
 	call "gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
+	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	channel "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 )
 
@@ -148,6 +149,20 @@ func (m *MockCallHandler) Hangup(cn *channel.Channel) error {
 func (mr *MockCallHandlerMockRecorder) Hangup(cn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockCallHandler)(nil).Hangup), cn)
+}
+
+// HangingUp mocks base method.
+func (m *MockCallHandler) HangingUp(c *call.Call, cause ari.ChannelCause) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HangingUp", c, cause)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// HangingUp indicates an expected call of HangingUp.
+func (mr *MockCallHandlerMockRecorder) HangingUp(c, cause interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangingUp", reflect.TypeOf((*MockCallHandler)(nil).HangingUp), c, cause)
 }
 
 // ActionNext mocks base method.

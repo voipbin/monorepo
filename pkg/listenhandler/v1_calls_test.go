@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
@@ -358,6 +359,71 @@ func TestProcessV1CallsPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.call.UserID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestProcessV1CallsIDDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		db:          mockDB,
+		reqHandler:  mockReq,
+		callHandler: mockCall,
+	}
+
+	type test struct {
+		name      string
+		call      *call.Call
+		request   *rabbitmq.Request
+		expectRes *rabbitmq.Response
+	}
+
+	tests := []test{
+		{
+			"empty addresses",
+			&call.Call{
+				ID:          uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
+				UserID:      1,
+				Source:      call.Address{},
+				Destination: call.Address{},
+			},
+			&rabbitmq.Request{
+				URI:      "/v1/calls/91a0b50e-f4ec-11ea-b64c-1bf53742d0d8",
+				Method:   rabbitmq.RequestMethodDelete,
+				DataType: "application/json",
+				Data:     nil,
+			},
+			&rabbitmq.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"91a0b50e-f4ec-11ea-b64c-1bf53742d0d8","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockCall.EXPECT().HangingUp(tt.call, ari.ChannelCauseNormalClearing)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

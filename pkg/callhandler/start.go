@@ -246,8 +246,7 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 
 	// set flowid
 	if err := h.db.CallSetFlowID(ctx, c.ID, uuid.Nil); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
 	}
 
@@ -258,8 +257,7 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 	}
 	opt, err := json.Marshal(option)
 	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
@@ -273,8 +271,7 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 
 	c, err = h.db.CallGet(ctx, c.ID)
 	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not get created call info. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
 	}
 
@@ -316,24 +313,21 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]i
 	// set flowid
 	// because this call type support only 1 action, we don't set any valid call-flow id here
 	if err := h.db.CallSetFlowID(ctx, c.ID, uuid.Nil); err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
 	}
 
 	// get action for sip-service
 	act, err := h.getSipServiceAction(ctx, c, cn)
 	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not get action handle for sip-service. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
 	// get updated call info
 	c, err = h.db.CallGet(ctx, c.ID)
 	if err != nil {
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not get created call info. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
 	}
 

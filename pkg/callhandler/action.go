@@ -74,8 +74,6 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 // ActionNext Execute next action
 func (h *callHandler) ActionNext(c *call.Call) error {
-	ctx := context.Background()
-
 	log := log.WithFields(
 		logrus.Fields{
 			"call": c.ID,
@@ -86,15 +84,13 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 	case c.Action.Next == action.IDEnd:
 		// last action
 		log.Debug("End of call flow. No more next action left.")
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return nil
 
 	case c.FlowID == uuid.Nil:
 		// invalid flow id
 		log.Info("The call's flow id is not valid. Hanging up the call.")
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
@@ -102,8 +98,7 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 	action, err := h.reqHandler.FlowActionGet(c.FlowID, c.Action.Next)
 	if err != nil {
 		log.Errorf("Could not get next flow action. err: %v", err)
-		h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime())
-		h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return err
 	}
 
