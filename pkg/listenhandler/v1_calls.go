@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
 )
@@ -139,6 +140,57 @@ func (h *listenHandler) processV1CallsIDPost(m *rabbitmq.Request) (*rabbitmq.Res
 	log.Debugf("Created outgoing call. call: %v", c)
 
 	data, err := json.Marshal(c)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", c, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmq.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDDelete handles Delete /v1/calls/<id> request
+// It hangs up the exsited call.
+func (h *listenHandler) processV1CallsIDDelete(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsIDDelete.")
+
+	// get call
+	ctx := context.Background()
+	c, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Debugf("Could not get call info. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	// hanging up the call
+	if err := h.callHandler.HangingUp(c, ari.ChannelCauseNormalClearing); err != nil {
+		log.Debugf("Could not hanging up the call. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	// get updated call info
+	resCall, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Debugf("Could not get updated call info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(resCall)
 	if err != nil {
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", c, err)
 		return simpleResponse(500), nil

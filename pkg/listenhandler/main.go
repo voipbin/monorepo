@@ -151,55 +151,82 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 
 	start := time.Now()
 	switch {
+	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// v1
+	/////////////////////////////////////////////////////////////////////////////////////////////////
 
+	////////////
 	// asterisks
+	////////////
+	// POST /asterisks/<asterisk-id>channels/<channel-id>/health-check
 	case regV1AsterisksIDChannelsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1AsterisksIDChannelsIDHealthPost(m)
 		requestType = "/v1/asterisks/channels/health-check"
 
+	////////
 	// calls
+	////////
+	// POST /calls/<id>/health-check
 	case regV1CallsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDHealthPost(m)
 		requestType = "/v1/calls/health-check"
 
+	// POST /calls/<id>/action-next
 	case regV1CallsIDActionNext.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDActionNextPost(m)
 		requestType = "/v1/calls/action-next"
 
+	// POST /calls/<id>/action-timeout
 	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDActionTimeoutPost(m)
 		requestType = "/v1/calls/action-timeout"
 
+	// GET /calls/<id>
 	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
 		response, err = h.processV1CallsIDGet(m)
 		requestType = "/v1/calls"
 
+	// POST /calls/<id>
 	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsIDPost(m)
 		requestType = "/v1/calls"
 
+	// DELETE /calls/<id>
+	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
+		response, err = h.processV1CallsIDDelete(m)
+		requestType = "/v1/calls"
+
+	// POST /calls
 	case regV1Calls.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1CallsPost(m)
 		requestType = "/v1/calls"
 
+	//////////////
 	// conferences
+	//////////////
+	// DELETE /conferences/<conference-id>/calls/<call-id>
 	case regV1ConferencesIDCallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDCallsIDDelete(m)
 		requestType = "/v1/conferences/calls"
 
+	// DELETE /conferences/<conference-id>
 	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDDelete(m)
 		requestType = "/v1/conferences"
 
+	// GET /conferences/<conference-id>
 	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
 		response, err = h.processV1ConferencesIDGet(m)
 		requestType = "/v1/conferences"
 
+	// POST /conferences
 	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
 		response, err = h.processV1ConferencesPost(m)
 		requestType = "/v1/conferences"
 
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// No handler found
+	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
 		logrus.WithFields(
 			logrus.Fields{
