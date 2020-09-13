@@ -12,7 +12,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	calls := r.Group("/calls")
 
 	calls.POST("", callsPOST)
-	// calls.GET("/:id", conferencesIDGET)
+	calls.GET("/:id", callsIDDelete)
 	// calls.DELETE("/:id", conferencesIDDELETE)
 }
 

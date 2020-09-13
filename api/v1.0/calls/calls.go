@@ -50,3 +50,32 @@ func callsPOST(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// callsIDDelete handles DELETE /calls/<call-id> request.
+// It creates a temp flow and create a call with temp flow.
+func callsIDDelete(c *gin.Context) {
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+
+	// get service
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// get call
+	res, err := serviceHandler.CallGet(&u, id)
+	if err != nil {
+		logrus.Infof("Could not get the call info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}

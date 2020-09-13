@@ -103,7 +103,7 @@ func TestCallCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CallCallCreate(tt.user.ID, tt.flowID, tt.cmCall.Source, tt.cmCall.Destination).Return(tt.cmCall, nil)
+			mockReq.EXPECT().CMCallCreate(tt.user.ID, tt.flowID, tt.cmCall.Source, tt.cmCall.Destination).Return(tt.cmCall, nil)
 
 			res, err := h.CallCreate(tt.user, tt.flowID, tt.source, tt.destination)
 			if err != nil {

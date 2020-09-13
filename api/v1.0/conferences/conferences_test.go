@@ -56,7 +56,7 @@ func TestConferencesIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockReq.EXPECT().CallConferenceGet(tt.conference.ID).Return(tt.conference, nil)
+			mockReq.EXPECT().CMConferenceGet(tt.conference.ID).Return(tt.conference, nil)
 
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/conferences/%s", tt.conference.ID), nil)
 
@@ -164,7 +164,7 @@ func TestConferencesPOST(t *testing.T) {
 // 			})
 // 			setupServer(r)
 
-// 			mockReq.EXPECT().CallConferenceDelete(tt.conference.ID).Return(nil)
+// 			mockReq.EXPECT().CMConferenceDelete(tt.conference.ID).Return(nil)
 
 // 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/conferences/%s", tt.conference.ID), nil)
 

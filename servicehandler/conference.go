@@ -23,7 +23,7 @@ func (h *serviceHandler) ConferenceCreate(u *user.User, confType conference.Type
 		},
 	)
 
-	conf, err := h.reqHandler.CallConferenceCreate(u.ID, cmconference.Type(confType), name, detail)
+	conf, err := h.reqHandler.CMConferenceCreate(u.ID, cmconference.Type(confType), name, detail)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
@@ -60,7 +60,7 @@ func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error 
 	)
 
 	// get conference
-	cf, err := h.reqHandler.CallConferenceGet(confID)
+	cf, err := h.reqHandler.CMConferenceGet(confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return err
@@ -74,7 +74,7 @@ func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error 
 
 	// destroy
 	log.Debug("Destroying conference.")
-	if err := h.reqHandler.CallConferenceDelete(confID); err != nil {
+	if err := h.reqHandler.CMConferenceDelete(confID); err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
 		return err
 	}
