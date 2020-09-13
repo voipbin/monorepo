@@ -40,7 +40,7 @@ func (h *listenHandler) v1FlowsPost(req *rabbitmq.Request) (*rabbitmq.Response, 
 	}
 
 	// create flow
-	resFlow, err := h.flowHandler.FlowCreate(ctx, flow, reqData.Psersist)
+	resFlow, err := h.flowHandler.FlowCreate(ctx, flow, reqData.Persist)
 	if err != nil {
 		logrus.Errorf("Could not create anew flow. err: %v", err)
 		return nil, err

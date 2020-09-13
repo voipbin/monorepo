@@ -5,6 +5,8 @@ create table flows(
 
   name varchar(255),
   detail text,
+  
+  persist bool,
 
   actions json,
 

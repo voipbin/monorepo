@@ -11,10 +11,12 @@ import (
 // Flow struct
 type Flow struct {
 	ID     uuid.UUID `json:"id"`
-	UserID int64     `json:"user_id"`
+	UserID uint64    `json:"user_id"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
+
+	Persist bool `json:"persist"`
 
 	Actions []action.Action `json:"actions"`
 
