@@ -1,6 +1,8 @@
 package servicehandler
 
 import (
+	"fmt"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
@@ -10,8 +12,8 @@ import (
 )
 
 // CallCreate sends a request to call-manager
-// to creating a conference.
-// it returns created conference if it succeed.
+// to creating a call.
+// it returns created call info if it succeed.
 func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":        u.ID,
@@ -35,7 +37,7 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 
 	// send request
 	log.Debug("Creating a new call.")
-	res, err := h.reqHandler.CallCallCreate(u.ID, flowID, addrSrc, addrDest)
+	res, err := h.reqHandler.CMCallCreate(u.ID, flowID, addrSrc, addrDest)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -45,4 +47,33 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 	c := res.ConvertCall()
 
 	return c, err
+}
+
+// CallGet sends a request to call-manager
+// to getting a call.
+// it returns call if it succeed.
+func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"call_id":  callID,
+	})
+
+	// send request
+	c, err := h.reqHandler.CMCallGet(callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return nil, err
+	}
+
+	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
+		log.Info("The user has no permission for this call.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// convert
+	res := c.ConvertCall()
+
+	return res, nil
 }

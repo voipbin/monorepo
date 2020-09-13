@@ -72,7 +72,7 @@ func TestConferenceCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CallConferenceCreate(tt.user.ID, cmconference.Type(tt.confType), tt.confName, tt.confDetail).Return(tt.cmConference, nil)
+			mockReq.EXPECT().CMConferenceCreate(tt.user.ID, cmconference.Type(tt.confType), tt.confName, tt.confDetail).Return(tt.cmConference, nil)
 
 			res, err := h.ConferenceCreate(tt.user, tt.confType, tt.confName, tt.confDetail)
 			if err != nil {
@@ -130,8 +130,8 @@ func TestConferenceDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CallConferenceGet(tt.confID).Return(tt.cmConference, nil)
-			mockReq.EXPECT().CallConferenceDelete(tt.confID).Return(nil)
+			mockReq.EXPECT().CMConferenceGet(tt.confID).Return(tt.cmConference, nil)
+			mockReq.EXPECT().CMConferenceDelete(tt.confID).Return(nil)
 
 			err := h.ConferenceDelete(tt.user, tt.confID)
 			if err != nil {

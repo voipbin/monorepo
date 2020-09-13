@@ -38,63 +38,78 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
 }
 
-// CallCallCreate mocks base method.
-func (m *MockRequestHandler) CallCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error) {
+// CMCallCreate mocks base method.
+func (m *MockRequestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallCallCreate", userID, flowID, source, destination)
+	ret := m.ctrl.Call(m, "CMCallCreate", userID, flowID, source, destination)
 	ret0, _ := ret[0].(*cmcall.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CallCallCreate indicates an expected call of CallCallCreate.
-func (mr *MockRequestHandlerMockRecorder) CallCallCreate(userID, flowID, source, destination interface{}) *gomock.Call {
+// CMCallCreate indicates an expected call of CMCallCreate.
+func (mr *MockRequestHandlerMockRecorder) CMCallCreate(userID, flowID, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallCallCreate), userID, flowID, source, destination)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMCallCreate), userID, flowID, source, destination)
 }
 
-// CallConferenceCreate mocks base method.
-func (m *MockRequestHandler) CallConferenceCreate(userID uint64, conferenceType cmconference.Type, name, detail string) (*cmconference.Conference, error) {
+// CMCallGet mocks base method.
+func (m *MockRequestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallConferenceCreate", userID, conferenceType, name, detail)
+	ret := m.ctrl.Call(m, "CMCallGet", callID)
+	ret0, _ := ret[0].(*cmcall.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMCallGet indicates an expected call of CMCallGet.
+func (mr *MockRequestHandlerMockRecorder) CMCallGet(callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallGet", reflect.TypeOf((*MockRequestHandler)(nil).CMCallGet), callID)
+}
+
+// CMConferenceCreate mocks base method.
+func (m *MockRequestHandler) CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name, detail string) (*cmconference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMConferenceCreate", userID, conferenceType, name, detail)
 	ret0, _ := ret[0].(*cmconference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CallConferenceCreate indicates an expected call of CallConferenceCreate.
-func (mr *MockRequestHandlerMockRecorder) CallConferenceCreate(userID, conferenceType, name, detail interface{}) *gomock.Call {
+// CMConferenceCreate indicates an expected call of CMConferenceCreate.
+func (mr *MockRequestHandlerMockRecorder) CMConferenceCreate(userID, conferenceType, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceCreate), userID, conferenceType, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceCreate), userID, conferenceType, name, detail)
 }
 
-// CallConferenceDelete mocks base method.
-func (m *MockRequestHandler) CallConferenceDelete(conferenceID uuid.UUID) error {
+// CMConferenceDelete mocks base method.
+func (m *MockRequestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallConferenceDelete", conferenceID)
+	ret := m.ctrl.Call(m, "CMConferenceDelete", conferenceID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CallConferenceDelete indicates an expected call of CallConferenceDelete.
-func (mr *MockRequestHandlerMockRecorder) CallConferenceDelete(conferenceID interface{}) *gomock.Call {
+// CMConferenceDelete indicates an expected call of CMConferenceDelete.
+func (mr *MockRequestHandlerMockRecorder) CMConferenceDelete(conferenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceDelete", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceDelete), conferenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceDelete", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceDelete), conferenceID)
 }
 
-// CallConferenceGet mocks base method.
-func (m *MockRequestHandler) CallConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
+// CMConferenceGet mocks base method.
+func (m *MockRequestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallConferenceGet", conferenceID)
+	ret := m.ctrl.Call(m, "CMConferenceGet", conferenceID)
 	ret0, _ := ret[0].(*cmconference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CallConferenceGet indicates an expected call of CallConferenceGet.
-func (mr *MockRequestHandlerMockRecorder) CallConferenceGet(conferenceID interface{}) *gomock.Call {
+// CMConferenceGet indicates an expected call of CMConferenceGet.
+func (mr *MockRequestHandlerMockRecorder) CMConferenceGet(conferenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceGet), conferenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceGet), conferenceID)
 }
 
 // FMFlowCreate mocks base method.

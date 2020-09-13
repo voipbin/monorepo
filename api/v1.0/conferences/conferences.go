@@ -59,7 +59,7 @@ func conferencesIDGET(c *gin.Context) {
 
 	// send a request to call
 	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
-	res, err := requestHandler.CallConferenceGet(ID)
+	res, err := requestHandler.CMConferenceGet(ID)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
 		return
@@ -74,7 +74,7 @@ func conferencesIDDELETE(c *gin.Context) {
 
 	// send a request to call
 	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
-	if err := requestHandler.CallConferenceDelete(ID); err != nil {
+	if err := requestHandler.CMConferenceDelete(ID); err != nil {
 		c.AbortWithStatus(400)
 		return
 	}

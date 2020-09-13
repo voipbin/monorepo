@@ -11,10 +11,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/request"
 )
 
-// CallConferenceGet sends a request to call-manager
+// CMConferenceGet sends a request to call-manager
 // to getting a conference information.
 // it returns created conference if it succeed.
-func (r *requestHandler) CallConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
+func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
 	res, err := r.sendRequestCall(uri, models.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
@@ -36,10 +36,10 @@ func (r *requestHandler) CallConferenceGet(conferenceID uuid.UUID) (*cmconferenc
 	return &conference, nil
 }
 
-// CallConferenceDelete sends a request to call-manager
+// CMConferenceDelete sends a request to call-manager
 // to deleting a conference.
 // it returns deleted conference if it succeed.
-func (r *requestHandler) CallConferenceDelete(conferenceID uuid.UUID) error {
+func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
 	res, err := r.sendRequestCall(uri, models.RequestMethodDelete, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
@@ -56,10 +56,10 @@ func (r *requestHandler) CallConferenceDelete(conferenceID uuid.UUID) error {
 	return nil
 }
 
-// CallConferenceCreate sends a request to call-manager
+// CMConferenceCreate sends a request to call-manager
 // to creating a conference.
 // it returns created conference if it succeed.
-func (r *requestHandler) CallConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string) (*cmconference.Conference, error) {
+func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string) (*cmconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences")
 
 	data := &request.V1DataConferencesIDPost{
