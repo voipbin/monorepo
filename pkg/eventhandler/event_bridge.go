@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
+	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 )
 
 func (h *eventHandler) eventHandlerBridgeCreated(ctx context.Context, evt interface{}) error {

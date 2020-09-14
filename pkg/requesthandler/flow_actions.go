@@ -6,8 +6,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
 )
 
 func (r *requestHandler) FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error) {
