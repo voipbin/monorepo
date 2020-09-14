@@ -9,9 +9,9 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
 func TestFlowCreate(t *testing.T) {

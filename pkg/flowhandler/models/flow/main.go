@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 )
 
 // Flow struct

@@ -1,4 +1,4 @@
-module gitlab.com/voipbin/bin-manager/flow-manager
+module gitlab.com/voipbin/bin-manager/flow-manager.git
 
 go 1.14
 

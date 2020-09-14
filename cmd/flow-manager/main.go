@@ -15,11 +15,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/rabbitmq"
 )
 
 // channels

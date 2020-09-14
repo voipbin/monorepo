@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate mockgen -destination ./mock_dbhandler_dbhandler.go -package dbhandler gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler DBHandler
+//go:generate mockgen -destination ./mock_dbhandler_dbhandler.go -package dbhandler gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler DBHandler
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
 // DBHandler interface for call_manager database handle
