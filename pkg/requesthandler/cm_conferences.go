@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmconference"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
 )
 
 // CMConferenceGet sends a request to call-manager

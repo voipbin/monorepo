@@ -3,8 +3,8 @@ package cmcall
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmaction"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmaction"
 )
 
 // Call struct represent asterisk's channel information

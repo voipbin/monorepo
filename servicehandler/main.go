@@ -5,14 +5,14 @@ package servicehandler
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/conference"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 )
 
 // ServiceHandler is interface for service handle

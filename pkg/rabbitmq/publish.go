@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
 )
 
 // PublishMessage sends a message to rabbitmq

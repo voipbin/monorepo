@@ -2,7 +2,7 @@ package fmflow
 
 import (
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 )
 
 // Flow struct

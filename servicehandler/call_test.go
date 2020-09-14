@@ -7,12 +7,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmaction"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmcall"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmaction"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
 )
 
 func TestCallCreate(t *testing.T) {

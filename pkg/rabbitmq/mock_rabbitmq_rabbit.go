@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	amqp "github.com/streadway/amqp"
-	models "gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
+	models "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
 )
 
 // MockRabbit is a mock of Rabbit interface.

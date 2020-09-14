@@ -6,9 +6,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/conference"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmconference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 )
 
 // ConferenceCreate is a service handler for conference creating.

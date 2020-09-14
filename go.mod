@@ -1,4 +1,4 @@
-module gitlab.com/voipbin/bin-manager/api-manager
+module gitlab.com/voipbin/bin-manager/api-manager.git
 
 go 1.14
 

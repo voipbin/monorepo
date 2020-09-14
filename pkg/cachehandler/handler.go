@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // getSerialize returns cached serialized info.

@@ -9,10 +9,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "gitlab.com/voipbin/bin-manager/api-manager/models/action"
-	cmcall "gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmcall"
-	cmconference "gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmconference"
-	fmflow "gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/fmflow"
+	action "gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	cmcall "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
+	cmconference "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
+	fmflow "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 )
 
 // MockRequestHandler is a mock of RequestHandler interface.

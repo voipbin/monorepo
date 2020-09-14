@@ -13,13 +13,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmcall"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/cmconference"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/fmflow"
-	// rabbitmq "gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
+	// rabbitmq "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
 )
 
 // contents type

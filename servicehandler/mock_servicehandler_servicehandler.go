@@ -9,11 +9,11 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "gitlab.com/voipbin/bin-manager/api-manager/models/action"
-	call "gitlab.com/voipbin/bin-manager/api-manager/models/call"
-	conference "gitlab.com/voipbin/bin-manager/api-manager/models/conference"
-	flow "gitlab.com/voipbin/bin-manager/api-manager/models/flow"
-	user "gitlab.com/voipbin/bin-manager/api-manager/models/user"
+	action "gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	flow "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // MockServiceHandler is a mock of ServiceHandler interface.

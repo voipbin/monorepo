@@ -8,8 +8,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 )
 
 func TestUserCreate(t *testing.T) {
