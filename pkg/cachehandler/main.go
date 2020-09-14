@@ -1,6 +1,6 @@
 package cachehandler
 
-//go:generate mockgen -destination ./mock_cachehandler_cachehandler.go -package cachehandler gitlab.com/voipbin/bin-manager/flow-manager/pkg/cachehandler CacheHandler
+//go:generate mockgen -destination ./mock_cachehandler_cachehandler.go -package cachehandler gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler CacheHandler
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
 type handler struct {

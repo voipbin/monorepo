@@ -8,9 +8,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/listenhandler/request"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/request"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/rabbitmq"
 )
 
 func (h *listenHandler) v1FlowsIDGet(req *rabbitmq.Request) (*rabbitmq.Response, error) {

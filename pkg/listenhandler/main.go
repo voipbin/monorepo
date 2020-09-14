@@ -9,9 +9,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/rabbitmq"
 )
 
 // ListenHandler interface

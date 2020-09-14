@@ -6,11 +6,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/rabbitmq"
 )
 
 func TestFlowsGet(t *testing.T) {

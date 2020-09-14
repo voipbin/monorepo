@@ -1,15 +1,15 @@
 package flowhandler
 
-//go:generate mockgen -destination ./mock_flowhandler_flowhandler.go -package flowhandler gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler FlowHandler
+//go:generate mockgen -destination ./mock_flowhandler_flowhandler.go -package flowhandler gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler FlowHandler
 
 import (
 	"context"
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
 type flowHandler struct {
