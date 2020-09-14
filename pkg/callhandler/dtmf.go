@@ -3,8 +3,8 @@ package callhandler
 import (
 	"context"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 )
 
 func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration int) error {

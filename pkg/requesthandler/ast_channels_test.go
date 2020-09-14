@@ -7,9 +7,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
-	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
 )
 
 func TestAstChannelAnswer(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	ari "gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
+	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 )
 
 // eventHandlerStasisStart handles StasisStart ARI event

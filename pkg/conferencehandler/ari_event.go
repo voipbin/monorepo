@@ -5,9 +5,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 )
 
 func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {

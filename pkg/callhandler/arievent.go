@@ -6,9 +6,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	dbhandler "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 )
 
 // ARIStasisStart is called when the channel handler received StasisStart.

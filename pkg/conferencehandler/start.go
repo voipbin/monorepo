@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 )
 
 // createConference is handy function for creating a conference.

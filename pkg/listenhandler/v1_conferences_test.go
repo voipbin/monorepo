@@ -7,12 +7,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 func TestProcessV1ConferencesPost(t *testing.T) {

@@ -1,16 +1,16 @@
 package cachehandler
 
-//go:generate mockgen -destination ./mock_cachehandler_cachehandler.go -package cachehandler gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler CacheHandler
+//go:generate mockgen -destination ./mock_cachehandler_cachehandler.go -package cachehandler gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler CacheHandler
 
 import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 )
 
 type handler struct {

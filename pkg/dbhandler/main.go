@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate mockgen -destination ./mock_dbhandler_dbhandler.go -package dbhandler gitlab.com/voipbin/bin-manager/call-manager/pkg/dbhandler DBHandler
+//go:generate mockgen -destination ./mock_dbhandler_dbhandler.go -package dbhandler gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler DBHandler
 
 import (
 	"context"
@@ -11,13 +11,13 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/callhandler/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 )
 
 // DBHandler interface for call_manager database handle

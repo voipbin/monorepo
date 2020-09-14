@@ -1,6 +1,6 @@
 package requesthandler
 
-//go:generate mockgen -destination ./mock_requesthandler_requesthandler.go -package requesthandler gitlab.com/voipbin/bin-manager/call-manager/pkg/requesthandler RequestHandler
+//go:generate mockgen -destination ./mock_requesthandler_requesthandler.go -package requesthandler gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler RequestHandler
 
 import (
 	"context"
@@ -11,11 +11,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/eventhandler/models/channel"
-	rabbitmq "gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
 )
 
 // contents type

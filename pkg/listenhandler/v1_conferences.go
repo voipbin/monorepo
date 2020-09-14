@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/conferencehandler/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/call-manager/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
 )
 
 // processV1ConferencesPost handles /v1/conferences request
