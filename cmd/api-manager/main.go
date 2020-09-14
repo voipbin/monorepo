@@ -11,14 +11,14 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/api"
-	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
-	modelsApi "gitlab.com/voipbin/bin-manager/api-manager/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/api-manager/servicehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
+	modelsApi "gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
 )
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")

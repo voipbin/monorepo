@@ -9,8 +9,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/lib/common"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 var secretKey []byte

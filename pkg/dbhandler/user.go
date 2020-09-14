@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // UserUpdateToCache gets the user from the DB and update the cache.

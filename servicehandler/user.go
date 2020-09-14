@@ -6,7 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 func (h *serviceHandler) UserCreate(username, password string, permission uint64) (*user.User, error) {

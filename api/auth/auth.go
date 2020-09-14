@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager/servicehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
 )
 
 // ApplyRoutes applies router to the gin Engine

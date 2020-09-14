@@ -11,12 +11,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager/servicehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
 )
 
 func setupServer(app *gin.Engine) {

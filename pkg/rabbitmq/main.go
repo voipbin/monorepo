@@ -7,7 +7,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
 
 	"github.com/streadway/amqp"
 )

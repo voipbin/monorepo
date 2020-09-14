@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 )
 
 // AuthLogin generate jwt token of an user

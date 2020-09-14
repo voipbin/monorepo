@@ -6,10 +6,10 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/rabbitmq/models"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/fmflow"
-	"gitlab.com/voipbin/bin-manager/api-manager/pkg/requesthandler/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
 )
 
 // FMFlowCreate sends a request to flow-manager

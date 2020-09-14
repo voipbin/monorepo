@@ -3,10 +3,10 @@ package apiv1
 import (
 	"github.com/gin-gonic/gin"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/api/v1.0/calls"
-	"gitlab.com/voipbin/bin-manager/api-manager/api/v1.0/conferences"
-	"gitlab.com/voipbin/bin-manager/api-manager/api/v1.0/users"
-	"gitlab.com/voipbin/bin-manager/api-manager/lib/middleware"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/calls"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/conferences"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/users"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 )
 
 // ApplyRoutes applies router to the gin Engine

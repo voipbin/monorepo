@@ -3,8 +3,8 @@ package calls
 import (
 	"github.com/gin-gonic/gin"
 
-	"gitlab.com/voipbin/bin-manager/api-manager/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 )
 
 // ApplyRoutes applies router to the gin Engine
