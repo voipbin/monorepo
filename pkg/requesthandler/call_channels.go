@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
 )
 
 // CallChannelHealth sends the request for channel health-check
