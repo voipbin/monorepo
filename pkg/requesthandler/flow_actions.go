@@ -1,0 +1,32 @@
+package requesthandler
+
+import (
+	"encoding/json"
+	"fmt"
+
+	uuid "github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
+)
+
+func (r *requestHandler) FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error) {
+
+	uri := fmt.Sprintf("/flows/%s/actions/%s", flowID, actionID)
+
+	res, err := r.sendRequestFlow(uri, rabbitmq.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, ContentTypeJSON, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode >= 299 {
+		return nil, fmt.Errorf("could not find action")
+	}
+
+	var action action.Action
+	if err := json.Unmarshal([]byte(res.Data), &action); err != nil {
+		return nil, err
+	}
+
+	return &action, nil
+}
