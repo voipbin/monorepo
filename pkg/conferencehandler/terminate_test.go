@@ -6,12 +6,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	dbhandler "gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 func TestTerminate(t *testing.T) {

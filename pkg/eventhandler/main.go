@@ -12,13 +12,13 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
-	db "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	db "gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 // ARIEvent is the structure for ARI event parse.

@@ -10,13 +10,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
-	dbhandler "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
 )
 
 // CallHandler is interface for service handle

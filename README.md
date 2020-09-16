@@ -52,4 +52,23 @@ bin-manager.call-manager.request
 ## Event Notify Queue
 bin-manager.call-manager.event
 
+# Build
+
+Update git config
+```
+$ git config --global url.git@gitlab.com:.insteadOf https://gitlab.com/
+or
+$ git config --global url."https://<$GL_DEPLOY_USER>:<$GL_DEPLOY_TOKEN@gitlab.com>".insteadOf "https://gitlab.com"
+```
+
+Set golang
+```
+$ export GOPRIVATE="gitlab.com/voipbin"
+```
+
+```
+$ go mod vendor
+$ go build ./cmd/...
+```
+
 # Note

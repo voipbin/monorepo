@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
 )
 
 // processV1CallsIDGet handles GET /v1/calls/<id> request
