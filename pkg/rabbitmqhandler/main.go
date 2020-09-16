@@ -1,6 +1,6 @@
-package rabbitmq
+package rabbitmqhandler
 
-//go:generate mockgen -destination ./mock_rabbitmq_rabbit.go -package rabbitmq -source ./main.go Rabbit
+//go:generate mockgen -destination ./mock_rabbitmq_rabbit.go -package rabbitmqhandler -source ./main.go Rabbit
 
 import (
 	"context"
