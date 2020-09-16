@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
 )
 
 // processV1AsterisksIDChannelsIDHealthPost handles /v1/asterisks/<id>/channels/<id>/health-check request

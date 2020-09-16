@@ -10,7 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 func (h *conferenceHandler) createEndpointTarget(ctx context.Context, cf *conference.Conference) (string, error) {

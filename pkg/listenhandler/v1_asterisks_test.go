@@ -5,10 +5,10 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
