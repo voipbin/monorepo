@@ -8,16 +8,15 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq"
-	rabbitmodels "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestFMFlowCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request")
 
 	type test struct {
@@ -30,10 +29,10 @@ func TestFMFlowCreate(t *testing.T) {
 		actions    []action.Action
 		persist    bool
 
-		response *rabbitmodels.Response
+		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmodels.Request
+		expectRequest *rabbitmqhandler.Request
 		expectResult  *fmflow.Flow
 	}
 
@@ -47,16 +46,16 @@ func TestFMFlowCreate(t *testing.T) {
 			"test flow detail",
 			[]action.Action{},
 			true,
-			&rabbitmodels.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true,"tm_create":"2020-09-20T03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmodels.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmodels.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true}`),
 			},

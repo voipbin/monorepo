@@ -16,9 +16,9 @@ import (
 	modelsApi "gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
@@ -59,7 +59,7 @@ func main() {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// connect to rabbitmq
-	sock := rabbitmq.NewRabbit(*rabbitAddr)
+	sock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	sock.Connect()
 
 	// create servicehandler

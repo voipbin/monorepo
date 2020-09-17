@@ -22,7 +22,7 @@ func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
 
 	if checkHash(password, u.PasswordHash) == false {
 		logrus.Warningf("The password does not match. username: %s", username)
-		return "", err
+		return "", fmt.Errorf("password does not match")
 	}
 
 	serialized := u.Serialize()

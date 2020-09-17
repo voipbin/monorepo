@@ -25,6 +25,9 @@ ensure:
     paths:
       - vendor/
   script:
+    - git config --global url."https://$GL_DEPLOY_USER:$GL_DEPLOY_TOKEN@gitlab.com".insteadOf "https://gitlab.com"
+    - export GOPRIVATE="gitlab.com/voipbin"
+    - go mod download
     - go mod vendor
 
 lint:
@@ -39,8 +42,14 @@ vet:
 
 test:
   stage: test
+  artifacts:
+    name: $CI_COMMIT_REF_NAME"
+    expire_in: 8 hours
+    paths:
+      - cp.html
   script:
-    - go test -v $(go list ./...)
+    - go test -coverprofile cp.out -v $(go list ./...)
+    - go tool cover -html=cp.out -o cp.html
 
 build:
   stage: build

@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // CMCallCreate sends a request to call-manager
@@ -28,7 +28,7 @@ func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, d
 		return nil, err
 	}
 
-	res, err := r.sendRequestCall(uri, models.RequestMethodPost, resourceCallCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -53,7 +53,7 @@ func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, d
 func (r *requestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", callID)
 
-	res, err := r.sendRequestCall(uri, models.RequestMethodPost, resourceCallCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

@@ -54,3 +54,22 @@ $ curl -k -X POST https://api.voipbin.net/v1.0/conferences\?token=eyJhbGciOiJIUz
 
 $ curl -k -X POST https://localhost:443/v1.0/calls\?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAyMDIyMDcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.YnECmUr2chV-cpBbwedJ905ztcVUq0xVv5Tec_nibaU -v -d '{"source": {"type": "sip","target": "source@test.voipbin.net"},"destination": {"type": "sip","target": "destination@test.voipbin.net"},"actions": []}'
 ```
+
+# Build
+
+Update git config
+```
+$ git config --global url.git@gitlab.com:.insteadOf https://gitlab.com/
+or
+$ git config --global url."https://<$GL_DEPLOY_USER>:<$GL_DEPLOY_TOKEN@gitlab.com>".insteadOf "https://gitlab.com"
+```
+
+Set golang
+```
+$ export GOPRIVATE="gitlab.com/voipbin"
+```
+
+```
+$ go mod vendor
+$ go build ./cmd/...
+```

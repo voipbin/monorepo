@@ -14,12 +14,10 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
-	// rabbitmq "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // contents type
@@ -96,7 +94,7 @@ type RequestHandler interface {
 }
 
 type requestHandler struct {
-	sock rabbitmq.Rabbit
+	sock rabbitmqhandler.Rabbit
 
 	exchangeDelay string
 
@@ -105,7 +103,7 @@ type requestHandler struct {
 }
 
 // Inject injects requesthandler to gin context
-func Inject(sock rabbitmq.Rabbit, exchangeDelay, queueCall, queueFlow string) gin.HandlerFunc {
+func Inject(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestHandler := NewRequestHandler(sock, exchangeDelay, queueCall, queueFlow)
 
@@ -115,7 +113,7 @@ func Inject(sock rabbitmq.Rabbit, exchangeDelay, queueCall, queueFlow string) gi
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmq.Rabbit, exchangeDelay, queueCall, queueFlow string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
@@ -128,7 +126,7 @@ func NewRequestHandler(sock rabbitmq.Rabbit, exchangeDelay, queueCall, queueFlow
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
-func (r *requestHandler) sendRequestFlow(uri string, method models.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*models.Response, error) {
+func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 	log.WithFields(log.Fields{
 		"method":    method,
 		"uri":       uri,
@@ -137,7 +135,7 @@ func (r *requestHandler) sendRequestFlow(uri string, method models.RequestMethod
 	}).Debugf("Sending request to flow-manager. data: %s", data)
 
 	// creat a request message
-	req := &models.Request{
+	req := &rabbitmqhandler.Request{
 		URI:      uri,
 		Method:   method,
 		DataType: dataType,
@@ -174,7 +172,7 @@ func (r *requestHandler) sendRequestFlow(uri string, method models.RequestMethod
 // sendRequestCall send a request to the Asterisk-proxy and return the response
 // timeout second
 // delayed millisecond
-func (r *requestHandler) sendRequestCall(uri string, method models.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*models.Response, error) {
+func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 	log.WithFields(log.Fields{
 		"method":    method,
 		"uri":       uri,
@@ -183,7 +181,7 @@ func (r *requestHandler) sendRequestCall(uri string, method models.RequestMethod
 	}).Debugf("Sending request to call-manager. data: %s", data)
 
 	// creat a request message
-	req := &models.Request{
+	req := &rabbitmqhandler.Request{
 		URI:      uri,
 		Method:   method,
 		DataType: dataType,
@@ -218,7 +216,7 @@ func (r *requestHandler) sendRequestCall(uri string, method models.RequestMethod
 }
 
 // sendRequest sends the request to the target
-func (r *requestHandler) sendRequest(ctx context.Context, target string, resource resource, req *models.Request) (*models.Response, error) {
+func (r *requestHandler) sendRequest(ctx context.Context, target string, resource resource, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	start := time.Now()
 	res, err := r.sock.PublishRPC(ctx, target, req)
@@ -230,7 +228,7 @@ func (r *requestHandler) sendRequest(ctx context.Context, target string, resourc
 
 // sendDelayedRequest sends the delayed request to the target
 // delay unit is millisecond.
-func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, queue string, resource resource, delay int, req *models.Request) error {
+func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, queue string, resource resource, delay int, req *rabbitmqhandler.Request) error {
 
 	start := time.Now()
 	err := r.sock.PublishExchangeDelayedRequest(r.exchangeDelay, queue, req, delay)

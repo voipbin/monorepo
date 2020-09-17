@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // CMConferenceGet sends a request to call-manager
@@ -17,7 +17,7 @@ import (
 func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, models.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
 	switch {
 	case err != nil:
 		return nil, err
@@ -42,7 +42,7 @@ func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.
 func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, models.RequestMethodDelete, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
 	switch {
 	case err != nil:
 		return err
@@ -75,7 +75,7 @@ func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconf
 		return nil, err
 	}
 
-	res, err := r.sendRequestCall(uri, models.RequestMethodPost, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

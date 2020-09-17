@@ -11,8 +11,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // ServiceHandler is interface for service handle
@@ -54,7 +54,7 @@ func NewServiceHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhan
 var ReqHandler requesthandler.RequestHandler
 
 // Setup initiates service
-func Setup(sock rabbitmq.Rabbit, exchangeDelay, queueCall, queueFlow string) error {
+func Setup(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow string) error {
 	ReqHandler = requesthandler.NewRequestHandler(sock, exchangeDelay, queueCall, queueFlow)
 	return nil
 }
