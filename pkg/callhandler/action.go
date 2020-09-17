@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 )

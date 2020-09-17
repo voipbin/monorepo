@@ -10,8 +10,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func TestUpdateStatusRinging(t *testing.T) {

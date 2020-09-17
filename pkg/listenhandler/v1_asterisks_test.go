@@ -5,17 +5,17 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
@@ -28,7 +28,7 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 	type test struct {
 		name    string
 		channel *channel.Channel
-		request *rabbitmq.Request
+		request *rabbitmqhandler.Request
 	}
 
 	tests := []test{
@@ -38,9 +38,9 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 				ID:         "f1f90a0a-9844-11ea-8948-5378837e7179",
 				AsteriskID: "42:01:0a:a4:00:05",
 			},
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:    "/v1/asterisks/42%3A01%3A0a%3Aa4%3A00%3A05/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
-				Method: rabbitmq.RequestMethodPost,
+				Method: rabbitmqhandler.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 0, "retry_count_max": 2, "delay": 10000}`),
 			},
 		},

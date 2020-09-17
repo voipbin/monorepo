@@ -9,14 +9,14 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1CallsIDGet handles GET /v1/calls/<id> request
-func (h *listenHandler) processV1CallsIDGet(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1CallsIDGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
 	uriItems := strings.Split(m.URI, "/")
@@ -42,7 +42,7 @@ func (h *listenHandler) processV1CallsIDGet(m *rabbitmq.Request) (*rabbitmq.Resp
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmq.Response{
+	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -53,7 +53,7 @@ func (h *listenHandler) processV1CallsIDGet(m *rabbitmq.Request) (*rabbitmq.Resp
 
 // processV1CallsPost handles POST /v1/calls/<id> request
 // It creates a new call.
-func (h *listenHandler) processV1CallsPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1CallsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 3 {
 		return simpleResponse(400), nil
@@ -94,7 +94,7 @@ func (h *listenHandler) processV1CallsPost(m *rabbitmq.Request) (*rabbitmq.Respo
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmq.Response{
+	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -105,7 +105,7 @@ func (h *listenHandler) processV1CallsPost(m *rabbitmq.Request) (*rabbitmq.Respo
 
 // processV1CallsIDPost handles POST /v1/calls/<id> request
 // It creates a new call.
-func (h *listenHandler) processV1CallsIDPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1CallsIDPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -145,7 +145,7 @@ func (h *listenHandler) processV1CallsIDPost(m *rabbitmq.Request) (*rabbitmq.Res
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmq.Response{
+	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -156,7 +156,7 @@ func (h *listenHandler) processV1CallsIDPost(m *rabbitmq.Request) (*rabbitmq.Res
 
 // processV1CallsIDDelete handles Delete /v1/calls/<id> request
 // It hangs up the exsited call.
-func (h *listenHandler) processV1CallsIDDelete(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1CallsIDDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -196,7 +196,7 @@ func (h *listenHandler) processV1CallsIDDelete(m *rabbitmq.Request) (*rabbitmq.R
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmq.Response{
+	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -206,7 +206,7 @@ func (h *listenHandler) processV1CallsIDDelete(m *rabbitmq.Request) (*rabbitmq.R
 }
 
 // processV1CallsIDGet handles /v1/calls/<id>/health-check request
-func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
 	uriItems := strings.Split(m.URI, "/")
@@ -247,7 +247,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmq.Request) (*rabbit
 }
 
 // processV1CallsIDGet handles /v1/calls/<id>/action-timeout request
-func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 
 	if len(uriItems) < 4 {
@@ -281,7 +281,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmq.Request) (
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmq.Response{
+	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 	}
 
@@ -289,7 +289,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmq.Request) (
 }
 
 // processV1CallsIDGet handles /v1/calls/<id>/action-next request
-func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -316,7 +316,7 @@ func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmq.Request) (*ra
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmq.Response{
+	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 	}
 

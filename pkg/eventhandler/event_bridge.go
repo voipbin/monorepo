@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 )
 

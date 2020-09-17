@@ -12,13 +12,13 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
-	db "gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
+	db "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 // ARIEvent is the structure for ARI event parse.
@@ -38,7 +38,7 @@ type EventHandler interface {
 type eventHandler struct {
 	db         db.DBHandler
 	cache      cachehandler.CacheHandler
-	rabbitSock rabbitmq.Rabbit
+	rabbitSock rabbitmqhandler.Rabbit
 
 	reqHandler  requesthandler.RequestHandler
 	callHandler callhandler.CallHandler
@@ -89,7 +89,7 @@ func init() {
 }
 
 // NewEventHandler create EventHandler
-func NewEventHandler(sock rabbitmq.Rabbit, db db.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) EventHandler {
+func NewEventHandler(sock rabbitmqhandler.Rabbit, db db.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) EventHandler {
 	handler := &eventHandler{
 		rabbitSock: sock,
 		db:         db,
@@ -129,7 +129,7 @@ func (h *eventHandler) Run(queue, receiver string) error {
 }
 
 // processEvent processes received ARI event
-func (h *eventHandler) processEvent(m *rabbitmq.Event) error {
+func (h *eventHandler) processEvent(m *rabbitmqhandler.Event) error {
 	if m.Type != "ari_event" {
 		return fmt.Errorf("Wrong event type recevied. type: %s", m.Type)
 	}
