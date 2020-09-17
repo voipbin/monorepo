@@ -7,21 +7,21 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 func TestProcessV1CallsIDHealthPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
@@ -34,7 +34,7 @@ func TestProcessV1CallsIDHealthPost(t *testing.T) {
 	type test struct {
 		name    string
 		call    *call.Call
-		request *rabbitmq.Request
+		request *rabbitmqhandler.Request
 	}
 
 	tests := []test{
@@ -45,9 +45,9 @@ func TestProcessV1CallsIDHealthPost(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "94490ad8-982e-11ea-959d-b3d42fe73e00",
 			},
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:    "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/health-check",
-				Method: rabbitmq.RequestMethodPost,
+				Method: rabbitmqhandler.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 0, "delay": 10}`),
 			},
 		},
@@ -75,7 +75,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
@@ -90,18 +90,18 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 	type test struct {
 		name      string
 		id        uuid.UUID
-		request   *rabbitmq.Request
+		request   *rabbitmqhandler.Request
 		action    *action.Action
-		expectRes *rabbitmq.Response
+		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
 			"normal test",
 			uuid.FromStringOrNil("1a94c1e6-982e-11ea-9298-43412daaf0da"),
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/action-timeout",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.809"}`),
 			},
@@ -111,7 +111,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 				Next:      action.IDEnd,
 				TMExecute: "2020-05-03T21:35:02.809",
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 			},
 		},
@@ -138,7 +138,7 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
@@ -153,8 +153,8 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 	type test struct {
 		name      string
 		call      *call.Call
-		request   *rabbitmq.Request
-		expectRes *rabbitmq.Response
+		request   *rabbitmqhandler.Request
+		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -168,13 +168,13 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				Destination: call.Address{},
 			},
 
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {}, "destination": {}}`),
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
@@ -194,13 +194,13 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				Destination: call.Address{},
 			},
 
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {}}`),
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
@@ -224,13 +224,13 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				},
 			},
 
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/f93eef0c-ed79-11ea-85cb-b39596cdf7ff",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "flow_id": "00000000-0000-0000-0000-000000000000","source": {"type": "sip","target": "test_source@127.0.0.1:5061","name": "test_source"},"destination": {"type": "sip","target": "test_destination@127.0.0.1:5061","name": "test_destination"}}`),
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f93eef0c-ed79-11ea-85cb-b39596cdf7ff","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"sip","target":"test_destination@127.0.0.1:5061","name":"test_destination"},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
@@ -258,7 +258,7 @@ func TestProcessV1CallsPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
@@ -273,8 +273,8 @@ func TestProcessV1CallsPost(t *testing.T) {
 	type test struct {
 		name      string
 		call      *call.Call
-		request   *rabbitmq.Request
-		expectRes *rabbitmq.Response
+		request   *rabbitmqhandler.Request
+		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -287,13 +287,13 @@ func TestProcessV1CallsPost(t *testing.T) {
 				Source:      call.Address{},
 				Destination: call.Address{},
 			},
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/calls",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "flow_id": "78fd1276-f3a8-11ea-9734-6735e73fd720", "source": {}, "destination": {}}`),
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"72d56d08-f3a8-11ea-9c0c-ef8258d54f42","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"78fd1276-f3a8-11ea-9734-6735e73fd720","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
@@ -312,13 +312,13 @@ func TestProcessV1CallsPost(t *testing.T) {
 				},
 				Destination: call.Address{},
 			},
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/calls",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {}}`),
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"cd561ba6-f3a8-11ea-b7ac-57b19fa28e09","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
@@ -341,13 +341,13 @@ func TestProcessV1CallsPost(t *testing.T) {
 					Name:   "test_destination",
 				},
 			},
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/calls",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "flow_id": "00000000-0000-0000-0000-000000000000","source": {"type": "sip","target": "test_source@127.0.0.1:5061","name": "test_source"},"destination": {"type": "sip","target": "test_destination@127.0.0.1:5061","name": "test_destination"}}`),
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"09b84a24-f3a9-11ea-80f6-d7e6af125065","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"sip","target":"test_destination@127.0.0.1:5061","name":"test_destination"},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
@@ -375,7 +375,7 @@ func TestProcessV1CallsIDDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
@@ -390,8 +390,8 @@ func TestProcessV1CallsIDDelete(t *testing.T) {
 	type test struct {
 		name      string
 		call      *call.Call
-		request   *rabbitmq.Request
-		expectRes *rabbitmq.Response
+		request   *rabbitmqhandler.Request
+		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -403,13 +403,13 @@ func TestProcessV1CallsIDDelete(t *testing.T) {
 				Source:      call.Address{},
 				Destination: call.Address{},
 			},
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/91a0b50e-f4ec-11ea-b64c-1bf53742d0d8",
-				Method:   rabbitmq.RequestMethodDelete,
+				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"91a0b50e-f4ec-11ea-b64c-1bf53742d0d8","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","next":"00000000-0000-0000-0000-000000000000","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),

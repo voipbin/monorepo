@@ -14,14 +14,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // channels
@@ -50,7 +50,7 @@ var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 type worker struct {
-	rabbitSock rabbitmq.Rabbit
+	rabbitSock rabbitmqhandler.Rabbit
 
 	eventHandler  eventhandler.EventHandler
 	reqHandler    requesthandler.RequestHandler
@@ -151,7 +151,7 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(
@@ -177,7 +177,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
 	// request handler

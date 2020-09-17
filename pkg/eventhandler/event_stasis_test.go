@@ -6,10 +6,10 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-	dbhandler "gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 func TestEventHandlerStasisStart(t *testing.T) {
@@ -17,13 +17,13 @@ func TestEventHandlerStasisStart(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
-		event *rabbitmq.Event
+		event *rabbitmqhandler.Event
 
 		expectAsterisID string
 		expectChannelID string
@@ -34,7 +34,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type":"StasisStart","timestamp":"2020-04-25T00:27:18.342+0000","args":["context=call-in","domain=sip-service.voipbin.net","source=213.127.79.161"],"channel":{"id":"1587774438.2390","name":"PJSIP/in-voipbin-00000948","state":"Ring","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"1234234324","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=8juJJyujlS,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-04-25T00:27:18.341+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`),
@@ -80,13 +80,13 @@ func TestEventHandlerStasisEnd(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
-		event *rabbitmq.Event
+		event *rabbitmqhandler.Event
 
 		expectAsterisID string
 		expectChannelID string
@@ -96,7 +96,7 @@ func TestEventHandlerStasisEnd(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type":"StasisEnd","timestamp":"2020-05-06T15:36:26.406+0000","channel":{"id":"1588779386.6019","name":"PJSIP/in-voipbin-00000bcb","state":"Up","caller":{"name":"","number":"287"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"0111049442037691478","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=522514233-794783407-1635452815,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=103.145.12.63"},"creationtime":"2020-05-06T15:36:26.003+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`),

@@ -10,11 +10,11 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1AsterisksIDChannelsIDHealthPost handles /v1/asterisks/<id>/channels/<id>/health-check request
-func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
 	uriItems := strings.Split(m.URI, "/")

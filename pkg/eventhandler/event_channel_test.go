@@ -7,12 +7,12 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
-	dbhandler "gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
-	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestEventHandlerChannelCreated(t *testing.T) {
@@ -20,13 +20,13 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name    string
-		event   *rabbitmq.Event
+		event   *rabbitmqhandler.Event
 		channel *channel.Channel
 	}
 
@@ -34,7 +34,7 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type":"ChannelCreated","timestamp":"2020-04-19T14:38:00.363+0000","channel":{"id":"1587307080.49","name":"PJSIP/in-voipbin-00000030","state":"Ring","caller":{"name":"","number":"68025"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"011441332323027","priority":1,"app_name":"","app_data":""},"creationtime":"2020-04-19T14:38:00.363+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
@@ -71,13 +71,13 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
-		event *rabbitmq.Event
+		event *rabbitmqhandler.Event
 
 		expectAsteriskID string
 		expectChannelID  string
@@ -88,7 +88,7 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type":"ChannelDestroyed","timestamp":"2020-04-19T17:02:58.651+0000","cause":42,"cause_txt":"Switching equipment congestion","channel":{"id":"1587315778.885","name":"PJSIP/in-voipbin-00000370","state":"Ring","caller":{"name":"","number":"804"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"00048323395006","priority":1,"app_name":"","app_data":""},"creationtime":"2020-04-19T17:02:58.651+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`),
@@ -125,13 +125,13 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name  string
-		event *rabbitmq.Event
+		event *rabbitmqhandler.Event
 
 		expectAsterisID string
 		expectChannelID string
@@ -142,7 +142,7 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type":"ChannelStateChange","timestamp":"2020-04-25T19:17:13.786+0000","channel":{"id":"1587842233.10218","name":"PJSIP/in-voipbin-000026ee","state":"Up","caller":{"name":"","number":"586737682"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"46842002310","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=1491366011-850848062-1281392838,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=45.151.255.178"},"creationtime":"2020-04-25T19:17:13.585+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
@@ -180,7 +180,7 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
@@ -195,7 +195,7 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 
 	type test struct {
 		name    string
-		event   *rabbitmq.Event
+		event   *rabbitmqhandler.Event
 		channel *channel.Channel
 		bridge  *bridge.Bridge
 	}
@@ -203,7 +203,7 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type":"ChannelEnteredBridge","timestamp":"2020-05-09T10:36:04.595+0000","bridge":{"id":"a6abbe41-2a83-447b-8175-e52e5dea000f","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":["1589020563.4752","915befe7-7fff-490e-8432-ffe063d5c46d"],"creationtime":"2020-05-09T10:36:04.360+0000","video_mode":"talker"},"channel":{"id":"1589020563.4752","name":"PJSIP/in-voipbin-000008cc","state":"Ring","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"999999","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=B0SUsFI1eo,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-09T10:36:03.792+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
@@ -241,7 +241,7 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
@@ -256,7 +256,7 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 
 	type test struct {
 		name    string
-		event   *rabbitmq.Event
+		event   *rabbitmqhandler.Event
 		channel *channel.Channel
 		bridge  *bridge.Bridge
 	}
@@ -264,7 +264,7 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type":"ChannelLeftBridge","timestamp":"2020-05-09T10:53:39.181+0000","bridge":{"id":"a6abbe41-2a83-447b-8175-e52e5dea000f","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":["915befe7-7fff-490e-8432-ffe063d5c46d"],"creationtime":"2020-05-09T10:36:04.360+0000","video_mode":"talker"},"channel":{"id":"1589020563.4752","name":"PJSIP/in-voipbin-000008cc","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"999999","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=B0SUsFI1eo,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-09T10:36:03.792+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
@@ -302,13 +302,13 @@ func TestEventHandlerChannelDtmfReceived(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name     string
-		event    *rabbitmq.Event
+		event    *rabbitmqhandler.Event
 		channel  *channel.Channel
 		digit    string
 		duration int
@@ -317,7 +317,7 @@ func TestEventHandlerChannelDtmfReceived(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type":"ChannelDtmfReceived","timestamp":"2020-05-20T18:43:32.809+0000","digit":"5","duration_ms":100,"channel":{"id":"1590000197.6557","name":"PJSIP/call-in-0000067a","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"918298437394","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=Oi9M1NhtxK,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-20T18:43:17.822+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`),
@@ -355,13 +355,13 @@ func TestEventHandlerChannelVarsetDirection(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name      string
-		event     *rabbitmq.Event
+		event     *rabbitmqhandler.Event
 		channel   *channel.Channel
 		direction channel.Direction
 		// duration int
@@ -370,7 +370,7 @@ func TestEventHandlerChannelVarsetDirection(t *testing.T) {
 	tests := []test{
 		{
 			"None",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-DIRECTION","value":"","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.10032","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -383,7 +383,7 @@ func TestEventHandlerChannelVarsetDirection(t *testing.T) {
 		},
 		{
 			"incoming",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-DIRECTION","value":"incoming","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.10042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -396,7 +396,7 @@ func TestEventHandlerChannelVarsetDirection(t *testing.T) {
 		},
 		{
 			"outgoing",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-DIRECTION","value":"outgoing","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.11042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -432,13 +432,13 @@ func TestEventHandlerChannelVarsetSIPTransport(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name         string
-		event        *rabbitmq.Event
+		event        *rabbitmqhandler.Event
 		channel      *channel.Channel
 		sipTransport channel.SIPTransport
 	}
@@ -446,7 +446,7 @@ func TestEventHandlerChannelVarsetSIPTransport(t *testing.T) {
 	tests := []test{
 		{
 			"tcp type",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-SIP_TRANSPORT","value":"tcp","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.90042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -459,7 +459,7 @@ func TestEventHandlerChannelVarsetSIPTransport(t *testing.T) {
 		},
 		{
 			"udp type",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-SIP_TRANSPORT","value":"udp","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.90042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -472,7 +472,7 @@ func TestEventHandlerChannelVarsetSIPTransport(t *testing.T) {
 		},
 		{
 			"tls type",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-SIP_TRANSPORT","value":"tls","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.90042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -485,7 +485,7 @@ func TestEventHandlerChannelVarsetSIPTransport(t *testing.T) {
 		},
 		{
 			"wss type",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-SIP_TRANSPORT","value":"wss","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.90042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -521,13 +521,13 @@ func TestEventHandlerChannelVarsetSIPCallID(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name      string
-		event     *rabbitmq.Event
+		event     *rabbitmqhandler.Event
 		channel   *channel.Channel
 		sipCallID string
 	}
@@ -535,7 +535,7 @@ func TestEventHandlerChannelVarsetSIPCallID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-SIP_CALLID","value":"d224d2a8-e471-11ea-93f2-e302e86922cc","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.90042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -570,13 +570,13 @@ func TestEventHandlerChannelVarsetSIPDataItem(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name    string
-		event   *rabbitmq.Event
+		event   *rabbitmqhandler.Event
 		channel *channel.Channel
 		key     string
 		value   interface{}
@@ -585,7 +585,7 @@ func TestEventHandlerChannelVarsetSIPDataItem(t *testing.T) {
 	tests := []test{
 		{
 			"test VB-SIP_PAI",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-SIP_PAI","value":"tel:+31616818985","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.90042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -599,7 +599,7 @@ func TestEventHandlerChannelVarsetSIPDataItem(t *testing.T) {
 		},
 		{
 			"test VB-SIP_PRIVACY",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-SIP_PRIVACY","value":"id","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-1597539159.90042","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -635,13 +635,13 @@ func TestEventHandlerChannelVarsetVBTYPE(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	type test struct {
 		name    string
-		event   *rabbitmq.Event
+		event   *rabbitmqhandler.Event
 		channel *channel.Channel
 		cType   channel.Type
 	}
@@ -649,7 +649,7 @@ func TestEventHandlerChannelVarsetVBTYPE(t *testing.T) {
 	tests := []test{
 		{
 			"None",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-TYPE","value":"","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-e42907e8-e549-11ea-8744-dfde41483063","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -663,7 +663,7 @@ func TestEventHandlerChannelVarsetVBTYPE(t *testing.T) {
 		},
 		{
 			"call",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-TYPE","value":"call","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-dac9f91e-e549-11ea-9491-e315e9ebdc0a","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -677,7 +677,7 @@ func TestEventHandlerChannelVarsetVBTYPE(t *testing.T) {
 		},
 		{
 			"conf",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-TYPE","value":"conf","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-cf436148-e549-11ea-813a-036e5febe4ac","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
@@ -691,7 +691,7 @@ func TestEventHandlerChannelVarsetVBTYPE(t *testing.T) {
 		},
 		{
 			"join",
-			&rabbitmq.Event{
+			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"variable":"VB-TYPE","value":"join","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-c39d269e-e549-11ea-856a-db4440c2c2fe","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),

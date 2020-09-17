@@ -8,12 +8,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 // ListenHandler interface
@@ -22,7 +22,7 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock rabbitmq.Rabbit
+	rabbitSock rabbitmqhandler.Rabbit
 	db         dbhandler.DBHandler
 	cache      cachehandler.CacheHandler
 
@@ -74,15 +74,15 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmq.Response {
-	return &rabbitmq.Response{
+func simpleResponse(code int) *rabbitmqhandler.Response {
+	return &rabbitmqhandler.Response{
 		StatusCode: code,
 	}
 }
 
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
-	rabbitSock rabbitmq.Rabbit,
+	rabbitSock rabbitmqhandler.Rabbit,
 	db dbhandler.DBHandler,
 	cache cachehandler.CacheHandler,
 	reqHandler requesthandler.RequestHandler,
@@ -135,11 +135,11 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	var requestType string
 	var err error
-	var response *rabbitmq.Response
+	var response *rabbitmqhandler.Response
 
 	logrus.WithFields(
 		logrus.Fields{
@@ -159,7 +159,7 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 	// asterisks
 	////////////
 	// POST /asterisks/<asterisk-id>channels/<channel-id>/health-check
-	case regV1AsterisksIDChannelsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+	case regV1AsterisksIDChannelsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1AsterisksIDChannelsIDHealthPost(m)
 		requestType = "/v1/asterisks/channels/health-check"
 
@@ -167,37 +167,37 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 	// calls
 	////////
 	// POST /calls/<id>/health-check
-	case regV1CallsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+	case regV1CallsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDHealthPost(m)
 		requestType = "/v1/calls/health-check"
 
 	// POST /calls/<id>/action-next
-	case regV1CallsIDActionNext.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+	case regV1CallsIDActionNext.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDActionNextPost(m)
 		requestType = "/v1/calls/action-next"
 
 	// POST /calls/<id>/action-timeout
-	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDActionTimeoutPost(m)
 		requestType = "/v1/calls/action-timeout"
 
 	// GET /calls/<id>
-	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
+	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1CallsIDGet(m)
 		requestType = "/v1/calls"
 
 	// POST /calls/<id>
-	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDPost(m)
 		requestType = "/v1/calls"
 
 	// DELETE /calls/<id>
-	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
+	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1CallsIDDelete(m)
 		requestType = "/v1/calls"
 
 	// POST /calls
-	case regV1Calls.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+	case regV1Calls.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsPost(m)
 		requestType = "/v1/calls"
 
@@ -205,22 +205,22 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 	// conferences
 	//////////////
 	// DELETE /conferences/<conference-id>/calls/<call-id>
-	case regV1ConferencesIDCallsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
+	case regV1ConferencesIDCallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDCallsIDDelete(m)
 		requestType = "/v1/conferences/calls"
 
 	// DELETE /conferences/<conference-id>
-	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodDelete:
+	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDDelete(m)
 		requestType = "/v1/conferences"
 
 	// GET /conferences/<conference-id>
-	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
+	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ConferencesIDGet(m)
 		requestType = "/v1/conferences"
 
 	// POST /conferences
-	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConferencesPost(m)
 		requestType = "/v1/conferences"
 

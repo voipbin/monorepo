@@ -10,16 +10,16 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 func TestProcessV1ConferencesPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
@@ -35,19 +35,19 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmq.Request
+		request *rabbitmqhandler.Request
 
 		expectReqConf    *conference.Conference
 		expectConference *conference.Conference
-		expectRes        *rabbitmq.Response
+		expectRes        *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
 			"conference basic",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/conferences",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "type": "conference"}`),
 			},
@@ -62,16 +62,16 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				BridgeID: "f1354268-9fe8-11ea-b693-3761800b29d5",
 				Timeout:  0,
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","user_id":1,"type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
 			"conference with all items",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/conferences",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "type": "conference", "name": "test conference all items", "detail": "test conference with all tiems detail", "timeout": 180}`),
 			},
@@ -91,16 +91,16 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Detail:   "test conference with all tiems detail",
 				Timeout:  180,
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","user_id":1,"type":"conference","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
 			"conference with timeout",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/conferences",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "type": "conference", "timeout": 180}`),
 			},
@@ -116,16 +116,16 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				BridgeID: "3a6486ba-da9a-11ea-8a39-03999d98a404",
 				Timeout:  180,
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","user_id":1,"type":"conference","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
 			"conference with name",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/conferences",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "type": "conference", "name": "test conference"}`),
 			},
@@ -142,16 +142,16 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Name:     "test conference",
 				Timeout:  0,
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"9179b768-da9a-11ea-b583-c7592caaa090","user_id":1,"type":"conference","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
 			"conference with name and detail",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/conferences",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "type": "conference", "name": "test conference", "detail": "test conference detail"}`),
 			},
@@ -170,7 +170,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Detail:   "test conference detail",
 				Timeout:  0,
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","user_id":1,"type":"conference","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
@@ -199,7 +199,7 @@ func TestProcessV1ConferencesIDDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
@@ -216,22 +216,22 @@ func TestProcessV1ConferencesIDDelete(t *testing.T) {
 	type test struct {
 		name    string
 		id      uuid.UUID
-		request *rabbitmq.Request
+		request *rabbitmqhandler.Request
 
-		expectRes *rabbitmq.Response
+		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
 			"conference type",
 			uuid.FromStringOrNil("cacb6c12-a054-11ea-b1c1-87f3ae0d2b5b"),
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/conferences/cacb6c12-a054-11ea-b1c1-87f3ae0d2b5b",
-				Method:   rabbitmq.RequestMethodDelete,
+				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 			},
 		},
@@ -258,7 +258,7 @@ func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
@@ -276,9 +276,9 @@ func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
 		name         string
 		conferenceID uuid.UUID
 		callID       uuid.UUID
-		request      *rabbitmq.Request
+		request      *rabbitmqhandler.Request
 
-		expectRes *rabbitmq.Response
+		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -286,13 +286,13 @@ func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
 			"conference type",
 			uuid.FromStringOrNil("ebabdcaa-a45a-11ea-9bcb-8b169d520839"),
 			uuid.FromStringOrNil("55338534-a45a-11ea-8754-838b14c2b227"),
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/conferences/ebabdcaa-a45a-11ea-9bcb-8b169d520839/calls/55338534-a45a-11ea-8754-838b14c2b227",
-				Method:   rabbitmq.RequestMethodDelete,
+				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 			},
 		},
@@ -319,7 +319,7 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
@@ -335,18 +335,18 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmq.Request
+		request *rabbitmqhandler.Request
 
 		expectConference *conference.Conference
-		expectRes        *rabbitmq.Response
+		expectRes        *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
 			"conference basic",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:    "/v1/conferences/e2951d7c-ac2d-11ea-8d4b-aff0e70476d6",
-				Method: rabbitmq.RequestMethodGet,
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&conference.Conference{
 				ID:       uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
@@ -354,7 +354,7 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 				Type:     conference.TypeConference,
 				BridgeID: "fea1c22c-ac2d-11ea-8a08-7f5cb36f279a",
 			},
-			&rabbitmq.Response{
+			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","user_id":1,"type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},

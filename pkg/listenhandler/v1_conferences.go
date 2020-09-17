@@ -9,11 +9,11 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1ConferencesPost handles /v1/conferences request
-func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1ConferencesPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	var data request.V1DataConferencesIDPost
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
@@ -41,7 +41,7 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq
 		return simpleResponse(400), nil
 	}
 
-	res := &rabbitmq.Response{
+	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		Data:       tmp,
 	}
@@ -50,7 +50,7 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmq.Request) (*rabbitmq
 }
 
 // processV1ConferencesIDDelete handles /v1/conferences/<id> DELETE request
-func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -74,7 +74,7 @@ func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmq.Request) (*rabb
 }
 
 // processV1ConferencesIDGet handles /v1/conferences/<id> GET request
-func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -91,7 +91,7 @@ func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmq.Request) (*rabbitm
 		return simpleResponse(400), nil
 	}
 
-	res := &rabbitmq.Response{
+	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		Data:       tmp,
 	}
@@ -100,7 +100,7 @@ func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmq.Request) (*rabbitm
 }
 
 // processV1ConferencesIDCallsIDDelete handles /v1/conferences/<id>/calls/<id> DELETE request
-func (h *listenHandler) processV1ConferencesIDCallsIDDelete(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processV1ConferencesIDCallsIDDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 6 {
 		return simpleResponse(400), nil
