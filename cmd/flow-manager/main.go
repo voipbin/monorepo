@@ -15,11 +15,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/rabbitmq"
 )
 
 // channels
@@ -122,7 +122,7 @@ func initProm(endpoint, listen string) {
 
 func run(db *sql.DB, cache cachehandler.CacheHandler) {
 	// rabbitmq handler
-	rabbitSock := rabbitmq.NewRabbit(*rabbitAddr)
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
 	// database handler

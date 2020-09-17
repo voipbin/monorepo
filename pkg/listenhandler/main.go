@@ -9,9 +9,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/rabbitmq"
 )
 
 // ListenHandler interface
@@ -20,7 +20,7 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock rabbitmq.Rabbit
+	rabbitSock rabbitmqhandler.Rabbit
 	db         dbhandler.DBHandler
 	// cache      cachehandler.CacheHandler
 
@@ -62,15 +62,15 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmq.Response {
-	return &rabbitmq.Response{
+func simpleResponse(code int) *rabbitmqhandler.Response {
+	return &rabbitmqhandler.Response{
 		StatusCode: code,
 	}
 }
 
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
-	rabbitSock rabbitmq.Rabbit,
+	rabbitSock rabbitmqhandler.Rabbit,
 	db dbhandler.DBHandler,
 	flowHandler flowhandler.FlowHandler,
 	// cache cachehandler.CacheHandler,
@@ -125,11 +125,11 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	var requestType string
 	var err error
-	var response *rabbitmq.Response
+	var response *rabbitmqhandler.Response
 
 	logrus.WithFields(
 		logrus.Fields{
@@ -143,15 +143,15 @@ func (h *listenHandler) processRequest(m *rabbitmq.Request) (*rabbitmq.Response,
 	switch {
 
 	// v1
-	case regV1FlowsIDActionsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
+	case regV1FlowsIDActionsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows/actions"
 		return h.v1FlowsIDActionsIDGet(m)
 
-	case regV1FlowsID.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodGet:
+	case regV1FlowsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows"
 		return h.v1FlowsIDGet(m)
 
-	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmq.RequestMethodPost:
+	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/flows"
 		return h.v1FlowsPost(m)
 

@@ -6,11 +6,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/rabbitmq"
 )
 
 func TestFlowsGet(t *testing.T) {
@@ -18,7 +18,7 @@ func TestFlowsGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
@@ -29,16 +29,16 @@ func TestFlowsGet(t *testing.T) {
 
 	type test struct {
 		name       string
-		request    *rabbitmq.Request
+		request    *rabbitmqhandler.Request
 		expectFlow *flow.Flow
 	}
 
 	tests := []test{
 		{
 			"empty actions",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test","detail":"test detail","actions":[]}`),
 			},
@@ -50,9 +50,9 @@ func TestFlowsGet(t *testing.T) {
 		},
 		{
 			"has actions echo",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test","detail":"test detail","actions":[{"type":"echo"}]}`),
 			},
@@ -68,9 +68,9 @@ func TestFlowsGet(t *testing.T) {
 		},
 		{
 			"has 2 actions",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test","detail":"test detail","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
@@ -89,9 +89,9 @@ func TestFlowsGet(t *testing.T) {
 		},
 		{
 			"has 2 actions with user_id",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmq.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test","detail":"test detail","user_id":1,"actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
@@ -125,7 +125,7 @@ func TestV1FlowsIDActionsIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmq.NewMockRabbit(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
@@ -136,7 +136,7 @@ func TestV1FlowsIDActionsIDGet(t *testing.T) {
 
 	type test struct {
 		name           string
-		request        *rabbitmq.Request
+		request        *rabbitmqhandler.Request
 		expectFlowID   uuid.UUID
 		expectActionID uuid.UUID
 		// expectFlow *flow.Flow
@@ -145,9 +145,9 @@ func TestV1FlowsIDActionsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"empty actions",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/v1/flows/c71bba06-8a77-11ea-93c7-47dc226c8c31/actions/00000000-0000-0000-0000-000000000001",
-				Method:   rabbitmq.RequestMethodGet,
+				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},

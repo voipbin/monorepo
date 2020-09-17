@@ -8,5 +8,4 @@ COPY . .
 RUN pwd
 RUN ls -l /app
 
-RUN go mod download
 RUN go build ./cmd/...
