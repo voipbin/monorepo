@@ -5,6 +5,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
@@ -14,7 +16,7 @@ import (
 // It creates a temp flow and create a call with temp flow.
 func callsPOST(c *gin.Context) {
 
-	var requestBody RequestBodyCallsPOST
+	var requestBody request.BodyCallsPOST
 
 	if err := c.BindJSON(&requestBody); err != nil {
 		c.AbortWithStatus(400)
@@ -75,6 +77,60 @@ func callsIDDelete(c *gin.Context) {
 		logrus.Infof("Could not get the call info. err: %v", err)
 		c.AbortWithStatus(400)
 		return
+	}
+
+	c.JSON(200, res)
+}
+
+// callsGET handles GET /calls request.
+// It returns list of calls of the given user.
+func callsGET(c *gin.Context) {
+
+	var requestParam request.ParamCallsGET
+
+	if err := c.BindQuery(&requestParam); err != nil {
+		c.AbortWithStatus(400)
+		return
+	}
+	log := logrus.WithFields(
+		logrus.Fields{
+			"request_address": c.ClientIP,
+		},
+	)
+	log.Debugf("callsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+
+	// get service
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// set max page size
+	pageSize := requestParam.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 10
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	// get calls
+	calls, err := serviceHandler.CallGets(&u, pageSize, requestParam.PageToken)
+	if err != nil {
+		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := calls[len(calls)-1].TMCreate
+	res := response.BodyCallsGET{
+		Result: calls,
+		Pagination: response.Pagination{
+			NextPageToken: nextToken,
+		},
 	}
 
 	c.JSON(200, res)

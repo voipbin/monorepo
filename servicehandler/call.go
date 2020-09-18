@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -74,6 +75,28 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, er
 
 	// convert
 	res := c.ConvertCall()
+
+	return res, nil
+}
+
+// CallGets sends a request to call-manager
+// to getting a list of calls.
+// it returns list of calls if it succeed.
+func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"size":     size,
+		"token":    token,
+	})
+
+	// get calls
+	ctx := context.Background()
+	res, err := h.dbHandler.CallsGetsByUserID(ctx, u.ID, token, size)
+	if err != nil {
+		log.Infof("Could not get calls info. err: %v", err)
+		return []*call.Call{}, nil
+	}
 
 	return res, nil
 }

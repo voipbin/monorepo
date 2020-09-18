@@ -84,6 +84,21 @@ func (mr *MockServiceHandlerMockRecorder) CallGet(u, callID interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGet", reflect.TypeOf((*MockServiceHandler)(nil).CallGet), u, callID)
 }
 
+// CallGets mocks base method.
+func (m *MockServiceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallGets", u, size, token)
+	ret0, _ := ret[0].([]*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallGets indicates an expected call of CallGets.
+func (mr *MockServiceHandlerMockRecorder) CallGets(u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockServiceHandler)(nil).CallGets), u, size, token)
+}
+
 // ConferenceCreate mocks base method.
 func (m *MockServiceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
