@@ -7,9 +7,7 @@ import (
 // Call struct represent asterisk's channel information for client show
 type Call struct {
 	// identity
-	ID uuid.UUID `json:"id"`
-	// AsteriskID string    `json:"asterisk_id"`
-	// ChannelID  string    `json:"channel_id"`
+	ID     uuid.UUID `json:"id"`
 	UserID uint64    `json:"user_id"`
 	FlowID uuid.UUID `json:"flow_id"` // flow id
 	ConfID uuid.UUID `json:"conf_id"` // currently joined conference id
@@ -20,9 +18,7 @@ type Call struct {
 	Destination Address `json:"destination"`
 
 	// info
-	Status Status `json:"status"`
-	// Data         map[string]interface{} `json:"data"`
-	// Action       action.Action `json:"action"`
+	Status       Status       `json:"status"`
 	Direction    Direction    `json:"direction"`
 	HangupBy     HangupBy     `json:"hangup_by"`
 	HangupReason HangupReason `json:"hangup_reason"`

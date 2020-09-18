@@ -23,6 +23,7 @@ type ServiceHandler interface {
 	// call handlers
 	CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error)
 	CallGet(u *user.User, callID uuid.UUID) (*call.Call, error)
+	CallGets(u *user.User, size uint64, token string) ([]*call.Call, error)
 
 	// conference handlers
 	ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error)

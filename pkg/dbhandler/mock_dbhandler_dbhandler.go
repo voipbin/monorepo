@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
@@ -33,6 +34,21 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// CallsGetsByUserID mocks base method.
+func (m *MockDBHandler) CallsGetsByUserID(arg0 context.Context, arg1 uint64, arg2 string, arg3 uint64) ([]*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallsGetsByUserID", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].([]*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallsGetsByUserID indicates an expected call of CallsGetsByUserID.
+func (mr *MockDBHandlerMockRecorder) CallsGetsByUserID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallsGetsByUserID", reflect.TypeOf((*MockDBHandler)(nil).CallsGetsByUserID), arg0, arg1, arg2, arg3)
 }
 
 // UserCreate mocks base method.
