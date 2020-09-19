@@ -14,6 +14,13 @@ import (
 
 // callsPOST handles POST /calls request.
 // It creates a temp flow and create a call with temp flow.
+
+// @Summary Make an outbound call
+// @Description dialing to destination
+// @Produce  json
+// @Param call body request.BodyCallsPOST true "The call detail"
+// @Success 200 {object} call.Call
+// @Router /v1.0/calls [post]
 func callsPOST(c *gin.Context) {
 
 	var requestBody request.BodyCallsPOST
@@ -55,6 +62,13 @@ func callsPOST(c *gin.Context) {
 
 // callsIDDelete handles DELETE /calls/<call-id> request.
 // It creates a temp flow and create a call with temp flow.
+
+// @Summary Hangup the call
+// @Description Hangup the call of the given id
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200 {object} call.Call
+// @Router /v1.0/calls/{id} [delete]
 func callsIDDelete(c *gin.Context) {
 
 	// get id
@@ -84,6 +98,14 @@ func callsIDDelete(c *gin.Context) {
 
 // callsGET handles GET /calls request.
 // It returns list of calls of the given user.
+
+// @Summary List calls
+// @Description get calls of the user
+// @Produce  json
+// @Param page_size query int false "The size of results. Max 100"
+// @Param page_token query string false "The token. tm_create"
+// @Success 200 {object} response.BodyCallsGET
+// @Router /v1.0/calls [get]
 func callsGET(c *gin.Context) {
 
 	var requestParam request.ParamCallsGET

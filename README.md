@@ -45,6 +45,8 @@ Usage of ./api-manager:
 ```
 
 # Test
+
+## API test
 ```
 $ curl -k https://api.voipbin.net/ping
 
@@ -53,6 +55,12 @@ $ curl -k -X POST https://api.voipbin.net/auth/login -d '{"username":"test","pas
 $ curl -k -X POST https://api.voipbin.net/v1.0/conferences\?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAwNDQ5MjQsInVzZXIiOnsiaWQiOjEsInVzZXJuYW1lIjoidGVzdCJ9fQ.UJR04FE7b00PRnjEt9kNy4f6DYyrZvZ_jpAVomqzNso -d '{"type":"conference", "name":"test conference"}' -v
 
 $ curl -k -X POST https://localhost:443/v1.0/calls\?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAyMDIyMDcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.YnECmUr2chV-cpBbwedJ905ztcVUq0xVv5Tec_nibaU -v -d '{"source": {"type": "sip","target": "source@test.voipbin.net"},"destination": {"type": "sip","target": "destination@test.voipbin.net"},"actions": []}'
+```
+
+## SWAGGER test
+Access to 
+```
+https://api.voipbin.net/swagger/index.html
 ```
 
 # Build
@@ -72,4 +80,18 @@ $ export GOPRIVATE="gitlab.com/voipbin"
 ```
 $ go mod vendor
 $ go build ./cmd/...
+```
+
+## swag
+Install the swaggo
+```
+$ go get -u -v github.com/go-swagger/go-swagger/cmd/swagger
+$ go get -u github.com/swaggo/swag/cmd/swag
+$ go get -u github.com/swaggo/gin-swagger
+$ go get -u github.com/swaggo/files
+```
+
+swag
+```
+$ swag init -g cmd/api-manager/main.go
 ```
