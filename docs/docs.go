@@ -125,6 +125,136 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/v1.0/conferences": {
+            "get": {
+                "description": "get conferences of the user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get list of conferences",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyCallsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new conference with the given information.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new conferences",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The conference detail",
+                        "name": "call",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyConferencesPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/conference.Conference"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/conferences/{id}": {
+            "get": {
+                "description": "Returns detail conference info of the given conference id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail conference info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conference",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/conference.Conference"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete the conference. All the participants in the conference will be kicked out.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete the confernce.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conference",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
         }
     },
     "definitions": {
@@ -223,6 +353,44 @@ var doc = `{
                 }
             }
         },
+        "conference.Conference": {
+            "type": "object",
+            "properties": {
+                "call_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "request.BodyCallsPOST": {
             "type": "object",
             "required": [
@@ -246,6 +414,23 @@ var doc = `{
                 "source": {
                     "type": "object",
                     "$ref": "#/definitions/call.Address"
+                }
+            }
+        },
+        "request.BodyConferencesPOST": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },

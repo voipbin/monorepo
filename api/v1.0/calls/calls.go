@@ -147,7 +147,10 @@ func callsGET(c *gin.Context) {
 		return
 	}
 
-	nextToken := calls[len(calls)-1].TMCreate
+	nextToken := ""
+	if len(calls) > 0 {
+		nextToken = calls[len(calls)-1].TMCreate
+	}
 	res := response.BodyCallsGET{
 		Result: calls,
 		Pagination: response.Pagination{

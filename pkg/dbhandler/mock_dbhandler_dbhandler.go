@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
@@ -49,6 +50,21 @@ func (m *MockDBHandler) CallsGetsByUserID(arg0 context.Context, arg1 uint64, arg
 func (mr *MockDBHandlerMockRecorder) CallsGetsByUserID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallsGetsByUserID", reflect.TypeOf((*MockDBHandler)(nil).CallsGetsByUserID), arg0, arg1, arg2, arg3)
+}
+
+// ConferenceGetsByUserID mocks base method.
+func (m *MockDBHandler) ConferenceGetsByUserID(arg0 context.Context, arg1 uint64, arg2 string, arg3 uint64) ([]*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceGetsByUserID", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].([]*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceGetsByUserID indicates an expected call of ConferenceGetsByUserID.
+func (mr *MockDBHandlerMockRecorder) ConferenceGetsByUserID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetsByUserID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetsByUserID), arg0, arg1, arg2, arg3)
 }
 
 // UserCreate mocks base method.
