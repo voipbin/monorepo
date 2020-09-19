@@ -1,0 +1,169 @@
+definitions:
+  action.Action:
+    properties:
+      id:
+        type: string
+      next:
+        type: string
+      option:
+        type: string
+      type:
+        type: string
+    type: object
+  call.Address:
+    properties:
+      name:
+        description: parsed name
+        type: string
+      target:
+        description: parsed destination
+        type: string
+      type:
+        description: type of address
+        type: string
+    type: object
+  call.Call:
+    properties:
+      conf_id:
+        description: currently joined conference id
+        type: string
+      destination:
+        $ref: '#/definitions/call.Address'
+        type: object
+      direction:
+        type: string
+      flow_id:
+        description: flow id
+        type: string
+      hangup_by:
+        type: string
+      hangup_reason:
+        type: string
+      id:
+        description: identity
+        type: string
+      source:
+        $ref: '#/definitions/call.Address'
+        description: source/destination
+        type: object
+      status:
+        description: info
+        type: string
+      tm_create:
+        description: timestamp
+        type: string
+      tm_hangup:
+        type: string
+      tm_progressing:
+        type: string
+      tm_ringing:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  request.BodyCallsPOST:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      destination:
+        $ref: '#/definitions/call.Address'
+        type: object
+      event_url:
+        type: string
+      source:
+        $ref: '#/definitions/call.Address'
+        type: object
+    required:
+    - destination
+    - source
+    type: object
+  response.BodyCallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/call.Call'
+        type: array
+    type: object
+host: api.voipbin.net
+info:
+  contact:
+    email: pchero21@gmail.com
+    name: VoIPBIN Project
+  description: RESTful API documents for VoIPBIN project.
+  license: {}
+  termsOfService: http://swagger.io/terms/
+  title: VoIPBIN project API
+  version: "1.0"
+paths:
+  /ping:
+    get:
+      description: Used to check the server is alive
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "pong"}'
+      summary: Returns message pong
+  /v1.0/calls:
+    get:
+      description: get calls of the user
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyCallsGET'
+      summary: List calls
+    post:
+      description: dialing to destination
+      parameters:
+      - description: The call detail
+        in: body
+        name: call
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyCallsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/call.Call'
+      summary: Make an outbound call
+  /v1.0/calls/{id}:
+    delete:
+      description: Hangup the call of the given id
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/call.Call'
+      summary: Hangup the call
+swagger: "2.0"

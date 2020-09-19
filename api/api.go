@@ -17,6 +17,13 @@ func ApplyRoutes(r *gin.Engine) {
 	apiv1.ApplyRoutes(api)
 }
 
+// ping handler
+// @Summary Returns message pong
+// @Description Used to check the server is alive
+// @Produce  json
+// @Router /ping [get]
+// @Success 200 "{"message": "pong"}"
+// @BasePath
 func ping(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "pong",

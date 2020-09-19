@@ -1,0 +1,251 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "RESTful API documents for VoIPBIN project.",
+        "title": "VoIPBIN project API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "VoIPBIN Project",
+            "email": "pchero21@gmail.com"
+        },
+        "license": {},
+        "version": "1.0"
+    },
+    "host": "api.voipbin.net",
+    "paths": {
+        "/ping": {
+            "get": {
+                "description": "Used to check the server is alive",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns message pong",
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"pong\"}"
+                    }
+                }
+            }
+        },
+        "/v1.0/calls": {
+            "get": {
+                "description": "get calls of the user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List calls",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyCallsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "dialing to destination",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Make an outbound call",
+                "parameters": [
+                    {
+                        "description": "The call detail",
+                        "name": "call",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyCallsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/call.Call"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/calls/{id}": {
+            "delete": {
+                "description": "Hangup the call of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Hangup the call",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/call.Call"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "action.Action": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "next": {
+                    "type": "string"
+                },
+                "option": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "call.Address": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "parsed name",
+                    "type": "string"
+                },
+                "target": {
+                    "description": "parsed destination",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type of address",
+                    "type": "string"
+                }
+            }
+        },
+        "call.Call": {
+            "type": "object",
+            "properties": {
+                "conf_id": {
+                    "description": "currently joined conference id",
+                    "type": "string"
+                },
+                "destination": {
+                    "type": "object",
+                    "$ref": "#/definitions/call.Address"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "flow_id": {
+                    "description": "flow id",
+                    "type": "string"
+                },
+                "hangup_by": {
+                    "type": "string"
+                },
+                "hangup_reason": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "identity",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "source/destination",
+                    "type": "object",
+                    "$ref": "#/definitions/call.Address"
+                },
+                "status": {
+                    "description": "info",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_hangup": {
+                    "type": "string"
+                },
+                "tm_progressing": {
+                    "type": "string"
+                },
+                "tm_ringing": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "request.BodyCallsPOST": {
+            "type": "object",
+            "required": [
+                "destination",
+                "source"
+            ],
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "destination": {
+                    "type": "object",
+                    "$ref": "#/definitions/call.Address"
+                },
+                "event_url": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "object",
+                    "$ref": "#/definitions/call.Address"
+                }
+            }
+        },
+        "response.BodyCallsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/call.Call"
+                    }
+                }
+            }
+        }
+    }
+}
