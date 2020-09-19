@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -10,6 +11,32 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 )
+
+// ConferenceGets gets the list of conference.
+// It returns list of calls if it succeed.
+func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"size":     size,
+		"token":    token,
+	})
+
+	if token == "" {
+		token = getCurTime()
+	}
+
+	log.Debugf("Get conferences. token: %s", token)
+	// get calls
+	ctx := context.Background()
+	res, err := h.dbHandler.ConferenceGetsByUserID(ctx, u.ID, token, size)
+	if err != nil {
+		log.Infof("Could not get calls info. err: %v", err)
+		return []*conference.Conference{}, nil
+	}
+
+	return res, nil
+}
 
 // ConferenceCreate is a service handler for conference creating.
 func (h *serviceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error) {

@@ -90,6 +90,10 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 		"token":    token,
 	})
 
+	if token == "" {
+		token = getCurTime()
+	}
+
 	// get calls
 	ctx := context.Background()
 	res, err := h.dbHandler.CallsGetsByUserID(ctx, u.ID, token, size)

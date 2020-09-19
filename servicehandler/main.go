@@ -3,6 +3,9 @@ package servicehandler
 //go:generate mockgen -destination ./mock_servicehandler_servicehandler.go -package servicehandler -source ./main.go ServiceHandler
 
 import (
+	"strings"
+	"time"
+
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
@@ -28,6 +31,7 @@ type ServiceHandler interface {
 	// conference handlers
 	ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error)
 	ConferenceDelete(u *user.User, confID uuid.UUID) error
+	ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error)
 
 	// flow handlers
 	FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
@@ -58,4 +62,12 @@ var ReqHandler requesthandler.RequestHandler
 func Setup(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow string) error {
 	ReqHandler = requesthandler.NewRequestHandler(sock, exchangeDelay, queueCall, queueFlow)
 	return nil
+}
+
+// getCurTime return current utc time string
+func getCurTime() string {
+	now := time.Now().UTC().String()
+	res := strings.TrimSuffix(now, " +0000 UTC")
+
+	return res
 }

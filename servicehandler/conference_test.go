@@ -140,3 +140,45 @@ func TestConferenceDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestConferenceGets(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	type test struct {
+		name  string
+		user  *user.User
+		token string
+		limit uint64
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&user.User{
+				ID: 1,
+			},
+			"2020-09-20T03:23:20.995000",
+			10,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			mockDB.EXPECT().ConferenceGetsByUserID(gomock.Any(), tt.user.ID, tt.token, tt.limit).Return([]*conference.Conference{}, nil)
+
+			_, err := h.ConferenceGets(tt.user, tt.limit, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

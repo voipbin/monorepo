@@ -65,6 +65,31 @@ definitions:
       user_id:
         type: integer
     type: object
+  conference.Conference:
+    properties:
+      call_ids:
+        items:
+          type: string
+        type: array
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+      user_id:
+        type: integer
+    type: object
   request.BodyCallsPOST:
     properties:
       actions:
@@ -82,6 +107,17 @@ definitions:
     required:
     - destination
     - source
+    type: object
+  request.BodyConferencesPOST:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    required:
+    - type
     type: object
   response.BodyCallsGET:
     properties:
@@ -166,4 +202,91 @@ paths:
           schema:
             $ref: '#/definitions/call.Call'
       summary: Hangup the call
+  /v1.0/conferences:
+    get:
+      description: get conferences of the user
+      parameters:
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyCallsGET'
+      summary: Get list of conferences
+    post:
+      description: Create a new conference with the given information.
+      parameters:
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: The conference detail
+        in: body
+        name: call
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyConferencesPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/conference.Conference'
+      summary: Create a new conferences
+  /v1.0/conferences/{id}:
+    delete:
+      description: Delete the conference. All the participants in the conference will be kicked out.
+      parameters:
+      - description: The ID of the conference
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete the confernce.
+    get:
+      description: Returns detail conference info of the given conference id.
+      parameters:
+      - description: The ID of the conference
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/conference.Conference'
+      summary: Returns detail conference info.
 swagger: "2.0"

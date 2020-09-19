@@ -128,6 +128,21 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceDelete(u, confID interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceDelete", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceDelete), u, confID)
 }
 
+// ConferenceGets mocks base method.
+func (m *MockServiceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceGets", u, size, token)
+	ret0, _ := ret[0].([]*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceGets indicates an expected call of ConferenceGets.
+func (mr *MockServiceHandlerMockRecorder) ConferenceGets(u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGets), u, size, token)
+}
+
 // FlowCreate mocks base method.
 func (m *MockServiceHandler) FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
