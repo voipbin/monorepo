@@ -28,6 +28,7 @@ const (
 	TypeAnswer         Type = "answer"
 	TypeConferenceJoin Type = "conference_join"
 	TypeEcho           Type = "echo"
+	TypeInput          Type = "input"
 	TypePlay           Type = "play"
 	TypeStreamEcho     Type = "stream_echo"
 )
@@ -45,6 +46,12 @@ type OptionConferenceJoin struct {
 // OptionEcho struct
 type OptionEcho struct {
 	Duration int `json:"duration"`
+}
+
+// OptionInput defines action input's option.
+type OptionInput struct {
+	EventURL    string `json:"event_url"`
+	EventMethod string `json:"event_method"`
 }
 
 // OptionPlay defines action play's option.

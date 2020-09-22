@@ -32,19 +32,3 @@ func NewFlowHandler(db dbhandler.DBHandler) FlowHandler {
 
 	return h
 }
-
-// FlowGet returns flow
-func (h *flowHandler) ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error) {
-	flow, err := h.FlowGet(ctx, flowID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, action := range flow.Actions {
-		if action.ID == actionID {
-			return &action, nil
-		}
-	}
-
-	return nil, dbhandler.ErrNotFound
-}

@@ -2,6 +2,7 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 )
 
@@ -18,4 +19,11 @@ type V1DataFlowPost struct {
 	Actions []action.Action `json:"actions"` // actions
 
 	Persist bool `json:"persist"` // persist. If it is true, set the flow into the database.
+}
+
+// V1FlowsIDActionsIDNextGet is
+// v1 data type request struct for
+// /v1/flows/{id}/actions/{id}/next GET
+type V1FlowsIDActionsIDNextGet struct {
+	CallID uuid.UUID `json:"call_id"`
 }
