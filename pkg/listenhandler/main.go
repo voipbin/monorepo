@@ -34,9 +34,10 @@ var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// flows
-	regV1Flows            = regexp.MustCompile("/v1/flows")
-	regV1FlowsID          = regexp.MustCompile("/v1/flows/" + regUUID)
-	regV1FlowsIDActionsID = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID)
+	regV1Flows                = regexp.MustCompile("/v1/flows")
+	regV1FlowsID              = regexp.MustCompile("/v1/flows/" + regUUID)
+	regV1FlowsIDActionsID     = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID)
+	regV1FlowsIDActionsIDNext = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "/next")
 )
 
 var (
