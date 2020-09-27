@@ -1,5 +1,6 @@
 # call-manager
-Handling the call.
+Handling the call. 
+Execute the atomic call actions.
 
 # Usage
 ```
