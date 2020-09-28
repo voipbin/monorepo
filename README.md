@@ -2,6 +2,9 @@
 Handling the call. 
 Execute the atomic call actions.
 
+# Actions
+
+
 # Usage
 ```
 Usage of ./call-manager:
