@@ -3,7 +3,10 @@ Handling the call.
 Execute the atomic call actions.
 
 # Actions
-
+answer
+play
+echio
+stream_echo
 
 # Usage
 ```
