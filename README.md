@@ -2,13 +2,6 @@
 Handling the call. 
 Execute the atomic call actions.
 
-# Actions
-## answer
-answer
-play
-echio
-stream_echo
-
 # Usage
 ```
 Usage of ./call-manager:
@@ -78,5 +71,19 @@ $ export GOPRIVATE="gitlab.com/voipbin"
 $ go mod vendor
 $ go build ./cmd/...
 ```
+
+# Actions
+## answer
+Answer the call(Incoming call only).
+
+## play
+Play the music file(url).
+
+## echo
+Echo back. Sound only.
+
+## stream_echo
+Echo back. Sound/Video/DTMF.
+
 
 # Note
