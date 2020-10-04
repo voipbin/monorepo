@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
@@ -22,6 +23,9 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
+
+	ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error)
+	ActiveFlowSet(ctx context.Context, cf *activeflow.ActiveFlow) error
 
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowSet(ctx context.Context, flow *flow.Flow) error

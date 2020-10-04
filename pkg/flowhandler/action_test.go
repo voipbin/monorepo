@@ -31,7 +31,7 @@ func TestActionInputGet(t *testing.T) {
 			"normal",
 			&action.Action{
 				ID:     uuid.FromStringOrNil("6e2a0cee-fba2-11ea-a469-a350f2dad844"),
-				Option: []byte(`{"event_url": "https://webhook.site/62c0cadf-3087-4af9-a0a4-cafaf0baed29"}`),
+				Option: []byte(`{"event_url": "https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211"}`),
 			},
 			uuid.FromStringOrNil("549d358a-fbfc-11ea-a625-43073fda56b9"),
 		},

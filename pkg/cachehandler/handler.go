@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
@@ -21,6 +22,7 @@ func (h *handler) getSerialize(ctx context.Context, key string, data interface{}
 	if err := json.Unmarshal([]byte(tmp), &data); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -53,6 +55,29 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	key := fmt.Sprintf("flow:%s", id)
 
 	var res flow.Flow
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// ActiveFlowSet sets the activeflow info into the cache
+func (h *handler) ActiveFlowSet(ctx context.Context, af *activeflow.ActiveFlow) error {
+	key := fmt.Sprintf("activeflow:%s", af.CallID)
+
+	if err := h.setSerialize(ctx, key, af); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ActiveFlowGet returns cached activeflow info
+func (h *handler) ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error) {
+	key := fmt.Sprintf("activeflow:%s", id)
+
+	var res activeflow.ActiveFlow
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}

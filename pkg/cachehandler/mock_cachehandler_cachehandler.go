@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
@@ -34,6 +35,35 @@ func NewMockCacheHandler(ctrl *gomock.Controller) *MockCacheHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
+}
+
+// ActiveFlowGet mocks base method.
+func (m *MockCacheHandler) ActiveFlowGet(arg0 context.Context, arg1 uuid.UUID) (*activeflow.ActiveFlow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveFlowGet", arg0, arg1)
+	ret0, _ := ret[0].(*activeflow.ActiveFlow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveFlowGet indicates an expected call of ActiveFlowGet.
+func (mr *MockCacheHandlerMockRecorder) ActiveFlowGet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowGet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveFlowGet), arg0, arg1)
+}
+
+// ActiveFlowSet mocks base method.
+func (m *MockCacheHandler) ActiveFlowSet(arg0 context.Context, arg1 *activeflow.ActiveFlow) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveFlowSet", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActiveFlowSet indicates an expected call of ActiveFlowSet.
+func (mr *MockCacheHandlerMockRecorder) ActiveFlowSet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowSet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveFlowSet), arg0, arg1)
 }
 
 // Connect mocks base method.
