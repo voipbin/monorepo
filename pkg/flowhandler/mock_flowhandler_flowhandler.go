@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
+	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
@@ -50,6 +51,21 @@ func (m *MockFlowHandler) ActionGet(arg0 context.Context, arg1, arg2 uuid.UUID) 
 func (mr *MockFlowHandlerMockRecorder) ActionGet(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionGet", reflect.TypeOf((*MockFlowHandler)(nil).ActionGet), arg0, arg1, arg2)
+}
+
+// ActiveFlowCreate mocks base method.
+func (m *MockFlowHandler) ActiveFlowCreate(arg0 context.Context, arg1, arg2 uuid.UUID) (*activeflow.ActiveFlow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveFlowCreate", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*activeflow.ActiveFlow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveFlowCreate indicates an expected call of ActiveFlowCreate.
+func (mr *MockFlowHandlerMockRecorder) ActiveFlowCreate(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowCreate", reflect.TypeOf((*MockFlowHandler)(nil).ActiveFlowCreate), arg0, arg1, arg2)
 }
 
 // FlowCreate mocks base method.

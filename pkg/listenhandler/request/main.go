@@ -6,6 +6,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 )
 
+// V1DataActiveFlowsPost is
+// v1 data type request struct for
+// /v1/active-flows POST
+type V1DataActiveFlowsPost struct {
+	CallID uuid.UUID `json:"call_id"`
+	FlowID uuid.UUID `json:"flow_id"`
+}
+
 // V1DataFlowPost is
 // v1 data type request struct for
 // /v1/flows POST

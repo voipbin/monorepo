@@ -10,11 +10,18 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
+	ActiveFlowCreate(ctx context.Context, af *activeflow.ActiveFlow) error
+	ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error)
+	ActiveFlowGetFromCache(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error)
+	ActiveFlowSet(ctx context.Context, af *activeflow.ActiveFlow) error
+	ActiveFlowSetToCache(ctx context.Context, flow *activeflow.ActiveFlow) error
+
 	FlowCreate(ctx context.Context, flow *flow.Flow) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flow, error)

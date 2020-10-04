@@ -33,6 +33,9 @@ type listenHandler struct {
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
+	// activeflows
+	regV1ActiveFlows = regexp.MustCompile("/v1/active-flows")
+
 	// flows
 	regV1Flows                = regexp.MustCompile("/v1/flows")
 	regV1FlowsID              = regexp.MustCompile("/v1/flows/" + regUUID)
@@ -144,6 +147,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	switch {
 
 	// v1
+	case regV1ActiveFlows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/active-flows"
+		return h.v1ActiveFlowsPost(m)
+
 	case regV1FlowsIDActionsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows/actions"
 		return h.v1FlowsIDActionsIDGet(m)
