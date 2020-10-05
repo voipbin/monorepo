@@ -10,6 +10,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
+	activeflow "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/activeflow"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
@@ -347,4 +348,34 @@ func (m *MockRequestHandler) FlowActionGet(flowID, actionID uuid.UUID) (*action.
 func (mr *MockRequestHandlerMockRecorder) FlowActionGet(flowID, actionID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActionGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowActionGet), flowID, actionID)
+}
+
+// FlowActvieFlowPost mocks base method.
+func (m *MockRequestHandler) FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowActvieFlowPost", callID, flowID)
+	ret0, _ := ret[0].(*activeflow.ActiveFlow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowActvieFlowPost indicates an expected call of FlowActvieFlowPost.
+func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowPost(callID, flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActvieFlowPost", reflect.TypeOf((*MockRequestHandler)(nil).FlowActvieFlowPost), callID, flowID)
+}
+
+// FlowActvieFlowNextGet mocks base method.
+func (m *MockRequestHandler) FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowActvieFlowNextGet", callID, actionID)
+	ret0, _ := ret[0].(*action.Action)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowActvieFlowNextGet indicates an expected call of FlowActvieFlowNextGet.
+func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowNextGet(callID, actionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActvieFlowNextGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowActvieFlowNextGet), callID, actionID)
 }

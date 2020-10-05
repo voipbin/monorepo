@@ -93,6 +93,15 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 		return nil, err
 	}
 
+	// create active-flow
+	af, err := h.reqHandler.FlowActvieFlowPost(c.ID, flowID)
+	if err != nil {
+		log.Errorf("Could not create an active-flow for outgoing call. err: %v", err)
+		return nil, err
+	}
+	log.Debugf("Created active-flow. active-flow: %v", af)
+
+	// create a destination endpoint
 	endpoint := fmt.Sprintf("pjsip/call-out/sip:%s", destination.Target)
 	appArgs := fmt.Sprintf("context=%s", contextOutgoingCall)
 

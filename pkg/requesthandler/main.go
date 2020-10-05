@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
@@ -130,6 +131,8 @@ type RequestHandler interface {
 
 	// flow actions
 	FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
+	FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
+	FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error)
 }
 
 type requestHandler struct {
