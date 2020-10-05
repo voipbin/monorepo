@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 )
 
 func TestV1ActiveFlowsPost(t *testing.T) {
@@ -49,6 +50,61 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockFlowHandler.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectCallID, tt.expectFlowID).Return(nil, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.StatusCode != 200 {
+				t.Errorf("Wrong match. expect: 200, got: %d", res.StatusCode)
+			}
+		})
+	}
+}
+
+func TestV1ActiveFlowsIDNextGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+
+	h := &listenHandler{
+		db:          mockDB,
+		rabbitSock:  mockSock,
+		flowHandler: mockFlowHandler,
+	}
+
+	type test struct {
+		name            string
+		request         *rabbitmqhandler.Request
+		callID          uuid.UUID
+		currentActionID uuid.UUID
+		nextAction      action.Action
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/active-flows/cec5b926-06a7-11eb-967e-fb463343f0a5/next",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"current_action_id": "6a1ce642-06a8-11eb-a632-978be835f982"}`),
+			},
+			uuid.FromStringOrNil("cec5b926-06a7-11eb-967e-fb463343f0a5"),
+			uuid.FromStringOrNil("6a1ce642-06a8-11eb-a632-978be835f982"),
+			action.Action{
+				ID:   uuid.FromStringOrNil("63698276-06ab-11eb-9cbf-c771a09c1619"),
+				Type: action.TypeEcho,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockFlowHandler.EXPECT().ActiveFlowNextActionGet(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.nextAction, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

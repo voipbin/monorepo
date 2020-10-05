@@ -68,6 +68,21 @@ func (mr *MockFlowHandlerMockRecorder) ActiveFlowCreate(arg0, arg1, arg2 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowCreate", reflect.TypeOf((*MockFlowHandler)(nil).ActiveFlowCreate), arg0, arg1, arg2)
 }
 
+// ActiveFlowNextActionGet mocks base method.
+func (m *MockFlowHandler) ActiveFlowNextActionGet(arg0 context.Context, arg1, arg2 uuid.UUID) (*action.Action, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveFlowNextActionGet", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*action.Action)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveFlowNextActionGet indicates an expected call of ActiveFlowNextActionGet.
+func (mr *MockFlowHandlerMockRecorder) ActiveFlowNextActionGet(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowNextActionGet", reflect.TypeOf((*MockFlowHandler)(nil).ActiveFlowNextActionGet), arg0, arg1, arg2)
+}
+
 // FlowCreate mocks base method.
 func (m *MockFlowHandler) FlowCreate(arg0 context.Context, arg1 *flow.Flow, arg2 bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()

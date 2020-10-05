@@ -34,7 +34,8 @@ var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// activeflows
-	regV1ActiveFlows = regexp.MustCompile("/v1/active-flows")
+	regV1ActiveFlows       = regexp.MustCompile("/v1/active-flows")
+	regV1ActiveFlowsIDNext = regexp.MustCompile("/v1/active-flows/" + regUUID + "/next")
 
 	// flows
 	regV1Flows                = regexp.MustCompile("/v1/flows")
@@ -150,6 +151,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1ActiveFlows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/active-flows"
 		return h.v1ActiveFlowsPost(m)
+
+	case regV1ActiveFlowsIDNext.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/active-flows"
+		return h.v1ActiveFlowsIDNextGet(m)
 
 	case regV1FlowsIDActionsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows/actions"

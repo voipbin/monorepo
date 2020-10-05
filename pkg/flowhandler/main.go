@@ -24,6 +24,7 @@ type FlowHandler interface {
 	ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error)
 
 	ActiveFlowCreate(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
+	ActiveFlowNextActionGet(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
 
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowCreate(ctx context.Context, flow *flow.Flow, persist bool) (*flow.Flow, error)
