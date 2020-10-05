@@ -13,4 +13,5 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20200916231420-c174522ea887
+	google.golang.org/appengine v1.4.0 // indirect
 )

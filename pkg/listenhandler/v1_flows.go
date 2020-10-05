@@ -89,38 +89,3 @@ func (h *listenHandler) v1FlowsIDActionsIDGet(req *rabbitmqhandler.Request) (*ra
 
 	return res, nil
 }
-
-// v1FlowsIDActionsIDNextGet handles
-// /v1/flows/{id}/actions/{id}/next GET
-func (h *listenHandler) v1FlowsIDActionsIDNextGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-
-	// "/v1/flows/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/actions/ab1f7732-8a74-11ea-98f6-9b02a042df6a"
-	tmpVals := strings.Split(req.URI, "/")
-	flowID := uuid.FromStringOrNil(tmpVals[3])
-	actionID := uuid.FromStringOrNil(tmpVals[5])
-
-	var reqData request.V1FlowsIDActionsIDNextGet
-	if err := json.Unmarshal(req.Data, &reqData); err != nil {
-		logrus.Errorf("Could not marshal the data. err: %v", err)
-		return nil, err
-	}
-
-	resAction, err := h.flowHandler.ActionGet(ctx, flowID, actionID)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := json.Marshal(resAction)
-	if err != nil {
-		return nil, err
-	}
-
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       data,
-	}
-
-	return res, nil
-}
