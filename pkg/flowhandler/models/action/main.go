@@ -29,7 +29,7 @@ const (
 	TypeConferenceJoin Type = "conference_join"
 	TypeEcho           Type = "echo"
 	TypeHangup         Type = "hangup"
-	TypeInput          Type = "input"
+	TypePatch          Type = "patch"
 	TypePlay           Type = "play"
 	TypeStreamEcho     Type = "stream_echo"
 )
@@ -49,8 +49,8 @@ type OptionEcho struct {
 	Duration int `json:"duration"`
 }
 
-// OptionInput defines action input's option.
-type OptionInput struct {
+// OptionPatch defines action patch's option.
+type OptionPatch struct {
 	EventURL    string `json:"event_url"`
 	EventMethod string `json:"event_method"`
 }

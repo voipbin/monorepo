@@ -11,6 +11,68 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
+func TestFlowCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
+		name string
+		flow *flow.Flow
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&flow.Flow{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
+
+			h.FlowCreate(context.Background(), &flow.Flow{}, true)
+
+		})
+	}
+}
+
+func TestFlowGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
+		name string
+		flow *flow.Flow
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&flow.Flow{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
+
+			h.FlowGet(context.Background(), uuid.Must(uuid.NewV4()))
+		})
+	}
+}
+
 func TestFlowCreatePersistTrue(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

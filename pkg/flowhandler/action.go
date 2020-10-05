@@ -15,25 +15,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 )
 
-func (h *flowHandler) actionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error) {
-	flow, err := h.FlowGet(ctx, flowID)
-	if err != nil {
-		return nil, err
-	}
+// actionPatchGet gets the action from the remote.
+func (h *flowHandler) actionPatchGet(act *action.Action, callID uuid.UUID) ([]action.Action, error) {
 
-	for _, action := range flow.Actions {
-		if action.ID == actionID {
-			return &action, nil
-		}
-	}
-
-	return nil, dbhandler.ErrNotFound
-}
-
-// actionInputGet gets the action from the remote.
-func (h *flowHandler) actionInputGet(act *action.Action, callID uuid.UUID) ([]action.Action, error) {
-
-	var option action.OptionInput
+	var option action.OptionPatch
 	if err := json.Unmarshal(act.Option, &option); err != nil {
 		logrus.Errorf("Could not unmarshal the option. err: %v", err)
 		return nil, err
@@ -84,22 +69,8 @@ func (h *flowHandler) actionInputGet(act *action.Action, callID uuid.UUID) ([]ac
 	return res, nil
 }
 
-// ActionGet returns action
+// ActionGet returns corresponded action.
 func (h *flowHandler) ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error) {
-	return h.actionGet(ctx, flowID, actionID)
-}
-
-// ActionNextGet returns given action's next action
-func (h *flowHandler) ActionNextGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error) {
-	curAction, err := h.actionGet(ctx, flowID, actionID)
-	if err != nil {
-		return nil, err
-	}
-
-	if curAction.Type == action.TypeInput {
-		// get
-	}
-
 	flow, err := h.FlowGet(ctx, flowID)
 	if err != nil {
 		return nil, err
@@ -110,8 +81,6 @@ func (h *flowHandler) ActionNextGet(ctx context.Context, flowID uuid.UUID, actio
 			return &action, nil
 		}
 	}
-
-	// if action.
 
 	return nil, dbhandler.ErrNotFound
 }

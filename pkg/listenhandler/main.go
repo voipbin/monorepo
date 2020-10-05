@@ -38,10 +38,9 @@ var (
 	regV1ActiveFlowsIDNext = regexp.MustCompile("/v1/active-flows/" + regUUID + "/next")
 
 	// flows
-	regV1Flows                = regexp.MustCompile("/v1/flows")
-	regV1FlowsID              = regexp.MustCompile("/v1/flows/" + regUUID)
-	regV1FlowsIDActionsID     = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID)
-	regV1FlowsIDActionsIDNext = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "/next")
+	regV1Flows            = regexp.MustCompile("/v1/flows")
+	regV1FlowsID          = regexp.MustCompile("/v1/flows/" + regUUID)
+	regV1FlowsIDActionsID = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID)
 )
 
 var (
