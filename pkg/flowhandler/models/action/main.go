@@ -28,6 +28,7 @@ const (
 	TypeAnswer         Type = "answer"
 	TypeConferenceJoin Type = "conference_join"
 	TypeEcho           Type = "echo"
+	TypeHangup         Type = "hangup"
 	TypeInput          Type = "input"
 	TypePlay           Type = "play"
 	TypeStreamEcho     Type = "stream_echo"
