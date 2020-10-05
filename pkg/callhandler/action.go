@@ -52,6 +52,9 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	case action.TypeEcho:
 		err = h.actionExecuteEcho(c, a)
 
+	case action.TypeHangup:
+		err = h.actionExecuteHangup(c, a)
+
 	case action.TypePlay:
 		err = h.actionExecutePlay(c, a)
 
@@ -77,32 +80,23 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 	log := log.WithFields(
 		logrus.Fields{
 			"call": c.ID,
+			"flow": c.FlowID,
 		})
+	log.WithFields(
+		logrus.Fields{
+			"action": c.Action,
+		},
+	).Debug("Getting a next action for the call.")
 
-	// validate current state
-	switch {
-	case c.Action.Next == action.IDEnd:
-		// last action
-		log.Debug("End of call flow. No more next action left.")
-		h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return nil
-
-	case c.FlowID == uuid.Nil:
-		// invalid flow id
-		log.Info("The call's flow id is not valid. Hanging up the call.")
-		h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return nil
-	}
-
-	// get next action from flow-manager
-	action, err := h.reqHandler.FlowActionGet(c.FlowID, c.Action.Next)
+	// get next action
+	nextAction, err := h.reqHandler.FlowActvieFlowNextGet(c.ID, c.Action.ID)
 	if err != nil {
-		log.Errorf("Could not get next flow action. err: %v", err)
+		log.Debugf("Could not get next action from the flow-manager. err: %v", err)
 		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return err
 	}
 
-	return h.ActionExecute(c, action)
+	return h.ActionExecute(c, nextAction)
 }
 
 // ActionTimeout handles action's timeout
@@ -388,6 +382,45 @@ func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) er
 	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
+
+	return nil
+}
+
+// actionExecuteHangup executes the action type hangup
+func (h *callHandler) actionExecuteHangup(c *call.Call, a *action.Action) error {
+	// copy the action
+	act := *a
+
+	// set current time
+	act.TMExecute = getCurTime()
+
+	log := log.WithFields(
+		log.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionHangup
+	if err := json.Unmarshal(act.Option, &option); err != nil {
+		log.Errorf("could not parse the option. err: %v", err)
+		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+	}
+
+	// set option
+	rawOption, err := json.Marshal(option)
+	if err != nil {
+		return fmt.Errorf("could not marshal the action option. err: %v", err)
+	}
+	act.Option = rawOption
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	// hangup
+	h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 
 	return nil
 }

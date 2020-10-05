@@ -13,9 +13,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func TestGetTypeContextIncomingCall(t *testing.T) {
@@ -537,6 +537,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
+			mockReq.EXPECT().FlowActvieFlowPost(tt.id, tt.flowID).Return(nil, nil)
 			mockReq.EXPECT().AstChannelCreate(requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s", contextOutgoingCall), fmt.Sprintf("pjsip/call-out/sip:%s", tt.destination.Target), "", "", "").Return(nil)
 
 			res, err := h.CreateCallOutgoing(tt.id, tt.userID, tt.flowID, tt.source, tt.destination)

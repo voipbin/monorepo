@@ -60,6 +60,7 @@ const (
 	TypeAnswer         Type = "answer"
 	TypeConferenceJoin Type = "conference_join"
 	TypeEcho           Type = "echo"        // echo the voice
+	TypeHangup         Type = "hangup"      // call hangup
 	TypePlay           Type = "play"        // play the given file
 	TypeStreamEcho     Type = "stream_echo" // echo the stream(video/voice) and dtmf
 )
@@ -78,6 +79,11 @@ type OptionConferenceJoin struct {
 type OptionEcho struct {
 	Duration int  `json:"duration"` // echo duration. ms
 	DTMF     bool `json:"dtmf"`     // sending back the dtmf on/off
+}
+
+// OptionHangup defines action hangup's option.
+type OptionHangup struct {
+	// no option
 }
 
 // OptionPlay defines action play's option.

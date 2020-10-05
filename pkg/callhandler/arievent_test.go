@@ -10,10 +10,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
@@ -145,8 +145,14 @@ func TestARIPlaybackFinished(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			returnAction := action.Action{
+				Type:   action.TypeHangup,
+				Option: []byte(`{}`),
+			}
+
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any())
+			mockReq.EXPECT().FlowActvieFlowNextGet(tt.call.ID, tt.call.Action.ID).Return(&returnAction, nil)
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelHangup(tt.call.AsteriskID, tt.call.ChannelID, ari.ChannelCauseNormalClearing)
 
 			if err := h.ARIPlaybackFinished(tt.channel, tt.playbackID); err != nil {
