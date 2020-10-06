@@ -188,6 +188,11 @@ func (h *flowHandler) activeFlowHandleActionPatch(ctx context.Context, callID uu
 		return err
 	}
 
+	// generate action id
+	for _, act := range patchedActions {
+		act.ID = uuid.Must(uuid.NewV4())
+	}
+
 	// get active flow
 	af, err := h.db.ActiveFlowGet(ctx, callID)
 	if err != nil {
