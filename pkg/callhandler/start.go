@@ -29,6 +29,16 @@ const (
 	domainSipService = "sip-service.voipbin.net"
 )
 
+// pjsip endpoints
+const (
+	pjsipEndpointOutgoing = "call-out"
+)
+
+// fixed trunks
+const (
+	trunkTwilio = "voipbin.pstn.twilio.com"
+)
+
 // default max timeout for each services. sec.
 const (
 	defaultMaxTimeoutEcho       = "300"   // maximum call duration for service echo. 5 min
@@ -102,11 +112,31 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 	log.Debugf("Created active-flow. active-flow: %v", af)
 
 	// create a destination endpoint
-	endpoint := fmt.Sprintf("pjsip/call-out/sip:%s", destination.Target)
+	var endpointDst string
+	if destination.Type == call.AddressTypeTel {
+		endpointDst = fmt.Sprintf("pjsip/%s/sip:%s@%s", pjsipEndpointOutgoing, destination.Target, trunkTwilio)
+	} else {
+		endpointDst = fmt.Sprintf("pjsip/%s/sip:%s", pjsipEndpointOutgoing, destination.Target)
+	}
+
+	// create a source endpoint
+	var endpointSrc string
+	if source.Type == call.AddressTypeTel {
+		endpointSrc = source.Target
+	} else {
+		endpointSrc = fmt.Sprintf("\"%s\" <sip:%s>", source.Name, source.Target)
+	}
+
+	// set app args
 	appArgs := fmt.Sprintf("context=%s", contextOutgoingCall)
 
+	// set variables
+	variables := map[string]string{
+		"CALLERID(all)": endpointSrc,
+	}
+
 	// create a channel
-	if err := h.reqHandler.AstChannelCreate(requesthandler.AsteriskIDCall, channelID, appArgs, endpoint, "", "", ""); err != nil {
+	if err := h.reqHandler.AstChannelCreate(requesthandler.AsteriskIDCall, channelID, appArgs, endpointDst, "", "", "", variables); err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 		return nil, err
 	}
@@ -187,7 +217,7 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, "", 30); err != nil {
+	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, cn.ID, 30); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}

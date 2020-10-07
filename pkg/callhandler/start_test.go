@@ -486,7 +486,9 @@ func TestCreateCallOutgoing(t *testing.T) {
 		source      call.Address
 		destination call.Address
 
-		expectCall *call.Call
+		expectCall        *call.Call
+		expectEndpointDst string
+		expectVariables   map[string]string
 	}
 
 	tests := []test{
@@ -498,11 +500,11 @@ func TestCreateCallOutgoing(t *testing.T) {
 			call.Address{
 				Type:   call.AddressTypeSIP,
 				Name:   "test",
-				Target: "testincoming@test.com",
+				Target: "testsrc@test.com",
 			},
 			call.Address{
 				Type:   call.AddressTypeSIP,
-				Name:   " test target",
+				Name:   "test target",
 				Target: "testoutgoing@test.com",
 			},
 
@@ -517,17 +519,65 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Source: call.Address{
 					Type:   call.AddressTypeSIP,
 					Name:   "test",
-					Target: "testincoming@test.com",
+					Target: "testsrc@test.com",
 				},
 				Destination: call.Address{
 					Type:   call.AddressTypeSIP,
-					Name:   " test target",
+					Name:   "test target",
 					Target: "testoutgoing@test.com",
 				},
 				Action: action.Action{
 					ID:   action.IDInit,
 					Next: action.IDBegin,
 				},
+			},
+			"pjsip/call-out/sip:testoutgoing@test.com",
+			map[string]string{
+				"CALLERID(all)": `"test" <sip:testsrc@test.com>`,
+			},
+		},
+		{
+			"tel type destination",
+			uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+			1,
+			uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+			call.Address{
+				Type:   call.AddressTypeTel,
+				Name:   "test",
+				Target: "+99999888",
+			},
+			call.Address{
+				Type:   call.AddressTypeTel,
+				Name:   "test target",
+				Target: "+123456789",
+			},
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+				UserID:    1,
+				ChannelID: call.TestChannelID,
+				FlowID:    uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+				Type:      call.TypeFlow,
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
+				Source: call.Address{
+					Type:   call.AddressTypeTel,
+					Name:   "test",
+					Target: "+99999888",
+				},
+				Destination: call.Address{
+					Type:   call.AddressTypeTel,
+					Name:   "test target",
+					Target: "+123456789",
+				},
+				Action: action.Action{
+					ID:   action.IDInit,
+					Next: action.IDBegin,
+				},
+			},
+			"pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
+			map[string]string{
+				"CALLERID(all)": "+99999888",
 			},
 		},
 	}
@@ -538,7 +588,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
 			mockReq.EXPECT().FlowActvieFlowPost(tt.id, tt.flowID).Return(nil, nil)
-			mockReq.EXPECT().AstChannelCreate(requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s", contextOutgoingCall), fmt.Sprintf("pjsip/call-out/sip:%s", tt.destination.Target), "", "", "").Return(nil)
+			mockReq.EXPECT().AstChannelCreate(requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s", contextOutgoingCall), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
 
 			res, err := h.CreateCallOutgoing(tt.id, tt.userID, tt.flowID, tt.source, tt.destination)
 			if err != nil {

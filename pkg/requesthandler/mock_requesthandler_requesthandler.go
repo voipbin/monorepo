@@ -153,17 +153,17 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelContinue(asteriskID, channel
 }
 
 // AstChannelCreate mocks base method.
-func (m *MockRequestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string) error {
+func (m *MockRequestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelCreate", asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats)
+	ret := m.ctrl.Call(m, "AstChannelCreate", asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelCreate indicates an expected call of AstChannelCreate.
-func (mr *MockRequestHandlerMockRecorder) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelCreate", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelCreate), asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelCreate", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelCreate), asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables)
 }
 
 // AstChannelCreateSnoop mocks base method.

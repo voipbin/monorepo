@@ -110,17 +110,18 @@ func (r *requestHandler) AstChannelVariableSet(asteriskID, channelID, variable, 
 }
 
 // AstChannelCreate sends the request for create a channel
-func (r *requestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string) error {
+func (r *requestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error {
 	uri := "/ari/channels/create"
 
 	type Data struct {
-		Endpoint       string `json:"endpoint,omitempty"`
-		App            string `json:"app"`
-		AppArgs        string `json:"appArgs,omitempty"`
-		ChannelID      string `json:"channelId,omitempty"`
-		OtherChannelID string `json:"otherChannelId,omitempty"`
-		Originator     string `json:"originator,omitempty"`
-		Formats        string `json:"formats,omitempty"`
+		Endpoint       string            `json:"endpoint,omitempty"`
+		App            string            `json:"app"`
+		AppArgs        string            `json:"appArgs,omitempty"`
+		ChannelID      string            `json:"channelId,omitempty"`
+		OtherChannelID string            `json:"otherChannelId,omitempty"`
+		Originator     string            `json:"originator,omitempty"`
+		Formats        string            `json:"formats,omitempty"`
+		Variables      map[string]string `json:"variables,omitempty"`
 	}
 
 	m, err := json.Marshal(Data{
@@ -131,6 +132,7 @@ func (r *requestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoi
 		otherChannelID,
 		originator,
 		formats,
+		variables,
 	})
 	if err != nil {
 		return err

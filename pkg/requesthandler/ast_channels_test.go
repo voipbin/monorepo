@@ -523,6 +523,7 @@ func TestAstChannelCreate(t *testing.T) {
 		otherChannelID string
 		originator     string
 		formats        string
+		variables      map[string]string
 		response       *rabbitmqhandler.Response
 
 		expectTarget  string
@@ -539,6 +540,7 @@ func TestAstChannelCreate(t *testing.T) {
 			"",
 			"",
 			"",
+			nil,
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 			},
@@ -551,13 +553,34 @@ func TestAstChannelCreate(t *testing.T) {
 				Data:     []byte(`{"endpoint":"PJSIP/call-out/sip:test@test.com:5060","app":"voipbin","channelId":"adf2ec1a-9ee6-11ea-9d2e-33da3e3b92a3"}`),
 			},
 		},
-	}
+		{
+			"include variables",
+			"00:11:22:33:44:55",
+			"0a2628dc-0853-11eb-811f-ebaf03ba1ba6",
+			"",
+			"PJSIP/call-out/sip:test@test.com:5060",
+			"",
+			"",
+			"",
+			map[string]string{"CALLERID(all)": "+123456789"},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:      "/ari/channels/create",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"endpoint":"PJSIP/call-out/sip:test@test.com:5060","app":"voipbin","channelId":"0a2628dc-0853-11eb-811f-ebaf03ba1ba6","variables":{"CALLERID(all)":"+123456789"}}`),
+			},
+		}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelCreate(tt.asterisk, tt.channelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats)
+			err := reqHandler.AstChannelCreate(tt.asterisk, tt.channelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
