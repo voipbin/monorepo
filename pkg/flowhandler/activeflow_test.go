@@ -62,10 +62,11 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 	}
 
 	type test struct {
-		name     string
-		callID   uuid.UUID
-		actionID uuid.UUID
-		af       activeflow.ActiveFlow
+		name         string
+		callID       uuid.UUID
+		actionID     uuid.UUID
+		af           activeflow.ActiveFlow
+		expectAction action.Action
 	}
 
 	tests := []test{
@@ -89,6 +90,49 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 					},
 				},
 			},
+			action.Action{
+				ID:   uuid.FromStringOrNil("c9fffcf4-0737-11eb-a28f-2bc0bae5eeaf"),
+				Type: action.TypeAnswer,
+			},
+		},
+		{
+			"empty actions",
+			uuid.FromStringOrNil("085f48fc-08a4-11eb-8ef3-675e25cbc25c"),
+			action.IDStart,
+			activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				Actions: []action.Action{},
+			},
+			action.Action{
+				ID:   action.IDFinish,
+				Type: action.TypeHangup,
+			},
+		},
+		{
+			"current id start",
+			uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
+			action.IDStart,
+			activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				Actions: []action.Action{
+					action.Action{
+						ID:   uuid.FromStringOrNil("97f96f9c-08a4-11eb-8ea0-57d38a96eca3"),
+						Type: action.TypeAnswer,
+					},
+					action.Action{
+						ID:   uuid.FromStringOrNil("a9b365ee-08a4-11eb-87c5-e7b9e9ea9de3"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			action.Action{
+				ID:   uuid.FromStringOrNil("97f96f9c-08a4-11eb-8ea0-57d38a96eca3"),
+				Type: action.TypeAnswer,
+			},
 		},
 	}
 
@@ -104,8 +148,8 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if act.ID != tt.af.Actions[1].ID {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.af.Actions[1].ID, act.ID)
+			if act.ID != tt.expectAction.ID || act.Type != tt.expectAction.Type {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectAction, act)
 			}
 		})
 	}

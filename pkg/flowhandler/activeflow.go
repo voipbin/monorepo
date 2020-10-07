@@ -117,12 +117,40 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 		"call":              callID,
 		"current_action_id": caID,
 	})
+	log.Debug("Getting next action.")
 
 	// get active-flow
 	af, err := h.db.ActiveFlowGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get active-flow. err: %v", err)
 		return nil, err
+	}
+
+	// check the empty actions and action id is start id or not.
+	switch {
+	case len(af.Actions) == 0:
+		resAction := action.Action{
+			ID:   action.IDFinish,
+			Type: action.TypeHangup,
+		}
+
+		// update current action in active-flow
+		if err := h.activeFlowUpdateCurrentAction(ctx, callID, &resAction); err != nil {
+			log.Errorf("Could not update the current action. err: %v", err)
+			return nil, fmt.Errorf("could not update the current action. err: %v", err)
+		}
+
+		return &resAction, nil
+
+	case af.CurrentAction.ID == action.IDStart:
+		resAction := af.Actions[0]
+
+		// update current action in active-flow
+		if err := h.activeFlowUpdateCurrentAction(ctx, callID, &resAction); err != nil {
+			log.Errorf("Could not update the current action. err: %v", err)
+			return nil, fmt.Errorf("could not update the current action. err: %v", err)
+		}
+		return &resAction, nil
 	}
 
 	// compare current action.
@@ -158,7 +186,8 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 
 		// create finish hangup
 		nextAction = action.Action{
-			ID: action.IDFinish,
+			ID:   action.IDFinish,
+			Type: action.TypeHangup,
 		}
 	} else {
 		nextAction = af.Actions[idx+1]
