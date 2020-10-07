@@ -111,7 +111,7 @@ type RequestHandler interface {
 	// asterisk channels
 	AstChannelAnswer(asteriskID, channelID string) error
 	AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error
-	AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string) error
+	AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error
 	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
 	AstChannelDial(asteriskID, channelID, caller string, timeout int) error
 	AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error
@@ -215,8 +215,7 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.Requ
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 
-	target := "flow_manager-request"
-	res, err := r.sendRequest(ctx, target, resource, m)
+	res, err := r.sendRequest(ctx, r.queueFlow, resource, m)
 	if err != nil {
 		return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 	}

@@ -28,7 +28,7 @@ func (r *requestHandler) FlowActvieFlowPost(callID, flowID uuid.UUID) (*activefl
 		return nil, err
 	}
 
-	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, ContentTypeJSON, m)
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
