@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
@@ -27,13 +26,8 @@ func (h *flowHandler) FlowCreate(ctx context.Context, flow *flow.Flow, persist b
 	}
 
 	// set action id
-	if persist == false && len(flow.Actions) > 0 {
-		nextID := action.IDStart
-		for _, act := range flow.Actions {
-			act.ID = nextID
-			nextID = uuid.Must(uuid.NewV4())
-		}
-		flow.Actions[len(flow.Actions)-1].Next = action.IDFinish
+	for i := range flow.Actions {
+		flow.Actions[i].ID = uuid.Must(uuid.NewV4())
 	}
 
 	switch {
