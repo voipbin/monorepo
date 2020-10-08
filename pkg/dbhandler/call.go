@@ -320,6 +320,31 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	}
 }
 
+// CallSetAsteriskID sets the call aserisk_id
+func (h *handler) CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error {
+
+	// prepare
+	q := `
+	update
+		calls
+	set
+		asterisk_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, asteriskID, tmUpdate, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallSetAsteriskID. err: %v", err)
+	}
+
+	// update the cache
+	h.CallUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // CallSetStatus sets the call status
 func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error {
 

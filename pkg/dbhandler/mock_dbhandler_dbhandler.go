@@ -288,6 +288,20 @@ func (mr *MockDBHandlerMockRecorder) CallSetAction(ctx, id, action interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetAction", reflect.TypeOf((*MockDBHandler)(nil).CallSetAction), ctx, id, action)
 }
 
+// CallSetAsteriskID mocks base method.
+func (m *MockDBHandler) CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID, tmUpdate string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetAsteriskID", ctx, id, asteriskID, tmUpdate)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetAsteriskID indicates an expected call of CallSetAsteriskID.
+func (mr *MockDBHandlerMockRecorder) CallSetAsteriskID(ctx, id, asteriskID, tmUpdate interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetAsteriskID", reflect.TypeOf((*MockDBHandler)(nil).CallSetAsteriskID), ctx, id, asteriskID, tmUpdate)
+}
+
 // CallSetConferenceID mocks base method.
 func (m *MockDBHandler) CallSetConferenceID(ctx context.Context, id, conferenceID uuid.UUID) error {
 	m.ctrl.T.Helper()

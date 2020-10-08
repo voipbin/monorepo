@@ -128,7 +128,7 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 	}
 
 	// set app args
-	appArgs := fmt.Sprintf("context=%s", contextOutgoingCall)
+	appArgs := fmt.Sprintf("context=%s,call_id=%s", contextOutgoingCall, c.ID)
 
 	// set variables
 	variables := map[string]string{
@@ -210,6 +210,17 @@ func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data 
 // startHandlerContextOutgoingCall handles contextOutgoingCall context type of StasisStart event.
 func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data map[string]interface{}) error {
 	logrus.Infof("Executing startHandlerContextOutgoingCall. channel: %s, data: %v", cn.ID, data)
+
+	// get
+	callID := uuid.FromStringOrNil(data["call_id"].(string))
+	if callID == uuid.Nil {
+		return fmt.Errorf("could not get correct call_id. channel: %s, asterisk: %s", cn.ID, cn.AsteriskID)
+	}
+
+	// update call's asterisk id
+	if err := h.db.CallSetAsteriskID(context.Background(), callID, cn.AsteriskID, getCurTime()); err != nil {
+		return fmt.Errorf("could not set asterisk id to call. channel: %s, asterisk: %s", cn.ID, cn.AsteriskID)
+	}
 
 	// set channel's type call.
 	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeCall)); err != nil {

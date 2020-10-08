@@ -42,6 +42,7 @@ type DBHandler interface {
 	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
 	CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error
+	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
 	CallSetConferenceID(ctx context.Context, id, conferenceID uuid.UUID) error
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
