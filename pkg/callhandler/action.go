@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
@@ -77,7 +76,7 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 // ActionNext Execute next action
 func (h *callHandler) ActionNext(c *call.Call) error {
-	log := log.WithFields(
+	log := logrus.WithFields(
 		logrus.Fields{
 			"call": c.ID,
 			"flow": c.FlowID,
@@ -150,8 +149,8 @@ func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error 
 	// set current time
 	act.TMExecute = getCurTime()
 
-	log := log.WithFields(
-		log.Fields{
+	log := logrus.WithFields(
+		logrus.Fields{
 			"call":        c.ID,
 			"action":      act.ID,
 			"action_type": act.Type,
@@ -196,8 +195,8 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	// set current time
 	act.TMExecute = getCurTime()
 
-	log := log.WithFields(
-		log.Fields{
+	log := logrus.WithFields(
+		logrus.Fields{
 			"call":        c.ID,
 			"action":      act.ID,
 			"action_type": act.Type,
@@ -248,8 +247,8 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 	// set current time
 	act.TMExecute = getCurTime()
 
-	log := log.WithFields(
-		log.Fields{
+	log := logrus.WithFields(
+		logrus.Fields{
 			"call":        c.ID,
 			"action":      act.ID,
 			"action_type": act.Type,
@@ -290,8 +289,8 @@ func (h *callHandler) actionExecutePlay(c *call.Call, a *action.Action) error {
 	// set current time
 	act.TMExecute = getCurTime()
 
-	log := log.WithFields(
-		log.Fields{
+	log := logrus.WithFields(
+		logrus.Fields{
 			"call":        c.ID,
 			"action":      act.ID,
 			"action_type": act.Type,
@@ -341,8 +340,8 @@ func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) er
 	// set current time
 	act.TMExecute = getCurTime()
 
-	log := log.WithFields(
-		log.Fields{
+	log := logrus.WithFields(
+		logrus.Fields{
 			"call":        c.ID,
 			"action":      act.ID,
 			"action_type": act.Type,
@@ -394,8 +393,8 @@ func (h *callHandler) actionExecuteHangup(c *call.Call, a *action.Action) error 
 	// set current time
 	act.TMExecute = getCurTime()
 
-	log := log.WithFields(
-		log.Fields{
+	log := logrus.WithFields(
+		logrus.Fields{
 			"call":        c.ID,
 			"action":      act.ID,
 			"action_type": act.Type,
