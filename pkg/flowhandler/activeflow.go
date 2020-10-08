@@ -2,6 +2,7 @@ package flowhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -129,10 +130,7 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 	// check the empty actions and action id is start id or not.
 	switch {
 	case len(af.Actions) == 0:
-		resAction := action.Action{
-			ID:   action.IDFinish,
-			Type: action.TypeHangup,
-		}
+		resAction := *(h.CreateActionHangup())
 
 		// update current action in active-flow
 		if err := h.activeFlowUpdateCurrentAction(ctx, callID, &resAction); err != nil {
@@ -185,10 +183,7 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 		log.Infof("No more action left. found: %v, idx: %v", found, idx)
 
 		// create finish hangup
-		nextAction = action.Action{
-			ID:   action.IDFinish,
-			Type: action.TypeHangup,
-		}
+		nextAction = *(h.CreateActionHangup())
 	} else {
 		nextAction = af.Actions[idx+1]
 	}
@@ -240,4 +235,23 @@ func (h *flowHandler) activeFlowHandleActionPatch(ctx context.Context, callID uu
 	}
 
 	return nil
+}
+
+func (h *flowHandler) CreateActionHangup() *action.Action {
+
+	opt := action.OptionHangup{}
+
+	optString, err := json.Marshal(opt)
+	if err != nil {
+		logrus.Errorf("Could not marshal the hangup option. err: %v", err)
+		return nil
+	}
+
+	res := action.Action{
+		ID:     action.IDFinish,
+		Type:   action.TypeHangup,
+		Option: optString,
+	}
+
+	return &res
 }

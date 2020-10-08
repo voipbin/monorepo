@@ -49,6 +49,11 @@ type OptionEcho struct {
 	Duration int `json:"duration"`
 }
 
+// OptionHangup defines action hangup's option.
+type OptionHangup struct {
+	// no option
+}
+
 // OptionPatch defines action patch's option.
 type OptionPatch struct {
 	EventURL    string `json:"event_url"`

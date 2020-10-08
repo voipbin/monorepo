@@ -2,6 +2,7 @@ package flowhandler
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -150,6 +151,49 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 
 			if act.ID != tt.expectAction.ID || act.Type != tt.expectAction.Type {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectAction, act)
+			}
+		})
+	}
+}
+
+func TestCreateActionHangup(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
+		name string
+	}
+
+	tests := []test{
+		{
+			"normal",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := *h.CreateActionHangup()
+
+			marString, err := json.Marshal(res)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			var act action.Action
+			if err := json.Unmarshal(marString, &act); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			var opt action.OptionHangup
+			if err := json.Unmarshal(act.Option, &opt); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
