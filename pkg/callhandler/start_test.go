@@ -99,7 +99,6 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 				ID:     action.IDBegin,
 				Type:   action.TypeEcho,
 				Option: []byte(`{"duration":180000,"dtmf":true}`),
-				Next:   action.IDEnd,
 			},
 		},
 	}
@@ -246,7 +245,6 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 				ID:     action.IDBegin,
 				Type:   action.TypeAnswer,
 				Option: opt,
-				Next:   action.IDEnd,
 			}
 
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
@@ -310,7 +308,6 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 				ID:     action.IDBegin,
 				Type:   action.TypeStreamEcho,
 				Option: []byte(`{"duration":180000}`),
-				Next:   action.IDEnd,
 			},
 		},
 	}
@@ -377,7 +374,6 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 				ID:     action.IDBegin,
 				Type:   action.TypeConferenceJoin,
 				Option: []byte(`{"conference_id":"037a20b9-d11d-4b63-a135-ae230cafd495"}`),
-				Next:   action.IDEnd,
 			},
 		},
 	}
@@ -443,7 +439,6 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 				ID:     action.IDBegin,
 				Type:   action.TypePlay,
 				Option: []byte(`{"stream_url":["https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"]}`),
-				Next:   action.IDEnd,
 			},
 		},
 	}
@@ -527,8 +522,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 					Target: "testoutgoing@test.com",
 				},
 				Action: action.Action{
-					ID:   action.IDInit,
-					Next: action.IDBegin,
+					ID: action.IDBegin,
 				},
 			},
 			"pjsip/call-out/sip:testoutgoing@test.com",
@@ -571,8 +565,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 					Target: "+123456789",
 				},
 				Action: action.Action{
-					ID:   action.IDInit,
-					Next: action.IDBegin,
+					ID: action.IDBegin,
 				},
 			},
 			"pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
