@@ -9,9 +9,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func TestActionExecuteConferenceJoin(t *testing.T) {
@@ -203,7 +203,6 @@ func TestActionTimeoutNext(t *testing.T) {
 				ChannelID:  "12a05228-e3fd-11ea-b55f-afd68e7aa755",
 				Action: action.Action{
 					ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
-					Next:      action.IDEnd,
 					TMExecute: "2020-04-18T03:22:17.995000",
 				},
 			},

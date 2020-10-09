@@ -13,7 +13,6 @@ type Action struct {
 	ID     uuid.UUID       `json:"id"`
 	Type   Type            `json:"type"`
 	Option json.RawMessage `json:"option,omitempty"`
-	Next   uuid.UUID       `json:"next"` // represent next action's next action.
 
 	TMExecute string `json:"tm_execute"` // represent when this action has executed.
 }
@@ -35,9 +34,8 @@ type Flow struct {
 
 // Predefined special IDs
 var (
-	IDInit  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001") // default action id for call initiating
-	IDBegin uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002") // default action id for call-flow begin
-	IDEnd   uuid.UUID = uuid.Nil                                                     // default action id for call-flow end
+	IDBegin uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001") // default action id for call initiating
+	IDEnd   uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000") // default action id for call-flow end
 )
 
 // Matches return true if the given items are the same

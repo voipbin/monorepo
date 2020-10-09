@@ -84,8 +84,7 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 		Source:      source,
 		Destination: destination,
 		Action: action.Action{
-			ID:   action.IDInit,
-			Next: action.IDBegin,
+			ID: action.IDBegin,
 		},
 		TMCreate: getCurTime(),
 	}
@@ -316,7 +315,6 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 		ID:     action.IDBegin,
 		Type:   action.TypeConferenceJoin,
 		Option: opt,
-		Next:   action.IDEnd,
 	}
 
 	c, err = h.db.CallGet(ctx, c.ID)
@@ -406,7 +404,6 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 			ID:     action.IDBegin,
 			Type:   action.TypeAnswer,
 			Option: opt,
-			Next:   action.IDEnd,
 		}
 
 	// conference_join
@@ -424,7 +421,6 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 			ID:     action.IDBegin,
 			Type:   action.TypeConferenceJoin,
 			Option: opt,
-			Next:   action.IDEnd,
 		}
 
 	// default
@@ -449,7 +445,6 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 			ID:     action.IDBegin,
 			Type:   action.TypeEcho,
 			Option: opt,
-			Next:   action.IDEnd,
 		}
 
 	// play
@@ -472,7 +467,6 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 			ID:     action.IDBegin,
 			Type:   action.TypePlay,
 			Option: opt,
-			Next:   action.IDEnd,
 		}
 
 	// stream_echo
@@ -490,7 +484,6 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 			ID:     action.IDBegin,
 			Type:   action.TypeStreamEcho,
 			Option: opt,
-			Next:   action.IDEnd,
 		}
 
 	}

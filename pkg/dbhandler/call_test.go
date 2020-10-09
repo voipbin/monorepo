@@ -10,9 +10,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 )
 
 func TestCallCreate(t *testing.T) {
@@ -614,7 +614,6 @@ func TestCallSetAction(t *testing.T) {
 			&action.Action{
 				ID:     uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
 				Type:   action.TypeEcho,
-				Next:   uuid.Nil,
 				Option: []byte(`{"duration":180}`),
 			},
 
@@ -631,7 +630,6 @@ func TestCallSetAction(t *testing.T) {
 				Action: action.Action{
 					ID:     uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
 					Type:   action.TypeEcho,
-					Next:   uuid.Nil,
 					Option: []byte(`{"duration":180}`),
 				},
 				Status:    call.StatusRinging,
@@ -661,7 +659,6 @@ func TestCallSetAction(t *testing.T) {
 			&action.Action{
 				ID:   uuid.FromStringOrNil("a1e3ff02-8d04-11ea-b30b-9fb57c4036f4"),
 				Type: action.TypeEcho,
-				Next: uuid.Nil,
 			},
 
 			&call.Call{
@@ -677,7 +674,6 @@ func TestCallSetAction(t *testing.T) {
 				Action: action.Action{
 					ID:   uuid.FromStringOrNil("a1e3ff02-8d04-11ea-b30b-9fb57c4036f4"),
 					Type: action.TypeEcho,
-					Next: uuid.Nil,
 				},
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
