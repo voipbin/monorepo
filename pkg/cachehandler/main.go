@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
@@ -39,6 +40,9 @@ type CacheHandler interface {
 
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceSet(ctx context.Context, conference *conference.Conference) error
+
+	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
+	NumberSetByNumber(ctx context.Context, numb *number.Number) error
 }
 
 // NewHandler creates DBHandler

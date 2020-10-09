@@ -25,8 +25,9 @@ const (
 
 // domain types
 const (
-	domainConference = "conference.voipbin.net"
-	domainSipService = "sip-service.voipbin.net"
+	domainConference  = "conference.voipbin.net"
+	domainSIPService  = "sip-service.voipbin.net"
+	domainPSTNService = "pstn.voipbin.net"
 )
 
 // pjsip endpoints
@@ -44,6 +45,7 @@ const (
 	defaultMaxTimeoutEcho       = "300"   // maximum call duration for service echo. 5 min
 	defaultMaxTimeoutConference = "10800" // maximum call duration for service conf-soft. 3 hours
 	defaultMaxTimeoutSipService = "300"   // maximum call duration for service sip-service. 5 min
+	defaultMaxTimeoutFlow       = "3600"  // maximum call duration for service flow. 1 hour
 )
 
 // default sip service option variables
@@ -198,6 +200,9 @@ func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data 
 	case call.TypeSipService:
 		return h.typeSipServiceStart(cn, data)
 
+	case call.TypeFlow:
+		return h.typeFlowStart(cn, data)
+
 	default:
 		// call.TypeNone will get to here.
 		// no route found
@@ -244,8 +249,11 @@ func getTypeContextIncomingCall(domain string) call.Type {
 	case domainConference:
 		return call.TypeConference
 
-	case domainSipService:
+	case domainSIPService:
 		return call.TypeSipService
+
+	case domainPSTNService:
+		return call.TypeFlow
 
 	default:
 		return call.TypeNone
@@ -327,6 +335,61 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 	return h.ActionExecute(c, action)
 }
 
+// typeFlowStart handles flow calltype start.
+func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]interface{}) error {
+	ctx := context.Background()
+
+	log := log.WithFields(
+		log.Fields{
+			"channel":  cn.ID,
+			"asterisk": cn.AsteriskID,
+		})
+	log.Debugf("Starting the flow incoming call handler. source: %s, destinaiton: %s", cn.SourceNumber, cn.DestinationNumber)
+
+	// set absolute timeout for 3600 sec(1 hour)
+	log.Debugf("Setting absolute timeout for flow type call")
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutFlow); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
+	// get number
+	numb, err := h.db.NumberGetByNumber(ctx, cn.DestinationNumber)
+	if err != nil {
+		log.Debugf("Could not find number info. err: %v", err)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return fmt.Errorf("could not get a number info by the destination. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
+	// create a call
+	c := call.NewCallByChannel(cn, call.UserIDAdmin, call.TypeSipService, call.DirectionIncoming, data)
+	c.FlowID = numb.FlowID
+	c.Action = action.Action{
+		ID: action.IDBegin,
+	}
+	if err := h.createCall(ctx, c); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+	log = log.WithFields(
+		logrus.Fields{
+			"call":      c.ID,
+			"type":      c.Type,
+			"direction": c.Direction,
+		})
+	log.Debugf("Created a call. call: %v", c)
+
+	// create active flow
+	af, err := h.reqHandler.FlowActvieFlowPost(c.ID, numb.FlowID)
+	if err != nil {
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
+	}
+	log.Debugf("Created an active flow. active-flow: %v", af)
+
+	return h.ActionNext(c)
+}
+
 // typeSipServiceStart handles sip-service calltype request.
 func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]interface{}) error {
 	ctx := context.Background()
@@ -336,6 +399,7 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]i
 			"channel":  cn.ID,
 			"asterisk": cn.AsteriskID,
 		})
+	log.Debugf("Starting the sip-service. source: %s, destinaiton: %s", cn.SourceNumber, cn.DestinationNumber)
 
 	// set absolute timeout for 300 sec
 	log.Debugf("Setting absolute timeout for sip-service type call")

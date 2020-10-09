@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
@@ -132,11 +133,34 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 	return &res, nil
 }
 
-// CallSet sets the bridge info into the cache.
+// ConferenceSet sets the conference info into the cache.
 func (h *handler) ConferenceSet(ctx context.Context, conference *conference.Conference) error {
 	key := fmt.Sprintf("conference:%s", conference.ID)
 
 	if err := h.setSerialize(ctx, key, conference); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// NumberGetByNumber returns number call info
+func (h *handler) NumberGetByNumber(ctx context.Context, num string) (*number.Number, error) {
+	key := fmt.Sprintf("number-number:%s", num)
+
+	var res number.Number
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// NumberSetByNumber sets the number info into the cache.
+func (h *handler) NumberSetByNumber(ctx context.Context, numb *number.Number) error {
+	key := fmt.Sprintf("number-number:%s", numb.Number)
+
+	if err := h.setSerialize(ctx, key, numb); err != nil {
 		return err
 	}
 

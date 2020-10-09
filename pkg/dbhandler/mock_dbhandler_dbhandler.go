@@ -13,6 +13,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	number "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
@@ -840,4 +841,19 @@ func (m *MockDBHandler) ConferenceUpdateToCache(ctx context.Context, id uuid.UUI
 func (mr *MockDBHandlerMockRecorder) ConferenceUpdateToCache(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).ConferenceUpdateToCache), ctx, id)
+}
+
+// NumberGetByNumber mocks base method.
+func (m *MockDBHandler) NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberGetByNumber", ctx, numb)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberGetByNumber indicates an expected call of NumberGetByNumber.
+func (mr *MockDBHandlerMockRecorder) NumberGetByNumber(ctx, numb interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetByNumber", reflect.TypeOf((*MockDBHandler)(nil).NumberGetByNumber), ctx, numb)
 }
