@@ -94,6 +94,7 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return err
 	}
+	log.Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
 
 	return h.ActionExecute(c, nextAction)
 }
@@ -401,9 +402,11 @@ func (h *callHandler) actionExecuteHangup(c *call.Call, a *action.Action) error 
 		})
 
 	var option action.OptionHangup
-	if err := json.Unmarshal(act.Option, &option); err != nil {
-		log.Errorf("could not parse the option. err: %v", err)
-		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+	if act.Option != nil {
+		if err := json.Unmarshal(act.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
 	}
 
 	// set option

@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -591,6 +592,73 @@ func TestCreateCallOutgoing(t *testing.T) {
 			if !reflect.DeepEqual(res, tt.expectCall) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
 			}
+		})
+	}
+}
+
+func TestTypeFlowStart(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name    string
+		channel *channel.Channel
+		data    map[string]interface{}
+		call    *call.Call
+		numb    *number.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&channel.Channel{
+				ID:                "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000949",
+				DestinationNumber: "+123456789",
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "pstn.voipbin.net",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ChannelID:  "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
+				Type:       call.TypeSipService,
+				Direction:  call.DirectionIncoming,
+			},
+			&number.Number{
+				ID:     uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
+				FlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
+				UserID: 1,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutFlow).Return(nil)
+			mockDB.EXPECT().NumberGetByNumber(gomock.Any(), tt.channel.DestinationNumber).Return(tt.numb, nil)
+			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowActvieFlowPost(gomock.Any(), tt.numb.FlowID).Return(nil, nil)
+			mockReq.EXPECT().FlowActvieFlowNextGet(gomock.Any(), action.IDBegin).Return(&action.Action{Type: action.TypeHangup}, nil)
+
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+			h.StartCallHandle(tt.channel, tt.data)
 		})
 	}
 }

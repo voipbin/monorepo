@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
@@ -85,6 +86,9 @@ type DBHandler interface {
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
 	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
 	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error
+
+	// numbers
+	NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error)
 }
 
 // handler database handler
