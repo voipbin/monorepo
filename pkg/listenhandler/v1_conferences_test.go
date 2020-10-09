@@ -11,11 +11,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestProcessV1ConferencesPost(t *testing.T) {
+func TestProcessV1ConferencesPostTypeConference(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -173,6 +173,186 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","user_id":1,"type":"conference","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockConf.EXPECT().Start(tt.expectReqConf).Return(tt.expectConference, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func TestProcessV1ConferencesPostTypeConnect(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:        mockSock,
+		db:                mockDB,
+		reqHandler:        mockReq,
+		callHandler:       mockCall,
+		conferenceHandler: mockConf,
+	}
+
+	type test struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		expectReqConf    *conference.Conference
+		expectConference *conference.Conference
+		expectRes        *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"connect basic",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"user_id": 1, "type": "connect"}`),
+			},
+			&conference.Conference{
+				UserID: 1,
+				Type:   conference.TypeConnect,
+			},
+			&conference.Conference{
+				ID:       uuid.FromStringOrNil("d82ce190-9fe8-11ea-aec8-973901dd28fa"),
+				UserID:   1,
+				Type:     conference.TypeConnect,
+				BridgeID: "f1354268-9fe8-11ea-b693-3761800b29d5",
+				Timeout:  0,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				Data:       []byte(`{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","user_id":1,"type":"connect","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+		{
+			"connect with all items",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"user_id": 1, "type": "connect", "name": "test conference all items", "detail": "test conference with all tiems detail", "timeout": 180}`),
+			},
+			&conference.Conference{
+				UserID:  1,
+				Type:    conference.TypeConnect,
+				Name:    "test conference all items",
+				Detail:  "test conference with all tiems detail",
+				Timeout: 180,
+			},
+			&conference.Conference{
+				ID:       uuid.FromStringOrNil("2a835238-da9c-11ea-bc7b-eb2f57685ad6"),
+				UserID:   1,
+				Type:     conference.TypeConnect,
+				BridgeID: "2f84ff66-da9c-11ea-9b90-83a7346c3e97",
+				Name:     "test conference all items",
+				Detail:   "test conference with all tiems detail",
+				Timeout:  180,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				Data:       []byte(`{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","user_id":1,"type":"connect","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+		{
+			"conference with timeout",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"user_id": 1, "type": "connect", "timeout": 180}`),
+			},
+			&conference.Conference{
+				UserID:  1,
+				Type:    conference.TypeConnect,
+				Timeout: 180,
+			},
+			&conference.Conference{
+				ID:       uuid.FromStringOrNil("3402e154-da9a-11ea-a52b-2781af28f74d"),
+				UserID:   1,
+				Type:     conference.TypeConnect,
+				BridgeID: "3a6486ba-da9a-11ea-8a39-03999d98a404",
+				Timeout:  180,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				Data:       []byte(`{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","user_id":1,"type":"connect","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+		{
+			"conference with name",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"user_id": 1, "type": "connect", "name": "test conference connect"}`),
+			},
+			&conference.Conference{
+				UserID: 1,
+				Type:   conference.TypeConnect,
+				Name:   "test conference connect",
+			},
+			&conference.Conference{
+				ID:       uuid.FromStringOrNil("9179b768-da9a-11ea-b583-c7592caaa090"),
+				UserID:   1,
+				Type:     conference.TypeConnect,
+				BridgeID: "95f5b53a-da9a-11ea-92be-23fad8a8b229",
+				Name:     "test conference connect",
+				Timeout:  0,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				Data:       []byte(`{"id":"9179b768-da9a-11ea-b583-c7592caaa090","user_id":1,"type":"connect","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference connect","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+		{
+			"conference with name and detail",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"user_id": 1, "type": "connect", "name": "test conference", "detail": "test conference detail"}`),
+			},
+			&conference.Conference{
+				UserID: 1,
+				Type:   conference.TypeConnect,
+				Name:   "test conference",
+				Detail: "test conference detail",
+			},
+			&conference.Conference{
+				ID:       uuid.FromStringOrNil("c8fa873a-da9a-11ea-97f0-fff8a6d8aa21"),
+				UserID:   1,
+				Type:     conference.TypeConnect,
+				BridgeID: "cdc9898c-da9a-11ea-8b27-c77718b25ab9",
+				Name:     "test conference",
+				Detail:   "test conference detail",
+				Timeout:  0,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				Data:       []byte(`{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","user_id":1,"type":"connect","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

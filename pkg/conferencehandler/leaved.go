@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
@@ -174,19 +173,15 @@ func (h *conferenceHandler) isTerminatable(ctx context.Context, id uuid.UUID) bo
 	// get conference
 	cf, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
-		log.WithFields(
-			log.Fields{
-				"conference": id.String(),
-			}).Warningf("Could not get conference after remove the call. err: %v", err)
+		logrus.Errorf("Could not get conference info. conference: %s, err: %v", id, err)
 		return false
 	}
 
-	// check there's more calls or not
-	switch cf.Type {
-	case conference.TypeConference:
+	// the conference type's conference will be destroyed when the timeout expired.
+	// the other type's conference will be destroyed if the joined calls are lesser than 2
+	if cf.Type == conference.TypeConference || len(cf.CallIDs) > 1 {
 		return false
-
-	default:
-		return true
 	}
+
+	return true
 }

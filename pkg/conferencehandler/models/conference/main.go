@@ -32,6 +32,7 @@ type Type string
 const (
 	TypeNone       Type = ""
 	TypeConference Type = "conference" // conference for more than 3 calls join
+	TypeConnect    Type = "connect"    // connect type kicks out the participant if the 1 call has left in the conference.
 )
 
 // Status type
@@ -44,6 +45,17 @@ const (
 	StatusTerminating Status = "terminating"
 	StatusTerminated  Status = "terminated"
 )
+
+// IsValidConferenceType returns false if the given conference type is not valid
+func IsValidConferenceType(confType Type) bool {
+	switch confType {
+	case TypeNone, TypeConference, TypeConnect:
+		return true
+
+	default:
+		return false
+	}
+}
 
 // // NewConference creates a new conference with given request conference
 // func NewConference(id uuid.UUID, cType Type, bridgeID string, req *Conference) *Conference {

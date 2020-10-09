@@ -37,7 +37,8 @@ func TestStartTypeConference(t *testing.T) {
 				Type: conference.TypeConference,
 			},
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("325b9d9a-a413-11ea-a6d7-ef53544faeb3"),
+				ID:   uuid.FromStringOrNil("325b9d9a-a413-11ea-a6d7-ef53544faeb3"),
+				Type: conference.TypeConference,
 			},
 		},
 		{
@@ -48,6 +49,7 @@ func TestStartTypeConference(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:     uuid.FromStringOrNil("12cb0fd8-f148-11ea-b1c3-878d11a76a13"),
+				Type:   conference.TypeConference,
 				UserID: call.UserIDAdmin,
 			},
 		},
@@ -62,7 +64,62 @@ func TestStartTypeConference(t *testing.T) {
 				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), "timeout", tt.reqConf.Timeout*1000).Return(nil)
 			}
 
-			h.startTypeConference(tt.reqConf)
+			h.Start(tt.reqConf)
+		})
+	}
+}
+
+func TestStartTypeConnect(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := conferenceHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	type test struct {
+		name       string
+		reqConf    *conference.Conference
+		conference *conference.Conference
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&conference.Conference{
+				Type: conference.TypeConnect,
+			},
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("05d67da8-0a5c-11eb-94d6-b3c944a3bf8b"),
+			},
+		},
+		{
+			"added user id",
+			&conference.Conference{
+				Type:   conference.TypeConnect,
+				UserID: call.UserIDAdmin,
+			},
+			&conference.Conference{
+				ID:     uuid.FromStringOrNil("0a514944-0a5c-11eb-b450-03f3da9acf03"),
+				UserID: call.UserIDAdmin,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.conference, nil)
+
+			if tt.reqConf.Timeout > 0 {
+				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), "timeout", tt.reqConf.Timeout*1000).Return(nil)
+			}
+
+			h.Start(tt.reqConf)
 		})
 	}
 }
