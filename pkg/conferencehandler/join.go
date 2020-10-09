@@ -71,7 +71,7 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 		// we need to create a new bridge for this conference.
 		log.Infof("Could not find valid conference bridge. Creating a new bridge for the conference. bridge: %s", cf.BridgeID)
 
-		if err := h.createConferenceBridge(ctx, conference.TypeConference, cf.ID); err != nil {
+		if err := h.createConferenceBridge(ctx, cf.Type, cf.ID); err != nil {
 			log.Errorf("Could not create a conference bridge. err: %v", err)
 			return err
 		}
@@ -159,7 +159,7 @@ func (h *conferenceHandler) isBridgeExist(ctx context.Context, id string) bool {
 // createConferenceBridge creates the bridge for conferencing
 func (h *conferenceHandler) createConferenceBridge(ctx context.Context, conferenceType conference.Type, id uuid.UUID) error {
 	bridgeID := uuid.Must(uuid.NewV4()).String()
-	bridgeName := generateBridgeName(conference.TypeConference, id, false)
+	bridgeName := generateBridgeName(conferenceType, id, false)
 	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU}); err != nil {
 		log.Errorf("Could not create a bridge for a conference. err: %v", err)
 		return err

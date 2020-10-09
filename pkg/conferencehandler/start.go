@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 )
 
@@ -24,34 +23,22 @@ func (h *conferenceHandler) createConference(ctx context.Context, cf *conference
 }
 
 func (h *conferenceHandler) Start(reqConf *conference.Conference) (*conference.Conference, error) {
-
 	log := log.WithFields(
 		log.Fields{
 			"conference_type": reqConf.Type,
 		})
 	log.Info("Start conference.")
 
-	mapHandler := map[conference.Type]func(*conference.Conference) (*conference.Conference, error){
-		conference.TypeConference: h.startTypeConference,
+	// check valid conference type
+	if ret := conference.IsValidConferenceType(reqConf.Type); ret != true {
+		return nil, fmt.Errorf("wrong conference type. type: %s", reqConf.Type)
 	}
 
-	handler := mapHandler[reqConf.Type]
-	if handler == nil {
-		return nil, fmt.Errorf("could not find conference handler. type: %s", reqConf.Type)
-	}
-
-	return handler(reqConf)
+	return h.startConference(reqConf)
 }
 
-// startTypeTransfer handles transfer conference
-func (h *conferenceHandler) startTypeTransfer(cf *conference.Conference, c *call.Call) error {
-
-	// todo: ????
-	return nil
-}
-
-// startTypeConference inits the conference for conference type.
-func (h *conferenceHandler) startTypeConference(req *conference.Conference) (*conference.Conference, error) {
+// startConference inits the conference.
+func (h *conferenceHandler) startConference(req *conference.Conference) (*conference.Conference, error) {
 	ctx := context.Background()
 	conferenceID := uuid.Must(uuid.NewV4())
 
@@ -59,14 +46,14 @@ func (h *conferenceHandler) startTypeConference(req *conference.Conference) (*co
 		log.Fields{
 			"conference": conferenceID.String(),
 			"user_id":    req.UserID,
-			"type":       conference.TypeConference,
+			"type":       req.Type,
 		})
 	log.Debug("Starting conference.")
 
 	// create a conference with given requested conference info
 	cf := &conference.Conference{
 		ID:       conferenceID,
-		Type:     conference.TypeConference,
+		Type:     req.Type,
 		BridgeID: "",
 
 		UserID:  req.UserID,
