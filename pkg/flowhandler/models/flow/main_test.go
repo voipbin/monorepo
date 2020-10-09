@@ -25,7 +25,6 @@ func TestUnmarshalActionEcho(t *testing.T) {
 			&action.Action{
 				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
 				Type: action.TypeEcho,
-				Next: uuid.Nil,
 			},
 			nil,
 		},
@@ -36,7 +35,6 @@ func TestUnmarshalActionEcho(t *testing.T) {
 				ID:     uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
 				Type:   action.TypeEcho,
 				Option: []byte(`{"duration": 180}`),
-				Next:   uuid.Nil,
 			},
 			&action.OptionEcho{
 				Duration: 180,
@@ -82,22 +80,20 @@ func TestMarshalActionEcho(t *testing.T) {
 			&action.Action{
 				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
 				Type: action.TypeEcho,
-				Next: uuid.Nil,
 			},
 			nil,
-			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","type":"echo","next":"00000000-0000-0000-0000-000000000000"}`,
+			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","type":"echo"}`,
 		},
 		{
 			"have option duration",
 			&action.Action{
 				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
 				Type: action.TypeEcho,
-				Next: uuid.Nil,
 			},
 			&action.OptionEcho{
 				Duration: 180,
 			},
-			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","type":"echo","option":{"duration":180},"next":"00000000-0000-0000-0000-000000000000"}`,
+			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","type":"echo","option":{"duration":180}}`,
 		},
 	}
 
