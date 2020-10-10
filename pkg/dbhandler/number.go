@@ -42,7 +42,7 @@ func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*nu
 
 		coalesce(tm_create, '') as tm_create,
 		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete,
+		coalesce(tm_delete, '') as tm_delete
 
 	from
 		numbers
