@@ -43,6 +43,21 @@ func TestTerminate(t *testing.T) {
 				ID:         "86918a90-ddc1-11ea-87cb-87d08ecc726f",
 			},
 		},
+		{
+			"channel exists in the bridge",
+			uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
+			&conference.Conference{
+				ID:   uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
+				Type: conference.TypeConference,
+			},
+			&bridge.Bridge{
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ID:         "0077b86e-0ab5-11eb-90a5-176365109da1",
+				ChannelIDs: []string{
+					"03d30630-0ab5-11eb-8313-6b2621c82106",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -51,7 +66,7 @@ func TestTerminate(t *testing.T) {
 			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.id, conference.StatusTerminating).Return(nil)
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridge, nil)
 			for _, id := range tt.bridge.ChannelIDs {
-				mockReq.EXPECT().AstBridgeRemoveChannel(tt.bridge.AsteriskID, tt.bridge.ID, id)
+				mockReq.EXPECT().AstChannelHangup(tt.bridge.AsteriskID, id, ari.ChannelCauseNormalClearing).Return(nil)
 			}
 			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
 

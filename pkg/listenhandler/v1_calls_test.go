@@ -434,3 +434,65 @@ func TestProcessV1CallsIDDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestProcessV1CallsIDActionNextPost(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		db:          mockDB,
+		reqHandler:  mockReq,
+		callHandler: mockCall,
+	}
+
+	type test struct {
+		name      string
+		call      *call.Call
+		request   *rabbitmqhandler.Request
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"empty addresses",
+			&call.Call{
+				ID:          uuid.FromStringOrNil("37b3a214-0afd-11eb-88ea-7bdd69288e90"),
+				UserID:      1,
+				Source:      call.Address{},
+				Destination: call.Address{},
+			},
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/37b3a214-0afd-11eb-88ea-7bdd69288e90/action-next",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     nil,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockCall.EXPECT().ActionNext(tt.call).Return(nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

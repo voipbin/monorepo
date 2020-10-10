@@ -41,13 +41,13 @@ func (h *conferenceHandler) Terminate(id uuid.UUID, reason string) error {
 		return err
 	}
 
-	// remove all channels from the conference bridge
+	// hangup all channels from the conference bridge
 	br, err := h.db.BridgeGet(ctx, cf.BridgeID)
 	if err != nil {
 		log.Errorf("Could not get bridge info. bridge: %s, err: %v", cf.BridgeID, err)
 		return err
 	}
-	h.removeAllChannelsInBridge(br)
+	h.hangupAllChannelsInBridge(br)
 
 	// update conference status to terminated
 	if err := h.db.ConferenceEnd(ctx, id); err != nil {
