@@ -84,3 +84,22 @@ func (h *flowHandler) ActionGet(ctx context.Context, flowID uuid.UUID, actionID 
 
 	return nil, dbhandler.ErrNotFound
 }
+
+func (h *flowHandler) CreateActionHangup() *action.Action {
+
+	opt := action.OptionHangup{}
+
+	optString, err := json.Marshal(opt)
+	if err != nil {
+		logrus.Errorf("Could not marshal the hangup option. err: %v", err)
+		return nil
+	}
+
+	res := action.Action{
+		ID:     action.IDFinish,
+		Type:   action.TypeHangup,
+		Option: optString,
+	}
+
+	return &res
+}

@@ -10,10 +10,12 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmconference"
 )
 
 // FlowCreate creates a flow
-// func (h *flowHandler) ActiveFlowCreate(ctx context.Context, flow *flow.Flow, persist bool) (*flow.Flow, error) {
 func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
 
 	// get flow
@@ -28,6 +30,7 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 	tmpAF := &activeflow.ActiveFlow{
 		CallID: callID,
 		FlowID: flowID,
+		UserID: flow.UserID,
 
 		CurrentAction: action.Action{
 			ID: action.IDStart,
@@ -66,13 +69,21 @@ func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.U
 		return nil, err
 	}
 
-	// if next action's type is patch,
-	// we have to patch the action from the remote.
-	if nextAction.Type == action.TypePatch {
+	switch nextAction.Type {
+	case action.TypePatch:
 		// handle the patch
 		// add the patched actions to the active-flow
 		if err := h.activeFlowHandleActionPatch(ctx, callID, nextAction); err != nil {
 			log.Errorf("Could not handle the patch action correctly. err: %v", err)
+			return nil, err
+		}
+
+		// do activeflow next action get again.
+		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+
+	case action.TypeConnect:
+		if err := h.activeFlowHandleActionConnect(ctx, callID, nextAction); err != nil {
+			log.Errorf("Could not handle the connect action correctly. err: %v", err)
 			return nil, err
 		}
 
@@ -225,7 +236,10 @@ func (h *flowHandler) activeFlowHandleActionPatch(ctx context.Context, callID uu
 	}
 
 	// append the patched actions to the active flow
-	af.Actions = append(af.Actions, patchedActions...)
+	if err := appendActionsAfterID(af, act.ID, patchedActions); err != nil {
+		log.Errorf("Could not append new action. err: %v", err)
+		return fmt.Errorf("could not append new action. err: %v", err)
+	}
 	af.TMUpdate = getCurTime()
 
 	// set active flow
@@ -237,21 +251,135 @@ func (h *flowHandler) activeFlowHandleActionPatch(ctx context.Context, callID uu
 	return nil
 }
 
-func (h *flowHandler) CreateActionHangup() *action.Action {
+// activeFlowHandleActionConnect handles action connect with active flow.
+func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+	log := logrus.WithFields(logrus.Fields{
+		"call":   callID,
+		"action": act.ID,
+	})
 
-	opt := action.OptionHangup{}
-
-	optString, err := json.Marshal(opt)
+	// get active-flow
+	af, err := h.db.ActiveFlowGet(ctx, callID)
 	if err != nil {
-		logrus.Errorf("Could not marshal the hangup option. err: %v", err)
-		return nil
+		log.Errorf("Could not get active-flow. err: %v", err)
+		return fmt.Errorf("could not get active-flow. err: %v", err)
 	}
 
-	res := action.Action{
-		ID:     action.IDFinish,
-		Type:   action.TypeHangup,
+	// create conference room for connect
+	cf, err := h.reqHandler.CMConferenceCreate(af.UserID, cmconference.TypeConnect, "", "", 86400)
+	if err != nil {
+		log.Errorf("Could not create conference for connect. err: %v", err)
+		return fmt.Errorf("could not create conference for connect. err: %v", err)
+	}
+
+	// create a temp flow connect conference join
+	optJoin := action.OptionConferenceJoin{
+		ConferenceID: cf.ID.String(),
+	}
+	optString, err := json.Marshal(optJoin)
+	if err != nil {
+		log.Errorf("Could not marshal the conference join option. err: %v", err)
+		return fmt.Errorf("could not marshal the conference join option. err: %v", err)
+	}
+
+	tmpCF := &flow.Flow{
+		UserID: cf.UserID,
+		Actions: []action.Action{
+			action.Action{
+				Type:   action.TypeConferenceJoin,
+				Option: optString,
+			},
+		},
+	}
+
+	var optConnect action.OptionConnect
+	if err := json.Unmarshal(act.Option, &optConnect); err != nil {
+		log.Errorf("Could not unmarshal the connect option. err: %v", err)
+		return fmt.Errorf("could not unmarshal the connect option. err: %v", err)
+	}
+
+	// create a flow
+	connectCF, err := h.FlowCreate(ctx, tmpCF, false)
+	if err != nil {
+		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
+		return fmt.Errorf("could not create a call flow. err: %v", err)
+	}
+
+	// create a call for each destination
+	successCount := 0
+	for _, dest := range optConnect.Destinations {
+		source := cmcall.Address{
+			Type:   cmcall.AddressTypeTel,
+			Target: optConnect.From,
+		}
+
+		destination := cmcall.Address{
+			Type:   cmcall.AddressType(dest.Type),
+			Target: dest.Target,
+			Name:   dest.Name,
+		}
+		// create a call
+		resCall, err := h.reqHandler.CMCallCreate(connectCF.UserID, connectCF.ID, source, destination)
+		if err != nil {
+			log.Errorf("Could not create a outgoing call for connect. err: %v", err)
+			continue
+		}
+
+		log.Debugf("Created outgoing call for connect. call: %s", resCall.ID)
+		successCount++
+	}
+
+	if successCount == 0 {
+		log.Errorf("Could not create any successful outgoingcall.")
+		return fmt.Errorf("could not create any successful outgoing call")
+	}
+
+	// put original call into the created conference
+	resAction := action.Action{
+		ID:     uuid.Must(uuid.NewV4()),
+		Type:   action.TypeConferenceJoin,
 		Option: optString,
 	}
 
-	return &res
+	// add the created action next to the given action id.
+	if err := appendActionsAfterID(af, act.ID, []action.Action{resAction}); err != nil {
+		log.Errorf("Could not append new action. err: %v", err)
+		return fmt.Errorf("could not append new action. err: %v", err)
+	}
+	af.TMUpdate = getCurTime()
+
+	// update active flow
+	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func appendActionsAfterID(af *activeflow.ActiveFlow, id uuid.UUID, act []action.Action) error {
+
+	var res []action.Action
+
+	// get idx
+	idx := -1
+	for i, act := range af.Actions {
+		if act.ID == id {
+			idx = i
+			break
+		}
+	}
+
+	if idx == -1 {
+		return fmt.Errorf("could not find action index")
+	}
+
+	// append
+	res = append(res, af.Actions[:idx+1]...)
+	res = append(res, act...)
+	res = append(res, af.Actions[idx+1:]...)
+
+	af.Actions = res
+
+	return nil
 }
