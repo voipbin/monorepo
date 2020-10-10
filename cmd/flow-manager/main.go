@@ -20,6 +20,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler"
 )
 
 // channels
@@ -34,6 +35,9 @@ var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672",
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.flow-manager.request", "rabbitmq queue name for request listen")
 var rabbitQueueEvent = flag.String("rabbit_queue_event", "bin-manager.flow-manager.event", "rabbitmq queue name for event notify")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
+
+var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
+var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -128,8 +132,15 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) {
 	// database handler
 	dbHandler := dbhandler.NewHandler(db, cache)
 
+	// connect to rabbitmq
+	sock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	sock.Connect()
+
+	// create servicehandler
+	requestHandler := requesthandler.NewRequestHandler(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest)
+
 	// flow
-	flowHandler := flowhandler.NewFlowHandler(dbHandler)
+	flowHandler := flowhandler.NewFlowHandler(dbHandler, requestHandler)
 
 	// create and run the listen handler
 	// listen to the request queue

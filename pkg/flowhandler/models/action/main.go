@@ -26,12 +26,29 @@ type Type string
 const (
 	TypeAnswer         Type = "answer"
 	TypeConferenceJoin Type = "conference_join"
+	TypeConnect        Type = "connect"
 	TypeEcho           Type = "echo"
 	TypeHangup         Type = "hangup"
 	TypePatch          Type = "patch"
 	TypePlay           Type = "play"
 	TypeStreamEcho     Type = "stream_echo"
 )
+
+// AddressType type
+type AddressType string
+
+// List of CallAddressType
+const (
+	AddressTypeSIP AddressType = "sip"
+	AddressTypeTel AddressType = "tel"
+)
+
+// Address contains source/destination detail info.
+type Address struct {
+	Type   AddressType `json:"type"`   // type of address
+	Target string      `json:"target"` // parsed destination
+	Name   string      `json:"name"`   // parsed name
+}
 
 // OptionAnswer defines action answer's option.
 type OptionAnswer struct {
@@ -41,6 +58,12 @@ type OptionAnswer struct {
 // OptionConferenceJoin defines action conference_join's option.
 type OptionConferenceJoin struct {
 	ConferenceID string `json:"conference_id"`
+}
+
+// OptionConnect defines action connect's optoin.
+type OptionConnect struct {
+	From         string    `json:"from"`
+	Destinations []Address `json:"destinations"`
 }
 
 // OptionEcho struct

@@ -13,10 +13,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler"
 )
 
 type flowHandler struct {
-	db dbhandler.DBHandler
+	db         dbhandler.DBHandler
+	reqHandler requesthandler.RequestHandler
 }
 
 // FlowHandler interface
@@ -31,9 +33,10 @@ type FlowHandler interface {
 }
 
 // NewFlowHandler return FlowHandler
-func NewFlowHandler(db dbhandler.DBHandler) FlowHandler {
+func NewFlowHandler(db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler) FlowHandler {
 	h := &flowHandler{
-		db: db,
+		db:         db,
+		reqHandler: reqHandler,
 	}
 
 	return h

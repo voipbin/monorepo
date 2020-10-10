@@ -10,6 +10,7 @@ import (
 type ActiveFlow struct {
 	CallID        uuid.UUID
 	FlowID        uuid.UUID
+	UserID        uint64
 	CurrentAction action.Action
 
 	Actions []action.Action
