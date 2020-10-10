@@ -8,12 +8,12 @@ import (
 
 // ActiveFlow struct
 type ActiveFlow struct {
-	CallID        uuid.UUID
-	FlowID        uuid.UUID
-	UserID        uint64
-	CurrentAction action.Action
+	CallID        uuid.UUID     `json:"call_id"`
+	FlowID        uuid.UUID     `json:"flow_id"`
+	UserID        uint64        `json:"user_id"`
+	CurrentAction action.Action `json:"current_action"`
 
-	Actions []action.Action
+	Actions []action.Action `json:"actions"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
