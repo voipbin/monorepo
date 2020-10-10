@@ -302,17 +302,14 @@ func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmqhandler.Reques
 		})
 	log.Debug("Executing processV1CallsIDActionNextPost.")
 
-	var a action.Action
-	if err := json.Unmarshal([]byte(m.Data), &a); err != nil {
-		return simpleResponse(404), nil
-	}
-
 	c, err := h.db.CallGet(context.Background(), id)
 	if err != nil {
+		log.Errorf("Could not get call info from the database. err: %v", err)
 		return simpleResponse(404), nil
 	}
 
 	if err := h.callHandler.ActionNext(c); err != nil {
+		log.Errorf("Could not get call info from the database. err: %v", err)
 		return simpleResponse(404), nil
 	}
 

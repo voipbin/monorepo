@@ -146,6 +146,14 @@ func (h *conferenceHandler) leavedBridge(cn *channel.Channel, br *bridge.Bridge)
 }
 
 func (h *conferenceHandler) leavedConference(cn *channel.Channel, br *bridge.Bridge) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"conference": br.ConferenceID,
+			"bridge":     br.ID,
+			"asterisk":   br.AsteriskID,
+		},
+	)
+
 	if cn.Type != channel.TypeCall {
 		// nothing to do here
 		return
@@ -155,15 +163,11 @@ func (h *conferenceHandler) leavedConference(cn *channel.Channel, br *bridge.Bri
 		// the conference is not finished yet.
 		return
 	}
+	log.Debug("The conference is terminatable.")
 
+	// send the conference termination request
 	if err := h.reqHandler.CallConferenceTerminate(br.ConferenceID, "normal terminating", requesthandler.DelayNow); err != nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"conference": br.ConferenceID,
-				"bridge":     br.ID,
-				"asterisk":   br.AsteriskID,
-			},
-		).Errorf("Could not send the conference terminate request. err: %v", err)
+		log.Errorf("Could not send the conference terminate request. err: %v", err)
 	}
 }
 
