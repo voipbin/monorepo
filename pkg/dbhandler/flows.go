@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 
@@ -41,6 +42,34 @@ func (h *handler) FlowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flo
 	res, err := h.cache.FlowGet(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	return res, nil
+}
+
+// flowGetFromRow gets the flow from the row.
+func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
+	var actions string
+
+	res := &flow.Flow{}
+	if err := row.Scan(
+		&res.ID,
+		&res.UserID,
+
+		&res.Name,
+		&res.Detail,
+
+		&actions,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+		&res.TMDelete,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. flowGetFromRow. err: %v", err)
+	}
+
+	if err := json.Unmarshal([]byte(actions), &res.Actions); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the data. FlowGet. err: %v", err)
 	}
 
 	return res, nil
@@ -132,27 +161,9 @@ func (h *handler) FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, 
 		return nil, ErrNotFound
 	}
 
-	var actions string
-
-	res := &flow.Flow{}
-	if err := row.Scan(
-		&res.ID,
-		&res.UserID,
-
-		&res.Name,
-		&res.Detail,
-
-		&actions,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. FlowGet. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(actions), &res.Actions); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. FlowGet. err: %v", err)
+	res, err := h.flowGetFromRow(row)
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil
@@ -173,6 +184,52 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 
 	// set to the cache
 	h.FlowSetToCache(ctx, res)
+
+	return res, nil
+}
+
+// FlowGetsByUserID returns list of flows.
+func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error) {
+
+	// prepare
+	q := `
+	select
+		id,
+		user_id,
+
+		name,
+		detail,
+
+		actions,
+
+		coalesce(tm_create, '') as tm_create,
+		coalesce(tm_update, '') as tm_update,
+		coalesce(tm_delete, '') as tm_delete
+	from
+		flows
+	where
+		user_id = ? and tm_create < ?
+	order by
+		tm_create desc, id desc
+	limit ?
+
+	`
+
+	rows, err := h.db.Query(q, userID, token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. FlowGetsByUserID. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*flow.Flow
+	for rows.Next() {
+		u, err := h.flowGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. FlowGetsByUserID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
 
 	return res, nil
 }

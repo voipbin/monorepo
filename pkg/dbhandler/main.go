@@ -26,6 +26,7 @@ type DBHandler interface {
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
+	FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error)
 	FlowSetToCache(ctx context.Context, flow *flow.Flow) error
 	FlowUpdateToCache(ctx context.Context, id uuid.UUID) error
 }
