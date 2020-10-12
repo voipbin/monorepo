@@ -89,8 +89,9 @@ type RequestHandler interface {
 	CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error)
 
 	// flow actions
-	// FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
 	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error)
+	FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error)
+	FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 }
 
 type requestHandler struct {

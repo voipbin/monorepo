@@ -8,14 +8,14 @@ import (
 // Flow struct for client show
 type Flow struct {
 	ID     uuid.UUID `json:"id"`
-	UserID uint64    `json:"user_id"`
+	UserID uint64    `json:"-"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
 	Actions []action.Action `json:"actions"`
 
-	Persist bool `json:"persist"`
+	Persist bool `json:"-"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`

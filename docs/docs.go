@@ -255,6 +255,74 @@ var doc = `{
                     "200": {}
                 }
             }
+        },
+        "/v1.0/flows": {
+            "get": {
+                "description": "Gets a list of flows",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of flows.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/flow.Flow"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new flow and returns detail created flow info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new flow and returns detail created flow info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/flow.Flow"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/flows/{id}": {
+            "get": {
+                "description": "Returns detail flow info of the given flow id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail flow info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the flow",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/flow.Flow"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -262,9 +330,6 @@ var doc = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "string"
-                },
-                "next": {
                     "type": "string"
                 },
                 "option": {
@@ -388,6 +453,35 @@ var doc = `{
                 },
                 "user_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "flow.Flow": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
                 }
             }
         },

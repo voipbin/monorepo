@@ -3,6 +3,7 @@ package requesthandler
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/gofrs/uuid"
 
@@ -49,4 +50,54 @@ func (r *requestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail 
 	}
 
 	return &res, nil
+}
+
+// CMFlowGet sends a request to flow-manager
+// to getting a detail flow info.
+// it returns detail flow info if it succeed.
+func (r *requestHandler) FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error) {
+	uri := fmt.Sprintf("/v1/flows/%s", flowID)
+
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var f fmflow.Flow
+	if err := json.Unmarshal([]byte(res.Data), &f); err != nil {
+		return nil, err
+	}
+
+	return &f, nil
+}
+
+// FMFlowGets sends a request to flow-manager
+// to getting a list of flow info.
+// it returns detail list of flow info if it succeed.
+func (r *requestHandler) FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error) {
+	uri := fmt.Sprintf("/v1/flows?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var f []fmflow.Flow
+	if err := json.Unmarshal([]byte(res.Data), &f); err != nil {
+		return nil, err
+	}
+
+	return f, nil
 }

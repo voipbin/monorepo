@@ -158,6 +158,36 @@ func (mr *MockServiceHandlerMockRecorder) FlowCreate(u, id, name, detail, action
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockServiceHandler)(nil).FlowCreate), u, id, name, detail, actions, persist)
 }
 
+// FlowGet mocks base method.
+func (m *MockServiceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowGet", u, id)
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowGet indicates an expected call of FlowGet.
+func (mr *MockServiceHandlerMockRecorder) FlowGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockServiceHandler)(nil).FlowGet), u, id)
+}
+
+// FlowGetsByUserID mocks base method.
+func (m *MockServiceHandler) FlowGetsByUserID(u *user.User, pageToken string, pageSize uint64) ([]*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowGetsByUserID", u, pageToken, pageSize)
+	ret0, _ := ret[0].([]*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowGetsByUserID indicates an expected call of FlowGetsByUserID.
+func (mr *MockServiceHandlerMockRecorder) FlowGetsByUserID(u, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetsByUserID", reflect.TypeOf((*MockServiceHandler)(nil).FlowGetsByUserID), u, pageToken, pageSize)
+}
+
 // UserCreate mocks base method.
 func (m *MockServiceHandler) UserCreate(username, password string, permission uint64) (*user.User, error) {
 	m.ctrl.T.Helper()
