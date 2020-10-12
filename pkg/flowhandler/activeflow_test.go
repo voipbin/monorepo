@@ -372,3 +372,86 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 		})
 	}
 }
+
+func TestActiveFlowGetNextAction(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &flowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	type test struct {
+		name         string
+		callID       uuid.UUID
+		af           activeflow.ActiveFlow
+		expectAction action.Action
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("f96b5730-0c24-11eb-89ff-af22fc6e8dce"),
+			activeflow.ActiveFlow{
+				UserID: 1,
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("005a71ac-0c25-11eb-b9ba-ffa78e01ffc9"),
+					Type:   action.TypeConnect,
+					Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
+				},
+				Actions: []action.Action{
+					action.Action{
+						ID:     uuid.FromStringOrNil("005a71ac-0c25-11eb-b9ba-ffa78e01ffc9"),
+						Type:   action.TypeConnect,
+						Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
+					},
+					action.Action{
+						ID:   uuid.FromStringOrNil("686ece64-0c25-11eb-a025-ffd0ed1b73d2"),
+						Type: action.TypeEcho,
+					},
+				},
+			},
+			action.Action{
+				ID:   uuid.FromStringOrNil("686ece64-0c25-11eb-a025-ffd0ed1b73d2"),
+				Type: action.TypeEcho,
+			},
+		},
+		{
+			"empty actions",
+			uuid.FromStringOrNil("44413184-0c26-11eb-83a9-974d19b06d35"),
+			activeflow.ActiveFlow{
+				UserID: 1,
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+			},
+			action.Action{
+				ID:     action.IDFinish,
+				Type:   action.TypeHangup,
+				Option: []byte(`{}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
+			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
+			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+
+			act, err := h.activeFlowGetNextAction(ctx, tt.callID, tt.af.CurrentAction.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(act, &tt.expectAction) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectAction, act)
+			}
+		})
+	}
+}
