@@ -32,5 +32,6 @@ require (
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
 	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff // indirect
 	golang.org/x/tools v0.0.0-20200918201133-e94ab7288189 // indirect
+	google.golang.org/appengine v1.4.0
 	google.golang.org/protobuf v1.25.0 // indirect
 )

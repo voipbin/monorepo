@@ -11,7 +11,6 @@ type Action struct {
 	ID     uuid.UUID       `json:"id"`
 	Type   Type            `json:"type"`
 	Option json.RawMessage `json:"option,omitempty"`
-	Next   uuid.UUID       `json:"next"`
 }
 
 // Type type

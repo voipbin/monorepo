@@ -1,0 +1,140 @@
+package flows
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
+)
+
+// flowsPOST handles POST /flows request.
+// It creates a new flow with the given info and returns created flow info.
+// @Summary Create a new flow and returns detail created flow info.
+// @Description Create a new flow and returns detail created flow info.
+// @Produce json
+// @Success 200 {object} flow.Flow
+// @Router /v1.0/flows [post]
+func flowsPOST(c *gin.Context) {
+
+	var body request.BodyFlowsPOST
+	if err := c.BindJSON(&body); err != nil {
+		c.AbortWithStatus(400)
+		return
+	}
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log := logrus.WithFields(logrus.Fields{
+		"id":         u.ID,
+		"username":   u.Username,
+		"permission": u.Permission,
+	})
+
+	// create a flow
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	flow, err := serviceHandler.FlowCreate(&u, uuid.Must(uuid.NewV4()), body.Name, body.Detail, body.Actions, true)
+	if err != nil {
+		log.Errorf("Could not create a flow. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, flow)
+	return
+}
+
+// flowsGET handles GET /flows request.
+// It gets a list of flows with the given info.
+// @Summary Gets a list of flows.
+// @Description Gets a list of flows
+// @Produce json
+// @Success 200 {array} flow.Flow
+// @Router /v1.0/flows [get]
+func flowsGET(c *gin.Context) {
+
+	var requestParam request.ParamFlowsGET
+
+	if err := c.BindQuery(&requestParam); err != nil {
+		c.AbortWithStatus(400)
+		return
+	}
+	log := logrus.WithFields(
+		logrus.Fields{
+			"request_address": c.ClientIP,
+		},
+	)
+	log.Debugf("flowsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	u := tmp.(user.User)
+	log = log.WithFields(logrus.Fields{
+		"id":         u.ID,
+		"username":   u.Username,
+		"permission": u.Permission,
+	})
+
+	// create a flow
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	flows, err := serviceHandler.FlowGetsByUserID(&u, requestParam.PageToken, requestParam.PageSize)
+	if err != nil {
+		log.Errorf("Could not get a flow list. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, flows)
+	return
+}
+
+// flowsIDGET handles GET /flows/{id} request.
+// It returns detail flow info.
+// @Summary Returns detail flow info.
+// @Description Returns detail flow info of the given flow id.
+// @Produce json
+// @Param id path string true "The ID of the flow"
+// @Param token query string true "JWT token"
+// @Success 200 {object} flow.Flow
+// @Router /v1.0/flows/{id} [get]
+func flowsIDGET(c *gin.Context) {
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log := logrus.WithFields(logrus.Fields{
+		"id":         u.ID,
+		"username":   u.Username,
+		"permission": u.Permission,
+	})
+	log.Debug("Executing flowsIDGET.")
+
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.FlowGet(&u, id)
+	if err != nil {
+		log.Errorf("Could not get a flow. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}

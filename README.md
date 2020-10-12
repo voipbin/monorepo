@@ -42,7 +42,9 @@ Usage of ./api-manager:
       -rabbit_addr "amqp://guest:guest@rabbitmq.voipbin.net:5672" \
       -rabbit_exchange_delay bin-manager.delay \
       -rabbit_queue_call bin-manager.call-manager.request \
-      -rabbit_queue_flow bin-manager.flow-manager.request
+      -rabbit_queue_flow bin-manager.flow-manager.request \
+      -redis_addr 10.164.15.220:6379 \
+      -redis_db 1
 ```
 
 # Test

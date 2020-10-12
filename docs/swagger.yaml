@@ -3,8 +3,6 @@ definitions:
     properties:
       id:
         type: string
-      next:
-        type: string
       option:
         type: string
       type:
@@ -89,6 +87,25 @@ definitions:
         type: string
       user_id:
         type: integer
+    type: object
+  flow.Flow:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
     type: object
   request.BodyCallsPOST:
     properties:
@@ -289,4 +306,49 @@ paths:
           schema:
             $ref: '#/definitions/conference.Conference'
       summary: Returns detail conference info.
+  /v1.0/flows:
+    get:
+      description: Gets a list of flows
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/flow.Flow'
+            type: array
+      summary: Gets a list of flows.
+    post:
+      description: Create a new flow and returns detail created flow info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/flow.Flow'
+      summary: Create a new flow and returns detail created flow info.
+  /v1.0/flows/{id}:
+    get:
+      description: Returns detail flow info of the given flow id.
+      parameters:
+      - description: The ID of the flow
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/flow.Flow'
+      summary: Returns detail flow info.
 swagger: "2.0"

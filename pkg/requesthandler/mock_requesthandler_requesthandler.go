@@ -126,3 +126,33 @@ func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(userID, id, name, detail,
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), userID, id, name, detail, actions, persist)
 }
+
+// FMFlowGet mocks base method.
+func (m *MockRequestHandler) FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowGet", flowID)
+	ret0, _ := ret[0].(*fmflow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMFlowGet indicates an expected call of FMFlowGet.
+func (mr *MockRequestHandlerMockRecorder) FMFlowGet(flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowGet", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowGet), flowID)
+}
+
+// FMFlowGets mocks base method.
+func (m *MockRequestHandler) FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowGets", userID, pageToken, pageSize)
+	ret0, _ := ret[0].([]fmflow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMFlowGets indicates an expected call of FMFlowGets.
+func (mr *MockRequestHandlerMockRecorder) FMFlowGets(userID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowGets", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowGets), userID, pageToken, pageSize)
+}
