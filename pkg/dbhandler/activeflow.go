@@ -42,8 +42,8 @@ func (h *handler) ActiveFlowCreate(ctx context.Context, af *activeflow.ActiveFlo
 func (h *handler) ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error) {
 
 	res, err := h.ActiveFlowGetFromCache(ctx, id)
-	if err == nil {
-		return res, nil
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil
