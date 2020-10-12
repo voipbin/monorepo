@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
@@ -48,4 +49,16 @@ func (h *flowHandler) FlowCreate(ctx context.Context, flow *flow.Flow, persist b
 	}
 
 	return resFlow, nil
+}
+
+// FlowGetByUserID returns list of flows
+func (h *flowHandler) FlowGetByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error) {
+
+	flows, err := h.db.FlowGetsByUserID(ctx, userID, token, limit)
+	if err != nil {
+		logrus.Errorf("Could not get flows. err: %v", err)
+		return nil, err
+	}
+
+	return flows, nil
 }

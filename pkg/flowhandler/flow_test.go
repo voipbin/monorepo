@@ -144,3 +144,38 @@ func TestFlowCreatePersistFalse(t *testing.T) {
 		})
 	}
 }
+
+func TestFlowGetByUserID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
+		name   string
+		userID uint64
+		token  string
+		limit  uint64
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			1,
+			"2020-10-10T03:30:17.000000",
+			10,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockDB.EXPECT().FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit).Return(nil, nil)
+
+			h.FlowGetByUserID(ctx, tt.userID, tt.token, tt.limit)
+		})
+	}
+}

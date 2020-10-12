@@ -123,3 +123,81 @@ func TestFlowCreate(t *testing.T) {
 		})
 	}
 }
+
+func TestFlowGetsByUserID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name       string
+		userID     uint64
+		limit      uint64
+		token      string
+		flows      []flow.Flow
+		expectFlow []*flow.Flow
+	}
+
+	tests := []test{
+		{
+			"have no actions",
+			1,
+			10,
+			"2020-04-18T03:30:17.000000",
+			[]flow.Flow{
+				flow.Flow{
+					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					UserID:   1,
+					Name:     "test1",
+					Persist:  true,
+					TMCreate: "2020-04-18T03:22:17.995000",
+				},
+				flow.Flow{
+					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+					UserID:   1,
+					Name:     "test2",
+					Persist:  true,
+					TMCreate: "2020-04-18T03:23:17.995000",
+				},
+			},
+			[]*flow.Flow{
+				&flow.Flow{
+					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+					UserID:   1,
+					Name:     "test2",
+					TMCreate: "2020-04-18T03:23:17.995000",
+				},
+				&flow.Flow{
+					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					UserID:   1,
+					Name:     "test1",
+					TMCreate: "2020-04-18T03:22:17.995000",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
+
+			for _, flow := range tt.flows {
+				mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+				if err := h.FlowCreate(ctx, &flow); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			flows, err := h.FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(flows, tt.expectFlow) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectFlow, flows)
+			}
+		})
+	}
+}

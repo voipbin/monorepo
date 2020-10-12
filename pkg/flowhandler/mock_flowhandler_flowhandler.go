@@ -112,3 +112,18 @@ func (mr *MockFlowHandlerMockRecorder) FlowGet(arg0, arg1 interface{}) *gomock.C
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockFlowHandler)(nil).FlowGet), arg0, arg1)
 }
+
+// FlowGetByUserID mocks base method.
+func (m *MockFlowHandler) FlowGetByUserID(arg0 context.Context, arg1 uint64, arg2 string, arg3 uint64) ([]*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowGetByUserID", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].([]*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowGetByUserID indicates an expected call of FlowGetByUserID.
+func (mr *MockFlowHandlerMockRecorder) FlowGetByUserID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetByUserID", reflect.TypeOf((*MockFlowHandler)(nil).FlowGetByUserID), arg0, arg1, arg2, arg3)
+}

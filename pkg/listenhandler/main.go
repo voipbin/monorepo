@@ -14,6 +14,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
+// pagination parameters
+const (
+	PageSize  = "page_size"
+	PageToken = "page_token"
+)
+
 // ListenHandler interface
 type ListenHandler interface {
 	Run(queue, exchangeDelay string) error
@@ -22,12 +28,8 @@ type ListenHandler interface {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 	db         dbhandler.DBHandler
-	// cache      cachehandler.CacheHandler
 
 	flowHandler flowhandler.FlowHandler
-	// reqHandler        requesthandler.RequestHandler
-	// callHandler       callhandler.CallHandler
-	// conferenceHandler conferencehandler.ConferenceHandler
 }
 
 var (
@@ -77,19 +79,11 @@ func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	db dbhandler.DBHandler,
 	flowHandler flowhandler.FlowHandler,
-	// cache cachehandler.CacheHandler,
-	// reqHandler requesthandler.RequestHandler,
-	// callHandler callhandler.CallHandler,
-	// conferenceHandler conferencehandler.ConferenceHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:  rabbitSock,
 		db:          db,
 		flowHandler: flowHandler,
-		// cache:             cache,
-		// reqHandler:        reqHandler,
-		// callHandler:       callHandler,
-		// conferenceHandler: conferenceHandler,
 	}
 
 	return h
@@ -166,6 +160,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/flows"
 		return h.v1FlowsPost(m)
+
+	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/flows"
+		return h.v1FlowsGet(m)
 
 	default:
 		logrus.WithFields(

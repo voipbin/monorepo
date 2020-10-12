@@ -3,6 +3,8 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -13,9 +15,38 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/request"
 )
 
+// v1FlowsIDGet handles /v1/flows/{id} GET request
 func (h *listenHandler) v1FlowsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
 
-	return nil, nil
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/flows/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/actions/ab1f7732-8a74-11ea-98f6-9b02a042df6a"
+	tmpVals := strings.Split(u.Path, "/")
+	flowID := uuid.FromStringOrNil(tmpVals[3])
+
+	flow, err := h.flowHandler.FlowGet(ctx, flowID)
+	if err != nil {
+		logrus.Errorf("Could not get flow info. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(flow)
+	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
 }
 
 // v1FlowsPost handles /v1/flows POST request
@@ -61,13 +92,57 @@ func (h *listenHandler) v1FlowsPost(req *rabbitmqhandler.Request) (*rabbitmqhand
 	return res, nil
 }
 
+// v1FlowsGet handles /v1/flows GET request
+func (h *listenHandler) v1FlowsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the pagination params
+	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := u.Query().Get(PageToken)
+
+	// get user_id
+	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
+	userID := uint64(tmpUserID)
+
+	resFlows, err := h.flowHandler.FlowGetByUserID(ctx, userID, pageToken, pageSize)
+	if err != nil {
+		logrus.Errorf("Could not get flows. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(resFlows)
+	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // handlerFlowsIDActionsIDGet handles
 // /v1/flows/{id}/actions/{id} GET
 func (h *listenHandler) v1FlowsIDActionsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
 	// "/v1/flows/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/actions/ab1f7732-8a74-11ea-98f6-9b02a042df6a"
-	tmpVals := strings.Split(req.URI, "/")
+	tmpVals := strings.Split(u.Path, "/")
 	flowID := uuid.FromStringOrNil(tmpVals[3])
 	actionID := uuid.FromStringOrNil(tmpVals[5])
 
