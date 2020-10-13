@@ -1,5 +1,5 @@
 {
-  "name": "open-react-template",
+  "name": "main-voipbin",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -11,10 +11,6 @@
     "react-ga": "^2.7.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.4.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/cruip/open-react-template.git"
   },
   "scripts": {
     "start": "react-scripts start",
