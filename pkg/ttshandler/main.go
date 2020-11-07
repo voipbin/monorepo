@@ -1,0 +1,51 @@
+package ttshandler
+
+//go:generate mockgen -destination ./mock_ttshandler_ttshandler.go -package ttshandler -source ./main.go TTSHandler
+
+import (
+	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/audiohandler"
+	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/buckethandler"
+)
+
+// TTSHandler intreface for tts handler
+type TTSHandler interface {
+	TTSCreate(ssml string, lang string, gender string) (string, error)
+}
+
+type ttsHandler struct {
+	credentailPath string
+
+	audioHandler  audiohandler.AudioHandler
+	bucketHandler buckethandler.BucketHandler
+}
+
+// NewTTSHandler create TTSHandler
+func NewTTSHandler(credentialPath string, projectID, bucketName string) TTSHandler {
+	audioHandler := audiohandler.NewAudioHandler(credentialPath)
+	if audioHandler == nil {
+		logrus.Errorf("Could not create audio handler.")
+		return nil
+	}
+
+	bucketHandler := buckethandler.NewBucketHandler(credentialPath, projectID, bucketName)
+	if bucketHandler == nil {
+		logrus.Errorf("Could not create bucket handler.")
+		return nil
+	}
+
+	h := &ttsHandler{
+		credentailPath: credentialPath,
+
+		audioHandler:  audioHandler,
+		bucketHandler: bucketHandler,
+	}
+
+	return h
+}
+
+// Init initialize the bucket
+func (h *ttsHandler) Init() {
+	return
+}
