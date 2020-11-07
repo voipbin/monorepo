@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tts-manager
+  labels:
+    app: tts-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tts-manager
+  template:
+    metadata:
+      labels:
+        app: tts-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: tts-manager
+          image: tts-manager-image
+          command:
+            - '/app/tts-manager'
+          args:
+            - '-prom_endpoint'
+            - '/metrics'
+            - '-prom_listen_addr'
+            - ':2112'
+            - '-rabbit_addr'
+            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
+            - '-rabbit_queue_listen'
+            - 'bin-manager.tts-manager.request'
+            - '-rabbit_queue_notify'
+            - 'bin-manager.tts-manager.event'
+            - '-rabbit_exchange_delay'
+            - 'bin-manager.delay'
+            - '-rabbit_queue_call'
+            - 'bin-manager.call-manager.request'
+            - '-rabbit_queue_flow'
+            - 'bin-manager.flow-manager.request'
+            - '-gcp_credential'
+            - './google_service_account.json'
+            - '-gcp_project_id'
+            - 'voipbin-production'
+            - '-gcp_bucket_name'
+            - 'voipbin-voip-bucket-europe-west4'
+
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            limits:
+              cpu: "60m"
+              memory: "30M"
