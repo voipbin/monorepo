@@ -34,16 +34,16 @@ func (m *MockTTSHandler) EXPECT() *MockTTSHandlerMockRecorder {
 }
 
 // TTSCreate mocks base method.
-func (m *MockTTSHandler) TTSCreate(ssml, lang, gender string) (string, error) {
+func (m *MockTTSHandler) TTSCreate(text, lang, gender string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TTSCreate", ssml, lang, gender)
+	ret := m.ctrl.Call(m, "TTSCreate", text, lang, gender)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TTSCreate indicates an expected call of TTSCreate.
-func (mr *MockTTSHandlerMockRecorder) TTSCreate(ssml, lang, gender interface{}) *gomock.Call {
+func (mr *MockTTSHandlerMockRecorder) TTSCreate(text, lang, gender interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSCreate", reflect.TypeOf((*MockTTSHandler)(nil).TTSCreate), ssml, lang, gender)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSCreate", reflect.TypeOf((*MockTTSHandler)(nil).TTSCreate), text, lang, gender)
 }

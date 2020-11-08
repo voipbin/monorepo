@@ -11,7 +11,7 @@ import (
 )
 
 // v1SpeechesPost handles /v1/speeches POST request
-// creates a new tts audio for the given ssml and upload the file to the bucket. Returns uploaded filename with path.
+// creates a new tts audio for the given text and upload the file to the bucket. Returns uploaded filename with path.
 func (h *listenHandler) v1SpeechesPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	var reqData request.V1DataSpeechesPost
 	if err := json.Unmarshal(req.Data, &reqData); err != nil {
@@ -20,7 +20,7 @@ func (h *listenHandler) v1SpeechesPost(req *rabbitmqhandler.Request) (*rabbitmqh
 	}
 
 	// create tts
-	filename, err := h.ttshandler.TTSCreate(reqData.Ssml, reqData.Language, reqData.Gender)
+	filename, err := h.ttshandler.TTSCreate(reqData.Text, reqData.Language, reqData.Gender)
 	if err != nil {
 		logrus.Errorf("Could not create a tts audio. err: %v", err)
 		return nil, err

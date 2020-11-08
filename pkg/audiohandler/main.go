@@ -14,7 +14,7 @@ import (
 
 // AudioHandler intreface for audio handler
 type AudioHandler interface {
-	AudioCreate(ssml, lang, gender, filename string) error
+	AudioCreate(text, lang, gender, filename string) error
 }
 
 type audioHandler struct {
@@ -44,7 +44,7 @@ func (h *audioHandler) Init() {
 	return
 }
 
-func (h *audioHandler) AudioCreate(ssml, lang, gender, filename string) error {
+func (h *audioHandler) AudioCreate(text, lang, gender, filename string) error {
 
 	ssmlGender := texttospeechpb.SsmlVoiceGender_NEUTRAL
 	switch gender {
@@ -64,7 +64,7 @@ func (h *audioHandler) AudioCreate(ssml, lang, gender, filename string) error {
 		// set the ssml input to be synthesized.
 		Input: &texttospeechpb.SynthesisInput{
 			InputSource: &texttospeechpb.SynthesisInput_Ssml{
-				Ssml: ssml,
+				Ssml: text,
 			},
 		},
 
@@ -86,7 +86,7 @@ func (h *audioHandler) AudioCreate(ssml, lang, gender, filename string) error {
 	ctx := context.Background()
 	resp, err := h.client.SynthesizeSpeech(ctx, &req)
 	if err != nil {
-		logrus.Errorf("Could not get a correct response. ssml: %s, lang: %s, ssmlGender: %v, err: %v", ssml, lang, ssmlGender, err)
+		logrus.Errorf("Could not get a correct response. text: %s, lang: %s, ssmlGender: %v, err: %v", text, lang, ssmlGender, err)
 		return err
 	}
 
