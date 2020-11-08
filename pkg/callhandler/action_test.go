@@ -235,3 +235,58 @@ func TestActionTimeoutNext(t *testing.T) {
 		})
 	}
 }
+
+func TestActionExecuteTalk(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name           string
+		call           *call.Call
+		action         *action.Action
+		expectSSML     string
+		expectGender   string
+		expectLanguage string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("5e9f3946-2188-11eb-9d74-bf4bf1239da3"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "61a1345a-2188-11eb-ba52-af82c1239d8f",
+			},
+			&action.Action{
+				Type: action.TypeTalk,
+				ID:   uuid.FromStringOrNil("5c9cd6be-2195-11eb-a9c9-bfc91ac88411"),
+
+				Option: []byte(`{"text":"hello world","gender":"male","language":"en-US"}`),
+			},
+			`hello world`,
+			"male",
+			"en-US",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().TTSSpeechesPOST(tt.expectSSML, tt.expectGender, tt.expectLanguage).Return("test.wav", nil)
+			mockReq.EXPECT().AstChannelPlay(tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, []string{"sound:/mnt/media/test.wav"}).Return(nil)
+
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

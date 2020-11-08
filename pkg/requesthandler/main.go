@@ -87,6 +87,8 @@ const (
 	resourceCallChannelsHealth     resource = "call/channels/health"
 
 	resourceFlowsActions resource = "flows/actions"
+
+	resourceTTSSpeeches resource = "tts/speeches"
 )
 
 func init() {
@@ -133,6 +135,9 @@ type RequestHandler interface {
 	FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
 	FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
 	FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error)
+
+	// tts speeches
+	TTSSpeechesPOST(text, gender, language string) (string, error)
 }
 
 type requestHandler struct {
@@ -142,16 +147,18 @@ type requestHandler struct {
 
 	queueCall string
 	queueFlow string
+	queueTTS  string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueTTS string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
 		exchangeDelay: exchangeDelay,
 		queueCall:     queueCall,
 		queueFlow:     queueFlow,
+		queueTTS:      queueTTS,
 	}
 
 	return h
@@ -216,6 +223,40 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.Requ
 	defer cancel()
 
 	res, err := r.sendRequest(ctx, r.queueFlow, resource, m)
+	if err != nil {
+		return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+	}
+
+	log.WithFields(log.Fields{
+		"uri":         uri,
+		"method":      method,
+		"status_code": res.StatusCode,
+	}).Debugf("Received result. data: %s", res.Data)
+
+	return res, nil
+}
+
+// sendRequestTTS send a request to the tts-manager and return the response
+func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+	log.WithFields(log.Fields{
+		"uri":       uri,
+		"method":    method,
+		"data_type": dataType,
+		"data":      data,
+	}).Debugf("Sending request to TTS. data: %s", data)
+
+	// creat a request message
+	m := &rabbitmqhandler.Request{
+		URI:      uri,
+		Method:   method,
+		DataType: dataType,
+		Data:     data,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	defer cancel()
+
+	res, err := r.sendRequest(ctx, r.queueTTS, resource, m)
 	if err != nil {
 		return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 	}

@@ -379,3 +379,18 @@ func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowNextGet(callID, actionID
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActvieFlowNextGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowActvieFlowNextGet), callID, actionID)
 }
+
+// TTSSpeechesPOST mocks base method.
+func (m *MockRequestHandler) TTSSpeechesPOST(text, gender, language string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSSpeechesPOST", text, gender, language)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSSpeechesPOST indicates an expected call of TTSSpeechesPOST.
+func (mr *MockRequestHandlerMockRecorder) TTSSpeechesPOST(text, gender, language interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSSpeechesPOST", reflect.TypeOf((*MockRequestHandler)(nil).TTSSpeechesPOST), text, gender, language)
+}
