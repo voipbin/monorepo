@@ -61,6 +61,7 @@ const (
 	TypeHangup         Type = "hangup"      // call hangup
 	TypePlay           Type = "play"        // play the given file
 	TypeStreamEcho     Type = "stream_echo" // echo the stream(video/voice) and dtmf
+	TypeTalk           Type = "talk"        // generate audio from the given text(ssml or plain text) and play it
 )
 
 // OptionAnswer defines action answer's option.
@@ -92,4 +93,11 @@ type OptionPlay struct {
 // OptionStreamEcho defines action stream_echo's option.
 type OptionStreamEcho struct {
 	Duration int `json:"duration"`
+}
+
+// OptionTalk defines action talk's option.
+type OptionTalk struct {
+	Text     string `json:"text"`     // the text to read(SSML format or plain text)
+	Gender   string `json:"gender"`   // gender(male/female/neutral)
+	Language string `json:"language"` // IETF locale-name(ko-KR, en-US)
 }

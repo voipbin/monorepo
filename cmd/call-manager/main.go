@@ -32,6 +32,7 @@ var chDone = make(chan bool, 1)
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueARIEvent = flag.String("rabbit_queue_arievent", "asterisk.all.event", "rabbitmq asterisk ari event queue name.")
 var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
+var rabbitQueueTTSRequest = flag.String("rabbit_queue_tts", "bin-manager.tts-manager.request", "rabbitmq queue name for tts request")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
 var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.call-manager.event", "rabbitmq queue name for event notify")
 
@@ -159,6 +160,7 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitExchangeDelay,
 		*rabbitQueueListen,
 		*rabbitQueueFlowRequest,
+		*rabbitQueueTTSRequest,
 	)
 
 	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)
@@ -186,6 +188,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitExchangeDelay,
 		*rabbitQueueListen,
 		*rabbitQueueFlowRequest,
+		*rabbitQueueTTSRequest,
 	)
 
 	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)

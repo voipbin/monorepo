@@ -60,6 +60,9 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	case action.TypeStreamEcho:
 		err = h.actionExecuteStreamEcho(c, a)
 
+	case action.TypeTalk:
+		err = h.actionExecuteTalk(c, a)
+
 	default:
 		log.Errorf("Could not find action handle found. call: %s, action: %s, type: %s", c.ID, a.ID, a.Type)
 		err = fmt.Errorf("no action handler found")
@@ -423,6 +426,50 @@ func (h *callHandler) actionExecuteHangup(c *call.Call, a *action.Action) error 
 
 	// hangup
 	h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+
+	return nil
+}
+
+// actionExecuteTalk executes the action type talk
+func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
+
+	// copy the action
+	act := *a
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionTalk
+	if act.Option != nil {
+		if err := json.Unmarshal(act.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
+	}
+
+	// send request for create wav file
+	filename, err := h.reqHandler.TTSSpeechesPOST(option.Text, option.Gender, option.Language)
+	if err != nil {
+		return fmt.Errorf("could not create tts wav. err: %v", err)
+	}
+
+	// send play request
+	playFilename := fmt.Sprintf("/mnt/media/%s", filename)
+
+	// create a media string array
+	var medias []string
+	media := fmt.Sprintf("sound:%s", playFilename)
+	medias = append(medias, media)
+
+	// play
+	if err := h.reqHandler.AstChannelPlay(c.AsteriskID, c.ChannelID, act.ID, medias); err != nil {
+		log.Errorf("Could not play the media for tts. media: %v, err: %v", medias, err)
+		return fmt.Errorf("could not play the media for tts. err: %v", err)
+	}
 
 	return nil
 }
