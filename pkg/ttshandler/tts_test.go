@@ -24,7 +24,7 @@ func TestTTSCreate(t *testing.T) {
 
 	type test struct {
 		name     string
-		ssml     string
+		text     string
 		gender   string
 		language string
 		filename string
@@ -45,10 +45,10 @@ func TestTTSCreate(t *testing.T) {
 			target := fmt.Sprintf("%s/%s", bucketDirectory, tt.filename)
 
 			mockBucket.EXPECT().FileExist(target).Return(false)
-			mockAudio.EXPECT().AudioCreate(tt.ssml, tt.language, tt.gender, tt.filename).Return(nil)
+			mockAudio.EXPECT().AudioCreate(tt.text, tt.language, tt.gender, tt.filename).Return(nil)
 			mockBucket.EXPECT().FileUpload(tt.filename, target).Return(nil)
 
-			h.TTSCreate(tt.ssml, tt.language, tt.gender)
+			h.TTSCreate(tt.text, tt.language, tt.gender)
 		})
 	}
 }

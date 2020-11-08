@@ -11,7 +11,7 @@ import (
 
 // TTSHandler intreface for tts handler
 type TTSHandler interface {
-	TTSCreate(ssml string, lang string, gender string) (string, error)
+	TTSCreate(text string, lang string, gender string) (string, error)
 }
 
 type ttsHandler struct {

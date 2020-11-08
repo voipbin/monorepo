@@ -13,10 +13,10 @@ const (
 )
 
 // TTSCreate creates audio and upload it to the bucket.
-func (h *ttsHandler) TTSCreate(ssml string, lang string, gender string) (string, error) {
+func (h *ttsHandler) TTSCreate(text string, lang string, gender string) (string, error) {
 
 	// create hash/target
-	filename := h.filenameHashGenerator(ssml, lang, gender)
+	filename := h.filenameHashGenerator(text, lang, gender)
 	target := fmt.Sprintf("%s/%s", bucketDirectory, filename)
 
 	// check exists
@@ -26,7 +26,7 @@ func (h *ttsHandler) TTSCreate(ssml string, lang string, gender string) (string,
 	}
 
 	// create audio
-	err := h.audioHandler.AudioCreate(ssml, lang, gender, filename)
+	err := h.audioHandler.AudioCreate(text, lang, gender, filename)
 	if err != nil {
 		logrus.Errorf("Could not create audio. err: %v", err)
 		return "", fmt.Errorf("could not create audio. err: %v", err)
@@ -44,8 +44,8 @@ func (h *ttsHandler) TTSCreate(ssml string, lang string, gender string) (string,
 }
 
 // filenameHashGenerator generates hashed filename for tts wav file.
-func (h *ttsHandler) filenameHashGenerator(ssml string, lang string, gender string) string {
-	s := fmt.Sprintf("%s%s%s", ssml, lang, gender)
+func (h *ttsHandler) filenameHashGenerator(text string, lang string, gender string) string {
+	s := fmt.Sprintf("%s%s%s", text, lang, gender)
 
 	sh1 := sha1.New()
 	sh1.Write([]byte(s))
