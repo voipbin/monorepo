@@ -161,6 +161,9 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 		}
 		return &resAction, nil
 	}
+	log = log.WithFields(logrus.Fields{
+		"active_flow_current_action_id": af.CurrentAction.ID,
+	})
 
 	// compare current action.
 	// if the current action does not match with the active-flow's current action,
@@ -271,6 +274,10 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 		log.Errorf("Could not create conference for connect. err: %v", err)
 		return fmt.Errorf("could not create conference for connect. err: %v", err)
 	}
+	log = log.WithFields(logrus.Fields{
+		"conference": cf.ID,
+	})
+	log.Debug("Created conference for connect.")
 
 	// create a temp flow connect conference join
 	optJoin := action.OptionConferenceJoin{
