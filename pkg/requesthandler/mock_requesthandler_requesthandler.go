@@ -238,17 +238,17 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelHangup(asteriskID, channelID
 }
 
 // AstChannelPlay mocks base method.
-func (m *MockRequestHandler) AstChannelPlay(asteriskID, channelID string, actionID uuid.UUID, medias []string) error {
+func (m *MockRequestHandler) AstChannelPlay(asteriskID, channelID string, actionID uuid.UUID, medias []string, lang string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelPlay", asteriskID, channelID, actionID, medias)
+	ret := m.ctrl.Call(m, "AstChannelPlay", asteriskID, channelID, actionID, medias, lang)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelPlay indicates an expected call of AstChannelPlay.
-func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(asteriskID, channelID, actionID, medias interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(asteriskID, channelID, actionID, medias, lang interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelPlay", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelPlay), asteriskID, channelID, actionID, medias)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelPlay", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelPlay), asteriskID, channelID, actionID, medias, lang)
 }
 
 // AstChannelVariableSet mocks base method.

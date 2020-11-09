@@ -702,7 +702,7 @@ func TestAstChannelPlay(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelPlay(tt.asterisk, tt.channelID, tt.actionID, tt.medias)
+			err := reqHandler.AstChannelPlay(tt.asterisk, tt.channelID, tt.actionID, tt.medias, "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

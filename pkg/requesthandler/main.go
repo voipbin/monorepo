@@ -119,7 +119,7 @@ type RequestHandler interface {
 	AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error
 	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
-	AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string) error
+	AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
 	AstChannelVariableSet(asteriskID, channelID, variable, value string) error
 
 	// call

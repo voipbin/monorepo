@@ -72,7 +72,7 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 		"source":      source,
 		"destination": destination,
 	})
-	log.Debug("Creating outgoing call.")
+	log.Debug("Creating a call for outgoing.")
 
 	channelID := uuid.Must(uuid.NewV4()).String()
 	cTmp := &call.Call{
