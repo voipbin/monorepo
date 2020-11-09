@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -18,6 +20,10 @@ const (
 	redirectTimeoutContext  = "svc-stasis"
 	redirectTimeoutExten    = "s"
 	redirectTimeoutPriority = "1"
+)
+
+const (
+	asteriskGCSFuseMount = "/mnt/media" // gcsfuse mount directory
 )
 
 // setAction sets the action to the call
@@ -326,7 +332,7 @@ func (h *callHandler) actionExecutePlay(c *call.Call, a *action.Action) error {
 	}
 
 	// play
-	if err := h.reqHandler.AstChannelPlay(c.AsteriskID, c.ChannelID, act.ID, medias); err != nil {
+	if err := h.reqHandler.AstChannelPlay(c.AsteriskID, c.ChannelID, act.ID, medias, ""); err != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, err)
 		return fmt.Errorf("could not play the media. err: %v", err)
 	}
@@ -451,6 +457,11 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 		}
 	}
 
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
 	// send request for create wav file
 	filename, err := h.reqHandler.TTSSpeechesPOST(option.Text, option.Gender, option.Language)
 	if err != nil {
@@ -458,7 +469,7 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 	}
 
 	// send play request
-	playFilename := fmt.Sprintf("/mnt/media/%s", filename)
+	playFilename := fmt.Sprintf("%s/%s", asteriskGCSFuseMount, strings.TrimSuffix(filename, filepath.Ext(filename)))
 
 	// create a media string array
 	var medias []string
@@ -466,7 +477,7 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 	medias = append(medias, media)
 
 	// play
-	if err := h.reqHandler.AstChannelPlay(c.AsteriskID, c.ChannelID, act.ID, medias); err != nil {
+	if err := h.reqHandler.AstChannelPlay(c.AsteriskID, c.ChannelID, act.ID, medias, ""); err != nil {
 		log.Errorf("Could not play the media for tts. media: %v, err: %v", medias, err)
 		return fmt.Errorf("could not play the media for tts. err: %v", err)
 	}

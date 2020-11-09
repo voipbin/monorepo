@@ -265,17 +265,19 @@ func (r *requestHandler) AstChannelDial(asteriskID, channelID, caller string, ti
 // AstChannelPlay plays the music file on the channel
 // The channelID will be used for playbackId as well.
 // medias string must be stared with sound:, recording:, number:, digits:, characters:, tone:.
-func (r *requestHandler) AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string) error {
+func (r *requestHandler) AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error {
 	url := fmt.Sprintf("/ari/channels/%s/play", channelID)
 
 	type Data struct {
 		Media      []string `json:"media"`
 		PlaybackID string   `json:"playbackId"`
+		Language   string   `json:"lang,omitempty"`
 	}
 
 	m, err := json.Marshal(Data{
 		medias,
 		actionID.String(),
+		lang,
 	})
 	if err != nil {
 		return err
