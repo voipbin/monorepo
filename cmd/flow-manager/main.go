@@ -13,7 +13,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
@@ -28,7 +28,7 @@ var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
 // log level
-var logLevel = flag.Int("log_level", int(log.DebugLevel), "log level")
+var logLevel = flag.Int("log_level", int(logrus.DebugLevel), "log level")
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
@@ -54,21 +54,15 @@ var redisDB = flag.Int("redis_db", 1, "redis database.")
 func main() {
 	fmt.Printf("Hello world!\n")
 
-	// connect to database
-	db, err := sql.Open("mysql", *dbDSN)
+	// create dbhandler
+	dbHandler, err := createDBHandler()
 	if err != nil {
-		log.Errorf("Could not access to database. err: %v", err)
+		logrus.Errorf("Could not connect to the database or failed to initiate the cachehandler. err: ")
 		return
 	}
 
-	// connect to cache
-	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
-	if err := cache.Connect(); err != nil {
-		log.Errorf("Could not connect to cache server. err: %v", err)
-		return
-	}
-
-	run(db, cache)
+	// run the service
+	run(dbHandler)
 	<-chDone
 
 	return
@@ -86,13 +80,13 @@ func init() {
 	// init prometheus setting
 	initProm(*promEndpoint, *promListenAddr)
 
-	log.Info("The init finished.")
+	logrus.Info("The init finished.")
 }
 
 // initLog inits log settings.
 func initLog() {
-	log.SetFormatter(joonix.NewFormatter())
-	log.SetLevel(log.DebugLevel)
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
 }
 
 // initSignal inits sinal settings.
@@ -104,7 +98,7 @@ func initSignal() {
 // signalHandler catches signals and set the done
 func signalHandler() {
 	sig := <-chSigs
-	log.Debugf("Received signal. sig: %v", sig)
+	logrus.Debugf("Received signal. sig: %v", sig)
 	chDone <- true
 }
 
@@ -115,7 +109,7 @@ func initProm(endpoint, listen string) {
 		for {
 			err := http.ListenAndServe(listen, nil)
 			if err != nil {
-				log.Errorf("Could not start prometheus listener")
+				logrus.Errorf("Could not start prometheus listener")
 				time.Sleep(time.Second * 1)
 				continue
 			}
@@ -124,30 +118,56 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-func run(db *sql.DB, cache cachehandler.CacheHandler) {
-	// rabbitmq handler
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+// connectDatabase connects to the database and cachehandler
+func createDBHandler() (dbhandler.DBHandler, error) {
+	// connect to database
+	db, err := sql.Open("mysql", *dbDSN)
+	if err != nil {
+		logrus.Errorf("Could not access to database. err: %v", err)
+		return nil, err
+	}
 
-	// database handler
+	// connect to cache
+	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
+	if err := cache.Connect(); err != nil {
+		logrus.Errorf("Could not connect to cache server. err: %v", err)
+		return nil, err
+	}
+
+	// create dbhandler
 	dbHandler := dbhandler.NewHandler(db, cache)
 
-	// connect to rabbitmq
-	sock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	sock.Connect()
+	return dbHandler, nil
+}
 
-	// create servicehandler
-	requestHandler := requesthandler.NewRequestHandler(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest)
+func run(dbHandler dbhandler.DBHandler) {
 
-	// flow
+	// run the listen service
+	go func() {
+		runListen(dbHandler)
+	}()
+}
+
+// runListen runs the listen service
+func runListen(dbHandler dbhandler.DBHandler) error {
+	// create flowhandler
+	sockRequest := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	sockRequest.Connect()
+	requestHandler := requesthandler.NewRequestHandler(sockRequest, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest)
 	flowHandler := flowhandler.NewFlowHandler(dbHandler, requestHandler)
 
 	// create and run the listen handler
 	// listen to the request queue
+	sockListen := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	sockListen.Connect()
 	listenHandler := listenhandler.NewListenHandler(
-		rabbitSock,
+		sockListen,
 		dbHandler,
 		flowHandler,
 	)
+
+	// run the service
 	listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay)
+
+	return nil
 }

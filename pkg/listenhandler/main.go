@@ -8,7 +8,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
@@ -46,7 +45,7 @@ var (
 )
 
 var (
-	metricsNamespace = "api_manager"
+	metricsNamespace = "flow_manager"
 
 	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -110,17 +109,13 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	}
 
 	// receive ARI event
-	go func() {
-		for {
-			err := h.rabbitSock.ConsumeRPC(queue, "call-manager", h.processRequest)
-			if err != nil {
-				logrus.Errorf("Could not consume the ARI message correctly. Will try again after 1 second. err: %v", err)
-				time.Sleep(time.Second * 1)
-			}
+	for {
+		err := h.rabbitSock.ConsumeRPC(queue, "flow-manager", h.processRequest)
+		if err != nil {
+			logrus.Errorf("Could not consume the ARI message correctly. Will try again after 1 second. err: %v", err)
+			time.Sleep(time.Second * 1)
 		}
-	}()
-
-	return nil
+	}
 }
 
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {

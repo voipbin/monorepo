@@ -65,7 +65,7 @@ func (h *listenHandler) v1ActiveFlowsIDNextGet(req *rabbitmqhandler.Request) (*r
 	if err != nil {
 		return nil, err
 	}
-	logrus.Debugf("Found next action. call: %s, current_action_id: %s, next_action: %v", callID, reqData.CurrentActionID, resAction)
+	logrus.Debugf("Found next action. call: %s, current_action_id: %s, next_action: %s", callID, reqData.CurrentActionID, resAction)
 
 	data, err := json.Marshal(resAction)
 	if err != nil {
