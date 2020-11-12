@@ -42,11 +42,14 @@ type DBHandler interface {
 	CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
+	CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
+	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
 	CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error
 	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
 	CallSetConferenceID(ctx context.Context, id, conferenceID uuid.UUID) error
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
+	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
 	CallSetToCache(ctx context.Context, call *call.Call) error
 	CallUpdateToCache(ctx context.Context, id uuid.UUID) error

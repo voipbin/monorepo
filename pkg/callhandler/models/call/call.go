@@ -14,13 +14,15 @@ import (
 // Call struct represent asterisk's channel information
 type Call struct {
 	// identity
-	ID         uuid.UUID `json:"id"`
-	UserID     uint64    `json:"user_id"`
-	AsteriskID string    `json:"asterisk_id"`
-	ChannelID  string    `json:"channel_id"`
-	FlowID     uuid.UUID `json:"flow_id"` // flow id
-	ConfID     uuid.UUID `json:"conf_id"` // currently joined conference id
-	Type       Type      `json:"type"`
+	ID             uuid.UUID   `json:"id"`
+	UserID         uint64      `json:"user_id"`
+	AsteriskID     string      `json:"asterisk_id"`
+	ChannelID      string      `json:"channel_id"`
+	FlowID         uuid.UUID   `json:"flow_id"`          // flow id
+	ConfID         uuid.UUID   `json:"conf_id"`          // currently joined conference id
+	Type           Type        `json:"type"`             // call type
+	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
+	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // chained call ids
 
 	// source/destination
 	Source      Address `json:"source"`
