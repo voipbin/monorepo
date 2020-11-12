@@ -319,3 +319,37 @@ func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmqhandler.Reques
 
 	return res, nil
 }
+
+// processV1CallsIDChainedCallIDsPost handles /v1/calls/<id>/chained-call-ids POST request
+func (h *listenHandler) processV1CallsIDChainedCallIDsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsIDChainedCallIDsPost.")
+
+	var data request.V1DataCallsIDChainedCallIDs
+	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+		return nil, err
+	}
+	log.WithFields(logrus.Fields{
+		"chained_call_ids": data,
+	}).Debugf("Parsed request data.")
+
+	if err := h.callHandler.ChainedCallIDAdd(id, data.ChainedCallID); err != nil {
+		log.Errorf("Could not add the chained call id. call: %s, chained_call: %s, err: %v", id, data.ChainedCallID, err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}

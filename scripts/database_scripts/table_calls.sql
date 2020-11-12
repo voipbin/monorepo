@@ -1,12 +1,14 @@
 create table calls(
   -- identity
-  id              binary(16),   -- id
-  user_id         integer,      -- user id
-  asterisk_id     varchar(255), -- Asterisk id
-  channel_id      varchar(255), -- channel id
-  flow_id         binary(16),   -- flow id
-  conference_id   binary(16),   -- currently joined conference id
-  type            varchar(16),  -- type of call
+  id                binary(16),   -- id
+  user_id           integer,      -- user id
+  asterisk_id       varchar(255), -- Asterisk id
+  channel_id        varchar(255), -- channel id
+  flow_id           binary(16),   -- flow id
+  conference_id     binary(16),   -- currently joined conference id
+  type              varchar(16),  -- type of call
+  master_call_id    binary(16),   -- master call id
+  chained_call_ids  json,         -- chained call ids
 
   -- source/destination
   source        json, -- source's type, target, number, name, ...

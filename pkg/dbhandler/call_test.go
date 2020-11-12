@@ -97,6 +97,131 @@ func TestCallCreate(t *testing.T) {
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 		},
+		{
+			"master added",
+			uuid.Must(uuid.NewV4()),
+			uuid.Must(uuid.NewV4()),
+			call.Call{
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ChannelID:    "c1372760-24be-11eb-b93e-37379c2c7946",
+				Type:         call.TypeFlow,
+				MasterCallID: uuid.FromStringOrNil("cf3c6046-24be-11eb-8b61-074f38be56e4"),
+
+				Source: call.Address{
+					Type: call.AddressTypeSIP,
+				},
+				Destination: call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+			call.Call{
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ChannelID:    "c1372760-24be-11eb-b93e-37379c2c7946",
+				Type:         call.TypeFlow,
+				MasterCallID: uuid.FromStringOrNil("cf3c6046-24be-11eb-8b61-074f38be56e4"),
+
+				Source: call.Address{
+					Type: call.AddressTypeSIP,
+				},
+				Destination: call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+		},
+		{
+			"single branch call",
+			uuid.Must(uuid.NewV4()),
+			uuid.Must(uuid.NewV4()),
+			call.Call{
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ChannelID:    "06eed97e-24bf-11eb-b88a-8702e77eda81",
+				Type:         call.TypeFlow,
+				MasterCallID: uuid.FromStringOrNil("0bfa246e-24bf-11eb-b919-3b6404fdc87b"),
+				ChainedCallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("10e34906-24bf-11eb-b3dd-63551f2b9bde"),
+				},
+
+				Source: call.Address{
+					Type: call.AddressTypeSIP,
+				},
+				Destination: call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+			call.Call{
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ChannelID:    "06eed97e-24bf-11eb-b88a-8702e77eda81",
+				Type:         call.TypeFlow,
+				MasterCallID: uuid.FromStringOrNil("0bfa246e-24bf-11eb-b919-3b6404fdc87b"),
+				ChainedCallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("10e34906-24bf-11eb-b3dd-63551f2b9bde"),
+				},
+
+				Source: call.Address{
+					Type: call.AddressTypeSIP,
+				},
+				Destination: call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+		},
+		{
+			"many branch calls",
+			uuid.Must(uuid.NewV4()),
+			uuid.Must(uuid.NewV4()),
+			call.Call{
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ChannelID:    "3272b8cc-24bf-11eb-affd-af1cf6f0f7bb",
+				Type:         call.TypeFlow,
+				MasterCallID: uuid.FromStringOrNil("32c01ec8-24bf-11eb-9e91-9b0246fc5e76"),
+				ChainedCallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("32f84884-24bf-11eb-a097-93f53734f1c9"),
+					uuid.FromStringOrNil("3323a3b2-24bf-11eb-9955-27bf0b4927b7"),
+				},
+
+				Source: call.Address{
+					Type: call.AddressTypeSIP,
+				},
+				Destination: call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+			call.Call{
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ChannelID:    "3272b8cc-24bf-11eb-affd-af1cf6f0f7bb",
+				Type:         call.TypeFlow,
+				MasterCallID: uuid.FromStringOrNil("32c01ec8-24bf-11eb-9e91-9b0246fc5e76"),
+				ChainedCallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("32f84884-24bf-11eb-a097-93f53734f1c9"),
+					uuid.FromStringOrNil("3323a3b2-24bf-11eb-9955-27bf0b4927b7"),
+				},
+
+				Source: call.Address{
+					Type: call.AddressTypeSIP,
+				},
+				Destination: call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -707,6 +832,85 @@ func TestCallSetAction(t *testing.T) {
 			res.TMUpdate = ""
 			if reflect.DeepEqual(*tt.expectCall, *res) == false {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+			}
+		})
+	}
+}
+
+func TestCallSetMasterCallID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name         string
+		call         *call.Call
+		masterCallID uuid.UUID
+
+		expectCall *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("14649d2c-24fc-11eb-bb0b-9bd6970f725f"),
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ChannelID:  "14daba5c-24fc-11eb-8f58-8b798baaf553",
+				Type:       call.TypeFlow,
+				TMCreate:   "2020-04-18T03:22:17.995000",
+			},
+			uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
+			&call.Call{
+				ID:           uuid.FromStringOrNil("14649d2c-24fc-11eb-bb0b-9bd6970f725f"),
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ChannelID:    "14daba5c-24fc-11eb-8f58-8b798baaf553",
+				Type:         call.TypeFlow,
+				MasterCallID: uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
+				TMCreate:     "2020-04-18T03:22:17.995000",
+			},
+		},
+		{
+			"set nil",
+			&call.Call{
+				ID:       uuid.FromStringOrNil("665db8f2-2501-11eb-86ce-f3a50eef6f26"),
+				Type:     call.TypeFlow,
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+			uuid.Nil,
+			&call.Call{
+				ID:       uuid.FromStringOrNil("665db8f2-2501-11eb-86ce-f3a50eef6f26"),
+				Type:     call.TypeFlow,
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
+			if err := h.CallCreate(context.Background(), tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
+			if err := h.CallSetMasterCallID(context.Background(), tt.call.ID, tt.masterCallID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
+			res, err := h.CallGet(context.Background(), tt.call.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMUpdate = ""
+			if reflect.DeepEqual(*tt.expectCall, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
 			}
 		})
 	}

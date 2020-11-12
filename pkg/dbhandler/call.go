@@ -13,7 +13,7 @@ import (
 )
 
 // CallCreate creates new call record.
-func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
+func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	q := `insert into calls(
 		id,
 		user_id,
@@ -22,6 +22,8 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 		flow_id,
 		conference_id,
 		type,
+		master_call_id,
+		chained_call_ids,
 
 		source,
 		source_target,
@@ -37,61 +39,68 @@ func (h *handler) CallCreate(ctx context.Context, call *call.Call) error {
 
 		tm_create
 	) values(
-		?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?,?,
 		?
 		)`
 
-	tmpSource, err := json.Marshal(call.Source)
+	tmpChainedCallIDs, err := json.Marshal(c.ChainedCallIDs)
+	if err != nil {
+		return fmt.Errorf("could not marshal calls. CallCreate. err: %v", err)
+	}
+
+	tmpSource, err := json.Marshal(c.Source)
 	if err != nil {
 		return fmt.Errorf("could not marshal source. CallCreate. err: %v", err)
 	}
 
-	tmpDestination, err := json.Marshal(call.Destination)
+	tmpDestination, err := json.Marshal(c.Destination)
 	if err != nil {
 		return fmt.Errorf("could not marshal destination. CallCreate. err: %v", err)
 	}
 
-	tmpData, err := json.Marshal(call.Data)
+	tmpData, err := json.Marshal(c.Data)
 	if err != nil {
 		return fmt.Errorf("could not marshal data. CallCreate. err: %v", err)
 	}
 
-	tmpAction, err := json.Marshal(call.Action)
+	tmpAction, err := json.Marshal(c.Action)
 	if err != nil {
 		return fmt.Errorf("could not marshal action. CallCreate. err: %v", err)
 	}
 
 	_, err = h.db.Exec(q,
-		call.ID.Bytes(),
-		call.UserID,
-		call.AsteriskID,
-		call.ChannelID,
-		call.FlowID.Bytes(),
-		call.ConfID.Bytes(),
-		call.Type,
+		c.ID.Bytes(),
+		c.UserID,
+		c.AsteriskID,
+		c.ChannelID,
+		c.FlowID.Bytes(),
+		c.ConfID.Bytes(),
+		c.Type,
+		c.MasterCallID.Bytes(),
+		tmpChainedCallIDs,
 
 		tmpSource,
-		call.Source.Target,
+		c.Source.Target,
 		tmpDestination,
-		call.Destination.Target,
+		c.Destination.Target,
 
-		call.Status,
+		c.Status,
 		tmpData,
 		tmpAction,
-		call.Direction,
-		call.HangupBy,
-		call.HangupReason,
+		c.Direction,
+		c.HangupBy,
+		c.HangupReason,
 
-		call.TMCreate,
+		c.TMCreate,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. CallCreate. err: %v", err)
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, call.ID)
+	h.CallUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -128,6 +137,8 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 		flow_id,
 		conference_id,
 		type,
+		master_call_id,
+		chained_call_ids,
 
 		source,
 		destination,
@@ -172,6 +183,7 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 
 // callGetFromRow gets the call from the row.
 func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
+	var ChainedCallIDs string
 	var data string
 	var source string
 	var destination string
@@ -185,6 +197,8 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.FlowID,
 		&res.ConfID,
 		&res.Type,
+		&res.MasterCallID,
+		&ChainedCallIDs,
 
 		&source,
 		&destination,
@@ -206,6 +220,9 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
 	}
 
+	if err := json.Unmarshal([]byte(ChainedCallIDs), &res.ChainedCallIDs); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the chained_call_ids. callGetFromRow. err: %v", err)
+	}
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
 	}
@@ -478,6 +495,8 @@ func (h *handler) CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, 
 		flow_id,
 		conference_id,
 		type,
+		master_call_id,
+		chained_call_ids,
 
 		source,
 		destination,
@@ -541,6 +560,89 @@ func (h *handler) CallSetToCache(ctx context.Context, call *call.Call) error {
 	if err := h.cache.CallSet(ctx, call); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+// CallAddChainedCallID adds the call id to the given call's chained_call_ids.
+func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
+	// prepare
+	q := `
+	update call set
+		chained_call_ids = json_array_append(
+			chained_call_ids,
+			'$',
+			?
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, chainedCallID.String(), getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
+	}
+
+	// update the cache
+	h.CallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CallRemoveChainedCallID removes the call id from the given call's chained_call_ids.
+func (h *handler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
+	// prepare
+	q := `
+	update calls set
+		chained_call_ids = json_remove(
+			chained_call_ids, replace(
+				json_search(
+					chained_call_ids,
+					'one',
+					?
+				),
+				'"',
+				''
+			)
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, chainedCallID.String(), getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
+	}
+
+	// update the cache
+	h.CallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CallSetMasterCallID sets the call's master_call_id
+func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error {
+
+	// prepare
+	q := `
+	update
+		calls
+	set
+		master_call_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, callID.Bytes(), getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallSetMasterCallID. err: %v", err)
+	}
+
+	// update the cache
+	h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
