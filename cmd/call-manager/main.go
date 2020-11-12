@@ -12,7 +12,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
@@ -65,7 +65,7 @@ func main() {
 	// connect to database
 	sqlDB, err := sql.Open("mysql", *dbDSN)
 	if err != nil {
-		log.Errorf("Could not access to database. err: %v", err)
+		logrus.Errorf("Could not access to database. err: %v", err)
 		return
 	}
 	defer sqlDB.Close()
@@ -73,7 +73,7 @@ func main() {
 	// connect to cache
 	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
 	if err := cache.Connect(); err != nil {
-		log.Errorf("Could not connect to cache server. err: %v", err)
+		logrus.Errorf("Could not connect to cache server. err: %v", err)
 		return
 	}
 
@@ -96,20 +96,20 @@ func init() {
 	// init prometheus setting
 	initProm(*promEndpoint, *promListenAddr)
 
-	log.Info("init finished.")
+	logrus.Info("init finished.")
 }
 
 // signalHandler catches signals and set the done
 func signalHandler() {
 	sig := <-chSigs
-	log.Debugf("Received signal. sig: %v", sig)
+	logrus.Debugf("Received signal. sig: %v", sig)
 	chDone <- true
 }
 
 // initLog inits log settings.
 func initLog() {
-	log.SetFormatter(joonix.NewFormatter())
-	log.SetLevel(log.DebugLevel)
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
 }
 
 // initSignal inits sinal settings.
@@ -125,7 +125,7 @@ func initProm(endpoint, listen string) {
 		for {
 			err := http.ListenAndServe(listen, nil)
 			if err != nil {
-				log.Errorf("Could not start prometheus listener")
+				logrus.Errorf("Could not start prometheus listener")
 				time.Sleep(time.Second * 1)
 				continue
 			}
@@ -147,6 +147,7 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 	return nil
 }
 
+// runARI runs the ARI listen service
 func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
@@ -168,12 +169,13 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// run
 	if err := eventHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
-		log.Errorf("Could not run the eventhandler correctly. err: %v", err)
+		logrus.Errorf("Could not run the eventhandler correctly. err: %v", err)
 	}
 
 	return nil
 }
 
+// runListen runs the listen service
 func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
@@ -197,7 +199,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
-		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
+		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
 	return nil
