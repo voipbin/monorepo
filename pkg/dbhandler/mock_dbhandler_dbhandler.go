@@ -6,6 +6,7 @@ package dbhandler
 
 import (
 	context "context"
+	sql "database/sql"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
@@ -412,6 +413,62 @@ func (m *MockDBHandler) CallSetToCache(ctx context.Context, call *call.Call) err
 func (mr *MockDBHandlerMockRecorder) CallSetToCache(ctx, call interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetToCache", reflect.TypeOf((*MockDBHandler)(nil).CallSetToCache), ctx, call)
+}
+
+// CallTXAddChainedCallID mocks base method
+func (m *MockDBHandler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallTXAddChainedCallID", tx, id, chainedCallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallTXAddChainedCallID indicates an expected call of CallTXAddChainedCallID
+func (mr *MockDBHandlerMockRecorder) CallTXAddChainedCallID(tx, id, chainedCallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallTXAddChainedCallID", reflect.TypeOf((*MockDBHandler)(nil).CallTXAddChainedCallID), tx, id, chainedCallID)
+}
+
+// CallTXFinish mocks base method
+func (m *MockDBHandler) CallTXFinish(tx *sql.Tx, commit bool) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CallTXFinish", tx, commit)
+}
+
+// CallTXFinish indicates an expected call of CallTXFinish
+func (mr *MockDBHandlerMockRecorder) CallTXFinish(tx, commit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallTXFinish", reflect.TypeOf((*MockDBHandler)(nil).CallTXFinish), tx, commit)
+}
+
+// CallTXRemoveChainedCallID mocks base method
+func (m *MockDBHandler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallTXRemoveChainedCallID", tx, id, chainedCallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallTXRemoveChainedCallID indicates an expected call of CallTXRemoveChainedCallID
+func (mr *MockDBHandlerMockRecorder) CallTXRemoveChainedCallID(tx, id, chainedCallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallTXRemoveChainedCallID", reflect.TypeOf((*MockDBHandler)(nil).CallTXRemoveChainedCallID), tx, id, chainedCallID)
+}
+
+// CallTXStart mocks base method
+func (m *MockDBHandler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallTXStart", id)
+	ret0, _ := ret[0].(*sql.Tx)
+	ret1, _ := ret[1].(*call.Call)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CallTXStart indicates an expected call of CallTXStart
+func (mr *MockDBHandlerMockRecorder) CallTXStart(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallTXStart", reflect.TypeOf((*MockDBHandler)(nil).CallTXStart), id)
 }
 
 // CallUpdateToCache mocks base method

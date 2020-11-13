@@ -12,6 +12,43 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 )
 
+const (
+	// select query for call get
+	callSelect = `
+	select
+		id,
+		user_id,
+		asterisk_id,
+		channel_id,
+		flow_id,
+		conference_id,
+		type,
+		master_call_id,
+		chained_call_ids,
+
+		source,
+		destination,
+
+		status,
+		data,
+		action,
+		direction,
+		hangup_by,
+		hangup_reason,
+
+
+		coalesce(tm_create, '') as tm_create,
+		coalesce(tm_update, '') as tm_update,
+
+		coalesce(tm_progressing, '') as tm_progressing,
+		coalesce(tm_ringing, '') as tm_ringing,
+		coalesce(tm_hangup, '') as tm_hangup
+
+	from
+		calls
+	`
+)
+
 // CallCreate creates new call record.
 func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	q := `insert into calls(
@@ -128,40 +165,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error) {
 
 	// prepare
-	q := `
-	select
-		id,
-		user_id,
-		asterisk_id,
-		channel_id,
-		flow_id,
-		conference_id,
-		type,
-		master_call_id,
-		chained_call_ids,
-
-		source,
-		destination,
-
-		status,
-		data,
-		action,
-		direction,
-		hangup_by,
-		hangup_reason,
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-
-		coalesce(tm_progressing, '') as tm_progressing,
-		coalesce(tm_ringing, '') as tm_ringing,
-		coalesce(tm_hangup, '') as tm_hangup
-
-	from
-		calls
-	where
-		channel_id = ?
-	`
+	q := fmt.Sprintf("%s where channel_id = ?", callSelect)
 
 	row, err := h.db.Query(q, channelID)
 	if err != nil {
@@ -486,41 +490,7 @@ func (h *handler) CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Cal
 func (h *handler) CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 
 	// prepare
-	q := `
-	select
-		id,
-		user_id,
-		asterisk_id,
-		channel_id,
-		flow_id,
-		conference_id,
-		type,
-		master_call_id,
-		chained_call_ids,
-
-		source,
-		destination,
-
-		status,
-		data,
-		action,
-		direction,
-		hangup_by,
-		hangup_reason,
-
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-
-		coalesce(tm_progressing, '') as tm_progressing,
-		coalesce(tm_ringing, '') as tm_ringing,
-		coalesce(tm_hangup, '') as tm_hangup
-
-	from
-		calls
-	where
-		id = ?
-	`
+	q := fmt.Sprintf("%s where id = ?", callSelect)
 
 	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
@@ -643,6 +613,103 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 
 	// update the cache
 	h.CallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+func (h *handler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
+
+	tx, err := h.db.Begin()
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not get transaction. CallTXStart. err: %v", err)
+	}
+
+	// prepare
+	q := fmt.Sprintf("%s where id = ? for update", callSelect)
+
+	row, err := tx.Query(q, id.Bytes())
+	if err != nil {
+		tx.Rollback()
+		return nil, nil, fmt.Errorf("could not query. CallTXStart. err: %v", err)
+	}
+	defer row.Close()
+
+	if row.Next() == false {
+		tx.Rollback()
+		return nil, nil, ErrNotFound
+	}
+
+	res, err := h.callGetFromRow(row)
+	if err != nil {
+		tx.Rollback()
+		return nil, nil, fmt.Errorf("could not get call. CallTXStart, err: %v", err)
+	}
+
+	return tx, res, nil
+}
+
+func (h *handler) CallTXFinish(tx *sql.Tx, commit bool) {
+	if commit == true {
+		tx.Commit()
+	} else {
+		tx.Rollback()
+	}
+}
+
+// CallTXAddChainedCallID adds the call id to the given call's chained_call_ids in a transaction mode.
+func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
+	// prepare
+	q := `
+	update call set
+		chained_call_ids = json_array_append(
+			chained_call_ids,
+			'$',
+			?
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := tx.Exec(q, chainedCallID.String(), getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
+	}
+
+	// update the cache
+	h.CallUpdateToCache(context.Background(), id)
+
+	return nil
+}
+
+// CallTXRemoveChainedCallID removes the call id from the given call's chained_call_ids in a transaction mode.
+func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
+	// prepare
+	q := `
+	update calls set
+		chained_call_ids = json_remove(
+			chained_call_ids, replace(
+				json_search(
+					chained_call_ids,
+					'one',
+					?
+				),
+				'"',
+				''
+			)
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := tx.Exec(q, chainedCallID.String(), getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
+	}
+
+	// update the cache
+	h.CallUpdateToCache(context.Background(), id)
 
 	return nil
 }

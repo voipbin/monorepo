@@ -52,6 +52,10 @@ type DBHandler interface {
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
 	CallSetToCache(ctx context.Context, call *call.Call) error
+	CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
+	CallTXFinish(tx *sql.Tx, commit bool)
+	CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
+	CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error)
 	CallUpdateToCache(ctx context.Context, id uuid.UUID) error
 
 	// channels

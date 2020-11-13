@@ -12,8 +12,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // ListenHandler interface
@@ -39,11 +39,12 @@ var (
 	regV1AsterisksIDChannelsIDHealth = regexp.MustCompile("/v1/asterisks/(.*)/channels/(.*)/health-check")
 
 	// calls
-	regV1Calls                = regexp.MustCompile("/v1/calls")
-	regV1CallsID              = regexp.MustCompile("/v1/calls/" + regUUID)
-	regV1CallsIDHealth        = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check")
-	regV1CallsIDActionNext    = regexp.MustCompile("/v1/calls/" + regUUID + "/action-next")
-	regV1CallsIDActionTimeout = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
+	regV1Calls                 = regexp.MustCompile("/v1/calls")
+	regV1CallsID               = regexp.MustCompile("/v1/calls/" + regUUID)
+	regV1CallsIDHealth         = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check")
+	regV1CallsIDActionNext     = regexp.MustCompile("/v1/calls/" + regUUID + "/action-next")
+	regV1CallsIDActionTimeout  = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
+	regV1CallsIDChainedCallIDs = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids")
 
 	// conferences
 	regV1ConferencesIDCallsID = regexp.MustCompile("/v1/conferences/" + regUUID + "/calls/" + regUUID)
@@ -180,6 +181,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDActionTimeoutPost(m)
 		requestType = "/v1/calls/action-timeout"
+
+	// POST /calls/<id>/chained-call-ids
+	case regV1CallsIDChainedCallIDs.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDChainedCallIDsPost(m)
+		requestType = "/v1/calls/chained-call-ids"
+
+	// DELETE /calls/<id>/chained-call-ids
+	case regV1CallsIDChainedCallIDs.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1CallsIDChainedCallIDsDelete(m)
+		requestType = "/v1/calls/chained-call-ids"
 
 	// GET /calls/<id>
 	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
