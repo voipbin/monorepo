@@ -353,3 +353,31 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(m *rabbitmqhandler.Re
 
 	return res, nil
 }
+
+// processV1CallsIDChainedCallIDsDelete handles /v1/calls/<id>/chained-call-ids/<chained-call-id> DELETE request
+func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	chainedCallID := uuid.FromStringOrNil(uriItems[5])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id":              id,
+			"chained_call_id": chainedCallID,
+		})
+	log.Debug("Executing processV1CallsIDChainedCallIDsDelete.")
+
+	if err := h.callHandler.ChainedCallIDRemove(id, chainedCallID); err != nil {
+		log.Errorf("Could not add the chained call id. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
