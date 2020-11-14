@@ -6,38 +6,37 @@ package dbhandler
 
 import (
 	context "context"
-	reflect "reflect"
-
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	reflect "reflect"
 )
 
-// MockDBHandler is a mock of DBHandler interface.
+// MockDBHandler is a mock of DBHandler interface
 type MockDBHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockDBHandlerMockRecorder
 }
 
-// MockDBHandlerMockRecorder is the mock recorder for MockDBHandler.
+// MockDBHandlerMockRecorder is the mock recorder for MockDBHandler
 type MockDBHandlerMockRecorder struct {
 	mock *MockDBHandler
 }
 
-// NewMockDBHandler creates a new mock instance.
+// NewMockDBHandler creates a new mock instance
 func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 	mock := &MockDBHandler{ctrl: ctrl}
 	mock.recorder = &MockDBHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
-// ActiveFlowCreate mocks base method.
+// ActiveFlowCreate mocks base method
 func (m *MockDBHandler) ActiveFlowCreate(arg0 context.Context, arg1 *activeflow.ActiveFlow) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveFlowCreate", arg0, arg1)
@@ -45,13 +44,13 @@ func (m *MockDBHandler) ActiveFlowCreate(arg0 context.Context, arg1 *activeflow.
 	return ret0
 }
 
-// ActiveFlowCreate indicates an expected call of ActiveFlowCreate.
+// ActiveFlowCreate indicates an expected call of ActiveFlowCreate
 func (mr *MockDBHandlerMockRecorder) ActiveFlowCreate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowCreate", reflect.TypeOf((*MockDBHandler)(nil).ActiveFlowCreate), arg0, arg1)
 }
 
-// ActiveFlowGet mocks base method.
+// ActiveFlowGet mocks base method
 func (m *MockDBHandler) ActiveFlowGet(arg0 context.Context, arg1 uuid.UUID) (*activeflow.ActiveFlow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveFlowGet", arg0, arg1)
@@ -60,13 +59,13 @@ func (m *MockDBHandler) ActiveFlowGet(arg0 context.Context, arg1 uuid.UUID) (*ac
 	return ret0, ret1
 }
 
-// ActiveFlowGet indicates an expected call of ActiveFlowGet.
+// ActiveFlowGet indicates an expected call of ActiveFlowGet
 func (mr *MockDBHandlerMockRecorder) ActiveFlowGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowGet", reflect.TypeOf((*MockDBHandler)(nil).ActiveFlowGet), arg0, arg1)
 }
 
-// ActiveFlowGetFromCache mocks base method.
+// ActiveFlowGetFromCache mocks base method
 func (m *MockDBHandler) ActiveFlowGetFromCache(arg0 context.Context, arg1 uuid.UUID) (*activeflow.ActiveFlow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveFlowGetFromCache", arg0, arg1)
@@ -75,13 +74,13 @@ func (m *MockDBHandler) ActiveFlowGetFromCache(arg0 context.Context, arg1 uuid.U
 	return ret0, ret1
 }
 
-// ActiveFlowGetFromCache indicates an expected call of ActiveFlowGetFromCache.
+// ActiveFlowGetFromCache indicates an expected call of ActiveFlowGetFromCache
 func (mr *MockDBHandlerMockRecorder) ActiveFlowGetFromCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).ActiveFlowGetFromCache), arg0, arg1)
 }
 
-// ActiveFlowSet mocks base method.
+// ActiveFlowSet mocks base method
 func (m *MockDBHandler) ActiveFlowSet(arg0 context.Context, arg1 *activeflow.ActiveFlow) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveFlowSet", arg0, arg1)
@@ -89,13 +88,13 @@ func (m *MockDBHandler) ActiveFlowSet(arg0 context.Context, arg1 *activeflow.Act
 	return ret0
 }
 
-// ActiveFlowSet indicates an expected call of ActiveFlowSet.
+// ActiveFlowSet indicates an expected call of ActiveFlowSet
 func (mr *MockDBHandlerMockRecorder) ActiveFlowSet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowSet", reflect.TypeOf((*MockDBHandler)(nil).ActiveFlowSet), arg0, arg1)
 }
 
-// ActiveFlowSetToCache mocks base method.
+// ActiveFlowSetToCache mocks base method
 func (m *MockDBHandler) ActiveFlowSetToCache(arg0 context.Context, arg1 *activeflow.ActiveFlow) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveFlowSetToCache", arg0, arg1)
@@ -103,13 +102,13 @@ func (m *MockDBHandler) ActiveFlowSetToCache(arg0 context.Context, arg1 *activef
 	return ret0
 }
 
-// ActiveFlowSetToCache indicates an expected call of ActiveFlowSetToCache.
+// ActiveFlowSetToCache indicates an expected call of ActiveFlowSetToCache
 func (mr *MockDBHandlerMockRecorder) ActiveFlowSetToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowSetToCache", reflect.TypeOf((*MockDBHandler)(nil).ActiveFlowSetToCache), arg0, arg1)
 }
 
-// FlowCreate mocks base method.
+// FlowCreate mocks base method
 func (m *MockDBHandler) FlowCreate(arg0 context.Context, arg1 *flow.Flow) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowCreate", arg0, arg1)
@@ -117,13 +116,13 @@ func (m *MockDBHandler) FlowCreate(arg0 context.Context, arg1 *flow.Flow) error 
 	return ret0
 }
 
-// FlowCreate indicates an expected call of FlowCreate.
+// FlowCreate indicates an expected call of FlowCreate
 func (mr *MockDBHandlerMockRecorder) FlowCreate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockDBHandler)(nil).FlowCreate), arg0, arg1)
 }
 
-// FlowGet mocks base method.
+// FlowGet mocks base method
 func (m *MockDBHandler) FlowGet(arg0 context.Context, arg1 uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGet", arg0, arg1)
@@ -132,13 +131,13 @@ func (m *MockDBHandler) FlowGet(arg0 context.Context, arg1 uuid.UUID) (*flow.Flo
 	return ret0, ret1
 }
 
-// FlowGet indicates an expected call of FlowGet.
+// FlowGet indicates an expected call of FlowGet
 func (mr *MockDBHandlerMockRecorder) FlowGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockDBHandler)(nil).FlowGet), arg0, arg1)
 }
 
-// FlowGetFromCache mocks base method.
+// FlowGetFromCache mocks base method
 func (m *MockDBHandler) FlowGetFromCache(arg0 context.Context, arg1 uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGetFromCache", arg0, arg1)
@@ -147,13 +146,13 @@ func (m *MockDBHandler) FlowGetFromCache(arg0 context.Context, arg1 uuid.UUID) (
 	return ret0, ret1
 }
 
-// FlowGetFromCache indicates an expected call of FlowGetFromCache.
+// FlowGetFromCache indicates an expected call of FlowGetFromCache
 func (mr *MockDBHandlerMockRecorder) FlowGetFromCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).FlowGetFromCache), arg0, arg1)
 }
 
-// FlowGetFromDB mocks base method.
+// FlowGetFromDB mocks base method
 func (m *MockDBHandler) FlowGetFromDB(arg0 context.Context, arg1 uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGetFromDB", arg0, arg1)
@@ -162,13 +161,13 @@ func (m *MockDBHandler) FlowGetFromDB(arg0 context.Context, arg1 uuid.UUID) (*fl
 	return ret0, ret1
 }
 
-// FlowGetFromDB indicates an expected call of FlowGetFromDB.
+// FlowGetFromDB indicates an expected call of FlowGetFromDB
 func (mr *MockDBHandlerMockRecorder) FlowGetFromDB(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).FlowGetFromDB), arg0, arg1)
 }
 
-// FlowGetsByUserID mocks base method.
+// FlowGetsByUserID mocks base method
 func (m *MockDBHandler) FlowGetsByUserID(arg0 context.Context, arg1 uint64, arg2 string, arg3 uint64) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGetsByUserID", arg0, arg1, arg2, arg3)
@@ -177,13 +176,13 @@ func (m *MockDBHandler) FlowGetsByUserID(arg0 context.Context, arg1 uint64, arg2
 	return ret0, ret1
 }
 
-// FlowGetsByUserID indicates an expected call of FlowGetsByUserID.
+// FlowGetsByUserID indicates an expected call of FlowGetsByUserID
 func (mr *MockDBHandlerMockRecorder) FlowGetsByUserID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetsByUserID", reflect.TypeOf((*MockDBHandler)(nil).FlowGetsByUserID), arg0, arg1, arg2, arg3)
 }
 
-// FlowSetToCache mocks base method.
+// FlowSetToCache mocks base method
 func (m *MockDBHandler) FlowSetToCache(arg0 context.Context, arg1 *flow.Flow) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowSetToCache", arg0, arg1)
@@ -191,13 +190,13 @@ func (m *MockDBHandler) FlowSetToCache(arg0 context.Context, arg1 *flow.Flow) er
 	return ret0
 }
 
-// FlowSetToCache indicates an expected call of FlowSetToCache.
+// FlowSetToCache indicates an expected call of FlowSetToCache
 func (mr *MockDBHandlerMockRecorder) FlowSetToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowSetToCache", reflect.TypeOf((*MockDBHandler)(nil).FlowSetToCache), arg0, arg1)
 }
 
-// FlowUpdateToCache mocks base method.
+// FlowUpdateToCache mocks base method
 func (m *MockDBHandler) FlowUpdateToCache(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowUpdateToCache", arg0, arg1)
@@ -205,7 +204,7 @@ func (m *MockDBHandler) FlowUpdateToCache(arg0 context.Context, arg1 uuid.UUID) 
 	return ret0
 }
 
-// FlowUpdateToCache indicates an expected call of FlowUpdateToCache.
+// FlowUpdateToCache indicates an expected call of FlowUpdateToCache
 func (mr *MockDBHandlerMockRecorder) FlowUpdateToCache(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdateToCache), arg0, arg1)

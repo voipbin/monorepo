@@ -5,40 +5,53 @@
 package requesthandler
 
 import (
-	reflect "reflect"
-
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 	cmcall "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
 	cmconference "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmconference"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/fmflow"
+	reflect "reflect"
 )
 
-// MockRequestHandler is a mock of RequestHandler interface.
+// MockRequestHandler is a mock of RequestHandler interface
 type MockRequestHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockRequestHandlerMockRecorder
 }
 
-// MockRequestHandlerMockRecorder is the mock recorder for MockRequestHandler.
+// MockRequestHandlerMockRecorder is the mock recorder for MockRequestHandler
 type MockRequestHandlerMockRecorder struct {
 	mock *MockRequestHandler
 }
 
-// NewMockRequestHandler creates a new mock instance.
+// NewMockRequestHandler creates a new mock instance
 func NewMockRequestHandler(ctrl *gomock.Controller) *MockRequestHandler {
 	mock := &MockRequestHandler{ctrl: ctrl}
 	mock.recorder = &MockRequestHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
 }
 
-// CMCallCreate mocks base method.
+// CMCallAddChainedCall mocks base method
+func (m *MockRequestHandler) CMCallAddChainedCall(callID, chainedCallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMCallAddChainedCall", callID, chainedCallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CMCallAddChainedCall indicates an expected call of CMCallAddChainedCall
+func (mr *MockRequestHandlerMockRecorder) CMCallAddChainedCall(callID, chainedCallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallAddChainedCall", reflect.TypeOf((*MockRequestHandler)(nil).CMCallAddChainedCall), callID, chainedCallID)
+}
+
+// CMCallCreate mocks base method
 func (m *MockRequestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMCallCreate", userID, flowID, source, destination)
@@ -47,13 +60,13 @@ func (m *MockRequestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, sourc
 	return ret0, ret1
 }
 
-// CMCallCreate indicates an expected call of CMCallCreate.
+// CMCallCreate indicates an expected call of CMCallCreate
 func (mr *MockRequestHandlerMockRecorder) CMCallCreate(userID, flowID, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMCallCreate), userID, flowID, source, destination)
 }
 
-// CMCallGet mocks base method.
+// CMCallGet mocks base method
 func (m *MockRequestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMCallGet", callID)
@@ -62,13 +75,28 @@ func (m *MockRequestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 	return ret0, ret1
 }
 
-// CMCallGet indicates an expected call of CMCallGet.
+// CMCallGet indicates an expected call of CMCallGet
 func (mr *MockRequestHandlerMockRecorder) CMCallGet(callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallGet", reflect.TypeOf((*MockRequestHandler)(nil).CMCallGet), callID)
 }
 
-// CMConferenceCreate mocks base method.
+// CMCallHangup mocks base method
+func (m *MockRequestHandler) CMCallHangup(callID uuid.UUID) (*cmcall.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMCallHangup", callID)
+	ret0, _ := ret[0].(*cmcall.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMCallHangup indicates an expected call of CMCallHangup
+func (mr *MockRequestHandlerMockRecorder) CMCallHangup(callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallHangup", reflect.TypeOf((*MockRequestHandler)(nil).CMCallHangup), callID)
+}
+
+// CMConferenceCreate mocks base method
 func (m *MockRequestHandler) CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name, detail string, timeout int) (*cmconference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMConferenceCreate", userID, conferenceType, name, detail, timeout)
@@ -77,13 +105,13 @@ func (m *MockRequestHandler) CMConferenceCreate(userID uint64, conferenceType cm
 	return ret0, ret1
 }
 
-// CMConferenceCreate indicates an expected call of CMConferenceCreate.
+// CMConferenceCreate indicates an expected call of CMConferenceCreate
 func (mr *MockRequestHandlerMockRecorder) CMConferenceCreate(userID, conferenceType, name, detail, timeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceCreate), userID, conferenceType, name, detail, timeout)
 }
 
-// CMConferenceDelete mocks base method.
+// CMConferenceDelete mocks base method
 func (m *MockRequestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMConferenceDelete", conferenceID)
@@ -91,13 +119,13 @@ func (m *MockRequestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 	return ret0
 }
 
-// CMConferenceDelete indicates an expected call of CMConferenceDelete.
+// CMConferenceDelete indicates an expected call of CMConferenceDelete
 func (mr *MockRequestHandlerMockRecorder) CMConferenceDelete(conferenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceDelete", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceDelete), conferenceID)
 }
 
-// CMConferenceGet mocks base method.
+// CMConferenceGet mocks base method
 func (m *MockRequestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMConferenceGet", conferenceID)
@@ -106,13 +134,13 @@ func (m *MockRequestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconfere
 	return ret0, ret1
 }
 
-// CMConferenceGet indicates an expected call of CMConferenceGet.
+// CMConferenceGet indicates an expected call of CMConferenceGet
 func (mr *MockRequestHandlerMockRecorder) CMConferenceGet(conferenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceGet), conferenceID)
 }
 
-// FMFlowCreate mocks base method.
+// FMFlowCreate mocks base method
 func (m *MockRequestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FMFlowCreate", userID, id, name, detail, actions, persist)
@@ -121,7 +149,7 @@ func (m *MockRequestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, det
 	return ret0, ret1
 }
 
-// FMFlowCreate indicates an expected call of FMFlowCreate.
+// FMFlowCreate indicates an expected call of FMFlowCreate
 func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(userID, id, name, detail, actions, persist interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), userID, id, name, detail, actions, persist)

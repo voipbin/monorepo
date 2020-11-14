@@ -6,38 +6,37 @@ package cachehandler
 
 import (
 	context "context"
-	reflect "reflect"
-
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	reflect "reflect"
 )
 
-// MockCacheHandler is a mock of CacheHandler interface.
+// MockCacheHandler is a mock of CacheHandler interface
 type MockCacheHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockCacheHandlerMockRecorder
 }
 
-// MockCacheHandlerMockRecorder is the mock recorder for MockCacheHandler.
+// MockCacheHandlerMockRecorder is the mock recorder for MockCacheHandler
 type MockCacheHandlerMockRecorder struct {
 	mock *MockCacheHandler
 }
 
-// NewMockCacheHandler creates a new mock instance.
+// NewMockCacheHandler creates a new mock instance
 func NewMockCacheHandler(ctrl *gomock.Controller) *MockCacheHandler {
 	mock := &MockCacheHandler{ctrl: ctrl}
 	mock.recorder = &MockCacheHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
 }
 
-// ActiveFlowGet mocks base method.
+// ActiveFlowGet mocks base method
 func (m *MockCacheHandler) ActiveFlowGet(arg0 context.Context, arg1 uuid.UUID) (*activeflow.ActiveFlow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveFlowGet", arg0, arg1)
@@ -46,13 +45,13 @@ func (m *MockCacheHandler) ActiveFlowGet(arg0 context.Context, arg1 uuid.UUID) (
 	return ret0, ret1
 }
 
-// ActiveFlowGet indicates an expected call of ActiveFlowGet.
+// ActiveFlowGet indicates an expected call of ActiveFlowGet
 func (mr *MockCacheHandlerMockRecorder) ActiveFlowGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowGet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveFlowGet), arg0, arg1)
 }
 
-// ActiveFlowSet mocks base method.
+// ActiveFlowSet mocks base method
 func (m *MockCacheHandler) ActiveFlowSet(arg0 context.Context, arg1 *activeflow.ActiveFlow) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveFlowSet", arg0, arg1)
@@ -60,13 +59,13 @@ func (m *MockCacheHandler) ActiveFlowSet(arg0 context.Context, arg1 *activeflow.
 	return ret0
 }
 
-// ActiveFlowSet indicates an expected call of ActiveFlowSet.
+// ActiveFlowSet indicates an expected call of ActiveFlowSet
 func (mr *MockCacheHandlerMockRecorder) ActiveFlowSet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowSet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveFlowSet), arg0, arg1)
 }
 
-// Connect mocks base method.
+// Connect mocks base method
 func (m *MockCacheHandler) Connect() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Connect")
@@ -74,13 +73,13 @@ func (m *MockCacheHandler) Connect() error {
 	return ret0
 }
 
-// Connect indicates an expected call of Connect.
+// Connect indicates an expected call of Connect
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
 }
 
-// FlowGet mocks base method.
+// FlowGet mocks base method
 func (m *MockCacheHandler) FlowGet(arg0 context.Context, arg1 uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGet", arg0, arg1)
@@ -89,13 +88,13 @@ func (m *MockCacheHandler) FlowGet(arg0 context.Context, arg1 uuid.UUID) (*flow.
 	return ret0, ret1
 }
 
-// FlowGet indicates an expected call of FlowGet.
+// FlowGet indicates an expected call of FlowGet
 func (mr *MockCacheHandlerMockRecorder) FlowGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockCacheHandler)(nil).FlowGet), arg0, arg1)
 }
 
-// FlowSet mocks base method.
+// FlowSet mocks base method
 func (m *MockCacheHandler) FlowSet(arg0 context.Context, arg1 *flow.Flow) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowSet", arg0, arg1)
@@ -103,7 +102,7 @@ func (m *MockCacheHandler) FlowSet(arg0 context.Context, arg1 *flow.Flow) error 
 	return ret0
 }
 
-// FlowSet indicates an expected call of FlowSet.
+// FlowSet indicates an expected call of FlowSet
 func (mr *MockCacheHandlerMockRecorder) FlowSet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowSet", reflect.TypeOf((*MockCacheHandler)(nil).FlowSet), arg0, arg1)

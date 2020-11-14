@@ -64,3 +64,10 @@ type V1DataConferencesIDPost struct {
 	Timeout int                    `json:"timeout"` // timeout. second
 	Data    map[string]interface{} `json:"data"`
 }
+
+// V1DataCallsIDChainedCallIDsPost is
+// v1 data type for V1DataCallsIDChainedCallIDs
+// /v1/calls/<id>/chained-call-ids POST
+type V1DataCallsIDChainedCallIDsPost struct {
+	ChainedCallID uuid.UUID `json:"chained_call_id"`
+}

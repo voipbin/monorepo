@@ -363,6 +363,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
 			for i := range tt.destinations {
 				mockReq.EXPECT().CMCallCreate(tt.connectFlow.UserID, tt.connectFlow.ID, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
+				mockReq.EXPECT().CMCallAddChainedCall(tt.callID, uuid.Nil).Return(nil)
 			}
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
