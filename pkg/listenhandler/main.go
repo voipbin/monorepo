@@ -8,6 +8,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
@@ -108,14 +109,18 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
 	}
 
-	// receive ARI event
-	for {
-		err := h.rabbitSock.ConsumeRPC(queue, "flow-manager", h.processRequest)
-		if err != nil {
-			logrus.Errorf("Could not consume the ARI message correctly. Will try again after 1 second. err: %v", err)
-			time.Sleep(time.Second * 1)
+	// process the received request
+	go func() {
+		for {
+			err := h.rabbitSock.ConsumeRPC(queue, "flow-manager", h.processRequest)
+			if err != nil {
+				logrus.Errorf("Could not consume the ARI message correctly. Will try again after 1 second. err: %v", err)
+				time.Sleep(time.Second * 1)
+			}
 		}
-	}
+	}()
+
+	return nil
 }
 
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {

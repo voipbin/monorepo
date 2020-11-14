@@ -75,12 +75,10 @@ func init() {
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
 	// call
+	CMCallAddChainedCall(callID uuid.UUID, chainedCallID uuid.UUID) error
 	CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error)
 	CMCallGet(callID uuid.UUID) (*cmcall.Call, error)
-	// CallCallHealth(id uuid.UUID, delay, retryCount int) error
-	// CallCallActionNext(id uuid.UUID) error
-	// CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
-	// CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
+	CMCallHangup(callID uuid.UUID) (*cmcall.Call, error)
 
 	// conference
 	CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string, timeout int) (*cmconference.Conference, error)

@@ -6,39 +6,38 @@ package flowhandler
 
 import (
 	context "context"
-	reflect "reflect"
-
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	reflect "reflect"
 )
 
-// MockFlowHandler is a mock of FlowHandler interface.
+// MockFlowHandler is a mock of FlowHandler interface
 type MockFlowHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockFlowHandlerMockRecorder
 }
 
-// MockFlowHandlerMockRecorder is the mock recorder for MockFlowHandler.
+// MockFlowHandlerMockRecorder is the mock recorder for MockFlowHandler
 type MockFlowHandlerMockRecorder struct {
 	mock *MockFlowHandler
 }
 
-// NewMockFlowHandler creates a new mock instance.
+// NewMockFlowHandler creates a new mock instance
 func NewMockFlowHandler(ctrl *gomock.Controller) *MockFlowHandler {
 	mock := &MockFlowHandler{ctrl: ctrl}
 	mock.recorder = &MockFlowHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockFlowHandler) EXPECT() *MockFlowHandlerMockRecorder {
 	return m.recorder
 }
 
-// ActionGet mocks base method.
+// ActionGet mocks base method
 func (m *MockFlowHandler) ActionGet(arg0 context.Context, arg1, arg2 uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActionGet", arg0, arg1, arg2)
@@ -47,13 +46,13 @@ func (m *MockFlowHandler) ActionGet(arg0 context.Context, arg1, arg2 uuid.UUID) 
 	return ret0, ret1
 }
 
-// ActionGet indicates an expected call of ActionGet.
+// ActionGet indicates an expected call of ActionGet
 func (mr *MockFlowHandlerMockRecorder) ActionGet(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionGet", reflect.TypeOf((*MockFlowHandler)(nil).ActionGet), arg0, arg1, arg2)
 }
 
-// ActiveFlowCreate mocks base method.
+// ActiveFlowCreate mocks base method
 func (m *MockFlowHandler) ActiveFlowCreate(arg0 context.Context, arg1, arg2 uuid.UUID) (*activeflow.ActiveFlow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveFlowCreate", arg0, arg1, arg2)
@@ -62,13 +61,13 @@ func (m *MockFlowHandler) ActiveFlowCreate(arg0 context.Context, arg1, arg2 uuid
 	return ret0, ret1
 }
 
-// ActiveFlowCreate indicates an expected call of ActiveFlowCreate.
+// ActiveFlowCreate indicates an expected call of ActiveFlowCreate
 func (mr *MockFlowHandlerMockRecorder) ActiveFlowCreate(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowCreate", reflect.TypeOf((*MockFlowHandler)(nil).ActiveFlowCreate), arg0, arg1, arg2)
 }
 
-// ActiveFlowNextActionGet mocks base method.
+// ActiveFlowNextActionGet mocks base method
 func (m *MockFlowHandler) ActiveFlowNextActionGet(arg0 context.Context, arg1, arg2 uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveFlowNextActionGet", arg0, arg1, arg2)
@@ -77,13 +76,13 @@ func (m *MockFlowHandler) ActiveFlowNextActionGet(arg0 context.Context, arg1, ar
 	return ret0, ret1
 }
 
-// ActiveFlowNextActionGet indicates an expected call of ActiveFlowNextActionGet.
+// ActiveFlowNextActionGet indicates an expected call of ActiveFlowNextActionGet
 func (mr *MockFlowHandlerMockRecorder) ActiveFlowNextActionGet(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowNextActionGet", reflect.TypeOf((*MockFlowHandler)(nil).ActiveFlowNextActionGet), arg0, arg1, arg2)
 }
 
-// FlowCreate mocks base method.
+// FlowCreate mocks base method
 func (m *MockFlowHandler) FlowCreate(arg0 context.Context, arg1 *flow.Flow, arg2 bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowCreate", arg0, arg1, arg2)
@@ -92,13 +91,13 @@ func (m *MockFlowHandler) FlowCreate(arg0 context.Context, arg1 *flow.Flow, arg2
 	return ret0, ret1
 }
 
-// FlowCreate indicates an expected call of FlowCreate.
+// FlowCreate indicates an expected call of FlowCreate
 func (mr *MockFlowHandlerMockRecorder) FlowCreate(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockFlowHandler)(nil).FlowCreate), arg0, arg1, arg2)
 }
 
-// FlowGet mocks base method.
+// FlowGet mocks base method
 func (m *MockFlowHandler) FlowGet(arg0 context.Context, arg1 uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGet", arg0, arg1)
@@ -107,13 +106,13 @@ func (m *MockFlowHandler) FlowGet(arg0 context.Context, arg1 uuid.UUID) (*flow.F
 	return ret0, ret1
 }
 
-// FlowGet indicates an expected call of FlowGet.
+// FlowGet indicates an expected call of FlowGet
 func (mr *MockFlowHandlerMockRecorder) FlowGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockFlowHandler)(nil).FlowGet), arg0, arg1)
 }
 
-// FlowGetByUserID mocks base method.
+// FlowGetByUserID mocks base method
 func (m *MockFlowHandler) FlowGetByUserID(arg0 context.Context, arg1 uint64, arg2 string, arg3 uint64) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGetByUserID", arg0, arg1, arg2, arg3)
@@ -122,7 +121,7 @@ func (m *MockFlowHandler) FlowGetByUserID(arg0 context.Context, arg1 uint64, arg
 	return ret0, ret1
 }
 
-// FlowGetByUserID indicates an expected call of FlowGetByUserID.
+// FlowGetByUserID indicates an expected call of FlowGetByUserID
 func (mr *MockFlowHandlerMockRecorder) FlowGetByUserID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetByUserID", reflect.TypeOf((*MockFlowHandler)(nil).FlowGetByUserID), arg0, arg1, arg2, arg3)

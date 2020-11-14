@@ -325,10 +325,18 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 			Target: dest.Target,
 			Name:   dest.Name,
 		}
+
 		// create a call
 		resCall, err := h.reqHandler.CMCallCreate(connectCF.UserID, connectCF.ID, source, destination)
 		if err != nil {
 			log.Errorf("Could not create a outgoing call for connect. err: %v", err)
+			continue
+		}
+
+		// add the chained call id
+		if err := h.reqHandler.CMCallAddChainedCall(callID, resCall.ID); err != nil {
+			log.Warnf("Could not add the chained call id. Hangup the call. chained_call_id: %s", resCall.ID)
+			h.reqHandler.CMCallHangup(resCall.ID)
 			continue
 		}
 
