@@ -496,7 +496,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 	case string(action.TypeEcho):
 		// create default option for echo
 		option := action.OptionEcho{
-			Duration: 180 * 1000, // duration 300 sec
+			Duration: 180 * 1000, // duration 180 sec
 			DTMF:     true,
 		}
 		opt, err := json.Marshal(option)

@@ -251,5 +251,18 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	elapsed := time.Since(start)
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
+	// default error handler
+	if err != nil {
+		logrus.WithFields(
+			logrus.Fields{
+				"uri":    m.URI,
+				"method": m.Method,
+				"error":  err,
+			}).Errorf("Could not process the request correctly. data: %s", m.Data)
+		response = simpleResponse(400)
+		err = nil
+		requestType = "notfound"
+	}
+
 	return response, err
 }
