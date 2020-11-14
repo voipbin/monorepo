@@ -143,27 +143,27 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// v1
 	case regV1ActiveFlows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/active-flows"
-		return h.v1ActiveFlowsPost(m)
+		response, err = h.v1ActiveFlowsPost(m)
 
 	case regV1ActiveFlowsIDNext.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/active-flows"
-		return h.v1ActiveFlowsIDNextGet(m)
+		response, err = h.v1ActiveFlowsIDNextGet(m)
 
 	case regV1FlowsIDActionsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows/actions"
-		return h.v1FlowsIDActionsIDGet(m)
+		response, err = h.v1FlowsIDActionsIDGet(m)
 
 	case regV1FlowsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows"
-		return h.v1FlowsIDGet(m)
+		response, err = h.v1FlowsIDGet(m)
 
 	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/flows"
-		return h.v1FlowsPost(m)
+		response, err = h.v1FlowsPost(m)
 
 	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows"
-		return h.v1FlowsGet(m)
+		response, err = h.v1FlowsGet(m)
 
 	default:
 		logrus.WithFields(
@@ -177,6 +177,19 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	}
 	elapsed := time.Since(start)
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
+
+	// default error handler
+	if err != nil {
+		logrus.WithFields(
+			logrus.Fields{
+				"uri":    m.URI,
+				"method": m.Method,
+				"error":  err,
+			}).Errorf("Could not process the request correctly. data: %s", m.Data)
+		response = simpleResponse(400)
+		err = nil
+		requestType = "notfound"
+	}
 
 	return response, err
 }
