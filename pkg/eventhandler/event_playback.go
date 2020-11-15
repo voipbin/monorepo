@@ -27,6 +27,18 @@ func (h *eventHandler) eventHandlerPlaybackFinished(ctx context.Context, evt int
 	}
 
 	tmpChannelID := e.Playback.TargetURI[8:]
+
+	// check the channel is still exists.
+	// if the channel was hungup while the file is playing, the asterisk sends the playbackfinished event and channeldestroyed
+	// event sequentially.
+	// this makes  hard to know the channel was hungup or not using the playbackfinished event.
+	// so we have to send the channelget request to check the channel still does exist.
+	_, err := h.reqHandler.AstChannelGet(e.AsteriskID, tmpChannelID)
+	if err != nil {
+		log.Infof("Could not get the channel info from the Asterisk. Consider the channel already hungup. err: %v", err)
+		return nil
+	}
+
 	cn, err := h.db.ChannelGet(ctx, tmpChannelID)
 	if err != nil {
 		log.Errorf("Could not get channel info. err: %v", err)
