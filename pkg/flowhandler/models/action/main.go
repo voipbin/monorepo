@@ -64,6 +64,7 @@ type OptionConferenceJoin struct {
 type OptionConnect struct {
 	From         string    `json:"from"`
 	Destinations []Address `json:"destinations"`
+	Unchained    bool      `json:"unchained"`
 }
 
 // OptionEcho struct

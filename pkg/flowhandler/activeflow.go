@@ -333,11 +333,13 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 			continue
 		}
 
-		// add the chained call id
-		if err := h.reqHandler.CMCallAddChainedCall(callID, resCall.ID); err != nil {
-			log.Warnf("Could not add the chained call id. Hangup the call. chained_call_id: %s", resCall.ID)
-			h.reqHandler.CMCallHangup(resCall.ID)
-			continue
+		// add the chained call id if the unchained option is false
+		if optConnect.Unchained == false {
+			if err := h.reqHandler.CMCallAddChainedCall(callID, resCall.ID); err != nil {
+				log.Warnf("Could not add the chained call id. Hangup the call. chained_call_id: %s", resCall.ID)
+				h.reqHandler.CMCallHangup(resCall.ID)
+				continue
+			}
 		}
 
 		log.Debugf("Created outgoing call for connect. call: %s", resCall.ID)
