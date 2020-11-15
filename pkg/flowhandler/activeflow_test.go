@@ -302,12 +302,12 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 		connectFlow  *flow.Flow
 		source       cmcall.Address
 		destinations []cmcall.Address
-		expectAction action.Action
+		unchained    bool
 	}
 
 	tests := []test{
 		{
-			"normal",
+			"single destination",
 			uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
 			&action.Action{
 				ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
@@ -347,10 +347,103 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					Target: "+987654321",
 				},
 			},
-			action.Action{
-				ID:   uuid.FromStringOrNil("c9fffcf4-0737-11eb-a28f-2bc0bae5eeaf"),
-				Type: action.TypeAnswer,
+			false,
+		},
+
+		{
+			"multiple destinations",
+			uuid.FromStringOrNil("cb4accf8-2710-11eb-8e49-e73409394bef"),
+			&action.Action{
+				ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
+				Type:   action.TypeConnect,
+				Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
 			},
+			activeflow.ActiveFlow{
+				UserID: 1,
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
+					Type:   action.TypeConnect,
+					Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
+				},
+				Actions: []action.Action{
+					action.Action{
+						ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
+						Type:   action.TypeConnect,
+						Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
+					},
+				},
+			},
+			&cmconference.Conference{
+				ID:     uuid.FromStringOrNil("cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"),
+				UserID: 1,
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("cc480ff8-2710-11eb-8869-0fcf3d58fd6a"),
+				UserID: 1,
+			},
+			cmcall.Address{
+				Type:   cmcall.AddressTypeTel,
+				Target: "+123456789",
+			},
+			[]cmcall.Address{
+				cmcall.Address{
+					Type:   cmcall.AddressTypeTel,
+					Target: "+987654321",
+				},
+				cmcall.Address{
+					Type:   cmcall.AddressTypeTel,
+					Target: "+9876543210",
+				},
+			},
+			false,
+		},
+
+		{
+			"multiple unchained destinations",
+			uuid.FromStringOrNil("211a68fe-2712-11eb-ad71-97e2b1546a91"),
+			&action.Action{
+				ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
+				Type:   action.TypeConnect,
+				Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
+			},
+			activeflow.ActiveFlow{
+				UserID: 1,
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
+					Type:   action.TypeConnect,
+					Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
+				},
+				Actions: []action.Action{
+					action.Action{
+						ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
+						Type:   action.TypeConnect,
+						Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
+					},
+				},
+			},
+			&cmconference.Conference{
+				ID:     uuid.FromStringOrNil("2266e688-2712-11eb-aab4-eb00b0a3efbe"),
+				UserID: 1,
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("229ef410-2712-11eb-9dea-a737f7b6ef2b"),
+				UserID: 1,
+			},
+			cmcall.Address{
+				Type:   cmcall.AddressTypeTel,
+				Target: "+123456789",
+			},
+			[]cmcall.Address{
+				cmcall.Address{
+					Type:   cmcall.AddressTypeTel,
+					Target: "+987654321",
+				},
+				cmcall.Address{
+					Type:   cmcall.AddressTypeTel,
+					Target: "+9876543210",
+				},
+			},
+			true,
 		},
 	}
 
@@ -363,7 +456,9 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
 			for i := range tt.destinations {
 				mockReq.EXPECT().CMCallCreate(tt.connectFlow.UserID, tt.connectFlow.ID, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
-				mockReq.EXPECT().CMCallAddChainedCall(tt.callID, uuid.Nil).Return(nil)
+				if tt.unchained == false {
+					mockReq.EXPECT().CMCallAddChainedCall(tt.callID, uuid.Nil).Return(nil)
+				}
 			}
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
@@ -395,7 +490,7 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			"next action echo",
 			uuid.FromStringOrNil("f96b5730-0c24-11eb-89ff-af22fc6e8dce"),
 			activeflow.ActiveFlow{
 				UserID: 1,
