@@ -10,9 +10,9 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 )
 
 func TestBridgeCreate(t *testing.T) {
@@ -36,10 +36,11 @@ func TestBridgeCreate(t *testing.T) {
 				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 			&bridge.Bridge{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
-				ChannelIDs: []string{},
-				TMCreate:   "2020-04-18T03:22:17.995000",
+				AsteriskID:  "3e:50:6b:43:bb:30",
+				ID:          "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
+				ChannelIDs:  []string{},
+				RecordFiles: []string{},
+				TMCreate:    "2020-04-18T03:22:17.995000",
 			},
 		},
 		{
@@ -54,6 +55,7 @@ func TestBridgeCreate(t *testing.T) {
 				AsteriskID:   "3e:50:6b:43:bb:30",
 				ID:           "36d8b0be-9316-11ea-b829-6be92ca1faee",
 				ChannelIDs:   []string{},
+				RecordFiles:  []string{},
 				ConferenceID: uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
 				TMCreate:     "2020-04-18T03:22:17.995000",
 			},
@@ -71,6 +73,7 @@ func TestBridgeCreate(t *testing.T) {
 				AsteriskID:     "3e:50:6b:43:bb:30",
 				ID:             "5149007a-9316-11ea-9de0-5f9cb2e8c235",
 				ChannelIDs:     []string{},
+				RecordFiles:    []string{},
 				ConferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
 				ConferenceType: conference.TypeConference,
 				TMCreate:       "2020-04-18T03:22:17.995000",
@@ -89,6 +92,7 @@ func TestBridgeCreate(t *testing.T) {
 				AsteriskID:     "3e:50:6b:43:bb:30",
 				ID:             "8489f4c6-9316-11ea-9b3d-3b37cb9a2974",
 				ChannelIDs:     []string{},
+				RecordFiles:    []string{},
 				ConferenceID:   uuid.FromStringOrNil("8892c1f6-9316-11ea-96ff-8b2d8c1b2642"),
 				ConferenceType: conference.TypeNone,
 				TMCreate:       "2020-04-18T03:22:17.995000",
@@ -108,10 +112,50 @@ func TestBridgeCreate(t *testing.T) {
 				AsteriskID:     "3e:50:6b:43:bb:30",
 				ID:             "9c1197d8-a24e-11ea-8653-c74c75be39d3",
 				ChannelIDs:     []string{},
+				RecordFiles:    []string{},
 				ConferenceID:   uuid.FromStringOrNil("a0ec47a8-a24e-11ea-9868-c3c17aa422cd"),
 				ConferenceType: conference.TypeNone,
 				ConferenceJoin: true,
 				TMCreate:       "2020-04-18T03:22:17.995000",
+			},
+		},
+		{
+			"record channel id",
+			&bridge.Bridge{
+				AsteriskID:      "3e:50:6b:43:bb:30",
+				ID:              "31f82da0-282f-11eb-817c-33cd76cbd302",
+				RecordChannelID: "2c3c1b60-282f-11eb-9616-739f0c17f67d",
+				ConferenceID:    uuid.FromStringOrNil("322842e2-282f-11eb-92b1-630087a6a052"),
+				ConferenceType:  conference.TypeNone,
+				ConferenceJoin:  true,
+				TMCreate:        "2020-04-18T03:22:17.995000",
+			},
+			&bridge.Bridge{
+				AsteriskID:      "3e:50:6b:43:bb:30",
+				ID:              "31f82da0-282f-11eb-817c-33cd76cbd302",
+				RecordChannelID: "2c3c1b60-282f-11eb-9616-739f0c17f67d",
+				ChannelIDs:      []string{},
+				RecordFiles:     []string{},
+				ConferenceID:    uuid.FromStringOrNil("322842e2-282f-11eb-92b1-630087a6a052"),
+				ConferenceType:  conference.TypeNone,
+				ConferenceJoin:  true,
+				TMCreate:        "2020-04-18T03:22:17.995000",
+			},
+		},
+		{
+			"record files",
+			&bridge.Bridge{
+				AsteriskID:  "3e:50:6b:43:bb:30",
+				ID:          "6ff9a972-2833-11eb-8fbd-cf6b8bb8c188",
+				RecordFiles: []string{"call_39649002-2833-11eb-98be-ebbfea7cffc4_2020-04-18T03:22:17.995000.wav"},
+				TMCreate:    "2020-04-18T03:22:17.995000",
+			},
+			&bridge.Bridge{
+				AsteriskID:  "3e:50:6b:43:bb:30",
+				ID:          "6ff9a972-2833-11eb-8fbd-cf6b8bb8c188",
+				RecordFiles: []string{"call_39649002-2833-11eb-98be-ebbfea7cffc4_2020-04-18T03:22:17.995000.wav"},
+				ChannelIDs:  []string{},
+				TMCreate:    "2020-04-18T03:22:17.995000",
 			},
 		},
 	}
@@ -162,11 +206,12 @@ func TestBridgeEnd(t *testing.T) {
 			},
 			"2020-04-18T05:22:17.995000",
 			&bridge.Bridge{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "208a5bbe-8ee3-11ea-b267-174c3bd0a842",
-				ChannelIDs: []string{},
-				TMCreate:   "2020-04-18T03:22:17.995000",
-				TMDelete:   "2020-04-18T05:22:17.995000",
+				AsteriskID:  "3e:50:6b:43:bb:30",
+				ID:          "208a5bbe-8ee3-11ea-b267-174c3bd0a842",
+				ChannelIDs:  []string{},
+				RecordFiles: []string{},
+				TMCreate:    "2020-04-18T03:22:17.995000",
+				TMDelete:    "2020-04-18T05:22:17.995000",
 			},
 		},
 	}
@@ -378,6 +423,68 @@ func TestBridgeIsExistError(t *testing.T) {
 			elapsed := time.Since(start)
 			if elapsed < tt.timeout {
 				t.Errorf("Wrong match. expect: true, got: false")
+			}
+		})
+	}
+}
+
+func TestBridgeSetRecordChannelID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name            string
+		bridge          *bridge.Bridge
+		recordChannelID string
+		expectBridge    *bridge.Bridge
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&bridge.Bridge{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "2f7b0ee4-2834-11eb-9a6d-5beea5795ea6",
+				TMCreate:   "2020-04-18T03:22:17.995000",
+			},
+			"2fb4b446-2834-11eb-b864-1fdb13777d08",
+			&bridge.Bridge{
+				AsteriskID:      "3e:50:6b:43:bb:30",
+				ID:              "2f7b0ee4-2834-11eb-9a6d-5beea5795ea6",
+				ChannelIDs:      []string{},
+				RecordChannelID: "2fb4b446-2834-11eb-b864-1fdb13777d08",
+				RecordFiles:     []string{},
+				TMCreate:        "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
+			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
+			if err := h.BridgeSetRecordChannelID(context.Background(), tt.bridge.ID, tt.recordChannelID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
+			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMUpdate = ""
+			if reflect.DeepEqual(tt.expectBridge, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectBridge, res)
 			}
 		})
 	}

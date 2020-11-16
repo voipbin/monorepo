@@ -7,8 +7,12 @@ create table calls(
   flow_id           binary(16),   -- flow id
   conference_id     binary(16),   -- currently joined conference id
   type              varchar(16),  -- type of call
+
+  -- etc info
   master_call_id    binary(16),   -- master call id
   chained_call_ids  json,         -- chained call ids
+  record_channel_id varchar(255), -- recording channel id
+  record_files      json,         -- recording filenames
 
   -- source/destination
   source        json, -- source's type, target, number, name, ...

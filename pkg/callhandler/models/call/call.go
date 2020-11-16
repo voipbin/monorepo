@@ -14,15 +14,19 @@ import (
 // Call struct represent asterisk's channel information
 type Call struct {
 	// identity
-	ID             uuid.UUID   `json:"id"`
-	UserID         uint64      `json:"user_id"`
-	AsteriskID     string      `json:"asterisk_id"`
-	ChannelID      string      `json:"channel_id"`
-	FlowID         uuid.UUID   `json:"flow_id"`          // flow id
-	ConfID         uuid.UUID   `json:"conf_id"`          // currently joined conference id
-	Type           Type        `json:"type"`             // call type
-	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
-	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // chained call ids
+	ID         uuid.UUID `json:"id"`
+	UserID     uint64    `json:"user_id"`
+	AsteriskID string    `json:"asterisk_id"`
+	ChannelID  string    `json:"channel_id"`
+	FlowID     uuid.UUID `json:"flow_id"` // flow id
+	ConfID     uuid.UUID `json:"conf_id"` // currently joined conference id
+	Type       Type      `json:"type"`    // call type
+
+	// etc info
+	MasterCallID    uuid.UUID   `json:"master_call_id"`    // master call id
+	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids"`  // chained call ids
+	RecordChannelID string      `json:"record_channel_id"` // record channel id(spy channel)
+	RecordFiles     []string    `json:"record_files"`      // record filenames
 
 	// source/destination
 	Source      Address `json:"source"`
@@ -171,6 +175,9 @@ func NewCall(
 		FlowID:     flowID,
 		Type:       cType,
 
+		ChainedCallIDs: []uuid.UUID{},
+		RecordFiles:    []string{},
+
 		Source:      *source,
 		Destination: *destination,
 
@@ -198,6 +205,9 @@ func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction 
 		ChannelID:  cn.ID,
 		FlowID:     uuid.Nil,
 		Type:       cType,
+
+		ChainedCallIDs: []uuid.UUID{},
+		RecordFiles:    []string{},
 
 		Source:      *source,
 		Destination: *destination,
