@@ -57,6 +57,20 @@ func (mr *MockDBHandlerMockRecorder) BridgeAddChannelID(ctx, id, channelID inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeAddChannelID", reflect.TypeOf((*MockDBHandler)(nil).BridgeAddChannelID), ctx, id, channelID)
 }
 
+// BridgeAddRecordFiles mocks base method
+func (m *MockDBHandler) BridgeAddRecordFiles(ctx context.Context, id, filename string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeAddRecordFiles", ctx, id, filename)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BridgeAddRecordFiles indicates an expected call of BridgeAddRecordFiles
+func (mr *MockDBHandlerMockRecorder) BridgeAddRecordFiles(ctx, id, filename interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeAddRecordFiles", reflect.TypeOf((*MockDBHandler)(nil).BridgeAddRecordFiles), ctx, id, filename)
+}
+
 // BridgeCreate mocks base method
 func (m *MockDBHandler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 	m.ctrl.T.Helper()
@@ -171,6 +185,20 @@ func (m *MockDBHandler) BridgeRemoveChannelID(ctx context.Context, id, channelID
 func (mr *MockDBHandlerMockRecorder) BridgeRemoveChannelID(ctx, id, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeRemoveChannelID", reflect.TypeOf((*MockDBHandler)(nil).BridgeRemoveChannelID), ctx, id, channelID)
+}
+
+// BridgeSetRecordChannelID mocks base method
+func (m *MockDBHandler) BridgeSetRecordChannelID(ctx context.Context, id, recordChannelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BridgeSetRecordChannelID", ctx, id, recordChannelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BridgeSetRecordChannelID indicates an expected call of BridgeSetRecordChannelID
+func (mr *MockDBHandlerMockRecorder) BridgeSetRecordChannelID(ctx, id, recordChannelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeSetRecordChannelID", reflect.TypeOf((*MockDBHandler)(nil).BridgeSetRecordChannelID), ctx, id, recordChannelID)
 }
 
 // BridgeSetToCache mocks base method
@@ -289,6 +317,20 @@ func (mr *MockDBHandlerMockRecorder) CallAddChainedCallID(ctx, id, chainedCallID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallAddChainedCallID", reflect.TypeOf((*MockDBHandler)(nil).CallAddChainedCallID), ctx, id, chainedCallID)
 }
 
+// CallAddRecordFiles mocks base method
+func (m *MockDBHandler) CallAddRecordFiles(ctx context.Context, id uuid.UUID, filename string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallAddRecordFiles", ctx, id, filename)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallAddRecordFiles indicates an expected call of CallAddRecordFiles
+func (mr *MockDBHandlerMockRecorder) CallAddRecordFiles(ctx, id, filename interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallAddRecordFiles", reflect.TypeOf((*MockDBHandler)(nil).CallAddRecordFiles), ctx, id, filename)
+}
+
 // CallRemoveChainedCallID mocks base method
 func (m *MockDBHandler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -399,6 +441,20 @@ func (m *MockDBHandler) CallSetStatus(ctx context.Context, id uuid.UUID, status 
 func (mr *MockDBHandlerMockRecorder) CallSetStatus(ctx, id, status, tmUpdate interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetStatus", reflect.TypeOf((*MockDBHandler)(nil).CallSetStatus), ctx, id, status, tmUpdate)
+}
+
+// CallSetRecordChannelID mocks base method
+func (m *MockDBHandler) CallSetRecordChannelID(ctx context.Context, id uuid.UUID, recordChannelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetRecordChannelID", ctx, id, recordChannelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetRecordChannelID indicates an expected call of CallSetRecordChannelID
+func (mr *MockDBHandlerMockRecorder) CallSetRecordChannelID(ctx, id, recordChannelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetRecordChannelID", reflect.TypeOf((*MockDBHandler)(nil).CallSetRecordChannelID), ctx, id, recordChannelID)
 }
 
 // CallSetToCache mocks base method

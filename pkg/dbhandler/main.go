@@ -25,6 +25,7 @@ import (
 type DBHandler interface {
 	// bridges
 	BridgeAddChannelID(ctx context.Context, id, channelID string) error
+	BridgeAddRecordFiles(ctx context.Context, id, filename string) error
 	BridgeCreate(ctx context.Context, b *bridge.Bridge) error
 	BridgeEnd(ctx context.Context, id, timestamp string) error
 	BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error)
@@ -33,6 +34,7 @@ type DBHandler interface {
 	BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeIsExist(id string, timeout time.Duration) bool
 	BridgeRemoveChannelID(ctx context.Context, id, channelID string) error
+	BridgeSetRecordChannelID(ctx context.Context, id, recordChannelID string) error
 	BridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) error
 	BridgeUpdateToCache(ctx context.Context, id string) error
 
@@ -43,6 +45,7 @@ type DBHandler interface {
 	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
 	CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
+	CallAddRecordFiles(ctx context.Context, id uuid.UUID, filename string) error
 	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
 	CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error
 	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
@@ -51,6 +54,7 @@ type DBHandler interface {
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
+	CallSetRecordChannelID(ctx context.Context, id uuid.UUID, recordChannelID string) error
 	CallSetToCache(ctx context.Context, call *call.Call) error
 	CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
 	CallTXFinish(tx *sql.Tx, commit bool)

@@ -1,8 +1,8 @@
 create table bridges(
   -- identity
   asterisk_id varchar(255), -- Asterisk id
-  id          varchar(255),       -- bridge id
-  name        varchar(255),       -- bridge name
+  id          varchar(255), -- bridge id
+  name        varchar(255), -- bridge name
 
   -- info
   type    varchar(255),   -- bridge's type
@@ -10,11 +10,16 @@ create table bridges(
   class   varchar(255),   -- bridge's class
   creator varchar(255),   -- bridge creator
 
-
-  video_mode      varchar(255),
+  -- video info
+  video_mode      varchar(255), -- video's mode.
   video_source_id varchar(255),
 
-  channel_ids json,
+  -- joined channel info
+  channel_ids json, -- joined channel ids
+
+  -- record info
+  record_channel_id varchar(255), -- recording channel id
+  record_files      json,         -- recording filenames
 
   -- conference info
   conference_id   binary(16),   -- conference's id

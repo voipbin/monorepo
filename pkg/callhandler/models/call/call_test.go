@@ -248,6 +248,9 @@ func TestNewCallByChannel(t *testing.T) {
 				FlowID:     uuid.Nil,
 				Type:       TypeSipService,
 
+				ChainedCallIDs: []uuid.UUID{},
+				RecordFiles:    []string{},
+
 				Status: StatusRinging,
 
 				Direction: DirectionIncoming,

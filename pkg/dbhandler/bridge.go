@@ -9,6 +9,42 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 )
 
+// BridgeUpdateToCache gets the bridge from the DB and update the cache.
+func (h *handler) BridgeUpdateToCache(ctx context.Context, id string) error {
+
+	res, err := h.BridgeGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.BridgeSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// BridgeSetToCache sets the given bridge to the cache
+func (h *handler) BridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) error {
+	if err := h.cache.BridgeSet(ctx, bridge); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// BridgeGetFromCache returns bridge from the cache.
+func (h *handler) BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error) {
+
+	// get from cache
+	res, err := h.cache.BridgeGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // ChannelCreate creates new channel record and returns the created channel record.
 func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 	q := `insert into bridges(
@@ -26,6 +62,9 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 
 		channel_ids,
 
+		record_channel_id,
+		record_files,
+
 		conference_id,
 		conference_type,
 		conference_join,
@@ -36,6 +75,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		?, ?, ?, ?,
 		?, ?,
 		?,
+		?, ?,
 		?, ?, ?,
 		?
 		)
@@ -43,7 +83,12 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 
 	tmpChannelIDs, err := json.Marshal(b.ChannelIDs)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not marshal. BridgeCreate. err: %v", err)
+		return fmt.Errorf("could not marshal channel_ids. BridgeCreate. err: %v", err)
+	}
+
+	tmpRecordFiles, err := json.Marshal(b.RecordFiles)
+	if err != nil {
+		return fmt.Errorf("could not marshal record_files. BridgeCreate. err: %v", err)
 	}
 
 	_, err = h.db.Exec(q,
@@ -60,6 +105,9 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		b.VideoSourceID,
 
 		tmpChannelIDs,
+
+		b.RecordChannelID,
+		tmpRecordFiles,
 
 		b.ConferenceID.Bytes(),
 		b.ConferenceType,
@@ -221,18 +269,6 @@ func (h *handler) BridgeIsExist(id string, timeout time.Duration) bool {
 	return true
 }
 
-// BridgeGetFromCache returns bridge from the cache.
-func (h *handler) BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error) {
-
-	// get from cache
-	res, err := h.cache.BridgeGet(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
 // BridgeGetFromDB returns bridge from the DB.
 func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridge, error) {
 
@@ -252,6 +288,9 @@ func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 		video_source_id,
 
 		channel_ids,
+
+		record_channel_id,
+		record_files,
 
 		conference_id,
 		conference_type,
@@ -277,6 +316,7 @@ func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 	}
 
 	var channelIDs string
+	var recordFiles string
 	res := &bridge.Bridge{}
 	if err := row.Scan(
 		&res.ID,
@@ -293,6 +333,9 @@ func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 
 		&channelIDs,
 
+		&res.RecordChannelID,
+		&recordFiles,
+
 		&res.ConferenceID,
 		&res.ConferenceType,
 		&res.ConferenceJoin,
@@ -301,39 +344,70 @@ func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 		&res.TMUpdate,
 		&res.TMDelete,
 	); err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. BridgeGet. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. BridgeGetFromDB. err: %v", err)
 	}
 
 	if err := json.Unmarshal([]byte(channelIDs), &res.ChannelIDs); err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not unmarshal the result. BridgeGet. err: %v", err)
+		return nil, fmt.Errorf("could not unmarshal the channel_ids. BridgeGetFromDB. err: %v", err)
 	}
 	if res.ChannelIDs == nil {
 		res.ChannelIDs = []string{}
 	}
 
+	if err := json.Unmarshal([]byte(recordFiles), &res.RecordFiles); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the record_files. BridgeGetFromDB. err: %v", err)
+	}
+	if res.RecordFiles == nil {
+		res.RecordFiles = []string{}
+	}
+
 	return res, nil
 }
 
-// BridgeUpdateToCache gets the bridge from the DB and update the cache.
-func (h *handler) BridgeUpdateToCache(ctx context.Context, id string) error {
+// BridgeSetRecordChannelID sets the bridge's record_channel_id.
+func (h *handler) BridgeSetRecordChannelID(ctx context.Context, id, recordChannelID string) error {
+	// prepare
+	q := `
+	update bridges set
+		record_channel_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
 
-	res, err := h.BridgeGetFromDB(ctx, id)
+	_, err := h.db.Exec(q, recordChannelID, getCurTime(), id)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not execute. BridgeSetRecordChannelID. err: %v", err)
 	}
 
-	if err := h.BridgeSetToCache(ctx, res); err != nil {
-		return err
-	}
+	// update the cache
+	h.BridgeUpdateToCache(ctx, id)
 
 	return nil
 }
 
-// BridgeSetToCache sets the given bridge to the cache
-func (h *handler) BridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) error {
-	if err := h.cache.BridgeSet(ctx, bridge); err != nil {
-		return err
+// BridgeAddRecordFiles adds the record file to the bridge's record_files.
+func (h *handler) BridgeAddRecordFiles(ctx context.Context, id, filename string) error {
+	// prepare
+	q := `
+	update bridges set
+		record_files = json_array_append(
+			record_files,
+			'$',
+			?
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, filename, getCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. BridgeAddRecordFiles. err: %v", err)
 	}
+
+	// update the cache
+	h.BridgeUpdateToCache(ctx, id)
 
 	return nil
 }

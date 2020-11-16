@@ -23,8 +23,11 @@ const (
 		flow_id,
 		conference_id,
 		type,
+
 		master_call_id,
 		chained_call_ids,
+		record_channel_id,
+		record_files,
 
 		source,
 		destination,
@@ -59,8 +62,11 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		flow_id,
 		conference_id,
 		type,
+
 		master_call_id,
 		chained_call_ids,
+		record_channel_id,
+		record_files,
 
 		source,
 		source_target,
@@ -76,7 +82,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 		tm_create
 	) values(
-		?, ?, ?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?,?,
 		?
@@ -85,6 +92,11 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	tmpChainedCallIDs, err := json.Marshal(c.ChainedCallIDs)
 	if err != nil {
 		return fmt.Errorf("could not marshal calls. CallCreate. err: %v", err)
+	}
+
+	tmpRecordfiles, err := json.Marshal(c.RecordFiles)
+	if err != nil {
+		return fmt.Errorf("could not marshal the recordfiles. CallCreate. err: %v", err)
 	}
 
 	tmpSource, err := json.Marshal(c.Source)
@@ -115,8 +127,11 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.FlowID.Bytes(),
 		c.ConfID.Bytes(),
 		c.Type,
+
 		c.MasterCallID.Bytes(),
 		tmpChainedCallIDs,
+		c.RecordChannelID,
+		tmpRecordfiles,
 
 		tmpSource,
 		c.Source.Target,
@@ -187,7 +202,8 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 
 // callGetFromRow gets the call from the row.
 func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
-	var ChainedCallIDs string
+	var chainedCallIDs string
+	var recordFiles string
 	var data string
 	var source string
 	var destination string
@@ -201,8 +217,11 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.FlowID,
 		&res.ConfID,
 		&res.Type,
+
 		&res.MasterCallID,
-		&ChainedCallIDs,
+		&chainedCallIDs,
+		&res.RecordChannelID,
+		&recordFiles,
 
 		&source,
 		&destination,
@@ -224,9 +243,20 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(ChainedCallIDs), &res.ChainedCallIDs); err != nil {
+	if err := json.Unmarshal([]byte(chainedCallIDs), &res.ChainedCallIDs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the chained_call_ids. callGetFromRow. err: %v", err)
 	}
+	if res.ChainedCallIDs == nil {
+		res.ChainedCallIDs = []uuid.UUID{}
+	}
+
+	if err := json.Unmarshal([]byte(recordFiles), &res.RecordFiles); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the record_files. callGetFromRow. err: %v", err)
+	}
+	if res.RecordFiles == nil {
+		res.RecordFiles = []string{}
+	}
+
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
 	}
@@ -538,7 +568,7 @@ func (h *handler) CallSetToCache(ctx context.Context, call *call.Call) error {
 func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update call set
+	update calls set
 		chained_call_ids = json_array_append(
 			chained_call_ids,
 			'$',
@@ -617,6 +647,54 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 	return nil
 }
 
+// CallSetRecordChannelID sets the given recordChannelID to record_chanel_id.
+func (h *handler) CallSetRecordChannelID(ctx context.Context, id uuid.UUID, recordChannelID string) error {
+	// prepare
+	q := `
+	update calls set
+		record_channel_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, recordChannelID, getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallSetRecordChannelID. err: %v", err)
+	}
+
+	// update the cache
+	h.CallUpdateToCache(context.Background(), id)
+
+	return nil
+}
+
+// CallAddRecordFiles adds the given filename into the record_files.
+func (h *handler) CallAddRecordFiles(ctx context.Context, id uuid.UUID, filename string) error {
+	// prepare
+	q := `
+	update calls set
+		record_files = json_array_append(
+			record_files,
+			'$',
+			?
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, filename, getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallAddRecordFiles. err: %v", err)
+	}
+
+	// update the cache
+	h.CallUpdateToCache(ctx, id)
+
+	return nil
+}
+
 func (h *handler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
 
 	tx, err := h.db.Begin()
@@ -660,7 +738,7 @@ func (h *handler) CallTXFinish(tx *sql.Tx, commit bool) {
 func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update call set
+	update calls set
 		chained_call_ids = json_array_append(
 			chained_call_ids,
 			'$',
