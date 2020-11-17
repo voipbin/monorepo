@@ -292,3 +292,35 @@ func (r *requestHandler) AstChannelPlay(asteriskID string, channelID string, act
 	}
 	return nil
 }
+
+// AstChannelRecord records the given the channel
+func (r *requestHandler) AstChannelRecord(asteriskID string, channelID string, filename string, format string) error {
+	url := fmt.Sprintf("/ari/channels/%s/record", channelID)
+
+	type Data struct {
+		Name               string `json:"name"`
+		Format             string `json:"format"`
+		MaxDurationSeconds int64  `json:"maxDurationSeconds,omitempty"`
+		MaxSilenceSeconds  int64  `json:"maxSilenceSeconds,omitempty"`
+		IfExists           string `json:"ifExists,omitempty"`
+		Beep               bool   `json:"beep,omitempty"`
+		TerminateOn        string `json:"terminateOn,omitempty"`
+	}
+
+	m, err := json.Marshal(Data{
+		Name:   filename,
+		Format: format,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}

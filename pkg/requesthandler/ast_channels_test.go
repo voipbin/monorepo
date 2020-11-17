@@ -709,3 +709,57 @@ func TestAstChannelPlay(t *testing.T) {
 		})
 	}
 }
+
+func TestAstChannelRecord(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.tts-manager.request")
+
+	type test struct {
+		name      string
+		asterisk  string
+		channelID string
+		filename  string
+		format    string
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}
+
+	tests := []test{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"b3b6ca04-28d4-11eb-a27e-ebcd6dfed523",
+			"call_b469f3cc-28d4-11eb-b29a-db389e2bf1ca_2020-05-17T10:24:54.396+0000",
+			"wav",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:      "/ari/channels/b3b6ca04-28d4-11eb-a27e-ebcd6dfed523/record",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"call_b469f3cc-28d4-11eb-b29a-db389e2bf1ca_2020-05-17T10:24:54.396+0000","format":"wav"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			err := reqHandler.AstChannelRecord(tt.asterisk, tt.channelID, tt.filename, tt.format)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
