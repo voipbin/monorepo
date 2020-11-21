@@ -294,22 +294,27 @@ func (r *requestHandler) AstChannelPlay(asteriskID string, channelID string, act
 }
 
 // AstChannelRecord records the given the channel
-func (r *requestHandler) AstChannelRecord(asteriskID string, channelID string, filename string, format string) error {
+func (r *requestHandler) AstChannelRecord(asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error {
 	url := fmt.Sprintf("/ari/channels/%s/record", channelID)
 
 	type Data struct {
 		Name               string `json:"name"`
 		Format             string `json:"format"`
-		MaxDurationSeconds int64  `json:"maxDurationSeconds,omitempty"`
-		MaxSilenceSeconds  int64  `json:"maxSilenceSeconds,omitempty"`
-		IfExists           string `json:"ifExists,omitempty"`
-		Beep               bool   `json:"beep,omitempty"`
-		TerminateOn        string `json:"terminateOn,omitempty"`
+		MaxDurationSeconds int    `json:"maxDurationSeconds"`
+		MaxSilenceSeconds  int    `json:"maxSilenceSeconds"`
+		Beep               bool   `json:"beep"`
+		TerminateOn        string `json:"terminateOn"`
+		IfExists           string `json:"ifExists"`
 	}
 
 	m, err := json.Marshal(Data{
-		Name:   filename,
-		Format: format,
+		Name:               filename,
+		Format:             format,
+		MaxDurationSeconds: duration,
+		MaxSilenceSeconds:  silence,
+		Beep:               beep,
+		TerminateOn:        endKey,
+		IfExists:           ifExists,
 	})
 	if err != nil {
 		return err

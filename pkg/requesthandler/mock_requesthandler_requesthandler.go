@@ -251,17 +251,17 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(asteriskID, channelID, 
 }
 
 // AstChannelRecord mocks base method
-func (m *MockRequestHandler) AstChannelRecord(asteriskID, channelID, filename, format string) error {
+func (m *MockRequestHandler) AstChannelRecord(asteriskID, channelID, filename, format string, duration, silence int, beep bool, endKey, ifExists string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelRecord", asteriskID, channelID, filename, format)
+	ret := m.ctrl.Call(m, "AstChannelRecord", asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelRecord indicates an expected call of AstChannelRecord
-func (mr *MockRequestHandlerMockRecorder) AstChannelRecord(asteriskID, channelID, filename, format interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelRecord(asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelRecord", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelRecord), asteriskID, channelID, filename, format)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelRecord", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelRecord), asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists)
 }
 
 // AstChannelVariableSet mocks base method

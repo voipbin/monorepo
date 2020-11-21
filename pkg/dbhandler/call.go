@@ -26,8 +26,8 @@ const (
 
 		master_call_id,
 		chained_call_ids,
-		record_channel_id,
-		record_files,
+		record_id,
+		record_ids,
 
 		source,
 		destination,
@@ -65,8 +65,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 		master_call_id,
 		chained_call_ids,
-		record_channel_id,
-		record_files,
+		record_id,
+		record_ids,
 
 		source,
 		source_target,
@@ -94,9 +94,9 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		return fmt.Errorf("could not marshal calls. CallCreate. err: %v", err)
 	}
 
-	tmpRecordfiles, err := json.Marshal(c.RecordFiles)
+	tmpRecordIDs, err := json.Marshal(c.RecordIDs)
 	if err != nil {
-		return fmt.Errorf("could not marshal the recordfiles. CallCreate. err: %v", err)
+		return fmt.Errorf("could not marshal the record_ids. CallCreate. err: %v", err)
 	}
 
 	tmpSource, err := json.Marshal(c.Source)
@@ -130,8 +130,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 		c.MasterCallID.Bytes(),
 		tmpChainedCallIDs,
-		c.RecordChannelID,
-		tmpRecordfiles,
+		c.RecordID,
+		tmpRecordIDs,
 
 		tmpSource,
 		c.Source.Target,
@@ -203,7 +203,7 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 // callGetFromRow gets the call from the row.
 func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	var chainedCallIDs string
-	var recordFiles string
+	var recordIDs string
 	var data string
 	var source string
 	var destination string
@@ -220,8 +220,8 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 
 		&res.MasterCallID,
 		&chainedCallIDs,
-		&res.RecordChannelID,
-		&recordFiles,
+		&res.RecordID,
+		&recordIDs,
 
 		&source,
 		&destination,
@@ -250,11 +250,11 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		res.ChainedCallIDs = []uuid.UUID{}
 	}
 
-	if err := json.Unmarshal([]byte(recordFiles), &res.RecordFiles); err != nil {
+	if err := json.Unmarshal([]byte(recordIDs), &res.RecordIDs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the record_files. callGetFromRow. err: %v", err)
 	}
-	if res.RecordFiles == nil {
-		res.RecordFiles = []string{}
+	if res.RecordIDs == nil {
+		res.RecordIDs = []string{}
 	}
 
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
@@ -647,20 +647,20 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 	return nil
 }
 
-// CallSetRecordChannelID sets the given recordChannelID to record_chanel_id.
-func (h *handler) CallSetRecordChannelID(ctx context.Context, id uuid.UUID, recordChannelID string) error {
+// CallSetRecordID sets the given recordID to record_id.
+func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID string) error {
 	// prepare
 	q := `
 	update calls set
-		record_channel_id = ?,
+		record_id = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordChannelID, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID, getCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. CallSetRecordChannelID. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetRecordID. err: %v", err)
 	}
 
 	// update the cache
@@ -669,13 +669,13 @@ func (h *handler) CallSetRecordChannelID(ctx context.Context, id uuid.UUID, reco
 	return nil
 }
 
-// CallAddRecordFiles adds the given filename into the record_files.
-func (h *handler) CallAddRecordFiles(ctx context.Context, id uuid.UUID, filename string) error {
+// CallAddRecordIDs adds the given record_id into the record_ids.
+func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID string) error {
 	// prepare
 	q := `
 	update calls set
-		record_files = json_array_append(
-			record_files,
+		record_ids = json_array_append(
+			record_ids,
 			'$',
 			?
 		),
@@ -684,9 +684,9 @@ func (h *handler) CallAddRecordFiles(ctx context.Context, id uuid.UUID, filename
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, filename, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID, getCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. CallAddRecordFiles. err: %v", err)
+		return fmt.Errorf("could not execute. CallAddRecordIDs. err: %v", err)
 	}
 
 	// update the cache

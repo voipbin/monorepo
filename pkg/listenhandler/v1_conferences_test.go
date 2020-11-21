@@ -64,7 +64,7 @@ func TestProcessV1ConferencesPostTypeConference(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","user_id":1,"type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","user_id":1,"type":"conference","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -93,7 +93,7 @@ func TestProcessV1ConferencesPostTypeConference(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","user_id":1,"type":"conference","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","user_id":1,"type":"conference","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -118,7 +118,7 @@ func TestProcessV1ConferencesPostTypeConference(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","user_id":1,"type":"conference","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","user_id":1,"type":"conference","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -144,7 +144,7 @@ func TestProcessV1ConferencesPostTypeConference(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"9179b768-da9a-11ea-b583-c7592caaa090","user_id":1,"type":"conference","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"9179b768-da9a-11ea-b583-c7592caaa090","user_id":1,"type":"conference","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference","detail":"","data":null,"timeout":0,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -172,7 +172,7 @@ func TestProcessV1ConferencesPostTypeConference(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","user_id":1,"type":"conference","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","user_id":1,"type":"conference","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -244,7 +244,7 @@ func TestProcessV1ConferencesPostTypeConnect(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","user_id":1,"type":"connect","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"d82ce190-9fe8-11ea-aec8-973901dd28fa","user_id":1,"type":"connect","bridge_id":"f1354268-9fe8-11ea-b693-3761800b29d5","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -273,7 +273,7 @@ func TestProcessV1ConferencesPostTypeConnect(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","user_id":1,"type":"connect","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"2a835238-da9c-11ea-bc7b-eb2f57685ad6","user_id":1,"type":"connect","bridge_id":"2f84ff66-da9c-11ea-9b90-83a7346c3e97","status":"","name":"test conference all items","detail":"test conference with all tiems detail","data":null,"timeout":180,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -298,7 +298,7 @@ func TestProcessV1ConferencesPostTypeConnect(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","user_id":1,"type":"connect","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3402e154-da9a-11ea-a52b-2781af28f74d","user_id":1,"type":"connect","bridge_id":"3a6486ba-da9a-11ea-8a39-03999d98a404","status":"","name":"","detail":"","data":null,"timeout":180,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -324,7 +324,7 @@ func TestProcessV1ConferencesPostTypeConnect(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"9179b768-da9a-11ea-b583-c7592caaa090","user_id":1,"type":"connect","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference connect","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"9179b768-da9a-11ea-b583-c7592caaa090","user_id":1,"type":"connect","bridge_id":"95f5b53a-da9a-11ea-92be-23fad8a8b229","status":"","name":"test conference connect","detail":"","data":null,"timeout":0,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -352,7 +352,7 @@ func TestProcessV1ConferencesPostTypeConnect(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","user_id":1,"type":"connect","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"c8fa873a-da9a-11ea-97f0-fff8a6d8aa21","user_id":1,"type":"connect","bridge_id":"cdc9898c-da9a-11ea-8b27-c77718b25ab9","status":"","name":"test conference","detail":"test conference detail","data":null,"timeout":0,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -536,7 +536,7 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","user_id":1,"type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","user_id":1,"type":"conference","bridge_id":"fea1c22c-ac2d-11ea-8a08-7f5cb36f279a","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"record_id":"","record_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

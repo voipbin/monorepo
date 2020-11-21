@@ -249,7 +249,7 @@ func TestNewCallByChannel(t *testing.T) {
 				Type:       TypeSipService,
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Status: StatusRinging,
 

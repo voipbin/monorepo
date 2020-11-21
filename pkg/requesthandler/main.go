@@ -121,7 +121,7 @@ type RequestHandler interface {
 	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
 	AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
-	AstChannelRecord(asteriskID string, channelID string, filename string, format string) error
+	AstChannelRecord(asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelVariableSet(asteriskID, channelID, variable, value string) error
 
 	// call

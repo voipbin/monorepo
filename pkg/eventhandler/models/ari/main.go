@@ -31,6 +31,9 @@ const (
 	EventTypePlaybackContinuing   EventType = "PlaybackContinuing"
 	EventTypePlaybackFinished     EventType = "PlaybackFinished"
 	EventTypePlaybackStarted      EventType = "PlaybackStarted"
+	EventTypeRecordingFailed      EventType = "RecordingFailed"
+	EventTypeRecordingFinished    EventType = "RecordingFinished"
+	EventTypeRecordingStarted     EventType = "RecordingStarted"
 	EventTypeStasisEnd            EventType = "StasisEnd"
 	EventTypeStasisStart          EventType = "StasisStart"
 )
@@ -64,6 +67,9 @@ func Parse(message []byte) (*Event, interface{}, error) {
 		EventTypePlaybackContinuing:   &PlaybackContinuing{},
 		EventTypePlaybackFinished:     &PlaybackFinished{},
 		EventTypePlaybackStarted:      &PlaybackStarted{},
+		EventTypeRecordingFailed:      &RecordingFailed{},
+		EventTypeRecordingFinished:    &RecordingFinished{},
+		EventTypeRecordingStarted:     &RecordingStarted{},
 		EventTypeStasisEnd:            &StasisEnd{},
 		EventTypeStasisStart:          &StasisStart{},
 	}

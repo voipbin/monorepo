@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	number "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
+	record "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
@@ -211,4 +212,33 @@ func (m *MockCacheHandler) NumberSetByNumber(ctx context.Context, numb *number.N
 func (mr *MockCacheHandlerMockRecorder) NumberSetByNumber(ctx, numb interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberSetByNumber", reflect.TypeOf((*MockCacheHandler)(nil).NumberSetByNumber), ctx, numb)
+}
+
+// RecordGet mocks base method
+func (m *MockCacheHandler) RecordGet(ctx context.Context, id string) (*record.Record, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordGet", ctx, id)
+	ret0, _ := ret[0].(*record.Record)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordGet indicates an expected call of RecordGet
+func (mr *MockCacheHandlerMockRecorder) RecordGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordGet", reflect.TypeOf((*MockCacheHandler)(nil).RecordGet), ctx, id)
+}
+
+// RecordSet mocks base method
+func (m *MockCacheHandler) RecordSet(ctx context.Context, record *record.Record) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordSet", ctx, record)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordSet indicates an expected call of RecordSet
+func (mr *MockCacheHandlerMockRecorder) RecordSet(ctx, record interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordSet", reflect.TypeOf((*MockCacheHandler)(nil).RecordSet), ctx, record)
 }

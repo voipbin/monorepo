@@ -23,10 +23,10 @@ type Call struct {
 	Type       Type      `json:"type"`    // call type
 
 	// etc info
-	MasterCallID    uuid.UUID   `json:"master_call_id"`    // master call id
-	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids"`  // chained call ids
-	RecordChannelID string      `json:"record_channel_id"` // record channel id(spy channel)
-	RecordFiles     []string    `json:"record_files"`      // record filenames
+	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
+	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // chained call ids
+	RecordID       string      `json:"record_id"`        // record id(current)
+	RecordIDs      []string    `json:"record_ids"`       // record ids
 
 	// source/destination
 	Source      Address `json:"source"`
@@ -176,7 +176,7 @@ func NewCall(
 		Type:       cType,
 
 		ChainedCallIDs: []uuid.UUID{},
-		RecordFiles:    []string{},
+		RecordIDs:      []string{},
 
 		Source:      *source,
 		Destination: *destination,
@@ -207,7 +207,7 @@ func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction 
 		Type:       cType,
 
 		ChainedCallIDs: []uuid.UUID{},
-		RecordFiles:    []string{},
+		RecordIDs:      []string{},
 
 		Source:      *source,
 		Destination: *destination,

@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
@@ -43,6 +44,9 @@ type CacheHandler interface {
 
 	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
 	NumberSetByNumber(ctx context.Context, numb *number.Number) error
+
+	RecordGet(ctx context.Context, id string) (*record.Record, error)
+	RecordSet(ctx context.Context, record *record.Record) error
 }
 
 // NewHandler creates DBHandler

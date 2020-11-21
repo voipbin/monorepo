@@ -53,7 +53,7 @@ func TestCallCreate(t *testing.T) {
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Source:      call.Address{},
 				Destination: call.Address{},
@@ -91,7 +91,7 @@ func TestCallCreate(t *testing.T) {
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Source: call.Address{
 					Type: call.AddressTypeSIP,
@@ -133,7 +133,7 @@ func TestCallCreate(t *testing.T) {
 				MasterCallID: uuid.FromStringOrNil("cf3c6046-24be-11eb-8b61-074f38be56e4"),
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Source: call.Address{
 					Type: call.AddressTypeSIP,
@@ -180,7 +180,7 @@ func TestCallCreate(t *testing.T) {
 					uuid.FromStringOrNil("10e34906-24bf-11eb-b3dd-63551f2b9bde"),
 				},
 
-				RecordFiles: []string{},
+				RecordIDs: []string{},
 
 				Source: call.Address{
 					Type: call.AddressTypeSIP,
@@ -229,7 +229,7 @@ func TestCallCreate(t *testing.T) {
 					uuid.FromStringOrNil("3323a3b2-24bf-11eb-9955-27bf0b4927b7"),
 				},
 
-				RecordFiles: []string{},
+				RecordIDs: []string{},
 
 				Source: call.Address{
 					Type: call.AddressTypeSIP,
@@ -243,7 +243,7 @@ func TestCallCreate(t *testing.T) {
 			},
 		},
 		{
-			"record channel id",
+			"record id",
 			call.Call{
 				ID:         uuid.FromStringOrNil("ac1bde4c-2825-11eb-8bb0-7b1bf9f52aae"),
 				AsteriskID: "3e:50:6b:43:bb:30",
@@ -251,7 +251,7 @@ func TestCallCreate(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("accf3884-2825-11eb-b70b-33d61a1589dc"),
 				Type:       call.TypeFlow,
 
-				RecordChannelID: "acf747a2-2825-11eb-ac11-37bc826b0ba6",
+				RecordID: "acf747a2-2825-11eb-ac11-37bc826b0ba6",
 
 				Source: call.Address{
 					Type: call.AddressTypeSIP,
@@ -272,8 +272,8 @@ func TestCallCreate(t *testing.T) {
 
 				ChainedCallIDs: []uuid.UUID{},
 
-				RecordChannelID: "acf747a2-2825-11eb-ac11-37bc826b0ba6",
-				RecordFiles:     []string{},
+				RecordID:  "acf747a2-2825-11eb-ac11-37bc826b0ba6",
+				RecordIDs: []string{},
 
 				Source: call.Address{
 					Type: call.AddressTypeSIP,
@@ -295,8 +295,8 @@ func TestCallCreate(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("df48368a-2825-11eb-99c3-c77c66d82570"),
 				Type:       call.TypeFlow,
 
-				RecordChannelID: "df718b70-2825-11eb-b7b4-5f3b1137dd3c",
-				RecordFiles: []string{
+				RecordID: "df718b70-2825-11eb-b7b4-5f3b1137dd3c",
+				RecordIDs: []string{
 					"call_134be36e-2826-11eb-bae4-fb74cf5b5722_2020-04-18T03:22:17.995000.wav",
 				},
 
@@ -319,8 +319,8 @@ func TestCallCreate(t *testing.T) {
 
 				ChainedCallIDs: []uuid.UUID{},
 
-				RecordChannelID: "df718b70-2825-11eb-b7b4-5f3b1137dd3c",
-				RecordFiles: []string{
+				RecordID: "df718b70-2825-11eb-b7b4-5f3b1137dd3c",
+				RecordIDs: []string{
 					"call_134be36e-2826-11eb-bae4-fb74cf5b5722_2020-04-18T03:22:17.995000.wav",
 				},
 
@@ -404,7 +404,7 @@ func TestCallSetStatus(t *testing.T) {
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Source:      call.Address{},
 				Destination: call.Address{},
@@ -493,7 +493,7 @@ func TestCallGetByChannelID(t *testing.T) {
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Source:      call.Address{},
 				Destination: call.Address{},
@@ -529,7 +529,7 @@ func TestCallGetByChannelID(t *testing.T) {
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Source: call.Address{
 					Type: call.AddressTypeSIP,
@@ -614,7 +614,7 @@ func TestCallCallSetHangup(t *testing.T) {
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Source:      call.Address{},
 				Destination: call.Address{},
@@ -703,7 +703,7 @@ func TestCallSetFlowID(t *testing.T) {
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				FlowID: uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 
@@ -786,7 +786,7 @@ func TestCallSetConferenceID(t *testing.T) {
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				ConfID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
 
@@ -876,7 +876,7 @@ func TestCallSetAction(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Source:      call.Address{},
 				Destination: call.Address{},
@@ -923,7 +923,7 @@ func TestCallSetAction(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				Source:      call.Address{},
 				Destination: call.Address{},
@@ -1000,7 +1000,7 @@ func TestCallSetMasterCallID(t *testing.T) {
 				ChannelID:      "14daba5c-24fc-11eb-8f58-8b798baaf553",
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 				MasterCallID:   uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
 				TMCreate:       "2020-04-18T03:22:17.995000",
 			},
@@ -1017,7 +1017,7 @@ func TestCallSetMasterCallID(t *testing.T) {
 				ID:             uuid.FromStringOrNil("665db8f2-2501-11eb-86ce-f3a50eef6f26"),
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 				TMCreate:       "2020-04-18T03:22:17.995000",
 			},
 		},
@@ -1052,16 +1052,16 @@ func TestCallSetMasterCallID(t *testing.T) {
 	}
 }
 
-func TestCallSetRecordChannelID(t *testing.T) {
+func TestCallSetRecordID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	type test struct {
-		name            string
-		call            *call.Call
-		reocrdChannelID string
+		name     string
+		call     *call.Call
+		reocrdID string
 
 		expectCall *call.Call
 	}
@@ -1083,10 +1083,10 @@ func TestCallSetRecordChannelID(t *testing.T) {
 				ChannelID:      "4e2fe520-282b-11eb-ad66-b777dce59261",
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
-				RecordChannelID: "4e847572-282b-11eb-9c58-97622e4406e2",
-				TMCreate:        "2020-04-18T03:22:17.995000",
+				RecordID: "4e847572-282b-11eb-9c58-97622e4406e2",
+				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 		},
 		{
@@ -1101,7 +1101,7 @@ func TestCallSetRecordChannelID(t *testing.T) {
 				ID:             uuid.FromStringOrNil("7b3e197e-282b-11eb-956d-4feb054947db"),
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
-				RecordFiles:    []string{},
+				RecordIDs:      []string{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
@@ -1118,7 +1118,7 @@ func TestCallSetRecordChannelID(t *testing.T) {
 			}
 
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallSetRecordChannelID(context.Background(), tt.call.ID, tt.reocrdChannelID); err != nil {
+			if err := h.CallSetRecordID(context.Background(), tt.call.ID, tt.reocrdID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

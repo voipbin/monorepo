@@ -723,6 +723,11 @@ func TestAstChannelRecord(t *testing.T) {
 		channelID string
 		filename  string
 		format    string
+		duration  int
+		silence   int
+		beep      bool
+		endKey    string
+		ifExist   string
 
 		response *rabbitmqhandler.Response
 
@@ -737,6 +742,11 @@ func TestAstChannelRecord(t *testing.T) {
 			"b3b6ca04-28d4-11eb-a27e-ebcd6dfed523",
 			"call_b469f3cc-28d4-11eb-b29a-db389e2bf1ca_2020-05-17T10:24:54.396+0000",
 			"wav",
+			0,
+			0,
+			false,
+			"",
+			"fail",
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -747,7 +757,7 @@ func TestAstChannelRecord(t *testing.T) {
 				URI:      "/ari/channels/b3b6ca04-28d4-11eb-a27e-ebcd6dfed523/record",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"call_b469f3cc-28d4-11eb-b29a-db389e2bf1ca_2020-05-17T10:24:54.396+0000","format":"wav"}`),
+				Data:     []byte(`{"name":"call_b469f3cc-28d4-11eb-b29a-db389e2bf1ca_2020-05-17T10:24:54.396+0000","format":"wav","maxDurationSeconds":0,"maxSilenceSeconds":0,"beep":false,"terminateOn":"","ifExists":"fail"}`),
 			},
 		},
 	}
@@ -756,7 +766,7 @@ func TestAstChannelRecord(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelRecord(tt.asterisk, tt.channelID, tt.filename, tt.format)
+			err := reqHandler.AstChannelRecord(tt.asterisk, tt.channelID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
