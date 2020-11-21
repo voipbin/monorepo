@@ -11,8 +11,10 @@ create table calls(
   -- etc info
   master_call_id    binary(16),   -- master call id
   chained_call_ids  json,         -- chained call ids
-  record_channel_id varchar(255), -- recording channel id
-  record_files      json,         -- recording filenames
+
+  -- record info
+  record_id   varchar(255),   -- current record id
+  record_ids  json,           -- record ids
 
   -- source/destination
   source        json, -- source's type, target, number, name, ...

@@ -45,8 +45,7 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 				Creator:    "Stasis",
 				VideoMode:  "none",
 
-				ChannelIDs:  []string{},
-				RecordFiles: []string{},
+				ChannelIDs: []string{},
 
 				TMCreate: "2020-05-09T12:41:43.591",
 			},

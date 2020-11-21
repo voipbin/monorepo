@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	uuid "github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -20,6 +21,7 @@ import (
 const (
 	contextIncomingCall    = "call-in"
 	contextOutgoingCall    = "call-out"
+	contextRecording       = "call-record"
 	contextFromServiceCall = "call-svc"
 )
 
@@ -160,6 +162,9 @@ func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]inter
 	case contextOutgoingCall:
 		return h.startHandlerContextOutgoingCall(cn, data)
 
+	case contextRecording:
+		return h.startHandlerContextRecording(cn, data)
+
 	default:
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return fmt.Errorf("no route found for stasisstart. asterisk_id: %s, channel_id: %s, data: %v", cn.AsteriskID, cn.ID, data)
@@ -178,6 +183,25 @@ func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel, da
 	}
 
 	return h.ActionNext(c)
+}
+
+// startHandlerContextRecording handles contextFromServiceCall context type of StasisStart event.
+func (h *callHandler) startHandlerContextRecording(cn *channel.Channel, data map[string]interface{}) error {
+	logrus.Infof("Executing startHandlerContextRecording. channel: %s", cn.ID)
+
+	name := data["record_id"].(string)
+	format := data["format"].(string)
+	duration, _ := strconv.Atoi(data["duration"].(string))
+	silence, _ := strconv.Atoi(data["end_of_silence"].(string))
+	endKey := data["end_of_key"].(string)
+
+	if err := h.reqHandler.AstChannelRecord(cn.AsteriskID, cn.ID, name, format, duration, silence, false, endKey, "fail"); err != nil {
+		logrus.Errorf("Could not start the recording. Destorying the chanel. err: %v", err)
+
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	}
+
+	return nil
 }
 
 // startHandlerContextIncomingCall handles contextIncomingCall context type of StasisStart event.

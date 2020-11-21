@@ -12,7 +12,9 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 )
 
 // Redirect options for timeout action
@@ -62,6 +64,12 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 	case action.TypePlay:
 		err = h.actionExecutePlay(c, a)
+
+	case action.TypeRecordStart:
+		err = h.actionExecuteRecordStart(c, a)
+
+	case action.TypeRecordStop:
+		err = h.actionExecuteRecordStop(c, a)
 
 	case action.TypeStreamEcho:
 		err = h.actionExecuteStreamEcho(c, a)
@@ -481,6 +489,131 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 		log.Errorf("Could not play the media for tts. media: %v, err: %v", medias, err)
 		return fmt.Errorf("could not play the media for tts. err: %v", err)
 	}
+
+	return nil
+}
+
+// actionExecuteTalk executes the action type talk
+func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) error {
+
+	ctx := context.Background()
+
+	// copy the action
+	act := *a
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionRecordStart
+	if act.Option != nil {
+		if err := json.Unmarshal(act.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
+	}
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	recordID := fmt.Sprintf("call_%s_%s", c.ID, getCurTime())
+	channelID := uuid.Must(uuid.NewV4()).String()
+
+	// create a record
+	record := &record.Record{
+		ID:          recordID,
+		UserID:      c.UserID,
+		Type:        record.TypeCall,
+		ReferenceID: c.ID,
+		Status:      record.StatusInitiating,
+		Format:      option.Format,
+
+		AsteriskID: c.AsteriskID,
+		ChannelID:  channelID,
+	}
+
+	if err := h.db.RecordCreate(ctx, record); err != nil {
+		log.Errorf("Could not create the record. err: %v", err)
+		return fmt.Errorf("could not create the record. err: %v", err)
+	}
+
+	// set app args
+	appArgs := fmt.Sprintf("context=%s,call_id=%s,record_id=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
+		contextRecording,
+		c.ID,
+		recordID,
+		option.Format,
+		option.EndOfSilence,
+		option.EndOfKey,
+		option.Duration,
+	)
+
+	// create a snoop channel
+	if err := h.reqHandler.AstChannelCreateSnoop(record.AsteriskID, c.ChannelID, record.ChannelID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionNone); err != nil {
+		log.Errorf("Could not create a snoop channel for recroding. err: %v", err)
+		return fmt.Errorf("could not create snoop chanel for recrod. err: %v", err)
+	}
+
+	// set record channel id
+	if err := h.db.CallSetRecordID(ctx, c.ID, recordID); err != nil {
+		log.Errorf("Could not set the record id to the call. err: %v", err)
+		return fmt.Errorf("could not set the record id to the call. err: %v", err)
+	}
+
+	// send next action request
+	h.reqHandler.CallCallActionNext(c.ID)
+
+	return nil
+}
+
+// actionExecuteTalk executes the action type talk
+func (h *callHandler) actionExecuteRecordStop(c *call.Call, a *action.Action) error {
+	ctx := context.Background()
+
+	// copy the action
+	act := *a
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionRecordStop
+	if act.Option != nil {
+		if err := json.Unmarshal(act.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
+	}
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	// we don't do set empty call's recordid at here.
+	// setting the recordid will be done with RecordingFinished event.
+
+	// get record
+	record, err := h.db.RecordGet(ctx, c.RecordID)
+	if err != nil {
+		log.Errorf("Could not get record info. But keep continue to next. err: %v", err)
+	} else {
+		// hangup the channel
+		if err := h.reqHandler.AstChannelHangup(record.AsteriskID, record.ChannelID, ari.ChannelCauseNormalClearing); err != nil {
+			log.Errorf("Could not hangup the recording channel. err: %v", err)
+		}
+	}
+
+	// send next action request
+	h.reqHandler.CallCallActionNext(c.ID)
 
 	return nil
 }

@@ -8,8 +8,10 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
@@ -284,6 +286,111 @@ func TestActionExecuteTalk(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockReq.EXPECT().TTSSpeechesPOST(tt.expectSSML, tt.expectGender, tt.expectLanguage).Return("tts/test.wav", nil)
 			mockReq.EXPECT().AstChannelPlay(tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, []string{"sound:/mnt/media/tts/test"}, "").Return(nil)
+
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionExecuteRecordStart(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name   string
+		call   *call.Call
+		action *action.Action
+	}
+
+	tests := []test{
+		{
+			"default",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "bfd0e668-2a77-11eb-9993-e72b323b1801",
+			},
+			&action.Action{
+				Type: action.TypeRecordStart,
+				ID:   uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().RecordCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(nil)
+			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionExecuteRecordStop(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name   string
+		call   *call.Call
+		action *action.Action
+		record *record.Record
+	}
+
+	tests := []test{
+		{
+			"default",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("4dde92d0-2b9e-11eb-ad28-f732fd0afed7"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "5293419a-2b9e-11eb-bfa6-97a4312177f2",
+				RecordID:   "call_4dde92d0-2b9e-11eb-ad28-f732fd0afed7_2020-04-18T03:22:17.995000",
+			},
+			&action.Action{
+				Type: action.TypeRecordStop,
+				ID:   uuid.FromStringOrNil("4a3925dc-2b9e-11eb-abb3-d759c4b283d0"),
+			},
+			&record.Record{
+				ID:         "call_4dde92d0-2b9e-11eb-ad28-f732fd0afed7_2020-04-18T03:22:17.995000",
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "fe9354d8-2bb9-11eb-8ad0-9764de384853",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().RecordGet(gomock.Any(), tt.call.RecordID).Return(tt.record, nil)
+			mockReq.EXPECT().AstChannelHangup(tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
 
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

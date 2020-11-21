@@ -17,10 +17,6 @@ create table bridges(
   -- joined channel info
   channel_ids json, -- joined channel ids
 
-  -- record info
-  record_channel_id varchar(255), -- recording channel id
-  record_files      json,         -- recording filenames
-
   -- conference info
   conference_id   binary(16),   -- conference's id
   conference_type varchar(255), -- conference's type

@@ -27,9 +27,6 @@ type Bridge struct {
 
 	ChannelIDs []string
 
-	RecordChannelID string
-	RecordFiles     []string
-
 	// conference info
 	ConferenceID   uuid.UUID
 	ConferenceType conference.Type
@@ -79,9 +76,6 @@ func NewBridgeByBridgeCreated(e *ari.BridgeCreated) *Bridge {
 		VideoSourceID: e.Bridge.VideoSourceID,
 
 		ChannelIDs: e.Bridge.Channels,
-
-		RecordChannelID: "",
-		RecordFiles:     []string{},
 
 		ConferenceID:   uuid.Nil,
 		ConferenceType: conference.TypeNone,

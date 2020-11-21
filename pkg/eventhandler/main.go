@@ -17,8 +17,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	db "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // ARIEvent is the structure for ARI event parse.
@@ -164,6 +164,8 @@ func (h *eventHandler) processEvent(m *rabbitmqhandler.Event) error {
 		ari.EventTypeChannelStateChange:   h.eventHandlerChannelStateChange,
 		ari.EventTypeChannelVarset:        h.eventHandlerChannelVarset,
 		ari.EventTypePlaybackFinished:     h.eventHandlerPlaybackFinished,
+		ari.EventTypeRecordingFinished:    h.eventHandlerRecordingFinished,
+		ari.EventTypeRecordingStarted:     h.eventHandlerRecordingStarted,
 		ari.EventTypeStasisEnd:            h.eventHandlerStasisEnd,
 		ari.EventTypeStasisStart:          h.eventHandlerStasisStart,
 	}
