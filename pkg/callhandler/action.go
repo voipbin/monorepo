@@ -516,6 +516,12 @@ func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) e
 		}
 	}
 
+	// set record format
+	format := "wav"
+	if option.Format != "" {
+		format = option.Format
+	}
+
 	// set action
 	if err := h.setAction(c, &act); err != nil {
 		return fmt.Errorf("could not set the action for call. err: %v", err)
@@ -531,7 +537,7 @@ func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) e
 		Type:        record.TypeCall,
 		ReferenceID: c.ID,
 		Status:      record.StatusInitiating,
-		Format:      option.Format,
+		Format:      format,
 
 		AsteriskID: c.AsteriskID,
 		ChannelID:  channelID,

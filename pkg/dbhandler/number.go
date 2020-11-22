@@ -8,6 +8,42 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
 )
 
+const (
+	numberSelect = `
+	select
+		id,
+		number,
+		flow_id,
+		user_id,
+
+		coalesce(tm_create, '') as tm_create,
+		coalesce(tm_update, '') as tm_update,
+		coalesce(tm_delete, '') as tm_delete
+
+	from
+		numbers
+	`
+)
+
+// numberGetFromRow gets the number from the row.
+func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
+	res := &number.Number{}
+	if err := row.Scan(
+		&res.ID,
+		&res.Number,
+		&res.FlowID,
+		&res.UserID,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+		&res.TMDelete,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // NumberGetFromCacheByNumber returns number from the cache by number.
 func (h *handler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (*number.Number, error) {
 
@@ -33,22 +69,7 @@ func (h *handler) NumberSetToCacheByNumber(ctx context.Context, num *number.Numb
 func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error) {
 
 	// prepare
-	q := `
-	select
-		id,
-		number,
-		flow_id,
-		user_id,
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
-
-	from
-		numbers
-	where
-		number = ?
-	`
+	q := fmt.Sprintf("%s where number = ?", numberSelect)
 
 	row, err := h.db.Query(q, numb)
 	if err != nil {
@@ -63,25 +84,6 @@ func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*nu
 	res, err := h.numberGetFromRow(row)
 	if err != nil {
 		return nil, fmt.Errorf("could not get call. NumberGetFromDBByNumber, err: %v", err)
-	}
-
-	return res, nil
-}
-
-// numberGetFromRow gets the number from the row.
-func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
-	res := &number.Number{}
-	if err := row.Scan(
-		&res.ID,
-		&res.Number,
-		&res.FlowID,
-		&res.UserID,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
 	}
 
 	return res, nil
