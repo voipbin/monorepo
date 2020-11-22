@@ -134,18 +134,12 @@ func (h *handler) RecordCreate(ctx context.Context, c *record.Record) error {
 		asterisk_id,
 		channel_id,
 
-		tm_start,
-		tm_end,
-
-		tm_create,
-		tm_update,
-		tm_delete
+		tm_create
 
 	) values(
 		?, ?, ?, ?, ?, ?,
 		?, ?,
-		?, ?,
-		?, ?, ?
+		?
 	)`
 
 	_, err := h.db.Exec(q,
@@ -159,12 +153,7 @@ func (h *handler) RecordCreate(ctx context.Context, c *record.Record) error {
 		c.AsteriskID,
 		c.ChannelID,
 
-		c.TMStart,
-		c.TMEnd,
-
 		getCurTime(),
-		"",
-		"",
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. RecordCreate. err: %v", err)

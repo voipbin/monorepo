@@ -2,12 +2,105 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"time"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 )
+
+const (
+	bridgeSelect = `
+	select
+		id,
+		asterisk_id,
+		name,
+
+		type,
+		tech,
+		class,
+		creator,
+
+		video_mode,
+		video_source_id,
+
+		channel_ids,
+
+		conference_id,
+		conference_type,
+		conference_join,
+
+		coalesce(tm_create, '') as tm_create,
+		coalesce(tm_update, '') as tm_update,
+		coalesce(tm_delete, '') as tm_delete
+	from
+		bridges
+	`
+)
+
+func (h *handler) bridgeGetFromRow(row *sql.Rows) (*bridge.Bridge, error) {
+	var channelIDs string
+	res := &bridge.Bridge{}
+	if err := row.Scan(
+		&res.ID,
+		&res.AsteriskID,
+		&res.Name,
+
+		&res.Type,
+		&res.Tech,
+		&res.Class,
+		&res.Creator,
+
+		&res.VideoMode,
+		&res.VideoSourceID,
+
+		&channelIDs,
+
+		&res.ConferenceID,
+		&res.ConferenceType,
+		&res.ConferenceJoin,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+		&res.TMDelete,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. bridgeGetFromRow. err: %v", err)
+	}
+
+	if err := json.Unmarshal([]byte(channelIDs), &res.ChannelIDs); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the channel_ids. bridgeGetFromRow. err: %v", err)
+	}
+	if res.ChannelIDs == nil {
+		res.ChannelIDs = []string{}
+	}
+
+	return res, nil
+
+}
+
+// BridgeGetFromDB returns bridge from the DB.
+func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridge, error) {
+
+	q := fmt.Sprintf("%s where id = ?", bridgeSelect)
+
+	row, err := h.db.Query(q, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. BridgeGet. err: %v", err)
+	}
+	defer row.Close()
+
+	if row.Next() == false {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.bridgeGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan the row. BridgeGetFromDB. err: %v", err)
+	}
+
+	return res, nil
+}
 
 // BridgeUpdateToCache gets the bridge from the DB and update the cache.
 func (h *handler) BridgeUpdateToCache(ctx context.Context, id string) error {
@@ -255,85 +348,4 @@ func (h *handler) BridgeIsExist(id string, timeout time.Duration) bool {
 		return false
 	}
 	return true
-}
-
-// BridgeGetFromDB returns bridge from the DB.
-func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridge, error) {
-
-	// prepare
-	q := `
-	select
-		id,
-		asterisk_id,
-		name,
-
-		type,
-		tech,
-		class,
-		creator,
-
-		video_mode,
-		video_source_id,
-
-		channel_ids,
-
-		conference_id,
-		conference_type,
-		conference_join,
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
-	from
-		bridges
-	where
-		id = ?
-	`
-
-	row, err := h.db.Query(q, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. BridgeGet. err: %v", err)
-	}
-	defer row.Close()
-
-	if row.Next() == false {
-		return nil, ErrNotFound
-	}
-
-	var channelIDs string
-	res := &bridge.Bridge{}
-	if err := row.Scan(
-		&res.ID,
-		&res.AsteriskID,
-		&res.Name,
-
-		&res.Type,
-		&res.Tech,
-		&res.Class,
-		&res.Creator,
-
-		&res.VideoMode,
-		&res.VideoSourceID,
-
-		&channelIDs,
-
-		&res.ConferenceID,
-		&res.ConferenceType,
-		&res.ConferenceJoin,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. BridgeGetFromDB. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(channelIDs), &res.ChannelIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the channel_ids. BridgeGetFromDB. err: %v", err)
-	}
-	if res.ChannelIDs == nil {
-		res.ChannelIDs = []string{}
-	}
-
-	return res, nil
 }

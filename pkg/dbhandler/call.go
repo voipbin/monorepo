@@ -52,6 +52,79 @@ const (
 	`
 )
 
+// callGetFromRow gets the call from the row.
+func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
+	var chainedCallIDs string
+	var recordIDs string
+	var data string
+	var source string
+	var destination string
+	var action string
+	res := &call.Call{}
+	if err := row.Scan(
+		&res.ID,
+		&res.UserID,
+		&res.AsteriskID,
+		&res.ChannelID,
+		&res.FlowID,
+		&res.ConfID,
+		&res.Type,
+
+		&res.MasterCallID,
+		&chainedCallIDs,
+		&res.RecordID,
+		&recordIDs,
+
+		&source,
+		&destination,
+
+		&res.Status,
+		&data,
+		&action,
+		&res.Direction,
+		&res.HangupBy,
+		&res.HangupReason,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+
+		&res.TMProgressing,
+		&res.TMRinging,
+		&res.TMHangup,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
+	}
+
+	if err := json.Unmarshal([]byte(chainedCallIDs), &res.ChainedCallIDs); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the chained_call_ids. callGetFromRow. err: %v", err)
+	}
+	if res.ChainedCallIDs == nil {
+		res.ChainedCallIDs = []uuid.UUID{}
+	}
+
+	if err := json.Unmarshal([]byte(recordIDs), &res.RecordIDs); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the record_files. callGetFromRow. err: %v", err)
+	}
+	if res.RecordIDs == nil {
+		res.RecordIDs = []string{}
+	}
+
+	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
+	}
+	if err := json.Unmarshal([]byte(action), &res.Action); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the action. callGetFromRow. err: %v", err)
+	}
+	if err := json.Unmarshal([]byte(source), &res.Source); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the source. callGetFromRow. err: %v", err)
+	}
+	if err := json.Unmarshal([]byte(destination), &res.Destination); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the destination. callGetFromRow. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // CallCreate creates new call record.
 func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	q := `insert into calls(
@@ -195,79 +268,6 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 	res, err := h.callGetFromRow(row)
 	if err != nil {
 		return nil, fmt.Errorf("could not get call. CallGetByChannelID, err: %v", err)
-	}
-
-	return res, nil
-}
-
-// callGetFromRow gets the call from the row.
-func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
-	var chainedCallIDs string
-	var recordIDs string
-	var data string
-	var source string
-	var destination string
-	var action string
-	res := &call.Call{}
-	if err := row.Scan(
-		&res.ID,
-		&res.UserID,
-		&res.AsteriskID,
-		&res.ChannelID,
-		&res.FlowID,
-		&res.ConfID,
-		&res.Type,
-
-		&res.MasterCallID,
-		&chainedCallIDs,
-		&res.RecordID,
-		&recordIDs,
-
-		&source,
-		&destination,
-
-		&res.Status,
-		&data,
-		&action,
-		&res.Direction,
-		&res.HangupBy,
-		&res.HangupReason,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-
-		&res.TMProgressing,
-		&res.TMRinging,
-		&res.TMHangup,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(chainedCallIDs), &res.ChainedCallIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the chained_call_ids. callGetFromRow. err: %v", err)
-	}
-	if res.ChainedCallIDs == nil {
-		res.ChainedCallIDs = []uuid.UUID{}
-	}
-
-	if err := json.Unmarshal([]byte(recordIDs), &res.RecordIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the record_files. callGetFromRow. err: %v", err)
-	}
-	if res.RecordIDs == nil {
-		res.RecordIDs = []string{}
-	}
-
-	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
-	}
-	if err := json.Unmarshal([]byte(action), &res.Action); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the action. callGetFromRow. err: %v", err)
-	}
-	if err := json.Unmarshal([]byte(source), &res.Source); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the source. callGetFromRow. err: %v", err)
-	}
-	if err := json.Unmarshal([]byte(destination), &res.Destination); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the destination. callGetFromRow. err: %v", err)
 	}
 
 	return res, nil
