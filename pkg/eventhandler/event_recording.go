@@ -43,6 +43,7 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 			"stasis":   e.Application,
 			"record":   e.Recording.Name,
 		})
+	log.Debug("Executing eventHandlerRecordingFinished event.")
 
 	recordID := e.Recording.Name
 

@@ -269,7 +269,7 @@ func (h *handler) recordSetStatusEnd(ctx context.Context, id string, timestamp s
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, record.StatusRecording, timestamp, getCurTime(), id)
+	_, err := h.db.Exec(q, record.StatusEnd, timestamp, getCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. recordSetStatusEnd. err: %v", err)
 	}
