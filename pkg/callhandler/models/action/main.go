@@ -89,7 +89,7 @@ type OptionHangup struct {
 
 // OptionPlay defines action play's option.
 type OptionPlay struct {
-	StreamURL []string `json:"stream_url"` // stream url for media
+	StreamURLs []string `json:"stream_urls"` // stream url for media
 }
 
 // OptionRecordStart defines action record's option.

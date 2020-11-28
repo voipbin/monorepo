@@ -439,7 +439,7 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 			&action.Action{
 				ID:     action.IDBegin,
 				Type:   action.TypePlay,
-				Option: []byte(`{"stream_url":["https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"]}`),
+				Option: []byte(`{"stream_urls":["https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"]}`),
 			},
 		},
 	}

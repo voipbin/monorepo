@@ -334,10 +334,15 @@ func (h *callHandler) actionExecutePlay(c *call.Call, a *action.Action) error {
 
 	// create a media string array
 	var medias []string
-	for _, streamURL := range option.StreamURL {
+	for _, streamURL := range option.StreamURLs {
 		media := fmt.Sprintf("sound:%s", streamURL)
 		medias = append(medias, media)
 	}
+	log.WithFields(
+		logrus.Fields{
+			"media": medias,
+		},
+	).Debugf("Sending a request to the asterisk for media playing.")
 
 	// play
 	if err := h.reqHandler.AstChannelPlay(c.AsteriskID, c.ChannelID, act.ID, medias, ""); err != nil {
@@ -527,7 +532,7 @@ func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) e
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
-	recordID := fmt.Sprintf("call_%s_%s", c.ID, getCurTime())
+	recordID := fmt.Sprintf("call_%s_%s", c.ID, getCurTimeRFC3339())
 	channelID := uuid.Must(uuid.NewV4()).String()
 
 	// create a record

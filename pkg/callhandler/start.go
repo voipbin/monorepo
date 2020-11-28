@@ -543,7 +543,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 
 		option := action.OptionPlay{
-			StreamURL: []string{"https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"},
+			StreamURLs: []string{"https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"},
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
