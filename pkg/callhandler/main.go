@@ -116,6 +116,11 @@ func getCurTime() string {
 	return res
 }
 
+// getCurTime return current utc time string
+func getCurTimeRFC3339() string {
+	return time.Now().UTC().Format(time.RFC3339)
+}
+
 // getContextType returns CONTEXT's type
 func getContextType(message interface{}) contextType {
 	if message == nil {
