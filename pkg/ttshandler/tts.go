@@ -13,34 +13,44 @@ const (
 )
 
 // TTSCreate creates audio and upload it to the bucket.
+// Returns downloadable link string
 func (h *ttsHandler) TTSCreate(text string, lang string, gender string) (string, error) {
 
 	// create hash/target
 	filename := h.filenameHashGenerator(text, lang, gender)
 	target := fmt.Sprintf("%s/%s", bucketDirectory, filename)
+	downloadLink := h.createDownloadLink(filename)
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"filename":      filename,
+			"target":        target,
+			"download_link": downloadLink,
+		},
+	)
 
 	// check exists
 	if h.bucketHandler.FileExist(target) == true {
-		logrus.Infof("The file is already exsits.")
-		return target, nil
+		log.Infof("The target file is already exsits.")
+		return downloadLink, nil
 	}
 
 	// create audio
 	err := h.audioHandler.AudioCreate(text, lang, gender, filename)
 	if err != nil {
-		logrus.Errorf("Could not create audio. err: %v", err)
+		log.Errorf("Could not create audio. err: %v", err)
 		return "", fmt.Errorf("could not create audio. err: %v", err)
 	}
 	defer os.Remove(filename)
 
 	// upload to bucket
 	if err := h.bucketHandler.FileUpload(filename, target); err != nil {
-		logrus.Errorf("Could not upload the file to the bucket. err: %v", err)
+		log.Errorf("Could not upload the file to the bucket. err: %v", err)
 		return "", fmt.Errorf("could not upload the file to the bucket. err: %v", err)
 	}
-	logrus.Debugf("Created and uploaded tts wav file to the bucket correctly. target: %s", target)
+	log.Debugf("Created and uploaded tts wav file to the bucket correctly. target: %s", target)
 
-	return target, nil
+	return downloadLink, nil
 }
 
 // filenameHashGenerator generates hashed filename for tts wav file.
@@ -52,4 +62,8 @@ func (h *ttsHandler) filenameHashGenerator(text string, lang string, gender stri
 	bs := sh1.Sum(nil)
 
 	return fmt.Sprintf("%x.wav", bs)
+}
+
+func (h *ttsHandler) createDownloadLink(filename string) string {
+	return fmt.Sprintf("http://%s/v1.0/tts/%s", h.httpListenAddr, filename)
 }

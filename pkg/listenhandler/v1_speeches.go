@@ -20,14 +20,14 @@ func (h *listenHandler) v1SpeechesPost(req *rabbitmqhandler.Request) (*rabbitmqh
 	}
 
 	// create tts
-	filename, err := h.ttshandler.TTSCreate(reqData.Text, reqData.Language, reqData.Gender)
+	url, err := h.ttshandler.TTSCreate(reqData.Text, reqData.Language, reqData.Gender)
 	if err != nil {
 		logrus.Errorf("Could not create a tts audio. err: %v", err)
 		return nil, err
 	}
 
 	resMsg := &response.V1ResponseSpeechesPost{
-		Filename: filename,
+		URL: url,
 	}
 
 	data, err := json.Marshal(resMsg)

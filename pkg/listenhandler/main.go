@@ -25,10 +25,9 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
-	// db         dbhandler.DBHandler
-
-	ttshandler ttshandler.TTSHandler
+	rabbitSock     rabbitmqhandler.Rabbit
+	ttshandler     ttshandler.TTSHandler
+	httpListenAddr string
 }
 
 var (

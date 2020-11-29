@@ -5,10 +5,13 @@ package buckethandler
 import (
 	"context"
 	"io"
+	"io/ioutil"
 	"os"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 )
 
@@ -18,8 +21,10 @@ const (
 
 // BucketHandler intreface for GCP bucket handler
 type BucketHandler interface {
-	FileUpload(src, dest string) error
+	FileGet(target string) ([]byte, error)
+	FileGetDownloadURL(target string, expire time.Time) (string, error)
 	FileExist(target string) bool
+	FileUpload(src, dest string) error
 }
 
 type bucketHandler struct {
@@ -27,12 +32,27 @@ type bucketHandler struct {
 
 	projectID  string
 	bucketName string
+	accessID   string
+	privateKey []byte
 }
 
 // NewBucketHandler create bucket handler
 func NewBucketHandler(credentialPath string, projectID string, bucketName string) BucketHandler {
 
 	ctx := context.Background()
+
+	jsonKey, err := ioutil.ReadFile(credentialPath)
+	if err != nil {
+		logrus.Errorf("Could not read the credential file. err: %v", err)
+		return nil
+	}
+
+	// parse service account
+	conf, err := google.JWTConfigFromJSON(jsonKey)
+	if err != nil {
+		logrus.Errorf("Could not parse the credential file. err: %v", err)
+		return nil
+	}
 
 	// create client
 	client, err := storage.NewClient(ctx, option.WithCredentialsFile(credentialPath))
@@ -46,6 +66,8 @@ func NewBucketHandler(credentialPath string, projectID string, bucketName string
 
 		projectID:  projectID,
 		bucketName: bucketName,
+		accessID:   conf.Email,
+		privateKey: conf.PrivateKey,
 	}
 
 	return h
@@ -98,4 +120,54 @@ func (h *bucketHandler) FileExist(target string) bool {
 	logrus.Debugf("The file is exist. filename: %s, bucket: %s, created: %s", target, attrs.Bucket, attrs.Created)
 
 	return true
+}
+
+// FileGetDownloadURL returns google cloud storage signed url for file download
+func (h *bucketHandler) FileGetDownloadURL(target string, expire time.Time) (string, error) {
+
+	// create opt
+	opts := &storage.SignedURLOptions{
+		Scheme:         storage.SigningSchemeV4,
+		Method:         "GET",
+		GoogleAccessID: h.accessID,
+		PrivateKey:     h.privateKey,
+		Expires:        expire,
+	}
+
+	// get downloadable url
+	u, err := storage.SignedURL(h.bucketName, target, opts)
+	if err != nil {
+		logrus.Errorf("Could not get signed url. err: %v", err)
+		return "", err
+	}
+
+	return u, nil
+}
+
+// FileGetDownloadURL returns google cloud storage signed url for file download
+// The caller must close the returned reader.
+func (h *bucketHandler) FileGet(target string) ([]byte, error) {
+	ctx := context.Background()
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"target": target,
+		},
+	)
+
+	rc, err := h.client.Bucket(h.bucketName).Object(target).NewReader(ctx)
+	if err != nil {
+		log.Errorf("Could not get object info. err: %v", err)
+		return nil, err
+	}
+	defer rc.Close()
+
+	// read the data
+	data, err := ioutil.ReadAll(rc)
+	if err != nil {
+		log.Errorf("Could not read the file. err: %v", err)
+		return nil, err
+	}
+
+	return data, nil
 }
