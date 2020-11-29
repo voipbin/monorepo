@@ -36,5 +36,5 @@ func (r *requestHandler) TTSSpeechesPOST(text, gender, language string) (string,
 		return "", err
 	}
 
-	return resData.Filename, nil
+	return resData.URL, nil
 }

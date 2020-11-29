@@ -23,8 +23,8 @@ func TestTTSSpeechesPOST(t *testing.T) {
 
 		response *rabbitmqhandler.Response
 
-		expectRequest  *rabbitmqhandler.Request
-		expectFilename string
+		expectRequest *rabbitmqhandler.Request
+		expectURL     string
 	}
 
 	tests := []test{
@@ -36,7 +36,7 @@ func TestTTSSpeechesPOST(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"filename": "test.wav"}`),
+				Data:       []byte(`{"url": "https://test.wav"}`),
 			},
 
 			&rabbitmqhandler.Request{
@@ -45,7 +45,7 @@ func TestTTSSpeechesPOST(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"text":"hello world","gender":"male","language":"en-US"}`),
 			},
-			"test.wav",
+			"https://test.wav",
 		},
 	}
 
@@ -59,7 +59,7 @@ func TestTTSSpeechesPOST(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectFilename {
+			if res != tt.expectURL {
 				t.Errorf("Wrong match. expect: ok, got: %v", res)
 			}
 		})

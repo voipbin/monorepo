@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"path/filepath"
-	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -22,10 +20,6 @@ const (
 	redirectTimeoutContext  = "svc-stasis"
 	redirectTimeoutExten    = "s"
 	redirectTimeoutPriority = "1"
-)
-
-const (
-	asteriskGCSFuseMount = "/mnt/media" // gcsfuse mount directory
 )
 
 // setAction sets the action to the call
@@ -476,17 +470,14 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 	}
 
 	// send request for create wav file
-	filename, err := h.reqHandler.TTSSpeechesPOST(option.Text, option.Gender, option.Language)
+	url, err := h.reqHandler.TTSSpeechesPOST(option.Text, option.Gender, option.Language)
 	if err != nil {
 		return fmt.Errorf("could not create tts wav. err: %v", err)
 	}
 
-	// send play request
-	playFilename := fmt.Sprintf("%s/%s", asteriskGCSFuseMount, strings.TrimSuffix(filename, filepath.Ext(filename)))
-
 	// create a media string array
 	var medias []string
-	media := fmt.Sprintf("sound:%s", playFilename)
+	media := fmt.Sprintf("sound:%s", url)
 	medias = append(medias, media)
 
 	// play
