@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,6 +15,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/tts-manager.git/api"
+	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/buckethandler"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/ttshandler"
 )
@@ -40,7 +43,12 @@ var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP 
 var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
 var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name to use")
 
+// ip info
+var httpListenAddr = flag.String("http_listen_addr", "127.0.0.1:80", "the listen http address")
+
 func main() {
+
+	printIPAddresses()
 
 	run()
 	<-chDone
@@ -106,6 +114,10 @@ func run() error {
 		return err
 	}
 
+	if err := runHTTPListen(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -116,7 +128,7 @@ func runListen() error {
 	rabbitSock.Connect()
 
 	// create tts handler
-	ttsHandler := ttshandler.NewTTSHandler(*gcpCredential, *gcpProjectID, *gcpBucketName)
+	ttsHandler := ttshandler.NewTTSHandler(*gcpCredential, *gcpProjectID, *gcpBucketName, *httpListenAddr)
 	if ttsHandler == nil {
 		logrus.Errorf("Could not create tts handler.")
 		return fmt.Errorf("could not create tts handler")
@@ -131,4 +143,50 @@ func runListen() error {
 	}
 
 	return nil
+}
+
+func runHTTPListen() error {
+	// create bucket handler
+	bucketHandler := buckethandler.NewBucketHandler(*gcpCredential, *gcpProjectID, *gcpBucketName)
+	if bucketHandler == nil {
+		logrus.Errorf("Could not create tts handler.")
+		return fmt.Errorf("could not create tts handler")
+
+	}
+
+	// run
+	// We are setting ":80" only here.
+	// this is correct, because listening the service address doesn't work.
+	api.Run(bucketHandler, ":80")
+
+	return nil
+}
+
+func printIPAddresses() {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		logrus.Errorf("Could not get interfaces info. err: %v", err)
+		return
+	}
+
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			logrus.Errorf("Could not get interface's ip address. err: %v", err)
+			continue
+		}
+
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+
+			fmt.Printf("interface: %s, ip: %v\n", i.Name, ip)
+		}
+	}
+
 }

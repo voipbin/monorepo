@@ -5,49 +5,65 @@
 package buckethandler
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
+	time "time"
 )
 
-// MockBucketHandler is a mock of BucketHandler interface.
+// MockBucketHandler is a mock of BucketHandler interface
 type MockBucketHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockBucketHandlerMockRecorder
 }
 
-// MockBucketHandlerMockRecorder is the mock recorder for MockBucketHandler.
+// MockBucketHandlerMockRecorder is the mock recorder for MockBucketHandler
 type MockBucketHandlerMockRecorder struct {
 	mock *MockBucketHandler
 }
 
-// NewMockBucketHandler creates a new mock instance.
+// NewMockBucketHandler creates a new mock instance
 func NewMockBucketHandler(ctrl *gomock.Controller) *MockBucketHandler {
 	mock := &MockBucketHandler{ctrl: ctrl}
 	mock.recorder = &MockBucketHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockBucketHandler) EXPECT() *MockBucketHandlerMockRecorder {
 	return m.recorder
 }
 
-// FileUpload mocks base method.
-func (m *MockBucketHandler) FileUpload(src, dest string) error {
+// FileGet mocks base method
+func (m *MockBucketHandler) FileGet(target string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FileUpload", src, dest)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "FileGet", target)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// FileUpload indicates an expected call of FileUpload.
-func (mr *MockBucketHandlerMockRecorder) FileUpload(src, dest interface{}) *gomock.Call {
+// FileGet indicates an expected call of FileGet
+func (mr *MockBucketHandlerMockRecorder) FileGet(target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileUpload", reflect.TypeOf((*MockBucketHandler)(nil).FileUpload), src, dest)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGet", reflect.TypeOf((*MockBucketHandler)(nil).FileGet), target)
 }
 
-// FileExist mocks base method.
+// FileGetDownloadURL mocks base method
+func (m *MockBucketHandler) FileGetDownloadURL(target string, expire time.Time) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileGetDownloadURL", target, expire)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FileGetDownloadURL indicates an expected call of FileGetDownloadURL
+func (mr *MockBucketHandlerMockRecorder) FileGetDownloadURL(target, expire interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGetDownloadURL", reflect.TypeOf((*MockBucketHandler)(nil).FileGetDownloadURL), target, expire)
+}
+
+// FileExist mocks base method
 func (m *MockBucketHandler) FileExist(target string) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FileExist", target)
@@ -55,8 +71,22 @@ func (m *MockBucketHandler) FileExist(target string) bool {
 	return ret0
 }
 
-// FileExist indicates an expected call of FileExist.
+// FileExist indicates an expected call of FileExist
 func (mr *MockBucketHandlerMockRecorder) FileExist(target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileExist", reflect.TypeOf((*MockBucketHandler)(nil).FileExist), target)
+}
+
+// FileUpload mocks base method
+func (m *MockBucketHandler) FileUpload(src, dest string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileUpload", src, dest)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FileUpload indicates an expected call of FileUpload
+func (mr *MockBucketHandlerMockRecorder) FileUpload(src, dest interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileUpload", reflect.TypeOf((*MockBucketHandler)(nil).FileUpload), src, dest)
 }

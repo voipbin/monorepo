@@ -5,35 +5,34 @@
 package ttshandler
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
-// MockTTSHandler is a mock of TTSHandler interface.
+// MockTTSHandler is a mock of TTSHandler interface
 type MockTTSHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockTTSHandlerMockRecorder
 }
 
-// MockTTSHandlerMockRecorder is the mock recorder for MockTTSHandler.
+// MockTTSHandlerMockRecorder is the mock recorder for MockTTSHandler
 type MockTTSHandlerMockRecorder struct {
 	mock *MockTTSHandler
 }
 
-// NewMockTTSHandler creates a new mock instance.
+// NewMockTTSHandler creates a new mock instance
 func NewMockTTSHandler(ctrl *gomock.Controller) *MockTTSHandler {
 	mock := &MockTTSHandler{ctrl: ctrl}
 	mock.recorder = &MockTTSHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockTTSHandler) EXPECT() *MockTTSHandlerMockRecorder {
 	return m.recorder
 }
 
-// TTSCreate mocks base method.
+// TTSCreate mocks base method
 func (m *MockTTSHandler) TTSCreate(text, lang, gender string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TTSCreate", text, lang, gender)
@@ -42,7 +41,7 @@ func (m *MockTTSHandler) TTSCreate(text, lang, gender string) (string, error) {
 	return ret0, ret1
 }
 
-// TTSCreate indicates an expected call of TTSCreate.
+// TTSCreate indicates an expected call of TTSCreate
 func (mr *MockTTSHandlerMockRecorder) TTSCreate(text, lang, gender interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSCreate", reflect.TypeOf((*MockTTSHandler)(nil).TTSCreate), text, lang, gender)

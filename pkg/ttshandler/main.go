@@ -19,10 +19,12 @@ type ttsHandler struct {
 
 	audioHandler  audiohandler.AudioHandler
 	bucketHandler buckethandler.BucketHandler
+
+	httpListenAddr string
 }
 
 // NewTTSHandler create TTSHandler
-func NewTTSHandler(credentialPath string, projectID, bucketName string) TTSHandler {
+func NewTTSHandler(credentialPath string, projectID, bucketName string, httpListenAddr string) TTSHandler {
 	audioHandler := audiohandler.NewAudioHandler(credentialPath)
 	if audioHandler == nil {
 		logrus.Errorf("Could not create audio handler.")
@@ -40,6 +42,8 @@ func NewTTSHandler(credentialPath string, projectID, bucketName string) TTSHandl
 
 		audioHandler:  audioHandler,
 		bucketHandler: bucketHandler,
+
+		httpListenAddr: httpListenAddr,
 	}
 
 	return h
