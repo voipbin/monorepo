@@ -10,7 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
@@ -168,11 +168,11 @@ func (h *handler) NumberSetByNumber(ctx context.Context, numb *number.Number) er
 	return nil
 }
 
-// RecordGet returns record info from the cache
-func (h *handler) RecordGet(ctx context.Context, id string) (*record.Record, error) {
+// RecordingGet returns record info from the cache
+func (h *handler) RecordingGet(ctx context.Context, id string) (*recording.Recording, error) {
 	key := fmt.Sprintf("record:%s", id)
 
-	var res record.Record
+	var res recording.Recording
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (h *handler) RecordGet(ctx context.Context, id string) (*record.Record, err
 }
 
 // RecordSet sets the record info into the cache.
-func (h *handler) RecordSet(ctx context.Context, record *record.Record) error {
+func (h *handler) RecordSet(ctx context.Context, record *recording.Recording) error {
 	key := fmt.Sprintf("record:%s", record.ID)
 
 	if err := h.setSerialize(ctx, key, record); err != nil {

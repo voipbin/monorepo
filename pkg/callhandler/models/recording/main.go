@@ -1,9 +1,9 @@
-package record
+package recording
 
 import "github.com/gofrs/uuid"
 
-// Record struct represent record information
-type Record struct {
+// Recording struct represent record information
+type Recording struct {
 	ID          string    `json:"id"`
 	UserID      uint64    `json:"user_id"`
 	Type        Type      `json:"type"`

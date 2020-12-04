@@ -41,7 +41,7 @@ func TestConferenceCreate(t *testing.T) {
 				Name:      "test type conference",
 				Detail:    "test type conference detail",
 				CallIDs:   []uuid.UUID{},
-				RecordIDs: []string{},
+				RecordingIDs: []string{},
 			},
 		},
 		{
@@ -60,7 +60,7 @@ func TestConferenceCreate(t *testing.T) {
 				Name:      "test type conference",
 				Detail:    "test type conference detail",
 				CallIDs:   []uuid.UUID{},
-				RecordIDs: []string{},
+				RecordingIDs: []string{},
 			},
 		},
 		{
@@ -71,7 +71,7 @@ func TestConferenceCreate(t *testing.T) {
 				Type:     conference.TypeConference,
 				Name:     "test type conference",
 				Detail:   "test type conference detail",
-				RecordID: "conference_fc5fc020-2c18-11eb-9503-bf85560a5928_2020-04-18T03:22:17.995000",
+				RecordingID: "conference_fc5fc020-2c18-11eb-9503-bf85560a5928_2020-04-18T03:22:17.995000",
 			},
 			&conference.Conference{
 				ID:        uuid.FromStringOrNil("218aa220-2c19-11eb-905f-1b9d4d0da185"),
@@ -80,8 +80,8 @@ func TestConferenceCreate(t *testing.T) {
 				Name:      "test type conference",
 				Detail:    "test type conference detail",
 				CallIDs:   []uuid.UUID{},
-				RecordID:  "conference_fc5fc020-2c18-11eb-9503-bf85560a5928_2020-04-18T03:22:17.995000",
-				RecordIDs: []string{},
+				RecordingID:  "conference_fc5fc020-2c18-11eb-9503-bf85560a5928_2020-04-18T03:22:17.995000",
+				RecordingIDs: []string{},
 			},
 		},
 		{
@@ -92,7 +92,7 @@ func TestConferenceCreate(t *testing.T) {
 				Type:      conference.TypeConference,
 				Name:      "test type conference",
 				Detail:    "test type conference detail",
-				RecordIDs: []string{"conference_fc5fc020-2c18-11eb-9503-bf85560a5928_2020-04-18T03:22:17.995000"},
+				RecordingIDs: []string{"conference_fc5fc020-2c18-11eb-9503-bf85560a5928_2020-04-18T03:22:17.995000"},
 			},
 			&conference.Conference{
 				ID:        uuid.FromStringOrNil("21d33d64-2c19-11eb-be7d-1ff9387bed0e"),
@@ -101,7 +101,7 @@ func TestConferenceCreate(t *testing.T) {
 				Name:      "test type conference",
 				Detail:    "test type conference detail",
 				CallIDs:   []uuid.UUID{},
-				RecordIDs: []string{"conference_fc5fc020-2c18-11eb-9503-bf85560a5928_2020-04-18T03:22:17.995000"},
+				RecordingIDs: []string{"conference_fc5fc020-2c18-11eb-9503-bf85560a5928_2020-04-18T03:22:17.995000"},
 			},
 		},
 	}
@@ -153,8 +153,8 @@ func TestConferenceSetRecordID(t *testing.T) {
 			&conference.Conference{
 				ID:        uuid.FromStringOrNil("2f7b0ee4-2834-11eb-9a6d-5beea5795ea6"),
 				CallIDs:   []uuid.UUID{},
-				RecordID:  "2fb4b446-2834-11eb-b864-1fdb13777d08",
-				RecordIDs: []string{},
+				RecordingID:  "2fb4b446-2834-11eb-b864-1fdb13777d08",
+				RecordingIDs: []string{},
 			},
 		},
 	}

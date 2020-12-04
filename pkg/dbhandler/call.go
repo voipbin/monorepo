@@ -26,8 +26,8 @@ const (
 
 		master_call_id,
 		chained_call_ids,
-		record_id,
-		record_ids,
+		recording_id,
+		recording_ids,
 
 		source,
 		destination,
@@ -55,7 +55,7 @@ const (
 // callGetFromRow gets the call from the row.
 func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	var chainedCallIDs string
-	var recordIDs string
+	var recordingIDs string
 	var data string
 	var source string
 	var destination string
@@ -72,8 +72,8 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 
 		&res.MasterCallID,
 		&chainedCallIDs,
-		&res.RecordID,
-		&recordIDs,
+		&res.RecordingID,
+		&recordingIDs,
 
 		&source,
 		&destination,
@@ -102,11 +102,11 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		res.ChainedCallIDs = []uuid.UUID{}
 	}
 
-	if err := json.Unmarshal([]byte(recordIDs), &res.RecordIDs); err != nil {
+	if err := json.Unmarshal([]byte(recordingIDs), &res.RecordingIDs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the record_files. callGetFromRow. err: %v", err)
 	}
-	if res.RecordIDs == nil {
-		res.RecordIDs = []string{}
+	if res.RecordingIDs == nil {
+		res.RecordingIDs = []string{}
 	}
 
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
@@ -138,8 +138,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 		master_call_id,
 		chained_call_ids,
-		record_id,
-		record_ids,
+		recording_id,
+		recording_ids,
 
 		source,
 		source_target,
@@ -162,14 +162,20 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		?
 		)`
 
+	if c.ChainedCallIDs == nil {
+		c.ChainedCallIDs = []uuid.UUID{}
+	}
 	tmpChainedCallIDs, err := json.Marshal(c.ChainedCallIDs)
 	if err != nil {
 		return fmt.Errorf("could not marshal calls. CallCreate. err: %v", err)
 	}
 
-	tmpRecordIDs, err := json.Marshal(c.RecordIDs)
+	if c.RecordingIDs == nil {
+		c.RecordingIDs = []string{}
+	}
+	tmpRecordingIDs, err := json.Marshal(c.RecordingIDs)
 	if err != nil {
-		return fmt.Errorf("could not marshal the record_ids. CallCreate. err: %v", err)
+		return fmt.Errorf("could not marshal the recording_ids. CallCreate. err: %v", err)
 	}
 
 	tmpSource, err := json.Marshal(c.Source)
@@ -203,8 +209,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 		c.MasterCallID.Bytes(),
 		tmpChainedCallIDs,
-		c.RecordID,
-		tmpRecordIDs,
+		c.RecordingID,
+		tmpRecordingIDs,
 
 		tmpSource,
 		c.Source.Target,
@@ -647,12 +653,12 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 	return nil
 }
 
-// CallSetRecordID sets the given recordID to record_id.
+// CallSetRecordID sets the given recordID to recording_id.
 func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID string) error {
 	// prepare
 	q := `
 	update calls set
-		record_id = ?,
+		recording_id = ?,
 		tm_update = ?
 	where
 		id = ?
@@ -669,13 +675,13 @@ func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID st
 	return nil
 }
 
-// CallAddRecordIDs adds the given record_id into the record_ids.
+// CallAddRecordIDs adds the given recording_id into the recording_ids.
 func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID string) error {
 	// prepare
 	q := `
 	update calls set
-		record_ids = json_array_append(
-			record_ids,
+		recording_ids = json_array_append(
+			recording_ids,
 			'$',
 			?
 		),

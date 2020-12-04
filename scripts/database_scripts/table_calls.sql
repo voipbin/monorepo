@@ -12,9 +12,9 @@ create table calls(
   master_call_id    binary(16),   -- master call id
   chained_call_ids  json,         -- chained call ids
 
-  -- record info
-  record_id   varchar(255),   -- current record id
-  record_ids  json,           -- record ids
+  -- recording info
+  recording_id  varchar(255),   -- current recording id
+  recording_ids json,           -- recording ids
 
   -- source/destination
   source        json, -- source's type, target, number, name, ...

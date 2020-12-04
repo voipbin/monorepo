@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	number "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
-	record "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
+	recording "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
@@ -214,23 +214,23 @@ func (mr *MockCacheHandlerMockRecorder) NumberSetByNumber(ctx, numb interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberSetByNumber", reflect.TypeOf((*MockCacheHandler)(nil).NumberSetByNumber), ctx, numb)
 }
 
-// RecordGet mocks base method
-func (m *MockCacheHandler) RecordGet(ctx context.Context, id string) (*record.Record, error) {
+// RecordingGet mocks base method
+func (m *MockCacheHandler) RecordingGet(ctx context.Context, id string) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordGet", ctx, id)
-	ret0, _ := ret[0].(*record.Record)
+	ret := m.ctrl.Call(m, "RecordingGet", ctx, id)
+	ret0, _ := ret[0].(*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RecordGet indicates an expected call of RecordGet
-func (mr *MockCacheHandlerMockRecorder) RecordGet(ctx, id interface{}) *gomock.Call {
+// RecordingGet indicates an expected call of RecordingGet
+func (mr *MockCacheHandlerMockRecorder) RecordingGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordGet", reflect.TypeOf((*MockCacheHandler)(nil).RecordGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockCacheHandler)(nil).RecordingGet), ctx, id)
 }
 
 // RecordSet mocks base method
-func (m *MockCacheHandler) RecordSet(ctx context.Context, record *record.Record) error {
+func (m *MockCacheHandler) RecordSet(ctx context.Context, record *recording.Recording) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordSet", ctx, record)
 	ret0, _ := ret[0].(error)

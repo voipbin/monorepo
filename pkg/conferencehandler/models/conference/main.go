@@ -20,8 +20,8 @@ type Conference struct {
 
 	CallIDs []uuid.UUID `json:"call_ids"`
 
-	RecordID  string   `json:"record_id"`
-	RecordIDs []string `json:"record_ids"`
+	RecordingID  string   `json:"recording_id"`
+	RecordingIDs []string `json:"recording_ids"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`

@@ -12,7 +12,7 @@ import (
 	action "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	number "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
-	record "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
+	recording "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
@@ -998,105 +998,105 @@ func (mr *MockDBHandlerMockRecorder) ConferenceUpdateToCache(ctx, id interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).ConferenceUpdateToCache), ctx, id)
 }
 
-// RecordCreate mocks base method
-func (m *MockDBHandler) RecordCreate(ctx context.Context, c *record.Record) error {
+// RecordingCreate mocks base method
+func (m *MockDBHandler) RecordingCreate(ctx context.Context, c *recording.Recording) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordCreate", ctx, c)
+	ret := m.ctrl.Call(m, "RecordingCreate", ctx, c)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RecordCreate indicates an expected call of RecordCreate
-func (mr *MockDBHandlerMockRecorder) RecordCreate(ctx, c interface{}) *gomock.Call {
+// RecordingCreate indicates an expected call of RecordingCreate
+func (mr *MockDBHandlerMockRecorder) RecordingCreate(ctx, c interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordCreate", reflect.TypeOf((*MockDBHandler)(nil).RecordCreate), ctx, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingCreate", reflect.TypeOf((*MockDBHandler)(nil).RecordingCreate), ctx, c)
 }
 
-// RecordGet mocks base method
-func (m *MockDBHandler) RecordGet(ctx context.Context, id string) (*record.Record, error) {
+// RecordingGet mocks base method
+func (m *MockDBHandler) RecordingGet(ctx context.Context, id string) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordGet", ctx, id)
-	ret0, _ := ret[0].(*record.Record)
+	ret := m.ctrl.Call(m, "RecordingGet", ctx, id)
+	ret0, _ := ret[0].(*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RecordGet indicates an expected call of RecordGet
-func (mr *MockDBHandlerMockRecorder) RecordGet(ctx, id interface{}) *gomock.Call {
+// RecordingGet indicates an expected call of RecordingGet
+func (mr *MockDBHandlerMockRecorder) RecordingGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordGet", reflect.TypeOf((*MockDBHandler)(nil).RecordGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockDBHandler)(nil).RecordingGet), ctx, id)
 }
 
-// RecordGetFromCache mocks base method
-func (m *MockDBHandler) RecordGetFromCache(ctx context.Context, id string) (*record.Record, error) {
+// RecordingGetFromCache mocks base method
+func (m *MockDBHandler) RecordingGetFromCache(ctx context.Context, id string) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordGetFromCache", ctx, id)
-	ret0, _ := ret[0].(*record.Record)
+	ret := m.ctrl.Call(m, "RecordingGetFromCache", ctx, id)
+	ret0, _ := ret[0].(*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RecordGetFromCache indicates an expected call of RecordGetFromCache
-func (mr *MockDBHandlerMockRecorder) RecordGetFromCache(ctx, id interface{}) *gomock.Call {
+// RecordingGetFromCache indicates an expected call of RecordingGetFromCache
+func (mr *MockDBHandlerMockRecorder) RecordingGetFromCache(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).RecordGetFromCache), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).RecordingGetFromCache), ctx, id)
 }
 
-// RecordGetFromDB mocks base method
-func (m *MockDBHandler) RecordGetFromDB(ctx context.Context, id string) (*record.Record, error) {
+// RecordingGetFromDB mocks base method
+func (m *MockDBHandler) RecordingGetFromDB(ctx context.Context, id string) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordGetFromDB", ctx, id)
-	ret0, _ := ret[0].(*record.Record)
+	ret := m.ctrl.Call(m, "RecordingGetFromDB", ctx, id)
+	ret0, _ := ret[0].(*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RecordGetFromDB indicates an expected call of RecordGetFromDB
-func (mr *MockDBHandlerMockRecorder) RecordGetFromDB(ctx, id interface{}) *gomock.Call {
+// RecordingGetFromDB indicates an expected call of RecordingGetFromDB
+func (mr *MockDBHandlerMockRecorder) RecordingGetFromDB(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).RecordGetFromDB), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).RecordingGetFromDB), ctx, id)
 }
 
-// RecordSetStatus mocks base method
-func (m *MockDBHandler) RecordSetStatus(ctx context.Context, id string, status record.Status, timestamp string) error {
+// RecordingSetStatus mocks base method
+func (m *MockDBHandler) RecordingSetStatus(ctx context.Context, id string, status recording.Status, timestamp string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordSetStatus", ctx, id, status, timestamp)
+	ret := m.ctrl.Call(m, "RecordingSetStatus", ctx, id, status, timestamp)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RecordSetStatus indicates an expected call of RecordSetStatus
-func (mr *MockDBHandlerMockRecorder) RecordSetStatus(ctx, id, status, timestamp interface{}) *gomock.Call {
+// RecordingSetStatus indicates an expected call of RecordingSetStatus
+func (mr *MockDBHandlerMockRecorder) RecordingSetStatus(ctx, id, status, timestamp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordSetStatus", reflect.TypeOf((*MockDBHandler)(nil).RecordSetStatus), ctx, id, status, timestamp)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingSetStatus", reflect.TypeOf((*MockDBHandler)(nil).RecordingSetStatus), ctx, id, status, timestamp)
 }
 
-// RecordSetToCache mocks base method
-func (m *MockDBHandler) RecordSetToCache(ctx context.Context, r *record.Record) error {
+// RecordingSetToCache mocks base method
+func (m *MockDBHandler) RecordingSetToCache(ctx context.Context, r *recording.Recording) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordSetToCache", ctx, r)
+	ret := m.ctrl.Call(m, "RecordingSetToCache", ctx, r)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RecordSetToCache indicates an expected call of RecordSetToCache
-func (mr *MockDBHandlerMockRecorder) RecordSetToCache(ctx, r interface{}) *gomock.Call {
+// RecordingSetToCache indicates an expected call of RecordingSetToCache
+func (mr *MockDBHandlerMockRecorder) RecordingSetToCache(ctx, r interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordSetToCache", reflect.TypeOf((*MockDBHandler)(nil).RecordSetToCache), ctx, r)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingSetToCache", reflect.TypeOf((*MockDBHandler)(nil).RecordingSetToCache), ctx, r)
 }
 
-// RecordUpdateToCache mocks base method
-func (m *MockDBHandler) RecordUpdateToCache(ctx context.Context, id string) error {
+// RecordingUpdateToCache mocks base method
+func (m *MockDBHandler) RecordingUpdateToCache(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordUpdateToCache", ctx, id)
+	ret := m.ctrl.Call(m, "RecordingUpdateToCache", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RecordUpdateToCache indicates an expected call of RecordUpdateToCache
-func (mr *MockDBHandlerMockRecorder) RecordUpdateToCache(ctx, id interface{}) *gomock.Call {
+// RecordingUpdateToCache indicates an expected call of RecordingUpdateToCache
+func (mr *MockDBHandlerMockRecorder) RecordingUpdateToCache(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).RecordUpdateToCache), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).RecordingUpdateToCache), ctx, id)
 }
 
 // NumberGetByNumber mocks base method

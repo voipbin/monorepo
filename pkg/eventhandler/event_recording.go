@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 )
 
@@ -25,7 +25,7 @@ func (h *eventHandler) eventHandlerRecordingStarted(ctx context.Context, evt int
 	recordID := e.Recording.Name
 
 	// update record state to recording
-	if err := h.db.RecordSetStatus(ctx, recordID, record.StatusRecording, string(e.Timestamp)); err != nil {
+	if err := h.db.RecordingSetStatus(ctx, recordID, recording.StatusRecording, string(e.Timestamp)); err != nil {
 		log.Errorf("Could not update the record status to recording. err: %v", err)
 		return err
 	}
@@ -48,7 +48,7 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 	recordID := e.Recording.Name
 
 	// update record state to end
-	if err := h.db.RecordSetStatus(ctx, recordID, record.StatusEnd, string(e.Timestamp)); err != nil {
+	if err := h.db.RecordingSetStatus(ctx, recordID, recording.StatusEnd, string(e.Timestamp)); err != nil {
 		log.Errorf("Could not update the record status to end. err: %v", err)
 		return err
 	}
@@ -56,10 +56,10 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 	// set empty recordID
 	tmpParse := strings.Split(recordID, "_")
 	switch tmpParse[0] {
-	case string(record.TypeCall):
+	case string(recording.TypeCall):
 		h.db.CallSetRecordID(ctx, uuid.FromStringOrNil(tmpParse[1]), "")
 
-	case string(record.TypeConference):
+	case string(recording.TypeConference):
 		h.db.ConferenceSetRecordID(ctx, uuid.FromStringOrNil(tmpParse[1]), "")
 
 	default:

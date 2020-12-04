@@ -26,8 +26,8 @@ const (
 
 		call_ids,
 
-		record_id,
-		record_ids,
+		recording_id,
+		recording_ids,
 
 		coalesce(tm_create, '') as tm_create,
 		coalesce(tm_update, '') as tm_update,
@@ -43,7 +43,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 
 	var data string
 	var calls string
-	var RecordIDs string
+	var RecordingIDs string
 
 	res := &conference.Conference{}
 	if err := row.Scan(
@@ -59,8 +59,8 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 
 		&calls,
 
-		&res.RecordID,
-		&RecordIDs,
+		&res.RecordingID,
+		&RecordingIDs,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -80,11 +80,11 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		res.CallIDs = []uuid.UUID{}
 	}
 
-	if err := json.Unmarshal([]byte(RecordIDs), &res.RecordIDs); err != nil {
+	if err := json.Unmarshal([]byte(RecordingIDs), &res.RecordingIDs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the destination. conferenceGetFromRow. err: %v", err)
 	}
-	if res.RecordIDs == nil {
-		res.RecordIDs = []string{}
+	if res.RecordingIDs == nil {
+		res.RecordingIDs = []string{}
 	}
 
 	return res, nil
@@ -165,14 +165,14 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 		call_ids,
 
-		record_id,
-		record_ids,
+		recording_id,
+		recording_ids,
 
 		tm_create
 	) values(
 		?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, 
+		?,
 		?, ?,
 		?
 		)
@@ -188,9 +188,9 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		return fmt.Errorf("could not marshal calls. ConferenceCreate. err: %v", err)
 	}
 
-	recordIDs, err := json.Marshal(cf.RecordIDs)
+	recordingIDs, err := json.Marshal(cf.RecordingIDs)
 	if err != nil {
-		return fmt.Errorf("could not marshal record_ids. ConferenceCreate. err: %v", err)
+		return fmt.Errorf("could not marshal recording_ids. ConferenceCreate. err: %v", err)
 	}
 
 	_, err = h.db.Exec(q,
@@ -206,8 +206,8 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 		callIDs,
 
-		cf.RecordID,
-		recordIDs,
+		cf.RecordingID,
+		recordingIDs,
 
 		getCurTime(),
 	)
@@ -391,12 +391,12 @@ func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// ConferenceSetRecordID sets the conference's record_id.
+// ConferenceSetRecordID sets the conference's recording_id.
 func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID string) error {
 	// prepare
 	q := `
 	update conferences set
-		record_id = ?,
+		recording_id = ?,
 		tm_update = ?
 	where
 		id = ?
@@ -418,8 +418,8 @@ func (h *handler) ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 	// prepare
 	q := `
 	update conferences set
-		record_ids = json_array_append(
-			record_ids,
+		recording_ids = json_array_append(
+			recording_ids,
 			'$',
 			?
 		),

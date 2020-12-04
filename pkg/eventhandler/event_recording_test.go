@@ -7,7 +7,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -52,7 +52,7 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().RecordSetStatus(gomock.Any(), tt.recordID, record.StatusRecording, tt.timestamp).Return(nil)
+			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recordID, recording.StatusRecording, tt.timestamp).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -102,7 +102,7 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().RecordSetStatus(gomock.Any(), tt.recordID, record.StatusEnd, tt.timestamp).Return(nil)
+			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recordID, recording.StatusEnd, tt.timestamp).Return(nil)
 			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.callID, "").Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
@@ -153,7 +153,7 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
 
-// 			mockDB.EXPECT().RecordSetStatus(gomock.Any(), tt.recordID, record.StatusEnd, tt.timestamp).Return(nil)
+// 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recordID, record.StatusEnd, tt.timestamp).Return(nil)
 // 			mockDB.EXPECT().BridgeSetRecordID(gomock.Any(), tt.bridgeID, "").Return(nil)
 
 // 			if err := h.processEvent(tt.event); err != nil {
