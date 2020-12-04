@@ -8,7 +8,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
@@ -332,9 +332,10 @@ func TestActionExecuteRecordStart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().RecordCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().RecordingCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(nil)
 			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallAddRecordIDs(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -361,7 +362,7 @@ func TestActionExecuteRecordStop(t *testing.T) {
 		name   string
 		call   *call.Call
 		action *action.Action
-		record *record.Record
+		record *recording.Recording
 	}
 
 	tests := []test{
@@ -371,13 +372,13 @@ func TestActionExecuteRecordStop(t *testing.T) {
 				ID:         uuid.FromStringOrNil("4dde92d0-2b9e-11eb-ad28-f732fd0afed7"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "5293419a-2b9e-11eb-bfa6-97a4312177f2",
-				RecordID:   "call_4dde92d0-2b9e-11eb-ad28-f732fd0afed7_2020-04-18T03:22:17.995000",
+				RecordingID:   "call_4dde92d0-2b9e-11eb-ad28-f732fd0afed7_2020-04-18T03:22:17.995000",
 			},
 			&action.Action{
 				Type: action.TypeRecordStop,
 				ID:   uuid.FromStringOrNil("4a3925dc-2b9e-11eb-abb3-d759c4b283d0"),
 			},
-			&record.Record{
+			&recording.Recording{
 				ID:         "call_4dde92d0-2b9e-11eb-ad28-f732fd0afed7_2020-04-18T03:22:17.995000",
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "fe9354d8-2bb9-11eb-8ad0-9764de384853",
@@ -388,7 +389,7 @@ func TestActionExecuteRecordStop(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().RecordGet(gomock.Any(), tt.call.RecordID).Return(tt.record, nil)
+			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.call.RecordingID).Return(tt.record, nil)
 			mockReq.EXPECT().AstChannelHangup(tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
 			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
 

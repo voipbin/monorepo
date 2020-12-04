@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
@@ -99,14 +99,14 @@ type DBHandler interface {
 	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
 	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error
 
-	// records
-	RecordCreate(ctx context.Context, c *record.Record) error
-	RecordGet(ctx context.Context, id string) (*record.Record, error)
-	RecordGetFromCache(ctx context.Context, id string) (*record.Record, error)
-	RecordGetFromDB(ctx context.Context, id string) (*record.Record, error)
-	RecordSetStatus(ctx context.Context, id string, status record.Status, timestamp string) error
-	RecordSetToCache(ctx context.Context, r *record.Record) error
-	RecordUpdateToCache(ctx context.Context, id string) error
+	// recordings
+	RecordingCreate(ctx context.Context, c *recording.Recording) error
+	RecordingGet(ctx context.Context, id string) (*recording.Recording, error)
+	RecordingGetFromCache(ctx context.Context, id string) (*recording.Recording, error)
+	RecordingGetFromDB(ctx context.Context, id string) (*recording.Recording, error)
+	RecordingSetStatus(ctx context.Context, id string, status recording.Status, timestamp string) error
+	RecordingSetToCache(ctx context.Context, r *recording.Recording) error
+	RecordingUpdateToCache(ctx context.Context, id string) error
 
 	// numbers
 	NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error)

@@ -189,7 +189,7 @@ func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel, da
 func (h *callHandler) startHandlerContextRecording(cn *channel.Channel, data map[string]interface{}) error {
 	logrus.Infof("Executing startHandlerContextRecording. channel: %s", cn.ID)
 
-	name := data["record_id"].(string)
+	name := data["recording_id"].(string)
 	format := data["format"].(string)
 	duration, _ := strconv.Atoi(data["duration"].(string))
 	silence, _ := strconv.Atoi(data["end_of_silence"].(string))

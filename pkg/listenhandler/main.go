@@ -33,10 +33,11 @@ type listenHandler struct {
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+	regAny  = "(.*)"
 
 	// v1
 	// asterisks
-	regV1AsterisksIDChannelsIDHealth = regexp.MustCompile("/v1/asterisks/(.*)/channels/(.*)/health-check")
+	regV1AsterisksIDChannelsIDHealth = regexp.MustCompile("/v1/asterisks/" + regAny + "/channels/" + regAny + "/health-check")
 
 	// calls
 	regV1Calls                 = regexp.MustCompile("/v1/calls")
@@ -50,6 +51,9 @@ var (
 	regV1ConferencesIDCallsID = regexp.MustCompile("/v1/conferences/" + regUUID + "/calls/" + regUUID)
 	regV1ConferencesID        = regexp.MustCompile("/v1/conferences/" + regUUID)
 	regV1Conferences          = regexp.MustCompile("/v1/conferences")
+
+	// recordings
+	regV1RecordingsID = regexp.MustCompile("/v1/recordings/" + regAny)
 )
 
 var (
@@ -234,6 +238,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConferencesPost(m)
 		requestType = "/v1/conferences"
+
+	//////////////
+	// recordings
+	//////////////
+	// GET /recordings/<recording-id>
+	case regV1RecordingsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1RecordingsIDGet(m)
+		requestType = "/v1/recordings"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

@@ -10,7 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/record"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 )
@@ -526,26 +526,26 @@ func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) e
 	recordID := fmt.Sprintf("call_%s_%s", c.ID, getCurTimeRFC3339())
 	channelID := uuid.Must(uuid.NewV4()).String()
 
-	// create a record
-	record := &record.Record{
+	// create a recording
+	rec := &recording.Recording{
 		ID:          recordID,
 		UserID:      c.UserID,
-		Type:        record.TypeCall,
+		Type:        recording.TypeCall,
 		ReferenceID: c.ID,
-		Status:      record.StatusInitiating,
+		Status:      recording.StatusInitiating,
 		Format:      format,
 
 		AsteriskID: c.AsteriskID,
 		ChannelID:  channelID,
 	}
 
-	if err := h.db.RecordCreate(ctx, record); err != nil {
+	if err := h.db.RecordingCreate(ctx, rec); err != nil {
 		log.Errorf("Could not create the record. err: %v", err)
 		return fmt.Errorf("could not create the record. err: %v", err)
 	}
 
 	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s,record_id=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
+	appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
 		contextRecording,
 		c.ID,
 		recordID,
@@ -556,7 +556,7 @@ func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) e
 	)
 
 	// create a snoop channel
-	if err := h.reqHandler.AstChannelCreateSnoop(record.AsteriskID, c.ChannelID, record.ChannelID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionNone); err != nil {
+	if err := h.reqHandler.AstChannelCreateSnoop(rec.AsteriskID, c.ChannelID, rec.ChannelID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionNone); err != nil {
 		log.Errorf("Could not create a snoop channel for recroding. err: %v", err)
 		return fmt.Errorf("could not create snoop chanel for recrod. err: %v", err)
 	}
@@ -565,6 +565,12 @@ func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) e
 	if err := h.db.CallSetRecordID(ctx, c.ID, recordID); err != nil {
 		log.Errorf("Could not set the record id to the call. err: %v", err)
 		return fmt.Errorf("could not set the record id to the call. err: %v", err)
+	}
+
+	// add the recording
+	if err := h.db.CallAddRecordIDs(ctx, c.ID, recordID); err != nil {
+		log.Errorf("Could not add the record id to the call. err: %v", err)
+		return fmt.Errorf("could not add the record id to the call. err: %v", err)
 	}
 
 	// send next action request
@@ -604,7 +610,7 @@ func (h *callHandler) actionExecuteRecordStop(c *call.Call, a *action.Action) er
 	// setting the recordid will be done with RecordingFinished event.
 
 	// get record
-	record, err := h.db.RecordGet(ctx, c.RecordID)
+	record, err := h.db.RecordingGet(ctx, c.RecordingID)
 	if err != nil {
 		log.Errorf("Could not get record info. But keep continue to next. err: %v", err)
 	} else {

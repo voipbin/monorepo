@@ -1,4 +1,4 @@
-create table records(
+create table recordings(
   -- identity
   id                varchar(255),   -- recording's id(name)
   user_id           integer,        -- user id
@@ -22,5 +22,5 @@ create table records(
   primary key(id)
 );
 
-create index idx_records_user_id on records(user_id);
-create index idx_records_tm_start on records(tm_start);
+create index idx_recordings_user_id on recordings(user_id);
+create index idx_recordings_tm_start on recordings(tm_start);

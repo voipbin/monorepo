@@ -15,8 +15,8 @@ create table conferences(
   call_ids   json, -- calls in the conference
 
   -- record info
-  record_id   varchar(255),   -- current record id
-  record_ids  json,           -- record ids
+  recording_id   varchar(255),   -- current record id
+  recording_ids  json,           -- record ids
 
   -- timestamps
   tm_create datetime(6),  --
