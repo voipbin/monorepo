@@ -5,8 +5,6 @@
 package servicehandler
 
 import (
-	reflect "reflect"
-
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
@@ -14,32 +12,33 @@ import (
 	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	flow "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	reflect "reflect"
 )
 
-// MockServiceHandler is a mock of ServiceHandler interface.
+// MockServiceHandler is a mock of ServiceHandler interface
 type MockServiceHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceHandlerMockRecorder
 }
 
-// MockServiceHandlerMockRecorder is the mock recorder for MockServiceHandler.
+// MockServiceHandlerMockRecorder is the mock recorder for MockServiceHandler
 type MockServiceHandlerMockRecorder struct {
 	mock *MockServiceHandler
 }
 
-// NewMockServiceHandler creates a new mock instance.
+// NewMockServiceHandler creates a new mock instance
 func NewMockServiceHandler(ctrl *gomock.Controller) *MockServiceHandler {
 	mock := &MockServiceHandler{ctrl: ctrl}
 	mock.recorder = &MockServiceHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 	return m.recorder
 }
 
-// AuthLogin mocks base method.
+// AuthLogin mocks base method
 func (m *MockServiceHandler) AuthLogin(username, password string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AuthLogin", username, password)
@@ -48,13 +47,13 @@ func (m *MockServiceHandler) AuthLogin(username, password string) (string, error
 	return ret0, ret1
 }
 
-// AuthLogin indicates an expected call of AuthLogin.
+// AuthLogin indicates an expected call of AuthLogin
 func (mr *MockServiceHandlerMockRecorder) AuthLogin(username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthLogin", reflect.TypeOf((*MockServiceHandler)(nil).AuthLogin), username, password)
 }
 
-// CallCreate mocks base method.
+// CallCreate mocks base method
 func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallCreate", u, flowID, source, destination)
@@ -63,13 +62,13 @@ func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, 
 	return ret0, ret1
 }
 
-// CallCreate indicates an expected call of CallCreate.
+// CallCreate indicates an expected call of CallCreate
 func (mr *MockServiceHandlerMockRecorder) CallCreate(u, flowID, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockServiceHandler)(nil).CallCreate), u, flowID, source, destination)
 }
 
-// CallGet mocks base method.
+// CallGet mocks base method
 func (m *MockServiceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGet", u, callID)
@@ -78,13 +77,13 @@ func (m *MockServiceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call
 	return ret0, ret1
 }
 
-// CallGet indicates an expected call of CallGet.
+// CallGet indicates an expected call of CallGet
 func (mr *MockServiceHandlerMockRecorder) CallGet(u, callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGet", reflect.TypeOf((*MockServiceHandler)(nil).CallGet), u, callID)
 }
 
-// CallGets mocks base method.
+// CallGets mocks base method
 func (m *MockServiceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGets", u, size, token)
@@ -93,13 +92,13 @@ func (m *MockServiceHandler) CallGets(u *user.User, size uint64, token string) (
 	return ret0, ret1
 }
 
-// CallGets indicates an expected call of CallGets.
+// CallGets indicates an expected call of CallGets
 func (mr *MockServiceHandlerMockRecorder) CallGets(u, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockServiceHandler)(nil).CallGets), u, size, token)
 }
 
-// ConferenceCreate mocks base method.
+// ConferenceCreate mocks base method
 func (m *MockServiceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceCreate", u, confType, name, detail)
@@ -108,13 +107,13 @@ func (m *MockServiceHandler) ConferenceCreate(u *user.User, confType conference.
 	return ret0, ret1
 }
 
-// ConferenceCreate indicates an expected call of ConferenceCreate.
+// ConferenceCreate indicates an expected call of ConferenceCreate
 func (mr *MockServiceHandlerMockRecorder) ConferenceCreate(u, confType, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceCreate), u, confType, name, detail)
 }
 
-// ConferenceDelete mocks base method.
+// ConferenceDelete mocks base method
 func (m *MockServiceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceDelete", u, confID)
@@ -122,13 +121,28 @@ func (m *MockServiceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) er
 	return ret0
 }
 
-// ConferenceDelete indicates an expected call of ConferenceDelete.
+// ConferenceDelete indicates an expected call of ConferenceDelete
 func (mr *MockServiceHandlerMockRecorder) ConferenceDelete(u, confID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceDelete", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceDelete), u, confID)
 }
 
-// ConferenceGets mocks base method.
+// ConferenceGet mocks base method
+func (m *MockServiceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceGet", u, id)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceGet indicates an expected call of ConferenceGet
+func (mr *MockServiceHandlerMockRecorder) ConferenceGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGet", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGet), u, id)
+}
+
+// ConferenceGets mocks base method
 func (m *MockServiceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGets", u, size, token)
@@ -137,13 +151,13 @@ func (m *MockServiceHandler) ConferenceGets(u *user.User, size uint64, token str
 	return ret0, ret1
 }
 
-// ConferenceGets indicates an expected call of ConferenceGets.
+// ConferenceGets indicates an expected call of ConferenceGets
 func (mr *MockServiceHandlerMockRecorder) ConferenceGets(u, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGets), u, size, token)
 }
 
-// FlowCreate mocks base method.
+// FlowCreate mocks base method
 func (m *MockServiceHandler) FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowCreate", u, id, name, detail, actions, persist)
@@ -152,13 +166,13 @@ func (m *MockServiceHandler) FlowCreate(u *user.User, id uuid.UUID, name, detail
 	return ret0, ret1
 }
 
-// FlowCreate indicates an expected call of FlowCreate.
+// FlowCreate indicates an expected call of FlowCreate
 func (mr *MockServiceHandlerMockRecorder) FlowCreate(u, id, name, detail, actions, persist interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockServiceHandler)(nil).FlowCreate), u, id, name, detail, actions, persist)
 }
 
-// FlowGet mocks base method.
+// FlowGet mocks base method
 func (m *MockServiceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGet", u, id)
@@ -167,13 +181,13 @@ func (m *MockServiceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, er
 	return ret0, ret1
 }
 
-// FlowGet indicates an expected call of FlowGet.
+// FlowGet indicates an expected call of FlowGet
 func (mr *MockServiceHandlerMockRecorder) FlowGet(u, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockServiceHandler)(nil).FlowGet), u, id)
 }
 
-// FlowGetsByUserID mocks base method.
+// FlowGetsByUserID mocks base method
 func (m *MockServiceHandler) FlowGetsByUserID(u *user.User, pageToken string, pageSize uint64) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGetsByUserID", u, pageToken, pageSize)
@@ -182,13 +196,28 @@ func (m *MockServiceHandler) FlowGetsByUserID(u *user.User, pageToken string, pa
 	return ret0, ret1
 }
 
-// FlowGetsByUserID indicates an expected call of FlowGetsByUserID.
+// FlowGetsByUserID indicates an expected call of FlowGetsByUserID
 func (mr *MockServiceHandlerMockRecorder) FlowGetsByUserID(u, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetsByUserID", reflect.TypeOf((*MockServiceHandler)(nil).FlowGetsByUserID), u, pageToken, pageSize)
 }
 
-// UserCreate mocks base method.
+// RecordingGet mocks base method
+func (m *MockServiceHandler) RecordingGet(u *user.User, id string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingGet", u, id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingGet indicates an expected call of RecordingGet
+func (mr *MockServiceHandlerMockRecorder) RecordingGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockServiceHandler)(nil).RecordingGet), u, id)
+}
+
+// UserCreate mocks base method
 func (m *MockServiceHandler) UserCreate(username, password string, permission uint64) (*user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserCreate", username, password, permission)
@@ -197,13 +226,13 @@ func (m *MockServiceHandler) UserCreate(username, password string, permission ui
 	return ret0, ret1
 }
 
-// UserCreate indicates an expected call of UserCreate.
+// UserCreate indicates an expected call of UserCreate
 func (mr *MockServiceHandlerMockRecorder) UserCreate(username, password, permission interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserCreate", reflect.TypeOf((*MockServiceHandler)(nil).UserCreate), username, password, permission)
 }
 
-// UserGet mocks base method.
+// UserGet mocks base method
 func (m *MockServiceHandler) UserGet(userID uint64) (*user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserGet", userID)
@@ -212,13 +241,13 @@ func (m *MockServiceHandler) UserGet(userID uint64) (*user.User, error) {
 	return ret0, ret1
 }
 
-// UserGet indicates an expected call of UserGet.
+// UserGet indicates an expected call of UserGet
 func (mr *MockServiceHandlerMockRecorder) UserGet(userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGet", reflect.TypeOf((*MockServiceHandler)(nil).UserGet), userID)
 }
 
-// UserGets mocks base method.
+// UserGets mocks base method
 func (m *MockServiceHandler) UserGets() ([]*user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserGets")
@@ -227,7 +256,7 @@ func (m *MockServiceHandler) UserGets() ([]*user.User, error) {
 	return ret0, ret1
 }
 
-// UserGets indicates an expected call of UserGets.
+// UserGets indicates an expected call of UserGets
 func (mr *MockServiceHandlerMockRecorder) UserGets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGets", reflect.TypeOf((*MockServiceHandler)(nil).UserGets))

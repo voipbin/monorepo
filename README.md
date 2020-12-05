@@ -15,9 +15,11 @@ Usage of ./api-manager:
   -rabbit_exchange_delay string
         rabbitmq exchange name for delayed messaging. (default "bin-manager.delay")
   -rabbit_queue_call string
-        rabbitmq queue name for request listen (default "bin-manager.call-manager.request")
+        rabbitmq queue name for call request (default "bin-manager.call-manager.request")
   -rabbit_queue_flow string
         rabbitmq queue name for flow request (default "bin-manager.flow-manager.request")
+  -rabbit_queue_storage string
+        rabbitmq queue name for storage request (default "bin-manager.storage-manager.request")
   -redis_addr string
         redis address. (default "127.0.0.1:6379")
   -redis_db int
@@ -27,7 +29,7 @@ Usage of ./api-manager:
   -ssl_cert string
         Cert key file for ssl connection. (default "./etc/ssl/cert.pem")
   -ssl_private string
-        Private key file for ssl connection. (default "./etc/ssl/prikey.pem")```
+        Private key file for ssl connection. (default "./etc/ssl/prikey.pem")
 ```
 
 # SSL
@@ -44,6 +46,7 @@ Usage of ./api-manager:
       -rabbit_exchange_delay bin-manager.delay \
       -rabbit_queue_call bin-manager.call-manager.request \
       -rabbit_queue_flow bin-manager.flow-manager.request \
+      -rabbit_queue_storage bin-manager.storage-manager.request \
       -redis_addr 10.164.15.220:6379 \
       -redis_db 1
 ```
@@ -62,7 +65,7 @@ $ curl -k -X POST https://localhost:443/v1.0/calls\?token=eyJhbGciOiJIUzI1NiIsIn
 ```
 
 ## SWAGGER test
-Access to 
+Access to
 ```
 https://api.voipbin.net/swagger/index.html
 ```

@@ -17,7 +17,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
 )
@@ -95,7 +94,6 @@ func TestFlowsIDGET(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
@@ -146,7 +144,6 @@ func TestFlowsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("requestHandler", mockReq)
 				c.Set(api.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})

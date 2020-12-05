@@ -6,36 +6,35 @@ package cachehandler
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	reflect "reflect"
 )
 
-// MockCacheHandler is a mock of CacheHandler interface.
+// MockCacheHandler is a mock of CacheHandler interface
 type MockCacheHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockCacheHandlerMockRecorder
 }
 
-// MockCacheHandlerMockRecorder is the mock recorder for MockCacheHandler.
+// MockCacheHandlerMockRecorder is the mock recorder for MockCacheHandler
 type MockCacheHandlerMockRecorder struct {
 	mock *MockCacheHandler
 }
 
-// NewMockCacheHandler creates a new mock instance.
+// NewMockCacheHandler creates a new mock instance
 func NewMockCacheHandler(ctrl *gomock.Controller) *MockCacheHandler {
 	mock := &MockCacheHandler{ctrl: ctrl}
 	mock.recorder = &MockCacheHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
 }
 
-// Connect mocks base method.
+// Connect mocks base method
 func (m *MockCacheHandler) Connect() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Connect")
@@ -43,13 +42,13 @@ func (m *MockCacheHandler) Connect() error {
 	return ret0
 }
 
-// Connect indicates an expected call of Connect.
+// Connect indicates an expected call of Connect
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
 }
 
-// UserGet mocks base method.
+// UserGet mocks base method
 func (m *MockCacheHandler) UserGet(arg0 context.Context, arg1 uint64) (*user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserGet", arg0, arg1)
@@ -58,13 +57,13 @@ func (m *MockCacheHandler) UserGet(arg0 context.Context, arg1 uint64) (*user.Use
 	return ret0, ret1
 }
 
-// UserGet indicates an expected call of UserGet.
+// UserGet indicates an expected call of UserGet
 func (mr *MockCacheHandlerMockRecorder) UserGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGet", reflect.TypeOf((*MockCacheHandler)(nil).UserGet), arg0, arg1)
 }
 
-// UserSet mocks base method.
+// UserSet mocks base method
 func (m *MockCacheHandler) UserSet(arg0 context.Context, arg1 *user.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserSet", arg0, arg1)
@@ -72,7 +71,7 @@ func (m *MockCacheHandler) UserSet(arg0 context.Context, arg1 *user.User) error 
 	return ret0
 }
 
-// UserSet indicates an expected call of UserSet.
+// UserSet indicates an expected call of UserSet
 func (mr *MockCacheHandlerMockRecorder) UserSet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserSet", reflect.TypeOf((*MockCacheHandler)(nil).UserSet), arg0, arg1)
