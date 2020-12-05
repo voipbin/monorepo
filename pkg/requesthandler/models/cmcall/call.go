@@ -11,12 +11,18 @@ import (
 type Call struct {
 	// identity
 	ID         uuid.UUID `json:"id"`
+	UserID     uint64    `json:"user_id"`
 	AsteriskID string    `json:"asterisk_id"`
 	ChannelID  string    `json:"channel_id"`
-	UserID     uint64    `json:"user_id"`
 	FlowID     uuid.UUID `json:"flow_id"` // flow id
 	ConfID     uuid.UUID `json:"conf_id"` // currently joined conference id
-	Type       Type      `json:"type"`
+	Type       Type      `json:"type"`    // call type
+
+	// etc info
+	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
+	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // chained call ids
+	RecordingID    string      `json:"recording_id"`     // recording id(current)
+	RecordingIDs   []string    `json:"recording_ids"`    // recording ids
 
 	// source/destination
 	Source      Address `json:"source"`
@@ -119,6 +125,11 @@ func (h *Call) ConvertCall() *call.Call {
 		FlowID: h.FlowID,
 		ConfID: h.ConfID,
 		Type:   call.Type(h.Type),
+
+		MasterCallID:   h.MasterCallID,
+		ChainedCallIDs: h.ChainedCallIDs,
+		RecordingID:    h.RecordingID,
+		RecordingIDs:   h.RecordingIDs,
 
 		Source: call.Address{
 			Type:   call.AddressType(h.Source.Type),

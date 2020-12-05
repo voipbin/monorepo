@@ -9,7 +9,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
 )
 
@@ -136,11 +135,18 @@ func conferencesPOST(c *gin.Context) {
 // @Router /v1.0/conferences/{id} [get]
 func conferencesIDGET(c *gin.Context) {
 	// get id
-	ID := uuid.FromStringOrNil(c.Params.ByName("id"))
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
-	// send a request to call
-	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
-	res, err := requestHandler.CMConferenceGet(ID)
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+
+	servicehandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := servicehandler.ConferenceGet(&u, id)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
 		return
@@ -159,12 +165,21 @@ func conferencesIDGET(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/conferences/{id} [delete]
 func conferencesIDDELETE(c *gin.Context) {
-	// get id
-	ID := uuid.FromStringOrNil(c.Params.ByName("id"))
 
-	// send a request to call
-	requestHandler := c.MustGet("requestHandler").(requesthandler.RequestHandler)
-	if err := requestHandler.CMConferenceDelete(ID); err != nil {
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+
+	servicehandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	err := servicehandler.ConferenceDelete(&u, id)
+	if err != nil {
 		c.AbortWithStatus(400)
 		return
 	}

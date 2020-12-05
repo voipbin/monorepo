@@ -32,9 +32,10 @@ var sslCert = flag.String("ssl_cert", "./etc/ssl/cert.pem", "Cert key file for s
 var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
 
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
-var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
+var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for call request")
+var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
+var rabbitQueueStorageRequest = flag.String("rabbit_queue_storage", "bin-manager.storage-manager.request", "rabbitmq queue name for storage request")
 
 // args for redis
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
@@ -76,7 +77,7 @@ func main() {
 	sock.Connect()
 
 	// create servicehandler
-	requestHandler := requesthandler.NewRequestHandler(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest)
+	requestHandler := requesthandler.NewRequestHandler(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest, *rabbitQueueStorageRequest)
 	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db)
 
 	app := gin.Default()
@@ -104,9 +105,6 @@ func main() {
 		c.Set(modelsApi.OBJServiceHandler, serviceHandler)
 		c.Next()
 	})
-
-	// injects
-	app.Use(requesthandler.Inject(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest))
 
 	// set jwt middleware
 	app.Use(middleware.JWTMiddleware())

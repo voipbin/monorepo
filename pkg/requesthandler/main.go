@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -16,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -62,9 +62,12 @@ type resource string
 const (
 	resourceCallCall       resource = "call/calls"
 	resourceCallConference resource = "call/conferences"
+	resourceCallRecordings resource = "call/recordings"
 
-	resourceFlowActions resource = "flows/actions"
-	resourceFlowFlows   resource = "flows"
+	resourceFlowActions resource = "flow/flows/actions"
+	resourceFlowFlows   resource = "flow/flows"
+
+	resourceStorageRecording resource = "storage/recordings"
 )
 
 func init() {
@@ -88,10 +91,18 @@ type RequestHandler interface {
 	CMConferenceDelete(conferenceID uuid.UUID) error
 	CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error)
 
+	// recordings
+	CMRecordingGet(id string) (*cmrecording.Recording, error)
+
+	// flow
 	// flow actions
 	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error)
 	FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error)
 	FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
+
+	// storage
+	// recording
+	STRecordingGet(id string) (string, error)
 }
 
 type requestHandler struct {
@@ -99,28 +110,20 @@ type requestHandler struct {
 
 	exchangeDelay string
 
-	queueCall string
-	queueFlow string
-}
-
-// Inject injects requesthandler to gin context
-func Inject(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		requestHandler := NewRequestHandler(sock, exchangeDelay, queueCall, queueFlow)
-
-		c.Set("requestHandler", requestHandler)
-		c.Next()
-	}
+	queueCall    string
+	queueFlow    string
+	queueStorage string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
 		exchangeDelay: exchangeDelay,
 		queueCall:     queueCall,
 		queueFlow:     queueFlow,
+		queueStorage:  queueStorage,
 	}
 
 	return h
@@ -203,6 +206,52 @@ func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.Requ
 
 	default:
 		res, err := r.sendRequest(ctx, r.queueCall, resource, req)
+		if err != nil {
+			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+		}
+
+		log.WithFields(log.Fields{
+			"method":      method,
+			"uri":         uri,
+			"status_code": res.StatusCode,
+		}).Debugf("Received result. data: %s", res.Data)
+		return res, nil
+	}
+}
+
+// sendRequestStorage send a request to the storage-manager and return the response
+// timeout second
+// delayed millisecond
+func (r *requestHandler) sendRequestStorage(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+	log.WithFields(log.Fields{
+		"method":    method,
+		"uri":       uri,
+		"data_type": dataType,
+		"delayed":   delayed,
+	}).Debugf("Sending request to call-manager. data: %s", data)
+
+	// creat a request message
+	req := &rabbitmqhandler.Request{
+		URI:      uri,
+		Method:   method,
+		DataType: dataType,
+		Data:     data,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	defer cancel()
+
+	switch {
+	case delayed > 0:
+		// send scheduled message.
+		// we don't expect the response message here.
+		if err := r.sendDelayedRequest(ctx, r.exchangeDelay, r.queueStorage, resource, delayed, req); err != nil {
+			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
+		}
+		return nil, nil
+
+	default:
+		res, err := r.sendRequest(ctx, r.queueStorage, resource, req)
 		if err != nil {
 			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 		}

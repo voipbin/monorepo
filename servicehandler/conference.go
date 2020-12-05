@@ -12,6 +12,33 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 )
 
+// ConferenceGet gets the conference.
+// It returns conference info if it succeed.
+func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"user":       u.ID,
+		"username":   u.Username,
+		"conference": id,
+	})
+	log.Debugf("Get conference. conference: %s", id)
+
+	// get conference
+	res, err := h.reqHandler.CMConferenceGet(id)
+	if err != nil {
+		log.Infof("Could not get calls info. err: %v", err)
+		return nil, err
+	}
+	c := res.Convert()
+
+	// check permission
+	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
+		log.Info("The user has no permission for this conference.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	return c, nil
+}
+
 // ConferenceGets gets the list of conference.
 // It returns list of calls if it succeed.
 func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error) {

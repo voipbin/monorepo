@@ -13,6 +13,12 @@ type Call struct {
 	ConfID uuid.UUID `json:"conf_id"` // currently joined conference id
 	Type   Type      `json:"type"`
 
+	// etc info
+	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
+	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // chained call ids
+	RecordingID    string      `json:"recording_id"`     // recording id(current)
+	RecordingIDs   []string    `json:"recording_ids"`    // recording ids
+
 	// source/destination
 	Source      Address `json:"source"`
 	Destination Address `json:"destination"`

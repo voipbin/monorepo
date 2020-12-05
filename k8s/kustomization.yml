@@ -5,7 +5,6 @@ commonLabels:
   app: api-manager
 
 resources:
-  - namespace.yml
   - deployment.yml
   - service.yml
 

@@ -31,12 +31,16 @@ type ServiceHandler interface {
 	// conference handlers
 	ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error)
 	ConferenceDelete(u *user.User, confID uuid.UUID) error
+	ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error)
 
 	// flow handlers
 	FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
 	FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 	FlowGetsByUserID(u *user.User, pageToken string, pageSize uint64) ([]*flow.Flow, error)
+
+	// recording handlers
+	RecordingGet(u *user.User, id string) (string, error)
 
 	// user handlers
 	UserCreate(username, password string, permission uint64) (*user.User, error)
@@ -61,8 +65,8 @@ func NewServiceHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhan
 var ReqHandler requesthandler.RequestHandler
 
 // Setup initiates service
-func Setup(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow string) error {
-	ReqHandler = requesthandler.NewRequestHandler(sock, exchangeDelay, queueCall, queueFlow)
+func Setup(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage string) error {
+	ReqHandler = requesthandler.NewRequestHandler(sock, exchangeDelay, queueCall, queueFlow, queueStorage)
 	return nil
 }
 
