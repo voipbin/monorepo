@@ -62,7 +62,8 @@ func (h *conferenceHandler) startConference(req *conference.Conference) (*confer
 		Data:    req.Data,
 		Timeout: req.Timeout,
 
-		CallIDs: []uuid.UUID{},
+		CallIDs:      []uuid.UUID{},
+		RecordingIDs: []string{},
 	}
 	log.Debugf("Creating a conference. conference: %v", cf)
 
