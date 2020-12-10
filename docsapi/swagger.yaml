@@ -11,35 +11,55 @@ definitions:
   call.Address:
     properties:
       name:
-        description: parsed name
+        description: Name.
         type: string
       target:
-        description: parsed destination
+        description: Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
         type: string
       type:
-        description: type of address
+        description: Type of address. must be one of ["sip", "tel"].
         type: string
     type: object
   call.Call:
     properties:
+      chained_call_ids:
+        description: Chained call ids
+        items:
+          type: string
+        type: array
       conf_id:
-        description: currently joined conference id
+        description: Currently joined conference id.
         type: string
       destination:
         $ref: '#/definitions/call.Address'
+        description: Destination info
         type: object
       direction:
+        description: Call's direction.
         type: string
       flow_id:
-        description: flow id
+        description: Attached flow id
         type: string
       hangup_by:
+        description: Describe which endpoint sent the hangup request first.
         type: string
       hangup_reason:
+        description: Desribe detail of hangup reason.
         type: string
       id:
         description: identity
         type: string
+      master_call_id:
+        description: etc info
+        type: string
+      recording_id:
+        description: Recording id(current)
+        type: string
+      recording_ids:
+        description: Recording ids
+        items:
+          type: string
+        type: array
       source:
         $ref: '#/definitions/call.Address'
         description: source/destination
@@ -51,16 +71,22 @@ definitions:
         description: timestamp
         type: string
       tm_hangup:
+        description: Timestamp. Hangup time.
         type: string
       tm_progressing:
+        description: Timestamp. Progressing time.
         type: string
       tm_ringing:
+        description: Timestamp. Ringing time.
         type: string
       tm_update:
+        description: Timestamp. Updated time.
         type: string
       type:
+        description: Call's type.
         type: string
       user_id:
+        description: Call owner's ID.
         type: integer
     type: object
   conference.Conference:
@@ -75,6 +101,12 @@ definitions:
         type: string
       name:
         type: string
+      recording_id:
+        type: string
+      recording_ids:
+        items:
+          type: string
+        type: array
       status:
         type: string
       tm_create:

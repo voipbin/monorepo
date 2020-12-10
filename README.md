@@ -100,5 +100,18 @@ $ go get -u github.com/swaggo/files
 
 swag
 ```
-$ swag init -g cmd/api-manager/main.go
+$ swag init -g cmd/api-manager/main.go -o docsapi
+```
+
+# Restructured Text
+
+## Sphinx install
+```
+$ sudo apt install python3-sphinx
+```
+
+## Create html
+```
+$ cd docsdev
+$ make html
 ```

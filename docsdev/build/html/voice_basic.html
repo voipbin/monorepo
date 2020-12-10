@@ -1,0 +1,239 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Basic &#8212; voipbin  documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="index.html">voipbin  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="basic">
+<h1>Basic<a class="headerlink" href="#basic" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="type">
+<h2>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h2>
+<p>Call’s type.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>flow</td>
+<td>Executing the call-flow</td>
+</tr>
+<tr class="row-odd"><td>conference</td>
+<td>Conference call.</td>
+</tr>
+<tr class="row-even"><td>sip-service</td>
+<td>sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="status">
+<h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<p>Call’s status.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Status</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dialing</td>
+<td>The call is created. We are dialing to the destination.</td>
+</tr>
+<tr class="row-odd"><td>ringing</td>
+<td>The destination has confirmed that the call is ringng.</td>
+</tr>
+<tr class="row-even"><td>progressing</td>
+<td>The call has answered. The both endpoints are talking to each other.</td>
+</tr>
+<tr class="row-odd"><td>terminating</td>
+<td>The call is terminating.</td>
+</tr>
+<tr class="row-even"><td>canceling</td>
+<td>The call originator is canceling the call.</td>
+</tr>
+<tr class="row-odd"><td>hangup</td>
+<td>The call has been completed.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="direction">
+<h2>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h2>
+<p>Call’s direction.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Direction</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>incoming</td>
+<td>Call is coming from outside from voipbin.</td>
+</tr>
+<tr class="row-odd"><td>outgoing</td>
+<td>Call is generating form the voipbin.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="hangup-by">
+<h2>Hangup by<a class="headerlink" href="#hangup-by" title="Permalink to this headline">¶</a></h2>
+<p>The Hangup by shows which endpoint sent the hangup request first.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">hangup by</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>remote</td>
+<td>The remote end hangup the call first.</td>
+</tr>
+<tr class="row-odd"><td>local</td>
+<td>The local end hangup the call first.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="hangup-reason">
+<h2>Hangup reason<a class="headerlink" href="#hangup-reason" title="Permalink to this headline">¶</a></h2>
+<p>Shows why the call was hungup.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="91%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Reason</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>normal</td>
+<td>The call has ended after answer.</td>
+</tr>
+<tr class="row-odd"><td>failed</td>
+<td>The call attempt(signal) was not reached to the phone network.</td>
+</tr>
+<tr class="row-even"><td>busy</td>
+<td>The destination is on the line with another caller.</td>
+</tr>
+<tr class="row-odd"><td>cancel</td>
+<td>Call was cancelled by the originator before it was answered.</td>
+</tr>
+<tr class="row-even"><td>timeout</td>
+<td>Call reached max call duration after it was answered.</td>
+</tr>
+<tr class="row-odd"><td>unanswer</td>
+<td>Destination didn’t answer until destination’s timeout.</td>
+</tr>
+<tr class="row-even"><td>dialout</td>
+<td>The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Basic</a><ul>
+<li><a class="reference internal" href="#type">Type</a></li>
+<li><a class="reference internal" href="#status">Status</a></li>
+<li><a class="reference internal" href="#direction">Direction</a></li>
+<li><a class="reference internal" href="#hangup-by">Hangup by</a></li>
+<li><a class="reference internal" href="#hangup-reason">Hangup reason</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/voice_basic.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="index.html">voipbin  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Sungtae Kim.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>
