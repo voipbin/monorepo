@@ -294,7 +294,7 @@ func TestActionExecuteTalk(t *testing.T) {
 	}
 }
 
-func TestActionExecuteRecordStart(t *testing.T) {
+func TestActionExecuteRecordingStart(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -323,7 +323,7 @@ func TestActionExecuteRecordStart(t *testing.T) {
 				ChannelID:  "bfd0e668-2a77-11eb-9993-e72b323b1801",
 			},
 			&action.Action{
-				Type: action.TypeRecordStart,
+				Type: action.TypeRecordingStart,
 				ID:   uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
 			},
 		},
@@ -344,7 +344,7 @@ func TestActionExecuteRecordStart(t *testing.T) {
 	}
 }
 
-func TestActionExecuteRecordStop(t *testing.T) {
+func TestActionExecuteRecordingStop(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -369,13 +369,13 @@ func TestActionExecuteRecordStop(t *testing.T) {
 		{
 			"default",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("4dde92d0-2b9e-11eb-ad28-f732fd0afed7"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "5293419a-2b9e-11eb-bfa6-97a4312177f2",
-				RecordingID:   "call_4dde92d0-2b9e-11eb-ad28-f732fd0afed7_2020-04-18T03:22:17.995000",
+				ID:          uuid.FromStringOrNil("4dde92d0-2b9e-11eb-ad28-f732fd0afed7"),
+				AsteriskID:  "42:01:0a:a4:00:05",
+				ChannelID:   "5293419a-2b9e-11eb-bfa6-97a4312177f2",
+				RecordingID: "call_4dde92d0-2b9e-11eb-ad28-f732fd0afed7_2020-04-18T03:22:17.995000",
 			},
 			&action.Action{
-				Type: action.TypeRecordStop,
+				Type: action.TypeRecordingStop,
 				ID:   uuid.FromStringOrNil("4a3925dc-2b9e-11eb-abb3-d759c4b283d0"),
 			},
 			&recording.Recording{
