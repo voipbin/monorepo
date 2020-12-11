@@ -56,14 +56,14 @@ type Type string
 // List of Action types
 const (
 	TypeAnswer         Type = "answer"
-	TypeConferenceJoin Type = "conference_join" // join to the given conference
-	TypeEcho           Type = "echo"            // echo the voice
-	TypeHangup         Type = "hangup"          // call hangup
-	TypePlay           Type = "play"            // play the given file
-	TypeRecordStart    Type = "record_start"    // startr the record of the given call
-	TypeRecordStop     Type = "record_stop"     // stop the record of the given call
-	TypeStreamEcho     Type = "stream_echo"     // echo the stream(video/voice) and dtmf
-	TypeTalk           Type = "talk"            // generate audio from the given text(ssml or plain text) and play it
+	TypeConferenceJoin Type = "conference_join" // join to the given conference.
+	TypeEcho           Type = "echo"            // echo the voice.
+	TypeHangup         Type = "hangup"          // call hangup.
+	TypePlay           Type = "play"            // play the given file.
+	TypeRecordingStart Type = "recording_start" // startr the record of the given call.
+	TypeRecordingStop  Type = "recording_stop"  // stop the record of the given call.
+	TypeStreamEcho     Type = "stream_echo"     // echo the stream(video/voice) and dtmf.
+	TypeTalk           Type = "talk"            // generate audio from the given text(ssml or plain text) and play it.
 )
 
 // OptionAnswer defines action answer's option.
@@ -92,17 +92,17 @@ type OptionPlay struct {
 	StreamURLs []string `json:"stream_urls"` // stream url for media
 }
 
-// OptionRecordStart defines action record's option.
-type OptionRecordStart struct {
+// OptionRecordingStart defines action record's option.
+type OptionRecordingStart struct {
 	Format       string `json:"format"`         // Format to encode audio in. wav, mp3, ogg
-	EndOfSilence int    `json:"end_of_silence"` // Maximum duration of silence, in seconds. 0 for no limit
+	EndOfSilence int    `json:"end_of_silence"` // Maximum duration of silence, in seconds. 0 for no limit.
 	EndOfKey     string `json:"end_of_key"`     // DTMF input to terminate recording. none, any, *, #
-	Duration     int    `json:"duration"`       // Maximum duration of the recording, in seconds. 0 for no limit
-	BeepStart    bool   `json:"beep_start"`     // Play beep when recording begins
+	Duration     int    `json:"duration"`       // Maximum duration of the recording, in seconds. 0 for no limit.
+	BeepStart    bool   `json:"beep_start"`     // Play beep when recording begins.
 }
 
-// OptionRecordStop defines action record's option.
-type OptionRecordStop struct {
+// OptionRecordingStop defines action record's option.
+type OptionRecordingStop struct {
 	// no option
 }
 

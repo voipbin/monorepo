@@ -59,11 +59,11 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	case action.TypePlay:
 		err = h.actionExecutePlay(c, a)
 
-	case action.TypeRecordStart:
-		err = h.actionExecuteRecordStart(c, a)
+	case action.TypeRecordingStart:
+		err = h.actionExecuteRecordingStart(c, a)
 
-	case action.TypeRecordStop:
-		err = h.actionExecuteRecordStop(c, a)
+	case action.TypeRecordingStop:
+		err = h.actionExecuteRecordingStop(c, a)
 
 	case action.TypeStreamEcho:
 		err = h.actionExecuteStreamEcho(c, a)
@@ -489,8 +489,9 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 	return nil
 }
 
-// actionExecuteTalk executes the action type talk
-func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) error {
+// actionExecuteRecordingStart executes the action type recording_start.
+// It starts recording.
+func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action) error {
 
 	ctx := context.Background()
 
@@ -504,7 +505,7 @@ func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) e
 			"action_type": act.Type,
 		})
 
-	var option action.OptionRecordStart
+	var option action.OptionRecordingStart
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -579,8 +580,9 @@ func (h *callHandler) actionExecuteRecordStart(c *call.Call, a *action.Action) e
 	return nil
 }
 
-// actionExecuteTalk executes the action type talk
-func (h *callHandler) actionExecuteRecordStop(c *call.Call, a *action.Action) error {
+// actionExecuteRecordingStop executes the action type recording_stop.
+// It stops recording.
+func (h *callHandler) actionExecuteRecordingStop(c *call.Call, a *action.Action) error {
 	ctx := context.Background()
 
 	// copy the action
@@ -593,7 +595,7 @@ func (h *callHandler) actionExecuteRecordStop(c *call.Call, a *action.Action) er
 			"action_type": act.Type,
 		})
 
-	var option action.OptionRecordStop
+	var option action.OptionRecordingStop
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
