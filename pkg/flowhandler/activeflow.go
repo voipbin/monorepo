@@ -316,8 +316,9 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	successCount := 0
 	for _, dest := range optConnect.Destinations {
 		source := cmcall.Address{
-			Type:   cmcall.AddressTypeTel,
-			Target: optConnect.From,
+			Type:   cmcall.AddressType(optConnect.Source.Type),
+			Target: optConnect.Source.Target,
+			Name:   optConnect.Source.Name,
 		}
 
 		destination := cmcall.Address{

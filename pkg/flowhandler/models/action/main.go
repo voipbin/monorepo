@@ -62,9 +62,9 @@ type OptionConferenceJoin struct {
 
 // OptionConnect defines action connect's optoin.
 type OptionConnect struct {
-	From         string    `json:"from"`
-	Destinations []Address `json:"destinations"`
-	Unchained    bool      `json:"unchained"`
+	Source       Address   `json:"source"`       // source infromation.
+	Destinations []Address `json:"destinations"` // target destinations.
+	Unchained    bool      `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 }
 
 // OptionEcho struct
