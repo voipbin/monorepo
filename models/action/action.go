@@ -47,5 +47,5 @@ type OptionPlay struct {
 
 // OptionStreamEcho defines action stream_echo's option.
 type OptionStreamEcho struct {
-	Duration int `json:"duration"`
+	Duration int `json:"duration"` // echo duration. ms
 }

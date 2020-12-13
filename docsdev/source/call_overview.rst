@@ -1,9 +1,9 @@
-.. voice_overview:
+.. _call-overview: call-overview
 
 Overview
 ========
 
-The VoIPBIN voice API is the easiest way to build high-quality voice application in the Cloud.
+The VoIPBIN call API is the easiest way to build high-quality call application in the Cloud.
 
 With the VoIPBIN API you can:
 

@@ -4,22 +4,22 @@ import uuid "github.com/gofrs/uuid"
 
 // Conference type for client show
 type Conference struct {
-	ID     uuid.UUID `json:"id"`
-	UserID uint64    `json:"user_id"`
-	Type   Type      `json:"type"`
+	ID     uuid.UUID `json:"id"`      // Conference's ID.
+	UserID uint64    `json:"user_id"` // Conference owner's ID.
+	Type   Type      `json:"type"`    // Conference's type.
 
-	Status Status `json:"status"`
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Status Status `json:"status"` // Status.
+	Name   string `json:"name"`   // Name.
+	Detail string `json:"detail"` // Detail.
 
-	CallIDs []uuid.UUID `json:"call_ids"`
+	CallIDs []uuid.UUID `json:"call_ids"` // Currently joined call IDs.
 
-	RecordingID  string   `json:"recording_id"`
-	RecordingIDs []string `json:"recording_ids"`
+	RecordingID  string   `json:"recording_id"`  // Currently recording ID.
+	RecordingIDs []string `json:"recording_ids"` // Recorded recording IDs.
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create"` // Created timestamp.
+	TMUpdate string `json:"tm_update"` // Updated timestamp.
+	TMDelete string `json:"tm_delete"` // Deleted timestamp.
 }
 
 // Type conference types

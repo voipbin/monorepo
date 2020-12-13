@@ -1,7 +1,9 @@
-.. voice_action:
+.. _call-action: call-action
 
 Action
 ======
+
+.. _call-action-answer: call-action-answer
 
 Answer
 ------
@@ -22,6 +24,8 @@ Example
     {
         "type": "answer"
     }
+
+.. _call-action-conference_join: call-action-conference_join
 
 Conference Join
 ---------------
@@ -51,6 +55,8 @@ Example
         }
     }
 
+.. _call-action-connect:
+
 Connect
 -------
 Originate to the other destination(s) and connect to them each other.
@@ -62,17 +68,17 @@ Parameters
     {
         "type": "connect",
         "option": {
-            "from": "<string>",
+            "source": {...},
             "destinations": [
-                "<string>",
+                {...},
                 ...
             ]
             "unchained": <boolean>
         }
     }
 
-* from: From number.
-* destinations: Target destinations.
+* source: Source address. See detail :ref:`here <call-struct-address>`.
+* destinations: Destination addresses. See detail :ref:`here <call-struct-address>`.
 * unchained: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 
 Example
@@ -82,7 +88,10 @@ Example
     {
         "type": "connect",
         "option": {
-            "from": "+1111111111111",
+            "source": {
+                "type": "tel",
+                "target": "+11111111111111"
+            },
             "destinations": [
                 {
                     "type": "tel",
@@ -94,7 +103,7 @@ Example
 
 Echo
 ----
-Echoing the voice.
+Echoing the call.
 
 Parameters
 ++++++++++
@@ -140,6 +149,38 @@ Example
 
     {
         "type": "hangup"
+    }
+
+.. _call-action-patch:
+
+Patch
+-----
+Patch the next flow from the remote.
+
+Parameters
+++++++++++
+::
+
+    {
+        "type": "patch",
+        "option": {
+            "event_url": "<string>",
+            "event_method": "<string>"
+        }
+    }
+
+* event_url: The url for flow patching.
+* event_method: The method for flow patching.
+
+Example
++++++++
+::
+
+    {
+        "type": "patch".
+        "option": {
+            "event_url": "https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211"
+        }
     }
 
 Play
@@ -204,7 +245,7 @@ Example
 ::
 
     {
-        "type": "record_start",
+        "type": "recording_start",
         "option": {
             "format": "wav"
         }

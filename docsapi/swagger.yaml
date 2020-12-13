@@ -47,10 +47,10 @@ definitions:
         description: Desribe detail of hangup reason.
         type: string
       id:
-        description: identity
+        description: Call's ID.
         type: string
       master_call_id:
-        description: etc info
+        description: Master call id
         type: string
       recording_id:
         description: Recording id(current)
@@ -62,13 +62,13 @@ definitions:
         type: array
       source:
         $ref: '#/definitions/call.Address'
-        description: source/destination
+        description: Source info
         type: object
       status:
-        description: info
+        description: Call's status.
         type: string
       tm_create:
-        description: timestamp
+        description: Timestamp. Created time.
         type: string
       tm_hangup:
         description: Timestamp. Hangup time.
@@ -92,51 +92,70 @@ definitions:
   conference.Conference:
     properties:
       call_ids:
+        description: Currently joined call IDs.
         items:
           type: string
         type: array
       detail:
+        description: Detail.
         type: string
       id:
+        description: Conference's ID.
         type: string
       name:
+        description: Name.
         type: string
       recording_id:
+        description: Currently recording ID.
         type: string
       recording_ids:
+        description: Recorded recording IDs.
         items:
           type: string
         type: array
       status:
+        description: Status.
         type: string
       tm_create:
+        description: Created timestamp.
         type: string
       tm_delete:
+        description: Deleted timestamp.
         type: string
       tm_update:
+        description: Updated timestamp.
         type: string
       type:
+        description: Conference's type.
         type: string
       user_id:
+        description: Conference owner's ID.
         type: integer
     type: object
   flow.Flow:
     properties:
       actions:
+        description: Actions
         items:
           $ref: '#/definitions/action.Action'
         type: array
       detail:
+        description: Detail
         type: string
       id:
+        description: Flow's ID
         type: string
       name:
+        description: Name
         type: string
       tm_create:
+        description: Created timestamp.
         type: string
       tm_delete:
+        description: Deleted timestamp.
         type: string
       tm_update:
+        description: Updated timestamp.
         type: string
     type: object
   request.BodyCallsPOST:
