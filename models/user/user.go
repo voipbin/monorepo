@@ -3,15 +3,15 @@ package user
 // User data model
 type User struct {
 	// gorm.Model
-	ID           uint64 `json:"id"`
-	Username     string `json:"username"`
-	PasswordHash string `json:"-"`
+	ID           uint64 `json:"id"`       // User's ID
+	Username     string `json:"username"` // User's username
+	PasswordHash string `json:"-"`        // Hashed Password
 
-	Permission Permission `json:"permission"`
+	Permission Permission `json:"permission"` // User's permission.
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create"` // Created timestamp.
+	TMUpdate string `json:"tm_update"` // Updated timestamp.
+	TMDelete string `json:"tm_delete"` // Deleted timestamp.
 }
 
 // Serialize serializes user data

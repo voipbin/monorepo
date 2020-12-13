@@ -1,4 +1,4 @@
-.. voice_action:
+.. _voice-action:
 
 Action
 ======

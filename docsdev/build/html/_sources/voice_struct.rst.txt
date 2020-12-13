@@ -1,20 +1,25 @@
-.. voice_basic:
+.. _voice-struct: voice-struct
 
-Basic
-=====
+Struct
+======
+
+.. _voice-struct-type: voice-struct-type
 
 Type
 ----
 Call's type.
 
-=========== ============
-Type        Description
-=========== ============
-flow        Executing the call-flow
-conference  Conference call.
-sip-service sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.
-=========== ============
+.. table:: Call types
 
+    =========== ============
+    Type        Description
+    =========== ============
+    flow        Executing the call-flow
+    conference  Conference call.
+    sip-service sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.
+    =========== ============
+
+.. _voice-struct-status: voice-struct-status
 
 Status
 ------
@@ -31,6 +36,7 @@ canceling   The call originator is canceling the call.
 hangup      The call has been completed.
 =========== ===================
 
+.. _voice-struct-direction: voice-struct-direction
 
 Direction
 ---------
@@ -43,6 +49,7 @@ incoming    Call is coming from outside from voipbin.
 outgoing    Call is generating form the voipbin.
 =========== ============
 
+.. _voice-struct-hangupby: voice-struct-hangupby
 
 Hangup by
 ---------
@@ -55,6 +62,7 @@ remote      The remote end hangup the call first.
 local       The local end hangup the call first.
 =========== ============
 
+.. _voice-struct-hangupreason: voice-struct-hangupreason
 
 Hangup reason
 -------------

@@ -108,6 +108,7 @@ $ swag init -g cmd/api-manager/main.go -o docsapi
 ## Sphinx install
 ```
 $ sudo apt install python3-sphinx
+$ pip3 install sphinx-rtd-theme
 ```
 
 ## Create html

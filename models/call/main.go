@@ -6,30 +6,25 @@ import (
 
 // Call struct represent asterisk's channel information for client show
 type Call struct {
-	// identity
 	ID     uuid.UUID `json:"id"`      // Call's ID.
 	UserID uint64    `json:"user_id"` // Call owner's ID.
 	FlowID uuid.UUID `json:"flow_id"` // Attached flow id
 	ConfID uuid.UUID `json:"conf_id"` // Currently joined conference id.
 	Type   Type      `json:"type"`    // Call's type.
 
-	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // Master call id
 	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // Chained call ids
 	RecordingID    string      `json:"recording_id"`     // Recording id(current)
 	RecordingIDs   []string    `json:"recording_ids"`    // Recording ids
 
-	// source/destination
 	Source      Address `json:"source"`      // Source info
 	Destination Address `json:"destination"` // Destination info
 
-	// info
 	Status       Status       `json:"status"`        // Call's status.
 	Direction    Direction    `json:"direction"`     // Call's direction.
 	HangupBy     HangupBy     `json:"hangup_by"`     // Describe which endpoint sent the hangup request first.
 	HangupReason HangupReason `json:"hangup_reason"` // Desribe detail of hangup reason.
 
-	// timestamp
 	TMCreate string `json:"tm_create"` // Timestamp. Created time.
 	TMUpdate string `json:"tm_update"` // Timestamp. Updated time.
 

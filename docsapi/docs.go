@@ -393,11 +393,11 @@ var doc = `{
                     "type": "string"
                 },
                 "id": {
-                    "description": "identity",
+                    "description": "Call's ID.",
                     "type": "string"
                 },
                 "master_call_id": {
-                    "description": "etc info",
+                    "description": "Master call id",
                     "type": "string"
                 },
                 "recording_id": {
@@ -412,16 +412,16 @@ var doc = `{
                     }
                 },
                 "source": {
-                    "description": "source/destination",
+                    "description": "Source info",
                     "type": "object",
                     "$ref": "#/definitions/call.Address"
                 },
                 "status": {
-                    "description": "info",
+                    "description": "Call's status.",
                     "type": "string"
                 },
                 "tm_create": {
-                    "description": "timestamp",
+                    "description": "Timestamp. Created time.",
                     "type": "string"
                 },
                 "tm_hangup": {
@@ -454,45 +454,57 @@ var doc = `{
             "type": "object",
             "properties": {
                 "call_ids": {
+                    "description": "Currently joined call IDs.",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "detail": {
+                    "description": "Detail.",
                     "type": "string"
                 },
                 "id": {
+                    "description": "Conference's ID.",
                     "type": "string"
                 },
                 "name": {
+                    "description": "Name.",
                     "type": "string"
                 },
                 "recording_id": {
+                    "description": "Currently recording ID.",
                     "type": "string"
                 },
                 "recording_ids": {
+                    "description": "Recorded recording IDs.",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "status": {
+                    "description": "Status.",
                     "type": "string"
                 },
                 "tm_create": {
+                    "description": "Created timestamp.",
                     "type": "string"
                 },
                 "tm_delete": {
+                    "description": "Deleted timestamp.",
                     "type": "string"
                 },
                 "tm_update": {
+                    "description": "Updated timestamp.",
                     "type": "string"
                 },
                 "type": {
+                    "description": "Conference's type.",
                     "type": "string"
                 },
                 "user_id": {
+                    "description": "Conference owner's ID.",
                     "type": "integer"
                 }
             }
@@ -501,27 +513,34 @@ var doc = `{
             "type": "object",
             "properties": {
                 "actions": {
+                    "description": "Actions",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/action.Action"
                     }
                 },
                 "detail": {
+                    "description": "Detail",
                     "type": "string"
                 },
                 "id": {
+                    "description": "Flow's ID",
                     "type": "string"
                 },
                 "name": {
+                    "description": "Name",
                     "type": "string"
                 },
                 "tm_create": {
+                    "description": "Created timestamp.",
                     "type": "string"
                 },
                 "tm_delete": {
+                    "description": "Deleted timestamp.",
                     "type": "string"
                 },
                 "tm_update": {
+                    "description": "Updated timestamp.",
                     "type": "string"
                 }
             }

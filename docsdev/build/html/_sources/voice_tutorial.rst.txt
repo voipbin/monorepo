@@ -1,4 +1,4 @@
-.. voice_tutorial:
+.. _voice-tutorial: voice-tutorial
 
 Tutorial
 ========
