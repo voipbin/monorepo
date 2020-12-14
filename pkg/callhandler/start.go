@@ -40,6 +40,7 @@ const (
 // fixed trunks
 const (
 	trunkTwilio = "voipbin.pstn.twilio.com"
+	trunkTelnyx = "sip.telnyx.com"
 )
 
 // default max timeout for each services. sec.
@@ -117,7 +118,8 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 	// create a destination endpoint
 	var endpointDst string
 	if destination.Type == call.AddressTypeTel {
-		endpointDst = fmt.Sprintf("pjsip/%s/sip:%s@%s", pjsipEndpointOutgoing, destination.Target, trunkTwilio)
+		// endpointDst = fmt.Sprintf("pjsip/%s/sip:%s@%s", pjsipEndpointOutgoing, destination.Target, trunkTwilio)
+		endpointDst = fmt.Sprintf("pjsip/%s/sip:%s@%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx)
 	} else {
 		endpointDst = fmt.Sprintf("pjsip/%s/sip:%s", pjsipEndpointOutgoing, destination.Target)
 	}

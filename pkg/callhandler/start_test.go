@@ -569,7 +569,8 @@ func TestCreateCallOutgoing(t *testing.T) {
 					ID: action.IDBegin,
 				},
 			},
-			"pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
+			// "pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
+			"pjsip/call-out/sip:+123456789@sip.telnyx.com",
 			map[string]string{
 				"CALLERID(all)": "+99999888",
 			},
