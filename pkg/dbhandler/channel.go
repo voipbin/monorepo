@@ -35,16 +35,16 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 
 		dial_result,
 		hangup_cause,
-		
+
 		direction,
 
 		tm_create
 	) values(
 		?, ?, ?, ?, ?,
-		?, ?, 
+		?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, 
+		?, ?,
 		?,
 		?
 		)
@@ -177,35 +177,33 @@ func (h *handler) ChannelIsExist(id string, timeout time.Duration) bool {
 func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error) {
 
 	chanRes := make(chan *channel.Channel)
-	stop := false
+	chanStop := make(chan bool)
 
 	go func() {
 		for {
-			if stop == true {
+			select {
+			case <-chanStop:
+				return
+
+			default:
+				tmp, err := h.ChannelGet(ctx, id)
+				if err != nil || tmp.Stasis == "" {
+					time.Sleep(defaultDelayTimeout)
+					continue
+				}
+
+				chanRes <- tmp
 				return
 			}
-
-			tmp, err := h.ChannelGet(ctx, id)
-			if err != nil {
-				time.Sleep(defaultDelayTimeout)
-				continue
-			}
-
-			if tmp.Stasis == "" {
-				time.Sleep(defaultDelayTimeout)
-				continue
-			}
-
-			chanRes <- tmp
-			return
 		}
 	}()
 
 	select {
 	case res := <-chanRes:
 		return res, nil
+
 	case <-ctx.Done():
-		stop = true
+		chanStop <- true
 		return nil, fmt.Errorf("could not get channel. err: tiemout")
 	}
 }
@@ -214,22 +212,24 @@ func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id strin
 func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error) {
 
 	chanRes := make(chan *channel.Channel)
-	stop := false
+	chanStop := make(chan bool)
 
 	go func() {
 		for {
-			if stop == true {
+			select {
+			case <-chanStop:
+				return
+
+			default:
+				tmp, err := h.ChannelGet(ctx, id)
+				if err != nil {
+					time.Sleep(defaultDelayTimeout)
+					continue
+				}
+
+				chanRes <- tmp
 				return
 			}
-
-			tmp, err := h.ChannelGet(ctx, id)
-			if err != nil {
-				time.Sleep(defaultDelayTimeout)
-				continue
-			}
-
-			chanRes <- tmp
-			return
 		}
 	}()
 
@@ -237,7 +237,7 @@ func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id string) (*chann
 	case res := <-chanRes:
 		return res, nil
 	case <-ctx.Done():
-		stop = true
+		chanStop <- true
 		return nil, fmt.Errorf("could not get channel. err: tiemout")
 	}
 }
