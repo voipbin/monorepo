@@ -309,22 +309,23 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 func (h *handler) BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error) {
 
 	chanRes := make(chan *bridge.Bridge)
-	stop := false
+	chanStop := make(chan bool)
 
 	go func() {
 		for {
-			if stop == true {
+			select {
+			case <-chanStop:
+				return
+
+			default:
+				tmp, err := h.BridgeGet(ctx, id)
+				if err != nil {
+					time.Sleep(defaultDelayTimeout)
+					continue
+				}
+				chanRes <- tmp
 				return
 			}
-
-			tmp, err := h.BridgeGet(ctx, id)
-			if err != nil {
-				time.Sleep(defaultDelayTimeout)
-				continue
-			}
-
-			chanRes <- tmp
-			return
 		}
 	}()
 
@@ -332,8 +333,8 @@ func (h *handler) BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge
 	case res := <-chanRes:
 		return res, nil
 	case <-ctx.Done():
-		stop = true
-		return nil, fmt.Errorf("could not get bridge. err: tiemout")
+		chanStop <- true
+		return nil, fmt.Errorf("could not get a bridge. BridgeGetUntilTimeout. err: %v", ctx.Err())
 	}
 }
 
