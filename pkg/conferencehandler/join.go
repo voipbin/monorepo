@@ -180,7 +180,7 @@ func (h *conferenceHandler) createConferenceBridgeWithTimeout(ctx context.Contex
 	)
 
 	// create a bridge
-	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU}); err != nil {
+	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing}); err != nil {
 		log.Errorf("Could not create a bridge for a conference. err: %v", err)
 		return err
 	}
