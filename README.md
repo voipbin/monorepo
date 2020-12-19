@@ -1,5 +1,10 @@
 # Deploy
 ```
+$ git push heroku master
+```
+
+# Set heroku
+```
 $ heroku git:remote -a service-test-voipbin
 ```
 
