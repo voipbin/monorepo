@@ -1,3 +1,9 @@
+# Deploy
+```
+$ heroku git:remote -a service-test-voipbin
+```
+
+
 # Cyber Mega Phone 2K
 
 Cyber Mega Phone 2K Ultimate Dynamic Edition is a simple browser side client
@@ -24,7 +30,7 @@ on the Asterisk wiki. The configuration should be similar.
 
 You'll need to add a few additional settings to your configured pjsip endpoint.
 `max_audio_streams` and `max_video_streams` need to be set to a number greater than one
-(the default) in order for Asterisk to allow more than one of each stream type. 
+(the default) in order for Asterisk to allow more than one of each stream type.
 ```
 max_audio_streams=<num>
 max_video_streams=<num>
