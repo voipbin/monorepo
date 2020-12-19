@@ -9,7 +9,7 @@
 'use_strict';
 
 // Turn on jssip debugging by un-commenting the below:
-//JsSIP.debug.enable('JsSIP:*');
+JsSIP.debug.enable('JsSIP:*');
 
 let isFirefox = typeof InstallTrigger !== 'undefined';
 let isChrome = !!window.chrome && !!window.chrome;
