@@ -40,7 +40,7 @@ test:
   stage: test
   script:
     - go test -v $(go list ./...)
-  
+
 build:
   stage: build
   artifacts:
@@ -49,7 +49,16 @@ build:
       - bin/$LOCAL_PACKAGE_NAME
   script:
     - mkdir bin
-    - GOOS=$GOOS GOARCH=$GOARCH go build -o bin/$LOCAL_PACKAGE_NAME -ldflags "-extldflags '-static'" ./cmd/... 
+    - GOOS=$GOOS GOARCH=$GOARCH go build -o bin/$LOCAL_PACKAGE_NAME -ldflags "-extldflags '-static'" ./cmd/...
+
+build_docker:
+  stage: build
+  image: gitlab/dind:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
 
 release:
   stage: release
@@ -69,7 +78,7 @@ release:
     LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
     LOCAL_PROJECTID: voipbin-production
     LOCAL_ENV: production
-    LOCAL_ZONE: europe-west4-a 
+    LOCAL_ZONE: europe-west4-a
     LOCAL_REGION: europe-west4
 
 
