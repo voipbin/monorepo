@@ -6,7 +6,7 @@ metadata:
   labels:
     app: asterisk-call
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: asterisk-call
@@ -79,6 +79,12 @@ spec:
               exec:
                 command:
                   - /prestop.sh
+          command:
+            - '/start.sh'
+          args:
+            - 'sip:10.164.0.20:5060'
+            - 'eth0'
+            - 'voipbin-voip-media-bucket-europe-west4'
           ports:
             - name: sip-tcp
               protocol: "TCP"
