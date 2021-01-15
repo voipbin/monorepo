@@ -73,7 +73,7 @@ spec:
           resources:
             limits:
               cpu: "60m"
-              memory: "500M"
+              memory: "200M"
           lifecycle:
             preStop:
               exec:
