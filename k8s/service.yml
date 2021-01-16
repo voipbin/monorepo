@@ -5,12 +5,13 @@ metadata:
   name: asterisk-call-tcp
   annotations:
     cloud.google.com/load-balancer-type: "Internal"
-
+    cloud.google.com/backend-config: '{"default": "asterisk-k8s-call"}'
 spec:
   type: LoadBalancer
   loadBalancerIP: 10.164.0.17
   selector:
     app: asterisk-call
+  externalTrafficPolicy: Local
   ports:
     - port: 5060
       targetPort: 5060
@@ -23,12 +24,13 @@ metadata:
   name: asterisk-call-udp
   annotations:
     cloud.google.com/load-balancer-type: "Internal"
-
+    cloud.google.com/backend-config: '{"default": "asterisk-k8s-call"}'
 spec:
   type: LoadBalancer
   loadBalancerIP: 10.164.0.18
   selector:
     app: asterisk-call
+  externalTrafficPolicy: Local
   ports:
     - port: 5060
       targetPort: 5060
