@@ -1,6 +1,6 @@
 FROM debian:stable-slim
 
-ARG ASTERISK_VERSION=18.1.1
+ARG ASTERISK_VERSION=18.2.0-rc1
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 
 # mariadb's odbc connect requires buster-backports
@@ -55,7 +55,9 @@ RUN apt-get install -y \
     unixodbc-dev \
     curl \
     procps \
-    odbc-mariadb
+    odbc-mariadb \
+    curl \
+    iputils-ping
 
 # Install Asterisk pip dependencies
 RUN pip3 install alembic
@@ -69,8 +71,7 @@ RUN apt-get update
 RUN apt-get install -y gcsfuse
 
 # Download Asterisk source
-RUN mkdir ${ASTERISK_SOURCE_DIRECTORY}
-RUN curl -s http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-${ASTERISK_VERSION}.tar.gz | tar xz -C ${ASTERISK_SOURCE_DIRECTORY} --strip-components=1
+RUN git clone --branch ${ASTERISK_VERSION} https://gerrit.asterisk.org/asterisk ${ASTERISK_SOURCE_DIRECTORY}
 
 # Asterisk compilation & installation
 WORKDIR ${ASTERISK_SOURCE_DIRECTORY}
