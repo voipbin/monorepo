@@ -5,6 +5,7 @@ namespace: voip
 
 resources:
   - secret.yml
+  - backendconfig.yml
   - deployment.yml
   - service.yml
 
