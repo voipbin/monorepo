@@ -6,7 +6,10 @@ then
     exit
 fi
 
-echo "Print inserted parameters-------------------------------------"
+echo "Print status ------------------------------------"
+echo "Public address: $(curl ifconfig.me)"
+
+echo "Print inserted parameters -------------------------------------"
 echo "Outbound proxy address: $1"
 echo "Target interface name: $2"
 echo "GCP bucket name: $3"
@@ -18,7 +21,7 @@ VOIPBIN_GCP_BUCKET_NAME=$3
 MAC_ADDRESS=$(cat /sys/class/net/$VOIPBIN_TARGET_INTERFACE_NAME/address)
 HOSTNAME=$(hostname)
 
-echo "Print env variables-------------------------------------"
+echo "Print env variables -------------------------------------"
 echo "Outbound proxy address: $VOIPBIN_OUTBOUND_PROXY_ADDR"
 echo "Target interface name: $VOIPBIN_TARGET_INTERFACE_NAME"
 echo "GCP bucket name: $VOIPBIN_GCP_BUCKET_NAME"
