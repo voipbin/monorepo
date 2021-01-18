@@ -82,7 +82,7 @@ spec:
           command:
             - '/start.sh'
           args:
-            - 'sip:10.164.0.21:5070'
+            - 'sip:10.164.0.20:5060'
             - 'eth0'
             - 'voipbin-voip-media-bucket-europe-west4'
           ports:
