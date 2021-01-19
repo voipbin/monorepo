@@ -103,7 +103,10 @@ swag
 $ swag init -g cmd/api-manager/main.go -o docsapi
 ```
 
-# Restructured Text
+# API documents
+```
+https://api.voipbin.net/docs/
+```
 
 ## Sphinx install
 ```
