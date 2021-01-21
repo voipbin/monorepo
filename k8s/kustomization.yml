@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: voip
+
+resources:
+  - secret.yml
+  - deployment.yml
+  - service.yml
+
+commonLabels:
+  app: asterisk-conference
+
+# images:
+# - name: asterisk-image
+#   newName: asterisk
+#   newTag: latest
+
+# - name: asterisk-proxy-image
+#   newName: registry.gitlab.com/voipbin/voip/asterisk-proxy
+#   newTag: latest
+
