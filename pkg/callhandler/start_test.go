@@ -529,6 +529,8 @@ func TestCreateCallOutgoing(t *testing.T) {
 			"pjsip/call-out/sip:testoutgoing@test.com",
 			map[string]string{
 				"CALLERID(all)": `"test" <sip:testsrc@test.com>`,
+				"SIPADDHEADER0": "VBOUT-Transport: UDP",
+				"SIPADDHEADER1": "VBOUT-SDP_Transport: RTP/AVP",
 			},
 		},
 		{
@@ -573,6 +575,8 @@ func TestCreateCallOutgoing(t *testing.T) {
 			"pjsip/call-out/sip:+123456789@sip.telnyx.com",
 			map[string]string{
 				"CALLERID(all)": "+99999888",
+				"SIPADDHEADER0": "VBOUT-Transport: UDP",
+				"SIPADDHEADER1": "VBOUT-SDP_Transport: RTP/AVP",
 			},
 		},
 	}

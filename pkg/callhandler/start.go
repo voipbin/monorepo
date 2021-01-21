@@ -138,6 +138,8 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 	// set variables
 	variables := map[string]string{
 		"CALLERID(all)": endpointSrc,
+		"SIPADDHEADER0": "VBOUT-Transport: " + "UDP",
+		"SIPADDHEADER1": "VBOUT-SDP_Transport: " + "RTP/AVP",
 	}
 
 	// create a channel
