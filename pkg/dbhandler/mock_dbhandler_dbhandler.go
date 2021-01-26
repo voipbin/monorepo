@@ -1057,6 +1057,21 @@ func (mr *MockDBHandlerMockRecorder) RecordingGetFromDB(ctx, id interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).RecordingGetFromDB), ctx, id)
 }
 
+// RecordingGets mocks base method
+func (m *MockDBHandler) RecordingGets(ctx context.Context, userID, size uint64, token string) ([]*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingGets", ctx, userID, size, token)
+	ret0, _ := ret[0].([]*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingGets indicates an expected call of RecordingGets
+func (mr *MockDBHandlerMockRecorder) RecordingGets(ctx, userID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockDBHandler)(nil).RecordingGets), ctx, userID, size, token)
+}
+
 // RecordingSetStatus mocks base method
 func (m *MockDBHandler) RecordingSetStatus(ctx context.Context, id string, status recording.Status, timestamp string) error {
 	m.ctrl.T.Helper()

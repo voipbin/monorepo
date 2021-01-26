@@ -54,6 +54,7 @@ var (
 
 	// recordings
 	regV1RecordingsID = regexp.MustCompile("/v1/recordings/" + regAny)
+	regV1Recordings   = regexp.MustCompile("/v1/recordings")
 )
 
 var (
@@ -245,6 +246,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// GET /recordings/<recording-id>
 	case regV1RecordingsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1RecordingsIDGet(m)
+		requestType = "/v1/recordings"
+
+	// GET /recordings
+	case regV1Recordings.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1RecordingsGet(m)
 		requestType = "/v1/recordings"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////

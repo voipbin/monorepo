@@ -104,6 +104,7 @@ type DBHandler interface {
 	RecordingGet(ctx context.Context, id string) (*recording.Recording, error)
 	RecordingGetFromCache(ctx context.Context, id string) (*recording.Recording, error)
 	RecordingGetFromDB(ctx context.Context, id string) (*recording.Recording, error)
+	RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]*recording.Recording, error)
 	RecordingSetStatus(ctx context.Context, id string, status recording.Status, timestamp string) error
 	RecordingSetToCache(ctx context.Context, r *recording.Recording) error
 	RecordingUpdateToCache(ctx context.Context, id string) error

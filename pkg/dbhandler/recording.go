@@ -184,6 +184,31 @@ func (h *handler) RecordingGet(ctx context.Context, id string) (*recording.Recor
 	return res, nil
 }
 
+// RecordingGets returns a list of records.
+func (h *handler) RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]*recording.Recording, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", recordingSelect)
+
+	rows, err := h.db.Query(q, userID, token, size)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. RecordingGets. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*recording.Recording
+	for rows.Next() {
+		u, err := h.recordingGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. RecordingGets, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // RecordingSetStatus sets the record's status
 func (h *handler) RecordingSetStatus(ctx context.Context, id string, status recording.Status, timestamp string) error {
 
