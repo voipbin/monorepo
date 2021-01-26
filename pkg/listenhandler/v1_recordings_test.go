@@ -15,6 +15,79 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
+func TestProcessV1RecordingsGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:        mockSock,
+		db:                mockDB,
+		reqHandler:        mockReq,
+		callHandler:       mockCall,
+		conferenceHandler: mockConf,
+	}
+
+	type test struct {
+		name       string
+		request    *rabbitmqhandler.Request
+		userID     uint64
+		pageSize   uint64
+		pageToken  string
+		recordings []*recording.Recording
+		expectRes  *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"basic",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/recordings",
+				Method: rabbitmqhandler.RequestMethodGet,
+				Data:   []byte(`{"user_id": 0, "page_size": 10, "page_token": "2020-05-03 21:35:02.809"}`),
+			},
+			0,
+			10,
+			"2020-05-03 21:35:02.809",
+			[]*recording.Recording{
+				&recording.Recording{
+					ID:          "call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z",
+					UserID:      0,
+					Type:        recording.TypeCall,
+					ReferenceID: uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
+					Status:      recording.StatusEnd,
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z","user_id":0,"type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().RecordingGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.recordings, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func TestProcessV1RecordingsIDGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

@@ -4,6 +4,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
 )
 
+// Pagination is pagination structure for request
+type Pagination struct {
+	PageSize  uint64 `form:"page_size" json:"page_size"`
+	PageToken string `form:"page_token" json:"page_token"`
+}
+
 // V1DataAsterisksIDChannelsIDHealth is
 // v1 data type request struct for
 // AsterisksIDChannelsIDHealth
