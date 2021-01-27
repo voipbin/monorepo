@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
@@ -41,6 +42,7 @@ type ServiceHandler interface {
 
 	// recording handlers
 	RecordingGet(u *user.User, id string) (string, error)
+	RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error)
 
 	// user handlers
 	UserCreate(username, password string, permission uint64) (*user.User, error)

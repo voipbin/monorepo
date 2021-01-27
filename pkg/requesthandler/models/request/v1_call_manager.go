@@ -48,14 +48,14 @@ type V1DataCallsIDActionTimeout struct {
 
 // V1DataConferencesIDDelete is
 // v1 data type request struct for
-// /v1/conferences/<id>" DELETE
+// /v1/conferences/<id> DELETE
 type V1DataConferencesIDDelete struct {
 	Reason string `json:"reason,omitempty"`
 }
 
 // V1DataConferencesIDPost is
 // v1 data type request struct for
-// /v1/conferences/<id>" POST
+// /v1/conferences/<id> POST
 type V1DataConferencesIDPost struct {
 	Type    cmconference.Type      `json:"type"`
 	UserID  uint64                 `json:"user_id"`
@@ -63,4 +63,12 @@ type V1DataConferencesIDPost struct {
 	Detail  string                 `json:"detail"`
 	Timeout int                    `json:"timeout"` // timeout. second
 	Data    map[string]interface{} `json:"data"`
+}
+
+// V1DataRecordingsGet is
+// v1 data type request struct for
+// /v1/recordings GET
+type V1DataRecordingsGet struct {
+	UserID uint64 `json:"user_id"`
+	Pagination
 }
