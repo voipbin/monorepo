@@ -16,6 +16,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
+// pagination parameters
+const (
+	PageSize  = "page_size"
+	PageToken = "page_token"
+)
+
 // ListenHandler interface
 type ListenHandler interface {
 	Run(queue, exchangeDelay string) error

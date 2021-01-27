@@ -47,9 +47,8 @@ func TestProcessV1RecordingsGet(t *testing.T) {
 		{
 			"basic",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/recordings",
+				URI:    "/v1/recordings?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=0",
 				Method: rabbitmqhandler.RequestMethodGet,
-				Data:   []byte(`{"user_id": 0, "page_size": 10, "page_token": "2020-05-03 21:35:02.809"}`),
 			},
 			0,
 			10,
