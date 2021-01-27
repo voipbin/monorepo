@@ -1,10 +1,6 @@
-package cmrecording
+package recording
 
-import (
-	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-)
+import "github.com/gofrs/uuid"
 
 // Recording struct represent record information
 type Recording struct {
@@ -14,9 +10,6 @@ type Recording struct {
 	ReferenceID uuid.UUID `json:"reference_id"`
 	Status      Status    `json:"status"`
 	Format      string    `json:"format"`
-
-	AsteriskID string `json:"asterisk_id"`
-	ChannelID  string `json:"channel_id"`
 
 	TMStart string `json:"tm_start"`
 	TMEnd   string `json:"tm_end"`
@@ -44,25 +37,3 @@ const (
 	StatusRecording  Status = "recording"
 	StatusEnd        Status = "ended"
 )
-
-// Convert returns conference.Conference from cmconference.Conference
-func (h *Recording) Convert() *recording.Recording {
-	res := &recording.Recording{
-		ID:     h.ID,
-		UserID: h.UserID,
-		Type:   recording.Type(h.Type),
-
-		ReferenceID: h.ReferenceID,
-		Status:      recording.Status(h.Status),
-		Format:      h.Format,
-
-		TMStart: h.TMStart,
-		TMEnd:   h.TMEnd,
-
-		TMCreate: h.TMCreate,
-		TMUpdate: h.TMUpdate,
-		TMDelete: h.TMDelete,
-	}
-
-	return res
-}
