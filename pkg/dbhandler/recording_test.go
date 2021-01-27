@@ -87,6 +87,7 @@ func TestRecordingGets(t *testing.T) {
 	type test struct {
 		name string
 
+		userID  uint64
 		records []*recording.Recording
 		// expectRecord *recording.Recording
 	}
@@ -94,6 +95,7 @@ func TestRecordingGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
+			1,
 			[]*recording.Recording{
 				&recording.Recording{
 					ID:          "b075f22a-2b59-11eb-aeee-eb56de01c1b1",
@@ -119,13 +121,18 @@ func TestRecordingGets(t *testing.T) {
 				},
 			},
 		},
+		{
+			"empty",
+			2,
+			[]*recording.Recording{},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
-			res, err := h.RecordingGets(context.Background(), 1, 10, getCurTime())
+			res, err := h.RecordingGets(context.Background(), tt.userID, 10, getCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

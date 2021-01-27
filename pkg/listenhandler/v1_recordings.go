@@ -4,30 +4,39 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1RecordingGet handles GET /v1/recordings request
-func (h *listenHandler) processV1RecordingsGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
-	var reqData request.V1DataRecordingsGET
-	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
-		return simpleResponse(400), nil
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
 	}
+
+	// parse the pagination params
+	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := u.Query().Get(PageToken)
+
+	// get user_id
+	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
+	userID := uint64(tmpUserID)
+
 	log := logrus.WithFields(logrus.Fields{
-		"user":  reqData.UserID,
-		"size":  reqData.PageSize,
-		"token": reqData.PageToken,
+		"user":  userID,
+		"size":  pageSize,
+		"token": pageToken,
 	})
 
 	log.Debug("Getting recordings.")
-	recordings, err := h.db.RecordingGets(context.Background(), reqData.UserID, reqData.PageSize, reqData.PageToken)
+	recordings, err := h.db.RecordingGets(context.Background(), userID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil
@@ -38,6 +47,7 @@ func (h *listenHandler) processV1RecordingsGet(m *rabbitmqhandler.Request) (*rab
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", recordings, err)
 		return simpleResponse(500), nil
 	}
+	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,

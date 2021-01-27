@@ -196,7 +196,7 @@ func (h *handler) RecordingGets(ctx context.Context, userID uint64, size uint64,
 	}
 	defer rows.Close()
 
-	var res []*recording.Recording
+	res := []*recording.Recording{}
 	for rows.Next() {
 		u, err := h.recordingGetFromRow(rows)
 		if err != nil {
