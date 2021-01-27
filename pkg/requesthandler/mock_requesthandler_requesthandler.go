@@ -127,6 +127,21 @@ func (mr *MockRequestHandlerMockRecorder) CMRecordingGet(id interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMRecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).CMRecordingGet), id)
 }
 
+// CMRecordingGets mocks base method
+func (m *MockRequestHandler) CMRecordingGets(userID, size uint64, token string) ([]cmrecording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMRecordingGets", userID, size, token)
+	ret0, _ := ret[0].([]cmrecording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMRecordingGets indicates an expected call of CMRecordingGets
+func (mr *MockRequestHandlerMockRecorder) CMRecordingGets(userID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMRecordingGets", reflect.TypeOf((*MockRequestHandler)(nil).CMRecordingGets), userID, size, token)
+}
+
 // FMFlowCreate mocks base method
 func (m *MockRequestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
 	m.ctrl.T.Helper()

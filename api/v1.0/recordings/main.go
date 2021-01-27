@@ -8,6 +8,7 @@ import (
 func ApplyRoutes(r *gin.RouterGroup) {
 	recordings := r.Group("/recordings")
 
+	recordings.GET("", recordingsGET)
 	recordings.GET("/:id", recordingsIDGET)
 
 }

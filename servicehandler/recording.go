@@ -5,6 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
@@ -43,4 +44,34 @@ func (h *serviceHandler) RecordingGet(u *user.User, id string) (string, error) {
 	}
 
 	return url, nil
+}
+
+// RecordingGets sends a request to call-manager
+// to getting a list of calls.
+// it returns list of calls if it succeed.
+func (h *serviceHandler) RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"size":     size,
+		"token":    token,
+	})
+
+	if token == "" {
+		token = getCurTime()
+	}
+
+	tmp, err := h.reqHandler.CMRecordingGets(u.ID, size, token)
+	if err != nil {
+		log.Errorf("Could not get recordings from the call manager. err: %v", err)
+		return nil, err
+	}
+
+	res := []*recording.Recording{}
+	for _, tmpRecord := range tmp {
+		record := tmpRecord.Convert()
+		res = append(res, record)
+	}
+
+	return res, nil
 }

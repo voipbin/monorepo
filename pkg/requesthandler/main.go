@@ -93,6 +93,7 @@ type RequestHandler interface {
 
 	// recordings
 	CMRecordingGet(id string) (*cmrecording.Recording, error)
+	CMRecordingGets(userID uint64, size uint64, token string) ([]cmrecording.Recording, error)
 
 	// flow
 	// flow actions

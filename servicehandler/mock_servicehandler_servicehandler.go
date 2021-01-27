@@ -11,6 +11,7 @@ import (
 	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	flow "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	reflect "reflect"
 )
@@ -215,6 +216,21 @@ func (m *MockServiceHandler) RecordingGet(u *user.User, id string) (string, erro
 func (mr *MockServiceHandlerMockRecorder) RecordingGet(u, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockServiceHandler)(nil).RecordingGet), u, id)
+}
+
+// RecordingGets mocks base method
+func (m *MockServiceHandler) RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingGets", u, size, token)
+	ret0, _ := ret[0].([]*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingGets indicates an expected call of RecordingGets
+func (mr *MockServiceHandlerMockRecorder) RecordingGets(u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockServiceHandler)(nil).RecordingGets), u, size, token)
 }
 
 // UserCreate mocks base method
