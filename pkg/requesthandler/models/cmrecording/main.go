@@ -8,12 +8,13 @@ import (
 
 // Recording struct represent record information
 type Recording struct {
-	ID          string    `json:"id"`
+	ID          uuid.UUID `json:"id"`
 	UserID      uint64    `json:"user_id"`
 	Type        Type      `json:"type"`
 	ReferenceID uuid.UUID `json:"reference_id"`
 	Status      Status    `json:"status"`
 	Format      string    `json:"format"`
+	Filename    string    `json:"filename"`
 
 	AsteriskID string `json:"asterisk_id"`
 	ChannelID  string `json:"channel_id"`
@@ -55,6 +56,7 @@ func (h *Recording) Convert() *recording.Recording {
 		ReferenceID: h.ReferenceID,
 		Status:      recording.Status(h.Status),
 		Format:      h.Format,
+		Filename:    h.Filename,
 
 		TMStart: h.TMStart,
 		TMEnd:   h.TMEnd,

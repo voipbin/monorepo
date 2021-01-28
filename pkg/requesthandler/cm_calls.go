@@ -18,6 +18,7 @@ func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, d
 	uri := fmt.Sprintf("/v1/calls")
 
 	data := &request.V1DataCallsIDPost{
+		UserID:      userID,
 		FlowID:      flowID,
 		Source:      source,
 		Destination: destination,
