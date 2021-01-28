@@ -36,6 +36,7 @@ func TestRecordingCreate(t *testing.T) {
 				ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:      recording.StatusRecording,
 				Format:      "wav",
+				Filename:    "call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000.wav",
 
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "b10c2e84-2b59-11eb-b963-db658ca2c824",
@@ -47,6 +48,7 @@ func TestRecordingCreate(t *testing.T) {
 				ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:      recording.StatusRecording,
 				Format:      "wav",
+				Filename:    "call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000.wav",
 
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "b10c2e84-2b59-11eb-b963-db658ca2c824",
