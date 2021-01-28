@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -43,8 +44,9 @@ func TestRecordingfileGet(t *testing.T) {
 			"59a394e4-610e-11eb-b8c6-aff7333845f1",
 
 			&cmrecording.Recording{
-				ID:     "call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
-				UserID: 1,
+				ID:       uuid.FromStringOrNil("8a713c1a-6146-11eb-b718-3b1336e1b263"),
+				Filename: "call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
+				UserID:   1,
 			},
 			"test.com/downloadlink.wav",
 			"test.com/downloadlink.wav",
