@@ -30,7 +30,7 @@ func TestRecordingCreate(t *testing.T) {
 		{
 			"normal",
 			&recording.Recording{
-				ID:          "b075f22a-2b59-11eb-aeee-eb56de01c1b1",
+				ID:          uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
 				UserID:      1,
 				Type:        recording.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
@@ -42,7 +42,7 @@ func TestRecordingCreate(t *testing.T) {
 				ChannelID:  "b10c2e84-2b59-11eb-b963-db658ca2c824",
 			},
 			&recording.Recording{
-				ID:          "b075f22a-2b59-11eb-aeee-eb56de01c1b1",
+				ID:          uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
 				UserID:      1,
 				Type:        recording.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
@@ -100,7 +100,7 @@ func TestRecordingGets(t *testing.T) {
 			1,
 			[]*recording.Recording{
 				&recording.Recording{
-					ID:          "b075f22a-2b59-11eb-aeee-eb56de01c1b1",
+					ID:          uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
 					UserID:      1,
 					Type:        recording.TypeCall,
 					ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
@@ -111,7 +111,7 @@ func TestRecordingGets(t *testing.T) {
 					ChannelID:  "b10c2e84-2b59-11eb-b963-db658ca2c824",
 				},
 				&recording.Recording{
-					ID:          "b075f22a-2b59-11eb-aeee-eb56de01c1b1",
+					ID:          uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
 					UserID:      1,
 					Type:        recording.TypeCall,
 					ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),

@@ -215,7 +215,7 @@ func (mr *MockCacheHandlerMockRecorder) NumberSetByNumber(ctx, numb interface{})
 }
 
 // RecordingGet mocks base method
-func (m *MockCacheHandler) RecordingGet(ctx context.Context, id string) (*recording.Recording, error) {
+func (m *MockCacheHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGet", ctx, id)
 	ret0, _ := ret[0].(*recording.Recording)

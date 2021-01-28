@@ -13,7 +13,7 @@ create table calls(
   chained_call_ids  json,         -- chained call ids
 
   -- recording info
-  recording_id  varchar(255),   -- current recording id
+  recording_id  binary(16),     -- current recording id
   recording_ids json,           -- recording ids
 
   -- source/destination

@@ -32,7 +32,7 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 	type test struct {
 		name      string
 		event     *rabbitmqhandler.Event
-		recordID  string
+		recording *recording.Recording
 		timestamp string
 	}
 
@@ -42,9 +42,12 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
-				Data:     []byte(`{"type": "RecordingStarted","timestamp": "2020-02-10T13:08:18.888","recording": {"name": "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888","format": "wav","state": "recording","target_uri": "channel:test_call"},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
+				Data:     []byte(`{"type": "RecordingStarted","timestamp": "2020-02-10T13:08:18.888","recording": {"name": "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z","format": "wav","state": "recording","target_uri": "channel:test_call"},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
 			},
-			"call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888",
+			&recording.Recording{
+				ID:       uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
+				Filename: "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z.wav",
+			},
 			"2020-02-10T13:08:18.888",
 		},
 	}
@@ -52,7 +55,8 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recordID, recording.StatusRecording, tt.timestamp).Return(nil)
+			mockDB.EXPECT().RecordingGetByFilename(gomock.Any(), tt.recording.Filename).Return(tt.recording, nil)
+			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusRecording, tt.timestamp).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -80,9 +84,8 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 	type test struct {
 		name      string
 		event     *rabbitmqhandler.Event
-		recordID  string
+		recording *recording.Recording
 		timestamp string
-		callID    uuid.UUID
 	}
 
 	tests := []test{
@@ -93,17 +96,23 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"type": "RecordingFinished","timestamp": "2020-02-10T13:08:40.888","recording": {"name": "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888","format": "wav","state": "done","target_uri": "channel:test_call","duration": 351},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
 			},
-			"call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888",
+			&recording.Recording{
+				ID:          uuid.FromStringOrNil("4f367e2c-612c-11eb-b063-676ca5ee546a"),
+				Filename:    "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888.wav",
+				Format:      "wav",
+				Type:        recording.TypeCall,
+				ReferenceID: uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
+			},
 			"2020-02-10T13:08:40.888",
-			uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recordID, recording.StatusEnd, tt.timestamp).Return(nil)
-			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.callID, "").Return(nil)
+			mockDB.EXPECT().RecordingGetByFilename(gomock.Any(), tt.recording.Filename).Return(tt.recording, nil)
+			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
+			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -149,7 +149,7 @@ func (h *eventHandler) processEvent(m *rabbitmqhandler.Event) error {
 	log.WithFields(
 		logrus.Fields{
 			"event": m,
-		}).Debug("Received ARI event.")
+		}).Debugf("Received ARI event. type: %s", event.Type)
 	promARIEventTotal.WithLabelValues(string(event.Type), event.AsteriskID).Inc()
 
 	// processMap maps ARIEvent name and event handler.

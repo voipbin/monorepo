@@ -103,10 +103,10 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	}
 
 	if err := json.Unmarshal([]byte(recordingIDs), &res.RecordingIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the record_files. callGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not unmarshal the recording_ids. callGetFromRow. err: %v", err)
 	}
 	if res.RecordingIDs == nil {
-		res.RecordingIDs = []string{}
+		res.RecordingIDs = []uuid.UUID{}
 	}
 
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
@@ -171,7 +171,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	}
 
 	if c.RecordingIDs == nil {
-		c.RecordingIDs = []string{}
+		c.RecordingIDs = []uuid.UUID{}
 	}
 	tmpRecordingIDs, err := json.Marshal(c.RecordingIDs)
 	if err != nil {
@@ -209,7 +209,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 		c.MasterCallID.Bytes(),
 		tmpChainedCallIDs,
-		c.RecordingID,
+		c.RecordingID.Bytes(),
 		tmpRecordingIDs,
 
 		tmpSource,
@@ -654,7 +654,7 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 }
 
 // CallSetRecordID sets the given recordID to recording_id.
-func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID string) error {
+func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare
 	q := `
 	update calls set
@@ -664,7 +664,7 @@ func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID st
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetRecordID. err: %v", err)
 	}
@@ -676,7 +676,7 @@ func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID st
 }
 
 // CallAddRecordIDs adds the given recording_id into the recording_ids.
-func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID string) error {
+func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare
 	q := `
 	update calls set
@@ -690,7 +690,7 @@ func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID s
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.String(), getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddRecordIDs. err: %v", err)
 	}

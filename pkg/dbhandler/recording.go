@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	uuid "github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
 )
 
@@ -64,7 +66,7 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 }
 
 // RecordingGetFromCache returns record from the cache.
-func (h *handler) RecordingGetFromCache(ctx context.Context, id string) (*recording.Recording, error) {
+func (h *handler) RecordingGetFromCache(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 
 	// get from cache
 	res, err := h.cache.RecordingGet(ctx, id)
@@ -76,12 +78,12 @@ func (h *handler) RecordingGetFromCache(ctx context.Context, id string) (*record
 }
 
 // RecordingGetFromDB returns record from the DB.
-func (h *handler) RecordingGetFromDB(ctx context.Context, id string) (*recording.Recording, error) {
+func (h *handler) RecordingGetFromDB(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", recordingSelect)
 
-	row, err := h.db.Query(q, id)
+	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RecordingGetFromDB. err: %v", err)
 	}
@@ -100,7 +102,7 @@ func (h *handler) RecordingGetFromDB(ctx context.Context, id string) (*recording
 }
 
 // RecordingUpdateToCache gets the record from the DB and update the cache.
-func (h *handler) RecordingUpdateToCache(ctx context.Context, id string) error {
+func (h *handler) RecordingUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
 	res, err := h.RecordingGetFromDB(ctx, id)
 	if err != nil {
@@ -146,7 +148,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 	)`
 
 	_, err := h.db.Exec(q,
-		c.ID,
+		c.ID.Bytes(),
 		c.UserID,
 		c.Type,
 		c.ReferenceID.Bytes(),
@@ -170,7 +172,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 }
 
 // RecordingGet returns record.
-func (h *handler) RecordingGet(ctx context.Context, id string) (*recording.Recording, error) {
+func (h *handler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 
 	res, err := h.RecordingGetFromCache(ctx, id)
 	if err == nil {
@@ -184,6 +186,30 @@ func (h *handler) RecordingGet(ctx context.Context, id string) (*recording.Recor
 
 	// set to the cache
 	h.RecordingSetToCache(ctx, res)
+
+	return res, nil
+}
+
+// RecordingGetByFilename gets the recording by the filename.
+func (h *handler) RecordingGetByFilename(ctx context.Context, filename string) (*recording.Recording, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where filename = ?", recordingSelect)
+
+	row, err := h.db.Query(q, filename)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. RecordingGetByFilename. err: %v", err)
+	}
+	defer row.Close()
+
+	if row.Next() == false {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.recordingGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get data. RecordingGetByFilename, err: %v", err)
+	}
 
 	return res, nil
 }
@@ -214,7 +240,7 @@ func (h *handler) RecordingGets(ctx context.Context, userID uint64, size uint64,
 }
 
 // RecordingSetStatus sets the record's status
-func (h *handler) RecordingSetStatus(ctx context.Context, id string, status recording.Status, timestamp string) error {
+func (h *handler) RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status, timestamp string) error {
 
 	switch status {
 
@@ -233,7 +259,7 @@ func (h *handler) RecordingSetStatus(ctx context.Context, id string, status reco
 }
 
 // recordingSetStatusInitiating sets the record's status to initiating
-func (h *handler) recordingSetStatusInitiating(ctx context.Context, id string) error {
+func (h *handler) recordingSetStatusInitiating(ctx context.Context, id uuid.UUID) error {
 
 	// prepare
 	q := `
@@ -246,7 +272,7 @@ func (h *handler) recordingSetStatusInitiating(ctx context.Context, id string) e
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recording.StatusInitiating, getCurTime(), id)
+	_, err := h.db.Exec(q, recording.StatusInitiating, getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. recordingSetStatusRecording. err: %v", err)
 	}
@@ -258,7 +284,7 @@ func (h *handler) recordingSetStatusInitiating(ctx context.Context, id string) e
 }
 
 // recordingSetStatusRecording sets the record's status recording
-func (h *handler) recordingSetStatusRecording(ctx context.Context, id string, timestamp string) error {
+func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID, timestamp string) error {
 
 	// prepare
 	q := `
@@ -272,7 +298,7 @@ func (h *handler) recordingSetStatusRecording(ctx context.Context, id string, ti
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recording.StatusRecording, timestamp, getCurTime(), id)
+	_, err := h.db.Exec(q, recording.StatusRecording, timestamp, getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. recordingSetStatusRecording. err: %v", err)
 	}
@@ -284,7 +310,7 @@ func (h *handler) recordingSetStatusRecording(ctx context.Context, id string, ti
 }
 
 // recordingSetStatusEnd sets the record's status to end
-func (h *handler) recordingSetStatusEnd(ctx context.Context, id string, timestamp string) error {
+func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID, timestamp string) error {
 
 	// prepare
 	q := `
@@ -298,7 +324,7 @@ func (h *handler) recordingSetStatusEnd(ctx context.Context, id string, timestam
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recording.StatusEnd, timestamp, getCurTime(), id)
+	_, err := h.db.Exec(q, recording.StatusEnd, timestamp, getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. recordingSetStatusEnd. err: %v", err)
 	}

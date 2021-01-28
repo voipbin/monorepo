@@ -39,7 +39,7 @@ type DBHandler interface {
 
 	// calls
 	CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
-	CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID string) error
+	CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	CallCreate(ctx context.Context, call *call.Call) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error)
@@ -53,7 +53,7 @@ type DBHandler interface {
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
-	CallSetRecordID(ctx context.Context, id uuid.UUID, recordID string) error
+	CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	CallSetToCache(ctx context.Context, call *call.Call) error
 	CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
 	CallTXFinish(tx *sql.Tx, commit bool)
@@ -85,7 +85,7 @@ type DBHandler interface {
 
 	// conferences
 	ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error
-	ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, recordID string) error
+	ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error
 	ConferenceEnd(ctx context.Context, id uuid.UUID) error
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
@@ -94,20 +94,21 @@ type DBHandler interface {
 	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
-	ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID string) error
+	ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
 	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
 	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error
 
 	// recordings
 	RecordingCreate(ctx context.Context, c *recording.Recording) error
-	RecordingGet(ctx context.Context, id string) (*recording.Recording, error)
-	RecordingGetFromCache(ctx context.Context, id string) (*recording.Recording, error)
-	RecordingGetFromDB(ctx context.Context, id string) (*recording.Recording, error)
+	RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
+	RecordingGetByFilename(ctx context.Context, filename string) (*recording.Recording, error)
+	RecordingGetFromCache(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
+	RecordingGetFromDB(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]*recording.Recording, error)
-	RecordingSetStatus(ctx context.Context, id string, status recording.Status, timestamp string) error
+	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status, timestamp string) error
 	RecordingSetToCache(ctx context.Context, r *recording.Recording) error
-	RecordingUpdateToCache(ctx context.Context, id string) error
+	RecordingUpdateToCache(ctx context.Context, id uuid.UUID) error
 
 	// numbers
 	NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error)

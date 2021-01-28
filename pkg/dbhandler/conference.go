@@ -84,7 +84,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		return nil, fmt.Errorf("could not unmarshal the destination. conferenceGetFromRow. err: %v", err)
 	}
 	if res.RecordingIDs == nil {
-		res.RecordingIDs = []string{}
+		res.RecordingIDs = []uuid.UUID{}
 	}
 
 	return res, nil
@@ -206,7 +206,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 		callIDs,
 
-		cf.RecordingID,
+		cf.RecordingID.Bytes(),
 		recordingIDs,
 
 		getCurTime(),
@@ -392,7 +392,7 @@ func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 }
 
 // ConferenceSetRecordID sets the conference's recording_id.
-func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID string) error {
+func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare
 	q := `
 	update conferences set
@@ -402,7 +402,7 @@ func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recor
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetRecordID. err: %v", err)
 	}
@@ -414,7 +414,7 @@ func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recor
 }
 
 // ConferenceAddRecordIDs adds the record file to the bridge's record_files.
-func (h *handler) ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, recordID string) error {
+func (h *handler) ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare
 	q := `
 	update conferences set
@@ -428,7 +428,7 @@ func (h *handler) ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddRecordIDs. err: %v", err)
 	}

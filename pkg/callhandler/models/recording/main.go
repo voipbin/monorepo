@@ -4,7 +4,7 @@ import "github.com/gofrs/uuid"
 
 // Recording struct represent record information
 type Recording struct {
-	ID          string    `json:"id"`
+	ID          uuid.UUID `json:"id"`
 	UserID      uint64    `json:"user_id"`
 	Type        Type      `json:"type"`
 	ReferenceID uuid.UUID `json:"reference_id"`

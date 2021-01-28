@@ -45,7 +45,7 @@ type CacheHandler interface {
 	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
 	NumberSetByNumber(ctx context.Context, numb *number.Number) error
 
-	RecordingGet(ctx context.Context, id string) (*recording.Recording, error)
+	RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordSet(ctx context.Context, record *recording.Recording) error
 }
 

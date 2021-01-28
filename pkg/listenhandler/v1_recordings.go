@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -67,12 +68,7 @@ func (h *listenHandler) processV1RecordingsIDGet(m *rabbitmqhandler.Request) (*r
 		return simpleResponse(400), nil
 	}
 
-	id, err := url.QueryUnescape(uriItems[3])
-	if err != nil {
-		logrus.Errorf("Could not decode the id. err: %v", err)
-		return simpleResponse(404), nil
-	}
-
+	id := uuid.FromStringOrNil(uriItems[3])
 	log := logrus.WithFields(
 		logrus.Fields{
 			"id": id,
