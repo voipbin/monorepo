@@ -6,6 +6,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/calls"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/conferences"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/flows"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/recordingfiles"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/recordings"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/users"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
@@ -20,5 +21,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	conferences.ApplyRoutes(v1)
 	flows.ApplyRoutes(v1)
 	recordings.ApplyRoutes(v1)
+	recordingfiles.ApplyRoutes(v1)
 	users.ApplyRoutes(v1)
 }
