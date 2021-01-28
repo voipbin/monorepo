@@ -14,8 +14,8 @@ type Conference struct {
 
 	CallIDs []uuid.UUID `json:"call_ids"` // Currently joined call IDs.
 
-	RecordingID  string   `json:"recording_id"`  // Currently recording ID.
-	RecordingIDs []string `json:"recording_ids"` // Recorded recording IDs.
+	RecordingID  uuid.UUID   `json:"recording_id"`  // Currently recording ID.
+	RecordingIDs []uuid.UUID `json:"recording_ids"` // Recorded recording IDs.
 
 	TMCreate string `json:"tm_create"` // Created timestamp.
 	TMUpdate string `json:"tm_update"` // Updated timestamp.
