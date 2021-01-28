@@ -10,6 +10,7 @@ type Recording struct {
 	ReferenceID uuid.UUID `json:"reference_id"`
 	Status      Status    `json:"status"`
 	Format      string    `json:"format"`
+	Filename    string    `json:"filename"`
 
 	AsteriskID string `json:"asterisk_id"`
 	ChannelID  string `json:"channel_id"`

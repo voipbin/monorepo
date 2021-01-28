@@ -18,6 +18,7 @@ const (
 		reference_id,
 		status,
 		format,
+		filename,
 
 		asterisk_id,
 		channel_id,
@@ -44,6 +45,7 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 		&res.ReferenceID,
 		&res.Status,
 		&res.Format,
+		&res.Filename,
 
 		&res.AsteriskID,
 		&res.ChannelID,
@@ -130,6 +132,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		reference_id,
 		status,
 		format,
+		filename,
 
 		asterisk_id,
 		channel_id,
@@ -137,7 +140,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		tm_create
 
 	) values(
-		?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?,
 		?, ?,
 		?
 	)`
@@ -149,6 +152,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		c.ReferenceID.Bytes(),
 		c.Status,
 		c.Format,
+		c.Filename,
 
 		c.AsteriskID,
 		c.ChannelID,

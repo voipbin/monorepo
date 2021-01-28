@@ -525,6 +525,7 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 	}
 
 	recordID := fmt.Sprintf("call_%s_%s", c.ID, getCurTimeRFC3339())
+	filename := fmt.Sprintf("call_%s_%s.%s", c.ID, getCurTimeRFC3339(), format)
 	channelID := uuid.Must(uuid.NewV4()).String()
 
 	// create a recording
@@ -535,6 +536,7 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 		ReferenceID: c.ID,
 		Status:      recording.StatusInitiating,
 		Format:      format,
+		Filename:    filename,
 
 		AsteriskID: c.AsteriskID,
 		ChannelID:  channelID,
@@ -546,10 +548,11 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 	}
 
 	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
+	appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,recording_filename=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
 		contextRecording,
 		c.ID,
 		recordID,
+		filename,
 		option.Format,
 		option.EndOfSilence,
 		option.EndOfKey,

@@ -6,6 +6,7 @@ create table recordings(
   reference_id      binary(16),     -- referenced id. call-id, conference-id
   status            varchar(255),   -- current status of record.
   format            varchar(16),    -- recording's format. wav, ...
+  filename          varchar(255),   -- recording's filename.
 
   -- asterisk info
   asterisk_id       varchar(255), -- Asterisk id
