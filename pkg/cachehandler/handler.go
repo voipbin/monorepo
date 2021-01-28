@@ -169,7 +169,7 @@ func (h *handler) NumberSetByNumber(ctx context.Context, numb *number.Number) er
 }
 
 // RecordingGet returns record info from the cache
-func (h *handler) RecordingGet(ctx context.Context, id string) (*recording.Recording, error) {
+func (h *handler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	key := fmt.Sprintf("record:%s", id)
 
 	var res recording.Recording

@@ -372,14 +372,14 @@ func TestActionExecuteRecordingStop(t *testing.T) {
 				ID:          uuid.FromStringOrNil("4dde92d0-2b9e-11eb-ad28-f732fd0afed7"),
 				AsteriskID:  "42:01:0a:a4:00:05",
 				ChannelID:   "5293419a-2b9e-11eb-bfa6-97a4312177f2",
-				RecordingID: "call_4dde92d0-2b9e-11eb-ad28-f732fd0afed7_2020-04-18T03:22:17.995000",
+				RecordingID: uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
 			},
 			&action.Action{
 				Type: action.TypeRecordingStop,
 				ID:   uuid.FromStringOrNil("4a3925dc-2b9e-11eb-abb3-d759c4b283d0"),
 			},
 			&recording.Recording{
-				ID:         "call_4dde92d0-2b9e-11eb-ad28-f732fd0afed7_2020-04-18T03:22:17.995000",
+				ID:         uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "fe9354d8-2bb9-11eb-8ad0-9764de384853",
 			},

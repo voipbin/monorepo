@@ -40,7 +40,7 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 		"action":      a.ID,
 		"action_type": a.Type,
 	})
-	log.Debug("Executing the action.")
+	log.Debugf("Executing the action. action_type: %s", a.Type)
 
 	var err error
 	switch a.Type {
@@ -524,13 +524,14 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
-	recordID := fmt.Sprintf("call_%s_%s", c.ID, getCurTimeRFC3339())
-	filename := fmt.Sprintf("call_%s_%s.%s", c.ID, getCurTimeRFC3339(), format)
+	recordingID := uuid.Must(uuid.NewV4())
+	recordingName := fmt.Sprintf("call_%s_%s", c.ID, getCurTimeRFC3339())
+	filename := fmt.Sprintf("%s.%s", recordingName, format)
 	channelID := uuid.Must(uuid.NewV4()).String()
 
 	// create a recording
 	rec := &recording.Recording{
-		ID:          recordID,
+		ID:          recordingID,
 		UserID:      c.UserID,
 		Type:        recording.TypeCall,
 		ReferenceID: c.ID,
@@ -548,11 +549,11 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 	}
 
 	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,recording_filename=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
+	appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,recording_name=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
 		contextRecording,
 		c.ID,
-		recordID,
-		filename,
+		recordingID,
+		recordingName,
 		option.Format,
 		option.EndOfSilence,
 		option.EndOfKey,
@@ -566,13 +567,13 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 	}
 
 	// set record channel id
-	if err := h.db.CallSetRecordID(ctx, c.ID, recordID); err != nil {
+	if err := h.db.CallSetRecordID(ctx, c.ID, recordingID); err != nil {
 		log.Errorf("Could not set the record id to the call. err: %v", err)
 		return fmt.Errorf("could not set the record id to the call. err: %v", err)
 	}
 
 	// add the recording
-	if err := h.db.CallAddRecordIDs(ctx, c.ID, recordID); err != nil {
+	if err := h.db.CallAddRecordIDs(ctx, c.ID, recordingID); err != nil {
 		log.Errorf("Could not add the record id to the call. err: %v", err)
 		return fmt.Errorf("could not add the record id to the call. err: %v", err)
 	}

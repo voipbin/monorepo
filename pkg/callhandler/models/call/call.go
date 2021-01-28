@@ -25,8 +25,8 @@ type Call struct {
 	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
 	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // chained call ids
-	RecordingID    string      `json:"recording_id"`     // recording id(current)
-	RecordingIDs   []string    `json:"recording_ids"`    // recording ids
+	RecordingID    uuid.UUID   `json:"recording_id"`     // recording id(current)
+	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // recording ids
 
 	// source/destination
 	Source      Address `json:"source"`
@@ -176,7 +176,7 @@ func NewCall(
 		Type:       cType,
 
 		ChainedCallIDs: []uuid.UUID{},
-		RecordingIDs:   []string{},
+		RecordingIDs:   []uuid.UUID{},
 
 		Source:      *source,
 		Destination: *destination,
@@ -207,7 +207,7 @@ func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction 
 		Type:       cType,
 
 		ChainedCallIDs: []uuid.UUID{},
-		RecordingIDs:   []string{},
+		RecordingIDs:   []uuid.UUID{},
 
 		Source:      *source,
 		Destination: *destination,

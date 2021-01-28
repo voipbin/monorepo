@@ -217,7 +217,7 @@ func (mr *MockDBHandlerMockRecorder) CallAddChainedCallID(ctx, id, chainedCallID
 }
 
 // CallAddRecordIDs mocks base method
-func (m *MockDBHandler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID string) error {
+func (m *MockDBHandler) CallAddRecordIDs(ctx context.Context, id, recordID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallAddRecordIDs", ctx, id, recordID)
 	ret0, _ := ret[0].(error)
@@ -417,7 +417,7 @@ func (mr *MockDBHandlerMockRecorder) CallSetStatus(ctx, id, status, tmUpdate int
 }
 
 // CallSetRecordID mocks base method
-func (m *MockDBHandler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID string) error {
+func (m *MockDBHandler) CallSetRecordID(ctx context.Context, id, recordID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallSetRecordID", ctx, id, recordID)
 	ret0, _ := ret[0].(error)
@@ -814,7 +814,7 @@ func (mr *MockDBHandlerMockRecorder) ConferenceAddCallID(ctx, id, callID interfa
 }
 
 // ConferenceAddRecordIDs mocks base method
-func (m *MockDBHandler) ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, recordID string) error {
+func (m *MockDBHandler) ConferenceAddRecordIDs(ctx context.Context, id, recordID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceAddRecordIDs", ctx, id, recordID)
 	ret0, _ := ret[0].(error)
@@ -943,7 +943,7 @@ func (mr *MockDBHandlerMockRecorder) ConferenceSetData(ctx, id, data interface{}
 }
 
 // ConferenceSetRecordID mocks base method
-func (m *MockDBHandler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID string) error {
+func (m *MockDBHandler) ConferenceSetRecordID(ctx context.Context, id, recordID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceSetRecordID", ctx, id, recordID)
 	ret0, _ := ret[0].(error)
@@ -1013,7 +1013,7 @@ func (mr *MockDBHandlerMockRecorder) RecordingCreate(ctx, c interface{}) *gomock
 }
 
 // RecordingGet mocks base method
-func (m *MockDBHandler) RecordingGet(ctx context.Context, id string) (*recording.Recording, error) {
+func (m *MockDBHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGet", ctx, id)
 	ret0, _ := ret[0].(*recording.Recording)
@@ -1027,8 +1027,23 @@ func (mr *MockDBHandlerMockRecorder) RecordingGet(ctx, id interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockDBHandler)(nil).RecordingGet), ctx, id)
 }
 
+// RecordingGetByFilename mocks base method
+func (m *MockDBHandler) RecordingGetByFilename(ctx context.Context, filename string) (*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingGetByFilename", ctx, filename)
+	ret0, _ := ret[0].(*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingGetByFilename indicates an expected call of RecordingGetByFilename
+func (mr *MockDBHandlerMockRecorder) RecordingGetByFilename(ctx, filename interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGetByFilename", reflect.TypeOf((*MockDBHandler)(nil).RecordingGetByFilename), ctx, filename)
+}
+
 // RecordingGetFromCache mocks base method
-func (m *MockDBHandler) RecordingGetFromCache(ctx context.Context, id string) (*recording.Recording, error) {
+func (m *MockDBHandler) RecordingGetFromCache(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGetFromCache", ctx, id)
 	ret0, _ := ret[0].(*recording.Recording)
@@ -1043,7 +1058,7 @@ func (mr *MockDBHandlerMockRecorder) RecordingGetFromCache(ctx, id interface{}) 
 }
 
 // RecordingGetFromDB mocks base method
-func (m *MockDBHandler) RecordingGetFromDB(ctx context.Context, id string) (*recording.Recording, error) {
+func (m *MockDBHandler) RecordingGetFromDB(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGetFromDB", ctx, id)
 	ret0, _ := ret[0].(*recording.Recording)
@@ -1073,7 +1088,7 @@ func (mr *MockDBHandlerMockRecorder) RecordingGets(ctx, userID, size, token inte
 }
 
 // RecordingSetStatus mocks base method
-func (m *MockDBHandler) RecordingSetStatus(ctx context.Context, id string, status recording.Status, timestamp string) error {
+func (m *MockDBHandler) RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status, timestamp string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingSetStatus", ctx, id, status, timestamp)
 	ret0, _ := ret[0].(error)
@@ -1101,7 +1116,7 @@ func (mr *MockDBHandlerMockRecorder) RecordingSetToCache(ctx, r interface{}) *go
 }
 
 // RecordingUpdateToCache mocks base method
-func (m *MockDBHandler) RecordingUpdateToCache(ctx context.Context, id string) error {
+func (m *MockDBHandler) RecordingUpdateToCache(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingUpdateToCache", ctx, id)
 	ret0, _ := ret[0].(error)

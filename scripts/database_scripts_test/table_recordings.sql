@@ -1,6 +1,6 @@
 create table recordings(
   -- identity
-  id                varchar(255),   -- recording's id(name)
+  id                binary(16),     -- recording's id(name)
   user_id           integer,        -- user id
   type              varchar(16),    -- type of record. call, conference
   reference_id      binary(16),     -- referenced id. call-id, conference-id
@@ -25,3 +25,4 @@ create table recordings(
 
 create index idx_recordings_user_id on recordings(user_id);
 create index idx_recordings_tm_start on recordings(tm_start);
+create index idx_recordings_filename on recordings(filename);

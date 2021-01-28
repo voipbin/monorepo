@@ -194,13 +194,14 @@ func (h *callHandler) startHandlerContextRecording(cn *channel.Channel, data map
 	logrus.Infof("Executing startHandlerContextRecording. channel: %s", cn.ID)
 
 	id := data["recording_id"].(string)
-	name := data["recording_filename"].(string)
+	name := data["recording_name"].(string)
 	format := data["format"].(string)
 	duration, _ := strconv.Atoi(data["duration"].(string))
 	silence, _ := strconv.Atoi(data["end_of_silence"].(string))
 	endKey := data["end_of_key"].(string)
+	callID := data["call_id"].(string)
 
-	logrus.Infof("Recording start. id: %s, filename: %s", id, name)
+	logrus.Infof("Recording start. id: %s, name: %s, call: %s", id, name, callID)
 
 	if err := h.reqHandler.AstChannelRecord(cn.AsteriskID, cn.ID, name, format, duration, silence, false, endKey, "fail"); err != nil {
 		logrus.Errorf("Could not start the recording. Destorying the chanel. err: %v", err)

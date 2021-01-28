@@ -51,7 +51,7 @@ func (h *listenHandler) processV1CallsIDGet(m *rabbitmqhandler.Request) (*rabbit
 	return res, nil
 }
 
-// processV1CallsPost handles POST /v1/calls/<id> request
+// processV1CallsPost handles POST /v1/calls request
 // It creates a new call.
 func (h *listenHandler) processV1CallsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
