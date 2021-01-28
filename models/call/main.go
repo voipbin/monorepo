@@ -14,8 +14,8 @@ type Call struct {
 
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // Master call id
 	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // Chained call ids
-	RecordingID    string      `json:"recording_id"`     // Recording id(current)
-	RecordingIDs   []string    `json:"recording_ids"`    // Recording ids
+	RecordingID    uuid.UUID   `json:"recording_id"`     // Recording id(current)
+	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // Recording ids
 
 	Source      Address `json:"source"`      // Source info
 	Destination Address `json:"destination"` // Destination info
