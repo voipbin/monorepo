@@ -259,6 +259,21 @@ func (mr *MockDBHandlerMockRecorder) CallGet(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGet", reflect.TypeOf((*MockDBHandler)(nil).CallGet), ctx, id)
 }
 
+// CallGetByChannelID mocks base method
+func (m *MockDBHandler) CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallGetByChannelID", ctx, channelID)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallGetByChannelID indicates an expected call of CallGetByChannelID
+func (mr *MockDBHandlerMockRecorder) CallGetByChannelID(ctx, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetByChannelID", reflect.TypeOf((*MockDBHandler)(nil).CallGetByChannelID), ctx, channelID)
+}
+
 // CallGetFromCache mocks base method
 func (m *MockDBHandler) CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
@@ -289,19 +304,19 @@ func (mr *MockDBHandlerMockRecorder) CallGetFromDB(ctx, id interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).CallGetFromDB), ctx, id)
 }
 
-// CallGetByChannelID mocks base method
-func (m *MockDBHandler) CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error) {
+// CallGets mocks base method
+func (m *MockDBHandler) CallGets(ctx context.Context, userID, size uint64, token string) ([]*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallGetByChannelID", ctx, channelID)
-	ret0, _ := ret[0].(*call.Call)
+	ret := m.ctrl.Call(m, "CallGets", ctx, userID, size, token)
+	ret0, _ := ret[0].([]*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CallGetByChannelID indicates an expected call of CallGetByChannelID
-func (mr *MockDBHandlerMockRecorder) CallGetByChannelID(ctx, channelID interface{}) *gomock.Call {
+// CallGets indicates an expected call of CallGets
+func (mr *MockDBHandlerMockRecorder) CallGets(ctx, userID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetByChannelID", reflect.TypeOf((*MockDBHandler)(nil).CallGetByChannelID), ctx, channelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockDBHandler)(nil).CallGets), ctx, userID, size, token)
 }
 
 // CallRemoveChainedCallID mocks base method

@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -14,6 +16,52 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
+
+// processV1CallsGet handles GET /v1/calls request
+func (h *listenHandler) processV1CallsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the pagination params
+	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := u.Query().Get(PageToken)
+
+	// get user_id
+	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
+	userID := uint64(tmpUserID)
+
+	log := logrus.WithFields(logrus.Fields{
+		"user":  userID,
+		"size":  pageSize,
+		"token": pageToken,
+	})
+
+	log.Debug("Getting calls.")
+	recordings, err := h.db.CallGets(context.Background(), userID, pageSize, pageToken)
+	if err != nil {
+		log.Debugf("Could not get recordings. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(recordings)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", recordings, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
 
 // processV1CallsIDGet handles GET /v1/calls/<id> request
 func (h *listenHandler) processV1CallsIDGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {

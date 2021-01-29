@@ -218,6 +218,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1CallsIDDelete(m)
 		requestType = "/v1/calls"
 
+	// GET /calls
+	case regV1Calls.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1CallsGet(m)
+		requestType = "/v1/calls"
+
 	// POST /calls
 	case regV1Calls.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsPost(m)

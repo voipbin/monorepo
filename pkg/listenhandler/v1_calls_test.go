@@ -17,6 +17,128 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
+func TestProcessV1CallsIDGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock: mockSock,
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	type test struct {
+		name      string
+		request   *rabbitmqhandler.Request
+		call      *call.Call
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"basic",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls/638769c2-620d-11eb-bd1f-6b576e26b4e6",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&call.Call{
+				ID:     uuid.FromStringOrNil("638769c2-620d-11eb-bd1f-6b576e26b4e6"),
+				UserID: 0,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"638769c2-620d-11eb-bd1f-6b576e26b4e6","user_id":0,"asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestProcessV1CallsGets(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock: mockSock,
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	type test struct {
+		name      string
+		request   *rabbitmqhandler.Request
+		userID    uint64
+		pageSize  uint64
+		pageToken string
+		calls     []*call.Call
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"basic",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			1,
+			10,
+			"2020-05-03 21:35:02.809",
+			[]*call.Call{
+				&call.Call{
+					ID:     uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
+					UserID: 1,
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.calls, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
 func TestProcessV1CallsIDHealthPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
