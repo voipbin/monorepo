@@ -28,6 +28,7 @@ type ServiceHandler interface {
 	CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error)
 	CallGet(u *user.User, callID uuid.UUID) (*call.Call, error)
 	CallGets(u *user.User, size uint64, token string) ([]*call.Call, error)
+	CallDelete(u *user.User, callID uuid.UUID) error
 
 	// conference handlers
 	ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error)
@@ -41,8 +42,11 @@ type ServiceHandler interface {
 	FlowGetsByUserID(u *user.User, pageToken string, pageSize uint64) ([]*flow.Flow, error)
 
 	// recording handlers
-	RecordingGet(u *user.User, id string) (string, error)
+	RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error)
 	RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error)
+
+	// recordingfile handlers
+	RecordingfileGet(u *user.User, id uuid.UUID) (string, error)
 
 	// user handlers
 	UserCreate(username, password string, permission uint64) (*user.User, error)

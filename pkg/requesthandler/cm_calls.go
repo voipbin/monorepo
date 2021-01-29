@@ -3,6 +3,7 @@ package requesthandler
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/gofrs/uuid"
 
@@ -71,4 +72,49 @@ func (r *requestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 	}
 
 	return &c, nil
+}
+
+// CMCallGets sends a request to call-manager
+// to getting a list of call info.
+// it returns detail list of call info if it succeed.
+func (r *requestHandler) CMCallGets(userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error) {
+	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var calls []cmcall.Call
+	if err := json.Unmarshal([]byte(res.Data), &calls); err != nil {
+		return nil, err
+	}
+
+	return calls, nil
+}
+
+// CMCallDelete sends a request to call-manager
+// to hangup the call.
+// it returns 200 if it succeed.
+func (r *requestHandler) CMCallDelete(callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s", callID)
+
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
 }

@@ -1,7 +1,6 @@
 package servicehandler
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -95,12 +94,39 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 	}
 
 	// get calls
-	ctx := context.Background()
-	res, err := h.dbHandler.CallsGetsByUserID(ctx, u.ID, token, size)
+	res := []*call.Call{}
+	tmps, err := h.reqHandler.CMCallGets(u.ID, token, size)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
-		return []*call.Call{}, nil
+		return nil, err
+	}
+
+	// convert
+	for _, tmp := range tmps {
+		c := tmp.ConvertCall()
+		res = append(res, c)
 	}
 
 	return res, nil
+}
+
+// CallDelete sends a request to call-manager
+// to hangup the call.
+// it returns call if it succeed.
+func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"call_id":  callID,
+	})
+
+	// send request
+	err := h.reqHandler.CMCallDelete(callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	return nil
 }

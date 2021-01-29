@@ -3,13 +3,14 @@ package servicehandler
 import (
 	"fmt"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // RecordingfileGet returns downloadable url for recording
-func (h *serviceHandler) RecordingfileGet(u *user.User, id string) (string, error) {
+func (h *serviceHandler) RecordingfileGet(u *user.User, id uuid.UUID) (string, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -32,11 +33,9 @@ func (h *serviceHandler) RecordingfileGet(u *user.User, id string) (string, erro
 		return "", fmt.Errorf("user has no permission")
 	}
 
-	filename := fmt.Sprintf("%s.wav", id)
-	log.Debugf("Getting recording file. recording: %s", filename)
-
 	// get download url from storage-manager
-	url, err := h.reqHandler.STRecordingGet(filename)
+	log.Debugf("Getting recording file. recording: %s", recording.Filename)
+	url, err := h.reqHandler.STRecordingGet(recording.Filename)
 	if err != nil {
 		log.Errorf("Could not get download url. err: %v", err)
 		return "", err

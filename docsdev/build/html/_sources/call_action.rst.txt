@@ -11,7 +11,7 @@ Answer the call
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "answer"
@@ -19,7 +19,7 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "answer"
@@ -33,7 +33,7 @@ Join to the conference
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "conference_join",
@@ -46,7 +46,7 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "conference_join",
@@ -55,7 +55,7 @@ Example
         }
     }
 
-.. _call-action-connect:
+.. _call-action-connect: call-action-connect
 
 Connect
 -------
@@ -63,7 +63,7 @@ Originate to the other destination(s) and connect to them each other.
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "connect",
@@ -83,7 +83,7 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "connect",
@@ -107,7 +107,7 @@ Echoing the call.
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "echo",
@@ -122,7 +122,7 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "echo",
@@ -137,7 +137,7 @@ Hangup the call.
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "hangup"
@@ -145,13 +145,13 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "hangup"
     }
 
-.. _call-action-patch:
+.. _call-action-patch: call-action-patch
 
 Patch
 -----
@@ -159,7 +159,7 @@ Patch the next flow from the remote.
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "patch",
@@ -174,7 +174,7 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "patch".
@@ -189,7 +189,7 @@ Plays the linked file.
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "play",
@@ -205,7 +205,7 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "play",
@@ -221,7 +221,7 @@ Recording Start
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "recording_start"
@@ -242,7 +242,7 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "recording_start",
@@ -256,7 +256,7 @@ Recording Stop
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "recording_stop"
@@ -264,7 +264,7 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "recording_stop"
@@ -276,7 +276,7 @@ Text to speech. SSML(https://www.w3.org/TR/speech-synthesis/) supported.
 
 Parameters
 ++++++++++
-::
+.. code::
 
     {
         "type": "talk",
@@ -293,7 +293,7 @@ Parameters
 
 Example
 +++++++
-::
+.. code::
 
     {
         "type": "talk",

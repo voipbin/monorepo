@@ -80,13 +80,13 @@ unanswer    Destination didn't answer until destination's timeout.
 dialout     The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).
 =========== ============
 
-.. _call-struct-address:
+.. _call-struct-address: call-struct-address
 
 Address
 -------
 Defines target(source/destination) address.
 
-::
+.. code::
 
     {
         "type": "<string>",
@@ -98,7 +98,7 @@ Defines target(source/destination) address.
 * target: Target address.
 * name: Target name.
 
-.. _call-struct-address-type:
+.. _call-struct-address-type: call-struct-address-type
 
 Address type
 ------------
