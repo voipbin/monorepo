@@ -118,7 +118,7 @@ func (h *handler) RecordingUpdateToCache(ctx context.Context, id uuid.UUID) erro
 
 // RecordingSetToCache sets the given record to the cache
 func (h *handler) RecordingSetToCache(ctx context.Context, r *recording.Recording) error {
-	if err := h.cache.RecordSet(ctx, r); err != nil {
+	if err := h.cache.RecordingSet(ctx, r); err != nil {
 		return err
 	}
 

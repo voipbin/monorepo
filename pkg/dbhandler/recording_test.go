@@ -60,13 +60,13 @@ func TestRecordingCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
-			mockCache.EXPECT().RecordSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockCache.EXPECT().RecordingSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.RecordingCreate(context.Background(), tt.record); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().RecordingGet(gomock.Any(), tt.record.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().RecordSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockCache.EXPECT().RecordingSet(gomock.Any(), gomock.Any()).Return(nil)
 			res, err := h.RecordingGet(context.Background(), tt.record.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

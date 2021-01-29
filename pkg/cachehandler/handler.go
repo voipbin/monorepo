@@ -170,7 +170,7 @@ func (h *handler) NumberSetByNumber(ctx context.Context, numb *number.Number) er
 
 // RecordingGet returns record info from the cache
 func (h *handler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
-	key := fmt.Sprintf("record:%s", id)
+	key := fmt.Sprintf("recording:%s", id)
 
 	var res recording.Recording
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -180,9 +180,9 @@ func (h *handler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Re
 	return &res, nil
 }
 
-// RecordSet sets the record info into the cache.
-func (h *handler) RecordSet(ctx context.Context, record *recording.Recording) error {
-	key := fmt.Sprintf("record:%s", record.ID)
+// RecordingSet sets the record info into the cache.
+func (h *handler) RecordingSet(ctx context.Context, record *recording.Recording) error {
+	key := fmt.Sprintf("recording:%s", record.ID)
 
 	if err := h.setSerialize(ctx, key, record); err != nil {
 		return err
