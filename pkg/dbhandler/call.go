@@ -279,6 +279,31 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 	return res, nil
 }
 
+// CallGets returns a list of calls.
+func (h *handler) CallGets(ctx context.Context, userID uint64, size uint64, token string) ([]*call.Call, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", callSelect)
+
+	rows, err := h.db.Query(q, userID, token, size)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CallGets. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*call.Call{}
+	for rows.Next() {
+		u, err := h.callGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. callGetFromRow, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // callSetStatusRinging sets the call status to ringing
 func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStatus string) error {
 	// prepare

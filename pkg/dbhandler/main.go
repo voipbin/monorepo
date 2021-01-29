@@ -42,9 +42,10 @@ type DBHandler interface {
 	CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	CallCreate(ctx context.Context, call *call.Call) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
+	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
 	CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
-	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
+	CallGets(ctx context.Context, userID uint64, size uint64, token string) ([]*call.Call, error)
 	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
 	CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error
 	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
