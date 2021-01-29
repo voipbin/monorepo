@@ -229,16 +229,16 @@ func (mr *MockCacheHandlerMockRecorder) RecordingGet(ctx, id interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockCacheHandler)(nil).RecordingGet), ctx, id)
 }
 
-// RecordSet mocks base method
-func (m *MockCacheHandler) RecordSet(ctx context.Context, record *recording.Recording) error {
+// RecordingSet mocks base method
+func (m *MockCacheHandler) RecordingSet(ctx context.Context, record *recording.Recording) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordSet", ctx, record)
+	ret := m.ctrl.Call(m, "RecordingSet", ctx, record)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RecordSet indicates an expected call of RecordSet
-func (mr *MockCacheHandlerMockRecorder) RecordSet(ctx, record interface{}) *gomock.Call {
+// RecordingSet indicates an expected call of RecordingSet
+func (mr *MockCacheHandlerMockRecorder) RecordingSet(ctx, record interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordSet", reflect.TypeOf((*MockCacheHandler)(nil).RecordSet), ctx, record)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingSet", reflect.TypeOf((*MockCacheHandler)(nil).RecordingSet), ctx, record)
 }

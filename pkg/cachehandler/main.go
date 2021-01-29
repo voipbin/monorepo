@@ -46,7 +46,7 @@ type CacheHandler interface {
 	NumberSetByNumber(ctx context.Context, numb *number.Number) error
 
 	RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
-	RecordSet(ctx context.Context, record *recording.Recording) error
+	RecordingSet(ctx context.Context, record *recording.Recording) error
 }
 
 // NewHandler creates DBHandler
