@@ -158,6 +158,33 @@ definitions:
         description: Updated timestamp.
         type: string
     type: object
+  recording.Recording:
+    properties:
+      filename:
+        type: string
+      format:
+        type: string
+      id:
+        type: string
+      reference_id:
+        type: string
+      status:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_end:
+        type: string
+      tm_start:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+      user_id:
+        type: integer
+    type: object
   request.BodyCallsPOST:
     properties:
       actions:
@@ -194,6 +221,15 @@ definitions:
       result:
         items:
           $ref: '#/definitions/call.Call'
+        type: array
+    type: object
+  response.BodyRecordingsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/recording.Recording'
         type: array
     type: object
 host: api.voipbin.net
@@ -270,6 +306,27 @@ paths:
           schema:
             $ref: '#/definitions/call.Call'
       summary: Hangup the call
+    get:
+      description: Returns detail call info of the given call id.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/call.Call'
+      summary: Returns detail call info.
   /v1.0/conferences:
     get:
       description: get conferences of the user
@@ -402,4 +459,43 @@ paths:
           schema:
             $ref: '#/definitions/flow.Flow'
       summary: Returns detail flow info.
+  /v1.0/recordingfiles/{id}:
+    get:
+      description: Download the recording file
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Download the recording file
+  /v1.0/recordings:
+    get:
+      description: get recordings of the user
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyRecordingsGET'
+      summary: List recordings
+  /v1.0/recordings/{id}:
+    get:
+      description: Returns a detial recording information of the given recording id.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/recording.Recording'
+      summary: Returns a detail recording information.
 swagger: "2.0"

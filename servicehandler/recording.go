@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"fmt"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
@@ -10,7 +11,7 @@ import (
 )
 
 // RecordingGet returns downloadable url for recording
-func (h *serviceHandler) RecordingGet(u *user.User, id string) (string, error) {
+func (h *serviceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -24,26 +25,18 @@ func (h *serviceHandler) RecordingGet(u *user.User, id string) (string, error) {
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
-		return "", err
+		return nil, err
 	}
 
 	// check the recording ownership
 	if u.HasPermission(user.PermissionAdmin) != true && u.ID != recording.UserID {
 		log.Error("The user has no permission for this recording.")
-		return "", fmt.Errorf("user has no permission")
+		return nil, fmt.Errorf("user has no permission")
 	}
 
-	filename := fmt.Sprintf("%s.wav", id)
-	log.Debugf("Getting recording file. recording: %s", filename)
+	res := recording.Convert()
 
-	// get download url from storage-manager
-	url, err := h.reqHandler.STRecordingGet(filename)
-	if err != nil {
-		log.Errorf("Could not get download url. err: %v", err)
-		return "", err
-	}
-
-	return url, nil
+	return res, nil
 }
 
 // RecordingGets sends a request to call-manager

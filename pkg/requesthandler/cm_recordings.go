@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -37,7 +39,7 @@ func (r *requestHandler) CMRecordingGets(userID uint64, size uint64, token strin
 // CMRecordingGet sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMRecordingGet(id string) (*cmrecording.Recording, error) {
+func (r *requestHandler) CMRecordingGet(id uuid.UUID) (*cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
 	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)

@@ -17,7 +17,7 @@ import (
 func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -42,7 +42,7 @@ func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.
 func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
