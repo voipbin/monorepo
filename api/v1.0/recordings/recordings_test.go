@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
 )
@@ -29,6 +31,7 @@ func TestRecordingsIDGET(t *testing.T) {
 	type test struct {
 		name        string
 		user        user.User
+		recording   *recording.Recording
 		recordingID string
 		downloadURL string
 	}
@@ -38,6 +41,9 @@ func TestRecordingsIDGET(t *testing.T) {
 			"normal",
 			user.User{
 				ID: 1,
+			},
+			&recording.Recording{
+				ID: uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929"),
 			},
 			"call_776c8a94-34bd-11eb-abef-0b279f3eabc1_2020-04-18T03:22:17.995000Z.wav",
 			"https://test.com/call_776c8a94-34bd-11eb-abef-0b279f3eabc1_2020.wav?token=token",
@@ -56,12 +62,12 @@ func TestRecordingsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().RecordingGet(&tt.user, tt.recordingID).Return(tt.downloadURL, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/recordings/%s", tt.recordingID), nil)
+			mockSvc.EXPECT().RecordingGet(&tt.user, tt.recording.ID).Return(tt.recording, nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/recordings/%s", tt.recording.ID), nil)
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusTemporaryRedirect || w.HeaderMap["Location"][0] != tt.downloadURL {
-				t.Errorf("Wrong match. expect: %d, got: %d, response: %v", http.StatusTemporaryRedirect, w.Code, w)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
 		})
 	}

@@ -101,6 +101,37 @@ var doc = `{
             }
         },
         "/v1.0/calls/{id}": {
+            "get": {
+                "description": "Returns detail call info of the given call id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail call info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/call.Call"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "Hangup the call of the given id",
                 "produces": [
@@ -319,6 +350,66 @@ var doc = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/flow.Flow"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/recordingfiles/{id}": {
+            "get": {
+                "description": "Download the recording file",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Download the recording file",
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/recordings": {
+            "get": {
+                "description": "get recordings of the user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List recordings",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyRecordingsGET"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/recordings/{id}": {
+            "get": {
+                "description": "Returns a detial recording information of the given recording id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns a detail recording information.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/recording.Recording"
                         }
                     }
                 }
@@ -545,6 +636,47 @@ var doc = `{
                 }
             }
         },
+        "recording.Recording": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string"
+                },
+                "format": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_end": {
+                    "type": "string"
+                },
+                "tm_start": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "request.BodyCallsPOST": {
             "type": "object",
             "required": [
@@ -598,6 +730,20 @@ var doc = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/call.Call"
+                    }
+                }
+            }
+        },
+        "response.BodyRecordingsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/recording.Recording"
                     }
                 }
             }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
@@ -16,12 +17,12 @@ import (
 // @Summary Download the recording file
 // @Description Download the recording file
 // @Produce json
-// @Success 200 {binary}
+// @Success 200
 // @Router /v1.0/recordingfiles/{id} [get]
 func recordingfilesIDGET(c *gin.Context) {
 
 	// get id
-	id := c.Params.ByName("id")
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
 	if exists != true {
@@ -40,7 +41,7 @@ func recordingfilesIDGET(c *gin.Context) {
 	log.Debug("Executing recordingfilesIDGET.")
 
 	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
-	url, err := serviceHandler.RecordingGet(&u, id)
+	url, err := serviceHandler.RecordingfileGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get a recordingfile. err: %v", err)
 		c.AbortWithStatus(400)

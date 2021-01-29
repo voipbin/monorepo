@@ -99,6 +99,20 @@ func (mr *MockServiceHandlerMockRecorder) CallGets(u, size, token interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockServiceHandler)(nil).CallGets), u, size, token)
 }
 
+// CallDelete mocks base method
+func (m *MockServiceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallDelete", u, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallDelete indicates an expected call of CallDelete
+func (mr *MockServiceHandlerMockRecorder) CallDelete(u, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallDelete", reflect.TypeOf((*MockServiceHandler)(nil).CallDelete), u, callID)
+}
+
 // ConferenceCreate mocks base method
 func (m *MockServiceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
@@ -204,10 +218,10 @@ func (mr *MockServiceHandlerMockRecorder) FlowGetsByUserID(u, pageToken, pageSiz
 }
 
 // RecordingGet mocks base method
-func (m *MockServiceHandler) RecordingGet(u *user.User, id string) (string, error) {
+func (m *MockServiceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGet", u, id)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -231,6 +245,21 @@ func (m *MockServiceHandler) RecordingGets(u *user.User, size uint64, token stri
 func (mr *MockServiceHandlerMockRecorder) RecordingGets(u, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockServiceHandler)(nil).RecordingGets), u, size, token)
+}
+
+// RecordingfileGet mocks base method
+func (m *MockServiceHandler) RecordingfileGet(u *user.User, id uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingfileGet", u, id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingfileGet indicates an expected call of RecordingfileGet
+func (mr *MockServiceHandlerMockRecorder) RecordingfileGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingfileGet", reflect.TypeOf((*MockServiceHandler)(nil).RecordingfileGet), u, id)
 }
 
 // UserCreate mocks base method
