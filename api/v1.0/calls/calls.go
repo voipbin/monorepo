@@ -61,7 +61,7 @@ func callsPOST(c *gin.Context) {
 }
 
 // callsIDDelete handles DELETE /calls/<call-id> request.
-// It creates a temp flow and create a call with temp flow.
+// It hangup the call.
 
 // @Summary Hangup the call
 // @Description Hangup the call of the given id
@@ -86,14 +86,14 @@ func callsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get call
-	res, err := serviceHandler.CallGet(&u, id)
+	err := serviceHandler.CallDelete(&u, id)
 	if err != nil {
 		logrus.Infof("Could not get the call info. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.JSON(200, res)
+	c.AbortWithStatus(200)
 }
 
 // callsGET handles GET /calls request.
@@ -142,7 +142,7 @@ func callsGET(c *gin.Context) {
 	// get calls
 	calls, err := serviceHandler.CallGets(&u, pageSize, requestParam.PageToken)
 	if err != nil {
-		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
+		logrus.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -156,6 +156,45 @@ func callsGET(c *gin.Context) {
 		Pagination: response.Pagination{
 			NextPageToken: nextToken,
 		},
+	}
+
+	c.JSON(200, res)
+}
+
+// callsIDGET handles GET /calls/{id} request.
+// It returns detail call info.
+
+// @Summary Returns detail call info.
+// @Description Returns detail call info of the given call id.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Param token query string true "JWT token"
+// @Success 200 {object} call.Call
+// @Router /v1.0/calls/{id} [get]
+func callsIDGET(c *gin.Context) {
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log := logrus.WithFields(logrus.Fields{
+		"id":         u.ID,
+		"username":   u.Username,
+		"permission": u.Permission,
+	})
+	log.Debug("Executing callsIDGET.")
+
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.CallGet(&u, id)
+	if err != nil {
+		log.Errorf("Could not get a call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	c.JSON(200, res)

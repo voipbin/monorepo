@@ -53,6 +53,20 @@ func (mr *MockRequestHandlerMockRecorder) CMCallCreate(userID, flowID, source, d
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMCallCreate), userID, flowID, source, destination)
 }
 
+// CMCallDelete mocks base method
+func (m *MockRequestHandler) CMCallDelete(callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMCallDelete", callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CMCallDelete indicates an expected call of CMCallDelete
+func (mr *MockRequestHandlerMockRecorder) CMCallDelete(callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallDelete", reflect.TypeOf((*MockRequestHandler)(nil).CMCallDelete), callID)
+}
+
 // CMCallGet mocks base method
 func (m *MockRequestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 	m.ctrl.T.Helper()
@@ -66,6 +80,21 @@ func (m *MockRequestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 func (mr *MockRequestHandlerMockRecorder) CMCallGet(callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallGet", reflect.TypeOf((*MockRequestHandler)(nil).CMCallGet), callID)
+}
+
+// CMCallGets mocks base method
+func (m *MockRequestHandler) CMCallGets(userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMCallGets", userID, pageToken, pageSize)
+	ret0, _ := ret[0].([]cmcall.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMCallGets indicates an expected call of CMCallGets
+func (mr *MockRequestHandlerMockRecorder) CMCallGets(userID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallGets", reflect.TypeOf((*MockRequestHandler)(nil).CMCallGets), userID, pageToken, pageSize)
 }
 
 // CMConferenceCreate mocks base method
@@ -113,7 +142,7 @@ func (mr *MockRequestHandlerMockRecorder) CMConferenceGet(conferenceID interface
 }
 
 // CMRecordingGet mocks base method
-func (m *MockRequestHandler) CMRecordingGet(id string) (*cmrecording.Recording, error) {
+func (m *MockRequestHandler) CMRecordingGet(id uuid.UUID) (*cmrecording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMRecordingGet", id)
 	ret0, _ := ret[0].(*cmrecording.Recording)

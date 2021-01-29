@@ -1,9 +1,8 @@
 package recordings
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -15,7 +14,6 @@ import (
 
 // recordingsGET handles GET /recordings request.
 // It returns list of calls of the given user.
-
 // @Summary List recordings
 // @Description get recordings of the user
 // @Produce  json
@@ -79,16 +77,16 @@ func recordingsGET(c *gin.Context) {
 }
 
 // recordingsIDGET handles GET /recordings/<id> request.
-// It gets a list of flows with the given info.
-// @Summary Gets a list of flows.
-// @Description Gets a list of flows
+// It returns a detail recording info.
+// @Summary Returns a detail recording information.
+// @Description Returns a detial recording information of the given recording id.
 // @Produce json
-// @Success 200 {array} flow.Flow
-// @Router /v1.0/flows [get]
+// @Success 200 {object} recording.Recording
+// @Router /v1.0/recordings/{id} [get]
 func recordingsIDGET(c *gin.Context) {
 
 	// get id
-	id := c.Params.ByName("id")
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
 	if exists != true {
@@ -107,12 +105,12 @@ func recordingsIDGET(c *gin.Context) {
 	log.Debug("Executing recordingsIDGET.")
 
 	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
-	url, err := serviceHandler.RecordingGet(&u, id)
+	res, err := serviceHandler.RecordingGet(&u, id)
 	if err != nil {
-		log.Errorf("Could not get a flow. err: %v", err)
+		log.Errorf("Could not get a recording info. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.Redirect(http.StatusTemporaryRedirect, url)
+	c.JSON(200, res)
 }
