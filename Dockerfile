@@ -1,6 +1,6 @@
 FROM debian:stable-slim
 
-ARG ASTERISK_VERSION=18.2.0-rc1
+ARG ASTERISK_VERSION=18.2.0
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 
 # mariadb's odbc connect requires buster-backports
