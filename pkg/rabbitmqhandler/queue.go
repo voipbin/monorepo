@@ -63,6 +63,19 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 	return nil
 }
 
+func (r *rabbit) QueueQoS(name string, prefetchCount, prefetchSize int) error {
+	q := r.queueGet(name)
+	if q == nil {
+		return fmt.Errorf("no queue found")
+	}
+
+	if err := q.channel.Qos(prefetchCount, prefetchSize, false); err != nil {
+		return fmt.Errorf("could not set channel qos. queue: %s, cnt: %d, size: %d, err: %v", name, prefetchCount, prefetchSize, err)
+	}
+
+	return nil
+}
+
 // QueueBind binds queue and exchange with a key
 func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
 	queue := r.queueGet(name)
