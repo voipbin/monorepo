@@ -106,12 +106,20 @@ func NewEventHandler(sock rabbitmqhandler.Rabbit, db db.DBHandler, cache cacheha
 // Run starts to receive ARI event and process it.
 func (h *eventHandler) Run(queue, receiver string) error {
 	// create queue for ari event receive
-	log.WithFields(log.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"queue": queue,
-	}).Infof("Creating rabbitmq queue for ARI event receiving.")
+	})
+
+	log.Infof("Creating rabbitmq queue for ARI event receiving.")
 
 	err := h.rabbitSock.QueueDeclare(queue, true, false, false, false)
 	if err != nil {
+		return err
+	}
+
+	// Set QoS
+	if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
+		log.Errorf("Could not set the queue's qos. err: %v", err)
 		return err
 	}
 
