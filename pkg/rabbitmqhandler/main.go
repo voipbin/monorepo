@@ -72,6 +72,7 @@ type Rabbit interface {
 
 	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error
 	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
+	QueueQoS(name string, prefetchCount, prefetchSize int) error
 }
 
 // rabbit struct for rabbitmq
