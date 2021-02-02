@@ -1,5 +1,22 @@
 # meet
 
+# Build
+```bash
+$ heroku git:remote -a meet-voipbin
+$ git add .
+$ git commit -am "make it better"
+$ git push heroku master
+```
+
+# Run
+```bash
+$ npm install
+$ gulp live --fix
+```
+
+# Original
+You can find an original source at here: https://tryit.jssip.net
+
 # tryit-jssip
 
 The [JsSIP](http://jssip.net) demo application.
