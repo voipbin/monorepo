@@ -370,14 +370,16 @@ export default class Phone extends React.Component
 				mediaConstraints :
 				{
 					audio : true,
-					// video : false
-					video : true
+					video: true,
+					mandatory: {
+						maxWidth: 640,
+						maxHeight: 480
+					}
 				},
 				rtcOfferConstraints :
 				{
 					offerToReceiveAudio : 1,
 					offerToReceiveVideo : 1
-					// offerToReceiveVideo : 0
 				}
 			});
 		logger.debug('test session: %s', JSON.stringify(session.C))
