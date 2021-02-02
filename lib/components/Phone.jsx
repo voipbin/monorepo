@@ -68,7 +68,7 @@ export default class Phone extends React.Component
 								anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
 								targetOrigin={{ horizontal: 'right', vertical: 'top' }}
 							>
-								{/* <CopyToClipboard text={invitationLink}
+								<CopyToClipboard text={invitationLink}
 									onCopy={this.handleMenuCopyInvitationLink.bind(this)}
 								>
 									<MenuItem
@@ -81,7 +81,7 @@ export default class Phone extends React.Component
 									<MenuItem
 										primaryText='Copy my SIP URI'
 									/>
-								</CopyToClipboard> */}
+								</CopyToClipboard>
 								<MenuItem
 									primaryText='Exit'
 									onClick={this.handleMenuExit.bind(this)}
@@ -150,7 +150,8 @@ export default class Phone extends React.Component
 			// TODO: For testing.
 			window.UA = this._ua;
 		}
-		catch (error) {
+		catch (error)
+		{
 			this.props.onNotify(
 				{
 					level   : 'error',
@@ -292,10 +293,8 @@ export default class Phone extends React.Component
 					});
 			});
 
-			session.on('accepted', (data) =>
+			session.on('accepted', () =>
 			{
-				logger.debug('test accepted: %s', JSON.stringify(data.response));
-
 				audioPlayer.stop('ringing');
 				this.setState(
 					{
@@ -303,12 +302,6 @@ export default class Phone extends React.Component
 						incomingSession : null
 					});
 			});
-
-			session.on('confirmed', (data) =>
-			{
-				logger.debug('test confirmed: %s', JSON.stringify(data.response));
-			});
-
 		});
 
 		this._ua.start();
@@ -362,7 +355,6 @@ export default class Phone extends React.Component
 	handleOutgoingCall(uri)
 	{
 		logger.debug('handleOutgoingCall() [uri:"%s"]', uri);
-		logger.debug('config: %s', JSON.stringify(this.props.settings.pcConfig))
 
 		const session = this._ua.call(uri,
 			{
@@ -382,12 +374,8 @@ export default class Phone extends React.Component
 					offerToReceiveVideo : 1
 				}
 			});
-		logger.debug('test session: %s', JSON.stringify(session.C))
-		logger.debug('test session: %s', JSON.stringify(session.connection))
-
-		session.connection.addEventListener("track", e => {
-			logger.debug('test added another track!')
-		}, false);
+		logger.debug('Detail info. session: %s', JSON.stringify(session.C))
+		logger.debug('Detail info. session.connection: %s', JSON.stringify(session.connection))
 
 		session.on('icecandidate', (data) =>
 		{
@@ -395,29 +383,11 @@ export default class Phone extends React.Component
 			data.ready()
 		});
 
-		session.on('sdp', (data) =>
-		{
-			logger.debug('test sdp: %s', JSON.stringify(data.sdp))
-		});
-
 		session.on('connecting', (data) =>
 		{
-			logger.debug('test connecting: %s', JSON.stringify(data.sdp))
-
+			logger.debug('Detail info. connecting: %s', JSON.stringify(data.sdp))
 			this.setState({ session });
 		});
-
-		session.on('sending', (data) =>
-		{
-			logger.debug('test sending: %s', JSON.stringify(data.sdp))
-
-			// data.request.body = 'change body'
-			// logger.debug('test sending change body: %s', JSON.stringify(data.sdp))
-
-			// data.sdp = 'change sdp'
-			// logger.debug('test sending change sdp: %s', JSON.stringify(data.sdp))
-		});
-
 
 		session.on('progress', () =>
 		{
@@ -450,10 +420,10 @@ export default class Phone extends React.Component
 			audioPlayer.play('answered');
 		});
 
-		// session.on('reinvite', (data) =>
-		// {
-		// 	logger.debug('test reinvite: %s', JSON.stringify(data.request.body))
-		// });
+		session.on('sdp', (data) =>
+		{
+			logger.debug('Detail info. sdp: %s', JSON.stringify(data.sdp))
+		});
 
 	}
 
