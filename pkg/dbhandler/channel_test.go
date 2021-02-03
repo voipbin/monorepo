@@ -1207,7 +1207,7 @@ func TestChannelGetUntilTimeout(t *testing.T) {
 	tests := []test{
 		{
 			"timeout",
-			time.Millisecond * 100,
+			time.Millisecond * 300,
 			&channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "75a53bae-92f9-11ea-90c9-57a00330ee42",
