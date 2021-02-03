@@ -113,7 +113,6 @@ func (h *listenHandler) listenRun() error {
 				if err := h.rabbitSock.ConsumeRPC(queue, "", h.listenHandler); err != nil {
 					logrus.Errorf("Could not handle the request message correctly. err: %v", err)
 				}
-				logrus.Debugf("Check....")
 			}
 		}(listenQueue)
 	}
