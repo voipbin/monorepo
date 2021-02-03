@@ -11,6 +11,21 @@ import (
 // ConsumeMessage consumes message
 // If the queueName was not defined, then defines with default values.
 func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error {
+
+	return r.ConsumeMessageOpt(
+		queueName,
+		consumerName,
+		true,
+		false,
+		false,
+		false,
+		messageConsume,
+	)
+}
+
+// ConsumeMessageOpt consumes message with given options
+// If the queueName was not defined, then uses with default queue name values.
+func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, autoAck bool, exclusive bool, noLocal bool, noWait bool, messageConsume CbMsgConsume) error {
 	queue := r.queueGet(queueName)
 	if queue == nil {
 		return fmt.Errorf("queue not found")
@@ -19,10 +34,10 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 	messages, err := queue.channel.Consume(
 		queueName,    // queue
 		consumerName, // messageConsumer
-		true,         // auto-ack
-		false,        // exclusive
-		false,        // no-local
-		false,        // no-wait
+		autoAck,      // auto-ack
+		exclusive,    // exclusive
+		noLocal,      // no-local
+		noWait,       // no-wait
 		nil,          // args
 	)
 	if err != nil {
@@ -42,6 +57,9 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 		if err != nil {
 			log.Errorf("Message consumer returns error. err: %v", err)
 		}
+
+		// we are sending an Ack here no matter what.
+		message.Ack(false)
 	}
 
 	return nil
