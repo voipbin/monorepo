@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func (h *eventHandler) eventARIRun() error {
@@ -72,7 +72,7 @@ func (h *eventHandler) eventARIReceive() error {
 	logrus.Debugf("Recevied message. msgType: %s", msgStr)
 
 	// create a event for message send
-	event := &rabbitmq.Event{
+	event := &rabbitmqhandler.Event{
 		Type:     "ari_event",
 		DataType: "application/json",
 		Data:     msgStr,

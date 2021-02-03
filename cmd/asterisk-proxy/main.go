@@ -13,9 +13,9 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/eventhandler"
 	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/listenhandler"
-	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
 )
 
 var flagARIAddr = flag.String("ari_addr", "localhost:8088", "The asterisk-proxy connects to this asterisk ari service address")
@@ -45,8 +45,8 @@ func main() {
 	initProcess()
 
 	// connect to rabbitmq
-	logrus.Debugf("test: %s", *flagRabbitAddr)
-	rabbitSock := rabbitmq.NewRabbit(*flagRabbitAddr)
+	logrus.Debugf("rabbitmq address: %s", *flagRabbitAddr)
+	rabbitSock := rabbitmqhandler.NewRabbit(*flagRabbitAddr)
 	rabbitSock.Connect()
 
 	// connect to ami
@@ -63,13 +63,20 @@ func main() {
 	}
 
 	// create rabbitmq listen requet queue names
-	rabbitQueueListenRequests := fmt.Sprintf("asterisk.%s.request,%s", asteriskID, *flagRabbitQueueListenRequest)
+	rabbitQueueListenRequestsPermanent := *flagRabbitQueueListenRequest
+	rabbitQueueListenRequestsVolatile := fmt.Sprintf("asterisk.%s.request", asteriskID)
+	logrus.Debugf("Volatile listen queue name: %s", rabbitQueueListenRequestsVolatile)
 
 	// create event handler
 	evtHandler := eventhandler.NewEventHandler(
-		rabbitSock, rabbitQueueListenRequests, *flagRabbitQueuePublishEvent,
-		*flagARIAddr, *flagARIAccount, *flagARISubscribeAll, *flagARIApplication,
-		amiSock, amiFilter,
+		rabbitSock,
+		*flagRabbitQueuePublishEvent,
+		*flagARIAddr,
+		*flagARIAccount,
+		*flagARISubscribeAll,
+		*flagARIApplication,
+		amiSock,
+		amiFilter,
 	)
 
 	// run event handler
@@ -77,12 +84,15 @@ func main() {
 		logrus.Errorf("Could not run the eventhandler correctly. err: %v", err)
 		return
 	}
-	logrus.Debugf("The event handler is running now. listen: %s", rabbitQueueListenRequests)
+	logrus.Debugf("The event handler is running now. listen: %s", rabbitQueueListenRequestsPermanent)
 
 	// create a listen handler
 	listenHandler := listenhandler.NewListenHandler(
-		rabbitSock, rabbitQueueListenRequests,
-		*flagARIAddr, *flagARIAccount,
+		rabbitSock,
+		rabbitQueueListenRequestsPermanent,
+		rabbitQueueListenRequestsVolatile,
+		*flagARIAddr,
+		*flagARIAccount,
 		amiSock,
 	)
 
@@ -110,10 +120,6 @@ func initProcess() {
 	// initiate log
 	log.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true, DisableColors: true})
 	log.SetLevel(logrus.DebugLevel)
-	// hook, err := lSyslog.NewSyslogHook("", "", syslog.LOG_INFO, "")
-	// if err == nil {
-	// 	log.AddHook(hook)
-	// }
 
 	log.Info("asterisk-proxy has initiated.")
 }
@@ -162,6 +168,8 @@ func handleProxyInfo(addr string, db int, id, internalAddress string) error {
 
 // getAsteriskIDAddress returns given interface's mac address, ip address.
 func getAsteriskIDAddress(ifaceName string) (string, string, error) {
+	logrus.Debugf("Checking interface name. iface: %s", ifaceName)
+
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		logrus.Errorf("Could not get interface information. err: %v", err)
@@ -175,7 +183,6 @@ func getAsteriskIDAddress(ifaceName string) (string, string, error) {
 
 		addrs, err := iface.Addrs()
 		if err != nil {
-			logrus.Errorf("Could not get interface addresses. err: %v", err)
 			return "", "", err
 		}
 

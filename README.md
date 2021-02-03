@@ -30,7 +30,7 @@ Usage of ./asterisk-proxy:
   -rabbit_addr string
         The asterisk-proxy connect to rabbitmq address. (default "amqp://guest:guest@localhost:5672")
   -rabbit_queue_listen string
-        Comma separated asterisk-proxy's listen request queue name. (default "asterisk.call.request")
+        Additional comma separated asterisk-proxy's listen request queue name. (default "asterisk.call.request")
   -rabbit_queue_publish string
         The asterisk-proxy sends the ARI event to this rabbitmq queue name. The queue must be created before. (default "asterisk.all.event")
   -redis_addr string
@@ -40,7 +40,7 @@ Usage of ./asterisk-proxy:
 ```
 
 example
-```
+```bash
 $ ./asterisk-proxy \
   -ari_account asterisk:asterisk \
   -ari_addr localhost:8088 \
@@ -50,10 +50,10 @@ $ ./asterisk-proxy \
   -ami_port 5038 \
   -ami_username asterisk \
   -ami_password asterisk \
+  -interface_name docker0 \
   -rabbit_addr amqp://guest:guest@10.164.15.243:5672 \
   -rabbit_queue_publish asterisk.all.event \
   -rabbit_queue_listen asterisk.call.request \
-  -interface_name ppp0 \
   -redis_addr 10.164.15.220:6379 \
   -redis_db 1
 ```

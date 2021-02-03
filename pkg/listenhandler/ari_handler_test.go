@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestARISendRequestToAsterisk(t *testing.T) {
@@ -17,7 +17,7 @@ func TestARISendRequestToAsterisk(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockRabbit := rabbitmq.NewMockRabbit(mc)
+	mockRabbit := rabbitmqhandler.NewMockRabbit(mc)
 
 	// setup dummy server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -52,8 +52,8 @@ func TestARISendRequestToAsterisk(t *testing.T) {
 	url := fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
 
 	h := listenHandler{
-		rabbitSock:               mockRabbit,
-		rabbitQueueListenRequest: "",
+		rabbitSock:                        mockRabbit,
+		rabbitQueueListenRequestPermanent: "",
 
 		ariAddr:    url,
 		ariAccount: "asterisk:asterisk",
@@ -63,13 +63,13 @@ func TestARISendRequestToAsterisk(t *testing.T) {
 
 	type test struct {
 		name    string
-		message *rabbitmq.Request
+		message *rabbitmqhandler.Request
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&rabbitmq.Request{
+			&rabbitmqhandler.Request{
 				URI:      "/channels?endpoint=pjsip/test@sippuas&app=test",
 				Method:   "POST",
 				DataType: "application/json",

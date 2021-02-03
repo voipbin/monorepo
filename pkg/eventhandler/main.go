@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/ivahaev/amigo"
 
-	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // EventHandler interface type
@@ -14,9 +14,8 @@ type EventHandler interface {
 
 type eventHandler struct {
 	// rabbitmq settings
-	rabbitSock               rabbitmq.Rabbit
-	rabbitQueueListenRequest string
-	rabbitQueuePublishEvent  string
+	rabbitSock              rabbitmqhandler.Rabbit
+	rabbitQueuePublishEvent string
 
 	// ari settings
 	ariAddr         string // ari target address
@@ -36,14 +35,18 @@ func init() {
 
 // NewEventHandler returns eventhandler
 func NewEventHandler(
-	rabbitSock rabbitmq.Rabbit, rabbitQueueListenRequest string, rabbitQueuePublishEvents string,
-	ariAddr string, ariAccount string, ariSubscribeAll string, ariApplication string,
-	amiSock *amigo.Amigo, amiEventFilter []string,
+	rabbitSock rabbitmqhandler.Rabbit,
+	rabbitQueuePublishEvents string,
+	ariAddr string,
+	ariAccount string,
+	ariSubscribeAll string,
+	ariApplication string,
+	amiSock *amigo.Amigo,
+	amiEventFilter []string,
 ) EventHandler {
 	handler := &eventHandler{
-		rabbitSock:               rabbitSock,
-		rabbitQueueListenRequest: rabbitQueueListenRequest,
-		rabbitQueuePublishEvent:  rabbitQueuePublishEvents,
+		rabbitSock:              rabbitSock,
+		rabbitQueuePublishEvent: rabbitQueuePublishEvents,
 
 		ariAddr:         ariAddr,
 		ariAccount:      ariAccount,
