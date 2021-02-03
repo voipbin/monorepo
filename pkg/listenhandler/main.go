@@ -3,12 +3,12 @@ package listenhandler
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/ivahaev/amigo"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
+	// "gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // ListenHandler interface type
@@ -18,8 +18,9 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	// rabbitmq settings
-	rabbitSock               rabbitmq.Rabbit
-	rabbitQueueListenRequest string
+	rabbitSock                        rabbitmqhandler.Rabbit // rabbitmq socket
+	rabbitQueueListenRequestPermanent string                 // permanent listen queue name for request(asterisk.<asterisk type>.request)
+	rabbitQueueListenRequestVolatile  string                 // volatile listen queue name for request(asterisk.<asterisk id>.request)
 
 	// ari settings
 	ariAddr    string
@@ -31,14 +32,20 @@ type listenHandler struct {
 
 // NewListenHandler returns ListenHandler interface object
 func NewListenHandler(
-	rabbitSock rabbitmq.Rabbit, rabbitQueueListenRequest string,
-	ariAddr, ariAccount string,
+	rabbitSock rabbitmqhandler.Rabbit,
+
+	rabbitQueueListenRequestPermanent string,
+	rabbitQueueListenRequestVolatile string,
+
+	ariAddr string,
+	ariAccount string,
 	amiSock *amigo.Amigo,
 ) ListenHandler {
 
 	handler := &listenHandler{
-		rabbitSock:               rabbitSock,
-		rabbitQueueListenRequest: rabbitQueueListenRequest,
+		rabbitSock:                        rabbitSock,
+		rabbitQueueListenRequestPermanent: rabbitQueueListenRequestPermanent,
+		rabbitQueueListenRequestVolatile:  rabbitQueueListenRequestVolatile,
 
 		ariAddr:    ariAddr,
 		ariAccount: ariAccount,
@@ -57,31 +64,64 @@ func (h *listenHandler) Run() error {
 	return nil
 }
 
+// listenRun initiate and start to listening the request from the rabbitmq queue.
 func (h *listenHandler) listenRun() error {
 
-	queues := strings.Split(h.rabbitQueueListenRequest, ",")
-	for _, queue := range queues {
-		logrus.Debugf("Declaring request queue. queue: %s, sock: %v", queue, h.rabbitSock)
+	listenQueues := []string{}
+
+	// queue declare for permanent
+	permQueues := strings.Split(h.rabbitQueueListenRequestPermanent, ",")
+	for _, queue := range permQueues {
+
+		// declare queue
+		logrus.Debugf("Declaring permenant request queue. queue: %s", queue)
 		if err := h.rabbitSock.QueueDeclare(queue, false, false, false, false); err != nil {
-			logrus.WithFields(
-				logrus.Fields{
-					"queue": queue,
-				}).Errorf("Could not declare the queue. err: %v", err)
+			logrus.Errorf("Could not declare the permanent queue: %v, err: %v", queue, err)
 			return err
 		}
 
-		go func(sock rabbitmq.Rabbit, name string) {
+		// set qos
+		if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
+			logrus.Errorf("Could not set the QoS. queue: %v, err: %v", queue, err)
+			return err
+		}
+
+		// append it to listen queue
+		listenQueues = append(listenQueues, queue)
+	}
+
+	// queue declare for volatile
+	volQueues := strings.Split(h.rabbitQueueListenRequestVolatile, ",")
+	for _, queue := range volQueues {
+
+		// declare queue
+		logrus.Debugf("Declaring permenant request queue. queue: %s", queue)
+		if err := h.rabbitSock.QueueDeclare(queue, false, false, true, false); err != nil {
+			logrus.Errorf("Could not declare the volatile queue. queue: %v, err: %v", queue, err)
+			return err
+		}
+
+		// append it to liesten queue
+		listenQueues = append(listenQueues, queue)
+	}
+
+	// listening the queue
+	for _, listenQueue := range listenQueues {
+		logrus.Infof("Running the request listener. queue: %s", listenQueue)
+		go func(queue string) {
 			for {
-				sock.ConsumeRPC(name, "", h.listenHandler)
-				time.Sleep(time.Second * 1)
+				if err := h.rabbitSock.ConsumeRPC(queue, "", h.listenHandler); err != nil {
+					logrus.Errorf("Could not handle the request message correctly. err: %v", err)
+				}
+				logrus.Debugf("Check....")
 			}
-		}(h.rabbitSock, queue)
+		}(listenQueue)
 	}
 
 	return nil
 }
 
-func (h *listenHandler) listenHandler(request *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) listenHandler(request *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	switch request.URI[0:4] {
 	case "/ari":

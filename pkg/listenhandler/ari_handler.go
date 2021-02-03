@@ -9,12 +9,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // ariSendRequestToAsterisk sends the request to the Asterisk's ARI.
 // returns status_code, response_message, error
-func (h *listenHandler) ariSendRequestToAsterisk(m *rabbitmq.Request) (int, []byte, error) {
+func (h *listenHandler) ariSendRequestToAsterisk(m *rabbitmqhandler.Request) (int, []byte, error) {
 	url := fmt.Sprintf("http://%s%s", h.ariAddr, m.URI)
 	logrus.WithFields(logrus.Fields{
 		"request": m,
@@ -50,14 +50,14 @@ func (h *listenHandler) ariSendRequestToAsterisk(m *rabbitmq.Request) (int, []by
 	return resp.StatusCode, res, nil
 }
 
-func (h *listenHandler) listenHandlerARI(request *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) listenHandlerARI(request *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	// send the request to Asterisk
 	statusCode, resData, err := h.ariSendRequestToAsterisk(request)
 	if err != nil {
 		return nil, err
 	}
 
-	response := &rabbitmq.Response{
+	response := &rabbitmqhandler.Response{
 		StatusCode: statusCode,
 		DataType:   "application/json",
 		Data:       resData,

@@ -5,10 +5,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func (h *listenHandler) listenHandlerAMI(request *rabbitmq.Request) (*rabbitmq.Response, error) {
+func (h *listenHandler) listenHandlerAMI(request *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	logrus.Debugf("listenHandlerAMI. message: %v", request)
 
 	// send the request to Asterisk
@@ -17,7 +17,7 @@ func (h *listenHandler) listenHandlerAMI(request *rabbitmq.Request) (*rabbitmq.R
 		return nil, err
 	}
 
-	response := &rabbitmq.Response{
+	response := &rabbitmqhandler.Response{
 		StatusCode: statusCode,
 		DataType:   "application/json",
 		Data:       resData,
@@ -29,7 +29,7 @@ func (h *listenHandler) listenHandlerAMI(request *rabbitmq.Request) (*rabbitmq.R
 
 // sendRequestToAsteriskAMI sends the request to the Asterisk's AMI.
 // returns status_code, response_message, error
-func (h *listenHandler) sendRequestToAsteriskAMI(m *rabbitmq.Request) (int, []byte, error) {
+func (h *listenHandler) sendRequestToAsteriskAMI(m *rabbitmqhandler.Request) (int, []byte, error) {
 
 	var req map[string]string
 	if err := json.Unmarshal(m.Data, &req); err != nil {
