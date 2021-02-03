@@ -186,7 +186,7 @@ func (h *conferenceHandler) createConferenceBridgeWithTimeout(ctx context.Contex
 	}
 
 	// set timeout
-	tmpCTX, cancel := context.WithTimeout(ctx, timeout)
+	tmpCTX, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	// get created bridge info within timeout

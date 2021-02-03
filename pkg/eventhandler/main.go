@@ -126,10 +126,9 @@ func (h *eventHandler) Run(queue, receiver string) error {
 	// receive ARI event
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessage(queue, receiver, h.processEvent)
+			err := h.rabbitSock.ConsumeMessageOpt(queue, receiver, false, false, false, false, h.processEvent)
 			if err != nil {
 				log.Errorf("Could not consume the ARI message correctly. Will try again after 1 second. err: %v", err)
-				time.Sleep(time.Second * 1)
 			}
 		}
 	}()
