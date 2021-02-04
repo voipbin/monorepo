@@ -13,10 +13,9 @@ Welcome to voipbin's documentation!
    intro
    api
    call
-   flow
    conference
-   recording
    flow
+   recording
 
 
 Indices and tables

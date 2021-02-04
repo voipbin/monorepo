@@ -9,28 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 )
-
-// ConvertFMFlowToFlow returns converted data from fmflow.Flow to flow.Flow
-func ConvertFMFlowToFlow(f *fmflow.Flow) *flow.Flow {
-
-	return &flow.Flow{
-		ID:     f.ID,
-		UserID: f.UserID,
-
-		Name:   f.Name,
-		Detail: f.Detail,
-
-		Actions: f.Actions,
-
-		Persist: f.Persist,
-
-		TMCreate: f.TMCreate,
-		TMUpdate: f.TMUpdate,
-		TMDelete: f.TMDelete,
-	}
-}
 
 // FlowCreate is a service handler for flow creation.
 func (h *serviceHandler) FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
@@ -48,18 +27,7 @@ func (h *serviceHandler) FlowCreate(u *user.User, id uuid.UUID, name, detail str
 		return nil, err
 	}
 
-	res := &flow.Flow{
-		ID:      tmp.ID,
-		UserID:  tmp.UserID,
-		Name:    tmp.Name,
-		Detail:  tmp.Detail,
-		Actions: tmp.Actions,
-		Persist: tmp.Persist,
-
-		TMCreate: tmp.TMCreate,
-		TMUpdate: tmp.TMUpdate,
-		TMDelete: tmp.TMDelete,
-	}
+	res := tmp.ConvertFlow()
 
 	return res, nil
 }
@@ -87,29 +55,36 @@ func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	res := ConvertFMFlowToFlow(flow)
+	res := flow.ConvertFlow()
 	return res, nil
 }
 
-// FlowGetsByUserID gets the list of flow of the given user id.
+// FlowGets gets the list of flow of the given user id.
 // It returns list of flows if it succeed.
-func (h *serviceHandler) FlowGetsByUserID(u *user.User, pageToken string, pageSize uint64) ([]*flow.Flow, error) {
+func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*flow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
+		"size":     size,
+		"token":    token,
 	})
 	log.Debug("Getting a flow.")
 
+	if token == "" {
+		token = getCurTime()
+	}
+
 	// get flows
-	flows, err := h.reqHandler.FMFlowGets(u.ID, pageToken, pageSize)
+	flows, err := h.reqHandler.FMFlowGets(u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flows info. err: %v", err)
 	}
 
-	var res []*flow.Flow
+	// create result
+	res := []*flow.Flow{}
 	for _, flow := range flows {
-		tmp := ConvertFMFlowToFlow(&flow)
+		tmp := flow.ConvertFlow()
 		res = append(res, tmp)
 	}
 

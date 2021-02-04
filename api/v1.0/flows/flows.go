@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
@@ -88,16 +89,36 @@ func flowsGET(c *gin.Context) {
 		"permission": u.Permission,
 	})
 
-	// create a flow
+	// set max page size
+	pageSize := requestParam.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 10
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	// get service
 	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
-	flows, err := serviceHandler.FlowGetsByUserID(&u, requestParam.PageToken, requestParam.PageSize)
+
+	// get flows
+	flows, err := serviceHandler.FlowGets(&u, pageSize, requestParam.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a flow list. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.JSON(200, flows)
+	nextToken := ""
+	if len(flows) > 0 {
+		nextToken = flows[len(flows)-1].TMCreate
+	}
+	res := response.BodyFlowsGET{
+		Result: flows,
+		Pagination: response.Pagination{
+			NextPageToken: nextToken,
+		},
+	}
+
+	c.JSON(200, res)
 	return
 }
 

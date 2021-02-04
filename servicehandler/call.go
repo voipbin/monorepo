@@ -94,14 +94,14 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 	}
 
 	// get calls
-	res := []*call.Call{}
 	tmps, err := h.reqHandler.CMCallGets(u.ID, token, size)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
 	}
 
-	// convert
+	// create result
+	res := []*call.Call{}
 	for _, tmp := range tmps {
 		c := tmp.ConvertCall()
 		res = append(res, c)
