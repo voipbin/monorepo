@@ -202,19 +202,19 @@ func (mr *MockServiceHandlerMockRecorder) FlowGet(u, id interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockServiceHandler)(nil).FlowGet), u, id)
 }
 
-// FlowGetsByUserID mocks base method
-func (m *MockServiceHandler) FlowGetsByUserID(u *user.User, pageToken string, pageSize uint64) ([]*flow.Flow, error) {
+// FlowGets mocks base method
+func (m *MockServiceHandler) FlowGets(u *user.User, pageSize uint64, pageToken string) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowGetsByUserID", u, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "FlowGets", u, pageSize, pageToken)
 	ret0, _ := ret[0].([]*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowGetsByUserID indicates an expected call of FlowGetsByUserID
-func (mr *MockServiceHandlerMockRecorder) FlowGetsByUserID(u, pageToken, pageSize interface{}) *gomock.Call {
+// FlowGets indicates an expected call of FlowGets
+func (mr *MockServiceHandlerMockRecorder) FlowGets(u, pageSize, pageToken interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetsByUserID", reflect.TypeOf((*MockServiceHandler)(nil).FlowGetsByUserID), u, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGets", reflect.TypeOf((*MockServiceHandler)(nil).FlowGets), u, pageSize, pageToken)
 }
 
 // RecordingGet mocks base method

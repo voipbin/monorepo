@@ -10,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -66,7 +67,7 @@ func TestFMFlowCreate(t *testing.T) {
 				UserID:   1,
 				Name:     "test flow",
 				Detail:   "test flow detail",
-				Actions:  []action.Action{},
+				Actions:  []fmaction.Action{},
 				Persist:  true,
 				TMCreate: "2020-09-20 03:23:20.995000",
 				TMUpdate: "",
@@ -134,7 +135,7 @@ func TestFMFlowGet(t *testing.T) {
 				UserID:   1,
 				Name:     "test flow",
 				Detail:   "test flow detail",
-				Actions:  []action.Action{},
+				Actions:  []fmaction.Action{},
 				TMCreate: "2020-09-20 03:23:20.995000",
 				TMUpdate: "",
 				TMDelete: "",
@@ -203,12 +204,12 @@ func TestFMFlowGets(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			[]fmflow.Flow{
-				fmflow.Flow{
+				{
 					ID:       uuid.FromStringOrNil("158e4b2c-0c55-11eb-b4f2-37c93a78a6a0"),
 					UserID:   1,
 					Name:     "test flow",
 					Detail:   "test flow detail",
-					Actions:  []action.Action{},
+					Actions:  []fmaction.Action{},
 					TMCreate: "2020-09-20 03:23:20.995000",
 					TMUpdate: "",
 					TMDelete: "",
