@@ -94,7 +94,7 @@ Defines target(source/destination) address.
         "name": "<string>"
     }
 
-* type: Address type. See detail :ref:`here <call-struct-address-type>`
+* type: Address type.
 * target: Target address.
 * name: Target name.
 
