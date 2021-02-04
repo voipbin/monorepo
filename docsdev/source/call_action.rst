@@ -77,8 +77,8 @@ Parameters
         }
     }
 
-* source: Source address. See detail :ref:`here <call-struct-address>`.
-* destinations: Destination addresses. See detail :ref:`here <call-struct-address>`.
+* source: Source address.
+* destinations: Destination addresses.
 * unchained: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 
 Example
