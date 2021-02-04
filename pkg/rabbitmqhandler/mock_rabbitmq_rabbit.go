@@ -114,6 +114,20 @@ func (mr *MockRabbitMockRecorder) ConsumeRPC(queueNqme, consumerName, cbRPC inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeRPC", reflect.TypeOf((*MockRabbit)(nil).ConsumeRPC), queueNqme, consumerName, cbRPC)
 }
 
+// ConsumeRPCOpt mocks base method
+func (m *MockRabbit) ConsumeRPCOpt(queueName, consumerName string, autoAck, exclusive, noLocal, noWait bool, cbConsume CbMsgRPC) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsumeRPCOpt", queueName, consumerName, autoAck, exclusive, noLocal, noWait, cbConsume)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConsumeRPCOpt indicates an expected call of ConsumeRPCOpt
+func (mr *MockRabbitMockRecorder) ConsumeRPCOpt(queueName, consumerName, autoAck, exclusive, noLocal, noWait, cbConsume interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeRPCOpt", reflect.TypeOf((*MockRabbit)(nil).ConsumeRPCOpt), queueName, consumerName, autoAck, exclusive, noLocal, noWait, cbConsume)
+}
+
 // ExchangeDeclare mocks base method
 func (m *MockRabbit) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error {
 	m.ctrl.T.Helper()
