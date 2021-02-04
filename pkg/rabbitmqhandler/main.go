@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -61,6 +61,7 @@ type Rabbit interface {
 	ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error
 	ConsumeMessageOpt(queueName, consumerName string, autoAck bool, exclusive bool, noLocal bool, noWait bool, messageConsume CbMsgConsume) error
 	ConsumeRPC(queueNqme, consumerName string, cbRPC CbMsgRPC) error
+	ConsumeRPCOpt(queueName, consumerName string, autoAck bool, exclusive bool, noLocal bool, noWait bool, cbConsume CbMsgRPC) error
 
 	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
 	ExchangeDeclareForDelay(name string, durable, autoDelete, internal, noWait bool) error
@@ -152,7 +153,7 @@ func (r *rabbit) GetURL() string {
 
 // Close close the Queue.
 func (r *rabbit) Close() {
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"url": r.uri,
 	}).Info("Close the rabbitmq connection.")
 
@@ -165,7 +166,7 @@ func (r *rabbit) reconnector() {
 	for {
 		err := <-r.errorChannel
 		if r.closed == false {
-			log.Errorf("Reconnecting after connection closed. err: %v", err)
+			logrus.Errorf("Reconnecting after connection closed. err: %v", err)
 			r.connect()
 			r.redeclareAll()
 		}
@@ -175,7 +176,7 @@ func (r *rabbit) reconnector() {
 // connect connects to rabbitmq.
 func (r *rabbit) connect() {
 	for {
-		log := log.WithFields(log.Fields{
+		log := logrus.WithFields(logrus.Fields{
 			"url": r.uri,
 		})
 		log.Debug("Connecting to rabbitmq")
@@ -202,19 +203,19 @@ func (r *rabbit) connect() {
 func (r *rabbit) redeclareAll() {
 	// redeclare the queues
 	for _, queue := range r.queues {
-		log.Debugf("Redeclaring the queue. queue: %s", queue.name)
+		logrus.Debugf("Redeclaring the queue. queue: %s", queue.name)
 		r.QueueDeclare(queue.name, queue.durable, queue.autoDelete, queue.exclusive, queue.noWait)
 	}
 
 	// redeclare the exchanges
 	for _, exchange := range r.exchanges {
-		log.Debugf("Redeclaring the exchange. exchage: %s", exchange.name)
+		logrus.Debugf("Redeclaring the exchange. exchage: %s", exchange.name)
 		r.ExchangeDeclare(exchange.name, exchange.kind, exchange.durable, exchange.autoDelete, exchange.internal, exchange.noWait, exchange.args)
 	}
 
 	// redeclare the binds
 	for _, queueBind := range r.queueBinds {
-		log.Debugf("Redeclaring the bind. bind: %s", queueBind.name)
+		logrus.Debugf("Redeclaring the bind. bind: %s", queueBind.name)
 		r.QueueBind(queueBind.name, queueBind.key, queueBind.exchange, queueBind.noWait, queueBind.args)
 	}
 }

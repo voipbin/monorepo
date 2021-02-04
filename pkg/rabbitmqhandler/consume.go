@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -41,25 +41,33 @@ func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, autoAck bool,
 		nil,          // args
 	)
 	if err != nil {
-		log.Errorf("Could not consume the message. err: %v", err)
+		logrus.Errorf("Could not consume the message. err: %v", err)
 		return err
 	}
 
 	// process message
 	for message := range messages {
-		var event Event
-		if err := json.Unmarshal(message.Body, &event); err != nil {
-			log.Errorf("Could out unmarshal the message. err: %v", err)
-			continue
-		}
-
-		err := messageConsume(&event)
+		// execute callback
+		err := r.executeConsumeMessage(message, messageConsume)
 		if err != nil {
-			log.Errorf("Message consumer returns error. err: %v", err)
+			logrus.Errorf("Could not execute the message consume callback. err: %v", err)
 		}
-
-		// we are sending an Ack here no matter what.
 		message.Ack(false)
+	}
+
+	return nil
+}
+
+// executeConsumeMessage runs the callback with the given amqp message
+func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume CbMsgConsume) error {
+	var event Event
+
+	if err := json.Unmarshal(message.Body, &event); err != nil {
+		return fmt.Errorf("Could out unmarshal the message. err: %v", err)
+	}
+
+	if err := messageConsume(&event); err != nil {
+		return fmt.Errorf("Message consumer returns error. err: %v", err)
 	}
 
 	return nil
@@ -67,6 +75,12 @@ func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, autoAck bool,
 
 // ConsumeRPC consumes RPC message
 func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) error {
+
+	return r.ConsumeRPCOpt(queueName, consumerName, true, false, false, false, cbConsume)
+}
+
+// ConsumeRPCOpt consumes RPC message with given options
+func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, autoAck bool, exclusive bool, noLocal bool, noWait bool, cbConsume CbMsgRPC) error {
 	queue := r.queueGet(queueName)
 	if queue == nil {
 		return fmt.Errorf("queue not found")
@@ -75,68 +89,75 @@ func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) 
 	messages, err := queue.channel.Consume(
 		queueName,    // queue
 		consumerName, // messageConsumer
-		true,         // auto-ack
-		false,        // exclusive
-		false,        // no-local
-		false,        // no-wait
+		autoAck,      // auto-ack
+		exclusive,    // exclusive
+		noLocal,      // no-local
+		noWait,       // no-wait
 		nil,          // args
 	)
 	if err != nil {
-		log.Errorf("Could not consume the message. err: %v", err)
+		logrus.Errorf("Could not consume the message. err: %v", err)
 		return err
 	}
 
 	// process message
 	for message := range messages {
 
-		// message parse
-		var req Request
-		if err := json.Unmarshal(message.Body, &req); err != nil {
-			log.Errorf("Could not parse the message. message: %s, err: %v", string(message.Body), err)
-			continue
+		if err := r.executeConsumeRPC(message, cbConsume); err != nil {
+			logrus.Errorf("Could not consume the RPC correctly. err: %v", err)
 		}
+		message.Ack(false)
+	}
 
-		// execute callback
-		res, err := cbConsume(&req)
-		if err != nil {
-			log.Errorf("Message consumer returns error. err: %v", err)
-			continue
-		} else if res == nil {
-			// nothing to reply
-			continue
-		}
+	return nil
+}
 
-		// reply response
-		if message.ReplyTo != "" {
-			func() {
-				channel, err := r.connection.Channel()
-				if err != nil {
-					log.Errorf("Could not create a channel. err: %v", err)
-					return
-				}
-				defer channel.Close()
+// executeConsumeRPC runs the callback with the given amqp message
+func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) error {
 
-				resMsg, err := json.Marshal(res)
-				if err != nil {
-					log.Errorf("Could not marshal the response. res: %v, err: %v", res, err)
-					return
-				}
+	// message parse
+	var req Request
+	if err := json.Unmarshal(message.Body, &req); err != nil {
+		return fmt.Errorf("Could not parse the message. message: %s, err: %v", string(message.Body), err)
+	}
 
-				if err := channel.Publish(
-					"",              // exchange
-					message.ReplyTo, // routing key
-					false,           // mandatory
-					false,           // immediate
-					amqp.Publishing{
-						ContentType:   "text/plain",
-						CorrelationId: message.CorrelationId,
-						Body:          resMsg,
-					}); err != nil {
-					log.Errorf("Could not reply the message. message: %v, err: %v", res, err)
-					return
-				}
-			}()
-		}
+	// execute callback
+	res, err := cbConsume(&req)
+	if err != nil {
+		return fmt.Errorf("Message consumer returns error. err: %v", err)
+	} else if res == nil {
+		// nothing to return
+		return nil
+	}
+
+	// check reply destination
+	if message.ReplyTo == "" {
+		// no place to reply send
+		return nil
+	}
+
+	channel, err := r.connection.Channel()
+	if err != nil {
+		return fmt.Errorf("Could not create a channel. err: %v", err)
+	}
+	defer channel.Close()
+
+	resMsg, err := json.Marshal(res)
+	if err != nil {
+		return fmt.Errorf("Could not marshal the response. res: %v, err: %v", res, err)
+	}
+
+	if err := channel.Publish(
+		"",              // exchange
+		message.ReplyTo, // routing key
+		false,           // mandatory
+		false,           // immediate
+		amqp.Publishing{
+			ContentType:   "text/plain",
+			CorrelationId: message.CorrelationId,
+			Body:          resMsg,
+		}); err != nil {
+		return fmt.Errorf("Could not reply the message. message: %v, err: %v", res, err)
 	}
 
 	return nil
