@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 )
 
@@ -56,7 +57,7 @@ func TestFlowCreate(t *testing.T) {
 				UserID:  1,
 				Name:    "test",
 				Detail:  "test detail",
-				Actions: []action.Action{},
+				Actions: []fmaction.Action{},
 				Persist: true,
 			},
 			&flow.Flow{
@@ -81,7 +82,7 @@ func TestFlowCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
+			if reflect.DeepEqual(*res, *tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
 		})
@@ -122,7 +123,7 @@ func TestFlowGet(t *testing.T) {
 				UserID:  1,
 				Name:    "test",
 				Detail:  "test detail",
-				Actions: []action.Action{},
+				Actions: []fmaction.Action{},
 			},
 			&flow.Flow{
 				ID:      uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
@@ -130,6 +131,38 @@ func TestFlowGet(t *testing.T) {
 				Name:    "test",
 				Detail:  "test detail",
 				Actions: []action.Action{},
+			},
+		},
+		{
+			"action answer",
+			&user.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
+
+			&fmflow.Flow{
+				ID:     uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
+				UserID: 1,
+				Name:   "test",
+				Detail: "test detail",
+				Actions: []fmaction.Action{
+					{
+						ID:   uuid.FromStringOrNil("61f86f60-66af-11eb-917f-838fd6836e1f"),
+						Type: "answer",
+					},
+				},
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
+				UserID: 1,
+				Name:   "test",
+				Detail: "test detail",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("61f86f60-66af-11eb-917f-838fd6836e1f"),
+						Type: action.TypeAnswer,
+					},
+				},
 			},
 		},
 	}
@@ -150,7 +183,7 @@ func TestFlowGet(t *testing.T) {
 	}
 }
 
-func TestFlowGetsByUserID(t *testing.T) {
+func TestFlowGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -182,14 +215,30 @@ func TestFlowGetsByUserID(t *testing.T) {
 			10,
 
 			[]fmflow.Flow{
-				fmflow.Flow{
+				{
+					ID:      uuid.FromStringOrNil("ccda6eb2-0c5c-11eb-ae7e-a3ae4bcd3975"),
+					UserID:  1,
+					Name:    "test1",
+					Detail:  "test detail1",
+					Actions: []fmaction.Action{},
+				},
+				{
+					ID:      uuid.FromStringOrNil("d950aef4-0c5c-11eb-82dd-3b31d4ba2ea4"),
+					UserID:  1,
+					Name:    "test2",
+					Detail:  "test detail2",
+					Actions: []fmaction.Action{},
+				},
+			},
+			[]*flow.Flow{
+				{
 					ID:      uuid.FromStringOrNil("ccda6eb2-0c5c-11eb-ae7e-a3ae4bcd3975"),
 					UserID:  1,
 					Name:    "test1",
 					Detail:  "test detail1",
 					Actions: []action.Action{},
 				},
-				fmflow.Flow{
+				{
 					ID:      uuid.FromStringOrNil("d950aef4-0c5c-11eb-82dd-3b31d4ba2ea4"),
 					UserID:  1,
 					Name:    "test2",
@@ -197,21 +246,41 @@ func TestFlowGetsByUserID(t *testing.T) {
 					Actions: []action.Action{},
 				},
 			},
-			[]*flow.Flow{
-				&flow.Flow{
-					ID:      uuid.FromStringOrNil("ccda6eb2-0c5c-11eb-ae7e-a3ae4bcd3975"),
-					UserID:  1,
-					Name:    "test1",
-					Detail:  "test detail1",
-					Actions: []action.Action{},
-				},
+		},
+		{
+			"1 action",
+			&user.User{
+				ID: 1,
+			},
+			"2020-10-20T01:00:00.995000",
+			10,
 
-				&flow.Flow{
-					ID:      uuid.FromStringOrNil("d950aef4-0c5c-11eb-82dd-3b31d4ba2ea4"),
-					UserID:  1,
-					Name:    "test2",
-					Detail:  "test detail2",
-					Actions: []action.Action{},
+			[]fmflow.Flow{
+				{
+					ID:     uuid.FromStringOrNil("5a109d00-66ae-11eb-ad00-bbcf73569888"),
+					UserID: 1,
+					Name:   "test1",
+					Detail: "test detail1",
+					Actions: []fmaction.Action{
+						{
+							ID:   uuid.FromStringOrNil("775f5cde-66ae-11eb-9626-0f488d332e1e"),
+							Type: "answer",
+						},
+					},
+				},
+			},
+			[]*flow.Flow{
+				{
+					ID:     uuid.FromStringOrNil("5a109d00-66ae-11eb-ad00-bbcf73569888"),
+					UserID: 1,
+					Name:   "test1",
+					Detail: "test detail1",
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("775f5cde-66ae-11eb-9626-0f488d332e1e"),
+							Type: action.TypeAnswer,
+						},
+					},
 				},
 			},
 		},
@@ -221,7 +290,7 @@ func TestFlowGetsByUserID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().FMFlowGets(tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.FlowGetsByUserID(tt.user, tt.pageToken, tt.pageSize)
+			res, err := h.FlowGets(tt.user, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

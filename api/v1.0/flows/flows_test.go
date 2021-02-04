@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
 )
@@ -115,10 +116,10 @@ func TestFlowsIDGET(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 				UserID: 1,
-				Actions: []action.Action{
-					action.Action{
+				Actions: []fmaction.Action{
+					{
 						ID:   uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -128,7 +129,7 @@ func TestFlowsIDGET(t *testing.T) {
 				Detail: "test detail",
 				UserID: 1,
 				Actions: []action.Action{
-					action.Action{
+					{
 						ID:   uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
 						Type: action.TypeAnswer,
 					},
