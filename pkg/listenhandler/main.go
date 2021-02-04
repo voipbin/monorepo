@@ -99,6 +99,12 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
+	// Set QoS
+	if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
+		logrus.Errorf("Could not set the queue's qos. err: %v", err)
+		return err
+	}
+
 	// create a exchange for delayed message
 	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
 		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
@@ -112,10 +118,9 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// process the received request
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPC(queue, "flow-manager", h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, "flow-manager", false, false, false, h.processRequest)
 			if err != nil {
-				logrus.Errorf("Could not consume the ARI message correctly. Will try again after 1 second. err: %v", err)
-				time.Sleep(time.Second * 1)
+				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
 		}
 	}()
