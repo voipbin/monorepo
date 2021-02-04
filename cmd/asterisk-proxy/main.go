@@ -10,8 +10,8 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/ivahaev/amigo"
+	joonix "github.com/joonix/log"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/eventhandler"
@@ -118,10 +118,10 @@ func initProcess() {
 	flag.Parse()
 
 	// initiate log
-	log.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true, DisableColors: true})
-	log.SetLevel(logrus.DebugLevel)
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
 
-	log.Info("asterisk-proxy has initiated.")
+	logrus.Info("asterisk-proxy has initiated.")
 }
 
 // connectAMI access and login to the Asterisk's AMI.
@@ -208,6 +208,6 @@ func getAsteriskIDAddress(ifaceName string) (string, string, error) {
 		}
 
 	}
-	log.Errorf("Could not find correct interface information.")
+	logrus.Errorf("Could not find correct interface information.")
 	return "", "", fmt.Errorf("no interface found")
 }
