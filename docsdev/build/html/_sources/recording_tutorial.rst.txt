@@ -61,6 +61,31 @@ Example
     }
 
 
+Get detail of recording
+-----------------------
+
+Example
+
+.. code::
+
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordings/f27d65bc-2f10-49e1-a49d-a7762965df13?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTIyMzIxOTcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.of3jiawHOaTaq5t7USc25aVcSag-RhuXfYNdItXrDds'
+
+    {
+        "id": "f27d65bc-2f10-49e1-a49d-a7762965df13",
+        "user_id": 1,
+        "type": "call",
+        "reference_id": "5f7a0eff-9de9-4c41-a018-08bffd4a19aa",
+        "status": "ended",
+        "format": "wav",
+        "filename": "call_5f7a0eff-9de9-4c41-a018-08bffd4a19aa_2021-01-28T09:16:58Z.wav",
+        "tm_start": "2021-01-28 09:17:00.814000",
+        "tm_end": "2021-01-28 09:17:11.883000",
+        "tm_create": "2021-01-28 09:16:58.076735",
+        "tm_update": "2021-01-28 09:17:11.890500",
+        "tm_delete": ""
+    }
+
+
 Simple recordingfile download
 -----------------------------
 
