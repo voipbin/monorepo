@@ -32,7 +32,7 @@ release:
     - *gcp_init
     - cd k8s
     - kustomize edit set image asterisk-image=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    - kustomize edit set image asterisk-proxy-image=registry.gitlab.com/voipbin/voip/asterisk-proxy:19a3f4a8824cdde51c83da88f7e0f9662aa6dfb9
+    - kustomize edit set image asterisk-proxy-image=registry.gitlab.com/voipbin/voip/asterisk-proxy:0d9a92a461df07f347e7a0d8a45874174585c5d5
     - kubectl apply -k ./ -v6
   variables:
     LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
