@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Flow &mdash; voipbin  documentation</title>
+  <title>Tutorial &mdash; voipbin  documentation</title>
   
 
   
@@ -35,9 +35,7 @@
 
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Conference" href="conference.html" />
-    <link rel="prev" title="Call" href="call.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,39 +80,15 @@
               
             
             
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Flow</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#how-flow-works">How Flow works</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#get-list-of-flows">Get list of flows</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#get-detail-of-specified-flow">Get detail of specified flow</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-a-flow">Create a flow</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Flow</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#how-flow-works">How Flow works</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#get-list-of-flows">Get list of flows</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#get-detail-of-specified-flow">Get detail of specified flow</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-a-flow">Create a flow</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 </ul>
 
             
@@ -161,13 +135,13 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Flow</li>
+      <li>Tutorial</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/flow.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/flow_tutorial.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -180,22 +154,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="flow">
-<h1>Flow<a class="headerlink" href="#flow" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>The flow is a set of instructions you can use to tell VoIPBIN what to do when you receive an incoming call.</p>
-<div class="section" id="how-flow-works">
-<h3>How Flow works<a class="headerlink" href="#how-flow-works" title="Permalink to this headline">¶</a></h3>
-<p>When someone makes a call to one of your VoIPBIN numbers or destinations, VoIPBIN looks up the URL associated with that phone number and sends it a request.
-VoIPBIN then reads the Flow instructions to determine what to do, whether it’s recording the call, playing a message for the caller, or prompting the caller to press digits on their keypad.</p>
-<p>At its core, Flow is an array of json objects with special tags defined by VoIPBIN to help you build your Programmable Voice application.</p>
-</div>
-</div>
-<div class="section" id="tutorial">
-<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="get-list-of-flows">
-<h3>Get list of flows<a class="headerlink" href="#get-list-of-flows" title="Permalink to this headline">¶</a></h3>
+<h2>Get list of flows<a class="headerlink" href="#get-list-of-flows" title="Permalink to this headline">¶</a></h2>
 <p>Gets the list of registered flows.</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
 
@@ -250,7 +212,7 @@ VoIPBIN then reads the Flow instructions to determine what to do, whether it’s
 </div>
 </div>
 <div class="section" id="get-detail-of-specified-flow">
-<h3>Get detail of specified flow<a class="headerlink" href="#get-detail-of-specified-flow" title="Permalink to this headline">¶</a></h3>
+<h2>Get detail of specified flow<a class="headerlink" href="#get-detail-of-specified-flow" title="Permalink to this headline">¶</a></h2>
 <p>Gets the detail of registered flows.</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
 
@@ -286,7 +248,7 @@ VoIPBIN then reads the Flow instructions to determine what to do, whether it’s
 </div>
 </div>
 <div class="section" id="create-a-flow">
-<h3>Create a flow<a class="headerlink" href="#create-a-flow" title="Permalink to this headline">¶</a></h3>
+<h2>Create a flow<a class="headerlink" href="#create-a-flow" title="Permalink to this headline">¶</a></h2>
 <p>Create a new flow for incoming call requests.
 When the call is comming, this flow will answer the call first, then will speech the welcome text.</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
@@ -336,22 +298,12 @@ When the call is comming, this flow will answer the call first, then will speech
 </div>
 </div>
 </div>
-</div>
 
 
            </div>
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="conference.html" class="btn btn-neutral float-right" title="Conference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="call.html" class="btn btn-neutral float-left" title="Call" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>
