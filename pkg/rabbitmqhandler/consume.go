@@ -12,20 +12,12 @@ import (
 // If the queueName was not defined, then defines with default values.
 func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error {
 
-	return r.ConsumeMessageOpt(
-		queueName,
-		consumerName,
-		true,
-		false,
-		false,
-		false,
-		messageConsume,
-	)
+	return r.ConsumeMessageOpt(queueName, consumerName, false, false, false, messageConsume)
 }
 
 // ConsumeMessageOpt consumes message with given options
 // If the queueName was not defined, then uses with default queue name values.
-func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, autoAck bool, exclusive bool, noLocal bool, noWait bool, messageConsume CbMsgConsume) error {
+func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, messageConsume CbMsgConsume) error {
 	queue := r.queueGet(queueName)
 	if queue == nil {
 		return fmt.Errorf("queue not found")
@@ -34,7 +26,7 @@ func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, autoAck bool,
 	messages, err := queue.channel.Consume(
 		queueName,    // queue
 		consumerName, // messageConsumer
-		autoAck,      // auto-ack
+		false,        // auto-ack
 		exclusive,    // exclusive
 		noLocal,      // no-local
 		noWait,       // no-wait
@@ -76,11 +68,11 @@ func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume CbM
 // ConsumeRPC consumes RPC message
 func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) error {
 
-	return r.ConsumeRPCOpt(queueName, consumerName, true, false, false, false, cbConsume)
+	return r.ConsumeRPCOpt(queueName, consumerName, false, false, false, cbConsume)
 }
 
 // ConsumeRPCOpt consumes RPC message with given options
-func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, autoAck bool, exclusive bool, noLocal bool, noWait bool, cbConsume CbMsgRPC) error {
+func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, cbConsume CbMsgRPC) error {
 	queue := r.queueGet(queueName)
 	if queue == nil {
 		return fmt.Errorf("queue not found")
@@ -89,7 +81,7 @@ func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, autoAck bool, exc
 	messages, err := queue.channel.Consume(
 		queueName,    // queue
 		consumerName, // messageConsumer
-		autoAck,      // auto-ack
+		false,        // auto-ack
 		exclusive,    // exclusive
 		noLocal,      // no-local
 		noWait,       // no-wait
