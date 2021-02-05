@@ -140,7 +140,6 @@ func TestV1FlowsIDActionsIDGet(t *testing.T) {
 		request        *rabbitmqhandler.Request
 		expectFlowID   uuid.UUID
 		expectActionID uuid.UUID
-		// expectFlow *flow.Flow
 	}
 
 	tests := []test{
@@ -222,7 +221,6 @@ func TestV1FlowsIDGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockFlowHandler.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
 
-			// mockFlowHandler.EXPECT().ActionGet(gomock.Any(), tt.expectFlowID, tt.expectActionID).Return(nil, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -313,6 +311,59 @@ func TestV1FlowsIDPut(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestV1FlowsIDDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+
+	h := &listenHandler{
+		db:          mockDB,
+		rabbitSock:  mockSock,
+		flowHandler: mockFlowHandler,
+	}
+
+	type test struct {
+		name      string
+		flowID    uuid.UUID
+		request   *rabbitmqhandler.Request
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows/89ecd1f6-67c6-11eb-815a-a75d4cc3df3e",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: "application/json",
+				Data:     nil,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockFlowHandler.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}

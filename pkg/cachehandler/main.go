@@ -27,6 +27,7 @@ type CacheHandler interface {
 	ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error)
 	ActiveFlowSet(ctx context.Context, cf *activeflow.ActiveFlow) error
 
+	FlowDel(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowSet(ctx context.Context, flow *flow.Flow) error
 }

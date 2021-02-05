@@ -170,6 +170,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/flows"
 		response, err = h.v1FlowsPost(m)
 
+	case regV1FlowsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/flows"
+		response, err = h.v1FlowsIDDelete(m)
+
 	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows"
 		response, err = h.v1FlowsGet(m)

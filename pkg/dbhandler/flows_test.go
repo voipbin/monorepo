@@ -311,3 +311,48 @@ func TestFlowSetData(t *testing.T) {
 		})
 	}
 }
+
+func TestFlowDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name string
+		flow *flow.Flow
+	}
+
+	tests := []test{
+		{
+			"normal deletion",
+			&flow.Flow{
+				ID:       uuid.FromStringOrNil("9f59d11a-67c1-11eb-9cf4-1b8a94365c22"),
+				Name:     "test flow name",
+				Detail:   "test flow detail",
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().FlowDel(gomock.Any(), tt.flow.ID)
+			if err := h.FlowDelete(context.Background(), tt.flow.ID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(nil, fmt.Errorf("error"))
+			if _, err := h.FlowGet(context.Background(), tt.flow.ID); err == nil {
+				t.Errorf("Wrong match. expect: err, got: ok")
+			}
+		})
+	}
+}

@@ -62,15 +62,47 @@ func TestFlowGet(t *testing.T) {
 	tests := []test{
 		{
 			"test normal",
-			&flow.Flow{},
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("75d3c842-67c5-11eb-b8fe-0728b45d5ff1"),
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
 
-			h.FlowGet(context.Background(), uuid.Must(uuid.NewV4()))
+			h.FlowGet(context.Background(), tt.flow.ID)
+		})
+	}
+}
+
+func TestFlowDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
+		name   string
+		flowID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			uuid.FromStringOrNil("acb2d07e-67c5-11eb-a39d-6f0133ff0559"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(nil)
+
+			h.FlowDelete(context.Background(), tt.flowID)
 		})
 	}
 }

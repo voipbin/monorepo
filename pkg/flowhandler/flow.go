@@ -89,3 +89,13 @@ func (h *flowHandler) FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow,
 
 	return res, nil
 }
+
+// FlowDelete delets the given flow
+func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) error {
+	err := h.db.FlowDelete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

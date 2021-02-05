@@ -39,6 +39,14 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 	return nil
 }
 
+// delSerialize deletes the cached serialized data.
+func (h *handler) delSerialize(ctx context.Context, key string) error {
+	if err := h.Cache.Del(ctx, key).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // FlowSet sets the flow info into the cache.
 func (h *handler) FlowSet(ctx context.Context, flow *flow.Flow) error {
 	key := fmt.Sprintf("flow:%s", flow.ID)
@@ -60,6 +68,17 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	}
 
 	return &res, nil
+}
+
+// FlowDel returns cached flow info
+func (h *handler) FlowDel(ctx context.Context, id uuid.UUID) error {
+	key := fmt.Sprintf("flow:%s", id)
+
+	if err := h.delSerialize(ctx, key); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ActiveFlowSet sets the activeflow info into the cache
