@@ -20,7 +20,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
