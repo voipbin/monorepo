@@ -150,3 +150,89 @@ When the call is comming, this flow will answer the call first, then will speech
         "tm_update": "",
         "tm_delete": ""
     }
+
+Update the flow
+---------------
+
+Update the existed flow with given info.
+The doesn't affect to the existed call. The flow changes will be affected only a new calls.
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "test flow update",
+        "detail": "test voipbin flow example update",
+        "actions": [
+            {
+                "type": "answer"
+            },
+            {
+                "type": "talk",
+                "option": {
+                    "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin'\''s service. thank you.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "play",
+                "option": {
+                    "stream_url": [
+                        "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
+                    ]
+                }
+            },
+            {
+                "type": "play",
+                "option": {
+                    "stream_url": [
+                        "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
+                    ]
+                }
+            }
+        ]
+    }'
+
+    {
+        "id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+        "name": "test flow update",
+        "detail": "test voipbin flow example update",
+        "actions": [
+            {
+                "id": "be682498-e57e-41e9-b210-a578f9c044c5",
+                "type": "answer"
+            },
+            {
+                "id": "6669bfdd-a7b0-45e6-9a8d-db6bb898159f",
+                "type": "talk",
+                "option": {
+                    "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "id": "099b60c1-7b95-4d69-8cac-df11a992ee11",
+                "type": "play",
+                "option": {
+                    "stream_url": [
+                        "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
+                    ]
+                }
+            },
+            {
+                "id": "89fa5091-a192-4758-8a29-316776ead8fe",
+                "type": "play",
+                "option": {
+                    "stream_url": [
+                        "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
+                    ]
+                }
+            }
+        ],
+        "tm_create": "2020-10-11 01:00:00.000001",
+        "tm_update": "2021-02-05 13:08:56.113036",
+        "tm_delete": ""
+    }

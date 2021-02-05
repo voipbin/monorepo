@@ -36,8 +36,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Conference" href="conference.html" />
-    <link rel="prev" title="Call" href="call.html" /> 
+    <link rel="next" title="Recording" href="recording.html" />
+    <link rel="prev" title="Conference" href="conference.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,21 +87,7 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Flow</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#how-flow-works">How Flow works</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#get-list-of-flows">Get list of flows</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#get-detail-of-specified-flow">Get detail of specified flow</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-a-flow">Create a flow</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Flow</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#how-flow-works">How Flow works</a></li>
@@ -111,10 +97,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#get-list-of-flows">Get list of flows</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-detail-of-specified-flow">Get detail of specified flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#create-a-flow">Create a flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#update-the-flow">Update the flow</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
 </ul>
 
             
@@ -335,6 +323,90 @@ When the call is comming, this flow will answer the call first, then will speech
 </pre></div>
 </div>
 </div>
+<div class="section" id="update-the-flow">
+<h3>Update the flow<a class="headerlink" href="#update-the-flow" title="Permalink to this headline">¶</a></h3>
+<p>Update the existed flow with given info.
+The doesn’t affect to the existed call. The flow changes will be affected only a new calls.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;name&quot;: &quot;test flow update&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example update&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;answer&quot;
+        },
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;\&#39;&#39;s service. thank you.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
+                ]
+            }
+        },
+        {
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
+                ]
+            }
+        }
+    ]
+}&#39;
+
+{
+    &quot;id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
+    &quot;name&quot;: &quot;test flow update&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example update&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;id&quot;: &quot;be682498-e57e-41e9-b210-a578f9c044c5&quot;,
+            &quot;type&quot;: &quot;answer&quot;
+        },
+        {
+            &quot;id&quot;: &quot;6669bfdd-a7b0-45e6-9a8d-db6bb898159f&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;s service. thank you.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;id&quot;: &quot;099b60c1-7b95-4d69-8cac-df11a992ee11&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
+                ]
+            }
+        },
+        {
+            &quot;id&quot;: &quot;89fa5091-a192-4758-8a29-316776ead8fe&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
+                ]
+            }
+        }
+    ],
+    &quot;tm_create&quot;: &quot;2020-10-11 01:00:00.000001&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-05 13:08:56.113036&quot;,
+    &quot;tm_delete&quot;: &quot;&quot;
+}
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 
@@ -346,10 +418,10 @@ When the call is comming, this flow will answer the call first, then will speech
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="conference.html" class="btn btn-neutral float-right" title="Conference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="recording.html" class="btn btn-neutral float-right" title="Recording" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="call.html" class="btn btn-neutral float-left" title="Call" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="conference.html" class="btn btn-neutral float-left" title="Conference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
