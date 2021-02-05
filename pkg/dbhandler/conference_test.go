@@ -188,3 +188,104 @@ func TestConferenceSetRecordID(t *testing.T) {
 		})
 	}
 }
+
+func TestConferenceSetData(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name             string
+		conference       *conference.Conference
+		data             map[string]interface{}
+		expectConference *conference.Conference
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("0a64e234-675d-11eb-92c7-13f0c9a0e28b"),
+			},
+			map[string]interface{}{
+				"key1": "string value",
+			},
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("0a64e234-675d-11eb-92c7-13f0c9a0e28b"),
+				CallIDs:      []uuid.UUID{},
+				RecordingIDs: []uuid.UUID{},
+				Data: map[string]interface{}{
+					"key1": "string value",
+				},
+			},
+		},
+		{
+			"update 2 datas",
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("d54bf5b4-675d-11eb-b133-9b06996a9b99"),
+			},
+			map[string]interface{}{
+				"key1": "string value",
+				"key2": "string value",
+			},
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("d54bf5b4-675d-11eb-b133-9b06996a9b99"),
+				CallIDs:      []uuid.UUID{},
+				RecordingIDs: []uuid.UUID{},
+				Data: map[string]interface{}{
+					"key1": "string value",
+					"key2": "string value",
+				},
+			},
+		},
+		{
+			"update mixed data types",
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("efa1ec2a-675d-11eb-b854-ffe06d0fc488"),
+			},
+			map[string]interface{}{
+				"key1": "string value",
+				"key2": 123,
+			},
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("efa1ec2a-675d-11eb-b854-ffe06d0fc488"),
+				CallIDs:      []uuid.UUID{},
+				RecordingIDs: []uuid.UUID{},
+				Data: map[string]interface{}{
+					"key1": "string value",
+					"key2": float64(123),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
+			if err := h.ConferenceCreate(context.Background(), tt.conference); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
+			if err := h.ConferenceSetData(context.Background(), tt.conference.ID, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
+			res, err := h.ConferenceGet(context.Background(), tt.conference.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMUpdate = ""
+			res.TMCreate = ""
+			if reflect.DeepEqual(tt.expectConference, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectConference, res)
+			}
+		})
+	}
+}
