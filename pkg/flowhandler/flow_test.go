@@ -193,7 +193,6 @@ func TestFlowUpdate(t *testing.T) {
 
 	type test struct {
 		name         string
-		flowID       uuid.UUID
 		updateFlow   *flow.Flow
 		responseFlow *flow.Flow
 		expectRes    *flow.Flow
@@ -202,8 +201,8 @@ func TestFlowUpdate(t *testing.T) {
 	tests := []test{
 		{
 			"test normal",
-			uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
 			&flow.Flow{
+				ID:     uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
 				Name:   "changed name",
 				Detail: "changed detail",
 				Actions: []action.Action{
@@ -242,9 +241,9 @@ func TestFlowUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowUpdate(ctx, tt.flowID, tt.updateFlow).Return(nil)
-			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
-			res, err := h.FlowUpdate(ctx, tt.flowID, tt.updateFlow)
+			mockDB.EXPECT().FlowUpdate(ctx, tt.updateFlow).Return(nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.updateFlow.ID).Return(tt.responseFlow, nil)
+			res, err := h.FlowUpdate(ctx, tt.updateFlow)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

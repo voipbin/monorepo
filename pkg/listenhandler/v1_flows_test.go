@@ -252,7 +252,6 @@ func TestV1FlowsIDPut(t *testing.T) {
 	type test struct {
 		name         string
 		request      *rabbitmqhandler.Request
-		flowID       uuid.UUID
 		requestFlow  *flow.Flow
 		responseFlow *flow.Flow
 		expectRes    *rabbitmqhandler.Response
@@ -267,8 +266,8 @@ func TestV1FlowsIDPut(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
-			uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
 			&flow.Flow{
+				ID:     uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
 				Name:   "update name",
 				Detail: "update detail",
 				Actions: []action.Action{
@@ -305,7 +304,7 @@ func TestV1FlowsIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().FlowUpdate(gomock.Any(), tt.flowID, tt.requestFlow).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().FlowUpdate(gomock.Any(), tt.requestFlow).Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

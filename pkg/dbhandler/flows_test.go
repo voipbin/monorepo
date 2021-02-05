@@ -146,14 +146,14 @@ func TestFlowGetsByUserID(t *testing.T) {
 			10,
 			"2020-04-18T03:30:17.000000",
 			[]flow.Flow{
-				flow.Flow{
+				{
 					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
 					UserID:   1,
 					Name:     "test1",
 					Persist:  true,
 					TMCreate: "2020-04-18T03:22:17.995000",
 				},
-				flow.Flow{
+				{
 					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
 					UserID:   1,
 					Name:     "test2",
@@ -162,13 +162,13 @@ func TestFlowGetsByUserID(t *testing.T) {
 				},
 			},
 			[]*flow.Flow{
-				&flow.Flow{
+				{
 					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
 					UserID:   1,
 					Name:     "test2",
 					TMCreate: "2020-04-18T03:23:17.995000",
 				},
-				&flow.Flow{
+				{
 					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
 					UserID:   1,
 					Name:     "test1",
@@ -292,7 +292,7 @@ func TestFlowSetData(t *testing.T) {
 			}
 
 			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
-			if err := h.FlowUpdate(context.Background(), tt.flow.ID, tt.updateFlow); err != nil {
+			if err := h.FlowUpdate(context.Background(), tt.updateFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

@@ -225,7 +225,7 @@ func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token str
 
 // FlowUpdate updates the most of flow information.
 // except permenant info(i.e. id, timestamp, etc)
-func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, f *flow.Flow) error {
+func (h *handler) FlowUpdate(ctx context.Context, f *flow.Flow) error {
 	q := fmt.Sprintf(`
 	update flows set
 		name = ?,
@@ -241,7 +241,7 @@ func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, f *flow.Flow) er
 		return fmt.Errorf("could not marshal actions. FlowUpdate. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, f.Name, f.Detail, tmpActions, getCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, f.Name, f.Detail, tmpActions, getCurTime(), f.ID.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. FlowUpdate. err: %v", err)
 	}
 

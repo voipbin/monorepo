@@ -64,19 +64,24 @@ func (h *flowHandler) FlowGetsByUserID(ctx context.Context, userID uint64, token
 }
 
 // FlowUpdate updates the flow info and return the updated flow
-func (h *flowHandler) FlowUpdate(ctx context.Context, id uuid.UUID, f *flow.Flow) (*flow.Flow, error) {
+func (h *flowHandler) FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow, error) {
+	logrus.WithFields(
+		logrus.Fields{
+			"flow": f,
+		},
+	).Debugf("Updating flow. flow: %s", f.ID)
 
 	// set action id
 	for i := range f.Actions {
 		f.Actions[i].ID = uuid.Must(uuid.NewV4())
 	}
 
-	if err := h.db.FlowUpdate(ctx, id, f); err != nil {
+	if err := h.db.FlowUpdate(ctx, f); err != nil {
 		logrus.Errorf("Could not update the flow info. err: %v", err)
 		return nil, err
 	}
 
-	res, err := h.db.FlowGet(ctx, id)
+	res, err := h.db.FlowGet(ctx, f.ID)
 	if err != nil {
 		logrus.Errorf("Could not get updated flow. err: %v", err)
 		return nil, err

@@ -70,12 +70,13 @@ func (h *listenHandler) v1FlowsIDPut(req *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// create a update flow
 	f := &flow.Flow{
+		ID:      flowID,
 		Name:    reqData.Name,
 		Detail:  reqData.Detail,
 		Actions: reqData.Actions,
 	}
 
-	flow, err := h.flowHandler.FlowUpdate(ctx, flowID, f)
+	flow, err := h.flowHandler.FlowUpdate(ctx, f)
 	if err != nil {
 		logrus.Errorf("Could not update the flow info. err: %v", err)
 		return nil, err
