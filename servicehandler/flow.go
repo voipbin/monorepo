@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 )
 
 // FlowCreate is a service handler for flow creation.
@@ -89,4 +90,38 @@ func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*f
 	}
 
 	return res, nil
+}
+
+// FlowUpdate updates the flow info.
+// It returns updated flow if it succeed.
+func (h *serviceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"flow":     f.ID,
+	})
+	log.Debug("Updating a flow.")
+
+	// get flows
+	tmpFlow, err := h.reqHandler.FMFlowGet(f.ID)
+	if err != nil {
+		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find flows info. err: %v", err)
+	}
+
+	// check the ownership
+	if u.Permission != user.PermissionAdmin && u.ID != tmpFlow.UserID {
+		log.Info("The user has no permission for this call.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	reqFlow := fmflow.CreateFlow(f)
+	res, err := h.reqHandler.FMFlowUpdate(reqFlow)
+	if err != nil {
+		logrus.Errorf("Could not update the flow. err: %v", err)
+		return nil, err
+	}
+
+	resFlow := res.ConvertFlow()
+	return resFlow, nil
 }

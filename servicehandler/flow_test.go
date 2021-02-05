@@ -89,6 +89,81 @@ func TestFlowCreate(t *testing.T) {
 	}
 }
 
+func TestFlowUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	type test struct {
+		name string
+		user *user.User
+		flow *flow.Flow
+
+		requestFlow *fmflow.Flow
+		response    *fmflow.Flow
+		expectRes   *flow.Flow
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&user.User{
+				ID: 1,
+			},
+			&flow.Flow{
+				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
+				Name:    "update name",
+				Detail:  "update detail",
+				Actions: []action.Action{},
+			},
+			&fmflow.Flow{
+				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
+				Name:    "update name",
+				Detail:  "update detail",
+				Actions: []fmaction.Action{},
+			},
+			&fmflow.Flow{
+				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
+				UserID:  1,
+				Name:    "update name",
+				Detail:  "update detail",
+				Actions: []fmaction.Action{},
+				Persist: true,
+			},
+			&flow.Flow{
+				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
+				UserID:  1,
+				Name:    "update name",
+				Detail:  "update detail",
+				Actions: []action.Action{},
+				Persist: true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().FMFlowGet(tt.flow.ID).Return(&fmflow.Flow{UserID: 1}, nil)
+			mockReq.EXPECT().FMFlowUpdate(tt.requestFlow).Return(tt.response, nil)
+			res, err := h.FlowUpdate(tt.user, tt.flow)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*res, *tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func TestFlowGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

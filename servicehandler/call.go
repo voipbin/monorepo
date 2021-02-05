@@ -120,9 +120,21 @@ func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
 		"call_id":  callID,
 	})
 
-	// send request
-	err := h.reqHandler.CMCallDelete(callID)
+	// todo need to check the call's ownership
+	c, err := h.reqHandler.CMCallGet(callID)
 	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// check call's ownership
+	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
+		log.Info("The user has no permission for this call.")
+		return fmt.Errorf("user has no permission")
+	}
+
+	// send request
+	if err := h.reqHandler.CMCallDelete(callID); err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err

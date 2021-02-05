@@ -117,3 +117,48 @@ func TestCallCreate(t *testing.T) {
 	}
 
 }
+
+func TestCallDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	type test struct {
+		name   string
+		user   *user.User
+		callID uuid.UUID
+		call   *cmcall.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&user.User{
+				ID: 2,
+			},
+			uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
+			&cmcall.Call{
+				ID:     uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
+				UserID: 2,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().CMCallGet(tt.callID).Return(tt.call, nil)
+			mockReq.EXPECT().CMCallDelete(tt.callID).Return(nil)
+
+			if err := h.CallDelete(tt.user, tt.callID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
