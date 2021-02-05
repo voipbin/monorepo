@@ -100,6 +100,7 @@ type RequestHandler interface {
 	// flow
 	// flow actions
 	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error)
+	FMFlowDelete(flowID uuid.UUID) error
 	FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error)
 	FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMFlowUpdate(f *fmflow.Flow) (*fmflow.Flow, error)

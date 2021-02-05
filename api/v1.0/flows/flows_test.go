@@ -237,3 +237,50 @@ func TestFlowsIDPUT(t *testing.T) {
 		})
 	}
 }
+
+func TestFlowsIDDELETE(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name   string
+		user   user.User
+		flowID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			user.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("d466f900-67cb-11eb-b2ff-1f9adc48f842"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().FlowDelete(&tt.user, tt.flowID).Return(nil)
+			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/flows/%s", tt.flowID), nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
