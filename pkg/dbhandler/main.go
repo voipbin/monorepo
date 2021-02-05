@@ -24,12 +24,13 @@ type DBHandler interface {
 	ActiveFlowSet(ctx context.Context, af *activeflow.ActiveFlow) error
 	ActiveFlowSetToCache(ctx context.Context, flow *activeflow.ActiveFlow) error
 
-	FlowCreate(ctx context.Context, flow *flow.Flow) error
+	FlowCreate(ctx context.Context, f *flow.Flow) error
+	FlowDelete(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error)
-	FlowSetToCache(ctx context.Context, flow *flow.Flow) error
+	FlowSetToCache(ctx context.Context, f *flow.Flow) error
 	FlowUpdate(ctx context.Context, f *flow.Flow) error
 	FlowUpdateToCache(ctx context.Context, id uuid.UUID) error
 }

@@ -79,6 +79,20 @@ func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
 }
 
+// FlowDel mocks base method
+func (m *MockCacheHandler) FlowDel(arg0 context.Context, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowDel", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FlowDel indicates an expected call of FlowDel
+func (mr *MockCacheHandlerMockRecorder) FlowDel(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowDel", reflect.TypeOf((*MockCacheHandler)(nil).FlowDel), arg0, arg1)
+}
+
 // FlowGet mocks base method
 func (m *MockCacheHandler) FlowGet(arg0 context.Context, arg1 uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()

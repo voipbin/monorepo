@@ -24,7 +24,7 @@ func (h *listenHandler) v1FlowsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhan
 		return nil, err
 	}
 
-	// "/v1/flows/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/actions/ab1f7732-8a74-11ea-98f6-9b02a042df6a"
+	// "/v1/flows/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
 	tmpVals := strings.Split(u.Path, "/")
 	flowID := uuid.FromStringOrNil(tmpVals[3])
 
@@ -92,6 +92,30 @@ func (h *listenHandler) v1FlowsIDPut(req *rabbitmqhandler.Request) (*rabbitmqhan
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1FlowsIDDelete handles /v1/flows/{id} Delete request
+func (h *listenHandler) v1FlowsIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/flows/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
+	tmpVals := strings.Split(u.Path, "/")
+	flowID := uuid.FromStringOrNil(tmpVals[3])
+
+	if err := h.flowHandler.FlowDelete(ctx, flowID); err != nil {
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
 	}
 
 	return res, nil
