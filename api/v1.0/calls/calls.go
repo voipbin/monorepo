@@ -85,7 +85,7 @@ func callsIDDelete(c *gin.Context) {
 	// get service
 	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	// get call
+	// hangup the call
 	err := serviceHandler.CallDelete(&u, id)
 	if err != nil {
 		logrus.Infof("Could not get the call info. err: %v", err)

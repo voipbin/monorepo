@@ -77,6 +77,42 @@ func (r *requestHandler) FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error) {
 	return &f, nil
 }
 
+// FMFlowUpdate sends a request to flow-manager
+// to update the detail flow info.
+// it returns updated flow info if it succeed.
+func (r *requestHandler) FMFlowUpdate(f *fmflow.Flow) (*fmflow.Flow, error) {
+	uri := fmt.Sprintf("/v1/flows/%s", f.ID)
+
+	data := &request.FMV1DataFlowIDPut{
+		Name:    f.Name,
+		Detail:  f.Detail,
+		Actions: f.Actions,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPut, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resFlow fmflow.Flow
+	if err := json.Unmarshal([]byte(res.Data), &resFlow); err != nil {
+		return nil, err
+	}
+
+	return &resFlow, nil
+}
+
 // FMFlowGets sends a request to flow-manager
 // to getting a list of flow info.
 // it returns detail list of flow info if it succeed.

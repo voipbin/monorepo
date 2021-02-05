@@ -11,4 +11,5 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	flows.POST("", flowsPOST)
 	flows.GET("", flowsGET)
 	flows.GET("/:id", flowsIDGET)
+	flows.PUT("/:id", flowsIDPUT)
 }

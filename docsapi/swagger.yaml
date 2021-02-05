@@ -459,6 +459,16 @@ paths:
           schema:
             $ref: '#/definitions/flow.Flow'
       summary: Returns detail flow info.
+    put:
+      description: Update a flow and returns detail updated flow info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/flow.Flow'
+      summary: Update a flow and reuturns updated flow info.
   /v1.0/recordingfiles/{id}:
     get:
       description: Download the recording file

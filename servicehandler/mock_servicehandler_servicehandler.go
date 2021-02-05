@@ -217,6 +217,21 @@ func (mr *MockServiceHandlerMockRecorder) FlowGets(u, pageSize, pageToken interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGets", reflect.TypeOf((*MockServiceHandler)(nil).FlowGets), u, pageSize, pageToken)
 }
 
+// FlowUpdate mocks base method
+func (m *MockServiceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowUpdate", u, f)
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowUpdate indicates an expected call of FlowUpdate
+func (mr *MockServiceHandlerMockRecorder) FlowUpdate(u, f interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockServiceHandler)(nil).FlowUpdate), u, f)
+}
+
 // RecordingGet mocks base method
 func (m *MockServiceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()

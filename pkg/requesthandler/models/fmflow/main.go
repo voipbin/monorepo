@@ -28,6 +28,11 @@ type Flow struct {
 // ConvertFlow returns converted data from fmflow.Flow to flow.Flow
 func (f *Flow) ConvertFlow() *flow.Flow {
 
+	actions := []action.Action{}
+	for _, a := range f.Actions {
+		actions = append(actions, *a.ConvertAction())
+	}
+
 	res := &flow.Flow{
 		ID:     f.ID,
 		UserID: f.UserID,
@@ -37,16 +42,38 @@ func (f *Flow) ConvertFlow() *flow.Flow {
 
 		Persist: f.Persist,
 
-		Actions: []action.Action{},
+		Actions: actions,
 
 		TMCreate: f.TMCreate,
 		TMUpdate: f.TMUpdate,
 		TMDelete: f.TMDelete,
 	}
 
-	// convert actions
+	return res
+}
+
+// CreateFlow returns converted data from flow.Flow to fmflow.Flow
+func CreateFlow(f *flow.Flow) *Flow {
+
+	actions := []fmaction.Action{}
 	for _, a := range f.Actions {
-		res.Actions = append(res.Actions, *a.ConvertAction())
+		actions = append(actions, *fmaction.CreateAction(&a))
+	}
+
+	res := &Flow{
+		ID:     f.ID,
+		UserID: f.UserID,
+
+		Name:   f.Name,
+		Detail: f.Detail,
+
+		Persist: f.Persist,
+
+		Actions: actions,
+
+		TMCreate: f.TMCreate,
+		TMUpdate: f.TMUpdate,
+		TMDelete: f.TMDelete,
 	}
 
 	return res

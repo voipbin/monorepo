@@ -40,6 +40,7 @@ type ServiceHandler interface {
 	FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
 	FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 	FlowGets(u *user.User, pageSize uint64, pageToken string) ([]*flow.Flow, error)
+	FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, error)
 
 	// recording handlers
 	RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error)

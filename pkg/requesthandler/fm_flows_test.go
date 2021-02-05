@@ -10,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -87,6 +88,81 @@ func TestFMFlowCreate(t *testing.T) {
 
 			if reflect.DeepEqual(*tt.expectResult, *res) == false {
 				t.Errorf("Wrong matchdfdsfd.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			}
+		})
+	}
+}
+
+func TestFMFlowUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.storage-manager.request")
+
+	type test struct {
+		name string
+
+		requestFlow *fmflow.Flow
+		response    *rabbitmqhandler.Response
+		expectFlow  *flow.Flow
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectResult  *fmflow.Flow
+	}
+
+	tests := []test{
+		{
+			"empty action",
+			&fmflow.Flow{
+				ID:      uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
+				Name:    "update name",
+				Detail:  "update detail",
+				Actions: []fmaction.Action{},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51","user_id":1,"name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+			},
+			&flow.Flow{
+				ID:      uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
+				Name:    "update name",
+				Detail:  "update detail",
+				Actions: []action.Action{},
+			},
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows/7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[]}`),
+			},
+			&fmflow.Flow{
+				ID:       uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
+				UserID:   1,
+				Name:     "update name",
+				Detail:   "update detail",
+				Actions:  []fmaction.Action{},
+				TMCreate: "2020-09-20 03:23:20.995000",
+				TMUpdate: "",
+				TMDelete: "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.FMFlowUpdate(tt.requestFlow)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectResult, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
 			}
 		})
 	}
