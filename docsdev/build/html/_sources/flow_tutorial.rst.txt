@@ -236,3 +236,15 @@ The doesn't affect to the existed call. The flow changes will be affected only a
         "tm_update": "2021-02-05 13:08:56.113036",
         "tm_delete": ""
     }
+
+Delete the flow
+---------------
+
+Delete the existed flow of given flow id.
+The doesn't affect to the existed call.
+
+.. code::
+
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+
+

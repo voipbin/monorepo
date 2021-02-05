@@ -164,6 +164,56 @@ func TestFlowUpdate(t *testing.T) {
 	}
 }
 
+func TestFlowDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	type test struct {
+		name   string
+		user   *user.User
+		flowID uuid.UUID
+
+		response *fmflow.Flow
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&user.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
+
+			&fmflow.Flow{
+				ID:      uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
+				UserID:  1,
+				Name:    "test",
+				Detail:  "test detail",
+				Actions: []fmaction.Action{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().FMFlowGet(tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FMFlowDelete(tt.flowID).Return(nil)
+
+			if err := h.FlowDelete(tt.user, tt.flowID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 func TestFlowGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

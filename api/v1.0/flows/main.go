@@ -8,8 +8,10 @@ import (
 func ApplyRoutes(r *gin.RouterGroup) {
 	flows := r.Group("/flows")
 
-	flows.POST("", flowsPOST)
 	flows.GET("", flowsGET)
+	flows.POST("", flowsPOST)
+
+	flows.DELETE("/:id", flowsIDDELETE)
 	flows.GET("/:id", flowsIDGET)
 	flows.PUT("/:id", flowsIDPUT)
 }

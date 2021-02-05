@@ -212,3 +212,40 @@ func flowsIDPUT(c *gin.Context) {
 	c.JSON(200, res)
 	return
 }
+
+// flowsIDDELETE handles DELETE /flows/{id} request.
+// It deletes a exist flow info.
+// @Summary Delete a existing flow.
+// @Description Delete a existing flow.
+// @Produce json
+// @Success 200
+// @Router /v1.0/flows/{id} [delete]
+func flowsIDDELETE(c *gin.Context) {
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log := logrus.WithFields(logrus.Fields{
+		"id":         u.ID,
+		"username":   u.Username,
+		"permission": u.Permission,
+	})
+
+	// delete a flow
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.FlowDelete(&u, id); err != nil {
+		log.Errorf("Could not create a flow. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+	return
+}

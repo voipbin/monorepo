@@ -186,6 +186,20 @@ func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(userID, id, name, detail,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), userID, id, name, detail, actions, persist)
 }
 
+// FMFlowDelete mocks base method
+func (m *MockRequestHandler) FMFlowDelete(flowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowDelete", flowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FMFlowDelete indicates an expected call of FMFlowDelete
+func (mr *MockRequestHandlerMockRecorder) FMFlowDelete(flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowDelete", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowDelete), flowID)
+}
+
 // FMFlowGet mocks base method
 func (m *MockRequestHandler) FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error) {
 	m.ctrl.T.Helper()

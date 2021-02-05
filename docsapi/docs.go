@@ -368,6 +368,16 @@ var doc = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Delete a existing flow.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing flow.",
+                "responses": {
+                    "200": {}
+                }
             }
         },
         "/v1.0/recordingfiles/{id}": {

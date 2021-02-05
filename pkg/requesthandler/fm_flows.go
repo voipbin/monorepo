@@ -77,6 +77,25 @@ func (r *requestHandler) FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error) {
 	return &f, nil
 }
 
+// FMFlowDelete sends a request to flow-manager
+// to deleting the flow.
+func (r *requestHandler) FMFlowDelete(flowID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/flows/%s", flowID)
+
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodDelete, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
+}
+
 // FMFlowUpdate sends a request to flow-manager
 // to update the detail flow info.
 // it returns updated flow info if it succeed.
