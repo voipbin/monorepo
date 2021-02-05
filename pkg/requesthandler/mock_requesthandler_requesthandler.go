@@ -216,6 +216,21 @@ func (mr *MockRequestHandlerMockRecorder) FMFlowGets(userID, pageToken, pageSize
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowGets", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowGets), userID, pageToken, pageSize)
 }
 
+// FMFlowUpdate mocks base method
+func (m *MockRequestHandler) FMFlowUpdate(f *fmflow.Flow) (*fmflow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowUpdate", f)
+	ret0, _ := ret[0].(*fmflow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMFlowUpdate indicates an expected call of FMFlowUpdate
+func (mr *MockRequestHandlerMockRecorder) FMFlowUpdate(f interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowUpdate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowUpdate), f)
+}
+
 // STRecordingGet mocks base method
 func (m *MockRequestHandler) STRecordingGet(id string) (string, error) {
 	m.ctrl.T.Helper()

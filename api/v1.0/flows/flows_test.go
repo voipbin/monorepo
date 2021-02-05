@@ -51,7 +51,7 @@ func TestFlowsPOST(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 				Actions: []action.Action{
-					action.Action{
+					{
 						Type: action.TypeAnswer,
 					},
 				},
@@ -152,6 +152,83 @@ func TestFlowsIDGET(t *testing.T) {
 
 			mockSvc.EXPECT().FlowGet(&tt.user, tt.flow.ID).Return(tt.expectFlow, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/flows/%s", tt.flow.ID), nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func TestFlowsIDPUT(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name        string
+		user        user.User
+		flowID      uuid.UUID
+		requestBody request.BodyFlowsPOST
+		expectFlow  *flow.Flow
+	}
+
+	tests := []test{
+		{
+			"normal",
+			user.User{
+				ID:         1,
+				Permission: user.PermissionAdmin,
+			},
+			uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
+			request.BodyFlowsPOST{
+				Name:   "test name",
+				Detail: "test detail",
+				Actions: []action.Action{
+					{
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
+				Name:   "test name",
+				Detail: "test detail",
+				Actions: []action.Action{
+					{
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+
+			// mockSvc.EXPECT().FlowCreate(&tt.user, gomock.Any(), tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Actions, true).Return(&flow.Flow{}, nil)
+			mockSvc.EXPECT().FlowUpdate(&tt.user, tt.expectFlow).Return(&flow.Flow{}, nil)
+			req, _ := http.NewRequest("PUT", "/flows/"+tt.flowID.String(), bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
