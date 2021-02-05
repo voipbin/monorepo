@@ -162,6 +162,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/flows"
 		response, err = h.v1FlowsIDGet(m)
 
+	case regV1FlowsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/flows"
+		response, err = h.v1FlowsIDPut(m)
+
 	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/flows"
 		response, err = h.v1FlowsPost(m)

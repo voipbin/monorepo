@@ -11,6 +11,53 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
+const (
+	flowSelect = `
+		select
+		id,
+		user_id,
+
+		name,
+		detail,
+
+		actions,
+
+		coalesce(tm_create, '') as tm_create,
+		coalesce(tm_update, '') as tm_update,
+		coalesce(tm_delete, '') as tm_delete
+	from
+		flows
+	`
+)
+
+// flowGetFromRow gets the flow from the row.
+func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
+	var actions string
+
+	res := &flow.Flow{}
+	if err := row.Scan(
+		&res.ID,
+		&res.UserID,
+
+		&res.Name,
+		&res.Detail,
+
+		&actions,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+		&res.TMDelete,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. flowGetFromRow. err: %v", err)
+	}
+
+	if err := json.Unmarshal([]byte(actions), &res.Actions); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the data. FlowGet. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // FlowUpdateToCache gets the flow from the DB and update the cache.
 func (h *handler) FlowUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
@@ -42,34 +89,6 @@ func (h *handler) FlowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flo
 	res, err := h.cache.FlowGet(ctx, id)
 	if err != nil {
 		return nil, err
-	}
-
-	return res, nil
-}
-
-// flowGetFromRow gets the flow from the row.
-func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
-	var actions string
-
-	res := &flow.Flow{}
-	if err := row.Scan(
-		&res.ID,
-		&res.UserID,
-
-		&res.Name,
-		&res.Detail,
-
-		&actions,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. flowGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(actions), &res.Actions); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. FlowGet. err: %v", err)
 	}
 
 	return res, nil
@@ -122,38 +141,22 @@ func (h *handler) FlowCreate(ctx context.Context, flow *flow.Flow) error {
 	return nil
 }
 
-// FlowGet returns flow.
+// FlowGetFromDB gets the flow info from the db.
 func (h *handler) FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 
 	// prepare
-	q := `
-	select
-		id,
-		user_id,
+	q := fmt.Sprintf("%s where id = ?", flowSelect)
 
-		name,
-		detail,
-
-		actions,
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
-	from
-		flows
-	where
-		id = ?
-	`
 	stmt, err := h.db.PrepareContext(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. FlowGet. err: %v", err)
+		return nil, fmt.Errorf("could not prepare. FlowGetFromDB. err: %v", err)
 	}
 	defer stmt.Close()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("could not query. FlowGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. FlowGetFromDB. err: %v", err)
 	}
 	defer row.Close()
 
@@ -192,28 +195,14 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error) {
 
 	// prepare
-	q := `
-	select
-		id,
-		user_id,
-
-		name,
-		detail,
-
-		actions,
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
-	from
-		flows
-	where
-		user_id = ? and tm_create < ?
-	order by
-		tm_create desc, id desc
-	limit ?
-
-	`
+	q := fmt.Sprintf(`
+		%s
+		where
+			user_id = ? and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, flowSelect)
 
 	rows, err := h.db.Query(q, userID, token, limit)
 	if err != nil {
@@ -232,4 +221,32 @@ func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token str
 	}
 
 	return res, nil
+}
+
+// FlowUpdate updates the most of flow information.
+// except permenant info(i.e. id, timestamp, etc)
+func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, f *flow.Flow) error {
+	q := fmt.Sprintf(`
+	update flows set
+		name = ?,
+		detail = ?,
+		actions = ?,
+		tm_update = ?
+	where
+		id = ?
+	`)
+
+	tmpActions, err := json.Marshal(f.Actions)
+	if err != nil {
+		return fmt.Errorf("could not marshal actions. FlowUpdate. err: %v", err)
+	}
+
+	if _, err := h.db.Exec(q, f.Name, f.Detail, tmpActions, getCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. FlowUpdate. err: %v", err)
+	}
+
+	// set to the cache
+	h.FlowUpdateToCache(ctx, f.ID)
+
+	return nil
 }
