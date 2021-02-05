@@ -201,3 +201,113 @@ func TestFlowGetsByUserID(t *testing.T) {
 		})
 	}
 }
+
+func TestFlowSetData(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name       string
+		flow       *flow.Flow
+		updateFlow *flow.Flow
+		expectFlow *flow.Flow
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
+				Name:   "test name",
+				Detail: "test detail",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("a915c10c-6760-11eb-86c1-530dc1cd7cc9"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
+				Name:   "test name",
+				Detail: "test detail",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("a915c10c-6760-11eb-86c1-530dc1cd7cc9"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+		{
+			"2 actions",
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
+				Name:   "test name",
+				Detail: "test detail",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("c642ab68-6761-11eb-942e-4fa4f2851c63"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("d158cc12-6761-11eb-b60e-23b7402d1c55"),
+						Type: action.TypeEcho,
+					},
+				},
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
+				Name:   "test name",
+				Detail: "test detail",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("c642ab68-6761-11eb-942e-4fa4f2851c63"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("d158cc12-6761-11eb-b60e-23b7402d1c55"),
+						Type: action.TypeEcho,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+			if err := h.FlowUpdate(context.Background(), tt.flow.ID, tt.updateFlow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+			res, err := h.FlowGet(context.Background(), tt.flow.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMUpdate = ""
+			res.TMCreate = ""
+			if reflect.DeepEqual(tt.expectFlow, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectFlow, res)
+			}
+		})
+	}
+}

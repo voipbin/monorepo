@@ -51,8 +51,8 @@ func (h *flowHandler) FlowCreate(ctx context.Context, flow *flow.Flow, persist b
 	return resFlow, nil
 }
 
-// FlowGetByUserID returns list of flows
-func (h *flowHandler) FlowGetByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error) {
+// FlowGetsByUserID returns list of flows
+func (h *flowHandler) FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error) {
 
 	flows, err := h.db.FlowGetsByUserID(ctx, userID, token, limit)
 	if err != nil {
@@ -61,4 +61,26 @@ func (h *flowHandler) FlowGetByUserID(ctx context.Context, userID uint64, token 
 	}
 
 	return flows, nil
+}
+
+// FlowUpdate updates the flow info and return the updated flow
+func (h *flowHandler) FlowUpdate(ctx context.Context, id uuid.UUID, f *flow.Flow) (*flow.Flow, error) {
+
+	// set action id
+	for i := range f.Actions {
+		f.Actions[i].ID = uuid.Must(uuid.NewV4())
+	}
+
+	if err := h.db.FlowUpdate(ctx, id, f); err != nil {
+		logrus.Errorf("Could not update the flow info. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.FlowGet(ctx, id)
+	if err != nil {
+		logrus.Errorf("Could not get updated flow. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
 }

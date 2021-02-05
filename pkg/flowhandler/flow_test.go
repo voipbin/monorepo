@@ -2,12 +2,14 @@ package flowhandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
@@ -175,7 +177,81 @@ func TestFlowGetByUserID(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit).Return(nil, nil)
 
-			h.FlowGetByUserID(ctx, tt.userID, tt.token, tt.limit)
+			h.FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit)
+		})
+	}
+}
+
+func TestFlowUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
+		name         string
+		flowID       uuid.UUID
+		updateFlow   *flow.Flow
+		responseFlow *flow.Flow
+		expectRes    *flow.Flow
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
+			&flow.Flow{
+				Name:   "changed name",
+				Detail: "changed detail",
+				Actions: []action.Action{
+					{
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
+				Name:   "changed name",
+				Detail: "changed detail",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("445ad416-676d-11eb-bca9-1f9e07621368"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
+				Name:   "changed name",
+				Detail: "changed detail",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("445ad416-676d-11eb-bca9-1f9e07621368"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().FlowUpdate(ctx, tt.flowID, tt.updateFlow).Return(nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+			res, err := h.FlowUpdate(ctx, tt.flowID, tt.updateFlow)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
 		})
 	}
 }

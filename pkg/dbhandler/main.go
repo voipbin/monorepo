@@ -6,6 +6,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -28,6 +30,7 @@ type DBHandler interface {
 	FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error)
 	FlowSetToCache(ctx context.Context, flow *flow.Flow) error
+	FlowUpdate(ctx context.Context, id uuid.UUID, f *flow.Flow) error
 	FlowUpdateToCache(ctx context.Context, id uuid.UUID) error
 }
 
@@ -49,4 +52,12 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 		cache: cache,
 	}
 	return h
+}
+
+// getCurTime return current utc time string
+func getCurTime() string {
+	now := time.Now().UTC().String()
+	res := strings.TrimSuffix(now, " +0000 UTC")
+
+	return res
 }
