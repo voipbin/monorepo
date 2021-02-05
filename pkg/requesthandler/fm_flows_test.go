@@ -235,6 +235,53 @@ func TestFMFlowGet(t *testing.T) {
 	}
 }
 
+func TestFMFlowDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.storage-manager.request")
+
+	type test struct {
+		name string
+
+		flowID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("4193c3a2-67ca-11eb-a892-0b6d18cda91a"),
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows/4193c3a2-67ca-11eb-a892-0b6d18cda91a",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.FMFlowDelete(tt.flowID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 func TestFMFlowGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
