@@ -197,17 +197,17 @@ func (mr *MockDBHandlerMockRecorder) FlowSetToCache(arg0, arg1 interface{}) *gom
 }
 
 // FlowUpdate mocks base method
-func (m *MockDBHandler) FlowUpdate(arg0 context.Context, arg1 uuid.UUID, arg2 *flow.Flow) error {
+func (m *MockDBHandler) FlowUpdate(arg0 context.Context, arg1 *flow.Flow) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdate", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FlowUpdate", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FlowUpdate indicates an expected call of FlowUpdate
-func (mr *MockDBHandlerMockRecorder) FlowUpdate(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) FlowUpdate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), arg0, arg1)
 }
 
 // FlowUpdateToCache mocks base method

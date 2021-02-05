@@ -140,7 +140,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 			"method":    m.Method,
 			"data_type": m.DataType,
 			"data":      m.Data,
-		}).Debug("Received request.")
+		}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {

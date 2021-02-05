@@ -31,7 +31,7 @@ type FlowHandler interface {
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error)
 	FlowCreate(ctx context.Context, flow *flow.Flow, persist bool) (*flow.Flow, error)
-	FlowUpdate(ctx context.Context, id uuid.UUID, f *flow.Flow) (*flow.Flow, error)
+	FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow, error)
 }
 
 // NewFlowHandler return FlowHandler

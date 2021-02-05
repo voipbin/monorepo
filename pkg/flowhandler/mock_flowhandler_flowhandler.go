@@ -128,16 +128,16 @@ func (mr *MockFlowHandlerMockRecorder) FlowGetsByUserID(arg0, arg1, arg2, arg3 i
 }
 
 // FlowUpdate mocks base method
-func (m *MockFlowHandler) FlowUpdate(arg0 context.Context, arg1 uuid.UUID, arg2 *flow.Flow) (*flow.Flow, error) {
+func (m *MockFlowHandler) FlowUpdate(arg0 context.Context, arg1 *flow.Flow) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdate", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FlowUpdate", arg0, arg1)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowUpdate indicates an expected call of FlowUpdate
-func (mr *MockFlowHandlerMockRecorder) FlowUpdate(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockFlowHandlerMockRecorder) FlowUpdate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockFlowHandler)(nil).FlowUpdate), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockFlowHandler)(nil).FlowUpdate), arg0, arg1)
 }
