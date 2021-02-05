@@ -438,6 +438,13 @@ paths:
             $ref: '#/definitions/flow.Flow'
       summary: Create a new flow and returns detail created flow info.
   /v1.0/flows/{id}:
+    delete:
+      description: Delete a existing flow.
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete a existing flow.
     get:
       description: Returns detail flow info of the given flow id.
       parameters:

@@ -33,6 +33,35 @@ func (h *serviceHandler) FlowCreate(u *user.User, id uuid.UUID, name, detail str
 	return res, nil
 }
 
+// FlowDelete deletes the flow of the given id.
+func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"flow_id":  id,
+	})
+	log.Debug("Deleting a flow.")
+
+	// get flow
+	flow, err := h.reqHandler.FMFlowGet(id)
+	if err != nil {
+		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
+		return fmt.Errorf("could not find flow info. err: %v", err)
+	}
+
+	// permission check
+	if u.HasPermission(user.PermissionAdmin) != true && flow.UserID != u.ID {
+		log.Errorf("The user has no permission for this flow. user: %d, flow_user: %d", u.ID, flow.UserID)
+		return fmt.Errorf("user has no permission")
+	}
+
+	if err := h.reqHandler.FMFlowDelete(id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // FlowGet gets the flow of the given id.
 // It returns flow if it succeed.
 func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error) {
