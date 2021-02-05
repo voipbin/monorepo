@@ -8,6 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
 )
@@ -158,4 +159,56 @@ func flowsIDGET(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
+}
+
+// flowsIDPUT handles PUT /flows/{id} request.
+// It updates a exist flow info with the given flow info.
+// And returns updated flow info if it succeed.
+// @Summary Update a flow and reuturns updated flow info.
+// @Description Update a flow and returns detail updated flow info.
+// @Produce json
+// @Success 200 {object} flow.Flow
+// @Router /v1.0/flows/{id} [put]
+func flowsIDPUT(c *gin.Context) {
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	var body request.BodyFlowsIDPUT
+	if err := c.BindJSON(&body); err != nil {
+		c.AbortWithStatus(400)
+		return
+	}
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log := logrus.WithFields(logrus.Fields{
+		"id":         u.ID,
+		"username":   u.Username,
+		"permission": u.Permission,
+	})
+
+	f := &flow.Flow{
+		ID:      id,
+		Name:    body.Name,
+		Detail:  body.Detail,
+		Actions: body.Actions,
+	}
+
+	// update a flow
+	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.FlowUpdate(&u, f)
+	if err != nil {
+		log.Errorf("Could not create a flow. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+	return
 }

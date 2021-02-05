@@ -353,6 +353,21 @@ var doc = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "description": "Update a flow and returns detail updated flow info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a flow and reuturns updated flow info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/flow.Flow"
+                        }
+                    }
+                }
             }
         },
         "/v1.0/recordingfiles/{id}": {
