@@ -19,7 +19,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
 func setupServer(app *gin.Engine) {

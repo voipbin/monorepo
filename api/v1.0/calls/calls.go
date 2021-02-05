@@ -9,7 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/servicehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
 // callsPOST handles POST /calls request.
