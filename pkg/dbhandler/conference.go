@@ -346,7 +346,7 @@ func (h *handler) ConferenceSetBridgeID(ctx context.Context, id uuid.UUID, bridg
 func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error {
 	//prepare
 	q := `
-	update conference set
+	update conferences set
 		data = ?,
 		tm_update = ?
 	where
@@ -358,7 +358,7 @@ func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[
 		return fmt.Errorf("dbhandler: Could not marshal. ConferenceSetData. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, tmpData, getCurTime(), id)
+	_, err = h.db.Exec(q, tmpData, getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetData. err: %v", err)
 	}
