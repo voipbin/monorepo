@@ -85,10 +85,9 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
 </ul>
 
             
@@ -241,6 +240,165 @@ When the destination answer the call, it will play the given media file.</p>
     &quot;tm_progressing&quot;: &quot;&quot;,
     &quot;tm_ringing&quot;: &quot;&quot;,
     &quot;tm_hangup&quot;: &quot;&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="simple-outbound-call-with-tts-and-connect">
+<h2>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Permalink to this headline">¶</a></h2>
+<p>Making an outbound call with TTS(Text-to-Speech) and connect to other destination.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--data-raw &#39;{
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821021656521&quot;
+    },
+    &quot;destination&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821021656521&quot;
+    },
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;connect&quot;,
+            &quot;option&quot;: {
+                &quot;source&quot;: {
+                    &quot;type&quot;: &quot;tel&quot;,
+                    &quot;target&quot;: &quot;+821021656521&quot;
+                },
+                &quot;destinations&quot;: [
+                    {
+                        &quot;type&quot;: &quot;tel&quot;,
+                        &quot;target&quot;: &quot;+821043126521&quot;
+                    }
+                ]
+            }
+        }
+    ]
+}&#39;
+
+{
+    &quot;id&quot;: &quot;9f6265bc-6b59-4e80-a906-2679aca11455&quot;,
+    &quot;user_id&quot;: 1,
+    &quot;flow_id&quot;: &quot;d665fbc0-6dd8-44bc-99ea-2ae54bc59428&quot;,
+    &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;type&quot;: &quot;flow&quot;,
+    &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;chained_call_ids&quot;: [],
+    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;recording_ids&quot;: [],
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821021656521&quot;,
+        &quot;name&quot;: &quot;&quot;
+    },
+    &quot;destination&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821021656521&quot;,
+        &quot;name&quot;: &quot;&quot;
+    },
+    &quot;status&quot;: &quot;dialing&quot;,
+    &quot;direction&quot;: &quot;outgoing&quot;,
+    &quot;hangup_by&quot;: &quot;&quot;,
+    &quot;hangup_reason&quot;: &quot;&quot;,
+    &quot;tm_create&quot;: &quot;2021-02-06 09:52:49.941865&quot;,
+    &quot;tm_update&quot;: &quot;&quot;,
+    &quot;tm_progressing&quot;: &quot;&quot;,
+    &quot;tm_ringing&quot;: &quot;&quot;,
+    &quot;tm_hangup&quot;: &quot;&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-call-list">
+<h2>Get call list<a class="headerlink" href="#get-call-list" title="Permalink to this headline">¶</a></h2>
+<p>Getting a list of calls.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+
+{
+    &quot;result&quot;: [
+        {
+            &quot;id&quot;: &quot;9a7857ca-73ba-4000-8101-c47d3b48f9d1&quot;,
+            &quot;user_id&quot;: 1,
+            &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;sip-service&quot;,
+            &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;chained_call_ids&quot;: [],
+            &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;recording_ids&quot;: [],
+            &quot;source&quot;: {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;109&quot;,
+                &quot;name&quot;: &quot;109&quot;
+            },
+            &quot;destination&quot;: {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;972595897084&quot;,
+                &quot;name&quot;: &quot;&quot;
+            },
+            &quot;status&quot;: &quot;hangup&quot;,
+            &quot;direction&quot;: &quot;incoming&quot;,
+            &quot;hangup_by&quot;: &quot;remote&quot;,
+            &quot;hangup_reason&quot;: &quot;normal&quot;,
+            &quot;tm_create&quot;: &quot;2021-02-06 09:47:10.018000&quot;,
+            &quot;tm_update&quot;: &quot;2021-02-06 09:48:14.630000&quot;,
+            &quot;tm_progressing&quot;: &quot;2021-02-06 09:47:10.626000&quot;,
+            &quot;tm_ringing&quot;: &quot;&quot;,
+            &quot;tm_hangup&quot;: &quot;2021-02-06 09:48:14.630000&quot;
+        },
+        ...
+    ],
+    &quot;next_page_token&quot;: &quot;2021-02-06 08:54:38.361000&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-specific-call">
+<h2>Get specific call<a class="headerlink" href="#get-specific-call" title="Permalink to this headline">¶</a></h2>
+<p>Getting a given call uuid’s call info.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+
+{
+    &quot;id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
+    &quot;user_id&quot;: 1,
+    &quot;flow_id&quot;: &quot;246aeabe-fab5-4a1b-8e98-852b50e89dd7&quot;,
+    &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;type&quot;: &quot;flow&quot;,
+    &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;chained_call_ids&quot;: [],
+    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;recording_ids&quot;: [
+        &quot;142e8ef8-392c-4514-abf0-8656da5d2fdf&quot;
+    ],
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821028286521&quot;,
+        &quot;name&quot;: &quot;&quot;
+    },
+    &quot;destination&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821021656521&quot;,
+        &quot;name&quot;: &quot;&quot;
+    },
+    &quot;status&quot;: &quot;hangup&quot;,
+    &quot;direction&quot;: &quot;outgoing&quot;,
+    &quot;hangup_by&quot;: &quot;remote&quot;,
+    &quot;hangup_reason&quot;: &quot;normal&quot;,
+    &quot;tm_create&quot;: &quot;2021-01-29 03:17:54.349101&quot;,
+    &quot;tm_update&quot;: &quot;2021-01-29 03:18:22.131000&quot;,
+    &quot;tm_progressing&quot;: &quot;2021-01-29 03:18:07.810000&quot;,
+    &quot;tm_ringing&quot;: &quot;2021-01-29 03:17:55.392000&quot;,
+    &quot;tm_hangup&quot;: &quot;2021-01-29 03:18:22.131000&quot;
 }
 </pre></div>
 </div>
