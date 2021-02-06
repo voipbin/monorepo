@@ -3,26 +3,17 @@ package rabbitmqhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
-	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
 // PublishMessage sends a message to rabbitmq
 func (r *rabbit) publishExchange(exchange, key string, message []byte, headers amqp.Table) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"exchange": exchange,
-			"key":      key,
-			"message":  message,
-			"headers":  headers,
-		},
-	)
 
 	channel, err := r.connection.Channel()
 	if err != nil {
-		log.Errorf("Could not create a channel for PublishMessage. err: %v", err)
-		return err
+		return fmt.Errorf("could not create a channel for PublishMessage. err: %v", err)
 	}
 	defer channel.Close()
 
@@ -37,8 +28,7 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 			Headers:     headers,
 		})
 	if err != nil {
-		log.Errorf("Could not send a message. err: %v", err)
-		return err
+		return fmt.Errorf("could not send a message. err: %v", err)
 	}
 
 	return nil
@@ -46,22 +36,14 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 
 // PublishMessage sends a request to rabbitmq
 func (r *rabbit) PublishRequest(queueName string, req *Request) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"queue":   queueName,
-			"request": req,
-		},
-	)
 
 	message, err := json.Marshal(req)
 	if err != nil {
-		log.Errorf("Could not marshal the request. err: %v", err)
-		return err
+		return fmt.Errorf("could not marshal the request. err: %v", err)
 	}
 
 	if err := r.publishExchange("", queueName, message, nil); err != nil {
-		log.Errorf("Could not send a message. err: %v", err)
-		return err
+		return fmt.Errorf("could not send a message. err: %v", err)
 	}
 
 	return nil
@@ -69,22 +51,14 @@ func (r *rabbit) PublishRequest(queueName string, req *Request) error {
 
 // PublishEvent sends a event to rabbitmq
 func (r *rabbit) PublishEvent(queueName string, evt *Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"queue": queueName,
-			"event": evt,
-		},
-	)
 
 	message, err := json.Marshal(evt)
 	if err != nil {
-		log.Errorf("Could not marshal the event. err: %v", err)
-		return err
+		return fmt.Errorf("could not marshal the event. err: %v", err)
 	}
 
 	if err := r.publishExchange("", queueName, message, nil); err != nil {
-		log.Errorf("Could not send a message. err: %v", err)
-		return err
+		return fmt.Errorf("could not send a message. err: %v", err)
 	}
 
 	return nil
@@ -92,21 +66,16 @@ func (r *rabbit) PublishEvent(queueName string, evt *Event) error {
 
 // PublishRPC publishes RPC message and returns response.
 func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *Request) (*Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"name":    queueName,
-		"request": req,
-	})
 
 	reqMsg, err := json.Marshal(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not marshal the message. err: %v", err)
 	}
 
 	// create a channel
 	channel, err := r.connection.Channel()
 	if err != nil {
-		log.Errorf("Could not create a channel for PublishRPC. err: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("could not create a channel for PublishRPC. err: %v", err)
 	}
 	defer channel.Close()
 
@@ -120,7 +89,7 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *Request)
 		nil,   // arguments
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not declare the queue. err: %v", err)
 	}
 
 	// consuming the message from the tmpQueue
@@ -147,8 +116,7 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *Request)
 		},
 	)
 	if err != nil {
-		log.Errorf("Could not send a request. err: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("could not send a message. err: %v", err)
 	}
 
 	select {
