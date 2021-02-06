@@ -5,6 +5,7 @@ package requesthandler
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"time"
 
 	uuid "github.com/gofrs/uuid"
@@ -166,14 +167,17 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, qu
 	return h
 }
 
+func uriUnescape(u string) string {
+	res, err := url.QueryUnescape(u)
+	if err != nil {
+		return "could not unescape the url"
+	}
+
+	return res
+}
+
 // SendARIRequest send a request to the Asterisk-proxy and return the response
 func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
-	log.WithFields(log.Fields{
-		"asterisk_id": asteriskID,
-		"method":      method,
-		"uri":         uri,
-		"data_type":   dataType,
-	}).Debugf("Sending ARI request. data: %s", data)
 
 	// creat a request message
 	m := &rabbitmqhandler.Request{
@@ -186,32 +190,27 @@ func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmqh
 	// create target
 	target := fmt.Sprintf("asterisk.%s.request", asteriskID)
 
+	log.WithFields(log.Fields{
+		"request": m,
+	}).Debugf("Sending request to the asterisk. queue: %s, method: %s, uri: %s", target, m.Method, uriUnescape(m.URI))
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 
 	res, err := r.sendRequest(ctx, target, resource, m)
 	if err != nil {
-		return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+		return nil, fmt.Errorf("could not send the request to the asterisk. err: %v", err)
 	}
 
 	log.WithFields(log.Fields{
-		"asterisk_id": asteriskID,
-		"method":      method,
-		"uri":         uri,
-		"status_code": res.StatusCode,
-	}).Debugf("Received result. data: %s", res.Data)
+		"response": res,
+	}).Debugf("Received response. status_code: %d", res.StatusCode)
 
 	return res, nil
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
 func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
-	log.WithFields(log.Fields{
-		"uri":       uri,
-		"method":    method,
-		"data_type": dataType,
-		"data":      data,
-	}).Debugf("Sending request to Flow. data: %s", data)
 
 	// creat a request message
 	m := &rabbitmqhandler.Request{
@@ -220,32 +219,28 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.Requ
 		DataType: dataType,
 		Data:     data,
 	}
+
+	log.WithFields(log.Fields{
+		"request": m,
+	}).Debugf("Sending request to the flow-manager. queue: %s, method: %s, uri: %s", r.queueFlow, m.Method, uriUnescape(m.URI))
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 
 	res, err := r.sendRequest(ctx, r.queueFlow, resource, m)
 	if err != nil {
-		return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+		return nil, fmt.Errorf("could not send the request to the flow-manager. err: %v", err)
 	}
 
 	log.WithFields(log.Fields{
-		"uri":         uri,
-		"method":      method,
-		"status_code": res.StatusCode,
-	}).Debugf("Received result. data: %s", res.Data)
+		"response": res,
+	}).Debugf("Received response. status_code: %d", res.StatusCode)
 
 	return res, nil
 }
 
 // sendRequestTTS send a request to the tts-manager and return the response
 func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
-	log.WithFields(log.Fields{
-		"uri":       uri,
-		"method":    method,
-		"data_type": dataType,
-		"data":      data,
-	}).Debugf("Sending request to TTS. data: %s", data)
 
 	// creat a request message
 	m := &rabbitmqhandler.Request{
@@ -255,19 +250,21 @@ func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.Reque
 		Data:     data,
 	}
 
+	log.WithFields(log.Fields{
+		"request": m,
+	}).Debugf("Sending request to the tts-manager. queue: %s, method: %s, uri: %s", r.queueTTS, m.Method, uriUnescape(m.URI))
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 
 	res, err := r.sendRequest(ctx, r.queueTTS, resource, m)
 	if err != nil {
-		return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+		return nil, fmt.Errorf("could not send the request to the tts-manager. err: %v", err)
 	}
 
 	log.WithFields(log.Fields{
-		"uri":         uri,
-		"method":      method,
-		"status_code": res.StatusCode,
-	}).Debugf("Received result. data: %s", res.Data)
+		"response": res,
+	}).Debugf("Received response. status_code: %d", res.StatusCode)
 
 	return res, nil
 }
@@ -276,12 +273,6 @@ func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.Reque
 // timeout second
 // delayed millisecond
 func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
-	log.WithFields(log.Fields{
-		"method":    method,
-		"uri":       uri,
-		"data_type": dataType,
-		"delayed":   delayed,
-	}).Debugf("Sending request to call-manager. data: %s", data)
 
 	// creat a request message
 	req := &rabbitmqhandler.Request{
@@ -290,6 +281,11 @@ func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.Requ
 		DataType: dataType,
 		Data:     data,
 	}
+
+	log.WithFields(log.Fields{
+		"request": req,
+		"delayed": delayed,
+	}).Debugf("Sending request to the call-manager. queue: %s, method: %s, uri: %s", r.queueCall, req.Method, uriUnescape(req.URI))
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
@@ -306,14 +302,12 @@ func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.Requ
 	default:
 		res, err := r.sendRequest(ctx, r.queueCall, resource, req)
 		if err != nil {
-			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+			return nil, fmt.Errorf("could not send the request to the call-manager. err: %v", err)
 		}
 
 		log.WithFields(log.Fields{
-			"method":      method,
-			"uri":         uri,
-			"status_code": res.StatusCode,
-		}).Debugf("Received result. data: %s", res.Data)
+			"response": res,
+		}).Debugf("Received response. status_code: %d", res.StatusCode)
 		return res, nil
 	}
 }
