@@ -33,8 +33,7 @@ func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive boo
 		nil,          // args
 	)
 	if err != nil {
-		logrus.Errorf("Could not consume the message. err: %v", err)
-		return err
+		return fmt.Errorf("could not consume the message. err: %v", err)
 	}
 
 	// process message
@@ -88,15 +87,14 @@ func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, n
 		nil,          // args
 	)
 	if err != nil {
-		logrus.Errorf("Could not consume the message. err: %v", err)
-		return err
+		return fmt.Errorf("could not consume the RPC message. err: %v", err)
 	}
 
 	// process message
 	for message := range messages {
 
 		if err := r.executeConsumeRPC(message, cbConsume); err != nil {
-			logrus.Errorf("Could not consume the RPC correctly. err: %v", err)
+			logrus.Errorf("Could not consume the RPC message correctly. err: %v", err)
 		}
 		message.Ack(false)
 	}

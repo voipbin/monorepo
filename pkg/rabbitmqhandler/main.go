@@ -175,10 +175,11 @@ func (r *rabbit) reconnector() {
 
 // connect connects to rabbitmq.
 func (r *rabbit) connect() {
+	log := logrus.WithFields(logrus.Fields{
+		"url": r.uri,
+	})
+
 	for {
-		log := logrus.WithFields(logrus.Fields{
-			"url": r.uri,
-		})
 		log.Debug("Connecting to rabbitmq")
 
 		// connect
