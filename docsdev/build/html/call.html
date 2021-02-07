@@ -122,39 +122,44 @@
 <li class="toctree-l4"><a class="reference internal" href="#id4">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#echo">Echo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dtmf-receive">DTMF_Receive</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id5">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id6">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#hangup">Hangup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#echo">Echo</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id7">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id8">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#patch">Patch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hangup">Hangup</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id9">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id10">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#play">Play</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#patch">Patch</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id11">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id12">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#recording-start">Recording Start</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#play">Play</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id13">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id14">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#recording-stop">Recording Stop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#recording-start">Recording Start</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id15">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id16">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#talk">Talk</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#recording-stop">Recording Stop</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id17">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id18">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#talk">Talk</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id19">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id20">Example</a></li>
 </ul>
 </li>
 </ul>
@@ -499,8 +504,7 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="section" id="type">
 <h3>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h3>
 <p>Call’s type.</p>
-<table border="1" class="docutils" id="id19">
-<caption><span class="caption-text">Call types</span><a class="headerlink" href="#id19" title="Permalink to this table">¶</a></caption>
+<table border="1" class="docutils">
 <colgroup>
 <col width="10%" />
 <col width="90%" />
@@ -660,8 +664,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 <div class="section" id="address-type">
 <h3>Address type<a class="headerlink" href="#address-type" title="Permalink to this headline">¶</a></h3>
-<table border="1" class="docutils" id="id20">
-<caption><span class="caption-text">Address types</span><a class="headerlink" href="#id20" title="Permalink to this table">¶</a></caption>
+<table border="1" class="docutils">
 <colgroup>
 <col width="32%" />
 <col width="68%" />
@@ -778,11 +781,46 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </div>
 </div>
+<div class="section" id="dtmf-receive">
+<h3>DTMF_Receive<a class="headerlink" href="#dtmf-receive" title="Permalink to this headline">¶</a></h3>
+<p>Receives the DTMFs for given duration or numbers.</p>
+<div class="section" id="id5">
+<h4>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_receive&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;max_number_key&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;finish_on_key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>max_number_key: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.</li>
+<li>duration: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.</li>
+<li>finish_on_key: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h4>Example<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_receive&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;max_number_key&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+        <span class="s2">&quot;finish_on_key&quot;</span><span class="p">:</span> <span class="s2">&quot;#&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
 <div class="section" id="echo">
 <h3>Echo<a class="headerlink" href="#echo" title="Permalink to this headline">¶</a></h3>
 <p>Echoing the call.</p>
-<div class="section" id="id5">
-<h4>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id7">
+<h4>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -797,8 +835,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>dtmf: Sending back the DTMF.</li>
 </ul>
 </div>
-<div class="section" id="id6">
-<h4>Example<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id8">
+<h4>Example<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -812,16 +850,16 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="section" id="hangup">
 <h3>Hangup<a class="headerlink" href="#hangup" title="Permalink to this headline">¶</a></h3>
 <p>Hangup the call.</p>
-<div class="section" id="id7">
-<h4>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id9">
+<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id8">
-<h4>Example<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id10">
+<h4>Example<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
@@ -832,8 +870,8 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="section" id="patch">
 <h3>Patch<a class="headerlink" href="#patch" title="Permalink to this headline">¶</a></h3>
 <p>Patch the next flow from the remote.</p>
-<div class="section" id="id9">
-<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id11">
+<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -848,8 +886,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>event_method: The method for flow patching.</li>
 </ul>
 </div>
-<div class="section" id="id10">
-<h4>Example<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id12">
+<h4>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="o">.</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -863,8 +901,8 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="section" id="play">
 <h3>Play<a class="headerlink" href="#play" title="Permalink to this headline">¶</a></h3>
 <p>Plays the linked file.</p>
-<div class="section" id="id11">
-<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id13">
+<h4>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -880,8 +918,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>stream_urls: Stream url array for media.</li>
 </ul>
 </div>
-<div class="section" id="id12">
-<h4>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id14">
+<h4>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -896,8 +934,8 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 <div class="section" id="recording-start">
 <h3>Recording Start<a class="headerlink" href="#recording-start" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id13">
-<h4>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id15">
+<h4>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -918,8 +956,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>beep_start: Play beep when recording begins</li>
 </ul>
 </div>
-<div class="section" id="id14">
-<h4>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id16">
+<h4>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -932,16 +970,16 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 <div class="section" id="recording-stop">
 <h3>Recording Stop<a class="headerlink" href="#recording-stop" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id15">
-<h4>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id17">
+<h4>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id16">
-<h4>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id18">
+<h4>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
@@ -952,8 +990,8 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="section" id="talk">
 <h3>Talk<a class="headerlink" href="#talk" title="Permalink to this headline">¶</a></h3>
 <p>Text to speech. SSML(<a class="reference external" href="https://www.w3.org/TR/speech-synthesis/">https://www.w3.org/TR/speech-synthesis/</a>) supported.</p>
-<div class="section" id="id17">
-<h4>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id19">
+<h4>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -970,8 +1008,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</li>
 </ul>
 </div>
-<div class="section" id="id18">
-<h4>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id20">
+<h4>Example<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>

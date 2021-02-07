@@ -9,15 +9,13 @@ Type
 ----
 Call's type.
 
-.. table:: Call types
-
-    =========== ============
-    Type        Description
-    =========== ============
-    flow        Executing the call-flow
-    conference  Conference call.
-    sip-service sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.
-    =========== ============
+=========== ============
+Type        Description
+=========== ============
+flow        Executing the call-flow
+conference  Conference call.
+sip-service sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.
+=========== ============
 
 .. _call-struct-status: call-struct-status
 
@@ -103,12 +101,10 @@ Defines target(source/destination) address.
 Address type
 ------------
 
-.. table:: Address types
-
-    =========== ============
-    Type        Description
-    =========== ============
-    sip         SIP type address.
-    tel         Telephone type address.
-    =========== ============
+=========== ============
+Type        Description
+=========== ============
+sip         SIP type address.
+tel         Telephone type address.
+=========== ============
 
