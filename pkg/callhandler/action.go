@@ -104,13 +104,19 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 	// get next action
 	nextAction, err := h.reqHandler.FlowActvieFlowNextGet(c.ID, c.Action.ID)
 	if err != nil {
-		log.Debugf("Could not get next action from the flow-manager. err: %v", err)
+		log.Errorf("Could not get the next action from the flow-manager. Hanging up the call. err: %v", err)
 		h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return err
+		return nil
 	}
 	log.Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
 
-	return h.ActionExecute(c, nextAction)
+	if err := h.ActionExecute(c, nextAction); err != nil {
+		log.Errorf("Could not execute the next action correctly. Hanging up the call. err: %v", err)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		return nil
+	}
+
+	return nil
 }
 
 // ActionTimeout handles action's timeout
@@ -193,10 +199,9 @@ func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error 
 		return fmt.Errorf("could not answer the call. err: %v", err)
 	}
 
-	// set timeout
-	// send delayed message for next action execution after 10 ms.
-	if err := h.reqHandler.CallCallActionTimeout(c.ID, 10, &act); err != nil {
-		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
+	// send next action request
+	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
+		return fmt.Errorf("Could not send the next action request. Hanging up the call. err: %v", err)
 	}
 
 	return nil

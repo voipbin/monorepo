@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -605,12 +606,13 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockCall.EXPECT().ActionNext(tt.call).Return(nil)
+			mockCall.EXPECT().ActionNext(tt.call)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+			time.Sleep(100 * time.Millisecond)
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
