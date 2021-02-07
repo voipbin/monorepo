@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -201,7 +202,7 @@ func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error 
 
 	// send next action request
 	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
-		return fmt.Errorf("Could not send the next action request. Hanging up the call. err: %v", err)
+		return fmt.Errorf("Could not send the next action request. err: %v", err)
 	}
 
 	return nil
@@ -643,6 +644,7 @@ func (h *callHandler) actionExecuteRecordingStop(c *call.Call, a *action.Action)
 // actionExecuteDTMFReceive executes the action type dtmf_receive.
 // It collects the dtmfs within duration.
 func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) error {
+	ctx := context.Background()
 
 	// copy the action
 	act := *a
@@ -667,8 +669,20 @@ func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) e
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
+	// get stored dtmf
+	dtmfs, err := h.db.CallDTMFGet(ctx, c.ID)
+
+	// check the dtmf finish condition
+	if err == nil && len(dtmfs) > 0 && (strings.Contains(option.FinishOnKey, dtmfs) == true || len(dtmfs) >= option.MaxNumKey) {
+		// the stored dtmf has already qualified finish condition.
+		log.Debugf("The stored dtmfs are already qualified the finish condition. dtmfs: %s", dtmfs)
+		if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
+			return fmt.Errorf("Could not send the next action request. err: %v", err)
+		}
+		return nil
+	}
+
 	// set timeout
-	// send delayed message for next action execution after 10 ms.
 	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}

@@ -415,10 +415,11 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 	}
 
 	type test struct {
-		name     string
-		call     *call.Call
-		duration int
-		action   *action.Action
+		name        string
+		call        *call.Call
+		storedDTMFs string
+		duration    int
+		action      *action.Action
 	}
 
 	tests := []test{
@@ -429,11 +430,27 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
+			"",
 			1000,
 			&action.Action{
 				Type:   action.TypeDTMFReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000}`),
+				Option: []byte(`{"duration":1000, "max_number_key": 3}`),
+			},
+		},
+		{
+			"finish on key set but not qualified",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+			},
+			"*",
+			1000,
+			&action.Action{
+				Type:   action.TypeDTMFReceive,
+				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+				Option: []byte(`{"duration":1000, "max_number_key": 3, "finish_on_key": "1234567"}`),
 			},
 		},
 	}
@@ -441,10 +458,87 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return("", nil)
 			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, tt.duration, tt.action).Return(nil)
-			// mockDB.EXPECT().RecordingGet(gomock.Any(), tt.call.RecordingID).Return(tt.record, nil)
-			// mockReq.EXPECT().AstChannelHangup(tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
-			// mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name        string
+		call        *call.Call
+		storedDTMFs string
+		action      *action.Action
+	}
+
+	tests := []test{
+		{
+			"max number key qualified",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+			},
+			"123",
+			&action.Action{
+				Type:   action.TypeDTMFReceive,
+				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+				Option: []byte(`{"duration":1000, "max_number_key": 3}`),
+			},
+		},
+		{
+			"finish on key #",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+			},
+			"#",
+			&action.Action{
+				Type:   action.TypeDTMFReceive,
+				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+				Option: []byte(`{"duration":1000, "max_number_key": 3, "finish_on_key": "#"}`),
+			},
+		},
+		{
+			"finish on key *",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+			},
+			"*",
+			&action.Action{
+				Type:   action.TypeDTMFReceive,
+				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+				Option: []byte(`{"duration":1000, "max_number_key": 3, "finish_on_key": "1234567*"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return(tt.storedDTMFs, nil)
+			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
 
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
