@@ -101,6 +101,41 @@ Example
         }
     }
 
+DTMF_Receive
+------------
+Receives the DTMFs for given duration or numbers.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "dtmf_receive",
+        "option": {
+            "max_number_key": <number>,
+            "duration": <number>,
+            "finish_on_key": "<string>"
+        }
+    }
+
+* max_number_key: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.
+* duration: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.
+* finish_on_key: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.
+
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "dtmf_receive",
+        "option": {
+            "max_number_key": 3,
+            "duration": 10000,
+            "finish_on_key": "#"
+        }
+    }
+
 Echo
 ----
 Echoing the call.
