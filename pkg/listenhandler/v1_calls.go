@@ -356,10 +356,14 @@ func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmqhandler.Reques
 		return simpleResponse(404), nil
 	}
 
-	if err := h.callHandler.ActionNext(c); err != nil {
-		log.Errorf("Could not get call info from the database. err: %v", err)
-		return simpleResponse(404), nil
-	}
+	// we run the go runc() here.
+	// because we don't want to action's running time caused the request timeout.
+	go func() {
+		if err := h.callHandler.ActionNext(c); err != nil {
+			log.Errorf("Could not execute the action next. err: %v", err)
+		}
+		return
+	}()
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,

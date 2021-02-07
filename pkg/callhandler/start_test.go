@@ -256,7 +256,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
-			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, 10, action).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(tt.call.ID)
 
 			h.StartCallHandle(tt.channel, tt.data)
 		})

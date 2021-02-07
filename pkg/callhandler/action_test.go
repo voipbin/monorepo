@@ -167,7 +167,7 @@ func TestActionExecuteAnswer(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
-			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, 10, tt.expectAction).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

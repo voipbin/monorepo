@@ -364,7 +364,13 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 	}
 
 	// execute action
-	return h.ActionExecute(c, action)
+	if err := h.ActionExecute(c, action); err != nil {
+		log.Errorf("Could not execte the action. Hanging up the call. action: %s", action.Type)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("Could not get execute the action. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
+	}
+
+	return nil
 }
 
 // typeFlowStart handles flow calltype start.
@@ -476,7 +482,13 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]i
 	}
 
 	// execute action
-	return h.ActionExecute(c, act)
+	if err := h.ActionExecute(c, act); err != nil {
+		log.Errorf("Could not execte the action. Hanging up the call. action: %s", act.Type)
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("Could not get execute the action. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
+	}
+
+	return nil
 }
 
 // getSipServiceAction returns sip-service action handler by the call's destination.
