@@ -85,10 +85,9 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
 </ul>
 
             
@@ -250,11 +249,46 @@
 </div>
 </div>
 </div>
+<div class="section" id="dtmf-receive">
+<h2>DTMF_Receive<a class="headerlink" href="#dtmf-receive" title="Permalink to this headline">¶</a></h2>
+<p>Receives the DTMFs for given duration or numbers.</p>
+<div class="section" id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_receive&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;max_number_key&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;finish_on_key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>max_number_key: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.</li>
+<li>duration: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.</li>
+<li>finish_on_key: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h3>Example<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_receive&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;max_number_key&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+        <span class="s2">&quot;finish_on_key&quot;</span><span class="p">:</span> <span class="s2">&quot;#&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
 <div class="section" id="echo">
 <h2>Echo<a class="headerlink" href="#echo" title="Permalink to this headline">¶</a></h2>
 <p>Echoing the call.</p>
-<div class="section" id="id5">
-<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -269,8 +303,8 @@
 <li>dtmf: Sending back the DTMF.</li>
 </ul>
 </div>
-<div class="section" id="id6">
-<h3>Example<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>Example<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -284,16 +318,16 @@
 <div class="section" id="hangup">
 <h2>Hangup<a class="headerlink" href="#hangup" title="Permalink to this headline">¶</a></h2>
 <p>Hangup the call.</p>
-<div class="section" id="id7">
-<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id8">
-<h3>Example<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id10">
+<h3>Example<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
@@ -304,8 +338,8 @@
 <div class="section" id="patch">
 <h2>Patch<a class="headerlink" href="#patch" title="Permalink to this headline">¶</a></h2>
 <p>Patch the next flow from the remote.</p>
-<div class="section" id="id9">
-<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id11">
+<h3>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -320,8 +354,8 @@
 <li>event_method: The method for flow patching.</li>
 </ul>
 </div>
-<div class="section" id="id10">
-<h3>Example<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id12">
+<h3>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="o">.</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -335,8 +369,8 @@
 <div class="section" id="play">
 <h2>Play<a class="headerlink" href="#play" title="Permalink to this headline">¶</a></h2>
 <p>Plays the linked file.</p>
-<div class="section" id="id11">
-<h3>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id13">
+<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -352,8 +386,8 @@
 <li>stream_urls: Stream url array for media.</li>
 </ul>
 </div>
-<div class="section" id="id12">
-<h3>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id14">
+<h3>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -368,8 +402,8 @@
 </div>
 <div class="section" id="recording-start">
 <h2>Recording Start<a class="headerlink" href="#recording-start" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id13">
-<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -390,8 +424,8 @@
 <li>beep_start: Play beep when recording begins</li>
 </ul>
 </div>
-<div class="section" id="id14">
-<h3>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id16">
+<h3>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -404,16 +438,16 @@
 </div>
 <div class="section" id="recording-stop">
 <h2>Recording Stop<a class="headerlink" href="#recording-stop" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id15">
-<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id17">
+<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id16">
-<h3>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id18">
+<h3>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
@@ -424,8 +458,8 @@
 <div class="section" id="talk">
 <h2>Talk<a class="headerlink" href="#talk" title="Permalink to this headline">¶</a></h2>
 <p>Text to speech. SSML(<a class="reference external" href="https://www.w3.org/TR/speech-synthesis/">https://www.w3.org/TR/speech-synthesis/</a>) supported.</p>
-<div class="section" id="id17">
-<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id19">
+<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -442,8 +476,8 @@
 <li>language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</li>
 </ul>
 </div>
-<div class="section" id="id18">
-<h3>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id20">
+<h3>Example<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
