@@ -88,7 +88,7 @@ func TestJoin(t *testing.T) {
 		conference       *conference.Conference
 		call             *call.Call
 		bridgeJoining    *bridge.Bridge
-		birdgeConference *bridge.Bridge
+		bridgeConference *bridge.Bridge
 	}
 
 	tests := []test{
@@ -120,8 +120,8 @@ func TestJoin(t *testing.T) {
 		mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 		mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 		mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
-		mockDB.EXPECT().BridgeGet(gomock.Any(), tt.birdgeConference.ID).Return(tt.birdgeConference, nil)
-		mockReq.EXPECT().AstBridgeGet(tt.birdgeConference.AsteriskID, tt.birdgeConference.ID).Return(nil, nil)
+		mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridgeConference.ID).Return(tt.bridgeConference, nil)
+		mockReq.EXPECT().AstBridgeGet(tt.bridgeConference.AsteriskID, tt.bridgeConference.ID).Return(nil, nil)
 		mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
 		mockReq.EXPECT().AstBridgeAddChannel(tt.call.AsteriskID, gomock.Any(), tt.call.ChannelID, "", false, false).Return(nil)
 		mockDB.EXPECT().BridgeGet(gomock.Any(), gomock.Any()).Return(tt.bridgeJoining, nil)

@@ -9,12 +9,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestDTMFReceived(t *testing.T) {
+func TestDTMFReceivedNotActionDTMFReceived(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -60,10 +60,181 @@ func TestDTMFReceived(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstChannelDTMF(tt.call.AsteriskID, tt.call.ChannelID, tt.digit, tt.duration, 0, 0, 0)
+			mockDB.EXPECT().CallDTMFSet(gomock.Any(), tt.call.ID, tt.digit).Return(nil)
 
 			h.DTMFReceived(tt.channel, tt.digit, tt.duration)
 		})
 	}
+}
 
+func TestDTMFReceivedContinue(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name       string
+		channel    *channel.Channel
+		call       *call.Call
+		digit      string
+		duration   int
+		savedDTMFs string
+	}
+
+	tests := []test{
+		{
+			"max num is 3, got 1",
+			&channel.Channel{
+				ID:         "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Action: action.Action{
+					Type:   action.TypeDTMFReceive,
+					Option: []byte(`{"max_number_key": 3}`),
+				},
+			},
+			"4",
+			100,
+			"",
+		},
+		{
+			"max num is 3, got 2",
+			&channel.Channel{
+				ID:         "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Action: action.Action{
+					Type:   action.TypeDTMFReceive,
+					Option: []byte(`{"max_number_key": 3}`),
+				},
+			},
+			"4",
+			100,
+			"1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return(tt.savedDTMFs, nil)
+			mockDB.EXPECT().CallDTMFSet(gomock.Any(), tt.call.ID, tt.savedDTMFs+tt.digit).Return(nil)
+
+			h.DTMFReceived(tt.channel, tt.digit, tt.duration)
+		})
+	}
+}
+
+func TestDTMFReceivedStop(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name       string
+		channel    *channel.Channel
+		call       *call.Call
+		digit      string
+		duration   int
+		savedDTMFs string
+	}
+
+	tests := []test{
+		{
+			"finish key #",
+			&channel.Channel{
+				ID:         "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Action: action.Action{
+					Type:   action.TypeDTMFReceive,
+					Option: []byte(`{"max_number_key": 3, "finish_on_key": "#*"}`),
+				},
+			},
+			"#",
+			100,
+			"",
+		},
+		{
+			"finish key *",
+			&channel.Channel{
+				ID:         "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Action: action.Action{
+					Type:   action.TypeDTMFReceive,
+					Option: []byte(`{"max_number_key": 3, "finish_on_key": "#*"}`),
+				},
+			},
+			"#",
+			100,
+			"1",
+		},
+		{
+			"finish by max number key 2",
+			&channel.Channel{
+				ID:         "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Action: action.Action{
+					Type:   action.TypeDTMFReceive,
+					Option: []byte(`{"max_number_key": 2}`),
+				},
+			},
+			"2",
+			100,
+			"1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return(tt.savedDTMFs, nil)
+			mockDB.EXPECT().CallDTMFSet(gomock.Any(), tt.call.ID, tt.savedDTMFs+tt.digit).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(tt.call.ID)
+
+			h.DTMFReceived(tt.channel, tt.digit, tt.duration)
+		})
+	}
 }

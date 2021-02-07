@@ -57,6 +57,7 @@ type Type string
 const (
 	TypeAnswer         Type = "answer"
 	TypeConferenceJoin Type = "conference_join" // join to the given conference.
+	TypeDTMFReceive    Type = "dtmf_receive"    // receive the dtmfs.
 	TypeEcho           Type = "echo"            // echo the voice.
 	TypeHangup         Type = "hangup"          // call hangup.
 	TypePlay           Type = "play"            // play the given file.
@@ -74,6 +75,13 @@ type OptionAnswer struct {
 // OptionConferenceJoin defines action conference_join's option.
 type OptionConferenceJoin struct {
 	ConferenceID string `json:"conference_id"`
+}
+
+// OptionDTMFReceive defines action dtmf_receive's option.
+type OptionDTMFReceive struct {
+	Duration    int    `json:"duration"`       // dtmf receiving duration. ms
+	FinishOnKey string `json:"finish_on_key"`  // If set, determines which DTMF triggers the next step. The end key is not included in the resulting variable. If not set, no key will trigger the next step.
+	MaxNumKey   int    `json:"max_number_key"` // An optional limit to the number of DTMF events that should be gathered before continuing to the next step.
 }
 
 // OptionEcho defines action echo's option.
