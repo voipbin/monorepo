@@ -62,6 +62,11 @@ type DBHandler interface {
 	CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error)
 	CallUpdateToCache(ctx context.Context, id uuid.UUID) error
 
+	// calldtmfs
+	CallDTMFGet(ctx context.Context, id uuid.UUID) (string, error)
+	CallDTMFReset(ctx context.Context, id uuid.UUID) error
+	CallDTMFSet(ctx context.Context, id uuid.UUID, dtmf string) error
+
 	// channels
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
 	ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error

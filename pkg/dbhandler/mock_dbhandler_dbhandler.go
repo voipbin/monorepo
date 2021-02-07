@@ -529,6 +529,49 @@ func (mr *MockDBHandlerMockRecorder) CallUpdateToCache(ctx, id interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).CallUpdateToCache), ctx, id)
 }
 
+// CallDTMFGet mocks base method
+func (m *MockDBHandler) CallDTMFGet(ctx context.Context, id uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallDTMFGet", ctx, id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallDTMFGet indicates an expected call of CallDTMFGet
+func (mr *MockDBHandlerMockRecorder) CallDTMFGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallDTMFGet", reflect.TypeOf((*MockDBHandler)(nil).CallDTMFGet), ctx, id)
+}
+
+// CallDTMFReset mocks base method
+func (m *MockDBHandler) CallDTMFReset(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallDTMFReset", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallDTMFReset indicates an expected call of CallDTMFReset
+func (mr *MockDBHandlerMockRecorder) CallDTMFReset(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallDTMFReset", reflect.TypeOf((*MockDBHandler)(nil).CallDTMFReset), ctx, id)
+}
+
+// CallDTMFSet mocks base method
+func (m *MockDBHandler) CallDTMFSet(ctx context.Context, id uuid.UUID, dtmf string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallDTMFSet", ctx, id, dtmf)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallDTMFSet indicates an expected call of CallDTMFSet
+func (mr *MockDBHandlerMockRecorder) CallDTMFSet(ctx, id, dtmf interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallDTMFSet", reflect.TypeOf((*MockDBHandler)(nil).CallDTMFSet), ctx, id, dtmf)
+}
+
 // ChannelCreate mocks base method
 func (m *MockDBHandler) ChannelCreate(ctx context.Context, channel *channel.Channel) error {
 	m.ctrl.T.Helper()

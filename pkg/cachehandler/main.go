@@ -33,6 +33,9 @@ type CacheHandler interface {
 	BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeSet(ctx context.Context, bridge *bridge.Bridge) error
 
+	CallDTMFGet(ctx context.Context, callID uuid.UUID) (string, error)
+	CallDTMFSet(ctx context.Context, callID uuid.UUID, dtmf string) error
+
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallSet(ctx context.Context, call *call.Call) error
 

@@ -190,3 +190,26 @@ func (h *handler) RecordingSet(ctx context.Context, record *recording.Recording)
 
 	return nil
 }
+
+// CallDTMFGet returns the given call's dtmf info from the cache
+func (h *handler) CallDTMFGet(ctx context.Context, callID uuid.UUID) (string, error) {
+	key := fmt.Sprintf("call:%s:dtmf", callID)
+
+	var res string
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return "", err
+	}
+
+	return res, nil
+}
+
+// CallDTMFSet sets the given call's dtmf info into the cache.
+func (h *handler) CallDTMFSet(ctx context.Context, callID uuid.UUID, dtmf string) error {
+	key := fmt.Sprintf("call:%s:dtmf", callID)
+
+	if err := h.setSerialize(ctx, key, dtmf); err != nil {
+		return err
+	}
+
+	return nil
+}

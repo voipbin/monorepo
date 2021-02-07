@@ -50,6 +50,9 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	case action.TypeConferenceJoin:
 		err = h.actionExecuteConferenceJoin(c, a)
 
+	case action.TypeDTMFReceive:
+		err = h.actionExecuteDTMFReceive(c, a)
+
 	case action.TypeEcho:
 		err = h.actionExecuteEcho(c, a)
 
@@ -628,6 +631,42 @@ func (h *callHandler) actionExecuteRecordingStop(c *call.Call, a *action.Action)
 
 	// send next action request
 	h.reqHandler.CallCallActionNext(c.ID)
+
+	return nil
+}
+
+// actionExecuteDTMFReceive executes the action type dtmf_receive.
+// It collects the dtmfs within duration.
+func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) error {
+
+	// copy the action
+	act := *a
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionDTMFReceive
+	if act.Option != nil {
+		if err := json.Unmarshal(act.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
+	}
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	// set timeout
+	// send delayed message for next action execution after 10 ms.
+	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
+	}
 
 	return nil
 }
