@@ -92,6 +92,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#simple-outbound-call-with-tts">Simple outbound call with TTS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#simple-outbound-call-with-media-file-play">Simple outbound call with media file play</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#simple-outbound-call-with-tts-and-connect">Simple outbound call with TTS and connect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#simple-outbound-call-with-talk-and-dtmf-send">Simple outbound call with talk and dtmf_send</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-call-list">Get call list</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-specific-call">Get specific call</a></li>
 </ul>
@@ -127,39 +128,44 @@
 <li class="toctree-l4"><a class="reference internal" href="#id6">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#echo">Echo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dtmf-send">DTMF_Send</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id7">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id8">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#hangup">Hangup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#echo">Echo</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id9">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id10">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#patch">Patch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hangup">Hangup</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id11">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id12">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#play">Play</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#patch">Patch</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id13">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id14">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#recording-start">Recording Start</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#play">Play</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id15">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id16">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#recording-stop">Recording Stop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#recording-start">Recording Start</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id17">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id18">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#talk">Talk</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#recording-stop">Recording Stop</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id19">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id20">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#talk">Talk</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id21">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id22">Example</a></li>
 </ul>
 </li>
 </ul>
@@ -411,6 +417,79 @@ When the destination answer the call, it will play the given media file.</p>
     &quot;tm_ringing&quot;: &quot;&quot;,
     &quot;tm_hangup&quot;: &quot;&quot;
 }
+</pre></div>
+</div>
+</div>
+<div class="section" id="simple-outbound-call-with-talk-and-dtmf-send">
+<h3>Simple outbound call with talk and dtmf_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-dtmf-send" title="Permalink to this headline">¶</a></h3>
+<p>Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This is dtmf send test call. Please wait.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_send&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;dtmfs&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+                <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">500</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you. DTMF send test has done.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d7520a58-0b07-4dd7-ab72-a4e2d1979ec0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0f4bd9bc-9df5-4a5b-9465-2189822a3019&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;conf_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;flow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-02-08 03:59:33.281711&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 </div>
@@ -816,11 +895,46 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </div>
 </div>
+<div class="section" id="dtmf-send">
+<h3>DTMF_Send<a class="headerlink" href="#dtmf-send" title="Permalink to this headline">¶</a></h3>
+<p>Sends the DTMFs with given duration and interval.</p>
+<div class="section" id="id7">
+<h4>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;dtmfs&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>dtmfs: The dtmf string to send. Allowed set of characters: 0-9,A-D, #, ‘*’; with a maximum of 100 keys.</li>
+<li>duration: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.</li>
+<li>finish_on_key: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.</li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h4>Example<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;dtmfs&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+        <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">500</span>
+    <span class="p">}</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+</div>
+</div>
 <div class="section" id="echo">
 <h3>Echo<a class="headerlink" href="#echo" title="Permalink to this headline">¶</a></h3>
 <p>Echoing the call.</p>
-<div class="section" id="id7">
-<h4>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id9">
+<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -835,8 +949,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>dtmf: Sending back the DTMF.</li>
 </ul>
 </div>
-<div class="section" id="id8">
-<h4>Example<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id10">
+<h4>Example<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -850,16 +964,16 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="section" id="hangup">
 <h3>Hangup<a class="headerlink" href="#hangup" title="Permalink to this headline">¶</a></h3>
 <p>Hangup the call.</p>
-<div class="section" id="id9">
-<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id11">
+<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id10">
-<h4>Example<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id12">
+<h4>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
@@ -870,8 +984,8 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="section" id="patch">
 <h3>Patch<a class="headerlink" href="#patch" title="Permalink to this headline">¶</a></h3>
 <p>Patch the next flow from the remote.</p>
-<div class="section" id="id11">
-<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id13">
+<h4>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -886,8 +1000,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>event_method: The method for flow patching.</li>
 </ul>
 </div>
-<div class="section" id="id12">
-<h4>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id14">
+<h4>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="o">.</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -901,8 +1015,8 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="section" id="play">
 <h3>Play<a class="headerlink" href="#play" title="Permalink to this headline">¶</a></h3>
 <p>Plays the linked file.</p>
-<div class="section" id="id13">
-<h4>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id15">
+<h4>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -918,8 +1032,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>stream_urls: Stream url array for media.</li>
 </ul>
 </div>
-<div class="section" id="id14">
-<h4>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id16">
+<h4>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -934,8 +1048,8 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 <div class="section" id="recording-start">
 <h3>Recording Start<a class="headerlink" href="#recording-start" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id15">
-<h4>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id17">
+<h4>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -956,8 +1070,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>beep_start: Play beep when recording begins</li>
 </ul>
 </div>
-<div class="section" id="id16">
-<h4>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id18">
+<h4>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -970,16 +1084,16 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 <div class="section" id="recording-stop">
 <h3>Recording Stop<a class="headerlink" href="#recording-stop" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id17">
-<h4>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id19">
+<h4>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id18">
-<h4>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id20">
+<h4>Example<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
@@ -990,8 +1104,8 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="section" id="talk">
 <h3>Talk<a class="headerlink" href="#talk" title="Permalink to this headline">¶</a></h3>
 <p>Text to speech. SSML(<a class="reference external" href="https://www.w3.org/TR/speech-synthesis/">https://www.w3.org/TR/speech-synthesis/</a>) supported.</p>
-<div class="section" id="id19">
-<h4>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id21">
+<h4>Parameters<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1008,8 +1122,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li>language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</li>
 </ul>
 </div>
-<div class="section" id="id20">
-<h4>Example<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id22">
+<h4>Example<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h4>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
