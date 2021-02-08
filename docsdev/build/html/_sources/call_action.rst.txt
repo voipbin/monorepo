@@ -122,7 +122,6 @@ Parameters
 * duration: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.
 * finish_on_key: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.
 
-
 Example
 +++++++
 .. code::
@@ -135,6 +134,40 @@ Example
             "finish_on_key": "#"
         }
     }
+
+DTMF_Send
+---------
+Sends the DTMFs with given duration and interval.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "dtmf_send",
+        "option": {
+            "dtmfs": "<string>",
+            "duration": <number>,
+            "interval": <number>
+        }
+    }
+
+* dtmfs: The dtmf string to send. Allowed set of characters: 0-9,A-D, #, '*'; with a maximum of 100 keys.
+* duration: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
+* finish_on_key: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "dtmf_send",
+        "option": {
+            "dtmfs": "1234567890",
+            "duration": 500,
+            "interval": 500
+        }
+    },
 
 Echo
 ----

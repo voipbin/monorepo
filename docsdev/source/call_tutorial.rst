@@ -175,6 +175,79 @@ Making an outbound call with TTS(Text-to-Speech) and connect to other destinatio
         "tm_hangup": ""
     }
 
+Simple outbound call with talk and dtmf_send
+--------------------------------------------
+Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.
+
+.. code::
+
+    {
+        "source": {
+            "type": "tel",
+            "target": "+821028286521"
+        },
+        "destination": {
+            "type": "tel",
+            "target": "+821021656521"
+        },
+        "actions": [
+            {
+                "type": "talk",
+                "option": {
+                    "text": "This is dtmf send test call. Please wait.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "dtmf_send",
+                "option": {
+                    "dtmfs": "1234567890",
+                    "duration": 500,
+                    "interval": 500
+                }
+            },
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Thank you. DTMF send test has done.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            }
+        ]
+    }
+
+    {
+        "id": "d7520a58-0b07-4dd7-ab72-a4e2d1979ec0",
+        "user_id": 1,
+        "flow_id": "0f4bd9bc-9df5-4a5b-9465-2189822a3019",
+        "conf_id": "00000000-0000-0000-0000-000000000000",
+        "type": "flow",
+        "master_call_id": "00000000-0000-0000-0000-000000000000",
+        "chained_call_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
+        "recording_ids": [],
+        "source": {
+            "type": "tel",
+            "target": "+821028286521",
+            "name": ""
+        },
+        "destination": {
+            "type": "tel",
+            "target": "+821021656521",
+            "name": ""
+        },
+        "status": "dialing",
+        "direction": "outgoing",
+        "hangup_by": "",
+        "hangup_reason": "",
+        "tm_create": "2021-02-08 03:59:33.281711",
+        "tm_update": "",
+        "tm_progressing": "",
+        "tm_ringing": "",
+        "tm_hangup": ""
+    }
 
 Get call list
 -------------
