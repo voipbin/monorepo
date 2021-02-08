@@ -546,3 +546,77 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 		})
 	}
 }
+
+func TestActionExecuteDTMFSend(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name           string
+		call           *call.Call
+		action         *action.Action
+		expectDtmfs    string
+		expectDuration int
+		expectInterval int
+		expectTimeout  int
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("50270fae-69bf-11eb-a0a7-273260ea280c"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "5daefc0e-69bf-11eb-9e3a-b7d9a5988373",
+			},
+			&action.Action{
+				Type:   action.TypeDTMFSend,
+				ID:     uuid.FromStringOrNil("508063d8-69bf-11eb-a668-abdbd47ce266"),
+				Option: []byte(`{"dtmfs":"12345", "duration": 500, "interval": 500}`),
+			},
+			"12345",
+			500,
+			500,
+			4500,
+		},
+		{
+			"send 1 dtmf",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("49a66b38-69c0-11eb-b96c-d799dd21ba8f"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "49e625de-69c0-11eb-891d-db5407ae4982",
+			},
+			&action.Action{
+				Type:   action.TypeDTMFSend,
+				ID:     uuid.FromStringOrNil("4a24912a-69c0-11eb-a334-6f8053ede87a"),
+				Option: []byte(`{"dtmfs":"1", "duration": 500, "interval": 500}`),
+			},
+			"1",
+			500,
+			500,
+			500,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
+			mockReq.EXPECT().AstChannelDTMF(tt.call.AsteriskID, tt.call.ChannelID, tt.expectDtmfs, tt.expectDuration, 0, tt.expectInterval, 0)
+			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, tt.expectTimeout, tt.action)
+
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

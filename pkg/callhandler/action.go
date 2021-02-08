@@ -37,9 +37,8 @@ func (h *callHandler) setAction(c *call.Call, a *action.Action) error {
 // ActionExecute execute the action withe the call
 func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
-		"call":        c.ID,
-		"action":      a.ID,
-		"action_type": a.Type,
+		"call":   c.ID,
+		"action": a,
 	})
 	log.Debugf("Executing the action. action_type: %s", a.Type)
 
@@ -53,6 +52,9 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 	case action.TypeDTMFReceive:
 		err = h.actionExecuteDTMFReceive(c, a)
+
+	case action.TypeDTMFSend:
+		err = h.actionExecuteDTMFSend(c, a)
 
 	case action.TypeEcho:
 		err = h.actionExecuteEcho(c, a)
@@ -684,6 +686,54 @@ func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) e
 
 	// set timeout
 	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
+	}
+
+	return nil
+}
+
+// actionExecuteDTMFSend executes the action type dtmf_send.
+// It sends the DTMFs to the call.
+func (h *callHandler) actionExecuteDTMFSend(c *call.Call, a *action.Action) error {
+	// ctx := context.Background()
+
+	// copy the action
+	act := *a
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionDTMFSend
+	if act.Option != nil {
+		if err := json.Unmarshal(act.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
+	}
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	// send dtmfs
+	if err := h.reqHandler.AstChannelDTMF(c.AsteriskID, c.ChannelID, option.DTMFs, option.Duration, 0, option.Interval, 0); err != nil {
+		return fmt.Errorf("Could not send the dtmfs. err: %v", err)
+	}
+
+	// caculate timeout
+	// because of the Asterisk doesn't send the dtmf send finish event, we need to do this.
+	maxTimeout := (option.Duration * len(option.DTMFs))
+	if len(option.DTMFs) > 1 {
+		maxTimeout = maxTimeout + (option.Interval * (len(option.DTMFs) - 1))
+	}
+
+	// set timeout
+	if err := h.reqHandler.CallCallActionTimeout(c.ID, maxTimeout, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
