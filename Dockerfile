@@ -3,12 +3,9 @@ FROM debian:stable-slim
 ARG ASTERISK_VERSION=18.2.0
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 
-# mariadb's odbc connect requires buster-backports
-RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list
-
 RUN apt-get update
 
-# Install required apt dependencies
+# Install utilities
 RUN apt-get install -y \
     sngrep \
     sip-tester \
@@ -22,45 +19,41 @@ RUN apt-get install -y \
     vim \
     telnet \
     net-tools \
-    gcc \
-    build-essential \
     curl \
+    git \
+    subversion \
+    procps \
+    iputils-ping
+
+# Install required apt dependencies
+RUN apt-get install -y \
+    gcc \
+    gdb \
     make \
     gzip \
+    flex \
+    bison \
+    build-essential \
+    autoconf \
+    autotools-dev \
+    automake \
+    autogen \
     python3 \
     python3-dev \
     python3-pip \
     python3-mysqldb \
     python3-setuptools \
+    uuid-dev \
     libcurl4-openssl-dev \
     libssl-dev \
-    flex \
-    bison \
     libncurses5-dev \
-    uuid-dev \
     libedit-dev \
     libxml2-dev \
     libsqlite3-dev \
-    git \
+    default-libmysqlclient-dev \
     xmlstarlet \
     binutils-dev \
-    autoconf \
-    autotools-dev \
-    automake \
-    autogen \
-    gdb \
-    subversion \
-    libsrtp2-dev \
-    unixodbc \
-    unixodbc-dev \
-    curl \
-    procps \
-    odbc-mariadb \
-    curl \
-    iputils-ping
-
-# Install Asterisk pip dependencies
-RUN pip3 install alembic
+    libsrtp2-dev
 
 # install packages for gcsfuse
 RUN GCSFUSE_REPO=gcsfuse-`lsb_release -c -s` && echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" > /etc/apt/sources.list.d/gcsfuse.list
@@ -78,6 +71,6 @@ WORKDIR ${ASTERISK_SOURCE_DIRECTORY}
 RUN ./contrib/scripts/get_mp3_source.sh
 RUN ./configure --with-jansson-bundled
 RUN make menuselect.makeopts
-RUN ./menuselect/menuselect --enable FORMAT_MP3 --enable DONT_OPTIMIZE --enable BETTER_BACKTRACES --enable CODEC_OPUS --enable RES_CONFIG_ODBC --enable RES_ODBC --disable COMPILE_DOUBLE --disable CHAN_SIP menuselect.makeopts
+RUN ./menuselect/menuselect --enable FORMAT_MP3 --enable DONT_OPTIMIZE --enable BETTER_BACKTRACES --enable CODEC_OPUS --enable RES_CONFIG_MYSQL --enable CDR_MYSQL --enable APP_MYSQL --disable COMPILE_DOUBLE --disable CHAN_SIP menuselect.makeopts
 RUN make
 RUN make install
