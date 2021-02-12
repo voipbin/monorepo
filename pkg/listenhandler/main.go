@@ -140,7 +140,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
 	}
 
-	// receive ARI event
+	// receive requests
 	go func() {
 		for {
 			err := h.rabbitSock.ConsumeRPCOpt(queue, "call-manager", false, false, false, h.processRequest)
