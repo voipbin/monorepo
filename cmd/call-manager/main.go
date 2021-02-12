@@ -50,17 +50,6 @@ var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
-type worker struct {
-	rabbitSock rabbitmqhandler.Rabbit
-
-	eventHandler  eventhandler.EventHandler
-	reqHandler    requesthandler.RequestHandler
-	callHandler   callhandler.CallHandler
-	listenHandler listenhandler.ListenHandler
-
-	db dbhandler.DBHandler
-}
-
 func main() {
 	// connect to database
 	sqlDB, err := sql.Open("mysql", *dbDSN)
@@ -134,7 +123,7 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-// NewWorker creates worker interface
+// run runs the call-manager
 func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 	if err := runARI(db, cache); err != nil {
 		return err
