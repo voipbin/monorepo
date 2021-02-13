@@ -1,0 +1,121 @@
+package dbhandler
+
+import (
+	"context"
+	"fmt"
+	reflect "reflect"
+	"testing"
+
+	gomock "github.com/golang/mock/gomock"
+
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/asterisk"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
+)
+
+func TestAstAuthCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name       string
+		auth       *asterisk.AstAuth
+		expectAuth *asterisk.AstAuth
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&asterisk.AstAuth{
+				ID:       getStringPointer("test1@test.sip.voipbin.net"),
+				AuthType: getStringPointer("userpass"),
+
+				Username: getStringPointer("test1"),
+				Password: getStringPointer("password"),
+
+				Realm: getStringPointer("test.sip.voipbin.net"),
+			},
+			&asterisk.AstAuth{
+				ID:       getStringPointer("test1@test.sip.voipbin.net"),
+				AuthType: getStringPointer("userpass"),
+
+				Username: getStringPointer("test1"),
+				Password: getStringPointer("password"),
+
+				Realm: getStringPointer("test.sip.voipbin.net"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().AstAuthSet(gomock.Any(), gomock.Any())
+			if err := h.AstAuthCreate(context.Background(), tt.auth); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AstAuthGet(gomock.Any(), *tt.auth.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AstAuthSet(gomock.Any(), gomock.Any())
+			res, err := h.AstAuthGet(context.Background(), *tt.auth.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectAuth, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectAuth, res)
+			}
+		})
+	}
+}
+
+func TestAstAuthDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name string
+		auth *asterisk.AstAuth
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&asterisk.AstAuth{
+				ID:       getStringPointer("dcd14fe0-6df8-11eb-96b2-9f307c0f50bf@test.sip.voipbin.net"),
+				AuthType: getStringPointer("userpass"),
+
+				Username: getStringPointer("dcd14fe0-6df8-11eb-96b2-9f307c0f50bf"),
+				Password: getStringPointer("password"),
+
+				Realm: getStringPointer("test.sip.voipbin.net"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().AstAuthSet(gomock.Any(), gomock.Any())
+			if err := h.AstAuthCreate(context.Background(), tt.auth); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AstAuthDel(gomock.Any(), *tt.auth.ID)
+			if err := h.AstAuthDelete(context.Background(), *tt.auth.ID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AstAuthGet(gomock.Any(), *tt.auth.ID).Return(nil, fmt.Errorf(""))
+			_, err := h.AstAuthGet(context.Background(), *tt.auth.ID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: err, got: ok")
+			}
+		})
+	}
+}
