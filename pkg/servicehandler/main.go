@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -35,6 +36,13 @@ type ServiceHandler interface {
 	ConferenceDelete(u *user.User, confID uuid.UUID) error
 	ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error)
+
+	// domain handlers
+	DomainCreate(u *user.User, domainName, name, detail string) (*domain.Domain, error)
+	DomainDelete(u *user.User, id uuid.UUID) error
+	DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, error)
+	DomainGets(u *user.User, size uint64, token string) ([]*domain.Domain, error)
+	DomainUpdate(u *user.User, d *domain.Domain) (*domain.Domain, error)
 
 	// flow handlers
 	FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
@@ -73,8 +81,8 @@ func NewServiceHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhan
 var ReqHandler requesthandler.RequestHandler
 
 // Setup initiates service
-func Setup(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage string) error {
-	ReqHandler = requesthandler.NewRequestHandler(sock, exchangeDelay, queueCall, queueFlow, queueStorage)
+func Setup(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage, queueRegistrar string) error {
+	ReqHandler = requesthandler.NewRequestHandler(sock, exchangeDelay, queueCall, queueFlow, queueStorage, queueRegistrar)
 	return nil
 }
 

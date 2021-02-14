@@ -9,13 +9,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestFMFlowCreate(t *testing.T) {
+func TestRMDomainCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -25,18 +23,16 @@ func TestFMFlowCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		userID     uint64
-		flowID     uuid.UUID
-		flowName   string
-		flowDetail string
-		actions    []action.Action
-		persist    bool
-
-		response *rabbitmqhandler.Response
+		userID          uint64
+		domainName      string
+		domainTmpName   string
+		domainTmpDetail string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *fmflow.Flow
+		response      *rabbitmqhandler.Response
+
+		expectResult *rmdomain.Domain
 	}
 
 	tests := []test{
@@ -44,34 +40,29 @@ func TestFMFlowCreate(t *testing.T) {
 			"normal",
 
 			1,
-			uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
-			"test flow",
-			"test flow detail",
-			[]action.Action{},
-			true,
+			"test.sip.voipbin.net",
+			"test name",
+			"test detail",
+
+			"bin-manager.registrar-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/domains",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"user_id":1,"domain_name":"test.sip.voipbin.net","name":"test name","detail":"test detail"}`),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true,"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"68040bf2-6ed5-11eb-9924-9febe8425cbe","user_id":1,"domain_name":"test.sip.voipbin.net","name":"test name","detail":"test detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
-
-			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/flows",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true}`),
-			},
-			&fmflow.Flow{
-				ID:       uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
-				UserID:   1,
-				Name:     "test flow",
-				Detail:   "test flow detail",
-				Actions:  []fmaction.Action{},
-				Persist:  true,
-				TMCreate: "2020-09-20 03:23:20.995000",
-				TMUpdate: "",
-				TMDelete: "",
+			&rmdomain.Domain{
+				ID:         uuid.FromStringOrNil("68040bf2-6ed5-11eb-9924-9febe8425cbe"),
+				UserID:     1,
+				DomainName: "test.sip.voipbin.net",
+				Name:       "test name",
+				Detail:     "test detail",
+				TMCreate:   "2020-09-20 03:23:20.995000",
 			},
 		},
 	}
@@ -80,7 +71,7 @@ func TestFMFlowCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMFlowCreate(tt.userID, tt.flowID, tt.flowName, tt.flowDetail, tt.actions, tt.persist)
+			res, err := reqHandler.RMDomainCreate(tt.userID, tt.domainName, tt.domainTmpName, tt.domainTmpDetail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -92,7 +83,7 @@ func TestFMFlowCreate(t *testing.T) {
 	}
 }
 
-func TestFMFlowUpdate(t *testing.T) {
+func TestRMDomainUpdate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -102,44 +93,43 @@ func TestFMFlowUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		requestFlow *fmflow.Flow
-		response    *rabbitmqhandler.Response
+		requestDomain *rmdomain.Domain
+		response      *rabbitmqhandler.Response
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *fmflow.Flow
+		expectResult  *rmdomain.Domain
 	}
 
 	tests := []test{
 		{
-			"empty action",
-			&fmflow.Flow{
-				ID:      uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
-				Name:    "update name",
-				Detail:  "update detail",
-				Actions: []fmaction.Action{},
+			"normal",
+			&rmdomain.Domain{
+				ID:     uuid.FromStringOrNil("f4063a6c-6ed5-11eb-8835-23f57d9e419c"),
+				Name:   "update name",
+				Detail: "update detail",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51","user_id":1,"name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"f4063a6c-6ed5-11eb-8835-23f57d9e419c","user_id":1,"domain_name":"test.sip.voipbin.net","name":"update name","detail":"update detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
-			"bin-manager.flow-manager.request",
+			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows/7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51",
+				URI:      "/v1/domains/f4063a6c-6ed5-11eb-8835-23f57d9e419c",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[]}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
 			},
-			&fmflow.Flow{
-				ID:       uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
-				UserID:   1,
-				Name:     "update name",
-				Detail:   "update detail",
-				Actions:  []fmaction.Action{},
-				TMCreate: "2020-09-20 03:23:20.995000",
-				TMUpdate: "",
-				TMDelete: "",
+			&rmdomain.Domain{
+				ID:         uuid.FromStringOrNil("f4063a6c-6ed5-11eb-8835-23f57d9e419c"),
+				UserID:     1,
+				DomainName: "test.sip.voipbin.net",
+				Name:       "update name",
+				Detail:     "update detail",
+				TMCreate:   "2020-09-20 03:23:20.995000",
+				TMUpdate:   "",
+				TMDelete:   "",
 			},
 		},
 	}
@@ -148,7 +138,7 @@ func TestFMFlowUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMFlowUpdate(tt.requestFlow)
+			res, err := reqHandler.RMDomainUpdate(tt.requestDomain)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -160,7 +150,7 @@ func TestFMFlowUpdate(t *testing.T) {
 	}
 }
 
-func TestFMFlowGet(t *testing.T) {
+func TestRMDomainGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -170,14 +160,14 @@ func TestFMFlowGet(t *testing.T) {
 	type test struct {
 		name string
 
-		userID uint64
-		flowID uuid.UUID
+		userID   uint64
+		domainID uuid.UUID
 
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *fmflow.Flow
+		expectResult  *rmdomain.Domain
 	}
 
 	tests := []test{
@@ -185,28 +175,28 @@ func TestFMFlowGet(t *testing.T) {
 			"normal",
 
 			1,
-			uuid.FromStringOrNil("be66d9a6-6ed6-11eb-8152-0bb66bad7293"),
+			uuid.FromStringOrNil("eb0e485e-6ed6-11eb-81bd-9365803e5d9f"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"be66d9a6-6ed6-11eb-8152-0bb66bad7293","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"eb0e485e-6ed6-11eb-81bd-9365803e5d9f","user_id":1,"domain_name":"test.sip.voipbin.net","name":"test domain","detail":"test domain detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 
-			"bin-manager.flow-manager.request",
+			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows/be66d9a6-6ed6-11eb-8152-0bb66bad7293",
+				URI:      "/v1/domains/eb0e485e-6ed6-11eb-81bd-9365803e5d9f",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&fmflow.Flow{
-				ID:       uuid.FromStringOrNil("be66d9a6-6ed6-11eb-8152-0bb66bad7293"),
-				UserID:   1,
-				Name:     "test flow",
-				Detail:   "test flow detail",
-				Actions:  []fmaction.Action{},
-				TMCreate: "2020-09-20 03:23:20.995000",
-				TMUpdate: "",
-				TMDelete: "",
+			&rmdomain.Domain{
+				ID:         uuid.FromStringOrNil("eb0e485e-6ed6-11eb-81bd-9365803e5d9f"),
+				UserID:     1,
+				DomainName: "test.sip.voipbin.net",
+				Name:       "test domain",
+				Detail:     "test domain detail",
+				TMCreate:   "2020-09-20 03:23:20.995000",
+				TMUpdate:   "",
+				TMDelete:   "",
 			},
 		},
 	}
@@ -215,7 +205,7 @@ func TestFMFlowGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMFlowGet(tt.flowID)
+			res, err := reqHandler.RMDomainGet(tt.domainID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -227,7 +217,7 @@ func TestFMFlowGet(t *testing.T) {
 	}
 }
 
-func TestFMFlowDelete(t *testing.T) {
+func TestRMDomainDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -237,7 +227,7 @@ func TestFMFlowDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		flowID uuid.UUID
+		domainID uuid.UUID
 
 		response *rabbitmqhandler.Response
 
@@ -249,14 +239,14 @@ func TestFMFlowDelete(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("4193c3a2-67ca-11eb-a892-0b6d18cda91a"),
+			uuid.FromStringOrNil("5980b2e4-6ed8-11eb-abc3-33f6180819c6"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 			},
 
-			"bin-manager.flow-manager.request",
+			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows/4193c3a2-67ca-11eb-a892-0b6d18cda91a",
+				URI:      "/v1/domains/5980b2e4-6ed8-11eb-abc3-33f6180819c6",
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
@@ -267,14 +257,14 @@ func TestFMFlowDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FMFlowDelete(tt.flowID); err != nil {
+			if err := reqHandler.RMDomainDelete(tt.domainID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func TestFMFlowGets(t *testing.T) {
+func TestRMDomainsGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -292,7 +282,7 @@ func TestFMFlowGets(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  []fmflow.Flow
+		expectResult  []rmdomain.Domain
 	}
 
 	tests := []test{
@@ -306,25 +296,25 @@ func TestFMFlowGets(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"d19c3956-6ed8-11eb-b971-fb12bc338aeb","user_id":1,"domain_name":"test.sip.voipbin.net","name":"test","detail":"test detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
 			},
 
-			"bin-manager.flow-manager.request",
+			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&user_id=1", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/domains?page_token=%s&page_size=10&user_id=1", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			[]fmflow.Flow{
+			[]rmdomain.Domain{
 				{
-					ID:       uuid.FromStringOrNil("158e4b2c-0c55-11eb-b4f2-37c93a78a6a0"),
-					UserID:   1,
-					Name:     "test flow",
-					Detail:   "test flow detail",
-					Actions:  []fmaction.Action{},
-					TMCreate: "2020-09-20 03:23:20.995000",
-					TMUpdate: "",
-					TMDelete: "",
+					ID:         uuid.FromStringOrNil("d19c3956-6ed8-11eb-b971-fb12bc338aeb"),
+					UserID:     1,
+					DomainName: "test.sip.voipbin.net",
+					Name:       "test",
+					Detail:     "test detail",
+					TMCreate:   "2020-09-20 03:23:20.995000",
+					TMUpdate:   "",
+					TMDelete:   "",
 				},
 			},
 		},
@@ -334,7 +324,7 @@ func TestFMFlowGets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMFlowGets(tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RMDomainGets(tt.userID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

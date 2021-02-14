@@ -10,6 +10,7 @@ import (
 	action "gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	domain "gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	flow "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -170,6 +171,80 @@ func (m *MockServiceHandler) ConferenceGets(u *user.User, size uint64, token str
 func (mr *MockServiceHandlerMockRecorder) ConferenceGets(u, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGets), u, size, token)
+}
+
+// DomainCreate mocks base method
+func (m *MockServiceHandler) DomainCreate(u *user.User, domainName, name, detail string) (*domain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainCreate", u, domainName, name, detail)
+	ret0, _ := ret[0].(*domain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DomainCreate indicates an expected call of DomainCreate
+func (mr *MockServiceHandlerMockRecorder) DomainCreate(u, domainName, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainCreate", reflect.TypeOf((*MockServiceHandler)(nil).DomainCreate), u, domainName, name, detail)
+}
+
+// DomainDelete mocks base method
+func (m *MockServiceHandler) DomainDelete(u *user.User, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainDelete", u, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DomainDelete indicates an expected call of DomainDelete
+func (mr *MockServiceHandlerMockRecorder) DomainDelete(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDelete", reflect.TypeOf((*MockServiceHandler)(nil).DomainDelete), u, id)
+}
+
+// DomainGet mocks base method
+func (m *MockServiceHandler) DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainGet", u, id)
+	ret0, _ := ret[0].(*domain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DomainGet indicates an expected call of DomainGet
+func (mr *MockServiceHandlerMockRecorder) DomainGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGet", reflect.TypeOf((*MockServiceHandler)(nil).DomainGet), u, id)
+}
+
+// DomainGets mocks base method
+func (m *MockServiceHandler) DomainGets(u *user.User, size uint64, token string) ([]*domain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainGets", u, size, token)
+	ret0, _ := ret[0].([]*domain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DomainGets indicates an expected call of DomainGets
+func (mr *MockServiceHandlerMockRecorder) DomainGets(u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGets", reflect.TypeOf((*MockServiceHandler)(nil).DomainGets), u, size, token)
+}
+
+// DomainUpdate mocks base method
+func (m *MockServiceHandler) DomainUpdate(u *user.User, d *domain.Domain) (*domain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainUpdate", u, d)
+	ret0, _ := ret[0].(*domain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DomainUpdate indicates an expected call of DomainUpdate
+func (mr *MockServiceHandlerMockRecorder) DomainUpdate(u, d interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdate", reflect.TypeOf((*MockServiceHandler)(nil).DomainUpdate), u, d)
 }
 
 // FlowCreate mocks base method

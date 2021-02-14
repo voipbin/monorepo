@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -67,6 +68,9 @@ const (
 	resourceFlowActions resource = "flow/flows/actions"
 	resourceFlowFlows   resource = "flow/flows"
 
+	resourceRegistrarDomains    resource = "registrar/domains"
+	resourceRegistrarExtensions resource = "registrar/extensions"
+
 	resourceStorageRecording resource = "storage/recordings"
 )
 
@@ -105,6 +109,14 @@ type RequestHandler interface {
 	FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMFlowUpdate(f *fmflow.Flow) (*fmflow.Flow, error)
 
+	// registrar
+	// domain
+	RMDomainCreate(userID uint64, domainName, name, detail string) (*rmdomain.Domain, error)
+	RMDomainDelete(domainID uuid.UUID) error
+	RMDomainGet(domainID uuid.UUID) (*rmdomain.Domain, error)
+	RMDomainGets(userID uint64, pageToken string, pageSize uint64) ([]rmdomain.Domain, error)
+	RMDomainUpdate(f *rmdomain.Domain) (*rmdomain.Domain, error)
+
 	// storage
 	// recording
 	STRecordingGet(id string) (string, error)
@@ -115,20 +127,22 @@ type requestHandler struct {
 
 	exchangeDelay string
 
-	queueCall    string
-	queueFlow    string
-	queueStorage string
+	queueCall      string
+	queueFlow      string
+	queueStorage   string
+	queueRegistrar string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage, queueRegistrar string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
-		exchangeDelay: exchangeDelay,
-		queueCall:     queueCall,
-		queueFlow:     queueFlow,
-		queueStorage:  queueStorage,
+		exchangeDelay:  exchangeDelay,
+		queueCall:      queueCall,
+		queueFlow:      queueFlow,
+		queueStorage:   queueStorage,
+		queueRegistrar: queueRegistrar,
 	}
 
 	return h
@@ -257,6 +271,50 @@ func (r *requestHandler) sendRequestStorage(uri string, method rabbitmqhandler.R
 
 	default:
 		res, err := r.sendRequest(ctx, r.queueStorage, resource, req)
+		if err != nil {
+			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+		}
+
+		log.WithFields(log.Fields{
+			"method":      method,
+			"uri":         uri,
+			"status_code": res.StatusCode,
+		}).Debugf("Received result. data: %s", res.Data)
+		return res, nil
+	}
+}
+
+// sendRequestRegistrar send a request to the registrar-manager and return the response
+func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+	log.WithFields(log.Fields{
+		"method":    method,
+		"uri":       uri,
+		"data_type": dataType,
+		"delayed":   delayed,
+	}).Debugf("Sending request to registrar-manager. data: %s", data)
+
+	// creat a request message
+	req := &rabbitmqhandler.Request{
+		URI:      uri,
+		Method:   method,
+		DataType: dataType,
+		Data:     data,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	defer cancel()
+
+	switch {
+	case delayed > 0:
+		// send scheduled message.
+		// we don't expect the response message here.
+		if err := r.sendDelayedRequest(ctx, r.exchangeDelay, r.queueRegistrar, resource, delayed, req); err != nil {
+			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
+		}
+		return nil, nil
+
+	default:
+		res, err := r.sendRequest(ctx, r.queueRegistrar, resource, req)
 		if err != nil {
 			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 		}
