@@ -165,6 +165,63 @@ func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, 
 	return res, nil
 }
 
+// DomainGetByDomainName gets the domain by the given domain_name.
+func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) (*models.Domain, error) {
+
+	q := fmt.Sprintf("%s where domain_name = ? and tm_delete is NULL", domainSelect)
+
+	row, err := h.db.Query(q, domainName)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. DomainGetByDomainName. err: %v", err)
+	}
+	defer row.Close()
+
+	if row.Next() == false {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.domainGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan the row. DomainGetByDomainName. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// DomainGetsByUserID returns list of domains.
+func (h *handler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Domain, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete is null
+			and user_id = ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, domainSelect)
+
+	rows, err := h.db.Query(q, userID, token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. DomainGetsByUserID. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*models.Domain
+	for rows.Next() {
+		u, err := h.domainGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. DomainGetsByUserID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // DomainDelete deletes given Domain
 func (h *handler) DomainDelete(ctx context.Context, id uuid.UUID) error {
 	q := `

@@ -2,6 +2,7 @@ package domainhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
@@ -10,7 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
-func TestCreateDomain(t *testing.T) {
+func TestDomainCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -39,9 +40,10 @@ func TestCreateDomain(t *testing.T) {
 	for _, tt := range tests {
 		ctx := context.Background()
 
+		mockDBBin.EXPECT().DomainGetByDomainName(gomock.Any(), tt.domain.DomainName).Return(nil, fmt.Errorf(""))
 		mockDBBin.EXPECT().DomainCreate(gomock.Any(), gomock.Any())
 		mockDBBin.EXPECT().DomainGet(gomock.Any(), gomock.Any())
-		_, err := h.CreateDomain(ctx, tt.domain.UserID, tt.domain.DomainName)
+		_, err := h.DomainCreate(ctx, tt.domain)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}

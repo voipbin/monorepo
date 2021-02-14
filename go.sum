@@ -372,6 +372,7 @@ github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 gitlab.com/voipbin/bin-manager/api-manager.git v0.0.0-20210208052420-ffe12f15736f h1:R4vIchJk9MytOcRkH3w/scO4xBE1TLwTtehZzry/Y80=
 gitlab.com/voipbin/bin-manager/api-manager.git v0.0.0-20210208052420-ffe12f15736f/go.mod h1:1nNT0yGWVvzWqvl6kQwAbLJ7omlVc5gV/vf8tlBYZhE=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210212074702-c76f76217cc8 h1:ygIaaPIaGvLhz4/AHJc0HXp/V8h/WbZkt1f0m0OL8GI=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210204021924-4534f48f4348/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210206131226-ca5d2cbbfe65 h1:ZkPtK++jvUBOIcIom+cfSAJj9aUrhIocIWw1MfLXoeM=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210206131226-ca5d2cbbfe65/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
