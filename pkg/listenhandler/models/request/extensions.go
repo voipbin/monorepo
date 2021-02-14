@@ -12,4 +12,7 @@ type V1DataExtensionsPost struct {
 
 	Extension string `json:"extension"`
 	Password  string `json:"password"`
+
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
 }

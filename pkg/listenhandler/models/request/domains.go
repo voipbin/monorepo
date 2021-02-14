@@ -6,4 +6,7 @@ package request
 type V1DataDomainsPost struct {
 	UserID     uint64 `json:"user_id"`
 	DomainName string `json:"domain_name"`
+
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
 }

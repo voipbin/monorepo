@@ -16,6 +16,8 @@ const (
 		id,
 		user_id,
 
+		name,
+		detail,
 		domain_name,
 
 		coalesce(tm_create, '') as tm_create,
@@ -33,6 +35,8 @@ func (h *handler) domainGetFromRow(row *sql.Rows) (*models.Domain, error) {
 		&res.ID,
 		&res.UserID,
 
+		&res.Name,
+		&res.Detail,
 		&res.DomainName,
 
 		&res.TMCreate,
@@ -110,12 +114,14 @@ func (h *handler) DomainCreate(ctx context.Context, b *models.Domain) error {
 		id,
 		user_id,
 
+		name,
+		detail,
 		domain_name,
 
 		tm_create
 	) values(
 		?, ?,
-		?,
+		?, ?, ?,
 		?
 	)
 	`
@@ -124,6 +130,8 @@ func (h *handler) DomainCreate(ctx context.Context, b *models.Domain) error {
 		b.ID.Bytes(),
 		b.UserID,
 
+		b.Name,
+		b.Detail,
 		b.DomainName,
 
 		getCurTime(),

@@ -3,6 +3,9 @@ create table extensions (
   id            binary(16), -- id
   user_id       integer, -- user id
 
+  name    varchar(255),
+  detail  varchar(255),
+
   domain_id     binary(16),
   endpoint_id   varchar(255),
   aor_id        varchar(255),
