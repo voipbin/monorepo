@@ -12,6 +12,7 @@ import (
 	cmconference "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 	cmrecording "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
 	fmflow "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
+	rmdomain "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
 	reflect "reflect"
 )
 
@@ -243,6 +244,80 @@ func (m *MockRequestHandler) FMFlowUpdate(f *fmflow.Flow) (*fmflow.Flow, error) 
 func (mr *MockRequestHandlerMockRecorder) FMFlowUpdate(f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowUpdate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowUpdate), f)
+}
+
+// RMDomainCreate mocks base method
+func (m *MockRequestHandler) RMDomainCreate(userID uint64, domainName, name, detail string) (*rmdomain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMDomainCreate", userID, domainName, name, detail)
+	ret0, _ := ret[0].(*rmdomain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RMDomainCreate indicates an expected call of RMDomainCreate
+func (mr *MockRequestHandlerMockRecorder) RMDomainCreate(userID, domainName, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMDomainCreate", reflect.TypeOf((*MockRequestHandler)(nil).RMDomainCreate), userID, domainName, name, detail)
+}
+
+// RMDomainDelete mocks base method
+func (m *MockRequestHandler) RMDomainDelete(domainID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMDomainDelete", domainID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RMDomainDelete indicates an expected call of RMDomainDelete
+func (mr *MockRequestHandlerMockRecorder) RMDomainDelete(domainID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMDomainDelete", reflect.TypeOf((*MockRequestHandler)(nil).RMDomainDelete), domainID)
+}
+
+// RMDomainGet mocks base method
+func (m *MockRequestHandler) RMDomainGet(domainID uuid.UUID) (*rmdomain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMDomainGet", domainID)
+	ret0, _ := ret[0].(*rmdomain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RMDomainGet indicates an expected call of RMDomainGet
+func (mr *MockRequestHandlerMockRecorder) RMDomainGet(domainID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMDomainGet", reflect.TypeOf((*MockRequestHandler)(nil).RMDomainGet), domainID)
+}
+
+// RMDomainGets mocks base method
+func (m *MockRequestHandler) RMDomainGets(userID uint64, pageToken string, pageSize uint64) ([]rmdomain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMDomainGets", userID, pageToken, pageSize)
+	ret0, _ := ret[0].([]rmdomain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RMDomainGets indicates an expected call of RMDomainGets
+func (mr *MockRequestHandlerMockRecorder) RMDomainGets(userID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMDomainGets", reflect.TypeOf((*MockRequestHandler)(nil).RMDomainGets), userID, pageToken, pageSize)
+}
+
+// RMDomainUpdate mocks base method
+func (m *MockRequestHandler) RMDomainUpdate(f *rmdomain.Domain) (*rmdomain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMDomainUpdate", f)
+	ret0, _ := ret[0].(*rmdomain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RMDomainUpdate indicates an expected call of RMDomainUpdate
+func (mr *MockRequestHandlerMockRecorder) RMDomainUpdate(f interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMDomainUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RMDomainUpdate), f)
 }
 
 // STRecordingGet mocks base method

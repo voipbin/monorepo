@@ -36,6 +36,7 @@ var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.dela
 var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for call request")
 var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
 var rabbitQueueStorageRequest = flag.String("rabbit_queue_storage", "bin-manager.storage-manager.request", "rabbitmq queue name for storage request")
+var rabbitQueueRegistrarRequest = flag.String("rabbit_queue_registrar", "bin-manager.registrar-manager.request", "rabbitmq queue name for registrar request")
 
 // args for redis
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
@@ -77,7 +78,7 @@ func main() {
 	sock.Connect()
 
 	// create servicehandler
-	requestHandler := requesthandler.NewRequestHandler(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest, *rabbitQueueStorageRequest)
+	requestHandler := requesthandler.NewRequestHandler(sock, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest, *rabbitQueueStorageRequest, *rabbitQueueRegistrarRequest)
 	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db)
 
 	app := gin.Default()
