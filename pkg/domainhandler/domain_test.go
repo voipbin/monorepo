@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
@@ -44,6 +45,47 @@ func TestDomainCreate(t *testing.T) {
 		mockDBBin.EXPECT().DomainCreate(gomock.Any(), gomock.Any())
 		mockDBBin.EXPECT().DomainGet(gomock.Any(), gomock.Any())
 		_, err := h.DomainCreate(ctx, tt.domain)
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+	}
+}
+
+func TestDomainUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	h := &domainHandler{
+		dbAst: mockDBAst,
+		dbBin: mockDBBin,
+	}
+
+	type test struct {
+		name   string
+		domain *models.Domain
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&models.Domain{
+				ID:         uuid.FromStringOrNil("43b1c268-6eed-11eb-87ce-8f9d9ae03b04"),
+				UserID:     1,
+				Name:       "update name",
+				Detail:     "update detail",
+				DomainName: "43b1c268-6eed-11eb-87ce-8f9d9ae03b04.sip.voipbin.net",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().DomainUpdate(gomock.Any(), tt.domain)
+		mockDBBin.EXPECT().DomainGet(gomock.Any(), tt.domain.ID)
+		_, err := h.DomainUpdate(ctx, tt.domain)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}

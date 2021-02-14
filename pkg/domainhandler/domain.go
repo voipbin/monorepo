@@ -3,6 +3,7 @@ package domainhandler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -19,6 +20,12 @@ func (h *domainHandler) DomainCreate(ctx context.Context, d *models.Domain) (*mo
 		},
 	)
 	log.Debugf("Creating domain. domain: %s", d.DomainName)
+
+	// check suffix
+	if strings.HasSuffix(d.DomainName, constDomainSuffix) == false {
+		log.Errorf("Wrong domain name. domain_name: %s, suffix: %s", d.DomainName, constDomainSuffix)
+		return nil, fmt.Errorf("wrong domain name. suffix must matched with %s", constDomainSuffix)
+	}
 
 	// check duplicated domain
 	_, err := h.dbBin.DomainGetByDomainName(ctx, d.DomainName)
@@ -64,4 +71,26 @@ func (h *domainHandler) DomainGetsByUserID(ctx context.Context, userID uint64, t
 	}
 
 	return domains, nil
+}
+
+// DomainUpdate updates the domain info
+func (h *domainHandler) DomainUpdate(ctx context.Context, d *models.Domain) (*models.Domain, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"domain": d,
+		},
+	)
+
+	// update
+	if err := h.dbBin.DomainUpdate(ctx, d); err != nil {
+		log.Errorf("Could not update the domain. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.dbBin.DomainGet(ctx, d.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

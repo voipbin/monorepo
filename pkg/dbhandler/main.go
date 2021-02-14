@@ -56,6 +56,7 @@ type DBHandler interface {
 	DomainGetFromDB(ctx context.Context, id uuid.UUID) (*models.Domain, error)
 	DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Domain, error)
 	DomainSetToCache(ctx context.Context, e *models.Domain) error
+	DomainUpdate(ctx context.Context, b *models.Domain) error
 	DomainUpdateToCache(ctx context.Context, id uuid.UUID) error
 
 	ExtensionCreate(ctx context.Context, b *models.Extension) error
