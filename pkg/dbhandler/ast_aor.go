@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/asterisk"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
 )
 
 const (
@@ -36,8 +36,8 @@ const (
 )
 
 // astAORGetFromRow gets the AstAOR from the row
-func (h *handler) astAORGetFromRow(row *sql.Rows) (*asterisk.AstAOR, error) {
-	res := &asterisk.AstAOR{}
+func (h *handler) astAORGetFromRow(row *sql.Rows) (*models.AstAOR, error) {
+	res := &models.AstAOR{}
 	if err := row.Scan(
 		&res.ID,
 
@@ -66,7 +66,7 @@ func (h *handler) astAORGetFromRow(row *sql.Rows) (*asterisk.AstAOR, error) {
 }
 
 // AstAORGetFromDB returns AstAOR from the DB.
-func (h *handler) AstAORGetFromDB(ctx context.Context, id string) (*asterisk.AstAOR, error) {
+func (h *handler) AstAORGetFromDB(ctx context.Context, id string) (*models.AstAOR, error) {
 
 	q := fmt.Sprintf("%s where id = ?", astAorSelect)
 
@@ -104,7 +104,7 @@ func (h *handler) AstAORUpdateToCache(ctx context.Context, id string) error {
 }
 
 // AstAORSetToCache sets the given AstAOR to the cache
-func (h *handler) AstAORSetToCache(ctx context.Context, aor *asterisk.AstAOR) error {
+func (h *handler) AstAORSetToCache(ctx context.Context, aor *models.AstAOR) error {
 	if err := h.cache.AstAORSet(ctx, aor); err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func (h *handler) AstAORSetToCache(ctx context.Context, aor *asterisk.AstAOR) er
 }
 
 // AstAORGetFromCache returns AstAOR from the cache.
-func (h *handler) AstAORGetFromCache(ctx context.Context, id string) (*asterisk.AstAOR, error) {
+func (h *handler) AstAORGetFromCache(ctx context.Context, id string) (*models.AstAOR, error) {
 
 	// get from cache
 	res, err := h.cache.AstAORGet(ctx, id)
@@ -125,7 +125,7 @@ func (h *handler) AstAORGetFromCache(ctx context.Context, id string) (*asterisk.
 }
 
 // AstAORCreate creates new asterisk-aor record.
-func (h *handler) AstAORCreate(ctx context.Context, b *asterisk.AstAOR) error {
+func (h *handler) AstAORCreate(ctx context.Context, b *models.AstAOR) error {
 	q := `insert into ps_aors(
 		id,
 
@@ -188,7 +188,7 @@ func (h *handler) AstAORCreate(ctx context.Context, b *asterisk.AstAOR) error {
 }
 
 // AstAORGet returns AstAOR.
-func (h *handler) AstAORGet(ctx context.Context, id string) (*asterisk.AstAOR, error) {
+func (h *handler) AstAORGet(ctx context.Context, id string) (*models.AstAOR, error) {
 
 	res, err := h.AstAORGetFromCache(ctx, id)
 	if err == nil {

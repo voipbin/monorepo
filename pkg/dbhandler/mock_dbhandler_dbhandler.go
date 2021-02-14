@@ -9,7 +9,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	models "gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
-	asterisk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/asterisk"
 	reflect "reflect"
 )
 
@@ -37,7 +36,7 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 }
 
 // AstAORCreate mocks base method
-func (m *MockDBHandler) AstAORCreate(ctx context.Context, b *asterisk.AstAOR) error {
+func (m *MockDBHandler) AstAORCreate(ctx context.Context, b *models.AstAOR) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORCreate", ctx, b)
 	ret0, _ := ret[0].(error)
@@ -65,10 +64,10 @@ func (mr *MockDBHandlerMockRecorder) AstAORDelete(ctx, id interface{}) *gomock.C
 }
 
 // AstAORGet mocks base method
-func (m *MockDBHandler) AstAORGet(ctx context.Context, id string) (*asterisk.AstAOR, error) {
+func (m *MockDBHandler) AstAORGet(ctx context.Context, id string) (*models.AstAOR, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORGet", ctx, id)
-	ret0, _ := ret[0].(*asterisk.AstAOR)
+	ret0, _ := ret[0].(*models.AstAOR)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -80,10 +79,10 @@ func (mr *MockDBHandlerMockRecorder) AstAORGet(ctx, id interface{}) *gomock.Call
 }
 
 // AstAORGetFromCache mocks base method
-func (m *MockDBHandler) AstAORGetFromCache(ctx context.Context, id string) (*asterisk.AstAOR, error) {
+func (m *MockDBHandler) AstAORGetFromCache(ctx context.Context, id string) (*models.AstAOR, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORGetFromCache", ctx, id)
-	ret0, _ := ret[0].(*asterisk.AstAOR)
+	ret0, _ := ret[0].(*models.AstAOR)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -95,10 +94,10 @@ func (mr *MockDBHandlerMockRecorder) AstAORGetFromCache(ctx, id interface{}) *go
 }
 
 // AstAORGetFromDB mocks base method
-func (m *MockDBHandler) AstAORGetFromDB(ctx context.Context, id string) (*asterisk.AstAOR, error) {
+func (m *MockDBHandler) AstAORGetFromDB(ctx context.Context, id string) (*models.AstAOR, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORGetFromDB", ctx, id)
-	ret0, _ := ret[0].(*asterisk.AstAOR)
+	ret0, _ := ret[0].(*models.AstAOR)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -110,7 +109,7 @@ func (mr *MockDBHandlerMockRecorder) AstAORGetFromDB(ctx, id interface{}) *gomoc
 }
 
 // AstAORSetToCache mocks base method
-func (m *MockDBHandler) AstAORSetToCache(ctx context.Context, aor *asterisk.AstAOR) error {
+func (m *MockDBHandler) AstAORSetToCache(ctx context.Context, aor *models.AstAOR) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORSetToCache", ctx, aor)
 	ret0, _ := ret[0].(error)
@@ -138,7 +137,7 @@ func (mr *MockDBHandlerMockRecorder) AstAORUpdateToCache(ctx, id interface{}) *g
 }
 
 // AstAuthCreate mocks base method
-func (m *MockDBHandler) AstAuthCreate(ctx context.Context, b *asterisk.AstAuth) error {
+func (m *MockDBHandler) AstAuthCreate(ctx context.Context, b *models.AstAuth) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthCreate", ctx, b)
 	ret0, _ := ret[0].(error)
@@ -166,10 +165,10 @@ func (mr *MockDBHandlerMockRecorder) AstAuthDelete(ctx, id interface{}) *gomock.
 }
 
 // AstAuthGet mocks base method
-func (m *MockDBHandler) AstAuthGet(ctx context.Context, id string) (*asterisk.AstAuth, error) {
+func (m *MockDBHandler) AstAuthGet(ctx context.Context, id string) (*models.AstAuth, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthGet", ctx, id)
-	ret0, _ := ret[0].(*asterisk.AstAuth)
+	ret0, _ := ret[0].(*models.AstAuth)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -181,10 +180,10 @@ func (mr *MockDBHandlerMockRecorder) AstAuthGet(ctx, id interface{}) *gomock.Cal
 }
 
 // AstAuthGetFromCache mocks base method
-func (m *MockDBHandler) AstAuthGetFromCache(ctx context.Context, id string) (*asterisk.AstAuth, error) {
+func (m *MockDBHandler) AstAuthGetFromCache(ctx context.Context, id string) (*models.AstAuth, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthGetFromCache", ctx, id)
-	ret0, _ := ret[0].(*asterisk.AstAuth)
+	ret0, _ := ret[0].(*models.AstAuth)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -196,10 +195,10 @@ func (mr *MockDBHandlerMockRecorder) AstAuthGetFromCache(ctx, id interface{}) *g
 }
 
 // AstAuthGetFromDB mocks base method
-func (m *MockDBHandler) AstAuthGetFromDB(ctx context.Context, id string) (*asterisk.AstAuth, error) {
+func (m *MockDBHandler) AstAuthGetFromDB(ctx context.Context, id string) (*models.AstAuth, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthGetFromDB", ctx, id)
-	ret0, _ := ret[0].(*asterisk.AstAuth)
+	ret0, _ := ret[0].(*models.AstAuth)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -211,7 +210,7 @@ func (mr *MockDBHandlerMockRecorder) AstAuthGetFromDB(ctx, id interface{}) *gomo
 }
 
 // AstAuthSetToCache mocks base method
-func (m *MockDBHandler) AstAuthSetToCache(ctx context.Context, auth *asterisk.AstAuth) error {
+func (m *MockDBHandler) AstAuthSetToCache(ctx context.Context, auth *models.AstAuth) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthSetToCache", ctx, auth)
 	ret0, _ := ret[0].(error)
@@ -239,7 +238,7 @@ func (mr *MockDBHandlerMockRecorder) AstAuthUpdateToCache(ctx, id interface{}) *
 }
 
 // AstEndpointCreate mocks base method
-func (m *MockDBHandler) AstEndpointCreate(ctx context.Context, b *asterisk.AstEndpoint) error {
+func (m *MockDBHandler) AstEndpointCreate(ctx context.Context, b *models.AstEndpoint) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointCreate", ctx, b)
 	ret0, _ := ret[0].(error)
@@ -267,10 +266,10 @@ func (mr *MockDBHandlerMockRecorder) AstEndpointDelete(ctx, id interface{}) *gom
 }
 
 // AstEndpointGet mocks base method
-func (m *MockDBHandler) AstEndpointGet(ctx context.Context, id string) (*asterisk.AstEndpoint, error) {
+func (m *MockDBHandler) AstEndpointGet(ctx context.Context, id string) (*models.AstEndpoint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointGet", ctx, id)
-	ret0, _ := ret[0].(*asterisk.AstEndpoint)
+	ret0, _ := ret[0].(*models.AstEndpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -282,10 +281,10 @@ func (mr *MockDBHandlerMockRecorder) AstEndpointGet(ctx, id interface{}) *gomock
 }
 
 // AstEndpointGetFromCache mocks base method
-func (m *MockDBHandler) AstEndpointGetFromCache(ctx context.Context, id string) (*asterisk.AstEndpoint, error) {
+func (m *MockDBHandler) AstEndpointGetFromCache(ctx context.Context, id string) (*models.AstEndpoint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointGetFromCache", ctx, id)
-	ret0, _ := ret[0].(*asterisk.AstEndpoint)
+	ret0, _ := ret[0].(*models.AstEndpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -297,10 +296,10 @@ func (mr *MockDBHandlerMockRecorder) AstEndpointGetFromCache(ctx, id interface{}
 }
 
 // AstEndpointGetFromDB mocks base method
-func (m *MockDBHandler) AstEndpointGetFromDB(ctx context.Context, id string) (*asterisk.AstEndpoint, error) {
+func (m *MockDBHandler) AstEndpointGetFromDB(ctx context.Context, id string) (*models.AstEndpoint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointGetFromDB", ctx, id)
-	ret0, _ := ret[0].(*asterisk.AstEndpoint)
+	ret0, _ := ret[0].(*models.AstEndpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -312,7 +311,7 @@ func (mr *MockDBHandlerMockRecorder) AstEndpointGetFromDB(ctx, id interface{}) *
 }
 
 // AstEndpointSetToCache mocks base method
-func (m *MockDBHandler) AstEndpointSetToCache(ctx context.Context, ednpoint *asterisk.AstEndpoint) error {
+func (m *MockDBHandler) AstEndpointSetToCache(ctx context.Context, ednpoint *models.AstEndpoint) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointSetToCache", ctx, ednpoint)
 	ret0, _ := ret[0].(error)
@@ -438,4 +437,105 @@ func (m *MockDBHandler) DomainUpdateToCache(ctx context.Context, id uuid.UUID) e
 func (mr *MockDBHandlerMockRecorder) DomainUpdateToCache(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).DomainUpdateToCache), ctx, id)
+}
+
+// ExtensionCreate mocks base method
+func (m *MockDBHandler) ExtensionCreate(ctx context.Context, b *models.Extension) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionCreate", ctx, b)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionCreate indicates an expected call of ExtensionCreate
+func (mr *MockDBHandlerMockRecorder) ExtensionCreate(ctx, b interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionCreate", reflect.TypeOf((*MockDBHandler)(nil).ExtensionCreate), ctx, b)
+}
+
+// ExtensionDelete mocks base method
+func (m *MockDBHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionDelete indicates an expected call of ExtensionDelete
+func (mr *MockDBHandlerMockRecorder) ExtensionDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDelete", reflect.TypeOf((*MockDBHandler)(nil).ExtensionDelete), ctx, id)
+}
+
+// ExtensionGet mocks base method
+func (m *MockDBHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGet", ctx, id)
+	ret0, _ := ret[0].(*models.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGet indicates an expected call of ExtensionGet
+func (mr *MockDBHandlerMockRecorder) ExtensionGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGet", reflect.TypeOf((*MockDBHandler)(nil).ExtensionGet), ctx, id)
+}
+
+// ExtensionGetFromCache mocks base method
+func (m *MockDBHandler) ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGetFromCache", ctx, id)
+	ret0, _ := ret[0].(*models.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGetFromCache indicates an expected call of ExtensionGetFromCache
+func (mr *MockDBHandlerMockRecorder) ExtensionGetFromCache(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).ExtensionGetFromCache), ctx, id)
+}
+
+// ExtensionGetFromDB mocks base method
+func (m *MockDBHandler) ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGetFromDB", ctx, id)
+	ret0, _ := ret[0].(*models.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGetFromDB indicates an expected call of ExtensionGetFromDB
+func (mr *MockDBHandlerMockRecorder) ExtensionGetFromDB(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).ExtensionGetFromDB), ctx, id)
+}
+
+// ExtensionSetToCache mocks base method
+func (m *MockDBHandler) ExtensionSetToCache(ctx context.Context, e *models.Extension) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionSetToCache", ctx, e)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionSetToCache indicates an expected call of ExtensionSetToCache
+func (mr *MockDBHandlerMockRecorder) ExtensionSetToCache(ctx, e interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionSetToCache", reflect.TypeOf((*MockDBHandler)(nil).ExtensionSetToCache), ctx, e)
+}
+
+// ExtensionUpdateToCache mocks base method
+func (m *MockDBHandler) ExtensionUpdateToCache(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionUpdateToCache", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionUpdateToCache indicates an expected call of ExtensionUpdateToCache
+func (mr *MockDBHandlerMockRecorder) ExtensionUpdateToCache(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).ExtensionUpdateToCache), ctx, id)
 }

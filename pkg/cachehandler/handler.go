@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/asterisk"
 )
 
 // getSerialize returns cached serialized info.
@@ -53,10 +52,10 @@ func (h *handler) delKey(ctx context.Context, key string) error {
 }
 
 // AstEndpointGet returns cached AstEndpoint info
-func (h *handler) AstEndpointGet(ctx context.Context, id string) (*asterisk.AstEndpoint, error) {
+func (h *handler) AstEndpointGet(ctx context.Context, id string) (*models.AstEndpoint, error) {
 	key := fmt.Sprintf("ast_endpoint:%s", id)
 
-	var res asterisk.AstEndpoint
+	var res models.AstEndpoint
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -64,8 +63,8 @@ func (h *handler) AstEndpointGet(ctx context.Context, id string) (*asterisk.AstE
 	return &res, nil
 }
 
-// AstEndpointSet sets the asterisk.AstEndpoint info into the cache.
-func (h *handler) AstEndpointSet(ctx context.Context, e *asterisk.AstEndpoint) error {
+// AstEndpointSet sets the models.AstEndpoint info into the cache.
+func (h *handler) AstEndpointSet(ctx context.Context, e *models.AstEndpoint) error {
 	key := fmt.Sprintf("ast_endpoint:%s", *e.ID)
 
 	if err := h.setSerializeWithExpiration(ctx, key, e, time.Minute*3); err != nil {
@@ -75,7 +74,7 @@ func (h *handler) AstEndpointSet(ctx context.Context, e *asterisk.AstEndpoint) e
 	return nil
 }
 
-// AstEndpointDel deletes the asterisk.AstEndpoint info from the cache.
+// AstEndpointDel deletes the models.AstEndpoint info from the cache.
 func (h *handler) AstEndpointDel(ctx context.Context, id string) error {
 	key := fmt.Sprintf("ast_endpoint:%s", id)
 
@@ -83,10 +82,10 @@ func (h *handler) AstEndpointDel(ctx context.Context, id string) error {
 }
 
 // AstAuthGet returns cached AstAuth info
-func (h *handler) AstAuthGet(ctx context.Context, id string) (*asterisk.AstAuth, error) {
+func (h *handler) AstAuthGet(ctx context.Context, id string) (*models.AstAuth, error) {
 	key := fmt.Sprintf("ast_auth:%s", id)
 
-	var res asterisk.AstAuth
+	var res models.AstAuth
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -94,8 +93,8 @@ func (h *handler) AstAuthGet(ctx context.Context, id string) (*asterisk.AstAuth,
 	return &res, nil
 }
 
-// AstAuthSet sets the asterisk.AstAuth info into the cache.
-func (h *handler) AstAuthSet(ctx context.Context, e *asterisk.AstAuth) error {
+// AstAuthSet sets the models.AstAuth info into the cache.
+func (h *handler) AstAuthSet(ctx context.Context, e *models.AstAuth) error {
 	key := fmt.Sprintf("ast_auth:%s", *e.ID)
 
 	if err := h.setSerializeWithExpiration(ctx, key, e, time.Minute*3); err != nil {
@@ -105,7 +104,7 @@ func (h *handler) AstAuthSet(ctx context.Context, e *asterisk.AstAuth) error {
 	return nil
 }
 
-// AstAuthDel deletes the asterisk.AstAuth info from the cache.
+// AstAuthDel deletes the models.AstAuth info from the cache.
 func (h *handler) AstAuthDel(ctx context.Context, id string) error {
 	key := fmt.Sprintf("ast_auth:%s", id)
 
@@ -113,10 +112,10 @@ func (h *handler) AstAuthDel(ctx context.Context, id string) error {
 }
 
 // AstAORGet returns cached AstAOR info
-func (h *handler) AstAORGet(ctx context.Context, id string) (*asterisk.AstAOR, error) {
+func (h *handler) AstAORGet(ctx context.Context, id string) (*models.AstAOR, error) {
 	key := fmt.Sprintf("ast_aor:%s", id)
 
-	var res asterisk.AstAOR
+	var res models.AstAOR
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -124,8 +123,8 @@ func (h *handler) AstAORGet(ctx context.Context, id string) (*asterisk.AstAOR, e
 	return &res, nil
 }
 
-// AstAORSet sets the asterisk.AstAOR info into the cache.
-func (h *handler) AstAORSet(ctx context.Context, e *asterisk.AstAOR) error {
+// AstAORSet sets the models.AstAOR info into the cache.
+func (h *handler) AstAORSet(ctx context.Context, e *models.AstAOR) error {
 	key := fmt.Sprintf("ast_aor:%s", *e.ID)
 
 	if err := h.setSerializeWithExpiration(ctx, key, e, time.Minute*3); err != nil {
@@ -135,7 +134,7 @@ func (h *handler) AstAORSet(ctx context.Context, e *asterisk.AstAOR) error {
 	return nil
 }
 
-// AstAORDel deletes the asterisk.AstAOR info from the cache.
+// AstAORDel deletes the models.AstAOR info from the cache.
 func (h *handler) AstAORDel(ctx context.Context, id string) error {
 	key := fmt.Sprintf("ast_aor:%s", id)
 
@@ -168,6 +167,36 @@ func (h *handler) DomainSet(ctx context.Context, e *models.Domain) error {
 // DomainDel deletes the domain info from the cache.
 func (h *handler) DomainDel(ctx context.Context, id uuid.UUID) error {
 	key := fmt.Sprintf("domain:%s", id)
+
+	return h.delKey(ctx, key)
+}
+
+// ExtensionGet returns cached Domain info
+func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+	key := fmt.Sprintf("extension:%s", id)
+
+	var res models.Extension
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// ExtensionSet sets the extension info into the cache.
+func (h *handler) ExtensionSet(ctx context.Context, e *models.Extension) error {
+	key := fmt.Sprintf("extension:%s", e.ID)
+
+	if err := h.setSerialize(ctx, key, e); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ExtensionDel deletes the domain info from the cache.
+func (h *handler) ExtensionDel(ctx context.Context, id uuid.UUID) error {
+	key := fmt.Sprintf("extension:%s", id)
 
 	return h.delKey(ctx, key)
 }

@@ -1,6 +1,6 @@
 create table domains(
     -- identity
-    id        varchar(255), -- id
+    id        binary(16), -- id
     user_id   integer,      -- user id
 
     domain_name varchar(255),

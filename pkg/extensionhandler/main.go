@@ -1,31 +1,35 @@
-package domainhandler
+package extensionhandler
 
-//go:generate mockgen -destination ./mock_domainhandler_domainhandler.go -package domainhandler -source ./main.go DomainHandler
+//go:generate mockgen -destination ./mock_extensionhandler_extensionhandler.go -package extensionhandler -source ./main.go ExtensionHandler
 
 import (
 	"context"
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
 )
 
-// DomainHandler is interface for service handle
-type DomainHandler interface {
-	CreateDomain(ctx context.Context, userID uint64, domainName string) (*models.Domain, error)
+// ExtensionHandler is interface for service handle
+type ExtensionHandler interface {
+	CreateExtension(ctx context.Context, userID uint64, domainID uuid.UUID, ext string, password string) (*models.Extension, error)
 }
 
-// domainHandler structure for service handle
-type domainHandler struct {
+// extensionHandler structure for service handle
+type extensionHandler struct {
 	reqHandler requesthandler.RequestHandler
 	dbAst      dbhandler.DBHandler
 	dbBin      dbhandler.DBHandler
 	cache      cachehandler.CacheHandler
+
+	domainHandler domainhandler.DomainHandler
 }
 
 var (
@@ -67,14 +71,16 @@ func init() {
 	)
 }
 
-// NewDomainHandler returns new service handler
-func NewDomainHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, cache cachehandler.CacheHandler) DomainHandler {
+// NewExtensionHandler returns new service handler
+func NewExtensionHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, cache cachehandler.CacheHandler, domainH domainhandler.DomainHandler) ExtensionHandler {
 
-	h := &domainHandler{
+	h := &extensionHandler{
 		reqHandler: r,
 		dbAst:      dbAst,
 		dbBin:      dbBin,
 		cache:      cache,
+
+		domainHandler: domainH,
 	}
 
 	return h
@@ -91,4 +97,12 @@ func getCurTime() string {
 // getCurTime return current utc time string
 func getCurTimeRFC3339() string {
 	return time.Now().UTC().Format(time.RFC3339)
+}
+
+func getStringPointer(v string) *string {
+	return &v
+}
+
+func getIntegerPointer(v int) *int {
+	return &v
 }

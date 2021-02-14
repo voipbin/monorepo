@@ -12,7 +12,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/asterisk"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
 
@@ -22,30 +21,30 @@ type DBHandler interface {
 	// DomainCreate(ctx context.Context)
 
 	// AstAOR
-	AstAORCreate(ctx context.Context, b *asterisk.AstAOR) error
+	AstAORCreate(ctx context.Context, b *models.AstAOR) error
 	AstAORDelete(ctx context.Context, id string) error
-	AstAORGet(ctx context.Context, id string) (*asterisk.AstAOR, error)
-	AstAORGetFromCache(ctx context.Context, id string) (*asterisk.AstAOR, error)
-	AstAORGetFromDB(ctx context.Context, id string) (*asterisk.AstAOR, error)
-	AstAORSetToCache(ctx context.Context, aor *asterisk.AstAOR) error
+	AstAORGet(ctx context.Context, id string) (*models.AstAOR, error)
+	AstAORGetFromCache(ctx context.Context, id string) (*models.AstAOR, error)
+	AstAORGetFromDB(ctx context.Context, id string) (*models.AstAOR, error)
+	AstAORSetToCache(ctx context.Context, aor *models.AstAOR) error
 	AstAORUpdateToCache(ctx context.Context, id string) error
 
 	// AstAuth
-	AstAuthCreate(ctx context.Context, b *asterisk.AstAuth) error
+	AstAuthCreate(ctx context.Context, b *models.AstAuth) error
 	AstAuthDelete(ctx context.Context, id string) error
-	AstAuthGet(ctx context.Context, id string) (*asterisk.AstAuth, error)
-	AstAuthGetFromCache(ctx context.Context, id string) (*asterisk.AstAuth, error)
-	AstAuthGetFromDB(ctx context.Context, id string) (*asterisk.AstAuth, error)
-	AstAuthSetToCache(ctx context.Context, auth *asterisk.AstAuth) error
+	AstAuthGet(ctx context.Context, id string) (*models.AstAuth, error)
+	AstAuthGetFromCache(ctx context.Context, id string) (*models.AstAuth, error)
+	AstAuthGetFromDB(ctx context.Context, id string) (*models.AstAuth, error)
+	AstAuthSetToCache(ctx context.Context, auth *models.AstAuth) error
 	AstAuthUpdateToCache(ctx context.Context, id string) error
 
 	// AstEndpoint
-	AstEndpointCreate(ctx context.Context, b *asterisk.AstEndpoint) error
+	AstEndpointCreate(ctx context.Context, b *models.AstEndpoint) error
 	AstEndpointDelete(ctx context.Context, id string) error
-	AstEndpointGet(ctx context.Context, id string) (*asterisk.AstEndpoint, error)
-	AstEndpointGetFromCache(ctx context.Context, id string) (*asterisk.AstEndpoint, error)
-	AstEndpointGetFromDB(ctx context.Context, id string) (*asterisk.AstEndpoint, error)
-	AstEndpointSetToCache(ctx context.Context, ednpoint *asterisk.AstEndpoint) error
+	AstEndpointGet(ctx context.Context, id string) (*models.AstEndpoint, error)
+	AstEndpointGetFromCache(ctx context.Context, id string) (*models.AstEndpoint, error)
+	AstEndpointGetFromDB(ctx context.Context, id string) (*models.AstEndpoint, error)
+	AstEndpointSetToCache(ctx context.Context, ednpoint *models.AstEndpoint) error
 	AstEndpointUpdateToCache(ctx context.Context, id string) error
 
 	// Domain
@@ -56,6 +55,14 @@ type DBHandler interface {
 	DomainGetFromDB(ctx context.Context, id uuid.UUID) (*models.Domain, error)
 	DomainSetToCache(ctx context.Context, e *models.Domain) error
 	DomainUpdateToCache(ctx context.Context, id uuid.UUID) error
+
+	ExtensionCreate(ctx context.Context, b *models.Extension) error
+	ExtensionDelete(ctx context.Context, id uuid.UUID) error
+	ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error)
+	ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*models.Extension, error)
+	ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*models.Extension, error)
+	ExtensionSetToCache(ctx context.Context, e *models.Extension) error
+	ExtensionUpdateToCache(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler

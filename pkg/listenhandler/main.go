@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
 )
 
@@ -28,8 +29,9 @@ type ListenHandler interface {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	reqHandler    requesthandler.RequestHandler
-	domainHandler domainhandler.DomainHandler
+	reqHandler       requesthandler.RequestHandler
+	domainHandler    domainhandler.DomainHandler
+	extensionHandler extensionhandler.ExtensionHandler
 }
 
 var (
@@ -39,6 +41,9 @@ var (
 	// v1
 	// domains
 	regV1Domains = regexp.MustCompile("/v1/domains")
+
+	// extensions
+	regV1Extensions = regexp.MustCompile("/v1/extensions")
 )
 
 var (
@@ -75,11 +80,13 @@ func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	reqHandler requesthandler.RequestHandler,
 	domainHandler domainhandler.DomainHandler,
+	extensionHandler extensionhandler.ExtensionHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock:    rabbitSock,
-		reqHandler:    reqHandler,
-		domainHandler: domainHandler,
+		rabbitSock:       rabbitSock,
+		reqHandler:       reqHandler,
+		domainHandler:    domainHandler,
+		extensionHandler: extensionHandler,
 	}
 
 	return h
@@ -156,6 +163,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Domains.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1DomainsPost(m)
 		requestType = "/v1/domains"
+
+	////////////
+	// extensions
+	////////////
+	// POST /extensions
+	case regV1Extensions.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ExtensionsPost(m)
+		requestType = "/v1/extensions"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

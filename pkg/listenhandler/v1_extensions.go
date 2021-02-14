@@ -11,8 +11,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 )
 
-// processV1DomainsPost handles /v1/domains request
-func (h *listenHandler) processV1DomainsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1ExtensionsPost handles /v1/extensions request
+func (h *listenHandler) processV1ExtensionsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
 	uriItems := strings.Split(m.URI, "/")
@@ -20,22 +20,22 @@ func (h *listenHandler) processV1DomainsPost(m *rabbitmqhandler.Request) (*rabbi
 		return simpleResponse(400), nil
 	}
 
-	var reqData request.V1DataDomainsPost
+	var reqData request.V1DataExtensionsPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
 		logrus.Debugf("Could not unmarshal the request data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 
-	// create a new domain
-	d, err := h.domainHandler.CreateDomain(ctx, reqData.UserID, reqData.DomainName)
+	// create a new extension
+	e, err := h.extensionHandler.CreateExtension(ctx, reqData.UserID, reqData.DomainID, reqData.Extension, reqData.Password)
 	if err != nil {
-		logrus.Errorf("Could not create a new domain correctly. err: %v", err)
+		logrus.Errorf("Could not create a new extension correctly. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(d)
+	data, err := json.Marshal(e)
 	if err != nil {
-		logrus.Errorf("Could not marshal the response message. message: %v, err: %v", d, err)
+		logrus.Errorf("Could not marshal the response message. message: %v, err: %v", e, err)
 		return simpleResponse(500), nil
 	}
 

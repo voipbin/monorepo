@@ -35,7 +35,7 @@ func (m *MockDomainHandler) EXPECT() *MockDomainHandlerMockRecorder {
 }
 
 // CreateDomain mocks base method
-func (m *MockDomainHandler) CreateDomain(ctx context.Context, userID int, domainName string) (*models.Domain, error) {
+func (m *MockDomainHandler) CreateDomain(ctx context.Context, userID uint64, domainName string) (*models.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateDomain", ctx, userID, domainName)
 	ret0, _ := ret[0].(*models.Domain)

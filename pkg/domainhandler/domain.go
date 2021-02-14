@@ -10,7 +10,7 @@ import (
 )
 
 // CreateDomain creates a new domain and returns a created domain info
-func (h *domainHandler) CreateDomain(ctx context.Context, userID int, domainName string) (*models.Domain, error) {
+func (h *domainHandler) CreateDomain(ctx context.Context, userID uint64, domainName string) (*models.Domain, error) {
 	// create domain
 	d := &models.Domain{
 		ID:     uuid.Must(uuid.NewV4()),
