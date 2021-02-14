@@ -107,21 +107,22 @@ func TestDomainDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
-			if err := h.DomainCreate(context.Background(), tt.domain); err != nil {
+			if err := h.DomainCreate(ctx, tt.domain); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
-			if err := h.DomainDelete(context.Background(), tt.domain.ID); err != nil {
+			if err := h.DomainDelete(ctx, tt.domain.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().DomainGet(gomock.Any(), tt.domain.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
-			res, err := h.DomainGet(context.Background(), tt.domain.ID)
+			res, err := h.DomainGet(ctx, tt.domain.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -251,6 +252,75 @@ func TestDomainGetsByUserID(t *testing.T) {
 
 			if reflect.DeepEqual(domains, tt.expectDomains) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectDomains, domains)
+			}
+		})
+	}
+}
+
+func TestDomainUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name         string
+		domain       *models.Domain
+		updateDomain *models.Domain
+		expectDomain *models.Domain
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&models.Domain{
+				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
+				UserID:     1,
+				DomainName: "8e11791c-6eec-11eb-9d29-835387182e69.sip.voipbin.net",
+			},
+			&models.Domain{
+				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
+				UserID:     1,
+				Name:       "update name",
+				Detail:     "update detail",
+				DomainName: "8e11791c-6eec-11eb-9d29-835387182e69.sip.voipbin.net",
+			},
+			&models.Domain{
+				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
+				UserID:     1,
+				Name:       "update name",
+				Detail:     "update detail",
+				DomainName: "8e11791c-6eec-11eb-9d29-835387182e69.sip.voipbin.net",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
+			if err := h.DomainCreate(ctx, tt.domain); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
+			if err := h.DomainUpdate(ctx, tt.updateDomain); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().DomainGet(gomock.Any(), tt.domain.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
+			res, err := h.DomainGet(context.Background(), tt.domain.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMCreate = ""
+			res.TMUpdate = ""
+			if reflect.DeepEqual(tt.expectDomain, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectDomain, res)
 			}
 		})
 	}

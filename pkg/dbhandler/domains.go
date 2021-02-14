@@ -146,6 +146,33 @@ func (h *handler) DomainCreate(ctx context.Context, b *models.Domain) error {
 	return nil
 }
 
+// DomainUpdate updates new Domain record.
+func (h *handler) DomainUpdate(ctx context.Context, b *models.Domain) error {
+	q := `
+	update domains set
+		name = ?,
+		detail = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q,
+		b.Name,
+		b.Detail,
+		getCurTime(),
+		b.ID.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. DomainUpdate. err: %v", err)
+	}
+
+	// update the cache
+	h.DomainUpdateToCache(ctx, b.ID)
+
+	return nil
+}
+
 // DomainGet returns Domain.
 func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error) {
 

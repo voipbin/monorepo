@@ -455,6 +455,20 @@ func (mr *MockDBHandlerMockRecorder) DomainSetToCache(ctx, e interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainSetToCache", reflect.TypeOf((*MockDBHandler)(nil).DomainSetToCache), ctx, e)
 }
 
+// DomainUpdate mocks base method
+func (m *MockDBHandler) DomainUpdate(ctx context.Context, b *models.Domain) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainUpdate", ctx, b)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DomainUpdate indicates an expected call of DomainUpdate
+func (mr *MockDBHandlerMockRecorder) DomainUpdate(ctx, b interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdate", reflect.TypeOf((*MockDBHandler)(nil).DomainUpdate), ctx, b)
+}
+
 // DomainUpdateToCache mocks base method
 func (m *MockDBHandler) DomainUpdateToCache(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()

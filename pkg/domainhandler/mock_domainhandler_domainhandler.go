@@ -79,3 +79,18 @@ func (mr *MockDomainHandlerMockRecorder) DomainGetsByUserID(ctx, userID, token, 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetsByUserID", reflect.TypeOf((*MockDomainHandler)(nil).DomainGetsByUserID), ctx, userID, token, limit)
 }
+
+// DomainUpdate mocks base method
+func (m *MockDomainHandler) DomainUpdate(ctx context.Context, d *models.Domain) (*models.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainUpdate", ctx, d)
+	ret0, _ := ret[0].(*models.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DomainUpdate indicates an expected call of DomainUpdate
+func (mr *MockDomainHandlerMockRecorder) DomainUpdate(ctx, d interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdate", reflect.TypeOf((*MockDomainHandler)(nil).DomainUpdate), ctx, d)
+}

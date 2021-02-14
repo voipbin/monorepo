@@ -21,7 +21,12 @@ type DomainHandler interface {
 	DomainCreate(ctx context.Context, d *models.Domain) (*models.Domain, error)
 	DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error)
 	DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Domain, error)
+	DomainUpdate(ctx context.Context, d *models.Domain) (*models.Domain, error)
 }
+
+const (
+	constDomainSuffix = ".sip.voipbin.net"
+)
 
 // domainHandler structure for service handle
 type domainHandler struct {
