@@ -51,8 +51,10 @@ type DBHandler interface {
 	DomainCreate(ctx context.Context, b *models.Domain) error
 	DomainDelete(ctx context.Context, id uuid.UUID) error
 	DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error)
+	DomainGetByDomainName(ctx context.Context, domainName string) (*models.Domain, error)
 	DomainGetFromCache(ctx context.Context, id uuid.UUID) (*models.Domain, error)
 	DomainGetFromDB(ctx context.Context, id uuid.UUID) (*models.Domain, error)
+	DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Domain, error)
 	DomainSetToCache(ctx context.Context, e *models.Domain) error
 	DomainUpdateToCache(ctx context.Context, id uuid.UUID) error
 

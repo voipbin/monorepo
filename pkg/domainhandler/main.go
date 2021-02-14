@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
@@ -17,7 +18,9 @@ import (
 
 // DomainHandler is interface for service handle
 type DomainHandler interface {
-	CreateDomain(ctx context.Context, userID uint64, domainName string) (*models.Domain, error)
+	DomainCreate(ctx context.Context, d *models.Domain) (*models.Domain, error)
+	DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error)
+	DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Domain, error)
 }
 
 // domainHandler structure for service handle

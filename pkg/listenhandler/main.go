@@ -40,7 +40,8 @@ var (
 
 	// v1
 	// domains
-	regV1Domains = regexp.MustCompile("/v1/domains")
+	regV1Domains   = regexp.MustCompile("/v1/domains")
+	regV1DomainsID = regexp.MustCompile("/v1/domains/" + regUUID)
 
 	// extensions
 	regV1Extensions = regexp.MustCompile("/v1/extensions")
@@ -159,9 +160,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////
 	// domains
 	////////////
-	// POST /domains
+	case regV1DomainsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1DomainsIDGet(m)
+		requestType = "/v1/domains"
+
 	case regV1Domains.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1DomainsPost(m)
+		requestType = "/v1/domains"
+
+	case regV1Domains.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1DomainsGet(m)
 		requestType = "/v1/domains"
 
 	////////////
