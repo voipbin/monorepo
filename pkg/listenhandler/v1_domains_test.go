@@ -51,7 +51,7 @@ func TestProcessV1DomainsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1744ccb4-6e13-11eb-b08d-bb42431b2fb3","user_id":1,"domain_name":"0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"1744ccb4-6e13-11eb-b08d-bb42431b2fb3","user_id":1,"name":"","detail":"","domain_name":"0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

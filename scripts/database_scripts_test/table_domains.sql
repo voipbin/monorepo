@@ -3,6 +3,9 @@ create table domains(
     id        binary(16), -- id
     user_id   integer,      -- user id
 
+    name    varchar(255),
+    detail  varchar(255),
+
     domain_name varchar(255),
 
   -- timestamps

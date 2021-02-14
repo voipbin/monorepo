@@ -40,6 +40,23 @@ func TestDomainCreate(t *testing.T) {
 				DomainName: "test.sip.voipbin.net",
 			},
 		},
+		{
+			"with name detail",
+			&models.Domain{
+				ID:         uuid.FromStringOrNil("d55f111a-6edf-11eb-b978-277f5400b4e8"),
+				UserID:     1,
+				Name:       "test name",
+				Detail:     "test detail",
+				DomainName: "test1.sip.voipbin.net",
+			},
+			&models.Domain{
+				ID:         uuid.FromStringOrNil("d55f111a-6edf-11eb-b978-277f5400b4e8"),
+				UserID:     1,
+				Name:       "test name",
+				Detail:     "test detail",
+				DomainName: "test1.sip.voipbin.net",
+			},
+		},
 	}
 
 	for _, tt := range tests {

@@ -16,7 +16,10 @@ const (
 		id,
 		user_id,
 
+		name,
+		detail,
 		domain_id,
+
 		endpoint_id,
 		aor_id,
 		auth_id,
@@ -39,7 +42,10 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*models.Extension, error) 
 		&res.ID,
 		&res.UserID,
 
+		&res.Name,
+		&res.Detail,
 		&res.DomainID,
+
 		&res.EndpointID,
 		&res.AORID,
 		&res.AuthID,
@@ -122,6 +128,8 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *models.Extension) erro
 		id,
 		user_id,
 
+		name,
+		detail,
 		domain_id,
 
 		endpoint_id,
@@ -134,7 +142,7 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *models.Extension) erro
 		tm_create
 	) values(
 		?, ?,
-		?,
+		?, ?, ?,
 		?, ?, ?,
 		?, ?,
 		?
@@ -145,6 +153,8 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *models.Extension) erro
 		b.ID.Bytes(),
 		b.UserID,
 
+		b.Name,
+		b.Detail,
 		b.DomainID,
 
 		b.EndpointID,
