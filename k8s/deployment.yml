@@ -42,6 +42,8 @@ spec:
             - 'bin-manager.flow-manager.request'
             - '-rabbit_queue_storage'
             - 'bin-manager.storage-manager.request'
+            - '-rabbit_queue_registrar'
+            - 'bin-manager.registrar-manager.request'
             - '-redis_addr'
             - '10.164.15.220:6379'
             - '-redis_db'

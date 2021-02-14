@@ -1,4 +1,4 @@
-package flows
+package domains
 
 import (
 	"bytes"
@@ -13,12 +13,10 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -26,7 +24,7 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(&app.RouterGroup)
 }
 
-func TestFlowsPOST(t *testing.T) {
+func TestDomainsPOST(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -37,7 +35,7 @@ func TestFlowsPOST(t *testing.T) {
 	type test struct {
 		name        string
 		user        user.User
-		requestBody request.BodyFlowsPOST
+		requestBody request.BodyDomainsPOST
 	}
 
 	tests := []test{
@@ -47,14 +45,10 @@ func TestFlowsPOST(t *testing.T) {
 				ID:         1,
 				Permission: user.PermissionAdmin,
 			},
-			request.BodyFlowsPOST{
-				Name:   "test name",
-				Detail: "test detail",
-				Actions: []action.Action{
-					{
-						Type: action.TypeAnswer,
-					},
-				},
+			request.BodyDomainsPOST{
+				Name:       "test name",
+				Detail:     "test detail",
+				DomainName: "test.sip.voipbin.net",
 			},
 		},
 	}
@@ -77,8 +71,8 @@ func TestFlowsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowCreate(&tt.user, gomock.Any(), tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Actions, true).Return(&flow.Flow{}, nil)
-			req, _ := http.NewRequest("POST", "/flows", bytes.NewBuffer(body))
+			mockSvc.EXPECT().DomainCreate(&tt.user, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&domain.Domain{}, nil)
+			req, _ := http.NewRequest("POST", "/domains", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -89,155 +83,7 @@ func TestFlowsPOST(t *testing.T) {
 	}
 }
 
-func TestFlowsIDGET(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
-		name string
-		user user.User
-		flow *fmflow.Flow
-
-		expectFlow *flow.Flow
-	}
-
-	tests := []test{
-		{
-			"normal",
-			user.User{
-				ID: 1,
-			},
-			&fmflow.Flow{
-				ID:     uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-				Name:   "test name",
-				Detail: "test detail",
-				UserID: 1,
-				Actions: []fmaction.Action{
-					{
-						ID:   uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-						Type: "answer",
-					},
-				},
-			},
-			&flow.Flow{
-				ID:     uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-				Name:   "test name",
-				Detail: "test detail",
-				UserID: 1,
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
-			})
-			setupServer(r)
-
-			mockSvc.EXPECT().FlowGet(&tt.user, tt.flow.ID).Return(tt.expectFlow, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/flows/%s", tt.flow.ID), nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-		})
-	}
-}
-
-func TestFlowsIDPUT(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
-		name        string
-		user        user.User
-		flowID      uuid.UUID
-		requestBody request.BodyFlowsIDPUT
-		expectFlow  *flow.Flow
-	}
-
-	tests := []test{
-		{
-			"normal",
-			user.User{
-				ID:         1,
-				Permission: user.PermissionAdmin,
-			},
-			uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
-			request.BodyFlowsIDPUT{
-				Name:   "test name",
-				Detail: "test detail",
-				Actions: []action.Action{
-					{
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-			&flow.Flow{
-				ID:     uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
-				Name:   "test name",
-				Detail: "test detail",
-				Actions: []action.Action{
-					{
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
-			})
-			setupServer(r)
-
-			// create body
-			body, err := json.Marshal(tt.requestBody)
-			if err != nil {
-				t.Errorf("Could not marshal the request. err: %v", err)
-			}
-
-			mockSvc.EXPECT().FlowUpdate(&tt.user, tt.expectFlow).Return(&flow.Flow{}, nil)
-			req, _ := http.NewRequest("PUT", "/flows/"+tt.flowID.String(), bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-		})
-	}
-}
-
-func TestFlowsIDDELETE(t *testing.T) {
+func TestDomainsIDGET(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -248,7 +94,9 @@ func TestFlowsIDDELETE(t *testing.T) {
 	type test struct {
 		name   string
 		user   user.User
-		flowID uuid.UUID
+		domain *rmdomain.Domain
+
+		expectDomain *domain.Domain
 	}
 
 	tests := []test{
@@ -257,7 +105,20 @@ func TestFlowsIDDELETE(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			uuid.FromStringOrNil("d466f900-67cb-11eb-b2ff-1f9adc48f842"),
+			&rmdomain.Domain{
+				ID:         uuid.FromStringOrNil("8c769d1e-6edb-11eb-a141-8bb08ceaaa69"),
+				DomainName: "test.sip.voipbin.net",
+				Name:       "test name",
+				Detail:     "test detail",
+				UserID:     1,
+			},
+			&domain.Domain{
+				ID:         uuid.FromStringOrNil("8c769d1e-6edb-11eb-a141-8bb08ceaaa69"),
+				DomainName: "test.sip.voipbin.net",
+				Name:       "test name",
+				Detail:     "test detail",
+				UserID:     1,
+			},
 		},
 	}
 
@@ -273,8 +134,121 @@ func TestFlowsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().FlowDelete(&tt.user, tt.flowID).Return(nil)
-			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/flows/%s", tt.flowID), nil)
+			mockSvc.EXPECT().DomainGet(&tt.user, tt.domain.ID).Return(tt.expectDomain, nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/domains/%s", tt.domain.ID), nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func TestDomainsIDPUT(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name         string
+		user         user.User
+		domainID     uuid.UUID
+		requestBody  request.BodyDomainsIDPUT
+		expectDomain *domain.Domain
+	}
+
+	tests := []test{
+		{
+			"normal",
+			user.User{
+				ID:         1,
+				Permission: user.PermissionAdmin,
+			},
+			uuid.FromStringOrNil("91f5852a-6edb-11eb-86c9-f3e5fc2d3a80"),
+			request.BodyDomainsIDPUT{
+				Name:   "test name",
+				Detail: "test detail",
+			},
+			&domain.Domain{
+				ID:     uuid.FromStringOrNil("91f5852a-6edb-11eb-86c9-f3e5fc2d3a80"),
+				Name:   "test name",
+				Detail: "test detail",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+
+			mockSvc.EXPECT().DomainUpdate(&tt.user, tt.expectDomain).Return(&domain.Domain{}, nil)
+			req, _ := http.NewRequest("PUT", "/domains/"+tt.domainID.String(), bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func TestDomainsIDDELETE(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name     string
+		user     user.User
+		domainID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			user.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("5d41b834-6edc-11eb-8d71-f7a08bdfd253"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().DomainDelete(&tt.user, tt.domainID).Return(nil)
+			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/domains/%s", tt.domainID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
