@@ -19,6 +19,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
 )
@@ -148,7 +149,8 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 	)
 
 	domainHandler := domainhandler.NewDomainHandler(reqHandler, dbAst, dbBin, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, domainHandler)
+	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, cache, domainHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, domainHandler, extensionHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

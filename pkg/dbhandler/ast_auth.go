@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/asterisk"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
 )
 
 const (
@@ -31,8 +31,8 @@ const (
 )
 
 // astAuthGetFromRow gets the AstAuth from the row
-func (h *handler) astAuthGetFromRow(row *sql.Rows) (*asterisk.AstAuth, error) {
-	res := &asterisk.AstAuth{}
+func (h *handler) astAuthGetFromRow(row *sql.Rows) (*models.AstAuth, error) {
+	res := &models.AstAuth{}
 	if err := row.Scan(
 		&res.ID,
 		&res.AuthType,
@@ -56,7 +56,7 @@ func (h *handler) astAuthGetFromRow(row *sql.Rows) (*asterisk.AstAuth, error) {
 }
 
 // AstAuthGetFromDB returns AstAuth from the DB.
-func (h *handler) AstAuthGetFromDB(ctx context.Context, id string) (*asterisk.AstAuth, error) {
+func (h *handler) AstAuthGetFromDB(ctx context.Context, id string) (*models.AstAuth, error) {
 
 	q := fmt.Sprintf("%s where id = ?", astAuthSelect)
 
@@ -94,7 +94,7 @@ func (h *handler) AstAuthUpdateToCache(ctx context.Context, id string) error {
 }
 
 // AstAuthSetToCache sets the given AstAuth to the cache
-func (h *handler) AstAuthSetToCache(ctx context.Context, auth *asterisk.AstAuth) error {
+func (h *handler) AstAuthSetToCache(ctx context.Context, auth *models.AstAuth) error {
 	if err := h.cache.AstAuthSet(ctx, auth); err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (h *handler) AstAuthSetToCache(ctx context.Context, auth *asterisk.AstAuth)
 }
 
 // AstAuthGetFromCache returns AstAuth from the cache.
-func (h *handler) AstAuthGetFromCache(ctx context.Context, id string) (*asterisk.AstAuth, error) {
+func (h *handler) AstAuthGetFromCache(ctx context.Context, id string) (*models.AstAuth, error) {
 
 	// get from cache
 	res, err := h.cache.AstAuthGet(ctx, id)
@@ -115,7 +115,7 @@ func (h *handler) AstAuthGetFromCache(ctx context.Context, id string) (*asterisk
 }
 
 // AstAuthCreate creates new asterisk-auth record.
-func (h *handler) AstAuthCreate(ctx context.Context, b *asterisk.AstAuth) error {
+func (h *handler) AstAuthCreate(ctx context.Context, b *models.AstAuth) error {
 	q := `insert into ps_auths(
 		id,
 		auth_type,
@@ -167,7 +167,7 @@ func (h *handler) AstAuthCreate(ctx context.Context, b *asterisk.AstAuth) error 
 }
 
 // AstAuthGet returns AstAuth.
-func (h *handler) AstAuthGet(ctx context.Context, id string) (*asterisk.AstAuth, error) {
+func (h *handler) AstAuthGet(ctx context.Context, id string) (*models.AstAuth, error) {
 
 	res, err := h.AstAuthGetFromCache(ctx, id)
 	if err == nil {

@@ -8,7 +8,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/asterisk"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
 
@@ -20,14 +20,14 @@ func TestAstAuthCreate(t *testing.T) {
 
 	type test struct {
 		name       string
-		auth       *asterisk.AstAuth
-		expectAuth *asterisk.AstAuth
+		auth       *models.AstAuth
+		expectAuth *models.AstAuth
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&asterisk.AstAuth{
+			&models.AstAuth{
 				ID:       getStringPointer("test1@test.sip.voipbin.net"),
 				AuthType: getStringPointer("userpass"),
 
@@ -36,7 +36,7 @@ func TestAstAuthCreate(t *testing.T) {
 
 				Realm: getStringPointer("test.sip.voipbin.net"),
 			},
-			&asterisk.AstAuth{
+			&models.AstAuth{
 				ID:       getStringPointer("test1@test.sip.voipbin.net"),
 				AuthType: getStringPointer("userpass"),
 
@@ -79,13 +79,13 @@ func TestAstAuthDelete(t *testing.T) {
 
 	type test struct {
 		name string
-		auth *asterisk.AstAuth
+		auth *models.AstAuth
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&asterisk.AstAuth{
+			&models.AstAuth{
 				ID:       getStringPointer("dcd14fe0-6df8-11eb-96b2-9f307c0f50bf@test.sip.voipbin.net"),
 				AuthType: getStringPointer("userpass"),
 

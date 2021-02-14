@@ -1,4 +1,4 @@
-package asterisk
+package models
 
 // AstEndpoint for ast_endpoint table
 type AstEndpoint struct {

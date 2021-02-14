@@ -5,7 +5,7 @@ import "github.com/gofrs/uuid"
 // Domain struct
 type Domain struct {
 	ID     uuid.UUID `json:"id"`
-	UserID int       `json:"user_id"`
+	UserID uint64    `json:"user_id"`
 
 	DomainName string `json:"domain_name"`
 
