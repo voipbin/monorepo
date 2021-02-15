@@ -30,7 +30,7 @@ func (r *requestHandler) RMDomainCreate(userID uint64, domainName, name, detail 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPost, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPost, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -99,7 +99,7 @@ func (r *requestHandler) RMDomainDelete(domainID uuid.UUID) error {
 func (r *requestHandler) RMDomainUpdate(f *rmdomain.Domain) (*rmdomain.Domain, error) {
 	uri := fmt.Sprintf("/v1/domains/%s", f.ID)
 
-	data := &request.RMV1DataDomainIDPut{
+	data := &request.RMV1DataDomainsIDPut{
 		Name:   f.Name,
 		Detail: f.Detail,
 	}

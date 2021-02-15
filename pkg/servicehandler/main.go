@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -43,6 +44,13 @@ type ServiceHandler interface {
 	DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, error)
 	DomainGets(u *user.User, size uint64, token string) ([]*domain.Domain, error)
 	DomainUpdate(u *user.User, d *domain.Domain) (*domain.Domain, error)
+
+	// extension handlers
+	ExtensionCreate(u *user.User, e *extension.Extension) (*extension.Extension, error)
+	ExtensionDelete(u *user.User, id uuid.UUID) error
+	ExtensionGet(u *user.User, id uuid.UUID) (*extension.Extension, error)
+	ExtensionGets(u *user.User, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error)
+	ExtensionUpdate(u *user.User, d *extension.Extension) (*extension.Extension, error)
 
 	// flow handlers
 	FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)

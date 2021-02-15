@@ -9,11 +9,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmextension"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestRMDomainCreate(t *testing.T) {
+func TestRMExtensionCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -23,46 +23,49 @@ func TestRMDomainCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		userID          uint64
-		domainName      string
-		domainTmpName   string
-		domainTmpDetail string
+		extension *rmextension.Extension
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 
-		expectResult *rmdomain.Domain
+		expectResult *rmextension.Extension
 	}
 
 	tests := []test{
 		{
 			"normal",
 
-			1,
-			"test.sip.voipbin.net",
-			"test name",
-			"test detail",
+			&rmextension.Extension{
+				UserID:    1,
+				Name:      "test name",
+				Detail:    "test detail",
+				DomainID:  uuid.FromStringOrNil("22de2e58-6f9e-11eb-8fee-ef16005005d7"),
+				Extension: "4c98b74a-6f9e-11eb-a82f-37575ab16881",
+				Password:  "53710356-6f9e-11eb-8a91-43345d98682a",
+			},
 
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/domains",
+				URI:      "/v1/extensions",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"user_id":1,"domain_name":"test.sip.voipbin.net","name":"test name","detail":"test detail"}`),
+				Data:     []byte(`{"user_id":1,"name":"test name","detail":"test detail","domain_id":"22de2e58-6f9e-11eb-8fee-ef16005005d7","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"68040bf2-6ed5-11eb-9924-9febe8425cbe","user_id":1,"domain_name":"test.sip.voipbin.net","name":"test name","detail":"test detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"68040bf2-6ed5-11eb-9924-9febe8425cbe","user_id":1,"domain_id":"22de2e58-6f9e-11eb-8fee-ef16005005d7","name":"test name","detail":"test detail","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
-			&rmdomain.Domain{
-				ID:         uuid.FromStringOrNil("68040bf2-6ed5-11eb-9924-9febe8425cbe"),
-				UserID:     1,
-				DomainName: "test.sip.voipbin.net",
-				Name:       "test name",
-				Detail:     "test detail",
-				TMCreate:   "2020-09-20 03:23:20.995000",
+			&rmextension.Extension{
+				ID:        uuid.FromStringOrNil("68040bf2-6ed5-11eb-9924-9febe8425cbe"),
+				UserID:    1,
+				Name:      "test name",
+				Detail:    "test detail",
+				DomainID:  uuid.FromStringOrNil("22de2e58-6f9e-11eb-8fee-ef16005005d7"),
+				Extension: "4c98b74a-6f9e-11eb-a82f-37575ab16881",
+				Password:  "53710356-6f9e-11eb-8a91-43345d98682a",
+				TMCreate:  "2020-09-20 03:23:20.995000",
 			},
 		},
 	}
@@ -71,7 +74,7 @@ func TestRMDomainCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMDomainCreate(tt.userID, tt.domainName, tt.domainTmpName, tt.domainTmpDetail)
+			res, err := reqHandler.RMExtensionCreate(tt.extension)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -83,7 +86,7 @@ func TestRMDomainCreate(t *testing.T) {
 	}
 }
 
-func TestRMDomainUpdate(t *testing.T) {
+func TestRMExtensionUpdate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -93,43 +96,41 @@ func TestRMDomainUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		requestDomain *rmdomain.Domain
-		response      *rabbitmqhandler.Response
+		requestExtension *rmextension.Extension
+		response         *rabbitmqhandler.Response
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *rmdomain.Domain
+		expectResult  *rmextension.Extension
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&rmdomain.Domain{
-				ID:     uuid.FromStringOrNil("f4063a6c-6ed5-11eb-8835-23f57d9e419c"),
-				Name:   "update name",
-				Detail: "update detail",
+			&rmextension.Extension{
+				ID:       uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+				Name:     "update name",
+				Detail:   "update detail",
+				Password: "update password",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"f4063a6c-6ed5-11eb-8835-23f57d9e419c","user_id":1,"domain_name":"test.sip.voipbin.net","name":"update name","detail":"update detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"0be5298a-6f9f-11eb-bb77-f71f5b5f95f7","user_id":1,"name":"update name","detail":"update detail","password":"update password"}`),
 			},
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/domains/f4063a6c-6ed5-11eb-8835-23f57d9e419c",
+				URI:      "/v1/extensions/0be5298a-6f9f-11eb-bb77-f71f5b5f95f7",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","password":"update password"}`),
 			},
-			&rmdomain.Domain{
-				ID:         uuid.FromStringOrNil("f4063a6c-6ed5-11eb-8835-23f57d9e419c"),
-				UserID:     1,
-				DomainName: "test.sip.voipbin.net",
-				Name:       "update name",
-				Detail:     "update detail",
-				TMCreate:   "2020-09-20 03:23:20.995000",
-				TMUpdate:   "",
-				TMDelete:   "",
+			&rmextension.Extension{
+				ID:       uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+				UserID:   1,
+				Name:     "update name",
+				Detail:   "update detail",
+				Password: "update password",
 			},
 		},
 	}
@@ -138,7 +139,7 @@ func TestRMDomainUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMDomainUpdate(tt.requestDomain)
+			res, err := reqHandler.RMExtensionUpdate(tt.requestExtension)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -150,7 +151,7 @@ func TestRMDomainUpdate(t *testing.T) {
 	}
 }
 
-func TestRMDomainGet(t *testing.T) {
+func TestRMExtensionGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -160,14 +161,14 @@ func TestRMDomainGet(t *testing.T) {
 	type test struct {
 		name string
 
-		userID   uint64
-		domainID uuid.UUID
+		userID      uint64
+		extensionID uuid.UUID
 
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *rmdomain.Domain
+		expectResult  *rmextension.Extension
 	}
 
 	tests := []test{
@@ -175,28 +176,30 @@ func TestRMDomainGet(t *testing.T) {
 			"normal",
 
 			1,
-			uuid.FromStringOrNil("eb0e485e-6ed6-11eb-81bd-9365803e5d9f"),
+			uuid.FromStringOrNil("342f9734-6fa1-11eb-a937-17d537105d6a"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"eb0e485e-6ed6-11eb-81bd-9365803e5d9f","user_id":1,"domain_name":"test.sip.voipbin.net","name":"test domain","detail":"test domain detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"342f9734-6fa1-11eb-a937-17d537105d6a","user_id":1,"domain_id":"4351e596-6fa1-11eb-b086-db7f03792b30","name":"test domain","detail":"test domain detail","extension":"test","password":"password","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/domains/eb0e485e-6ed6-11eb-81bd-9365803e5d9f",
+				URI:      "/v1/extensions/342f9734-6fa1-11eb-a937-17d537105d6a",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rmdomain.Domain{
-				ID:         uuid.FromStringOrNil("eb0e485e-6ed6-11eb-81bd-9365803e5d9f"),
-				UserID:     1,
-				DomainName: "test.sip.voipbin.net",
-				Name:       "test domain",
-				Detail:     "test domain detail",
-				TMCreate:   "2020-09-20 03:23:20.995000",
-				TMUpdate:   "",
-				TMDelete:   "",
+			&rmextension.Extension{
+				ID:        uuid.FromStringOrNil("342f9734-6fa1-11eb-a937-17d537105d6a"),
+				UserID:    1,
+				DomainID:  uuid.FromStringOrNil("4351e596-6fa1-11eb-b086-db7f03792b30"),
+				Extension: "test",
+				Password:  "password",
+				Name:      "test domain",
+				Detail:    "test domain detail",
+				TMCreate:  "2020-09-20 03:23:20.995000",
+				TMUpdate:  "",
+				TMDelete:  "",
 			},
 		},
 	}
@@ -205,7 +208,7 @@ func TestRMDomainGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMDomainGet(tt.domainID)
+			res, err := reqHandler.RMExtensionGet(tt.extensionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -217,7 +220,7 @@ func TestRMDomainGet(t *testing.T) {
 	}
 }
 
-func TestRMDomainDelete(t *testing.T) {
+func TestRMExtensionDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -227,7 +230,7 @@ func TestRMDomainDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		domainID uuid.UUID
+		extesnionID uuid.UUID
 
 		response *rabbitmqhandler.Response
 
@@ -239,14 +242,14 @@ func TestRMDomainDelete(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("5980b2e4-6ed8-11eb-abc3-33f6180819c6"),
+			uuid.FromStringOrNil("b2ca6024-6fa1-11eb-aa5a-738c234d2ee1"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 			},
 
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/domains/5980b2e4-6ed8-11eb-abc3-33f6180819c6",
+				URI:      "/v1/extensions/b2ca6024-6fa1-11eb-aa5a-738c234d2ee1",
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
@@ -257,14 +260,14 @@ func TestRMDomainDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.RMDomainDelete(tt.domainID); err != nil {
+			if err := reqHandler.RMExtensionDelete(tt.extesnionID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func TestRMDomainsGets(t *testing.T) {
+func TestRMExtensionsGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -274,7 +277,7 @@ func TestRMDomainsGets(t *testing.T) {
 	type test struct {
 		name string
 
-		userID    uint64
+		domainID  uuid.UUID
 		pageToken string
 		pageSize  uint64
 
@@ -282,39 +285,41 @@ func TestRMDomainsGets(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  []rmdomain.Domain
+		expectResult  []rmextension.Extension
 	}
 
 	tests := []test{
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0"),
 			"2020-09-20 03:23:20.995000",
 			10,
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"d19c3956-6ed8-11eb-b971-fb12bc338aeb","user_id":1,"domain_name":"test.sip.voipbin.net","name":"test","detail":"test detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"d19c3956-6ed8-11eb-b971-fb12bc338aeb","user_id":1,"domain_id":"e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0","name":"test","detail":"test detail","extension":"test","password":"password","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
 			},
 
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/domains?page_token=%s&page_size=10&user_id=1", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/extensions?page_token=%s&page_size=10&domain_id=e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			[]rmdomain.Domain{
+			[]rmextension.Extension{
 				{
-					ID:         uuid.FromStringOrNil("d19c3956-6ed8-11eb-b971-fb12bc338aeb"),
-					UserID:     1,
-					DomainName: "test.sip.voipbin.net",
-					Name:       "test",
-					Detail:     "test detail",
-					TMCreate:   "2020-09-20 03:23:20.995000",
-					TMUpdate:   "",
-					TMDelete:   "",
+					ID:        uuid.FromStringOrNil("d19c3956-6ed8-11eb-b971-fb12bc338aeb"),
+					UserID:    1,
+					DomainID:  uuid.FromStringOrNil("e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0"),
+					Name:      "test",
+					Detail:    "test detail",
+					Extension: "test",
+					Password:  "password",
+					TMCreate:  "2020-09-20 03:23:20.995000",
+					TMUpdate:  "",
+					TMDelete:  "",
 				},
 			},
 		},
@@ -324,7 +329,7 @@ func TestRMDomainsGets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMDomainGets(tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RMExtensionGets(tt.domainID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
