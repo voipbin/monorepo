@@ -13,6 +13,7 @@ import (
 	cmrecording "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
 	fmflow "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	rmdomain "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
+	rmextension "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmextension"
 	reflect "reflect"
 )
 
@@ -318,6 +319,80 @@ func (m *MockRequestHandler) RMDomainUpdate(f *rmdomain.Domain) (*rmdomain.Domai
 func (mr *MockRequestHandlerMockRecorder) RMDomainUpdate(f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMDomainUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RMDomainUpdate), f)
+}
+
+// RMExtensionCreate mocks base method
+func (m *MockRequestHandler) RMExtensionCreate(e *rmextension.Extension) (*rmextension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMExtensionCreate", e)
+	ret0, _ := ret[0].(*rmextension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RMExtensionCreate indicates an expected call of RMExtensionCreate
+func (mr *MockRequestHandlerMockRecorder) RMExtensionCreate(e interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMExtensionCreate", reflect.TypeOf((*MockRequestHandler)(nil).RMExtensionCreate), e)
+}
+
+// RMExtensionDelete mocks base method
+func (m *MockRequestHandler) RMExtensionDelete(extensionID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMExtensionDelete", extensionID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RMExtensionDelete indicates an expected call of RMExtensionDelete
+func (mr *MockRequestHandlerMockRecorder) RMExtensionDelete(extensionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMExtensionDelete", reflect.TypeOf((*MockRequestHandler)(nil).RMExtensionDelete), extensionID)
+}
+
+// RMExtensionGet mocks base method
+func (m *MockRequestHandler) RMExtensionGet(extensionID uuid.UUID) (*rmextension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMExtensionGet", extensionID)
+	ret0, _ := ret[0].(*rmextension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RMExtensionGet indicates an expected call of RMExtensionGet
+func (mr *MockRequestHandlerMockRecorder) RMExtensionGet(extensionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMExtensionGet", reflect.TypeOf((*MockRequestHandler)(nil).RMExtensionGet), extensionID)
+}
+
+// RMExtensionGets mocks base method
+func (m *MockRequestHandler) RMExtensionGets(domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMExtensionGets", domainID, pageToken, pageSize)
+	ret0, _ := ret[0].([]rmextension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RMExtensionGets indicates an expected call of RMExtensionGets
+func (mr *MockRequestHandlerMockRecorder) RMExtensionGets(domainID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMExtensionGets", reflect.TypeOf((*MockRequestHandler)(nil).RMExtensionGets), domainID, pageToken, pageSize)
+}
+
+// RMExtensionUpdate mocks base method
+func (m *MockRequestHandler) RMExtensionUpdate(f *rmextension.Extension) (*rmextension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMExtensionUpdate", f)
+	ret0, _ := ret[0].(*rmextension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RMExtensionUpdate indicates an expected call of RMExtensionUpdate
+func (mr *MockRequestHandlerMockRecorder) RMExtensionUpdate(f interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMExtensionUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RMExtensionUpdate), f)
 }
 
 // STRecordingGet mocks base method

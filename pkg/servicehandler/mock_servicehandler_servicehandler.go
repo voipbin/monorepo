@@ -11,6 +11,7 @@ import (
 	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	domain "gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
+	extension "gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	flow "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -245,6 +246,80 @@ func (m *MockServiceHandler) DomainUpdate(u *user.User, d *domain.Domain) (*doma
 func (mr *MockServiceHandlerMockRecorder) DomainUpdate(u, d interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdate", reflect.TypeOf((*MockServiceHandler)(nil).DomainUpdate), u, d)
+}
+
+// ExtensionCreate mocks base method
+func (m *MockServiceHandler) ExtensionCreate(u *user.User, e *extension.Extension) (*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionCreate", u, e)
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionCreate indicates an expected call of ExtensionCreate
+func (mr *MockServiceHandlerMockRecorder) ExtensionCreate(u, e interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionCreate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionCreate), u, e)
+}
+
+// ExtensionDelete mocks base method
+func (m *MockServiceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDelete", u, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionDelete indicates an expected call of ExtensionDelete
+func (mr *MockServiceHandlerMockRecorder) ExtensionDelete(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDelete", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionDelete), u, id)
+}
+
+// ExtensionGet mocks base method
+func (m *MockServiceHandler) ExtensionGet(u *user.User, id uuid.UUID) (*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGet", u, id)
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGet indicates an expected call of ExtensionGet
+func (mr *MockServiceHandlerMockRecorder) ExtensionGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGet", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGet), u, id)
+}
+
+// ExtensionGets mocks base method
+func (m *MockServiceHandler) ExtensionGets(u *user.User, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGets", u, domainID, size, token)
+	ret0, _ := ret[0].([]*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGets indicates an expected call of ExtensionGets
+func (mr *MockServiceHandlerMockRecorder) ExtensionGets(u, domainID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGets", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGets), u, domainID, size, token)
+}
+
+// ExtensionUpdate mocks base method
+func (m *MockServiceHandler) ExtensionUpdate(u *user.User, d *extension.Extension) (*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionUpdate", u, d)
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionUpdate indicates an expected call of ExtensionUpdate
+func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(u, d interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionUpdate), u, d)
 }
 
 // FlowCreate mocks base method
