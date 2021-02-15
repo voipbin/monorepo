@@ -103,7 +103,12 @@ func (h *domainHandler) DomainDelete(ctx context.Context, id uuid.UUID) error {
 		},
 	)
 
-	// delete
+	// delete extensions
+	if err := h.extHandler.ExtensionDeleteByDomainID(ctx, id); err != nil {
+		return err
+	}
+
+	// delete domain
 	if err := h.dbBin.DomainDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the domain. err: %v", err)
 		return err

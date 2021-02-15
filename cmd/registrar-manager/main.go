@@ -148,8 +148,8 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 		*rabbitQueueListen,
 	)
 
-	domainHandler := domainhandler.NewDomainHandler(reqHandler, dbAst, dbBin, cache)
-	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, cache, domainHandler)
+	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, cache)
+	domainHandler := domainhandler.NewDomainHandler(reqHandler, dbAst, dbBin, cache, extensionHandler)
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, domainHandler, extensionHandler)
 
 	// run

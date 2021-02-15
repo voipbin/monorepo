@@ -64,6 +64,20 @@ func (mr *MockExtensionHandlerMockRecorder) ExtensionDelete(ctx, id interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDelete", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionDelete), ctx, id)
 }
 
+// ExtensionDeleteByDomainID mocks base method
+func (m *MockExtensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDeleteByDomainID", ctx, domainID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionDeleteByDomainID indicates an expected call of ExtensionDeleteByDomainID
+func (mr *MockExtensionHandlerMockRecorder) ExtensionDeleteByDomainID(ctx, domainID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDeleteByDomainID", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionDeleteByDomainID), ctx, domainID)
+}
+
 // ExtensionGet mocks base method
 func (m *MockExtensionHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
 	m.ctrl.T.Helper()

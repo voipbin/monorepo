@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
 )
 
@@ -35,6 +36,7 @@ type domainHandler struct {
 	dbAst      dbhandler.DBHandler
 	dbBin      dbhandler.DBHandler
 	cache      cachehandler.CacheHandler
+	extHandler extensionhandler.ExtensionHandler
 }
 
 var (
@@ -77,13 +79,14 @@ func init() {
 }
 
 // NewDomainHandler returns new service handler
-func NewDomainHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, cache cachehandler.CacheHandler) DomainHandler {
+func NewDomainHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, cache cachehandler.CacheHandler, extHandler extensionhandler.ExtensionHandler) DomainHandler {
 
 	h := &domainHandler{
 		reqHandler: r,
 		dbAst:      dbAst,
 		dbBin:      dbBin,
 		cache:      cache,
+		extHandler: extHandler,
 	}
 
 	return h
