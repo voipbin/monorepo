@@ -16,3 +16,12 @@ type V1DataExtensionsPost struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 }
+
+// V1DataExtensionsIDPut is
+// v1 data type request struct for
+// /v1/extensions/{id} PUT
+type V1DataExtensionsIDPut struct {
+	Name     string `json:"name"`
+	Detail   string `json:"detail"`
+	Password string `json:"password"`
+}

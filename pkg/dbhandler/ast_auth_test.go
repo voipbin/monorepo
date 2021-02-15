@@ -119,3 +119,67 @@ func TestAstAuthDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestAstAuthUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name       string
+		auth       *models.AstAuth
+		updateAuth *models.AstAuth
+		expectAuth *models.AstAuth
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&models.AstAuth{
+				ID:       getStringPointer("fc48baa8-6f41-11eb-9209-ff1f20a9494e"),
+				AuthType: getStringPointer("userpass"),
+				Username: getStringPointer("test"),
+				Password: getStringPointer("password"),
+			},
+			&models.AstAuth{
+				ID:       getStringPointer("fc48baa8-6f41-11eb-9209-ff1f20a9494e"),
+				Password: getStringPointer("update password"),
+			},
+			&models.AstAuth{
+				ID:       getStringPointer("fc48baa8-6f41-11eb-9209-ff1f20a9494e"),
+				AuthType: getStringPointer("userpass"),
+				Username: getStringPointer("test"),
+				Password: getStringPointer("update password"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().AstAuthSet(gomock.Any(), gomock.Any())
+			if err := h.AstAuthCreate(ctx, tt.auth); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AstAuthSet(gomock.Any(), gomock.Any())
+			if err := h.AstAuthUpdate(ctx, tt.updateAuth); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AstAuthGet(gomock.Any(), *tt.updateAuth.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AstAuthSet(gomock.Any(), gomock.Any())
+			res, err := h.AstAuthGet(context.Background(), *tt.updateAuth.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectAuth, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectAuth, res)
+			}
+		})
+	}
+}

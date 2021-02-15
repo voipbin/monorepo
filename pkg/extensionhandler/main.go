@@ -19,7 +19,11 @@ import (
 
 // ExtensionHandler is interface for service handle
 type ExtensionHandler interface {
-	CreateExtension(ctx context.Context, userID uint64, domainID uuid.UUID, ext string, password string) (*models.Extension, error)
+	ExtensionCreate(ctx context.Context, e *models.Extension) (*models.Extension, error)
+	ExtensionDelete(ctx context.Context, id uuid.UUID) error
+	ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error)
+	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error)
+	ExtensionUpdate(ctx context.Context, e *models.Extension) (*models.Extension, error)
 }
 
 // extensionHandler structure for service handle

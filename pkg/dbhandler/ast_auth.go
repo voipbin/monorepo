@@ -114,6 +114,12 @@ func (h *handler) AstAuthGetFromCache(ctx context.Context, id string) (*models.A
 	return res, nil
 }
 
+// AstAuthGetFromCache returns AstAuth from the cache.
+func (h *handler) AstAuthDeleteFromCache(ctx context.Context, id string) error {
+	// delete from the cache
+	return h.cache.AstAuthDel(ctx, id)
+}
+
 // AstAuthCreate creates new asterisk-auth record.
 func (h *handler) AstAuthCreate(ctx context.Context, b *models.AstAuth) error {
 	q := `insert into ps_auths(
@@ -201,7 +207,29 @@ func (h *handler) AstAuthDelete(ctx context.Context, id string) error {
 	}
 
 	// delete from the cache
-	h.cache.AstAuthDel(ctx, id)
+	h.AstAuthDeleteFromCache(ctx, id)
+
+	return nil
+}
+
+// AstAuthDelete deletes given AstAuth
+func (h *handler) AstAuthUpdate(ctx context.Context, auth *models.AstAuth) error {
+
+	// query
+	q := `
+	update ps_auths set
+		password = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, auth.Password, auth.ID)
+	if err != nil {
+		return fmt.Errorf("could not execute. AstAuthUpdate. err: %v", err)
+	}
+
+	// update to the cache
+	h.AstAuthUpdateToCache(ctx, *auth.ID)
 
 	return nil
 }

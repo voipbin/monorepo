@@ -11,10 +11,10 @@ type V1DataDomainsPost struct {
 	Detail string `json:"detail"`
 }
 
-// V1DataDomainsPut is
+// V1DataDomainsIDPut is
 // v1 data type request struct for
-// /v1/domains PUT
-type V1DataDomainsPut struct {
+// /v1/domains/{id} PUT
+type V1DataDomainsIDPut struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 }

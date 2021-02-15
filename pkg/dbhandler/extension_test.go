@@ -139,3 +139,81 @@ func TestExtensionDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestExtensionGetsByDomainID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name             string
+		domainID         uuid.UUID
+		limit            uint64
+		extensions       []models.Extension
+		expectExtensions []*models.Extension
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
+			10,
+			[]models.Extension{
+				{
+					ID:       uuid.FromStringOrNil("1d2cb402-6f49-11eb-a22c-5f2f23cba3a2"),
+					UserID:   1,
+					Name:     "test1",
+					DomainID: uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
+				},
+				{
+					ID:       uuid.FromStringOrNil("1d792bb6-6f49-11eb-be2e-0ff2f1c87d93"),
+					UserID:   1,
+					Name:     "test2",
+					DomainID: uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
+				},
+			},
+			[]*models.Extension{
+				{
+					ID:       uuid.FromStringOrNil("1d792bb6-6f49-11eb-be2e-0ff2f1c87d93"),
+					UserID:   1,
+					Name:     "test2",
+					DomainID: uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
+				},
+				{
+					ID:       uuid.FromStringOrNil("1d2cb402-6f49-11eb-a22c-5f2f23cba3a2"),
+					UserID:   1,
+					Name:     "test1",
+					DomainID: uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
+
+			for _, d := range tt.extensions {
+				mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
+				if err := h.ExtensionCreate(ctx, &d); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			exts, err := h.ExtensionGetsByDomainID(ctx, tt.domainID, getCurTime(), tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			for _, d := range exts {
+				d.TMCreate = ""
+			}
+
+			if reflect.DeepEqual(exts, tt.expectExtensions) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectExtensions, exts)
+			}
+		})
+	}
+}

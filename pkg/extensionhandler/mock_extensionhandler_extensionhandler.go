@@ -35,17 +35,76 @@ func (m *MockExtensionHandler) EXPECT() *MockExtensionHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateExtension mocks base method
-func (m *MockExtensionHandler) CreateExtension(ctx context.Context, userID uint64, domainID uuid.UUID, ext, password string) (*models.Extension, error) {
+// ExtensionCreate mocks base method
+func (m *MockExtensionHandler) ExtensionCreate(ctx context.Context, e *models.Extension) (*models.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateExtension", ctx, userID, domainID, ext, password)
+	ret := m.ctrl.Call(m, "ExtensionCreate", ctx, e)
 	ret0, _ := ret[0].(*models.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateExtension indicates an expected call of CreateExtension
-func (mr *MockExtensionHandlerMockRecorder) CreateExtension(ctx, userID, domainID, ext, password interface{}) *gomock.Call {
+// ExtensionCreate indicates an expected call of ExtensionCreate
+func (mr *MockExtensionHandlerMockRecorder) ExtensionCreate(ctx, e interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateExtension", reflect.TypeOf((*MockExtensionHandler)(nil).CreateExtension), ctx, userID, domainID, ext, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionCreate", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionCreate), ctx, e)
+}
+
+// ExtensionDelete mocks base method
+func (m *MockExtensionHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionDelete indicates an expected call of ExtensionDelete
+func (mr *MockExtensionHandlerMockRecorder) ExtensionDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDelete", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionDelete), ctx, id)
+}
+
+// ExtensionGet mocks base method
+func (m *MockExtensionHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGet", ctx, id)
+	ret0, _ := ret[0].(*models.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGet indicates an expected call of ExtensionGet
+func (mr *MockExtensionHandlerMockRecorder) ExtensionGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGet", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionGet), ctx, id)
+}
+
+// ExtensionGetsByDomainID mocks base method
+func (m *MockExtensionHandler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGetsByDomainID", ctx, domainID, token, limit)
+	ret0, _ := ret[0].([]*models.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGetsByDomainID indicates an expected call of ExtensionGetsByDomainID
+func (mr *MockExtensionHandlerMockRecorder) ExtensionGetsByDomainID(ctx, domainID, token, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetsByDomainID", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionGetsByDomainID), ctx, domainID, token, limit)
+}
+
+// ExtensionUpdate mocks base method
+func (m *MockExtensionHandler) ExtensionUpdate(ctx context.Context, e *models.Extension) (*models.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionUpdate", ctx, e)
+	ret0, _ := ret[0].(*models.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionUpdate indicates an expected call of ExtensionUpdate
+func (mr *MockExtensionHandlerMockRecorder) ExtensionUpdate(ctx, e interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionUpdate), ctx, e)
 }

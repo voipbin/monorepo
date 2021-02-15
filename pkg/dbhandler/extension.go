@@ -155,7 +155,7 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *models.Extension) erro
 
 		b.Name,
 		b.Detail,
-		b.DomainID,
+		b.DomainID.Bytes(),
 
 		b.EndpointID,
 		b.AORID,
@@ -213,4 +213,67 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 	h.ExtensionUpdateToCache(ctx, id)
 
 	return nil
+}
+
+// ExtensionUpdate updates extension record.
+func (h *handler) ExtensionUpdate(ctx context.Context, b *models.Extension) error {
+	q := `
+	update domains set
+		name = ?,
+		detail = ?,
+		password = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q,
+		b.Name,
+		b.Detail,
+		b.Password,
+		getCurTime(),
+		b.ID.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. ExtensionUpdate. err: %v", err)
+	}
+
+	// update the cache
+	h.ExtensionUpdateToCache(ctx, b.ID)
+
+	return nil
+}
+
+// ExtensionGetsByDomainID returns list of extensions.
+func (h *handler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete is null
+			and domain_id = ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, extensionSelect)
+
+	rows, err := h.db.Query(q, domainID.Bytes(), token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ExtensionGetsByDomainID. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*models.Extension
+	for rows.Next() {
+		u, err := h.extensionGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. ExtensionGetsByDomainID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
 }
