@@ -13,7 +13,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
 )
 
@@ -21,6 +20,7 @@ import (
 type ExtensionHandler interface {
 	ExtensionCreate(ctx context.Context, e *models.Extension) (*models.Extension, error)
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
+	ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) error
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error)
 	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error)
 	ExtensionUpdate(ctx context.Context, e *models.Extension) (*models.Extension, error)
@@ -32,8 +32,6 @@ type extensionHandler struct {
 	dbAst      dbhandler.DBHandler
 	dbBin      dbhandler.DBHandler
 	cache      cachehandler.CacheHandler
-
-	domainHandler domainhandler.DomainHandler
 }
 
 var (
@@ -76,15 +74,13 @@ func init() {
 }
 
 // NewExtensionHandler returns new service handler
-func NewExtensionHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, cache cachehandler.CacheHandler, domainH domainhandler.DomainHandler) ExtensionHandler {
+func NewExtensionHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, cache cachehandler.CacheHandler) ExtensionHandler {
 
 	h := &extensionHandler{
 		reqHandler: r,
 		dbAst:      dbAst,
 		dbBin:      dbBin,
 		cache:      cache,
-
-		domainHandler: domainH,
 	}
 
 	return h

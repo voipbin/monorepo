@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 )
 
 func TestDomainCreate(t *testing.T) {
@@ -98,9 +99,11 @@ func TestDomainDelete(t *testing.T) {
 
 	mockDBAst := dbhandler.NewMockDBHandler(mc)
 	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	mockExt := extensionhandler.NewMockExtensionHandler(mc)
 	h := &domainHandler{
-		dbAst: mockDBAst,
-		dbBin: mockDBBin,
+		dbAst:      mockDBAst,
+		dbBin:      mockDBBin,
+		extHandler: mockExt,
 	}
 
 	type test struct {
@@ -118,6 +121,7 @@ func TestDomainDelete(t *testing.T) {
 	for _, tt := range tests {
 		ctx := context.Background()
 
+		mockExt.EXPECT().ExtensionDeleteByDomainID(gomock.Any(), tt.domainID).Return(nil)
 		mockDBBin.EXPECT().DomainDelete(gomock.Any(), tt.domainID)
 		if err := h.DomainDelete(ctx, tt.domainID); err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)

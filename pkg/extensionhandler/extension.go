@@ -189,6 +189,23 @@ func (h *extensionHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) er
 	return nil
 }
 
+// ExtensionDelete deletes a exists extension
+func (h *extensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) error {
+	// get extensions
+	exts, err := h.ExtensionGetsByDomainID(ctx, domainID, getCurTime(), 1000)
+	if err != nil {
+		logrus.Errorf("Could not get delete extensions")
+		return err
+	}
+
+	// delete extensions
+	for _, ext := range exts {
+		h.ExtensionDelete(ctx, ext.ID)
+	}
+
+	return nil
+}
+
 // ExtensionGetsByDomainID returns list of extensions
 func (h *extensionHandler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error) {
 
