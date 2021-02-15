@@ -32,10 +32,12 @@ type DBHandler interface {
 	// AstAuth
 	AstAuthCreate(ctx context.Context, b *models.AstAuth) error
 	AstAuthDelete(ctx context.Context, id string) error
+	AstAuthDeleteFromCache(ctx context.Context, id string) error
 	AstAuthGet(ctx context.Context, id string) (*models.AstAuth, error)
 	AstAuthGetFromCache(ctx context.Context, id string) (*models.AstAuth, error)
 	AstAuthGetFromDB(ctx context.Context, id string) (*models.AstAuth, error)
 	AstAuthSetToCache(ctx context.Context, auth *models.AstAuth) error
+	AstAuthUpdate(ctx context.Context, auth *models.AstAuth) error
 	AstAuthUpdateToCache(ctx context.Context, id string) error
 
 	// AstEndpoint
@@ -50,6 +52,7 @@ type DBHandler interface {
 	// Domain
 	DomainCreate(ctx context.Context, b *models.Domain) error
 	DomainDelete(ctx context.Context, id uuid.UUID) error
+	DomainDeleteFromCache(ctx context.Context, id uuid.UUID) error
 	DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error)
 	DomainGetByDomainName(ctx context.Context, domainName string) (*models.Domain, error)
 	DomainGetFromCache(ctx context.Context, id uuid.UUID) (*models.Domain, error)
@@ -59,12 +62,15 @@ type DBHandler interface {
 	DomainUpdate(ctx context.Context, b *models.Domain) error
 	DomainUpdateToCache(ctx context.Context, id uuid.UUID) error
 
+	// Extension
 	ExtensionCreate(ctx context.Context, b *models.Extension) error
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error)
 	ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*models.Extension, error)
 	ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*models.Extension, error)
+	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error)
 	ExtensionSetToCache(ctx context.Context, e *models.Extension) error
+	ExtensionUpdate(ctx context.Context, b *models.Extension) error
 	ExtensionUpdateToCache(ctx context.Context, id uuid.UUID) error
 }
 

@@ -106,7 +106,7 @@ func (h *listenHandler) processV1DomainsIDPut(req *rabbitmqhandler.Request) (*ra
 	tmpVals := strings.Split(u.Path, "/")
 	domainID := uuid.FromStringOrNil(tmpVals[3])
 
-	var reqData request.V1DataDomainsPut
+	var reqData request.V1DataDomainsIDPut
 	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
 		logrus.Debugf("Could not unmarshal the request data. data: %v, err: %v", req.Data, err)
 		return simpleResponse(400), nil

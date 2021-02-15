@@ -83,7 +83,7 @@ func TestDomainCreate(t *testing.T) {
 	}
 }
 
-func TestDomainDelete(t *testing.T) {
+func ExtensionCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

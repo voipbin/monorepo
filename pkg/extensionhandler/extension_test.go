@@ -2,6 +2,7 @@ package extensionhandler
 
 import (
 	"context"
+	reflect "reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -11,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
-func TestCreateExtension(t *testing.T) {
+func TestExtensionCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -72,9 +73,234 @@ func TestCreateExtension(t *testing.T) {
 		mockDBAst.EXPECT().AstEndpointCreate(gomock.Any(), tt.endpoint).Return(nil)
 		mockDBBin.EXPECT().ExtensionCreate(gomock.Any(), gomock.Any()).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), gomock.Any()).Return(tt.ext, nil)
-		_, err := h.CreateExtension(ctx, tt.ext.UserID, tt.ext.DomainID, tt.ext.Extension, tt.ext.Password)
+		_, err := h.ExtensionCreate(ctx, tt.ext)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
+	}
+}
+
+func TestExtensionUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	h := &extensionHandler{
+		dbAst: mockDBAst,
+		dbBin: mockDBBin,
+	}
+
+	type test struct {
+		name       string
+		ext        *models.Extension
+		updateAuth *models.AstAuth
+		updateExt  *models.Extension
+		updatedExt *models.Extension
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&models.Extension{
+				ID:        uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
+				UserID:    1,
+				Name:      "update name",
+				Detail:    "update detail",
+				AuthID:    "66f6b86c-6f44-11eb-ab55-934942c23f91@test.sip.voipbin.net",
+				Extension: "66f6b86c-6f44-11eb-ab55-934942c23f91",
+				Password:  "update password",
+			},
+			&models.AstAuth{
+				ID:       getStringPointer("66f6b86c-6f44-11eb-ab55-934942c23f91@test.sip.voipbin.net"),
+				Password: getStringPointer("update password"),
+			},
+			&models.Extension{
+				ID:        uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
+				UserID:    1,
+				Name:      "update name",
+				Detail:    "update detail",
+				AuthID:    "66f6b86c-6f44-11eb-ab55-934942c23f91@test.sip.voipbin.net",
+				Extension: "66f6b86c-6f44-11eb-ab55-934942c23f91",
+				Password:  "update password",
+			},
+			&models.Extension{
+				ID:        uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
+				UserID:    1,
+				Name:      "update name",
+				Detail:    "update detail",
+				AuthID:    "66f6b86c-6f44-11eb-ab55-934942c23f91@test.sip.voipbin.net",
+				Extension: "66f6b86c-6f44-11eb-ab55-934942c23f91",
+				Password:  "update password",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.updateExt.ID).Return(tt.ext, nil)
+		mockDBAst.EXPECT().AstAuthUpdate(gomock.Any(), tt.updateAuth).Return(nil)
+		mockDBBin.EXPECT().ExtensionUpdate(gomock.Any(), tt.updateExt)
+		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.ext.ID).Return(tt.updatedExt, nil)
+		// mockDBBin.EXPECT().DomainUpdate(gomock.Any(), tt.domain)
+		// mockDBBin.EXPECT().DomainGet(gomock.Any(), tt.domain.ID)
+		_, err := h.ExtensionUpdate(ctx, tt.updateExt)
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+	}
+}
+
+func TestExtensionDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	h := &extensionHandler{
+		dbAst: mockDBAst,
+		dbBin: mockDBBin,
+	}
+
+	type test struct {
+		name string
+		ext  *models.Extension
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&models.Extension{
+				ID:         uuid.FromStringOrNil("4a6b7618-6f46-11eb-a2fb-1f7595db4195"),
+				UserID:     1,
+				Name:       "test name",
+				Detail:     "test detail",
+				AuthID:     "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
+				EndpointID: "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
+				AORID:      "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
+				Extension:  "4a6b7618-6f46-11eb-a2fb-1f7595db4195",
+				Password:   "test password",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
+		mockDBBin.EXPECT().ExtensionDelete(ctx, tt.ext.ID).Return(nil)
+		mockDBAst.EXPECT().AstEndpointDelete(ctx, tt.ext.EndpointID).Return(nil)
+		mockDBAst.EXPECT().AstAuthDelete(ctx, tt.ext.AuthID).Return(nil)
+		mockDBAst.EXPECT().AstAORDelete(ctx, tt.ext.AORID).Return(nil)
+		if err := h.ExtensionDelete(ctx, tt.ext.ID); err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+	}
+}
+
+func TestExtensionGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	h := &extensionHandler{
+		dbAst: mockDBAst,
+		dbBin: mockDBBin,
+	}
+
+	type test struct {
+		name string
+		ext  *models.Extension
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&models.Extension{
+				ID:         uuid.FromStringOrNil("798f8bcc-6f47-11eb-8908-efd77279298d"),
+				UserID:     1,
+				Name:       "test name",
+				Detail:     "test detail",
+				AuthID:     "798f8bcc-6f47-11eb-8908-efd77279298d@test.sip.voipbin.net",
+				EndpointID: "798f8bcc-6f47-11eb-8908-efd77279298d@test.sip.voipbin.net",
+				AORID:      "798f8bcc-6f47-11eb-8908-efd77279298d@test.sip.voipbin.net",
+				Extension:  "798f8bcc-6f47-11eb-8908-efd77279298d",
+				Password:   "test password",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
+		res, err := h.ExtensionGet(ctx, tt.ext.ID)
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if reflect.DeepEqual(tt.ext, res) == false {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.ext, res)
+		}
+
+	}
+}
+
+func TestExtensionGetsByDomainID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	h := &extensionHandler{
+		dbAst: mockDBAst,
+		dbBin: mockDBBin,
+	}
+
+	type test struct {
+		name     string
+		domainID uuid.UUID
+		token    string
+		exts     []*models.Extension
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			uuid.FromStringOrNil("bd57214a-6f4b-11eb-aad8-579de27e6b7f"),
+			"2021-02-15 17:31:59.519672",
+			[]*models.Extension{
+				{
+					ID:         uuid.FromStringOrNil("c9c736a4-6f4b-11eb-899a-575b7ce222e6"),
+					UserID:     1,
+					Name:       "test name",
+					Detail:     "test detail",
+					DomainID:   uuid.FromStringOrNil("bd57214a-6f4b-11eb-aad8-579de27e6b7f"),
+					AuthID:     "d1f16192-6f4b-11eb-83aa-27a0be9dffd1@test.sip.voipbin.net",
+					EndpointID: "d1f16192-6f4b-11eb-83aa-27a0be9dffd1@test.sip.voipbin.net",
+					AORID:      "d1f16192-6f4b-11eb-83aa-27a0be9dffd1@test.sip.voipbin.net",
+					Extension:  "d1f16192-6f4b-11eb-83aa-27a0be9dffd1",
+					Password:   "test password",
+					TMCreate:   "2021-02-14 17:31:59.519672",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().ExtensionGetsByDomainID(gomock.Any(), tt.domainID, tt.token, uint64(10)).Return(tt.exts, nil)
+		res, err := h.ExtensionGetsByDomainID(ctx, tt.domainID, tt.token, uint64(10))
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if reflect.DeepEqual(tt.exts, res) == false {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.exts, res)
+		}
+
 	}
 }
