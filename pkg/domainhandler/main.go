@@ -19,6 +19,7 @@ import (
 // DomainHandler is interface for service handle
 type DomainHandler interface {
 	DomainCreate(ctx context.Context, d *models.Domain) (*models.Domain, error)
+	DomainDelete(ctx context.Context, id uuid.UUID) error
 	DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error)
 	DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Domain, error)
 	DomainUpdate(ctx context.Context, d *models.Domain) (*models.Domain, error)

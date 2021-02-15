@@ -115,20 +115,15 @@ func TestDomainDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().DomainDel(gomock.Any(), tt.domain.ID)
 			if err := h.DomainDelete(ctx, tt.domain.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().DomainGet(gomock.Any(), tt.domain.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
-			res, err := h.DomainGet(ctx, tt.domain.ID)
-			if err != nil {
+			_, err := h.DomainGet(ctx, tt.domain.ID)
+			if err == nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if res.TMDelete == "" {
-				t.Errorf("Wrong match. expect: not empty, got: empty")
 			}
 		})
 	}

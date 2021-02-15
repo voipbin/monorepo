@@ -52,7 +52,7 @@ func (h *handler) domainGetFromRow(row *sql.Rows) (*models.Domain, error) {
 // DomainGetFromDB returns Domain from the DB.
 func (h *handler) DomainGetFromDB(ctx context.Context, id uuid.UUID) (*models.Domain, error) {
 
-	q := fmt.Sprintf("%s where id = ?", domainSelect)
+	q := fmt.Sprintf("%s where id = ? and tm_delete is null", domainSelect)
 
 	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
@@ -106,6 +106,17 @@ func (h *handler) DomainGetFromCache(ctx context.Context, id uuid.UUID) (*models
 	}
 
 	return res, nil
+}
+
+// DomainDeleteFromCache deletes Domain from the cache.
+func (h *handler) DomainDeleteFromCache(ctx context.Context, id uuid.UUID) error {
+
+	// get from cache
+	if err := h.cache.DomainDel(ctx, id); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // DomainCreate creates new Domain record.
@@ -263,8 +274,10 @@ func (h *handler) DomainDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("could not execute. DomainDelete. err: %v", err)
 	}
 
-	// update the cache
-	h.DomainUpdateToCache(ctx, id)
+	// delete the cache
+	if err := h.DomainDeleteFromCache(ctx, id); err != nil {
+		return err
+	}
 
 	return nil
 }

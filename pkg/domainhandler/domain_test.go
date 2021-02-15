@@ -91,3 +91,36 @@ func TestDomainUpdate(t *testing.T) {
 		}
 	}
 }
+
+func TestDomainDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	h := &domainHandler{
+		dbAst: mockDBAst,
+		dbBin: mockDBBin,
+	}
+
+	type test struct {
+		name     string
+		domainID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			uuid.FromStringOrNil("8a603afc-6f31-11eb-8ca1-0777f2a6f66e"),
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().DomainDelete(gomock.Any(), tt.domainID)
+		if err := h.DomainDelete(ctx, tt.domainID); err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+	}
+}

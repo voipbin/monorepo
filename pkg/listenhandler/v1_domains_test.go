@@ -231,3 +231,54 @@ func TestProcessV1DomainsPut(t *testing.T) {
 		})
 	}
 }
+
+func TestProcessV1DomainsDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDomain := domainhandler.NewMockDomainHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:    mockSock,
+		reqHandler:    mockReq,
+		domainHandler: mockDomain,
+	}
+
+	type test struct {
+		name      string
+		domainID  uuid.UUID
+		request   *rabbitmqhandler.Request
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"empty addresses",
+			uuid.FromStringOrNil("09e94cb4-6f32-11eb-af29-27dcd65a7064"),
+			&rabbitmqhandler.Request{
+				URI:    "/v1/domains/09e94cb4-6f32-11eb-af29-27dcd65a7064",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDomain.EXPECT().DomainDelete(gomock.Any(), tt.domainID).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

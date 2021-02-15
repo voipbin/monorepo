@@ -140,6 +140,31 @@ func (h *listenHandler) processV1DomainsIDPut(req *rabbitmqhandler.Request) (*ra
 	return res, nil
 }
 
+// processV1DomainsIDDelete handles /v1/domains/{id} DELETE request
+func (h *listenHandler) processV1DomainsIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/domains/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
+	tmpVals := strings.Split(u.Path, "/")
+	domainID := uuid.FromStringOrNil(tmpVals[3])
+
+	if err := h.domainHandler.DomainDelete(ctx, domainID); err != nil {
+		logrus.Errorf("Could not get domain info. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
 // processV1DomainsGet handles /v1/domains GET request
 func (h *listenHandler) processV1DomainsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()

@@ -168,6 +168,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1DomainsIDPut(m)
 		requestType = "/v1/domains"
 
+	case regV1DomainsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1DomainsIDDelete(m)
+		requestType = "/v1/domains"
+
 	case regV1Domains.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1DomainsPost(m)
 		requestType = "/v1/domains"
@@ -179,7 +183,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////
 	// extensions
 	////////////
-	// POST /extensions
 	case regV1Extensions.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ExtensionsPost(m)
 		requestType = "/v1/extensions"

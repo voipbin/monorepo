@@ -94,3 +94,20 @@ func (h *domainHandler) DomainUpdate(ctx context.Context, d *models.Domain) (*mo
 
 	return res, nil
 }
+
+// DomainDelete deletes the domain info
+func (h *domainHandler) DomainDelete(ctx context.Context, id uuid.UUID) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"domain": id,
+		},
+	)
+
+	// delete
+	if err := h.dbBin.DomainDelete(ctx, id); err != nil {
+		log.Errorf("Could not delete the domain. err: %v", err)
+		return err
+	}
+
+	return nil
+}

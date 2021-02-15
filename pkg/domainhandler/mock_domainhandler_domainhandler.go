@@ -50,6 +50,20 @@ func (mr *MockDomainHandlerMockRecorder) DomainCreate(ctx, d interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainCreate", reflect.TypeOf((*MockDomainHandler)(nil).DomainCreate), ctx, d)
 }
 
+// DomainDelete mocks base method
+func (m *MockDomainHandler) DomainDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DomainDelete indicates an expected call of DomainDelete
+func (mr *MockDomainHandlerMockRecorder) DomainDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDelete", reflect.TypeOf((*MockDomainHandler)(nil).DomainDelete), ctx, id)
+}
+
 // DomainGet mocks base method
 func (m *MockDomainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error) {
 	m.ctrl.T.Helper()
