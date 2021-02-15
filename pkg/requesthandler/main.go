@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmextension"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -116,6 +117,13 @@ type RequestHandler interface {
 	RMDomainGet(domainID uuid.UUID) (*rmdomain.Domain, error)
 	RMDomainGets(userID uint64, pageToken string, pageSize uint64) ([]rmdomain.Domain, error)
 	RMDomainUpdate(f *rmdomain.Domain) (*rmdomain.Domain, error)
+
+	// extension
+	RMExtensionCreate(e *rmextension.Extension) (*rmextension.Extension, error)
+	RMExtensionDelete(extensionID uuid.UUID) error
+	RMExtensionGet(extensionID uuid.UUID) (*rmextension.Extension, error)
+	RMExtensionGets(domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error)
+	RMExtensionUpdate(f *rmextension.Extension) (*rmextension.Extension, error)
 
 	// storage
 	// recording

@@ -86,7 +86,7 @@ func TestFMFlowCreate(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(*tt.expectResult, *res) == false {
-				t.Errorf("Wrong matchdfdsfd.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
 			}
 		})
 	}
