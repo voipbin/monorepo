@@ -200,3 +200,38 @@ func (h *handler) ExtensionDel(ctx context.Context, id uuid.UUID) error {
 
 	return h.delKey(ctx, key)
 }
+
+// AstContactsGet returns cached contacts info of the given endpoint
+func (h *handler) AstContactsGet(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+	key := fmt.Sprintf("ast_contacts:%s", endpoint)
+
+	var tmp []models.AstContact
+	if err := h.getSerialize(ctx, key, &tmp); err != nil {
+		return nil, err
+	}
+
+	var res []*models.AstContact
+	for _, c := range tmp {
+		res = append(res, &c)
+	}
+
+	return res, nil
+}
+
+// AstContactsSet sets the contacts info into the cache.
+func (h *handler) AstContactsSet(ctx context.Context, endpoint string, contacts []*models.AstContact) error {
+	key := fmt.Sprintf("ast_contacts:%s", endpoint)
+
+	if err := h.setSerialize(ctx, key, contacts); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AstContactsDel deletes the contacts info from the cache.
+func (h *handler) AstContactsDel(ctx context.Context, endpoint string) error {
+	key := fmt.Sprintf("ast_contacts:%s", endpoint)
+
+	return h.delKey(ctx, key)
+}

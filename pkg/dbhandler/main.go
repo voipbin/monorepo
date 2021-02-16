@@ -40,6 +40,11 @@ type DBHandler interface {
 	AstAuthUpdate(ctx context.Context, auth *models.AstAuth) error
 	AstAuthUpdateToCache(ctx context.Context, id string) error
 
+	// AstContact
+	AstContactsSetToCache(ctx context.Context, ednpoint string, contacts []*models.AstContact) error
+	AstContactsGetFromCache(ctx context.Context, endpoint string) ([]*models.AstContact, error)
+	AstContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*models.AstContact, error)
+
 	// AstEndpoint
 	AstEndpointCreate(ctx context.Context, b *models.AstEndpoint) error
 	AstEndpointDelete(ctx context.Context, id string) error

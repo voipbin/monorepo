@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/contacthandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
@@ -32,6 +33,7 @@ type listenHandler struct {
 	reqHandler       requesthandler.RequestHandler
 	domainHandler    domainhandler.DomainHandler
 	extensionHandler extensionhandler.ExtensionHandler
+	contactHandler   contacthandler.ContactHandler
 }
 
 var (
@@ -39,6 +41,9 @@ var (
 	regAny  = "(.*)"
 
 	// v1
+	// contacts
+	regV1Contacts = regexp.MustCompile("/v1/contacts")
+
 	// domains
 	regV1Domains   = regexp.MustCompile("/v1/domains")
 	regV1DomainsID = regexp.MustCompile("/v1/domains/" + regUUID)
@@ -83,12 +88,14 @@ func NewListenHandler(
 	reqHandler requesthandler.RequestHandler,
 	domainHandler domainhandler.DomainHandler,
 	extensionHandler extensionhandler.ExtensionHandler,
+	contactHandler contacthandler.ContactHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:       rabbitSock,
 		reqHandler:       reqHandler,
 		domainHandler:    domainHandler,
 		extensionHandler: extensionHandler,
+		contactHandler:   contactHandler,
 	}
 
 	return h
@@ -157,6 +164,13 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// v1
 	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	////////////
+	// contacts
+	////////////
+	case regV1Contacts.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ContactsGet(m)
+		requestType = "/v1/contacts"
 
 	////////////
 	// domains

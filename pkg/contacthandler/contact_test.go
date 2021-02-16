@@ -1,0 +1,71 @@
+package contacthandler
+
+import (
+	"context"
+	reflect "reflect"
+	"testing"
+
+	gomock "github.com/golang/mock/gomock"
+
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
+)
+
+func TestContactGetsByDomainID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	h := &contactHandler{
+		dbAst: mockDBAst,
+		dbBin: mockDBBin,
+	}
+
+	type test struct {
+		name     string
+		endpoint string
+		contacts []*models.AstContact
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			"test@test.sip.voipbin.net",
+			[]*models.AstContact{
+				{
+					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
+					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
+					ExpirationTime:      1613498199,
+					QualifyFrequency:    0,
+					OutboundProxy:       "",
+					Path:                "",
+					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
+					QualifyTimeout:      3,
+					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
+					AuthenticateQualify: "no",
+					ViaAddr:             "192.168.0.20",
+					ViaPort:             35551,
+					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
+					Endpoint:            "test@test.sip.voipbin.net",
+					PruneOnBoot:         "no",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+
+		mockDBAst.EXPECT().AstContactGetsByEndpoint(gomock.Any(), tt.endpoint).Return(tt.contacts, nil)
+		res, err := h.ContactGetsByEndpoint(ctx, tt.endpoint)
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if reflect.DeepEqual(tt.contacts, res) == false {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.contacts, res)
+		}
+
+	}
+}
