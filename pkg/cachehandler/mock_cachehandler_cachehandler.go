@@ -135,6 +135,49 @@ func (mr *MockCacheHandlerMockRecorder) AstAuthSet(ctx, e interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAuthSet", reflect.TypeOf((*MockCacheHandler)(nil).AstAuthSet), ctx, e)
 }
 
+// AstContactsDel mocks base method
+func (m *MockCacheHandler) AstContactsDel(ctx context.Context, endpoint string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstContactsDel", ctx, endpoint)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstContactsDel indicates an expected call of AstContactsDel
+func (mr *MockCacheHandlerMockRecorder) AstContactsDel(ctx, endpoint interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactsDel", reflect.TypeOf((*MockCacheHandler)(nil).AstContactsDel), ctx, endpoint)
+}
+
+// AstContactsGet mocks base method
+func (m *MockCacheHandler) AstContactsGet(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstContactsGet", ctx, endpoint)
+	ret0, _ := ret[0].([]*models.AstContact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AstContactsGet indicates an expected call of AstContactsGet
+func (mr *MockCacheHandlerMockRecorder) AstContactsGet(ctx, endpoint interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactsGet", reflect.TypeOf((*MockCacheHandler)(nil).AstContactsGet), ctx, endpoint)
+}
+
+// AstContactsSet mocks base method
+func (m *MockCacheHandler) AstContactsSet(ctx context.Context, endpoint string, contacts []*models.AstContact) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstContactsSet", ctx, endpoint, contacts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstContactsSet indicates an expected call of AstContactsSet
+func (mr *MockCacheHandlerMockRecorder) AstContactsSet(ctx, endpoint, contacts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactsSet", reflect.TypeOf((*MockCacheHandler)(nil).AstContactsSet), ctx, endpoint, contacts)
+}
+
 // AstEndpointDel mocks base method
 func (m *MockCacheHandler) AstEndpointDel(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()

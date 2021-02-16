@@ -1,0 +1,71 @@
+package contacthandler
+
+//go:generate mockgen -destination ./mock_contacthandler_contacthandler.go -package contacthandler -source ./main.go ContactHandler
+
+import (
+	"context"
+	"strings"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
+)
+
+// ContactHandler is interface for service handle
+type ContactHandler interface {
+	ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*models.AstContact, error)
+}
+
+// contactHandler structure for service handle
+type contactHandler struct {
+	reqHandler requesthandler.RequestHandler
+	dbAst      dbhandler.DBHandler
+	dbBin      dbhandler.DBHandler
+	cache      cachehandler.CacheHandler
+}
+
+var (
+	metricsNamespace = "registrar_manager"
+)
+
+func init() {
+	prometheus.MustRegister()
+}
+
+// NewContactHandler returns new service handler
+func NewContactHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, cache cachehandler.CacheHandler) ContactHandler {
+
+	h := &contactHandler{
+		reqHandler: r,
+		dbAst:      dbAst,
+		dbBin:      dbBin,
+		cache:      cache,
+	}
+
+	return h
+}
+
+// getCurTime return current utc time string
+func getCurTime() string {
+	now := time.Now().UTC().String()
+	res := strings.TrimSuffix(now, " +0000 UTC")
+
+	return res
+}
+
+// getCurTime return current utc time string
+func getCurTimeRFC3339() string {
+	return time.Now().UTC().Format(time.RFC3339)
+}
+
+func getStringPointer(v string) *string {
+	return &v
+}
+
+func getIntegerPointer(v int) *int {
+	return &v
+}

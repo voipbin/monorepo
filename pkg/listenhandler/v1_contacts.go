@@ -1,0 +1,48 @@
+package listenhandler
+
+import (
+	"context"
+	"encoding/json"
+	"net/url"
+
+	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+)
+
+// processV1ContactsGet handles /v1/contacts GET request
+func (h *listenHandler) processV1ContactsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// get endpoint
+	endpoint, err := url.QueryUnescape(u.Query().Get("endpoint"))
+	if err != nil {
+		logrus.Errorf("Could not unescape the parameter. err: %v", err)
+		return nil, err
+	}
+
+	resContacts, err := h.contactHandler.ContactGetsByEndpoint(ctx, endpoint)
+	if err != nil {
+		logrus.Errorf("Could not get contacts. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(resContacts)
+	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

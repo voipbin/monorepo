@@ -31,6 +31,10 @@ type CacheHandler interface {
 	AstAuthGet(ctx context.Context, id string) (*models.AstAuth, error)
 	AstAuthSet(ctx context.Context, e *models.AstAuth) error
 
+	AstContactsDel(ctx context.Context, endpoint string) error
+	AstContactsGet(ctx context.Context, endpoint string) ([]*models.AstContact, error)
+	AstContactsSet(ctx context.Context, endpoint string, contacts []*models.AstContact) error
+
 	AstEndpointDel(ctx context.Context, id string) error
 	AstEndpointGet(ctx context.Context, id string) (*models.AstEndpoint, error)
 	AstEndpointSet(ctx context.Context, e *models.AstEndpoint) error
