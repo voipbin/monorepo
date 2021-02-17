@@ -13,7 +13,7 @@ func TestTTSSpeechesPOST(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.tts-manager.request")
+	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.tts-manager.request", "bin-manager.registrar-manager.request")
 
 	type test struct {
 		name     string

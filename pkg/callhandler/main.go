@@ -3,6 +3,7 @@ package callhandler
 //go:generate mockgen -destination ./mock_callhandler_callhandler.go -package callhandler -source ./main.go CallHandler
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -30,6 +31,7 @@ type CallHandler interface {
 	CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error)
 	StartCallHandle(cn *channel.Channel, data map[string]interface{}) error
 	Hangup(cn *channel.Channel) error
+	HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error
 	HangingUp(c *call.Call, cause ari.ChannelCause) error
 
 	ActionNext(c *call.Call) error

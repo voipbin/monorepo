@@ -5,6 +5,7 @@
 package callhandler
 
 import (
+	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
@@ -148,6 +149,20 @@ func (m *MockCallHandler) Hangup(cn *channel.Channel) error {
 func (mr *MockCallHandlerMockRecorder) Hangup(cn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockCallHandler)(nil).Hangup), cn)
+}
+
+// HangupWithReason mocks base method
+func (m *MockCallHandler) HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HangupWithReason", ctx, c, reason, hangupBy, timestamp)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// HangupWithReason indicates an expected call of HangupWithReason
+func (mr *MockCallHandlerMockRecorder) HangupWithReason(ctx, c, reason, hangupBy, timestamp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangupWithReason", reflect.TypeOf((*MockCallHandler)(nil).HangupWithReason), ctx, c, reason, hangupBy, timestamp)
 }
 
 // HangingUp mocks base method

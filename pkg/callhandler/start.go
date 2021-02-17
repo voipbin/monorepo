@@ -14,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 // StasisStart event's context types
@@ -63,92 +62,6 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
 	promCallCreateTotal.WithLabelValues(string(c.Direction), string(c.Type)).Inc()
 
 	return nil
-}
-
-// CreateCallOutgoing creates a call for outgoing
-func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error) {
-	ctx := context.Background()
-	log := logrus.WithFields(logrus.Fields{
-		"id":          id,
-		"user":        userID,
-		"flow":        flowID,
-		"source":      source,
-		"destination": destination,
-	})
-	log.Debug("Creating a call for outgoing.")
-
-	channelID := uuid.Must(uuid.NewV4()).String()
-	cTmp := &call.Call{
-		ID:          id,
-		UserID:      userID,
-		ChannelID:   channelID,
-		FlowID:      flowID,
-		Type:        call.TypeFlow,
-		Status:      call.StatusDialing,
-		Direction:   call.DirectionOutgoing,
-		Source:      source,
-		Destination: destination,
-		Action: action.Action{
-			ID: action.IDBegin,
-		},
-		TMCreate: getCurTime(),
-	}
-
-	// create a call
-	if err := h.createCall(ctx, cTmp); err != nil {
-		log.Errorf("Could not create a call for outgoing call. err: %v", err)
-		return nil, err
-	}
-
-	// get created call
-	c, err := h.db.CallGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get a created call for outgoing call. err: %v", err)
-		return nil, err
-	}
-
-	// create active-flow
-	af, err := h.reqHandler.FlowActvieFlowPost(c.ID, flowID)
-	if err != nil {
-		log.Errorf("Could not create an active-flow for outgoing call. err: %v", err)
-		return nil, err
-	}
-	log.Debugf("Created active-flow. active-flow: %v", af)
-
-	// create a destination endpoint
-	var endpointDst string
-	if destination.Type == call.AddressTypeTel {
-		// endpointDst = fmt.Sprintf("pjsip/%s/sip:%s@%s", pjsipEndpointOutgoing, destination.Target, trunkTwilio)
-		endpointDst = fmt.Sprintf("pjsip/%s/sip:%s@%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx)
-	} else {
-		endpointDst = fmt.Sprintf("pjsip/%s/sip:%s", pjsipEndpointOutgoing, destination.Target)
-	}
-
-	// create a source endpoint
-	var endpointSrc string
-	if source.Type == call.AddressTypeTel {
-		endpointSrc = source.Target
-	} else {
-		endpointSrc = fmt.Sprintf("\"%s\" <sip:%s>", source.Name, source.Target)
-	}
-
-	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s", contextOutgoingCall, c.ID)
-
-	// set variables
-	variables := map[string]string{
-		"CALLERID(all)": endpointSrc,
-		"SIPADDHEADER0": "VBOUT-Transport: " + "UDP",
-		"SIPADDHEADER1": "VBOUT-SDP_Transport: " + "RTP/AVP",
-	}
-
-	// create a channel
-	if err := h.reqHandler.AstChannelCreate(requesthandler.AsteriskIDCall, channelID, appArgs, endpointDst, "", "", "", variables); err != nil {
-		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
-		return nil, err
-	}
-
-	return c, nil
 }
 
 // StartCallHandle starts the call handle service
