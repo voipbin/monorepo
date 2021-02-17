@@ -218,7 +218,7 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 // ExtensionUpdate updates extension record.
 func (h *handler) ExtensionUpdate(ctx context.Context, b *models.Extension) error {
 	q := `
-	update domains set
+	update extensions set
 		name = ?,
 		detail = ?,
 		password = ?,
