@@ -217,3 +217,84 @@ func TestExtensionGetsByDomainID(t *testing.T) {
 		})
 	}
 }
+
+func TestExtensionUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name            string
+		extension       *models.Extension
+		updateExtension *models.Extension
+		expectExtension *models.Extension
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&models.Extension{
+				ID:     uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
+				UserID: 1,
+
+				Name:     "test",
+				Detail:   "detail",
+				DomainID: uuid.FromStringOrNil("b2277afa-711b-11eb-a695-f71fad093e64"),
+
+				Extension: "test",
+				Password:  "password",
+			},
+			&models.Extension{
+				ID:     uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
+				UserID: 1,
+				Name:   "update name",
+				Detail: "update detail",
+
+				Password: "update password",
+			},
+			&models.Extension{
+				ID:     uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
+				UserID: 1,
+
+				Name:   "update name",
+				Detail: "update detail",
+
+				DomainID: uuid.FromStringOrNil("b2277afa-711b-11eb-a695-f71fad093e64"),
+
+				Extension: "test",
+				Password:  "update password",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
+			if err := h.ExtensionCreate(ctx, tt.extension); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
+			if err := h.ExtensionUpdate(ctx, tt.updateExtension); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ExtensionGet(gomock.Any(), tt.extension.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
+			res, err := h.ExtensionGet(context.Background(), tt.extension.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMCreate = ""
+			res.TMUpdate = ""
+			if reflect.DeepEqual(tt.expectExtension, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectExtension, res)
+			}
+		})
+	}
+}
