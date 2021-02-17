@@ -23,13 +23,23 @@ func (h *callHandler) Hangup(cn *channel.Channel) error {
 	reason := call.CalculateHangupReason(c.Status, cn.HangupCause)
 	hangupBy := call.CalculateHangupBy(c.Status)
 
-	// update call
-	if err := h.db.CallSetHangup(ctx, c.ID, reason, hangupBy, cn.TMEnd); err != nil {
+	// set hangup
+	if err := h.HangupWithReason(ctx, c, reason, hangupBy, cn.TMEnd); err != nil {
 		// we don't channel hangup here, because the channel has already gone.
 		return err
 	}
-	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
 
+	return nil
+}
+
+// HangupWithReason set the hangup call with the given reason
+func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error {
+	if err := h.db.CallSetHangup(ctx, c.ID, reason, hangupBy, timestamp); err != nil {
+		// we don't channel hangup here, we are assumming the channel has already gone.
+		return err
+	}
+
+	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
 	return nil
 }
 

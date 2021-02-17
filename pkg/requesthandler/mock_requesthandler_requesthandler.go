@@ -12,6 +12,7 @@ import (
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
+	rmastcontact "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
 	reflect "reflect"
 )
 
@@ -391,6 +392,21 @@ func (m *MockRequestHandler) FlowActvieFlowNextGet(callID, actionID uuid.UUID) (
 func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowNextGet(callID, actionID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActvieFlowNextGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowActvieFlowNextGet), callID, actionID)
+}
+
+// RMV1ContactsGet mocks base method
+func (m *MockRequestHandler) RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstContact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMV1ContactsGet", endpoint)
+	ret0, _ := ret[0].([]*rmastcontact.AstContact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RMV1ContactsGet indicates an expected call of RMV1ContactsGet
+func (mr *MockRequestHandlerMockRecorder) RMV1ContactsGet(endpoint interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ContactsGet", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ContactsGet), endpoint)
 }
 
 // TTSSpeechesPOST mocks base method

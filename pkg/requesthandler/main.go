@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -125,19 +126,22 @@ type RequestHandler interface {
 	AstChannelRecord(asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelVariableSet(asteriskID, channelID, variable, value string) error
 
-	// call
+	// cm call
 	CallCallHealth(id uuid.UUID, delay, retryCount int) error
 	CallCallActionNext(id uuid.UUID) error
 	CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
 	CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
-	// conference
+	// cm conference
 	CallConferenceTerminate(conferenceID uuid.UUID, reason string, delay int) error
 
-	// flow actions
+	// fm actions
 	FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
 	FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
 	FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error)
+
+	// rm contacts
+	RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstContact, error)
 
 	// tts speeches
 	TTSSpeechesPOST(text, gender, language string) (string, error)
@@ -148,20 +152,22 @@ type requestHandler struct {
 
 	exchangeDelay string
 
-	queueCall string
-	queueFlow string
-	queueTTS  string
+	queueCall      string
+	queueFlow      string
+	queueTTS       string
+	queueRegistrar string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueTTS string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueTTS, queueRegistrar string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
-		exchangeDelay: exchangeDelay,
-		queueCall:     queueCall,
-		queueFlow:     queueFlow,
-		queueTTS:      queueTTS,
+		exchangeDelay:  exchangeDelay,
+		queueCall:      queueCall,
+		queueFlow:      queueFlow,
+		queueTTS:       queueTTS,
+		queueRegistrar: queueRegistrar,
 	}
 
 	return h
@@ -310,6 +316,36 @@ func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.Requ
 		}).Debugf("Received response. status_code: %d", res.StatusCode)
 		return res, nil
 	}
+}
+
+// sendRequestRegistrar send a request to the registrar-manager and return the response
+func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	// creat a request message
+	m := &rabbitmqhandler.Request{
+		URI:      uri,
+		Method:   method,
+		DataType: dataType,
+		Data:     data,
+	}
+
+	log.WithFields(log.Fields{
+		"request": m,
+	}).Debugf("Sending request to the registrar-manager. queue: %s, method: %s, uri: %s", r.queueRegistrar, m.Method, uriUnescape(m.URI))
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	defer cancel()
+
+	res, err := r.sendRequest(ctx, r.queueRegistrar, resource, m)
+	if err != nil {
+		return nil, fmt.Errorf("could not send the request to the registrar-manager. err: %v", err)
+	}
+
+	log.WithFields(log.Fields{
+		"response": res,
+	}).Debugf("Received response. status_code: %d", res.StatusCode)
+
+	return res, nil
 }
 
 // sendRequest sends the request to the target

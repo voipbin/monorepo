@@ -1,0 +1,415 @@
+package callhandler
+
+import (
+	"fmt"
+	reflect "reflect"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
+)
+
+func TestCreateCallOutgoing(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name        string
+		id          uuid.UUID
+		userID      uint64
+		flowID      uuid.UUID
+		source      call.Address
+		destination call.Address
+
+		expectCall        *call.Call
+		expectEndpointDst string
+		expectVariables   map[string]string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+			1,
+			uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+			call.Address{
+				Type:   call.AddressTypeSIP,
+				Name:   "test",
+				Target: "testsrc@test.com",
+			},
+			call.Address{
+				Type:   call.AddressTypeSIP,
+				Name:   "test target",
+				Target: "testoutgoing@test.com",
+			},
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+				UserID:    1,
+				ChannelID: call.TestChannelID,
+				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+				Type:      call.TypeFlow,
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
+				Source: call.Address{
+					Type:   call.AddressTypeSIP,
+					Name:   "test",
+					Target: "testsrc@test.com",
+				},
+				Destination: call.Address{
+					Type:   call.AddressTypeSIP,
+					Name:   "test target",
+					Target: "testoutgoing@test.com",
+				},
+				Action: action.Action{
+					ID: action.IDBegin,
+				},
+			},
+			"pjsip/call-out/sip:testoutgoing@test.com",
+			map[string]string{
+				"CALLERID(all)": `"test" <sip:testsrc@test.com>`,
+				"SIPADDHEADER0": "VBOUT-Transport: UDP",
+				"SIPADDHEADER1": "VBOUT-SDP_Transport: RTP/AVP",
+			},
+		},
+		{
+			"tel type destination",
+			uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+			1,
+			uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+			call.Address{
+				Type:   call.AddressTypeTel,
+				Name:   "test",
+				Target: "+99999888",
+			},
+			call.Address{
+				Type:   call.AddressTypeTel,
+				Name:   "test target",
+				Target: "+123456789",
+			},
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+				UserID:    1,
+				ChannelID: call.TestChannelID,
+				FlowID:    uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+				Type:      call.TypeFlow,
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
+				Source: call.Address{
+					Type:   call.AddressTypeTel,
+					Name:   "test",
+					Target: "+99999888",
+				},
+				Destination: call.Address{
+					Type:   call.AddressTypeTel,
+					Name:   "test target",
+					Target: "+123456789",
+				},
+				Action: action.Action{
+					ID: action.IDBegin,
+				},
+			},
+			// "pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
+			"pjsip/call-out/sip:+123456789@sip.telnyx.com",
+			map[string]string{
+				"CALLERID(all)": "+99999888",
+				"SIPADDHEADER0": "VBOUT-Transport: UDP",
+				"SIPADDHEADER1": "VBOUT-SDP_Transport: RTP/AVP",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
+			mockReq.EXPECT().FlowActvieFlowPost(tt.id, tt.flowID).Return(nil, nil)
+			mockReq.EXPECT().AstChannelCreate(requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", contextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
+
+			res, err := h.CreateCallOutgoing(tt.id, tt.userID, tt.flowID, tt.source, tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectCall) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+			}
+		})
+	}
+}
+
+func TestGetEndpointDestinationTypeTel(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name                    string
+		destination             *call.Address
+		expectEndpointDest      string
+		expectEndpointTransport string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Address{
+				Type:   call.AddressTypeTel,
+				Target: "+1234567890",
+			},
+			"pjsip/call-out/sip:+1234567890@sip.telnyx.com",
+			constTransportUDP,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res, transport, err := h.getEndpointDestination(*tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectEndpointDest || transport != tt.expectEndpointTransport {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectEndpointDest, res)
+			}
+		})
+	}
+}
+
+func TestGetEndpointDestinationTypeSIP(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name                    string
+		destination             *call.Address
+		expectEndpointDest      string
+		expectEndpointTransport string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Address{
+				Type:   call.AddressTypeSIP,
+				Target: "test@test.com",
+			},
+			"pjsip/call-out/sip:test@test.com",
+			constTransportUDP,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res, transport, err := h.getEndpointDestination(*tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectEndpointDest || transport != tt.expectEndpointTransport {
+				t.Errorf("Wrong match. expect: %s, %s, got: %s, %s", tt.expectEndpointDest, tt.expectEndpointTransport, res, transport)
+			}
+		})
+	}
+}
+
+func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name                    string
+		destination             *call.Address
+		contacts                []*rmastcontact.AstContact
+		expectEndpointDest      string
+		expectEndpointTransport string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Address{
+				Type:   call.AddressTypeSIP,
+				Target: "test@test.sip.voipbin.net",
+			},
+			[]*rmastcontact.AstContact{
+				{
+					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
+					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
+					ExpirationTime:      1613498199,
+					QualifyFrequency:    0,
+					OutboundProxy:       "",
+					Path:                "",
+					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
+					QualifyTimeout:      3,
+					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
+					AuthenticateQualify: "no",
+					ViaAddr:             "192.168.0.20",
+					ViaPort:             35551,
+					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
+					Endpoint:            "test@test.sip.voipbin.net",
+					PruneOnBoot:         "no",
+				},
+			},
+			"pjsip/call-out/sip:test11@211.178.226.108:35551",
+			constTransportUDP,
+		},
+		{
+			"2 contacts",
+			&call.Address{
+				Type:   call.AddressTypeSIP,
+				Target: "test@test.sip.voipbin.net",
+			},
+			[]*rmastcontact.AstContact{
+				{
+					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
+					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
+					ExpirationTime:      1613498199,
+					QualifyFrequency:    0,
+					OutboundProxy:       "",
+					Path:                "",
+					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
+					QualifyTimeout:      3,
+					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
+					AuthenticateQualify: "no",
+					ViaAddr:             "192.168.0.20",
+					ViaPort:             35551,
+					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
+					Endpoint:            "test@test.sip.voipbin.net",
+					PruneOnBoot:         "no",
+				},
+				{
+					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b1",
+					URI:                 "sip:test11@211.178.226.120:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
+					ExpirationTime:      1613498199,
+					QualifyFrequency:    0,
+					OutboundProxy:       "",
+					Path:                "",
+					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
+					QualifyTimeout:      3,
+					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
+					AuthenticateQualify: "no",
+					ViaAddr:             "192.168.0.20",
+					ViaPort:             35551,
+					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
+					Endpoint:            "test@test.sip.voipbin.net",
+					PruneOnBoot:         "no",
+				}},
+			"pjsip/call-out/sip:test11@211.178.226.108:35551",
+			constTransportUDP,
+		}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockReq.EXPECT().RMV1ContactsGet(tt.destination.Target).Return(tt.contacts, nil)
+
+			res, transport, err := h.getEndpointDestination(*tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectEndpointDest || transport != tt.expectEndpointTransport {
+				t.Errorf("Wrong match. expect: %s, %s, got: %s, %s", tt.expectEndpointDest, tt.expectEndpointTransport, res, transport)
+			}
+		})
+	}
+}
+
+func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name        string
+		destination *call.Address
+		contacts    []*rmastcontact.AstContact
+	}
+
+	tests := []test{
+		{
+			"no contact",
+			&call.Address{
+				Type:   call.AddressTypeSIP,
+				Target: "test@test.sip.voipbin.net",
+			},
+			[]*rmastcontact.AstContact{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockReq.EXPECT().RMV1ContactsGet(tt.destination.Target).Return(tt.contacts, nil)
+
+			_, _, err := h.getEndpointDestination(*tt.destination)
+			if err == nil {
+				t.Error("Wrong match. expect: err, got: ok")
+			}
+		})
+	}
+}
