@@ -265,7 +265,7 @@ func (h *handler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUI
 	}
 	defer rows.Close()
 
-	var res []*models.Extension
+	res := []*models.Extension{}
 	for rows.Next() {
 		u, err := h.extensionGetFromRow(rows)
 		if err != nil {

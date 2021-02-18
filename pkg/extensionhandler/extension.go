@@ -35,9 +35,11 @@ func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *models.Extens
 
 	// create aor
 	maxContacts := 1
+	removeExisting := "yes"
 	aor := &models.AstAOR{
-		ID:          &commonID,
-		MaxContacts: &maxContacts,
+		ID:             &commonID,
+		MaxContacts:    &maxContacts,
+		RemoveExisting: &removeExisting,
 	}
 	if err := h.dbAst.AstAORCreate(ctx, aor); err != nil {
 		log.Errorf("Could not create AOR. err: %v", err)

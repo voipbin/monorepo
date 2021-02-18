@@ -10,6 +10,7 @@ import (
 
 // ContactGetsByEndpoint returns list of contacts
 func (h *contactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+	logrus.Debugf("Getting a contact info. endpoint: %s", endpoint)
 
 	contacts, err := h.dbAst.AstContactGetsByEndpoint(ctx, endpoint)
 	if err != nil {

@@ -247,7 +247,7 @@ func (h *handler) DomainGetsByUserID(ctx context.Context, userID uint64, token s
 	}
 	defer rows.Close()
 
-	var res []*models.Domain
+	res := []*models.Domain{}
 	for rows.Next() {
 		u, err := h.domainGetFromRow(rows)
 		if err != nil {
