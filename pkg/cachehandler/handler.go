@@ -210,7 +210,7 @@ func (h *handler) AstContactsGet(ctx context.Context, endpoint string) ([]*model
 		return nil, err
 	}
 
-	var res []*models.AstContact
+	res := []*models.AstContact{}
 	for _, c := range tmp {
 		res = append(res, &c)
 	}
@@ -222,7 +222,7 @@ func (h *handler) AstContactsGet(ctx context.Context, endpoint string) ([]*model
 func (h *handler) AstContactsSet(ctx context.Context, endpoint string, contacts []*models.AstContact) error {
 	key := fmt.Sprintf("ast_contacts:%s", endpoint)
 
-	if err := h.setSerialize(ctx, key, contacts); err != nil {
+	if err := h.setSerializeWithExpiration(ctx, key, contacts, time.Minute*3); err != nil {
 		return err
 	}
 

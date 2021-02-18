@@ -46,8 +46,9 @@ func TestExtensionCreate(t *testing.T) {
 				DomainName: "test.sip.voipbin.net",
 			},
 			&models.AstAOR{
-				ID:          getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
-				MaxContacts: getIntegerPointer(1),
+				ID:             getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
+				MaxContacts:    getIntegerPointer(1),
+				RemoveExisting: getStringPointer("yes"),
 			},
 			&models.AstAuth{
 				ID:       getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),

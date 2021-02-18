@@ -92,7 +92,7 @@ func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string)
 	}
 	defer rows.Close()
 
-	var res []*models.AstContact
+	res := []*models.AstContact{}
 	for rows.Next() {
 		u, err := h.astContactGetFromRow(rows)
 		if err != nil {
