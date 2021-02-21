@@ -1,0 +1,57 @@
+@import './mixins';
+@import './reset';
+@import './fonts';
+@import './colors';
+
+html {
+	height: 100%;
+	overflow: hidden;
+	font-family: 'Roboto';
+	font-size: 16px;
+	background-color: #444;
+}
+
+body {
+	height: 100%;
+	background: none;
+}
+
+* {
+	box-sizing: border-box;
+	outline: none;
+}
+
+#tryit-jssip-container {
+	height: 100%;
+	width: 100%;
+
+	// Components
+	@import './components/Logo';
+	@import './components/App';
+	@import './components/Login';
+	@import './components/Settings';
+	@import './components/Phone';
+	@import './components/UserChip';
+	@import './components/Dialer';
+	@import './components/Session';
+	@import './components/Incoming';
+}
+
+// Hack to detect in JS the current media query
+#tryit-jssip-media-query-detector {
+	position: relative;
+	z-index: -1000;
+	bottom: 0;
+	left: 0;
+	height: 1px;
+	width: 1px;
+
+	// In desktop let it "visible" so elem.offsetParent returns the parent element
+	+desktop() {}
+
+	// In mobile ensure it's not displayed so elem.offsetParent returns null
+	+mobile() {
+		display: none;
+		position: fixed;  // Required for old IE
+	}
+}
