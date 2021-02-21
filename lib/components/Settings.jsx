@@ -340,3 +340,4 @@ Settings.propTypes =
 	onSubmit : PropTypes.func.isRequired,
 	onCancel : PropTypes.func.isRequired
 };
+
