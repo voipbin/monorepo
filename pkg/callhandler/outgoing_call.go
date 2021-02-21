@@ -16,9 +16,11 @@ import (
 const (
 	constVoIPBINDomainSuffix = ".sip.voipbin.net"
 
-	constTransportUDP = "UDP"
-	constTransportTCP = "TCP"
-	constTransportTLS = "TLS"
+	constTransportUDP = "udp"
+	constTransportTCP = "tcp"
+	constTransportTLS = "tls"
+	constTransportWS  = "ws"
+	constTransportWSS = "wss"
 )
 
 // CreateCallOutgoing creates a call for outgoing
@@ -78,8 +80,8 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 	}
 	log.Debugf("Created active-flow. active-flow: %v", af)
 
-	// create a destination endpoint
-	endpointDst, endpointTransport, err := h.getEndpointDestination(destination)
+	// get a endpoint destination
+	endpointDst, err := h.getEndpointDestination(destination)
 	if err != nil {
 		log.Errorf("Could not create a destination endpoint. err: %v", err)
 
@@ -89,6 +91,10 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 		}
 		return nil, err
 	}
+
+	// get sdp-transport
+	sdpTransport := h.getEndpointSDPTransport(endpointDst)
+	log.Debugf("Endpoint detail. endpoint_destination: %s, sdp_transport: %s", endpointDst, sdpTransport)
 
 	// create a source endpoint
 	var endpointSrc string
@@ -103,9 +109,8 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 
 	// set variables
 	variables := map[string]string{
-		"CALLERID(all)": endpointSrc,
-		"SIPADDHEADER0": "VBOUT-Transport: " + endpointTransport,
-		"SIPADDHEADER1": "VBOUT-SDP_Transport: " + "RTP/AVP",
+		"CALLERID(all)":                         endpointSrc,
+		"PJSIP_HEADER(add,VBOUT-SDP_Transport)": sdpTransport,
 	}
 
 	// create a channel
@@ -122,64 +127,59 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 }
 
 // getEndpointDestination returns corresponded endpoint's destination address for Asterisk's dialing
-func (h *callHandler) getEndpointDestination(destination call.Address) (string, string, error) {
+func (h *callHandler) getEndpointDestination(destination call.Address) (string, error) {
 
 	var res string
 
 	// create a destination endpoint
+	// if the type is tel type, uses default gw
 	if destination.Type == call.AddressTypeTel {
-		res = fmt.Sprintf("pjsip/%s/sip:%s@%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx)
-		return res, constTransportUDP, nil
+		res = fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx, constTransportUDP)
+		return res, nil
 	}
 
-	// check voipbin suffix
-	if strings.HasSuffix(destination.Target, constVoIPBINDomainSuffix) == false {
-		res = fmt.Sprintf("pjsip/%s/sip:%s", pjsipEndpointOutgoing, destination.Target)
-		return res, constTransportUDP, nil
+	// destination is normal sip address.
+	tmp := strings.Split(destination.Target, ";")
+	if strings.HasSuffix(tmp[0], constVoIPBINDomainSuffix) == false {
+		endpoint := destination.Target
+		if strings.HasPrefix(endpoint, "sip") == false && strings.HasPrefix(endpoint, "sips:") == false {
+			endpoint = "sip:" + endpoint
+		}
+
+		res = fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, endpoint)
+		return res, nil
 	}
+
+	// get endpoint
+	// trim the sip: or sips:
+	endpoint := destination.Target
+	endpoint = strings.TrimPrefix(endpoint, "sip:")
+	endpoint = strings.TrimPrefix(endpoint, "sips:")
 
 	// get contacts
-	contacts, err := h.reqHandler.RMV1ContactsGet(destination.Target)
+	contacts, err := h.reqHandler.RMV1ContactsGet(endpoint)
 	if err != nil {
-		return "", "", fmt.Errorf("could not get contacts info. target: err: %v", err)
+		return "", fmt.Errorf("could not get contacts info. target: err: %v", err)
 	}
 
-	// has no contacts
-	if len(contacts) <= 0 {
-		return "", "", fmt.Errorf("not found registered contact address")
+	if len(contacts) == 0 {
+		return "", fmt.Errorf("no available contact")
 	}
 
 	// we need only one
-	contact := contacts[0]
+	contact := strings.ReplaceAll(contacts[0].URI, "^3B", ";")
+	res = fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, contact)
 
-	// sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22
-	var transport string
-	slices := strings.Split(contact.URI, "^3B")
-	for _, s := range slices[1:] {
+	return res, nil
+}
 
-		tmp := strings.ToUpper(s)
-		kv := strings.Split(tmp, "=")
+// getEndpointSDPTransport returns corresponded sdp-transport
+func (h *callHandler) getEndpointSDPTransport(endpointDestination string) string {
 
-		if len(kv) < 2 || kv[0] != "TRANSPORT" {
-			continue
-		}
-
-		switch kv[1] {
-		case constTransportTCP:
-			transport = constTransportTCP
-
-		case constTransportTLS:
-			transport = constTransportTLS
-
-		case constTransportUDP:
-			fallthrough
-		default:
-			transport = constTransportUDP
-		}
+	// webrtc allows only UDP/TLS/RTP/SAVPF
+	if strings.Contains(endpointDestination, "transport=ws") || strings.Contains(endpointDestination, "transport=wss") {
+		return "UDP/TLS/RTP/SAVPF"
 	}
 
-	addr := strings.Split(contact.URI, "^3B")[0]
-	res = fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, addr)
-
-	return res, transport, nil
+	return "RTP/AVP"
 }

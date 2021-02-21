@@ -84,9 +84,8 @@ func TestCreateCallOutgoing(t *testing.T) {
 			},
 			"pjsip/call-out/sip:testoutgoing@test.com",
 			map[string]string{
-				"CALLERID(all)": `"test" <sip:testsrc@test.com>`,
-				"SIPADDHEADER0": "VBOUT-Transport: UDP",
-				"SIPADDHEADER1": "VBOUT-SDP_Transport: RTP/AVP",
+				"CALLERID(all)":                         `"test" <sip:testsrc@test.com>`,
+				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
 			},
 		},
 		{
@@ -128,11 +127,10 @@ func TestCreateCallOutgoing(t *testing.T) {
 				},
 			},
 			// "pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
-			"pjsip/call-out/sip:+123456789@sip.telnyx.com",
+			"pjsip/call-out/sip:+123456789@sip.telnyx.com;transport=udp",
 			map[string]string{
-				"CALLERID(all)": "+99999888",
-				"SIPADDHEADER0": "VBOUT-Transport: UDP",
-				"SIPADDHEADER1": "VBOUT-SDP_Transport: RTP/AVP",
+				"CALLERID(all)":                         "+99999888",
+				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
 			},
 		},
 	}
@@ -173,10 +171,9 @@ func TestGetEndpointDestinationTypeTel(t *testing.T) {
 	}
 
 	type test struct {
-		name                    string
-		destination             *call.Address
-		expectEndpointDest      string
-		expectEndpointTransport string
+		name               string
+		destination        *call.Address
+		expectEndpointDest string
 	}
 
 	tests := []test{
@@ -186,20 +183,19 @@ func TestGetEndpointDestinationTypeTel(t *testing.T) {
 				Type:   call.AddressTypeTel,
 				Target: "+1234567890",
 			},
-			"pjsip/call-out/sip:+1234567890@sip.telnyx.com",
-			constTransportUDP,
+			"pjsip/call-out/sip:+1234567890@sip.telnyx.com;transport=udp",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, transport, err := h.getEndpointDestination(*tt.destination)
+			res, err := h.getEndpointDestination(*tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectEndpointDest || transport != tt.expectEndpointTransport {
+			if res != tt.expectEndpointDest {
 				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectEndpointDest, res)
 			}
 		})
@@ -222,10 +218,9 @@ func TestGetEndpointDestinationTypeSIP(t *testing.T) {
 	}
 
 	type test struct {
-		name                    string
-		destination             *call.Address
-		expectEndpointDest      string
-		expectEndpointTransport string
+		name               string
+		destination        *call.Address
+		expectEndpointDest string
 	}
 
 	tests := []test{
@@ -236,20 +231,19 @@ func TestGetEndpointDestinationTypeSIP(t *testing.T) {
 				Target: "test@test.com",
 			},
 			"pjsip/call-out/sip:test@test.com",
-			constTransportUDP,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, transport, err := h.getEndpointDestination(*tt.destination)
+			res, err := h.getEndpointDestination(*tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectEndpointDest || transport != tt.expectEndpointTransport {
-				t.Errorf("Wrong match. expect: %s, %s, got: %s, %s", tt.expectEndpointDest, tt.expectEndpointTransport, res, transport)
+			if res != tt.expectEndpointDest {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectEndpointDest, res)
 			}
 		})
 	}
@@ -271,11 +265,10 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 	}
 
 	type test struct {
-		name                    string
-		destination             *call.Address
-		contacts                []*rmastcontact.AstContact
-		expectEndpointDest      string
-		expectEndpointTransport string
+		name               string
+		destination        *call.Address
+		contacts           []*rmastcontact.AstContact
+		expectEndpointDest string
 	}
 
 	tests := []test{
@@ -304,8 +297,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 					PruneOnBoot:         "no",
 				},
 			},
-			"pjsip/call-out/sip:test11@211.178.226.108:35551",
-			constTransportUDP,
+			"pjsip/call-out/sip:test11@211.178.226.108:35551;transport=UDP;rinstance=8a1f981a77f30a22",
 		},
 		{
 			"2 contacts",
@@ -347,23 +339,78 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
 					Endpoint:            "test@test.sip.voipbin.net",
 					PruneOnBoot:         "no",
-				}},
-			"pjsip/call-out/sip:test11@211.178.226.108:35551",
-			constTransportUDP,
-		}}
+				},
+			},
+			"pjsip/call-out/sip:test11@211.178.226.108:35551;transport=UDP;rinstance=8a1f981a77f30a22",
+		},
+		{
+			"transport ws",
+			&call.Address{
+				Type:   call.AddressTypeSIP,
+				Target: "test@test.sip.voipbin.net",
+			},
+			[]*rmastcontact.AstContact{
+				{
+					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
+					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=ws^3Brinstance=8a1f981a77f30a22",
+					ExpirationTime:      1613498199,
+					QualifyFrequency:    0,
+					OutboundProxy:       "",
+					Path:                "",
+					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
+					QualifyTimeout:      3,
+					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
+					AuthenticateQualify: "no",
+					ViaAddr:             "192.168.0.20",
+					ViaPort:             35551,
+					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
+					Endpoint:            "test@test.sip.voipbin.net",
+					PruneOnBoot:         "no",
+				},
+			},
+			"pjsip/call-out/sip:test11@211.178.226.108:35551;transport=ws;rinstance=8a1f981a77f30a22",
+		},
+		{
+			"transport wss",
+			&call.Address{
+				Type:   call.AddressTypeSIP,
+				Target: "test@test.sip.voipbin.net",
+			},
+			[]*rmastcontact.AstContact{
+				{
+					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
+					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=wss^3Brinstance=8a1f981a77f30a22",
+					ExpirationTime:      1613498199,
+					QualifyFrequency:    0,
+					OutboundProxy:       "",
+					Path:                "",
+					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
+					QualifyTimeout:      3,
+					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
+					AuthenticateQualify: "no",
+					ViaAddr:             "192.168.0.20",
+					ViaPort:             35551,
+					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
+					Endpoint:            "test@test.sip.voipbin.net",
+					PruneOnBoot:         "no",
+				},
+			},
+			"pjsip/call-out/sip:test11@211.178.226.108:35551;transport=wss;rinstance=8a1f981a77f30a22",
+		},
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().RMV1ContactsGet(tt.destination.Target).Return(tt.contacts, nil)
 
-			res, transport, err := h.getEndpointDestination(*tt.destination)
+			res, err := h.getEndpointDestination(*tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectEndpointDest || transport != tt.expectEndpointTransport {
-				t.Errorf("Wrong match. expect: %s, %s, got: %s, %s", tt.expectEndpointDest, tt.expectEndpointTransport, res, transport)
+			if res != tt.expectEndpointDest {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectEndpointDest, res)
 			}
 		})
 	}
@@ -406,7 +453,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
 
 			mockReq.EXPECT().RMV1ContactsGet(tt.destination.Target).Return(tt.contacts, nil)
 
-			_, _, err := h.getEndpointDestination(*tt.destination)
+			_, err := h.getEndpointDestination(*tt.destination)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
