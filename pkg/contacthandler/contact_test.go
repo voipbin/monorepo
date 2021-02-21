@@ -69,3 +69,36 @@ func TestContactGetsByDomainID(t *testing.T) {
 
 	}
 }
+
+func TestContactRefreshByEndpoint(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	h := &contactHandler{
+		dbAst: mockDBAst,
+		dbBin: mockDBBin,
+	}
+
+	type test struct {
+		name     string
+		endpoint string
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			"test@test.sip.voipbin.net",
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+
+		mockDBAst.EXPECT().AstContactDeleteFromCache(gomock.Any(), tt.endpoint).Return(nil)
+		if err := h.ContactRefreshByEndpoint(ctx, tt.endpoint); err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+	}
+}

@@ -65,8 +65,8 @@ func (h *handler) AstContactsSetToCache(ctx context.Context, ednpoint string, co
 	return nil
 }
 
-// AstContactsGetFromCache returns AstContact from the cache.
-func (h *handler) AstContactsGetFromCache(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+// AstContactGetsFromCache returns AstContact from the cache.
+func (h *handler) AstContactGetsFromCache(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
 
 	// get from cache
 	res, err := h.cache.AstContactsGet(ctx, endpoint)
@@ -77,10 +77,16 @@ func (h *handler) AstContactsGetFromCache(ctx context.Context, endpoint string) 
 	return res, nil
 }
 
+// AstContactDeleteFromCache deletes AstContact info from the cache.
+func (h *handler) AstContactDeleteFromCache(ctx context.Context, endpoint string) error {
+
+	return h.cache.AstContactsDel(ctx, endpoint)
+}
+
 // AstContactGetsByEndpoint returns AstContact from the DB.
 func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
 	// get from cache
-	if res, err := h.AstContactsGetFromCache(ctx, endpoint); err == nil {
+	if res, err := h.AstContactGetsFromCache(ctx, endpoint); err == nil {
 		return res, nil
 	}
 

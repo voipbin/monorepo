@@ -101,3 +101,57 @@ func TestV1ContactsGet(t *testing.T) {
 		})
 	}
 }
+
+func TestV1ContactsPut(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockContact := contacthandler.NewMockContactHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:     mockSock,
+		reqHandler:     mockReq,
+		contactHandler: mockContact,
+	}
+
+	type test struct {
+		name     string
+		endpoint string
+		request  *rabbitmqhandler.Request
+
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			"test@test.sip.voipbin.net",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/contacts?endpoint=test%40test.sip.voipbin.net",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// mockContact.EXPECT().ContactGetsByEndpoint(gomock.Any(), tt.endpoint).Return(tt.contacts, nil)
+
+			mockContact.EXPECT().ContactRefreshByEndpoint(gomock.Any(), tt.endpoint).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}

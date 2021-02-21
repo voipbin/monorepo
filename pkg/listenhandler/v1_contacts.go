@@ -46,3 +46,32 @@ func (h *listenHandler) processV1ContactsGet(req *rabbitmqhandler.Request) (*rab
 
 	return res, nil
 }
+
+// processV1ContactsPut handles /v1/contatcs PUT request
+func (h *listenHandler) processV1ContactsPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+
+	ctx := context.Background()
+
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// get endpoint
+	endpoint, err := url.QueryUnescape(u.Query().Get("endpoint"))
+	if err != nil {
+		logrus.Errorf("Could not unescape the parameter. err: %v", err)
+		return nil, err
+	}
+
+	if err := h.contactHandler.ContactRefreshByEndpoint(ctx, endpoint); err != nil {
+		logrus.Errorf("Could not refresh the contact info. endpoint: %s, err: %v", endpoint, err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
