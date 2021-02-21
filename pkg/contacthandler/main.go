@@ -18,6 +18,7 @@ import (
 // ContactHandler is interface for service handle
 type ContactHandler interface {
 	ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*models.AstContact, error)
+	ContactRefreshByEndpoint(ctx context.Context, endpoint string) error
 }
 
 // contactHandler structure for service handle

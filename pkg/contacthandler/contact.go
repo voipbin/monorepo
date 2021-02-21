@@ -19,3 +19,10 @@ func (h *contactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint str
 	}
 	return contacts, err
 }
+
+// ContactRefreshByEndpoint refresh the list of contacts
+func (h *contactHandler) ContactRefreshByEndpoint(ctx context.Context, endpoint string) error {
+	logrus.Debugf("Getting a contact info. endpoint: %s", endpoint)
+
+	return h.dbAst.AstContactDeleteFromCache(ctx, endpoint)
+}

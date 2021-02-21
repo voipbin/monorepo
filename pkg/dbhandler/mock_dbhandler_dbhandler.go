@@ -265,33 +265,18 @@ func (mr *MockDBHandlerMockRecorder) AstAuthUpdateToCache(ctx, id interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAuthUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).AstAuthUpdateToCache), ctx, id)
 }
 
-// AstContactsSetToCache mocks base method
-func (m *MockDBHandler) AstContactsSetToCache(ctx context.Context, ednpoint string, contacts []*models.AstContact) error {
+// AstContactDeleteFromCache mocks base method
+func (m *MockDBHandler) AstContactDeleteFromCache(ctx context.Context, endpoint string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstContactsSetToCache", ctx, ednpoint, contacts)
+	ret := m.ctrl.Call(m, "AstContactDeleteFromCache", ctx, endpoint)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AstContactsSetToCache indicates an expected call of AstContactsSetToCache
-func (mr *MockDBHandlerMockRecorder) AstContactsSetToCache(ctx, ednpoint, contacts interface{}) *gomock.Call {
+// AstContactDeleteFromCache indicates an expected call of AstContactDeleteFromCache
+func (mr *MockDBHandlerMockRecorder) AstContactDeleteFromCache(ctx, endpoint interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactsSetToCache", reflect.TypeOf((*MockDBHandler)(nil).AstContactsSetToCache), ctx, ednpoint, contacts)
-}
-
-// AstContactsGetFromCache mocks base method
-func (m *MockDBHandler) AstContactsGetFromCache(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstContactsGetFromCache", ctx, endpoint)
-	ret0, _ := ret[0].([]*models.AstContact)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AstContactsGetFromCache indicates an expected call of AstContactsGetFromCache
-func (mr *MockDBHandlerMockRecorder) AstContactsGetFromCache(ctx, endpoint interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactsGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).AstContactsGetFromCache), ctx, endpoint)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactDeleteFromCache", reflect.TypeOf((*MockDBHandler)(nil).AstContactDeleteFromCache), ctx, endpoint)
 }
 
 // AstContactGetsByEndpoint mocks base method
@@ -307,6 +292,35 @@ func (m *MockDBHandler) AstContactGetsByEndpoint(ctx context.Context, endpoint s
 func (mr *MockDBHandlerMockRecorder) AstContactGetsByEndpoint(ctx, endpoint interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactGetsByEndpoint", reflect.TypeOf((*MockDBHandler)(nil).AstContactGetsByEndpoint), ctx, endpoint)
+}
+
+// AstContactGetsFromCache mocks base method
+func (m *MockDBHandler) AstContactGetsFromCache(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstContactGetsFromCache", ctx, endpoint)
+	ret0, _ := ret[0].([]*models.AstContact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AstContactGetsFromCache indicates an expected call of AstContactGetsFromCache
+func (mr *MockDBHandlerMockRecorder) AstContactGetsFromCache(ctx, endpoint interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactGetsFromCache", reflect.TypeOf((*MockDBHandler)(nil).AstContactGetsFromCache), ctx, endpoint)
+}
+
+// AstContactsSetToCache mocks base method
+func (m *MockDBHandler) AstContactsSetToCache(ctx context.Context, ednpoint string, contacts []*models.AstContact) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstContactsSetToCache", ctx, ednpoint, contacts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstContactsSetToCache indicates an expected call of AstContactsSetToCache
+func (mr *MockDBHandlerMockRecorder) AstContactsSetToCache(ctx, ednpoint, contacts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactsSetToCache", reflect.TypeOf((*MockDBHandler)(nil).AstContactsSetToCache), ctx, ednpoint, contacts)
 }
 
 // AstEndpointCreate mocks base method

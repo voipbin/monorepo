@@ -44,3 +44,11 @@ $ ./registrar-manager \
     -redis_addr 10.164.15.220:6379 \
     -redis_db 1
 ```
+
+# RabbitMQ queues
+## Request Listen Queue
+bin-manager.registrar-manager.request
+
+## Event Notify Queue
+bin-manager.registrar-manager.event
+

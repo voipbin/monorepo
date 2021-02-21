@@ -48,3 +48,17 @@ func (mr *MockContactHandlerMockRecorder) ContactGetsByEndpoint(ctx, endpoint in
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactGetsByEndpoint", reflect.TypeOf((*MockContactHandler)(nil).ContactGetsByEndpoint), ctx, endpoint)
 }
+
+// ContactRefreshByEndpoint mocks base method
+func (m *MockContactHandler) ContactRefreshByEndpoint(ctx context.Context, endpoint string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactRefreshByEndpoint", ctx, endpoint)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ContactRefreshByEndpoint indicates an expected call of ContactRefreshByEndpoint
+func (mr *MockContactHandlerMockRecorder) ContactRefreshByEndpoint(ctx, endpoint interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactRefreshByEndpoint", reflect.TypeOf((*MockContactHandler)(nil).ContactRefreshByEndpoint), ctx, endpoint)
+}

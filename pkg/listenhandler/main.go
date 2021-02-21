@@ -174,6 +174,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ContactsGet(m)
 		requestType = "/v1/contacts"
 
+	case regV1Contacts.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1ContactsPut(m)
+		requestType = "/v1/contacts"
+
 	////////////
 	// domains
 	////////////
