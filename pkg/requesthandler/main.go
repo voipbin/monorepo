@@ -142,6 +142,7 @@ type RequestHandler interface {
 
 	// rm contacts
 	RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstContact, error)
+	RMV1ContactsPut(endpoint string) error
 
 	// tts speeches
 	TTSSpeechesPOST(text, gender, language string) (string, error)

@@ -409,6 +409,20 @@ func (mr *MockRequestHandlerMockRecorder) RMV1ContactsGet(endpoint interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ContactsGet", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ContactsGet), endpoint)
 }
 
+// RMV1ContactsPut mocks base method
+func (m *MockRequestHandler) RMV1ContactsPut(endpoint string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RMV1ContactsPut", endpoint)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RMV1ContactsPut indicates an expected call of RMV1ContactsPut
+func (mr *MockRequestHandlerMockRecorder) RMV1ContactsPut(endpoint interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ContactsPut", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ContactsPut), endpoint)
+}
+
 // TTSSpeechesPOST mocks base method
 func (m *MockRequestHandler) TTSSpeechesPOST(text, gender, language string) (string, error) {
 	m.ctrl.T.Helper()
