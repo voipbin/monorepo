@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
+// RMV1ContactsGet sends the /v1/contacts GET request to registrar-manager
 func (r *requestHandler) RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstContact, error) {
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
@@ -33,4 +34,22 @@ func (r *requestHandler) RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstCo
 	}
 
 	return contacts, nil
+}
+
+// RMV1ContactsPut sends the /v1/contacts PUT request to registrar-manager
+func (r *requestHandler) RMV1ContactsPut(endpoint string) error {
+
+	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
+
+	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPut, resourceCallChannelsHealth, requestTimeoutDefault, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		return nil
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
 }

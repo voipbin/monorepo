@@ -28,6 +28,8 @@ const (
 	EventTypeChannelLeftBridge    EventType = "ChannelLeftBridge"
 	EventTypeChannelStateChange   EventType = "ChannelStateChange"
 	EventTypeChannelVarset        EventType = "ChannelVarset"
+	EventTypeContactStatusChange  EventType = "ContactStatusChange"
+	EventTypePeerStatusChange     EventType = "PeerStatusChange"
 	EventTypePlaybackContinuing   EventType = "PlaybackContinuing"
 	EventTypePlaybackFinished     EventType = "PlaybackFinished"
 	EventTypePlaybackStarted      EventType = "PlaybackStarted"
@@ -64,6 +66,8 @@ func Parse(message []byte) (*Event, interface{}, error) {
 		EventTypeChannelLeftBridge:    &ChannelLeftBridge{},
 		EventTypeChannelStateChange:   &ChannelStateChange{},
 		EventTypeChannelVarset:        &ChannelVarset{},
+		EventTypeContactStatusChange:  &ContactStatusChange{},
+		EventTypePeerStatusChange:     &PeerStatusChange{},
 		EventTypePlaybackContinuing:   &PlaybackContinuing{},
 		EventTypePlaybackFinished:     &PlaybackFinished{},
 		EventTypePlaybackStarted:      &PlaybackStarted{},
