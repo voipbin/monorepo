@@ -271,6 +271,194 @@
                 }
             }
         },
+        "/v1.0/domains": {
+            "get": {
+                "description": "Gets a list of domains",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of domains.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Domain"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new domain and returns detail created domain info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new domain and returns detail created domain info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Domain"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/domains/{id}": {
+            "get": {
+                "description": "Returns detail flow info of the given domain id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail domain info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the domain",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Domain"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a domain and returns detail updated domain info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a domain and reuturns updated domain info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Domain"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing domain.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing domain.",
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/extension/{id}": {
+            "get": {
+                "description": "Returns detail extension info of the given extension id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail extension info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the extension",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/extension.Extension"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/extensions": {
+            "get": {
+                "description": "Gets a list of extensions",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of extensions.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/extension.Extension"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new extension and returns detail created extension info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new domain and returns detail created extension info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/extension.Extension"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/extensions/{id}": {
+            "put": {
+                "description": "Update a extension and returns detail updated extension info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a extension and reuturns updated extension info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/extension.Extension"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing extension.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing extension.",
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/v1.0/flows": {
             "get": {
                 "description": "Gets a list of flows",
@@ -605,6 +793,75 @@
                 },
                 "user_id": {
                     "description": "Conference owner's ID.",
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.Domain": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "description": "Detail",
+                    "type": "string"
+                },
+                "domain_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "extension.Extension": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "domain_id": {
+                    "type": "string"
+                },
+                "extension": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "user_id": {
                     "type": "integer"
                 }
             }
