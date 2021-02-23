@@ -86,10 +86,9 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
 </ul>
 
             
@@ -170,6 +169,11 @@
 <li class="toctree-l2"><a class="reference internal" href="call.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="call.html#tutorial">Tutorial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-tts">Simple outbound call with TTS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-media-file-play">Simple outbound call with media file play</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-tts-and-connect">Simple outbound call with TTS and connect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-talk-and-dtmf-send">Simple outbound call with talk and dtmf_send</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#get-call-list">Get call list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#get-specific-call">Get specific call</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="call.html#struct">Struct</a><ul>
@@ -198,49 +202,78 @@
 <li class="toctree-l4"><a class="reference internal" href="call.html#id4">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#echo">Echo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#dtmf-receive">DTMF_Receive</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id5">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id6">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#hangup">Hangup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#dtmf-send">DTMF_Send</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id7">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id8">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#patch">Patch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#echo">Echo</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id9">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id10">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#play">Play</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#hangup">Hangup</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id11">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id12">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#recording-start">Recording Start</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#patch">Patch</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id13">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id14">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#recording-stop">Recording Stop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#play">Play</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id15">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id16">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#talk">Talk</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#recording-start">Recording Start</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id17">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="call.html#id18">Example</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#recording-stop">Recording Stop</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="call.html#id19">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="call.html#id20">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#talk">Talk</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="call.html#id21">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="call.html#id22">Example</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="conference.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="conference.html#tutorial">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#get-list-of-conferences">Get list of conferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#get-detail-of-conference">Get detail of conference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#create-a-new-conference">Create a new conference</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#how-flow-works">How Flow works</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#get-list-of-flows">Get list of flows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#get-detail-of-specified-flow">Get detail of specified flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#create-a-flow">Create a flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#update-the-flow">Update the flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#delete-the-flow">Delete the flow</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a><ul>
@@ -253,7 +286,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 </ul>
 </div>
 </div>
