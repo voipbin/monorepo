@@ -77,8 +77,8 @@ Parameters
         }
     }
 
-* source: Source address. See detail :ref:`here <call-struct-address>`.
-* destinations: Destination addresses. See detail :ref:`here <call-struct-address>`.
+* source: Source address.
+* destinations: Destination addresses.
 * unchained: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 
 Example
@@ -100,6 +100,74 @@ Example
             ]
         }
     }
+
+DTMF_Receive
+------------
+Receives the DTMFs for given duration or numbers.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "dtmf_receive",
+        "option": {
+            "max_number_key": <number>,
+            "duration": <number>,
+            "finish_on_key": "<string>"
+        }
+    }
+
+* max_number_key: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.
+* duration: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.
+* finish_on_key: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "dtmf_receive",
+        "option": {
+            "max_number_key": 3,
+            "duration": 10000,
+            "finish_on_key": "#"
+        }
+    }
+
+DTMF_Send
+---------
+Sends the DTMFs with given duration and interval.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "dtmf_send",
+        "option": {
+            "dtmfs": "<string>",
+            "duration": <number>,
+            "interval": <number>
+        }
+    }
+
+* dtmfs: The dtmf string to send. Allowed set of characters: 0-9,A-D, #, '*'; with a maximum of 100 keys.
+* duration: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
+* finish_on_key: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "dtmf_send",
+        "option": {
+            "dtmfs": "1234567890",
+            "duration": 500,
+            "interval": 500
+        }
+    },
 
 Echo
 ----

@@ -132,6 +132,53 @@ definitions:
         description: Conference owner's ID.
         type: integer
     type: object
+  domain.Domain:
+    properties:
+      detail:
+        description: Detail
+        type: string
+      domain_name:
+        type: string
+      id:
+        type: string
+      name:
+        description: Name
+        type: string
+      tm_create:
+        description: Created timestamp.
+        type: string
+      tm_delete:
+        description: Deleted timestamp.
+        type: string
+      tm_update:
+        description: Updated timestamp.
+        type: string
+      user_id:
+        type: integer
+    type: object
+  extension.Extension:
+    properties:
+      detail:
+        type: string
+      domain_id:
+        type: string
+      extension:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      user_id:
+        type: integer
+    type: object
   flow.Flow:
     properties:
       actions:
@@ -414,6 +461,131 @@ paths:
           schema:
             $ref: '#/definitions/conference.Conference'
       summary: Returns detail conference info.
+  /v1.0/domains:
+    get:
+      description: Gets a list of domains
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Domain'
+            type: array
+      summary: Gets a list of domains.
+    post:
+      description: Create a new domain and returns detail created domain info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Domain'
+      summary: Create a new domain and returns detail created domain info.
+  /v1.0/domains/{id}:
+    delete:
+      description: Delete a existing domain.
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete a existing domain.
+    get:
+      description: Returns detail flow info of the given domain id.
+      parameters:
+      - description: The ID of the domain
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Domain'
+      summary: Returns detail domain info.
+    put:
+      description: Update a domain and returns detail updated domain info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Domain'
+      summary: Update a domain and reuturns updated domain info.
+  /v1.0/extension/{id}:
+    get:
+      description: Returns detail extension info of the given extension id.
+      parameters:
+      - description: The ID of the extension
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/extension.Extension'
+      summary: Returns detail extension info.
+  /v1.0/extensions:
+    get:
+      description: Gets a list of extensions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/extension.Extension'
+            type: array
+      summary: Gets a list of extensions.
+    post:
+      description: Create a new extension and returns detail created extension info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/extension.Extension'
+      summary: Create a new domain and returns detail created extension info.
+  /v1.0/extensions/{id}:
+    delete:
+      description: Delete a existing extension.
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete a existing extension.
+    put:
+      description: Update a extension and returns detail updated extension info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/extension.Extension'
+      summary: Update a extension and reuturns updated extension info.
   /v1.0/flows:
     get:
       description: Gets a list of flows
