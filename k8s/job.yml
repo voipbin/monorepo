@@ -1,0 +1,24 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dbscheme-bin-manager
+  labels:
+    app: dbscheme-bin-manager
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        app: dbscheme-bin-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: dbscheme-bin-manager
+          image: dbscheme-bin-manager-image
+      restartPolicy: Never
