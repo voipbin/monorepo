@@ -14,6 +14,8 @@ Welcome to voipbin's documentation!
    api
    call
    conference
+   domain
+   extension
    flow
    recording
 
