@@ -74,7 +74,7 @@ func TestProcessV1OrderNumbersPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().OrderNumbers(tt.userID, tt.numbers).Return(tt.createdNumber, nil)
+			mockNumber.EXPECT().CreateOrderNumbers(tt.userID, tt.numbers).Return(tt.createdNumber, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

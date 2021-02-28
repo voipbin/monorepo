@@ -9,87 +9,23 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
 )
 
-// GetAvailableNumbers gets the numbers from the number providers
-func (h *numberHandler) OrderNumbers(userID uint64, numbers []string) ([]*models.Number, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"numbers": numbers,
-		},
-	)
+// CreateOrderNumbers creates a new order numbers of given numbers
+func (h *numberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*models.Number, error) {
+	logrus.Debugf("CreateOrderNumbers. user_id: %d, numbers: %v", userID, numbers)
 
-	// send a request to number providers
-	_, err := h.reqHandler.TelnyxNumberOrdersPost(numbers)
-	if err != nil {
-		log.Errorf("Could not send the order request to the telnyx. err: %v", err)
-		return nil, err
-	}
-
-	// get order number details
-	res := []*models.Number{}
-	for _, number := range numbers {
-		tmpNumber, err := h.createNumberByTelnyxOrderNumber(userID, number)
-		if err != nil {
-			log.Errorf("Could not handle the ordered number to the telnyx. number: %s, err: %v", number, err)
-			continue
-		}
-
-		// append
-		res = append(res, tmpNumber)
-	}
-
-	return res, nil
+	// use telnyx as a default
+	return h.numHandlerTelnyx.CreateOrderNumbers(userID, numbers)
 }
 
-// createNumberByTelnyxOrderNumber creates a number by ordered number to the telnyx.
-func (h *numberHandler) createNumberByTelnyxOrderNumber(userID uint64, number string) (*models.Number, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"number": number,
-		},
-	)
-	ctx := context.Background()
+// ReleaseOrderNumbers release/deleted an existed ordered number
+func (h *numberHandler) ReleaseOrderNumbers(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+	logrus.Debugf("ReleaseOrderNumbers. number: %s", id)
 
-	// get number info
-	numInfos, err := h.reqHandler.TelnyxPhoneNumbersGet(1, "", number)
+	number, err := h.db.NumberGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get correct number info. number: %s, err: %v", number, err)
-
-		return nil, err
-	}
-	if len(numInfos) <= 0 {
-		log.Errorf("Could not get number info. number: %s", number)
+		logrus.Errorf("Could not get order number info. number: %s, err: %v", id, err)
 		return nil, err
 	}
 
-	// update connection id
-	numInfo := numInfos[0]
-	tmpNum, err := h.reqHandler.TelnyxPhoneNumbersIDUpdateConnectionID(numInfo.ID, ConnectionID)
-	if err != nil {
-		log.Errorf("Could not update connection ID info. err: %v", err)
-		return nil, err
-	}
-
-	tmp := tmpNum.ConvertNumber()
-
-	// add uuid
-	tmp.ID = uuid.Must(uuid.NewV4())
-	tmp.UserID = userID
-
-	// insert into db
-	if err := h.db.NumberCreate(ctx, tmp); err != nil {
-		log.WithFields(
-			logrus.Fields{
-				"number": tmp,
-			},
-		).Errorf("Could not create a number. number: %s, err: %v", tmp.Number, err)
-		return nil, err
-	}
-
-	res, err := h.db.NumberGet(ctx, tmp.ID)
-	if err != nil {
-		log.Errorf("Could not get created number info. err: %v", err)
-		return nil, err
-	}
-
-	return res, err
+	return h.numHandlerTelnyx.ReleaseOrderNumber(ctx, number)
 }

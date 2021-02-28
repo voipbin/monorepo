@@ -25,7 +25,7 @@ func (h *listenHandler) processV1OrderNumbersPost(req *rabbitmqhandler.Request) 
 		},
 	)
 
-	numbers, err := h.numberHandler.OrderNumbers(reqData.UserID, reqData.Numbers)
+	numbers, err := h.numberHandler.CreateOrderNumbers(reqData.UserID, reqData.Numbers)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil
