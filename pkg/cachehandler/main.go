@@ -1,0 +1,61 @@
+package cachehandler
+
+//go:generate mockgen -destination ./mock_cachehandler_cachehandler.go -package cachehandler -source ./main.go CacheHandler
+
+import (
+	"context"
+
+	"github.com/go-redis/redis/v8"
+	"github.com/gofrs/uuid"
+
+	models "gitlab.com/voipbin/bin-manager/number-manager.git/models"
+)
+
+type handler struct {
+	Addr     string
+	Password string
+	DB       int
+
+	Cache *redis.Client
+}
+
+// CacheHandler interface
+type CacheHandler interface {
+	Connect() error
+
+	NumberDel(ctx context.Context, id uuid.UUID) error
+	NumberDelByNumber(ctx context.Context, num string) error
+	NumberGet(ctx context.Context, id uuid.UUID) (*models.Number, error)
+	NumberGetByNumber(ctx context.Context, num string) (*models.Number, error)
+	NumberSet(ctx context.Context, numb *models.Number) error
+	NumberSetByNumber(ctx context.Context, numb *models.Number) error
+}
+
+// NewHandler creates DBHandler
+func NewHandler(addr string, password string, db int) CacheHandler {
+
+	cache := redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: password,
+		DB:       db,
+	})
+
+	h := &handler{
+		Addr:     addr,
+		Password: password,
+		DB:       db,
+		Cache:    cache,
+	}
+
+	return h
+}
+
+// Connect connects to the cache server
+func (h *handler) Connect() error {
+	_, err := h.Cache.Ping(context.Background()).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
