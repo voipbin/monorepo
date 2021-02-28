@@ -1,4 +1,4 @@
-package numberhandler
+package numberhandlertelnyx
 
 import (
 	"reflect"
@@ -9,31 +9,26 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/telnyx"
 )
 
-func TestGetAvailableNumbersTelnyx(t *testing.T) {
+func TestGetAvailableNumbers(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockTelnyx := numberhandlertelnyx.NewMockNumberHandler(mc)
 
-	h := numberHandler{
-		reqHandler:       mockReq,
-		db:               mockDB,
-		cache:            mockCache,
-		numHandlerTelnyx: mockTelnyx,
-	}
+	h := NewNumberHandler(mockReq, mockDB, mockCache)
 
 	type test struct {
 		name    string
 		country string
 		limit   uint
 
+		numbers   []*telnyx.AvailableNumber
 		expectRes []*models.AvailableNumber
 	}
 
@@ -42,6 +37,48 @@ func TestGetAvailableNumbersTelnyx(t *testing.T) {
 			"normal us",
 			"us",
 			1,
+			[]*telnyx.AvailableNumber{
+				{
+					PhoneNumber:  "+16188850188",
+					Reservable:   true,
+					QuickShip:    true,
+					VanityFormat: "",
+					RecordType:   "available_phone_number",
+					CostInformation: telnyx.AvailableCostInformation{
+						MonthlyCost: "1.00000",
+						UpfrontCost: "1.00000",
+						Currency:    "USD",
+					},
+					Features: []telnyx.AvailableFeature{
+						{
+							Name: "emergency",
+						},
+						{
+							Name: "fax",
+						},
+						{
+							Name: "voice",
+						},
+						{
+							Name: "sms",
+						},
+					},
+					RegionInformation: []telnyx.AvailableRegionInformation{
+						{
+							RegionName: "IL",
+							RegionType: "state",
+						},
+						{
+							RegionName: "US",
+							RegionType: "country_code",
+						},
+						{
+							RegionName: "DOW",
+							RegionType: "rate_center",
+						},
+					},
+				},
+			},
 			[]*models.AvailableNumber{
 				{
 					Number:       "+16188850188",
@@ -60,7 +97,7 @@ func TestGetAvailableNumbersTelnyx(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTelnyx.EXPECT().GetAvailableNumbers(tt.country, tt.limit).Return(tt.expectRes, nil)
+			mockReq.EXPECT().TelnyxAvailableNumberGets(tt.country, "", "", tt.limit).Return(tt.numbers, nil)
 
 			res, err := h.GetAvailableNumbers(tt.country, tt.limit)
 			if err != nil {
