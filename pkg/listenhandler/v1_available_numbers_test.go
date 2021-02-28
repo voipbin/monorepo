@@ -1,0 +1,101 @@
+package listenhandler
+
+import (
+	"reflect"
+	"testing"
+
+	"github.com/golang/mock/gomock"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
+)
+
+func TestProcessV1AvailableNumbersGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:    mockSock,
+		db:            mockDB,
+		reqHandler:    mockReq,
+		numberHandler: mockNumber,
+	}
+
+	type test struct {
+		name        string
+		countryCode string
+		pageSize    uint
+		numbers     []*models.AvailableNumber
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"empty numbers",
+			"US",
+			1,
+			[]*models.AvailableNumber{},
+			&rabbitmqhandler.Request{
+				URI:    "/v1/available_numbers?country_code=US&page_size=1",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[]`),
+			},
+		},
+		{
+			"1 number entry",
+			"US",
+			1,
+			[]*models.AvailableNumber{
+				{
+					Number:       "+16188850188",
+					ProviderName: models.NumberProviderNameTelnyx,
+					Country:      "US",
+					Region:       "IL",
+					Features: []models.AvailableNumberFeature{
+						models.AvailableNumberFeatureEmergency, models.AvailableNumberFeatureFax, models.AvailableNumberFeatureVoice, models.AvailableNumberFeatureSMS,
+					},
+				},
+			},
+			&rabbitmqhandler.Request{
+				URI:    "/v1/available_numbers?country_code=US&page_size=1",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"number":"+16188850188","provider_name":"telnyx","country":"US","region":"IL","postal_code":"","features":["emergency","fax","voice","sms"],"tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockNumber.EXPECT().GetAvailableNumbers(tt.countryCode, tt.pageSize).Return(tt.numbers, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+
+		})
+	}
+}
