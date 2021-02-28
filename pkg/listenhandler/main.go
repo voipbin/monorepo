@@ -50,7 +50,8 @@ var (
 	regV1AvailableNumbers = regexp.MustCompile("/v1/available_numbers")
 
 	// order numbers
-	regV1OrderNumbers = regexp.MustCompile("/v1/order_numbers")
+	regV1OrderNumbers   = regexp.MustCompile("/v1/order_numbers")
+	regV1OrderNumbersID = regexp.MustCompile("/v1/order_numbers/" + regUUID)
 )
 
 var (
@@ -177,7 +178,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// order_numbers
 	////////////////////
 
-	// POST /order_numbers
+	// DELETE /order_numbers/<id>
+	case regV1OrderNumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1OrderNumbersIDDelete(m)
+		requestType = "/v1/order_numbers"
+
+		// POST /order_numbers
 	case regV1OrderNumbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1OrderNumbersPost(m)
 		requestType = "/v1/order_numbers"
