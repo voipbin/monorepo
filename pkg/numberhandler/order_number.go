@@ -47,3 +47,21 @@ func (h *numberHandler) GetOrderNumber(ctx context.Context, id uuid.UUID) (*mode
 
 	return number, nil
 }
+
+// GetOrderNumbers returns list of numbers info of the given user_id
+func (h *numberHandler) GetOrderNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*models.Number, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"user_id": userID,
+		},
+	)
+	log.Debugf("GetOrderNumbers. user_id: %d", userID)
+
+	numbers, err := h.db.NumberGets(ctx, userID, pageSize, pageToken)
+	if err != nil {
+		log.Errorf("Could not get numbers. user_id: %d, err:%v", userID, err)
+		return nil, err
+	}
+
+	return numbers, nil
+}

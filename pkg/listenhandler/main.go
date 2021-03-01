@@ -141,6 +141,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
+// processRequest handles all of requests of the listen queue.
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	var requestType string
@@ -188,9 +189,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1OrderNumbersIDGet(m)
 		requestType = "/v1/order_numbers"
 
-		// POST /order_numbers
+	// POST /order_numbers
 	case regV1OrderNumbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1OrderNumbersPost(m)
+		requestType = "/v1/order_numbers"
+
+	// GET /order_numbers
+	case regV1OrderNumbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1OrderNumbersGet(m)
 		requestType = "/v1/order_numbers"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
