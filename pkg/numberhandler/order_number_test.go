@@ -129,69 +129,67 @@ func TestGetOrderNumber(t *testing.T) {
 	}
 }
 
-// func TestOrderNumbers(t *testing.T) {
-// 	mc := gomock.NewController(t)
-// 	defer mc.Finish()
+func TestGetOrderNumbers(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-// 	mockReq := requesthandler.NewMockRequestHandler(mc)
-// 	mockDB := dbhandler.NewMockDBHandler(mc)
-// 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandler(mc)
 
-// 	h := NewNumberHandler(mockReq, mockDB, mockCache)
+	h := numberHandler{
+		reqHandler:       mockReq,
+		db:               mockDB,
+		cache:            mockCache,
+		numHandlerTelnyx: mockTelnyx,
+	}
 
-// 	type test struct {
-// 		name      string
-// 		userID    uint64
-// 		numbers   []string
-// 		expectRes []*models.Number
-// 	}
+	type test struct {
+		name      string
+		userID    uint64
+		pageSize  uint64
+		pageToken string
 
-// 	tests := []test{
-// 		{
-// 			"normal",
-// 			1,
-// 			[]string{"+821021656521"},
-// 			[]*models.Number{
-// 				{
-// 					ID:                  [16]byte{},
-// 					Number:              "",
-// 					FlowID:              [16]byte{},
-// 					UserID:              0,
-// 					ProviderName:        "",
-// 					ProviderReferenceID: "",
-// 					Status:              "",
-// 					T38Enabled:          false,
-// 					EmergencyEnabled:    false,
-// 					TMPurchase:          "",
-// 					TMCreate:            "",
-// 					TMUpdate:            "",
-// 					TMDelete:            "",
-// 				},
-// 			},
-// 		},
-// 	}
+		numbers []*models.Number
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
+	tests := []test{
+		{
+			"normal",
+			1,
+			10,
+			"2021-02-26 18:26:49.000",
+			[]*models.Number{
+				{
+					ID:                  uuid.FromStringOrNil("da535752-7a4d-11eb-aec4-5bac74c24370"),
+					Number:              "+821021656521",
+					UserID:              1,
+					ProviderName:        models.NumberProviderNameTelnyx,
+					ProviderReferenceID: "1580568175064384684",
+					Status:              models.NumberStatusActive,
+					T38Enabled:          false,
+					EmergencyEnabled:    false,
+					TMPurchase:          "2021-02-26 18:26:49.000",
+					TMCreate:            "2021-02-26 18:26:49.000",
+				},
+			},
+		},
+	}
 
-// 			mockReq.EXPECT().TelnyxNumberOrdersPost(tt.numbers)
-// 			for _, num := range tt.numbers {
-// 				mockReq.EXPECT().TelnyxPhoneNumbersGet(1, "", num).Return([]*telnyx.PhoneNumber{{ID: "b954ea5e-7924-11eb-b7e9-f3f26145e121"}}, nil)
-// 				mockReq.EXPECT().TelnyxPhoneNumbersIDUpdateConnectionID("b954ea5e-7924-11eb-b7e9-f3f26145e121", ConnectionID).Return(&telnyx.PhoneNumber{}, nil)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
-// 				tmp := &telnyx.PhoneNumber{}
-// 				mockDB.EXPECT().NumberCreate(gomock.Any(), tmp.ConvertNumber())
+			mockDB.EXPECT().NumberGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.numbers, nil)
+			res, err := h.GetOrderNumbers(ctx, tt.userID, tt.pageSize, tt.pageToken)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 
-// 			}
-
-// 			res, err := h.OrderNumbers(tt.userID, tt.numbers)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if reflect.DeepEqual(tt.expectRes, res) != true {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
+			if reflect.DeepEqual(tt.numbers, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.numbers, res)
+			}
+		})
+	}
+}

@@ -3,6 +3,8 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -109,6 +111,51 @@ func (h *listenHandler) processV1OrderNumbersIDGet(req *rabbitmqhandler.Request)
 	data, err := json.Marshal(number)
 	if err != nil {
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", number, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1OrderNumbersGet handles GET /v1/order_numbers request
+func (h *listenHandler) processV1OrderNumbersGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the pagination params
+	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := u.Query().Get(PageToken)
+
+	// get user_id
+	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
+	userID := uint64(tmpUserID)
+
+	log := logrus.WithFields(logrus.Fields{
+		"user":  userID,
+		"size":  pageSize,
+		"token": pageToken,
+	})
+
+	ctx := context.Background()
+	numbers, err := h.numberHandler.GetOrderNumbers(ctx, userID, pageSize, pageToken)
+	if err != nil {
+		log.Debugf("Could not get numbers. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(numbers)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", numbers, err)
 		return simpleResponse(500), nil
 	}
 

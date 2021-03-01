@@ -226,7 +226,7 @@ func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*models.N
 func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*models.Number, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", numberSelect)
+	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? and tm_delete is null order by tm_create desc limit ?", numberSelect)
 
 	rows, err := h.db.Query(q, userID, token, size)
 	if err != nil {
