@@ -23,6 +23,7 @@ type NumberHandler interface {
 
 	GetAvailableNumbers(countyCode string, limit uint) ([]*models.AvailableNumber, error)
 	GetOrderNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
+	GetOrderNumberByNumber(ctx context.Context, num string) (*models.Number, error)
 	GetOrderNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*models.Number, error)
 
 	ReleaseOrderNumbers(ctx context.Context, id uuid.UUID) (*models.Number, error)

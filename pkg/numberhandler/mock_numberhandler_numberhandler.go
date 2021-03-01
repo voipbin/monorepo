@@ -80,6 +80,21 @@ func (mr *MockNumberHandlerMockRecorder) GetOrderNumber(ctx, id interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderNumber", reflect.TypeOf((*MockNumberHandler)(nil).GetOrderNumber), ctx, id)
 }
 
+// GetOrderNumberByNumber mocks base method
+func (m *MockNumberHandler) GetOrderNumberByNumber(ctx context.Context, num string) (*models.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrderNumberByNumber", ctx, num)
+	ret0, _ := ret[0].(*models.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrderNumberByNumber indicates an expected call of GetOrderNumberByNumber
+func (mr *MockNumberHandlerMockRecorder) GetOrderNumberByNumber(ctx, num interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderNumberByNumber", reflect.TypeOf((*MockNumberHandler)(nil).GetOrderNumberByNumber), ctx, num)
+}
+
 // GetOrderNumbers mocks base method
 func (m *MockNumberHandler) GetOrderNumbers(ctx context.Context, userID, pageSize uint64, pageToken string) ([]*models.Number, error) {
 	m.ctrl.T.Helper()
