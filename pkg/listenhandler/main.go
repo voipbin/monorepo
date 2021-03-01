@@ -183,6 +183,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1OrderNumbersIDDelete(m)
 		requestType = "/v1/order_numbers"
 
+	// DELETE /order_numbers/<id>
+	case regV1OrderNumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1OrderNumbersIDGet(m)
+		requestType = "/v1/order_numbers"
+
 		// POST /order_numbers
 	case regV1OrderNumbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1OrderNumbersPost(m)

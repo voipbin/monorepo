@@ -20,6 +20,7 @@ import (
 // NumberHandler is interface for service handle
 type NumberHandler interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*models.AvailableNumber, error)
+	GetOrderNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
 	CreateOrderNumbers(userID uint64, numbers []string) ([]*models.Number, error)
 	ReleaseOrderNumbers(ctx context.Context, id uuid.UUID) (*models.Number, error)
 }
@@ -32,11 +33,6 @@ type numberHandler struct {
 
 	numHandlerTelnyx numberhandlertelnyx.NumberHandler
 }
-
-// telnyx const variables
-const (
-	ConnectionID string = "1526401767787464160" // telnyx's voipbin connection id
-)
 
 var (
 	metricsNamespace = "number_manager"

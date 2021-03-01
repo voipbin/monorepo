@@ -1,6 +1,7 @@
 package numberhandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -65,6 +66,64 @@ func TestCreateOrderNumbersTelnyx(t *testing.T) {
 
 			if reflect.DeepEqual(tt.expectRes, res) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestGetOrderNumber(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandler(mc)
+
+	h := numberHandler{
+		reqHandler:       mockReq,
+		db:               mockDB,
+		cache:            mockCache,
+		numHandlerTelnyx: mockTelnyx,
+	}
+
+	type test struct {
+		name     string
+		numberID uuid.UUID
+		number   *models.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
+			&models.Number{
+				ID:                  uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderReferenceID: "1580568175064384684",
+				Status:              models.NumberStatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+				TMPurchase:          "2021-02-26 18:26:49.000",
+				TMCreate:            "2021-02-26 18:26:49.000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().NumberGet(gomock.Any(), tt.numberID).Return(tt.number, nil)
+			res, err := h.GetOrderNumber(ctx, tt.numberID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.number, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.number, res)
 			}
 		})
 	}

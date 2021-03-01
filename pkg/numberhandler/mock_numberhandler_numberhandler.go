@@ -50,6 +50,21 @@ func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetAvailableNumbers), countyCode, limit)
 }
 
+// GetOrderNumber mocks base method
+func (m *MockNumberHandler) GetOrderNumber(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrderNumber", ctx, id)
+	ret0, _ := ret[0].(*models.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrderNumber indicates an expected call of GetOrderNumber
+func (mr *MockNumberHandlerMockRecorder) GetOrderNumber(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderNumber", reflect.TypeOf((*MockNumberHandler)(nil).GetOrderNumber), ctx, id)
+}
+
 // CreateOrderNumbers mocks base method
 func (m *MockNumberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*models.Number, error) {
 	m.ctrl.T.Helper()

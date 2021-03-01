@@ -29,3 +29,21 @@ func (h *numberHandler) ReleaseOrderNumbers(ctx context.Context, id uuid.UUID) (
 
 	return h.numHandlerTelnyx.ReleaseOrderNumber(ctx, number)
 }
+
+// GetOrderNumber returns number info of the given id
+func (h *numberHandler) GetOrderNumber(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"number_id": id,
+		},
+	)
+	log.Debugf("GetOrderNumber. number: %s", id)
+
+	number, err := h.db.NumberGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get number info. number: %s, err:%v", id, err)
+		return nil, err
+	}
+
+	return number, nil
+}
