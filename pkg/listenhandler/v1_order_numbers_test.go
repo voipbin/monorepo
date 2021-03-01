@@ -155,3 +155,71 @@ func TestProcessV1OrderNumbersIDDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestProcessV1OrderNumbersIDGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:    mockSock,
+		db:            mockDB,
+		reqHandler:    mockReq,
+		numberHandler: mockNumber,
+	}
+
+	type test struct {
+		name       string
+		id         uuid.UUID
+		resultData *models.Number
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"1 number",
+			uuid.FromStringOrNil("7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad"),
+			&models.Number{
+				ID:                  uuid.FromStringOrNil("7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderReferenceID: "",
+				Status:              models.NumberStatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+			},
+			&rabbitmqhandler.Request{
+				URI:    "/v1/order_numbers/7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockNumber.EXPECT().GetOrderNumber(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+
+		})
+	}
+}

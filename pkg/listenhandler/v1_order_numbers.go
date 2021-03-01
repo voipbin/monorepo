@@ -84,3 +84,39 @@ func (h *listenHandler) processV1OrderNumbersIDDelete(req *rabbitmqhandler.Reque
 
 	return res, nil
 }
+
+// processV1OrderNumbersIDGet handles GET /v1/order_numbers/<id> request
+func (h *listenHandler) processV1OrderNumbersIDGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(req.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debugf("Executing processV1OrderNumbersIDGet. number: %s", id)
+
+	ctx := context.Background()
+	number, err := h.numberHandler.GetOrderNumber(ctx, id)
+	if err != nil {
+		log.Debugf("Could not delete the number. number: %s, err: %v", id, err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(number)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", number, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
