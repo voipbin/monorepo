@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
@@ -22,7 +23,8 @@ import (
 )
 
 func setupServer(app *gin.Engine) {
-	ApplyRoutes(&app.RouterGroup)
+	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
+	ApplyRoutes(v1)
 }
 
 func TestCallsPOST(t *testing.T) {
@@ -81,7 +83,7 @@ func TestCallsPOST(t *testing.T) {
 				t.Errorf("Wong match. expect: ok, got: %v", err)
 			}
 
-			req, _ := http.NewRequest("POST", "/calls", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", "/v1.0/calls", bytes.NewBuffer(body))
 
 			req.Header.Set("Content-Type", "application/json")
 
@@ -126,7 +128,7 @@ func TestCallsGET(t *testing.T) {
 				},
 			},
 			[]*call.Call{
-				&call.Call{
+				{
 					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
@@ -145,15 +147,15 @@ func TestCallsGET(t *testing.T) {
 				},
 			},
 			[]*call.Call{
-				&call.Call{
+				{
 					ID:       uuid.FromStringOrNil("668e6ee6-f989-11ea-abca-bf1ca885b142"),
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
-				&call.Call{
+				{
 					ID:       uuid.FromStringOrNil("5d8167e0-f989-11ea-8b34-2b0a03c78fc5"),
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
-				&call.Call{
+				{
 					ID:       uuid.FromStringOrNil("61c6626a-f989-11ea-abbf-97944933fee9"),
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
@@ -174,7 +176,7 @@ func TestCallsGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			reqQuery := fmt.Sprintf("/calls?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
+			reqQuery := fmt.Sprintf("/v1.0/calls?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
 			mockSvc.EXPECT().CallGets(&tt.user, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)

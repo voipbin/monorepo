@@ -20,7 +20,15 @@ func TestFMFlowCreate(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.storage-manager.request", "bin-manager.registrar-manager.request")
+	reqHandler := requestHandler{
+		sock:           mockSock,
+		exchangeDelay:  "bin-manager.delay",
+		queueCall:      "bin-manager.call-manager.request",
+		queueFlow:      "bin-manager.flow-manager.request",
+		queueStorage:   "bin-manager.storage-manager.request",
+		queueRegistrar: "bin-manager.registrar-manager.request",
+		queueNumber:    "bin-manager.number-manager.request",
+	}
 
 	type test struct {
 		name string
@@ -97,7 +105,15 @@ func TestFMFlowUpdate(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.storage-manager.request", "bin-manager.registrar-manager.request")
+	reqHandler := requestHandler{
+		sock:           mockSock,
+		exchangeDelay:  "bin-manager.delay",
+		queueCall:      "bin-manager.call-manager.request",
+		queueFlow:      "bin-manager.flow-manager.request",
+		queueStorage:   "bin-manager.storage-manager.request",
+		queueRegistrar: "bin-manager.registrar-manager.request",
+		queueNumber:    "bin-manager.number-manager.request",
+	}
 
 	type test struct {
 		name string
@@ -165,7 +181,15 @@ func TestFMFlowGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.storage-manager.request", "bin-manager.registrar-manager.request")
+	reqHandler := requestHandler{
+		sock:           mockSock,
+		exchangeDelay:  "bin-manager.delay",
+		queueCall:      "bin-manager.call-manager.request",
+		queueFlow:      "bin-manager.flow-manager.request",
+		queueStorage:   "bin-manager.storage-manager.request",
+		queueRegistrar: "bin-manager.registrar-manager.request",
+		queueNumber:    "bin-manager.number-manager.request",
+	}
 
 	type test struct {
 		name string
@@ -232,7 +256,15 @@ func TestFMFlowDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.storage-manager.request", "bin-manager.registrar-manager.request")
+	reqHandler := requestHandler{
+		sock:           mockSock,
+		exchangeDelay:  "bin-manager.delay",
+		queueCall:      "bin-manager.call-manager.request",
+		queueFlow:      "bin-manager.flow-manager.request",
+		queueStorage:   "bin-manager.storage-manager.request",
+		queueRegistrar: "bin-manager.registrar-manager.request",
+		queueNumber:    "bin-manager.number-manager.request",
+	}
 
 	type test struct {
 		name string
@@ -279,7 +311,15 @@ func TestFMFlowGets(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.storage-manager.request", "bin-manager.registrar-manager.request")
+	reqHandler := requestHandler{
+		sock:           mockSock,
+		exchangeDelay:  "bin-manager.delay",
+		queueCall:      "bin-manager.call-manager.request",
+		queueFlow:      "bin-manager.flow-manager.request",
+		queueStorage:   "bin-manager.storage-manager.request",
+		queueRegistrar: "bin-manager.registrar-manager.request",
+		queueNumber:    "bin-manager.number-manager.request",
+	}
 
 	type test struct {
 		name string
