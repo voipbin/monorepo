@@ -41,7 +41,7 @@ func (h *listenHandler) processV1AvailableNumbersGet(req *rabbitmqhandler.Reques
 		"country_code": countryCode,
 	})
 
-	log.Debug("Getting available nubmers.")
+	log.Debug("processV1AvailableNumbersGet. Getting available nubmers.")
 	numbers, err := h.numberHandler.GetAvailableNumbers(countryCode, pageSize)
 	if err != nil {
 		log.Debugf("Could not get available numbers. err: %v", err)
@@ -53,7 +53,6 @@ func (h *listenHandler) processV1AvailableNumbersGet(req *rabbitmqhandler.Reques
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", numbers, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
