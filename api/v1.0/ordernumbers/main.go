@@ -9,4 +9,5 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	orderNumbers := r.Group("/order_numbers")
 
 	orderNumbers.GET("", orderNumbersGET)
+	orderNumbers.POST("", orderNumbersPOST)
 }
