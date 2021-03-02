@@ -1,0 +1,12 @@
+package ordernumbers
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+// ApplyRoutes applies router to the gin Engine
+func ApplyRoutes(r *gin.RouterGroup) {
+	orderNumbers := r.Group("/order_numbers")
+
+	orderNumbers.GET("", orderNumbersGET)
+}

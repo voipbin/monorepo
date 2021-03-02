@@ -62,6 +62,10 @@ type ServiceHandler interface {
 	FlowGets(u *user.User, pageSize uint64, pageToken string) ([]*flow.Flow, error)
 	FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, error)
 
+	// order numbers handler
+	OrderNumberCreate(u *user.User, num string) (*number.Number, error)
+	OrderNumberGets(u *user.User, size uint64, token string) ([]*number.Number, error)
+
 	// recording handlers
 	RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error)
 	RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error)
