@@ -412,6 +412,36 @@ func (mr *MockServiceHandlerMockRecorder) FlowUpdate(u, f interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockServiceHandler)(nil).FlowUpdate), u, f)
 }
 
+// OrderNumberCreate mocks base method
+func (m *MockServiceHandler) OrderNumberCreate(u *user.User, num string) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OrderNumberCreate", u, num)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OrderNumberCreate indicates an expected call of OrderNumberCreate
+func (mr *MockServiceHandlerMockRecorder) OrderNumberCreate(u, num interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrderNumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).OrderNumberCreate), u, num)
+}
+
+// OrderNumberGets mocks base method
+func (m *MockServiceHandler) OrderNumberGets(u *user.User, size uint64, token string) ([]*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OrderNumberGets", u, size, token)
+	ret0, _ := ret[0].([]*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OrderNumberGets indicates an expected call of OrderNumberGets
+func (mr *MockServiceHandlerMockRecorder) OrderNumberGets(u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrderNumberGets", reflect.TypeOf((*MockServiceHandler)(nil).OrderNumberGets), u, size, token)
+}
+
 // RecordingGet mocks base method
 func (m *MockServiceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()

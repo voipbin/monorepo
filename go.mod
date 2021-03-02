@@ -17,6 +17,7 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/prometheus/client_golang v1.9.0
+	github.com/prometheus/procfs v0.3.0 // indirect
 	github.com/sirupsen/logrus v1.7.0
 	github.com/smotes/purse v1.0.1
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
@@ -24,7 +25,10 @@ require (
 	github.com/swaggo/swag v1.7.0
 	github.com/ugorji/go v1.2.3 // indirect
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210204021924-4534f48f4348
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210204044617-f20271d98e1d
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+	golang.org/x/mod v0.3.1-0.20200828183125-ce943fd02449 // indirect
+	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	golang.org/x/tools v0.1.0 // indirect
+	google.golang.org/genproto v0.0.0-20210203152818-3206188e46ba // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
 )
