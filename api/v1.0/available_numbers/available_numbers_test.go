@@ -1,4 +1,4 @@
-package recordings
+package availablenumbers
 
 import (
 	"fmt"
@@ -7,12 +7,11 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -22,7 +21,7 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func TestRecordingsIDGET(t *testing.T) {
+func TestExtensionsGET(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -33,9 +32,10 @@ func TestRecordingsIDGET(t *testing.T) {
 	type test struct {
 		name        string
 		user        user.User
-		recording   *recording.Recording
-		recordingID string
-		downloadURL string
+		pageSize    uint64
+		countryCode string
+
+		resAvailableNumbers []*number.AvailableNumber
 	}
 
 	tests := []test{
@@ -44,11 +44,16 @@ func TestRecordingsIDGET(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			&recording.Recording{
-				ID: uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929"),
+			10,
+			"US",
+			[]*number.AvailableNumber{
+				{
+					Number:   "+16188850188",
+					Country:  "US",
+					Region:   "IL",
+					Features: []string{"emergency", "fax", "voice", "sms"},
+				},
 			},
-			"call_776c8a94-34bd-11eb-abef-0b279f3eabc1_2020-04-18T03:22:17.995000Z.wav",
-			"https://test.com/call_776c8a94-34bd-11eb-abef-0b279f3eabc1_2020.wav?token=token",
 		},
 	}
 
@@ -64,8 +69,8 @@ func TestRecordingsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().RecordingGet(&tt.user, tt.recording.ID).Return(tt.recording, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/recordings/%s", tt.recording.ID), nil)
+			mockSvc.EXPECT().AvailableNumberGets(&tt.user, tt.pageSize, tt.countryCode).Return(tt.resAvailableNumbers, nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/available_numbers?page_size=%d&user_id=%d&country_code=%s", tt.pageSize, tt.user.ID, tt.countryCode), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

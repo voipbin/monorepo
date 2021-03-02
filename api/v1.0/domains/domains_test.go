@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -21,7 +22,8 @@ import (
 )
 
 func setupServer(app *gin.Engine) {
-	ApplyRoutes(&app.RouterGroup)
+	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
+	ApplyRoutes(v1)
 }
 
 func TestDomainsPOST(t *testing.T) {
@@ -72,7 +74,7 @@ func TestDomainsPOST(t *testing.T) {
 			}
 
 			mockSvc.EXPECT().DomainCreate(&tt.user, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&domain.Domain{}, nil)
-			req, _ := http.NewRequest("POST", "/domains", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", "/v1.0/domains", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -135,7 +137,7 @@ func TestDomainsIDGET(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().DomainGet(&tt.user, tt.domain.ID).Return(tt.expectDomain, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/domains/%s", tt.domain.ID), nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/domains/%s", tt.domain.ID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -200,7 +202,7 @@ func TestDomainsIDPUT(t *testing.T) {
 			}
 
 			mockSvc.EXPECT().DomainUpdate(&tt.user, tt.expectDomain).Return(&domain.Domain{}, nil)
-			req, _ := http.NewRequest("PUT", "/domains/"+tt.domainID.String(), bytes.NewBuffer(body))
+			req, _ := http.NewRequest("PUT", "/v1.0/domains/"+tt.domainID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -248,7 +250,7 @@ func TestDomainsIDDELETE(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().DomainDelete(&tt.user, tt.domainID).Return(nil)
-			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/domains/%s", tt.domainID), nil)
+			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/domains/%s", tt.domainID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

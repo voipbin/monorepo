@@ -13,6 +13,7 @@ import (
 	domain "gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	flow "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	number "gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	reflect "reflect"
@@ -54,6 +55,21 @@ func (m *MockServiceHandler) AuthLogin(username, password string) (string, error
 func (mr *MockServiceHandlerMockRecorder) AuthLogin(username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthLogin", reflect.TypeOf((*MockServiceHandler)(nil).AuthLogin), username, password)
+}
+
+// AvailableNumberGets mocks base method
+func (m *MockServiceHandler) AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*number.AvailableNumber, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AvailableNumberGets", u, size, countryCode)
+	ret0, _ := ret[0].([]*number.AvailableNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AvailableNumberGets indicates an expected call of AvailableNumberGets
+func (mr *MockServiceHandlerMockRecorder) AvailableNumberGets(u, size, countryCode interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AvailableNumberGets", reflect.TypeOf((*MockServiceHandler)(nil).AvailableNumberGets), u, size, countryCode)
 }
 
 // CallCreate mocks base method

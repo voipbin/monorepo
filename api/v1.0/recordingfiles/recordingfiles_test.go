@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -17,7 +18,8 @@ import (
 )
 
 func setupServer(app *gin.Engine) {
-	ApplyRoutes(&app.RouterGroup)
+	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
+	ApplyRoutes(v1)
 }
 
 func TestRecordingfilesIDGET(t *testing.T) {
@@ -61,7 +63,7 @@ func TestRecordingfilesIDGET(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().RecordingfileGet(&tt.user, tt.recording.ID).Return(tt.downloadURL, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/recordingfiles/%s", tt.recording.ID), nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/recordingfiles/%s", tt.recording.ID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusTemporaryRedirect || w.HeaderMap["Location"][0] != tt.downloadURL {
