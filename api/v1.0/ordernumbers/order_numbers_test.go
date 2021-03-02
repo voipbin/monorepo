@@ -1,4 +1,4 @@
-package availablenumbers
+package ordernumbers
 
 import (
 	"fmt"
@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
@@ -21,7 +23,7 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func TestAvailableNumbersGET(t *testing.T) {
+func TestOrderNumbersGET(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -30,12 +32,11 @@ func TestAvailableNumbersGET(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name        string
-		user        user.User
-		pageSize    uint64
-		countryCode string
+		name string
+		user user.User
+		req  request.ParamOrderNumbersGET
 
-		resAvailableNumbers []*number.AvailableNumber
+		resNumbers []*number.Number
 	}
 
 	tests := []test{
@@ -44,14 +45,24 @@ func TestAvailableNumbersGET(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			10,
-			"US",
-			[]*number.AvailableNumber{
+			request.ParamOrderNumbersGET{
+				Pagination: request.Pagination{
+					PageSize:  10,
+					PageToken: "2020-09-20T03:23:20.995000",
+				},
+			},
+			[]*number.Number{
 				{
-					Number:   "+16188850188",
-					Country:  "US",
-					Region:   "IL",
-					Features: []string{"emergency", "fax", "voice", "sms"},
+					ID:               uuid.FromStringOrNil("31ee638c-7b23-11eb-858a-33e73c4f82f7"),
+					Number:           "+821021656521",
+					UserID:           1,
+					Status:           "active",
+					T38Enabled:       false,
+					EmergencyEnabled: false,
+					TMPurchase:       "",
+					TMCreate:         "",
+					TMUpdate:         "",
+					TMDelete:         "",
 				},
 			},
 		},
@@ -69,8 +80,8 @@ func TestAvailableNumbersGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().AvailableNumberGets(&tt.user, tt.pageSize, tt.countryCode).Return(tt.resAvailableNumbers, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/available_numbers?page_size=%d&user_id=%d&country_code=%s", tt.pageSize, tt.user.ID, tt.countryCode), nil)
+			mockSvc.EXPECT().OrderNumberGets(&tt.user, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/order_numbers?page_size=%d&user_id=%d&page_token=%s", tt.req.PageSize, tt.user.ID, tt.req.PageToken), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

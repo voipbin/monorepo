@@ -56,6 +56,36 @@ func (mr *MockRequestHandlerMockRecorder) NMAvailableNumbersGet(userID, pageSize
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMAvailableNumbersGet", reflect.TypeOf((*MockRequestHandler)(nil).NMAvailableNumbersGet), userID, pageSize, countryCode)
 }
 
+// NMOrderNumberCreate mocks base method
+func (m *MockRequestHandler) NMOrderNumberCreate(userID uint64, numb string) (*nmnumber.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NMOrderNumberCreate", userID, numb)
+	ret0, _ := ret[0].(*nmnumber.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NMOrderNumberCreate indicates an expected call of NMOrderNumberCreate
+func (mr *MockRequestHandlerMockRecorder) NMOrderNumberCreate(userID, numb interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMOrderNumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).NMOrderNumberCreate), userID, numb)
+}
+
+// NMOrderNumberGets mocks base method
+func (m *MockRequestHandler) NMOrderNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NMOrderNumberGets", userID, pageToken, pageSize)
+	ret0, _ := ret[0].([]nmnumber.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NMOrderNumberGets indicates an expected call of NMOrderNumberGets
+func (mr *MockRequestHandlerMockRecorder) NMOrderNumberGets(userID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMOrderNumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NMOrderNumberGets), userID, pageToken, pageSize)
+}
+
 // CMCallCreate mocks base method
 func (m *MockRequestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error) {
 	m.ctrl.T.Helper()

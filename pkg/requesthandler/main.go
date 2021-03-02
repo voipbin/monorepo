@@ -91,6 +91,9 @@ type RequestHandler interface {
 	// availalbe_number
 	NMAvailableNumbersGet(userID uint64, pageSize uint64, countryCode string) ([]nmnumber.AvailableNumber, error)
 
+	NMOrderNumberCreate(userID uint64, numb string) (*nmnumber.Number, error)
+	NMOrderNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
+
 	// call
 	CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error)
 	CMCallDelete(callID uuid.UUID) error

@@ -48,12 +48,12 @@ func TestRecordingGets(t *testing.T) {
 			"2020-10-20 01:00:00.995000",
 
 			[]cmrecording.Recording{
-				cmrecording.Recording{
+				{
 					ID:       uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
 					UserID:   1,
 					Filename: "call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 				},
-				cmrecording.Recording{
+				{
 					ID:       uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
 					Filename: "call_2f167946-b2b4-4370-94fa-d6c2c57c84da_2020-12-04T18:48:03Z",
 					UserID:   1,
@@ -61,13 +61,13 @@ func TestRecordingGets(t *testing.T) {
 			},
 
 			[]*recording.Recording{
-				&recording.Recording{
+				{
 					ID:          uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
 					UserID:      1,
 					Filename:    "call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 					ReferenceID: uuid.Nil,
 				},
-				&recording.Recording{
+				{
 					ID:          uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
 					Filename:    "call_2f167946-b2b4-4370-94fa-d6c2c57c84da_2020-12-04T18:48:03Z",
 					UserID:      1,
