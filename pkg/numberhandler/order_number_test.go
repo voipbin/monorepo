@@ -71,6 +71,62 @@ func TestCreateOrderNumbersTelnyx(t *testing.T) {
 	}
 }
 
+func TestCreateOrderNumberTelnyx(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandler(mc)
+
+	h := numberHandler{
+		reqHandler:       mockReq,
+		db:               mockDB,
+		cache:            mockCache,
+		numHandlerTelnyx: mockTelnyx,
+	}
+
+	type test struct {
+		name   string
+		userID uint64
+		number string
+
+		expectRes *models.Number
+	}
+
+	tests := []test{
+		{
+			"normal us",
+			1,
+			"+821021656521",
+			&models.Number{
+				ID:           uuid.FromStringOrNil("61afc712-7b25-11eb-b31f-5357d050c809"),
+				Number:       "+821021656521",
+				ProviderName: models.NumberProviderNameTelnyx,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			tmpNumbers := []string{tt.number}
+			tmpExpRes := []*models.Number{tt.expectRes}
+			mockTelnyx.EXPECT().CreateOrderNumbers(tt.userID, tmpNumbers).Return(tmpExpRes, nil)
+
+			res, err := h.CreateOrderNumber(tt.userID, tt.number)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func TestGetOrderNumber(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
