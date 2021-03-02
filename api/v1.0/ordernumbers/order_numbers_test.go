@@ -1,7 +1,8 @@
 package ordernumbers
 
 import (
-	"fmt"
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -34,6 +35,7 @@ func TestOrderNumbersGET(t *testing.T) {
 	type test struct {
 		name string
 		user user.User
+		uri  string
 		req  request.ParamOrderNumbersGET
 
 		resNumbers []*number.Number
@@ -45,10 +47,11 @@ func TestOrderNumbersGET(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
+			"/v1.0/order_numbers?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
 			request.ParamOrderNumbersGET{
 				Pagination: request.Pagination{
 					PageSize:  10,
-					PageToken: "2020-09-20T03:23:20.995000",
+					PageToken: "2021-03-02 03:23:20.995000",
 				},
 			},
 			[]*number.Number{
@@ -81,7 +84,64 @@ func TestOrderNumbersGET(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().OrderNumberGets(&tt.user, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/order_numbers?page_size=%d&user_id=%d&page_token=%s", tt.req.PageSize, tt.user.ID, tt.req.PageToken), nil)
+			req, _ := http.NewRequest("GET", tt.uri, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func TestOrderNumbersPOST(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name        string
+		user        user.User
+		uri         string
+		requestBody request.BodyOrderNumbersPOST
+	}
+
+	tests := []test{
+		{
+			"normal",
+			user.User{
+				ID: 1,
+			},
+			"/v1.0/order_numbers",
+			request.BodyOrderNumbersPOST{
+				Number: "+821021656521",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().OrderNumberCreate(&tt.user, tt.requestBody.Number)
+
+			// create body
+			body, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+			req, _ := http.NewRequest("POST", tt.uri, bytes.NewBuffer(body))
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
