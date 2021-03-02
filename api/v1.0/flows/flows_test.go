@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
@@ -23,7 +24,8 @@ import (
 )
 
 func setupServer(app *gin.Engine) {
-	ApplyRoutes(&app.RouterGroup)
+	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
+	ApplyRoutes(v1)
 }
 
 func TestFlowsPOST(t *testing.T) {
@@ -78,7 +80,7 @@ func TestFlowsPOST(t *testing.T) {
 			}
 
 			mockSvc.EXPECT().FlowCreate(&tt.user, gomock.Any(), tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Actions, true).Return(&flow.Flow{}, nil)
-			req, _ := http.NewRequest("POST", "/flows", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", "/v1.0/flows", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -151,7 +153,7 @@ func TestFlowsIDGET(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().FlowGet(&tt.user, tt.flow.ID).Return(tt.expectFlow, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/flows/%s", tt.flow.ID), nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/flows/%s", tt.flow.ID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -226,7 +228,7 @@ func TestFlowsIDPUT(t *testing.T) {
 			}
 
 			mockSvc.EXPECT().FlowUpdate(&tt.user, tt.expectFlow).Return(&flow.Flow{}, nil)
-			req, _ := http.NewRequest("PUT", "/flows/"+tt.flowID.String(), bytes.NewBuffer(body))
+			req, _ := http.NewRequest("PUT", "/v1.0/flows/"+tt.flowID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -274,7 +276,7 @@ func TestFlowsIDDELETE(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().FlowDelete(&tt.user, tt.flowID).Return(nil)
-			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/flows/%s", tt.flowID), nil)
+			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/flows/%s", tt.flowID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

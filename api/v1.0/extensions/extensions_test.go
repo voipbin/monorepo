@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -21,7 +22,8 @@ import (
 )
 
 func setupServer(app *gin.Engine) {
-	ApplyRoutes(&app.RouterGroup)
+	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
+	ApplyRoutes(v1)
 }
 
 func TestExtensionsPOST(t *testing.T) {
@@ -83,7 +85,7 @@ func TestExtensionsPOST(t *testing.T) {
 			}
 
 			mockSvc.EXPECT().ExtensionCreate(&tt.user, tt.reqExt).Return(&extension.Extension{}, nil)
-			req, _ := http.NewRequest("POST", "/extensions", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", "/v1.0/extensions", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -156,7 +158,7 @@ func TestExtensionsGET(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().ExtensionGets(&tt.user, tt.DomainID, uint64(10), "").Return(tt.expectExt, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/extensions?domain_id=%s", tt.DomainID), nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/extensions?domain_id=%s", tt.DomainID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -222,7 +224,7 @@ func TestExtensionsIDGET(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().ExtensionGet(&tt.user, tt.ext.ID).Return(tt.expectExt, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/extensions/%s", tt.ext.ID), nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/extensions/%s", tt.ext.ID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -289,7 +291,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 			}
 
 			mockSvc.EXPECT().ExtensionUpdate(&tt.user, tt.expectExt).Return(&extension.Extension{}, nil)
-			req, _ := http.NewRequest("PUT", "/extensions/"+tt.extID.String(), bytes.NewBuffer(body))
+			req, _ := http.NewRequest("PUT", "/v1.0/extensions/"+tt.extID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -337,7 +339,7 @@ func TestExtensionsIDDELETE(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().ExtensionDelete(&tt.user, tt.extID).Return(nil)
-			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/extensions/%s", tt.extID), nil)
+			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/extensions/%s", tt.extID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

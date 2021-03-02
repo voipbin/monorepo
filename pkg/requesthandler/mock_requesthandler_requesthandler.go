@@ -12,6 +12,7 @@ import (
 	cmconference "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 	cmrecording "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
 	fmflow "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
+	nmnumber "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
 	rmdomain "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
 	rmextension "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmextension"
 	reflect "reflect"
@@ -38,6 +39,21 @@ func NewMockRequestHandler(ctrl *gomock.Controller) *MockRequestHandler {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
+}
+
+// NMAvailableNumbersGet mocks base method
+func (m *MockRequestHandler) NMAvailableNumbersGet(userID, pageSize uint64, countryCode string) ([]nmnumber.AvailableNumber, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NMAvailableNumbersGet", userID, pageSize, countryCode)
+	ret0, _ := ret[0].([]nmnumber.AvailableNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NMAvailableNumbersGet indicates an expected call of NMAvailableNumbersGet
+func (mr *MockRequestHandlerMockRecorder) NMAvailableNumbersGet(userID, pageSize, countryCode interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMAvailableNumbersGet", reflect.TypeOf((*MockRequestHandler)(nil).NMAvailableNumbersGet), userID, pageSize, countryCode)
 }
 
 // CMCallCreate mocks base method
