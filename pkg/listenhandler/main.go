@@ -132,6 +132,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// receive requests
 	go func() {
 		for {
+			// consume the request
 			err := h.rabbitSock.ConsumeRPCOpt(queue, constCosumerName, false, false, false, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
@@ -233,6 +234,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		err = nil
 		requestType = "notfound"
 	}
+
+	logrus.WithFields(
+		logrus.Fields{
+			"response": response,
+		},
+	).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 
 	return response, err
 }
