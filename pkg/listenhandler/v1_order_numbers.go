@@ -25,20 +25,20 @@ func (h *listenHandler) processV1OrderNumbersPost(req *rabbitmqhandler.Request) 
 	}
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user":    reqData.UserID,
-			"numbers": reqData.Numbers,
+			"user":   reqData.UserID,
+			"number": reqData.Number,
 		},
 	)
 
-	numbers, err := h.numberHandler.CreateOrderNumbers(reqData.UserID, reqData.Numbers)
+	numb, err := h.numberHandler.CreateOrderNumber(reqData.UserID, reqData.Number)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(numbers)
+	data, err := json.Marshal(numb)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", numbers, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", numb, err)
 		return simpleResponse(500), nil
 	}
 

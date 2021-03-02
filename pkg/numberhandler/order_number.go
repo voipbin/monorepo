@@ -17,6 +17,20 @@ func (h *numberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*
 	return h.numHandlerTelnyx.CreateOrderNumbers(userID, numbers)
 }
 
+// CreateOrderNumbers creates a new order numbers of given numbers
+func (h *numberHandler) CreateOrderNumber(userID uint64, number string) (*models.Number, error) {
+	logrus.Debugf("CreateOrderNumber. user_id: %d, number: %v", userID, number)
+
+	// use telnyx as a default
+	numbers := []string{number}
+	tmpRes, err := h.numHandlerTelnyx.CreateOrderNumbers(userID, numbers)
+	if err != nil || len(tmpRes) == 0 {
+		return nil, err
+	}
+
+	return tmpRes[0], err
+}
+
 // ReleaseOrderNumbers release/deleted an existed ordered number
 func (h *numberHandler) ReleaseOrderNumbers(ctx context.Context, id uuid.UUID) (*models.Number, error) {
 	logrus.Debugf("ReleaseOrderNumbers. number: %s", id)

@@ -20,6 +20,7 @@ import (
 // NumberHandler is interface for service handle
 type NumberHandler interface {
 	CreateOrderNumbers(userID uint64, numbers []string) ([]*models.Number, error)
+	CreateOrderNumber(userID uint64, number string) (*models.Number, error)
 
 	GetAvailableNumbers(countyCode string, limit uint) ([]*models.AvailableNumber, error)
 	GetOrderNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
