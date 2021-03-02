@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -18,7 +19,8 @@ import (
 )
 
 func setupServer(app *gin.Engine) {
-	ApplyRoutes(&app.RouterGroup)
+	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
+	ApplyRoutes(v1)
 }
 
 func TestConferencesIDGET(t *testing.T) {
@@ -62,7 +64,7 @@ func TestConferencesIDGET(t *testing.T) {
 
 			mockSvc.EXPECT().ConferenceGet(&tt.user, tt.conference.ID).Return(tt.conference, nil)
 
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/conferences/%s", tt.conference.ID), nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/conferences/%s", tt.conference.ID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -122,7 +124,7 @@ func TestConferencesPOST(t *testing.T) {
 			body := []byte(fmt.Sprintf(`{"type": "%s", "name": "%s", "detail": "%s"}`, tt.confType, tt.confName, tt.confDetail))
 
 			mockSvc.EXPECT().ConferenceCreate(&tt.user, tt.confType, tt.confName, tt.confDetail).Return(tt.conference, nil)
-			req, _ := http.NewRequest("POST", "/conferences", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", "/v1.0/conferences", bytes.NewBuffer(body))
 
 			req.Header.Set("Content-Type", "application/json")
 
@@ -176,7 +178,7 @@ func TestConferencesIDDELETE(t *testing.T) {
 
 			mockSvc.EXPECT().ConferenceDelete(&tt.user, tt.conference.ID).Return(nil)
 
-			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/conferences/%s", tt.conference.ID), nil)
+			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/conferences/%s", tt.conference.ID), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

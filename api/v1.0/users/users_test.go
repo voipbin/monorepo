@@ -10,13 +10,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
 func setupServer(app *gin.Engine) {
-	ApplyRoutes(&app.RouterGroup)
+	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
+	ApplyRoutes(v1)
 }
 
 func TestUsersPOST(t *testing.T) {
@@ -79,7 +81,7 @@ func TestUsersPOST(t *testing.T) {
 			}
 
 			mockSvc.EXPECT().UserCreate(tt.requestBody.Username, tt.requestBody.Password, tt.requestBody.Permission)
-			req, _ := http.NewRequest("POST", "/users", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", "/v1.0/users", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -126,7 +128,7 @@ func TestUsersGET(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().UserGets().Return(nil, nil)
-			req, _ := http.NewRequest("GET", "/users", bytes.NewBuffer([]byte("")))
+			req, _ := http.NewRequest("GET", "/v1.0/users", bytes.NewBuffer([]byte("")))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)

@@ -14,17 +14,20 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // ServiceHandler is interface for service handle
 type ServiceHandler interface {
 	// auth handlers
 	AuthLogin(username, password string) (string, error)
+
+	// available numbers
+	AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*number.AvailableNumber, error)
 
 	// call handlers
 	CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error)
@@ -83,15 +86,6 @@ func NewServiceHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhan
 		reqHandler: reqHandler,
 		dbHandler:  dbHandler,
 	}
-}
-
-// ReqHandler for service
-var ReqHandler requesthandler.RequestHandler
-
-// Setup initiates service
-func Setup(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage, queueRegistrar string) error {
-	ReqHandler = requesthandler.NewRequestHandler(sock, exchangeDelay, queueCall, queueFlow, queueStorage, queueRegistrar)
-	return nil
 }
 
 // getCurTime return current utc time string
