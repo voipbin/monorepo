@@ -263,64 +263,64 @@ func (mr *MockRequestHandlerMockRecorder) NMAvailableNumbersGet(userID, pageSize
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMAvailableNumbersGet", reflect.TypeOf((*MockRequestHandler)(nil).NMAvailableNumbersGet), userID, pageSize, countryCode)
 }
 
-// NMOrderNumberCreate mocks base method
-func (m *MockRequestHandler) NMOrderNumberCreate(userID uint64, numb string) (*nmnumber.Number, error) {
+// NMNumberCreate mocks base method
+func (m *MockRequestHandler) NMNumberCreate(userID uint64, numb string) (*nmnumber.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMOrderNumberCreate", userID, numb)
+	ret := m.ctrl.Call(m, "NMNumberCreate", userID, numb)
 	ret0, _ := ret[0].(*nmnumber.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NMOrderNumberCreate indicates an expected call of NMOrderNumberCreate
-func (mr *MockRequestHandlerMockRecorder) NMOrderNumberCreate(userID, numb interface{}) *gomock.Call {
+// NMNumberCreate indicates an expected call of NMNumberCreate
+func (mr *MockRequestHandlerMockRecorder) NMNumberCreate(userID, numb interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMOrderNumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).NMOrderNumberCreate), userID, numb)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMNumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).NMNumberCreate), userID, numb)
 }
 
-// NMOrderNumberDelete mocks base method
-func (m *MockRequestHandler) NMOrderNumberDelete(id uuid.UUID) (*nmnumber.Number, error) {
+// NMNumberDelete mocks base method
+func (m *MockRequestHandler) NMNumberDelete(id uuid.UUID) (*nmnumber.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMOrderNumberDelete", id)
+	ret := m.ctrl.Call(m, "NMNumberDelete", id)
 	ret0, _ := ret[0].(*nmnumber.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NMOrderNumberDelete indicates an expected call of NMOrderNumberDelete
-func (mr *MockRequestHandlerMockRecorder) NMOrderNumberDelete(id interface{}) *gomock.Call {
+// NMNumberDelete indicates an expected call of NMNumberDelete
+func (mr *MockRequestHandlerMockRecorder) NMNumberDelete(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMOrderNumberDelete", reflect.TypeOf((*MockRequestHandler)(nil).NMOrderNumberDelete), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMNumberDelete", reflect.TypeOf((*MockRequestHandler)(nil).NMNumberDelete), id)
 }
 
-// NMOrderNumberGet mocks base method
-func (m *MockRequestHandler) NMOrderNumberGet(numberID uuid.UUID) (*nmnumber.Number, error) {
+// NMNumberGet mocks base method
+func (m *MockRequestHandler) NMNumberGet(numberID uuid.UUID) (*nmnumber.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMOrderNumberGet", numberID)
+	ret := m.ctrl.Call(m, "NMNumberGet", numberID)
 	ret0, _ := ret[0].(*nmnumber.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NMOrderNumberGet indicates an expected call of NMOrderNumberGet
-func (mr *MockRequestHandlerMockRecorder) NMOrderNumberGet(numberID interface{}) *gomock.Call {
+// NMNumberGet indicates an expected call of NMNumberGet
+func (mr *MockRequestHandlerMockRecorder) NMNumberGet(numberID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMOrderNumberGet", reflect.TypeOf((*MockRequestHandler)(nil).NMOrderNumberGet), numberID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMNumberGet", reflect.TypeOf((*MockRequestHandler)(nil).NMNumberGet), numberID)
 }
 
-// NMOrderNumberGets mocks base method
-func (m *MockRequestHandler) NMOrderNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
+// NMNumberGets mocks base method
+func (m *MockRequestHandler) NMNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMOrderNumberGets", userID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "NMNumberGets", userID, pageToken, pageSize)
 	ret0, _ := ret[0].([]nmnumber.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NMOrderNumberGets indicates an expected call of NMOrderNumberGets
-func (mr *MockRequestHandlerMockRecorder) NMOrderNumberGets(userID, pageToken, pageSize interface{}) *gomock.Call {
+// NMNumberGets indicates an expected call of NMNumberGets
+func (mr *MockRequestHandlerMockRecorder) NMNumberGets(userID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMOrderNumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NMOrderNumberGets), userID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMNumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NMNumberGets), userID, pageToken, pageSize)
 }
 
 // RMDomainCreate mocks base method

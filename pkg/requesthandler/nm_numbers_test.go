@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestNMOrderNumberCreate(t *testing.T) {
+func TestNMNumberCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -50,7 +50,7 @@ func TestNMOrderNumberCreate(t *testing.T) {
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/order_numbers",
+				URI:      "/v1/numbers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"user_id":1,"number":"+821021656521"}`),
@@ -81,7 +81,7 @@ func TestNMOrderNumberCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMOrderNumberCreate(tt.userID, tt.numbers)
+			res, err := reqHandler.NMNumberCreate(tt.userID, tt.numbers)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -93,7 +93,7 @@ func TestNMOrderNumberCreate(t *testing.T) {
 	}
 }
 
-func TestNMOrderNumberGets(t *testing.T) {
+func TestNMNumberGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -132,7 +132,7 @@ func TestNMOrderNumberGets(t *testing.T) {
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/order_numbers?page_token=%s&page_size=10&user_id=1", url.QueryEscape("2021-03-02 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/numbers?page_token=%s&page_size=10&user_id=1", url.QueryEscape("2021-03-02 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -164,7 +164,7 @@ func TestNMOrderNumberGets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMOrderNumberGets(tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.NMNumberGets(tt.userID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -176,7 +176,7 @@ func TestNMOrderNumberGets(t *testing.T) {
 	}
 }
 
-func TestNMOrderNumberGet(t *testing.T) {
+func TestNMNumberGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -211,7 +211,7 @@ func TestNMOrderNumberGet(t *testing.T) {
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/order_numbers/74a2f4bc-7be2-11eb-bb71-c767ac6ed931",
+				URI:      "/v1/numbers/74a2f4bc-7be2-11eb-bb71-c767ac6ed931",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -241,7 +241,7 @@ func TestNMOrderNumberGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMOrderNumberGet(tt.numberID)
+			res, err := reqHandler.NMNumberGet(tt.numberID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -253,7 +253,7 @@ func TestNMOrderNumberGet(t *testing.T) {
 	}
 }
 
-func TestNMOrderNumberDelete(t *testing.T) {
+func TestNMNumberDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -288,7 +288,7 @@ func TestNMOrderNumberDelete(t *testing.T) {
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/order_numbers/aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5",
+				URI:      "/v1/numbers/aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5",
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
@@ -318,7 +318,7 @@ func TestNMOrderNumberDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMOrderNumberDelete(tt.numberID)
+			res, err := reqHandler.NMNumberDelete(tt.numberID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

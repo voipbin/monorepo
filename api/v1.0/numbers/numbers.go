@@ -1,4 +1,4 @@
-package ordernumbers
+package numbers
 
 import (
 	"github.com/gin-gonic/gin"
@@ -11,7 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
-// orderNumbersGET handles GET /order_numbers request.
+// numbersGET handles GET /numbers request.
 // It returns list of order numbers of the given user.
 // @Summary List order numbers
 // @Description get order numbers of the country
@@ -19,10 +19,10 @@ import (
 // @Param page_size query int false "The size of results. Max 100"
 // @Param country_code query string true "The ISO country code"
 // @Success 200 {object} response.BodyOrderNumbersGET
-// @Router /v1.0/order_numbers [get]
-func orderNumbersGET(c *gin.Context) {
+// @Router /v1.0/numbers [get]
+func numbersGET(c *gin.Context) {
 
-	var requestParam request.ParamOrderNumbersGET
+	var requestParam request.ParamNumbersGET
 
 	if err := c.BindQuery(&requestParam); err != nil {
 		c.AbortWithStatus(400)
@@ -33,7 +33,7 @@ func orderNumbersGET(c *gin.Context) {
 			"request_address": c.ClientIP,
 		},
 	)
-	log.Debugf("orderNumbersGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
+	log.Debugf("numbersGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	tmp, exists := c.Get("user")
 	if exists != true {
@@ -60,7 +60,7 @@ func orderNumbersGET(c *gin.Context) {
 	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get order numbers
-	numbers, err := serviceHandler.OrderNumberGets(&u, pageSize, requestParam.PageToken)
+	numbers, err := serviceHandler.NumberGets(&u, pageSize, requestParam.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a order number list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -71,7 +71,7 @@ func orderNumbersGET(c *gin.Context) {
 	if len(numbers) > 0 {
 		nextToken = numbers[len(numbers)-1].TMCreate
 	}
-	res := response.BodyOrderNumbersGET{
+	res := response.BodyNumbersGET{
 		Result: numbers,
 		Pagination: response.Pagination{
 			NextPageToken: nextToken,
@@ -82,7 +82,7 @@ func orderNumbersGET(c *gin.Context) {
 	return
 }
 
-// orderNumbersIDGET handles GET /order_numbers/<id> request.
+// numbersIDGET handles GET /numbers/<id> request.
 // It returns order numbers of the given id.
 // @Summary Get order number
 // @Description get order number of the given id
@@ -90,8 +90,8 @@ func orderNumbersGET(c *gin.Context) {
 // @Param id path string true "The ID of the order number"
 // @Param token query string true "JWT token"
 // @Success 200 {object} models.Number
-// @Router /v1.0/order_numbers/{id} [get]
-func orderNumbersIDGET(c *gin.Context) {
+// @Router /v1.0/numbers/{id} [get]
+func numbersIDGET(c *gin.Context) {
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -113,11 +113,11 @@ func orderNumbersIDGET(c *gin.Context) {
 			"number":          id,
 		},
 	)
-	log.Debugf("orderNumbersIDGET. Received request detail. number_id: %s", id)
+	log.Debugf("numbersIDGET. Received request detail. number_id: %s", id)
 
 	// get order number
 	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OrderNumberGet(&u, id)
+	res, err := serviceHandler.NumberGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get an order number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -128,14 +128,14 @@ func orderNumbersIDGET(c *gin.Context) {
 	return
 }
 
-// orderNumbersPOST handles POST /order_numbers request.
+// numbersPOST handles POST /numbers request.
 // It creates a new order number with the given info and returns created order number.
 // @Summary Create a new number and returns detail created number info.
 // @Description Create a new number and returns detail created number info.
 // @Produce json
 // @Success 200 {object} models.Number
-// @Router /v1.0/order_numbers [post]
-func orderNumbersPOST(c *gin.Context) {
+// @Router /v1.0/numbers [post]
+func numbersPOST(c *gin.Context) {
 
 	var body request.BodyOrderNumbersPOST
 	if err := c.BindJSON(&body); err != nil {
@@ -158,7 +158,7 @@ func orderNumbersPOST(c *gin.Context) {
 
 	// create a number
 	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.OrderNumberCreate(&u, body.Number)
+	numb, err := serviceHandler.NumberCreate(&u, body.Number)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
 		c.AbortWithStatus(400)
@@ -169,7 +169,7 @@ func orderNumbersPOST(c *gin.Context) {
 	return
 }
 
-// orderNumbersIDDELETE handles DELETE /order_numbers/<id> request.
+// numbersIDDELETE handles DELETE /numbers/<id> request.
 // It deletes the given id of order number and returns the deleted order number.
 // @Summary Delete order number
 // @Description delete order number of the given id and returns deleted item.
@@ -177,8 +177,8 @@ func orderNumbersPOST(c *gin.Context) {
 // @Param id path string true "The ID of the order number"
 // @Param token query string true "JWT token"
 // @Success 200 {object} models.Number
-// @Router /v1.0/order_numbers/{id} [delete]
-func orderNumbersIDDELETE(c *gin.Context) {
+// @Router /v1.0/numbers/{id} [delete]
+func numbersIDDELETE(c *gin.Context) {
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -200,11 +200,11 @@ func orderNumbersIDDELETE(c *gin.Context) {
 			"number":          id,
 		},
 	)
-	log.Debugf("orderNumbersIDDELETE. Received request detail. number_id: %s", id)
+	log.Debugf("numbersIDDELETE. Received request detail. number_id: %s", id)
 
 	// delete order number
 	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OrderNumberDelete(&u, id)
+	res, err := serviceHandler.NumberDelete(&u, id)
 	if err != nil {
 		log.Errorf("Could not delete an order number. err: %v", err)
 		c.AbortWithStatus(400)
