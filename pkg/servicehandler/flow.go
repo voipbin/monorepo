@@ -6,14 +6,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 )
 
 // FlowCreate is a service handler for flow creation.
-func (h *serviceHandler) FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (h *serviceHandler) FlowCreate(u *models.User, id uuid.UUID, name, detail string, actions []models.Action, persist bool) (*models.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":    u.ID,
 		"flow":    id,
@@ -34,7 +32,7 @@ func (h *serviceHandler) FlowCreate(u *user.User, id uuid.UUID, name, detail str
 }
 
 // FlowDelete deletes the flow of the given id.
-func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
+func (h *serviceHandler) FlowDelete(u *models.User, id uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -50,7 +48,7 @@ func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && flow.UserID != u.ID {
+	if u.HasPermission(models.UserPermissionAdmin) != true && flow.UserID != u.ID {
 		log.Errorf("The user has no permission for this flow. user: %d, flow_user: %d", u.ID, flow.UserID)
 		return fmt.Errorf("user has no permission")
 	}
@@ -64,7 +62,7 @@ func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
 
 // FlowGet gets the flow of the given id.
 // It returns flow if it succeed.
-func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error) {
+func (h *serviceHandler) FlowGet(u *models.User, id uuid.UUID) (*models.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -80,7 +78,7 @@ func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && flow.UserID != u.ID {
+	if u.HasPermission(models.UserPermissionAdmin) != true && flow.UserID != u.ID {
 		log.Errorf("The user has no permission for this flow. user: %d, flow_user: %d", u.ID, flow.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -91,7 +89,7 @@ func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 
 // FlowGets gets the list of flow of the given user id.
 // It returns list of flows if it succeed.
-func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*flow.Flow, error) {
+func (h *serviceHandler) FlowGets(u *models.User, size uint64, token string) ([]*models.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -112,7 +110,7 @@ func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*f
 	}
 
 	// create result
-	res := []*flow.Flow{}
+	res := []*models.Flow{}
 	for _, flow := range flows {
 		tmp := flow.ConvertFlow()
 		res = append(res, tmp)
@@ -123,7 +121,7 @@ func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*f
 
 // FlowUpdate updates the flow info.
 // It returns updated flow if it succeed.
-func (h *serviceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, error) {
+func (h *serviceHandler) FlowUpdate(u *models.User, f *models.Flow) (*models.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -139,7 +137,7 @@ func (h *serviceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, err
 	}
 
 	// check the ownership
-	if u.Permission != user.PermissionAdmin && u.ID != tmpFlow.UserID {
+	if u.Permission != models.UserPermissionAdmin && u.ID != tmpFlow.UserID {
 		log.Info("The user has no permission for this call.")
 		return nil, fmt.Errorf("user has no permission")
 	}

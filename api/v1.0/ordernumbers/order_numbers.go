@@ -6,8 +6,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -42,7 +41,7 @@ func orderNumbersGET(c *gin.Context) {
 		return
 	}
 
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log = log.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -57,7 +56,7 @@ func orderNumbersGET(c *gin.Context) {
 	}
 
 	// get service
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get order numbers
 	numbers, err := serviceHandler.OrderNumberGets(&u, pageSize, requestParam.PageToken)
@@ -104,7 +103,7 @@ func orderNumbersPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -112,7 +111,7 @@ func orderNumbersPOST(c *gin.Context) {
 	})
 
 	// create a number
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	numb, err := serviceHandler.OrderNumberCreate(&u, body.Number)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)

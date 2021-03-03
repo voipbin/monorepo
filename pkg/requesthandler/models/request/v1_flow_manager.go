@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
 )
 
@@ -17,7 +17,7 @@ type FMV1DataFlowPost struct {
 	Name   string `json:"name"`   // name
 	Detail string `json:"detail"` // detail
 
-	Actions []action.Action `json:"actions"` // actions
+	Actions []models.Action `json:"actions"` // actions
 
 	Persist bool `json:"persist"` // persist. If it is true, set the flow into the database.
 }

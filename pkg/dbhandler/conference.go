@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // ConferenceGetsByUserID returns list of conferences.
-func (h *handler) ConferenceGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*conference.Conference, error) {
+func (h *handler) ConferenceGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Conference, error) {
 
 	// prepare
 	q := `
@@ -44,7 +44,7 @@ func (h *handler) ConferenceGetsByUserID(ctx context.Context, userID uint64, tok
 	}
 	defer rows.Close()
 
-	var res []*conference.Conference
+	var res []*models.Conference
 	for rows.Next() {
 		u, err := h.conferenceGetFromRow(rows)
 		if err != nil {
@@ -58,9 +58,9 @@ func (h *handler) ConferenceGetsByUserID(ctx context.Context, userID uint64, tok
 }
 
 // conferenceGetFromRow gets the conference from the row.
-func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, error) {
+func (h *handler) conferenceGetFromRow(row *sql.Rows) (*models.Conference, error) {
 	var calls string
-	res := &conference.Conference{}
+	res := &models.Conference{}
 	if err := row.Scan(
 		&res.ID,
 		&res.UserID,

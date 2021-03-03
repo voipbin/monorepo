@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // UserUpdateToCache gets the user from the DB and update the cache.
@@ -24,7 +24,7 @@ func (h *handler) UserUpdateToCache(ctx context.Context, id uint64) error {
 }
 
 // UserSetToCache sets the given user to the cache
-func (h *handler) UserSetToCache(ctx context.Context, u *user.User) error {
+func (h *handler) UserSetToCache(ctx context.Context, u *models.User) error {
 	if err := h.cache.UserSet(ctx, u); err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (h *handler) UserSetToCache(ctx context.Context, u *user.User) error {
 }
 
 // UserGetFromCache returns user from the cache.
-func (h *handler) UserGetFromCache(ctx context.Context, id uint64) (*user.User, error) {
+func (h *handler) UserGetFromCache(ctx context.Context, id uint64) (*models.User, error) {
 
 	// get from cache
 	res, err := h.cache.UserGet(ctx, id)
@@ -45,7 +45,7 @@ func (h *handler) UserGetFromCache(ctx context.Context, id uint64) (*user.User, 
 }
 
 // UserGetFromDB returns bridge from the DB.
-func (h *handler) UserGetFromDB(ctx context.Context, id uint64) (*user.User, error) {
+func (h *handler) UserGetFromDB(ctx context.Context, id uint64) (*models.User, error) {
 
 	// prepare
 	q := `
@@ -84,8 +84,8 @@ func (h *handler) UserGetFromDB(ctx context.Context, id uint64) (*user.User, err
 }
 
 // userGetFromRow gets the user from the row.
-func (h *handler) userGetFromRow(row *sql.Rows) (*user.User, error) {
-	res := &user.User{}
+func (h *handler) userGetFromRow(row *sql.Rows) (*models.User, error) {
+	res := &models.User{}
 	if err := row.Scan(
 		&res.ID,
 		&res.Username,
@@ -104,7 +104,7 @@ func (h *handler) userGetFromRow(row *sql.Rows) (*user.User, error) {
 }
 
 // UserGet returns user.
-func (h *handler) UserGet(ctx context.Context, id uint64) (*user.User, error) {
+func (h *handler) UserGet(ctx context.Context, id uint64) (*models.User, error) {
 	res, err := h.UserGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -122,7 +122,7 @@ func (h *handler) UserGet(ctx context.Context, id uint64) (*user.User, error) {
 }
 
 // UserGet returns user.
-func (h *handler) UserGets(ctx context.Context) ([]*user.User, error) {
+func (h *handler) UserGets(ctx context.Context) ([]*models.User, error) {
 	// prepare
 	q := `
 	select
@@ -145,7 +145,7 @@ func (h *handler) UserGets(ctx context.Context) ([]*user.User, error) {
 	}
 	defer rows.Close()
 
-	var res []*user.User
+	var res []*models.User
 	for rows.Next() {
 		u, err := h.userGetFromRow(rows)
 		if err != nil {
@@ -159,7 +159,7 @@ func (h *handler) UserGets(ctx context.Context) ([]*user.User, error) {
 }
 
 // UserCreate creates new user record and returns the created user record.
-func (h *handler) UserCreate(ctx context.Context, b *user.User) error {
+func (h *handler) UserCreate(ctx context.Context, b *models.User) error {
 	q := `insert into users(
 		id,
 		username,
@@ -195,7 +195,7 @@ func (h *handler) UserCreate(ctx context.Context, b *user.User) error {
 }
 
 // UserGetByUsername returns user.
-func (h *handler) UserGetByUsername(ctx context.Context, username string) (*user.User, error) {
+func (h *handler) UserGetByUsername(ctx context.Context, username string) (*models.User, error) {
 	// prepare
 	q := `
 	select

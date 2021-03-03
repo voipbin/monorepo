@@ -4,8 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -24,7 +23,7 @@ func usersPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -33,14 +32,14 @@ func usersPOST(c *gin.Context) {
 
 	// check permission
 	// only admin permssion can create a new user.
-	if u.HasPermission(user.PermissionAdmin) != true {
+	if u.HasPermission(models.UserPermissionAdmin) != true {
 		log.Info("The user has no permission")
 		c.AbortWithStatus(403)
 		return
 	}
 
 	// create an user
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	user, err := serviceHandler.UserCreate(body.Username, body.Password, body.Permission)
 	if err != nil {
 		c.AbortWithStatus(403)
@@ -59,7 +58,7 @@ func usersGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -68,14 +67,14 @@ func usersGET(c *gin.Context) {
 
 	// check permission
 	// only admin permssion users are allowed.
-	if u.HasPermission(user.PermissionAdmin) != true {
+	if u.HasPermission(models.UserPermissionAdmin) != true {
 		log.Info("The user has no permission")
 		c.AbortWithStatus(403)
 		return
 	}
 
 	// create an user
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	users, err := serviceHandler.UserGets()
 	if err != nil {
 		log.Errorf("Could not get users info. err: %v", err)

@@ -7,8 +7,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -36,10 +35,10 @@ func callsPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 
 	// get service
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create flow
 	flow, err := serviceHandler.FlowCreate(&u, uuid.Nil, "temp", "tmp outbound flow", requestBody.Actions, false)
@@ -80,10 +79,10 @@ func callsIDDelete(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 
 	// get service
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// hangup the call
 	err := serviceHandler.CallDelete(&u, id)
@@ -127,10 +126,10 @@ func callsGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 
 	// get service
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -181,7 +180,7 @@ func callsIDGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -189,7 +188,7 @@ func callsIDGET(c *gin.Context) {
 	})
 	log.Debug("Executing callsIDGET.")
 
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CallGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get a call. err: %v", err)

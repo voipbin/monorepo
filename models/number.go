@@ -1,4 +1,4 @@
-package number
+package models
 
 import "github.com/gofrs/uuid"
 

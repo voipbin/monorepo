@@ -9,7 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -37,7 +37,7 @@ func TestFMFlowCreate(t *testing.T) {
 		flowID     uuid.UUID
 		flowName   string
 		flowDetail string
-		actions    []action.Action
+		actions    []models.Action
 		persist    bool
 
 		response *rabbitmqhandler.Response
@@ -55,7 +55,7 @@ func TestFMFlowCreate(t *testing.T) {
 			uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
 			"test flow",
 			"test flow detail",
-			[]action.Action{},
+			[]models.Action{},
 			true,
 			&rabbitmqhandler.Response{
 				StatusCode: 200,

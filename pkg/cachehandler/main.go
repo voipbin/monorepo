@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 type handler struct {
@@ -22,8 +22,8 @@ type handler struct {
 type CacheHandler interface {
 	Connect() error
 
-	UserGet(ctx context.Context, id uint64) (*user.User, error)
-	UserSet(ctx context.Context, u *user.User) error
+	UserGet(ctx context.Context, id uint64) (*models.User, error)
+	UserSet(ctx context.Context, u *models.User) error
 }
 
 // NewHandler creates DBHandler
