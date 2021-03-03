@@ -1,4 +1,4 @@
-package ordernumbers
+package numbers
 
 import (
 	"bytes"
@@ -22,7 +22,7 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func TestOrderNumbersGET(t *testing.T) {
+func TestNumbersGET(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -34,7 +34,7 @@ func TestOrderNumbersGET(t *testing.T) {
 		name string
 		user models.User
 		uri  string
-		req  request.ParamOrderNumbersGET
+		req  request.ParamNumbersGET
 
 		resNumbers []*models.Number
 	}
@@ -45,8 +45,8 @@ func TestOrderNumbersGET(t *testing.T) {
 			models.User{
 				ID: 1,
 			},
-			"/v1.0/order_numbers?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
-			request.ParamOrderNumbersGET{
+			"/v1.0/numbers?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
+			request.ParamNumbersGET{
 				Pagination: request.Pagination{
 					PageSize:  10,
 					PageToken: "2021-03-02 03:23:20.995000",
@@ -81,7 +81,7 @@ func TestOrderNumbersGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OrderNumberGets(&tt.user, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
+			mockSvc.EXPECT().NumberGets(&tt.user, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
 			req, _ := http.NewRequest("GET", tt.uri, nil)
 
 			r.ServeHTTP(w, req)
@@ -92,7 +92,7 @@ func TestOrderNumbersGET(t *testing.T) {
 	}
 }
 
-func TestOrderNumbersIDGET(t *testing.T) {
+func TestNumbersIDGET(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -116,7 +116,7 @@ func TestOrderNumbersIDGET(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
-			"/v1.0/order_numbers/3ab6711c-7be6-11eb-8da6-d31a9f3d45a6",
+			"/v1.0/numbers/3ab6711c-7be6-11eb-8da6-d31a9f3d45a6",
 			&models.Number{
 				ID:               uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 				Number:           "+821021656521",
@@ -144,7 +144,7 @@ func TestOrderNumbersIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OrderNumberGet(&tt.user, tt.numberID).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberGet(&tt.user, tt.numberID).Return(tt.resNumber, nil)
 			req, _ := http.NewRequest("GET", tt.uri, nil)
 
 			r.ServeHTTP(w, req)
@@ -155,7 +155,7 @@ func TestOrderNumbersIDGET(t *testing.T) {
 	}
 }
 
-func TestOrderNumbersIDDELETE(t *testing.T) {
+func TestNumbersIDDELETE(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -179,7 +179,7 @@ func TestOrderNumbersIDDELETE(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
-			"/v1.0/order_numbers/d905c26e-7be6-11eb-b92a-ab4802b4bde3",
+			"/v1.0/numbers/d905c26e-7be6-11eb-b92a-ab4802b4bde3",
 			&models.Number{
 				ID:               uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
 				Number:           "+821021656521",
@@ -207,7 +207,7 @@ func TestOrderNumbersIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OrderNumberDelete(&tt.user, tt.numberID).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberDelete(&tt.user, tt.numberID).Return(tt.resNumber, nil)
 			req, _ := http.NewRequest("DELETE", tt.uri, nil)
 
 			r.ServeHTTP(w, req)
@@ -218,7 +218,7 @@ func TestOrderNumbersIDDELETE(t *testing.T) {
 	}
 }
 
-func TestOrderNumbersPOST(t *testing.T) {
+func TestNumbersPOST(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -239,7 +239,7 @@ func TestOrderNumbersPOST(t *testing.T) {
 			models.User{
 				ID: 1,
 			},
-			"/v1.0/order_numbers",
+			"/v1.0/numbers",
 			request.BodyOrderNumbersPOST{
 				Number: "+821021656521",
 			},
@@ -258,7 +258,7 @@ func TestOrderNumbersPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OrderNumberCreate(&tt.user, tt.requestBody.Number)
+			mockSvc.EXPECT().NumberCreate(&tt.user, tt.requestBody.Number)
 
 			// create body
 			body, err := json.Marshal(tt.requestBody)

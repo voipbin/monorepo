@@ -75,9 +75,9 @@ func TestOrderNumberGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().NMOrderNumberGets(tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().NMNumberGets(tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			_, err := h.OrderNumberGets(tt.user, tt.pageSize, tt.pageToken)
+			_, err := h.NumberGets(tt.user, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -142,9 +142,9 @@ func TestOrderNumberGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().NMOrderNumberGet(tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NMNumberGet(tt.id).Return(tt.response, nil)
 
-			res, err := h.OrderNumberGet(tt.user, tt.id)
+			res, err := h.NumberGet(tt.user, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -156,7 +156,7 @@ func TestOrderNumberGet(t *testing.T) {
 	}
 }
 
-func TestOrderNumberCreate(t *testing.T) {
+func TestNumberCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -213,9 +213,9 @@ func TestOrderNumberCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// ctx := context.Background()
 
-			mockReq.EXPECT().NMOrderNumberCreate(tt.user.ID, tt.numbers).Return(tt.response, nil)
+			mockReq.EXPECT().NMNumberCreate(tt.user.ID, tt.numbers).Return(tt.response, nil)
 
-			res, err := h.OrderNumberCreate(tt.user, tt.numbers)
+			res, err := h.NumberCreate(tt.user, tt.numbers)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -228,7 +228,7 @@ func TestOrderNumberCreate(t *testing.T) {
 	}
 }
 
-func TestOrderNumberDelete(t *testing.T) {
+func TestNumberDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -285,10 +285,10 @@ func TestOrderNumberDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().NMOrderNumberGet(tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().NMOrderNumberDelete(tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NMNumberGet(tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NMNumberDelete(tt.id).Return(tt.response, nil)
 
-			res, err := h.OrderNumberDelete(tt.user, tt.id)
+			res, err := h.NumberDelete(tt.user, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

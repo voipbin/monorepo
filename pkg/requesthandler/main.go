@@ -71,7 +71,7 @@ const (
 	resourceFlowFlows   resource = "flow/flows"
 
 	resourceNumberAvailableNumbers resource = "number/available_numbers"
-	resourceNumberOrderNumbers     resource = "number/order_numbers"
+	resourceNumberNumbers     resource = "number/numbers"
 
 	resourceRegistrarDomains    resource = "registrar/domains"
 	resourceRegistrarExtensions resource = "registrar/extensions"
@@ -114,10 +114,10 @@ type RequestHandler interface {
 	NMAvailableNumbersGet(userID uint64, pageSize uint64, countryCode string) ([]nmnumber.AvailableNumber, error)
 
 	// number: order number
-	NMOrderNumberCreate(userID uint64, numb string) (*nmnumber.Number, error)
-	NMOrderNumberDelete(id uuid.UUID) (*nmnumber.Number, error)
-	NMOrderNumberGet(numberID uuid.UUID) (*nmnumber.Number, error)
-	NMOrderNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
+	NMNumberCreate(userID uint64, numb string) (*nmnumber.Number, error)
+	NMNumberDelete(id uuid.UUID) (*nmnumber.Number, error)
+	NMNumberGet(numberID uuid.UUID) (*nmnumber.Number, error)
+	NMNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
 
 	// registrar: domain
 	RMDomainCreate(userID uint64, domainName, name, detail string) (*rmdomain.Domain, error)
