@@ -50,9 +50,9 @@ var (
 	regV1AvailableNumbers = regexp.MustCompile("/v1/available_numbers")
 
 	// order numbers
-	regV1OrderNumbers       = regexp.MustCompile("/v1/order_numbers")
-	regV1OrderNumbersID     = regexp.MustCompile("/v1/order_numbers/" + regUUID)
-	regV1OrderNumbersNumber = regexp.MustCompile("/v1/order_numbers/+" + regAny)
+	regV1Numbers       = regexp.MustCompile("/v1/numbers")
+	regV1NumbersID     = regexp.MustCompile("/v1/numbers/" + regUUID)
+	regV1NumbersNumber = regexp.MustCompile("/v1/numbers/+" + regAny)
 )
 
 var (
@@ -178,33 +178,33 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/v1/available_numbers"
 
 	////////////////////
-	// order_numbers
+	// numbers
 	////////////////////
 
-	// DELETE /order_numbers/<id>
-	case regV1OrderNumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1OrderNumbersIDDelete(m)
-		requestType = "/v1/order_numbers"
+	// DELETE /numbers/<id>
+	case regV1NumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1NumbersIDDelete(m)
+		requestType = "/v1/numbers"
 
-	// GET /order_numbers/<id>
-	case regV1OrderNumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1OrderNumbersIDGet(m)
-		requestType = "/v1/order_numbers"
+	// GET /numbers/<id>
+	case regV1NumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1NumbersIDGet(m)
+		requestType = "/v1/numbers"
 
-	// GET /order_numbers/<number>
-	case regV1OrderNumbersNumber.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1OrderNumbersNumberGet(m)
-		requestType = "/v1/order_numbers"
+	// GET /numbers/<number>
+	case regV1NumbersNumber.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1NumbersNumberGet(m)
+		requestType = "/v1/numbers"
 
-	// POST /order_numbers
-	case regV1OrderNumbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1OrderNumbersPost(m)
-		requestType = "/v1/order_numbers"
+	// POST /numbers
+	case regV1Numbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1NumbersPost(m)
+		requestType = "/v1/numbers"
 
-	// GET /order_numbers
-	case regV1OrderNumbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1OrderNumbersGet(m)
-		requestType = "/v1/order_numbers"
+	// GET /numbers
+	case regV1Numbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1NumbersGet(m)
+		requestType = "/v1/numbers"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

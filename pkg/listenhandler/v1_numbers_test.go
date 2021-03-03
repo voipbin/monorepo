@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
 )
 
-func TestProcessV1OrderNumbersPost(t *testing.T) {
+func TestProcessV1NumbersPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -57,7 +57,7 @@ func TestProcessV1OrderNumbersPost(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 			&rabbitmqhandler.Request{
-				URI:      "/v1/order_numbers",
+				URI:      "/v1/numbers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"user_id": 1, "number": "+821021656521"}`),
@@ -73,7 +73,7 @@ func TestProcessV1OrderNumbersPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().CreateOrderNumber(tt.userID, tt.number).Return(tt.createdNumber, nil)
+			mockNumber.EXPECT().CreateNumber(tt.userID, tt.number).Return(tt.createdNumber, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -87,7 +87,7 @@ func TestProcessV1OrderNumbersPost(t *testing.T) {
 	}
 }
 
-func TestProcessV1OrderNumbersIDDelete(t *testing.T) {
+func TestProcessV1NumbersIDDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -127,7 +127,7 @@ func TestProcessV1OrderNumbersIDDelete(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/order_numbers/9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f",
+				URI:    "/v1/numbers/9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f",
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 			&rabbitmqhandler.Response{
@@ -141,7 +141,7 @@ func TestProcessV1OrderNumbersIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().ReleaseOrderNumbers(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			mockNumber.EXPECT().ReleaseNumber(gomock.Any(), tt.id).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -155,7 +155,7 @@ func TestProcessV1OrderNumbersIDDelete(t *testing.T) {
 	}
 }
 
-func TestProcessV1OrderNumbersIDGet(t *testing.T) {
+func TestProcessV1NumbersIDGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -195,7 +195,7 @@ func TestProcessV1OrderNumbersIDGet(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/order_numbers/7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad",
+				URI:    "/v1/numbers/7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -209,7 +209,7 @@ func TestProcessV1OrderNumbersIDGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().GetOrderNumber(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			mockNumber.EXPECT().GetNumber(gomock.Any(), tt.id).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -223,7 +223,7 @@ func TestProcessV1OrderNumbersIDGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1OrderNumbersNumberGet(t *testing.T) {
+func TestProcessV1NumbersNumberGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -263,7 +263,7 @@ func TestProcessV1OrderNumbersNumberGet(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/order_numbers/+821021656521",
+				URI:    "/v1/numbers/+821021656521",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -277,7 +277,7 @@ func TestProcessV1OrderNumbersNumberGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().GetOrderNumberByNumber(gomock.Any(), tt.num).Return(tt.resultData, nil)
+			mockNumber.EXPECT().GetNumberByNumber(gomock.Any(), tt.num).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -291,7 +291,7 @@ func TestProcessV1OrderNumbersNumberGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1OrderNumbersGet(t *testing.T) {
+func TestProcessV1NumbersGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -337,7 +337,7 @@ func TestProcessV1OrderNumbersGet(t *testing.T) {
 				},
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/order_numbers?user_id=1&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/numbers?user_id=1&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -351,7 +351,7 @@ func TestProcessV1OrderNumbersGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().GetOrderNumbers(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
+			mockNumber.EXPECT().GetNumbers(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

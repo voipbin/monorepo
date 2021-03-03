@@ -14,10 +14,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
 )
 
-// processV1OrderNumbersPost handles POST /v1/order_numbers request
-func (h *listenHandler) processV1OrderNumbersPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1NumbersPost handles POST /v1/numbers request
+func (h *listenHandler) processV1NumbersPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
-	var reqData request.V1DataOrderNumbersPost
+	var reqData request.V1DataNumbersPost
 	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
 		// same call-id is already exsit
 		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", req.Data, err)
@@ -30,7 +30,7 @@ func (h *listenHandler) processV1OrderNumbersPost(req *rabbitmqhandler.Request) 
 		},
 	)
 
-	numb, err := h.numberHandler.CreateOrderNumber(reqData.UserID, reqData.Number)
+	numb, err := h.numberHandler.CreateNumber(reqData.UserID, reqData.Number)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil
@@ -51,8 +51,8 @@ func (h *listenHandler) processV1OrderNumbersPost(req *rabbitmqhandler.Request) 
 	return res, nil
 }
 
-// processV1OrderNumbersIDDelete handles DELETE /v1/order_numbers/<id> request
-func (h *listenHandler) processV1OrderNumbersIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1NumbersIDDelete handles DELETE /v1/numbers/<id> request
+func (h *listenHandler) processV1NumbersIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(req.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -66,7 +66,7 @@ func (h *listenHandler) processV1OrderNumbersIDDelete(req *rabbitmqhandler.Reque
 	log.Debugf("Executing processV1OrderNumbersIDDelete. number: %s", id)
 
 	ctx := context.Background()
-	number, err := h.numberHandler.ReleaseOrderNumbers(ctx, id)
+	number, err := h.numberHandler.ReleaseNumber(ctx, id)
 	if err != nil {
 		log.Debugf("Could not delete the number. number: %s, err: %v", id, err)
 		return simpleResponse(500), nil
@@ -87,8 +87,8 @@ func (h *listenHandler) processV1OrderNumbersIDDelete(req *rabbitmqhandler.Reque
 	return res, nil
 }
 
-// processV1OrderNumbersIDGet handles GET /v1/order_numbers/<id> request
-func (h *listenHandler) processV1OrderNumbersIDGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1NumbersIDGet handles GET /v1/numbers/<id> request
+func (h *listenHandler) processV1NumbersIDGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(req.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -102,7 +102,7 @@ func (h *listenHandler) processV1OrderNumbersIDGet(req *rabbitmqhandler.Request)
 	log.Debugf("Executing processV1OrderNumbersIDGet. number: %s", id)
 
 	ctx := context.Background()
-	number, err := h.numberHandler.GetOrderNumber(ctx, id)
+	number, err := h.numberHandler.GetNumber(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a number. number: %s, err: %v", id, err)
 		return simpleResponse(500), nil
@@ -123,8 +123,8 @@ func (h *listenHandler) processV1OrderNumbersIDGet(req *rabbitmqhandler.Request)
 	return res, nil
 }
 
-// processV1OrderNumbersNumberGet handles GET /v1/order_numbers/<number> request
-func (h *listenHandler) processV1OrderNumbersNumberGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1NumbersNumberGet handles GET /v1/numbers/<number> request
+func (h *listenHandler) processV1NumbersNumberGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(req.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -138,7 +138,7 @@ func (h *listenHandler) processV1OrderNumbersNumberGet(req *rabbitmqhandler.Requ
 	log.Debugf("Executing processV1OrderNumbersNumberGet. number: %s", num)
 
 	ctx := context.Background()
-	number, err := h.numberHandler.GetOrderNumberByNumber(ctx, num)
+	number, err := h.numberHandler.GetNumberByNumber(ctx, num)
 	if err != nil {
 		log.Debugf("Could not get a number. number: %s, err: %v", num, err)
 		return simpleResponse(500), nil
@@ -159,8 +159,8 @@ func (h *listenHandler) processV1OrderNumbersNumberGet(req *rabbitmqhandler.Requ
 	return res, nil
 }
 
-// processV1OrderNumbersGet handles GET /v1/order_numbers request
-func (h *listenHandler) processV1OrderNumbersGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1NumbersGet handles GET /v1/numbers request
+func (h *listenHandler) processV1NumbersGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -183,7 +183,7 @@ func (h *listenHandler) processV1OrderNumbersGet(req *rabbitmqhandler.Request) (
 	})
 
 	ctx := context.Background()
-	numbers, err := h.numberHandler.GetOrderNumbers(ctx, userID, pageSize, pageToken)
+	numbers, err := h.numberHandler.GetNumbers(ctx, userID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get numbers. err: %v", err)
 		return simpleResponse(500), nil

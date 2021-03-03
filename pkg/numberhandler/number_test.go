@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
 )
 
-func TestCreateOrderNumbersTelnyx(t *testing.T) {
+func TestCreateNumbersTelnyx(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -59,7 +59,7 @@ func TestCreateOrderNumbersTelnyx(t *testing.T) {
 
 			mockTelnyx.EXPECT().CreateOrderNumbers(tt.userID, tt.numbers).Return(tt.expectRes, nil)
 
-			res, err := h.CreateOrderNumbers(tt.userID, tt.numbers)
+			res, err := h.CreateNumbers(tt.userID, tt.numbers)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -115,7 +115,7 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 			tmpExpRes := []*models.Number{tt.expectRes}
 			mockTelnyx.EXPECT().CreateOrderNumbers(tt.userID, tmpNumbers).Return(tmpExpRes, nil)
 
-			res, err := h.CreateOrderNumber(tt.userID, tt.number)
+			res, err := h.CreateNumber(tt.userID, tt.number)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -127,7 +127,7 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 	}
 }
 
-func TestGetOrderNumber(t *testing.T) {
+func TestGetNumber(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -173,7 +173,7 @@ func TestGetOrderNumber(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().NumberGet(gomock.Any(), tt.numberID).Return(tt.number, nil)
-			res, err := h.GetOrderNumber(ctx, tt.numberID)
+			res, err := h.GetNumber(ctx, tt.numberID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -185,7 +185,7 @@ func TestGetOrderNumber(t *testing.T) {
 	}
 }
 
-func TestGetOrderNumbers(t *testing.T) {
+func TestGetNumbers(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -263,7 +263,7 @@ func TestGetOrderNumbers(t *testing.T) {
 				mockDB.EXPECT().NumberGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.numbers, nil)
 			}
 
-			res, err := h.GetOrderNumbers(ctx, tt.userID, tt.pageSize, tt.pageToken)
+			res, err := h.GetNumbers(ctx, tt.userID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
