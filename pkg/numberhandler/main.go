@@ -19,15 +19,15 @@ import (
 
 // NumberHandler is interface for service handle
 type NumberHandler interface {
-	CreateOrderNumbers(userID uint64, numbers []string) ([]*models.Number, error)
-	CreateOrderNumber(userID uint64, number string) (*models.Number, error)
-
 	GetAvailableNumbers(countyCode string, limit uint) ([]*models.AvailableNumber, error)
-	GetOrderNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
-	GetOrderNumberByNumber(ctx context.Context, num string) (*models.Number, error)
-	GetOrderNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*models.Number, error)
 
-	ReleaseOrderNumbers(ctx context.Context, id uuid.UUID) (*models.Number, error)
+	CreateNumbers(userID uint64, numbers []string) ([]*models.Number, error)
+	CreateNumber(userID uint64, number string) (*models.Number, error)
+	GetNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
+	GetNumberByNumber(ctx context.Context, num string) (*models.Number, error)
+	GetNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*models.Number, error)
+
+	ReleaseNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
 }
 
 // numberHandler structure for service handle
