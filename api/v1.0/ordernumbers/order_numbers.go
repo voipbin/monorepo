@@ -2,6 +2,7 @@ package ordernumbers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -79,7 +80,52 @@ func orderNumbersGET(c *gin.Context) {
 
 	c.JSON(200, res)
 	return
+}
 
+// orderNumbersIDGET handles GET /order_numbers/<id> request.
+// It returns order numbers of the given id.
+// @Summary Get order number
+// @Description get order number of the given id
+// @Produce  json
+// @Param id path string true "The ID of the order number"
+// @Param token query string true "JWT token"
+// @Success 200 {object} models.Number
+// @Router /v1.0/order_numbers/{id} [get]
+func orderNumbersIDGET(c *gin.Context) {
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(models.User)
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"request_address": c.ClientIP,
+			"id":              u.ID,
+			"username":        u.Username,
+			"permission":      u.Permission,
+			"number":          id,
+		},
+	)
+	log.Debugf("orderNumbersIDGET. Received request detail. number_id: %s", id)
+
+	// get order number
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.OrderNumberGet(&u, id)
+	if err != nil {
+		log.Errorf("Could not get an order number. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+	return
 }
 
 // orderNumbersPOST handles POST /order_numbers request.
@@ -87,7 +133,7 @@ func orderNumbersGET(c *gin.Context) {
 // @Summary Create a new number and returns detail created number info.
 // @Description Create a new number and returns detail created number info.
 // @Produce json
-// @Success 200 {object} number.Number
+// @Success 200 {object} models.Number
 // @Router /v1.0/order_numbers [post]
 func orderNumbersPOST(c *gin.Context) {
 
@@ -120,5 +166,51 @@ func orderNumbersPOST(c *gin.Context) {
 	}
 
 	c.JSON(200, numb)
+	return
+}
+
+// orderNumbersIDDELETE handles DELETE /order_numbers/<id> request.
+// It deletes the given id of order number and returns the deleted order number.
+// @Summary Delete order number
+// @Description delete order number of the given id and returns deleted item.
+// @Produce  json
+// @Param id path string true "The ID of the order number"
+// @Param token query string true "JWT token"
+// @Success 200 {object} models.Number
+// @Router /v1.0/order_numbers/{id} [delete]
+func orderNumbersIDDELETE(c *gin.Context) {
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(models.User)
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"request_address": c.ClientIP,
+			"id":              u.ID,
+			"username":        u.Username,
+			"permission":      u.Permission,
+			"number":          id,
+		},
+	)
+	log.Debugf("orderNumbersIDDELETE. Received request detail. number_id: %s", id)
+
+	// delete order number
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.OrderNumberDelete(&u, id)
+	if err != nil {
+		log.Errorf("Could not delete an order number. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
 	return
 }
