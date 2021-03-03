@@ -7,8 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmaction"
@@ -24,27 +23,27 @@ func TestCallCreate(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        *user.User
+		user        *models.User
 		flowID      uuid.UUID
-		source      call.Address
-		destination call.Address
+		source      models.CallAddress
+		destination models.CallAddress
 		cmCall      *cmcall.Call
-		expectCall  call.Call
+		expectCall  models.Call
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-			call.Address{
-				Type:   call.AddressTypeSIP,
+			models.CallAddress{
+				Type:   models.CallAddressTypeSIP,
 				Target: "testsource@test.com",
 			},
-			call.Address{
-				Type:   call.AddressTypeSIP,
+			models.CallAddress{
+				Type:   models.CallAddressTypeSIP,
 				Target: "testdestination@test.com",
 			},
 			&cmcall.Call{
@@ -72,24 +71,24 @@ func TestCallCreate(t *testing.T) {
 				HangupBy:     "",
 				HangupReason: "",
 			},
-			call.Call{
+			models.Call{
 				ID:     uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
 				UserID: 1,
 				FlowID: uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
 				ConfID: uuid.Nil,
-				Type:   call.TypeFlow,
+				Type:   models.CallTypeFlow,
 
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: models.CallAddress{
+					Type:   models.CallAddressTypeSIP,
 					Target: "testsource@test.com",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeSIP,
+				Destination: models.CallAddress{
+					Type:   models.CallAddressTypeSIP,
 					Target: "testdestination@test.com",
 				},
 
-				Status:       call.StatusDialing,
-				Direction:    call.DirectionIncoming,
+				Status:       models.CallStatusDialing,
+				Direction:    models.CallDirectionIncoming,
 				HangupBy:     "",
 				HangupReason: "",
 			},
@@ -132,7 +131,7 @@ func TestCallDelete(t *testing.T) {
 
 	type test struct {
 		name   string
-		user   *user.User
+		user   *models.User
 		callID uuid.UUID
 		call   *cmcall.Call
 	}
@@ -140,7 +139,7 @@ func TestCallDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 2,
 			},
 			uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),

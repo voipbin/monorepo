@@ -10,9 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -31,22 +29,22 @@ func TestAvailableNumbersGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		user        models.User
 		pageSize    uint64
 		countryCode string
 
-		resAvailableNumbers []*number.AvailableNumber
+		resAvailableNumbers []*models.AvailableNumber
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			10,
 			"US",
-			[]*number.AvailableNumber{
+			[]*models.AvailableNumber{
 				{
 					Number:   "+16188850188",
 					Country:  "US",
@@ -64,7 +62,7 @@ func TestAvailableNumbersGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

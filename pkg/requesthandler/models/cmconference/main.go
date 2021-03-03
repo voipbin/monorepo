@@ -3,7 +3,7 @@ package cmconference
 import (
 	uuid "github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // Conference type
@@ -51,13 +51,13 @@ const (
 )
 
 // Convert returns conference.Conference from cmconference.Conference
-func (h *Conference) Convert() *conference.Conference {
-	c := &conference.Conference{
+func (h *Conference) Convert() *models.Conference {
+	c := &models.Conference{
 		ID:     h.ID,
 		UserID: h.UserID,
-		Type:   conference.Type(h.Type),
+		Type:   models.ConferenceType(h.Type),
 
-		Status: conference.Status(h.Status),
+		Status: models.ConferenceStatus(h.Status),
 		Name:   h.Name,
 		Detail: h.Detail,
 

@@ -3,7 +3,7 @@ package cmrecording
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // Recording struct represent record information
@@ -47,14 +47,14 @@ const (
 )
 
 // Convert returns conference.Conference from cmconference.Conference
-func (h *Recording) Convert() *recording.Recording {
-	res := &recording.Recording{
+func (h *Recording) Convert() *models.Recording {
+	res := &models.Recording{
 		ID:     h.ID,
 		UserID: h.UserID,
-		Type:   recording.Type(h.Type),
+		Type:   models.RecordingType(h.Type),
 
 		ReferenceID: h.ReferenceID,
-		Status:      recording.Status(h.Status),
+		Status:      models.RecordingStatus(h.Status),
 		Format:      h.Format,
 		Filename:    h.Filename,
 

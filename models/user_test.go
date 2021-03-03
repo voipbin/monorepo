@@ -1,4 +1,4 @@
-package user
+package models
 
 import "testing"
 
@@ -6,7 +6,7 @@ func TestHasPermission(t *testing.T) {
 	type test struct {
 		name       string
 		user       User
-		permission Permission
+		permission UserPermission
 		expectRes  bool
 	}
 
@@ -15,9 +15,9 @@ func TestHasPermission(t *testing.T) {
 			"normal",
 			User{
 				Username:   "test",
-				Permission: PermissionAdmin,
+				Permission: UserPermissionAdmin,
 			},
-			PermissionAdmin,
+			UserPermissionAdmin,
 			true,
 		},
 		{
@@ -26,7 +26,7 @@ func TestHasPermission(t *testing.T) {
 				Username:   "test",
 				Permission: 1,
 			},
-			PermissionAdmin,
+			UserPermissionAdmin,
 			true,
 		},
 	}

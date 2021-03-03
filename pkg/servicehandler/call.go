@@ -6,15 +6,14 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
 )
 
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
+func (h *serviceHandler) CallCreate(u *models.User, flowID uuid.UUID, source, destination models.CallAddress) (*models.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":        u.ID,
 		"username":    u.Username,
@@ -52,7 +51,7 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 // CallGet sends a request to call-manager
 // to getting a call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, error) {
+func (h *serviceHandler) CallGet(u *models.User, callID uuid.UUID) (*models.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -67,7 +66,7 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, er
 		return nil, err
 	}
 
-	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
+	if u.Permission != models.UserPermissionAdmin && u.ID != c.UserID {
 		log.Info("The user has no permission for this call.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -81,7 +80,7 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, er
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Call, error) {
+func (h *serviceHandler) CallGets(u *models.User, size uint64, token string) ([]*models.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -101,7 +100,7 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 	}
 
 	// create result
-	res := []*call.Call{}
+	res := []*models.Call{}
 	for _, tmp := range tmps {
 		c := tmp.ConvertCall()
 		res = append(res, c)
@@ -113,7 +112,7 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 // CallDelete sends a request to call-manager
 // to hangup the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
+func (h *serviceHandler) CallDelete(u *models.User, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -128,7 +127,7 @@ func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
 	}
 
 	// check call's ownership
-	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
+	if u.Permission != models.UserPermissionAdmin && u.ID != c.UserID {
 		log.Info("The user has no permission for this call.")
 		return fmt.Errorf("user has no permission")
 	}

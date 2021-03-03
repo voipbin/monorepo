@@ -3,7 +3,7 @@ package cmcall
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmaction"
 )
 
@@ -118,35 +118,35 @@ const (
 )
 
 // ConvertCall returns call.Call from cmall.Call
-func (h *Call) ConvertCall() *call.Call {
-	c := &call.Call{
+func (h *Call) ConvertCall() *models.Call {
+	c := &models.Call{
 		ID:     h.ID,
 		UserID: h.UserID,
 		FlowID: h.FlowID,
 		ConfID: h.ConfID,
-		Type:   call.Type(h.Type),
+		Type:   models.CallType(h.Type),
 
 		MasterCallID:   h.MasterCallID,
 		ChainedCallIDs: h.ChainedCallIDs,
 		RecordingID:    h.RecordingID,
 		RecordingIDs:   h.RecordingIDs,
 
-		Source: call.Address{
-			Type:   call.AddressType(h.Source.Type),
+		Source: models.CallAddress{
+			Type:   models.CallAddressType(h.Source.Type),
 			Name:   h.Source.Name,
 			Target: h.Source.Target,
 		},
-		Destination: call.Address{
-			Type:   call.AddressType(h.Destination.Type),
+		Destination: models.CallAddress{
+			Type:   models.CallAddressType(h.Destination.Type),
 			Name:   h.Destination.Name,
 			Target: h.Destination.Target,
 		},
 
-		Status: call.Status(h.Status),
+		Status: models.CallStatus(h.Status),
 
-		Direction:    call.Direction(h.Direction),
-		HangupBy:     call.HangupBy(h.HangupBy),
-		HangupReason: call.HangupReason(h.HangupReason),
+		Direction:    models.CallDirection(h.Direction),
+		HangupBy:     models.CallHangupBy(h.HangupBy),
+		HangupReason: models.CallHangupReason(h.HangupReason),
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

@@ -6,13 +6,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmextension"
 )
 
 // ExtensionCreate is a service handler for flow creation.
-func (h *serviceHandler) ExtensionCreate(u *user.User, e *extension.Extension) (*extension.Extension, error) {
+func (h *serviceHandler) ExtensionCreate(u *models.User, e *models.Extension) (*models.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":      u.ID,
 		"domain_id": e.DomainID,
@@ -35,7 +34,7 @@ func (h *serviceHandler) ExtensionCreate(u *user.User, e *extension.Extension) (
 }
 
 // ExtensionDelete deletes the extension of the given id.
-func (h *serviceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
+func (h *serviceHandler) ExtensionDelete(u *models.User, id uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"user":         u.ID,
 		"username":     u.Username,
@@ -51,7 +50,7 @@ func (h *serviceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && ext.UserID != u.ID {
+	if u.HasPermission(models.UserPermissionAdmin) != true && ext.UserID != u.ID {
 		log.Errorf("The user has no permission for this extension. user: %d, domain_user: %d", u.ID, ext.UserID)
 		return fmt.Errorf("user has no permission")
 	}
@@ -65,7 +64,7 @@ func (h *serviceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
 
 // ExtensionGet gets the extension of the given id.
 // It returns extension if it succeed.
-func (h *serviceHandler) ExtensionGet(u *user.User, id uuid.UUID) (*extension.Extension, error) {
+func (h *serviceHandler) ExtensionGet(u *models.User, id uuid.UUID) (*models.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":         u.ID,
 		"username":     u.Username,
@@ -81,7 +80,7 @@ func (h *serviceHandler) ExtensionGet(u *user.User, id uuid.UUID) (*extension.Ex
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && d.UserID != u.ID {
+	if u.HasPermission(models.UserPermissionAdmin) != true && d.UserID != u.ID {
 		log.Errorf("The user has no permission for this extension. user: %d, extension_user: %d", u.ID, d.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -92,7 +91,7 @@ func (h *serviceHandler) ExtensionGet(u *user.User, id uuid.UUID) (*extension.Ex
 
 // ExtensionGets gets the list of extensions of the given user id.
 // It returns list of extensions if it succeed.
-func (h *serviceHandler) ExtensionGets(u *user.User, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error) {
+func (h *serviceHandler) ExtensionGets(u *models.User, domainID uuid.UUID, size uint64, token string) ([]*models.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -113,7 +112,7 @@ func (h *serviceHandler) ExtensionGets(u *user.User, domainID uuid.UUID, size ui
 	}
 
 	// create result
-	res := []*extension.Extension{}
+	res := []*models.Extension{}
 	for _, ext := range exts {
 		tmp := ext.ConvertExtension()
 		res = append(res, tmp)
@@ -124,7 +123,7 @@ func (h *serviceHandler) ExtensionGets(u *user.User, domainID uuid.UUID, size ui
 
 // ExtesnionUpdate updates the extension info.
 // It returns updated extension if it succeed.
-func (h *serviceHandler) ExtensionUpdate(u *user.User, d *extension.Extension) (*extension.Extension, error) {
+func (h *serviceHandler) ExtensionUpdate(u *models.User, d *models.Extension) (*models.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":      u.ID,
 		"username":  u.Username,
@@ -140,7 +139,7 @@ func (h *serviceHandler) ExtensionUpdate(u *user.User, d *extension.Extension) (
 	}
 
 	// check the ownership
-	if u.Permission != user.PermissionAdmin && u.ID != tmpExtension.UserID {
+	if u.Permission != models.UserPermissionAdmin && u.ID != tmpExtension.UserID {
 		log.Info("The user has no permission for this extension.")
 		return nil, fmt.Errorf("user has no permission")
 	}

@@ -1,8 +1,8 @@
 package servicehandler
 
-import "gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+import "gitlab.com/voipbin/bin-manager/api-manager.git/models"
 
-func (h *serviceHandler) ValidateAction(a *action.Action) bool {
+func (h *serviceHandler) ValidateAction(a *models.Action) bool {
 
 	return true
 }

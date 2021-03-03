@@ -1,6 +1,6 @@
 package request
 
-import "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+import "gitlab.com/voipbin/bin-manager/api-manager.git/models"
 
 // ParamConferencesGET is rquest param define for GET /conferences
 type ParamConferencesGET struct {
@@ -9,7 +9,7 @@ type ParamConferencesGET struct {
 
 // BodyConferencesPOST is rquest body define for POST /conferences
 type BodyConferencesPOST struct {
-	Type   conference.Type `json:"type" binding:"required"`
-	Name   string          `json:"name"`
-	Detail string          `json:"detail"`
+	Type   models.ConferenceType `json:"type" binding:"required"`
+	Name   string                `json:"name"`
+	Detail string                `json:"detail"`
 }

@@ -7,8 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
@@ -28,18 +27,18 @@ func TestOrderNumberGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
+		user      *models.User
 		pageToken string
 		pageSize  uint64
 
 		response  []nmnumber.Number
-		expectRes []*number.Number
+		expectRes []*models.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			"2021-03-01 01:00:00.995000",
@@ -57,7 +56,7 @@ func TestOrderNumberGets(t *testing.T) {
 					EmergencyEnabled:    false,
 				},
 			},
-			[]*number.Number{
+			[]*models.Number{
 				{
 					ID:               uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 					Number:           "+821021656521",
@@ -100,17 +99,17 @@ func TestOrderNumberCreate(t *testing.T) {
 
 	type test struct {
 		name    string
-		user    *user.User
+		user    *models.User
 		numbers string
 
 		response  *nmnumber.Number
-		expectRes *number.Number
+		expectRes *models.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			"+821021656521",
@@ -125,7 +124,7 @@ func TestOrderNumberCreate(t *testing.T) {
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&number.Number{
+			&models.Number{
 				Number:           "+821021656521",
 				UserID:           1,
 				Status:           "active",

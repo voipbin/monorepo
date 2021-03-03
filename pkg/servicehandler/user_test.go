@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 )
@@ -31,7 +31,7 @@ func TestUserCreate(t *testing.T) {
 			"normal",
 			"test username",
 			"test userpass",
-			uint64(user.PermissionNone),
+			uint64(models.UserPermissionNone),
 		},
 	}
 

@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 var secretKey []byte
@@ -92,7 +92,7 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		var u user.User
+		var u models.User
 		u.Read(tokenData["user"].(map[string]interface{}))
 
 		c.Set("user", u)

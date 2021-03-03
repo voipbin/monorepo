@@ -9,24 +9,22 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 )
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
-	CallsGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*call.Call, error)
+	CallsGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Call, error)
 
-	ConferenceGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*conference.Conference, error)
+	ConferenceGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Conference, error)
 
-	UserCreate(ctx context.Context, b *user.User) error
-	UserGet(ctx context.Context, id uint64) (*user.User, error)
-	UserGetFromDB(ctx context.Context, id uint64) (*user.User, error)
-	UserGetByUsername(ctx context.Context, username string) (*user.User, error)
-	UserGets(ctx context.Context) ([]*user.User, error)
-	UserSetToCache(ctx context.Context, u *user.User) error
+	UserCreate(ctx context.Context, b *models.User) error
+	UserGet(ctx context.Context, id uint64) (*models.User, error)
+	UserGetFromDB(ctx context.Context, id uint64) (*models.User, error)
+	UserGetByUsername(ctx context.Context, username string) (*models.User, error)
+	UserGets(ctx context.Context) ([]*models.User, error)
+	UserSetToCache(ctx context.Context, u *models.User) error
 	UserUpdateToCache(ctx context.Context, id uint64) error
 }
 

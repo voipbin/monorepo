@@ -7,8 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
@@ -28,8 +27,8 @@ func TestRecordingfileGet(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
-		recording *recording.Recording
+		user      *models.User
+		recording *models.Recording
 
 		id uuid.UUID
 
@@ -41,10 +40,10 @@ func TestRecordingfileGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
-			&recording.Recording{
+			&models.Recording{
 				ID:       uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
 				Filename: "call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 				UserID:   1,

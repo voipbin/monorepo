@@ -3,8 +3,7 @@ package fmflow
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
 )
 
@@ -26,14 +25,14 @@ type Flow struct {
 }
 
 // ConvertFlow returns converted data from fmflow.Flow to flow.Flow
-func (f *Flow) ConvertFlow() *flow.Flow {
+func (f *Flow) ConvertFlow() *models.Flow {
 
-	actions := []action.Action{}
+	actions := []models.Action{}
 	for _, a := range f.Actions {
 		actions = append(actions, *a.ConvertAction())
 	}
 
-	res := &flow.Flow{
+	res := &models.Flow{
 		ID:     f.ID,
 		UserID: f.UserID,
 
@@ -53,7 +52,7 @@ func (f *Flow) ConvertFlow() *flow.Flow {
 }
 
 // CreateFlow returns converted data from flow.Flow to fmflow.Flow
-func CreateFlow(f *flow.Flow) *Flow {
+func CreateFlow(f *models.Flow) *Flow {
 
 	actions := []fmaction.Action{}
 	for _, a := range f.Actions {
