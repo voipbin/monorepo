@@ -3,7 +3,7 @@ package nmnumber
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // Number struct represent number information
@@ -39,9 +39,9 @@ const (
 )
 
 // ConvertNumber returns converted data from nmnumber.Number
-func (t *Number) ConvertNumber() *number.Number {
+func (t *Number) ConvertNumber() *models.Number {
 
-	res := &number.Number{
+	res := &models.Number{
 		ID:     t.ID,
 		Number: t.Number,
 		FlowID: t.FlowID,

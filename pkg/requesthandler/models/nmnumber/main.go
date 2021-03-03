@@ -1,7 +1,7 @@
 package nmnumber
 
 import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // AvailableNumber struct represent number information
@@ -22,9 +22,9 @@ type AvailableNumber struct {
 }
 
 // ConvertNumber returns converted data from number.Available
-func (t *AvailableNumber) ConvertNumber() *number.AvailableNumber {
+func (t *AvailableNumber) ConvertNumber() *models.AvailableNumber {
 
-	res := &number.AvailableNumber{
+	res := &models.AvailableNumber{
 		Number:     t.Number,
 		Country:    t.Country,
 		Region:     t.Region,

@@ -7,8 +7,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -54,10 +53,10 @@ func conferencesGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 
 	// get service
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -112,9 +111,9 @@ func conferencesPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 
-	servicehandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	servicehandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := servicehandler.ConferenceCreate(&u, requestBody.Type, requestBody.Name, requestBody.Detail)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
@@ -143,9 +142,9 @@ func conferencesIDGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 
-	servicehandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	servicehandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := servicehandler.ConferenceGet(&u, id)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
@@ -175,9 +174,9 @@ func conferencesIDDELETE(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 
-	servicehandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	servicehandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	err := servicehandler.ConferenceDelete(&u, id)
 	if err != nil {
 		c.AbortWithStatus(400)

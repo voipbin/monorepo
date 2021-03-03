@@ -1,9 +1,7 @@
-package flow
+package models
 
 import (
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 )
 
 // Flow struct for client show
@@ -14,7 +12,7 @@ type Flow struct {
 	Name   string `json:"name"`   // Name
 	Detail string `json:"detail"` // Detail
 
-	Actions []action.Action `json:"actions"` // Actions
+	Actions []Action `json:"actions"` // Actions
 
 	Persist bool `json:"-"` // Persist
 

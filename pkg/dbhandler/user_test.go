@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 )
 
@@ -20,20 +20,20 @@ func TestUserCreate(t *testing.T) {
 
 	type test struct {
 		name       string
-		user       *user.User
-		expectUser *user.User
+		user       *models.User
+		expectUser *models.User
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&user.User{
+			&models.User{
 				ID:           1,
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TMCreate:     "2020-04-18T03:22:17.995000",
 			},
-			&user.User{
+			&models.User{
 				ID:           1,
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
@@ -73,35 +73,35 @@ func TestUserGets(t *testing.T) {
 
 	type test struct {
 		name       string
-		user       []*user.User
-		expectUser []*user.User
+		user       []*models.User
+		expectUser []*models.User
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			[]*user.User{
-				&user.User{
+			[]*models.User{
+				&models.User{
 					ID:           2,
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TMCreate:     "2020-04-18T03:22:17.995000",
 				},
-				&user.User{
+				&models.User{
 					ID:           3,
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TMCreate:     "2020-04-18T03:22:17.995000",
 				},
 			},
-			[]*user.User{
-				&user.User{
+			[]*models.User{
+				&models.User{
 					ID:           2,
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TMCreate:     "2020-04-18T03:22:17.995000",
 				},
-				&user.User{
+				&models.User{
 					ID:           3,
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",

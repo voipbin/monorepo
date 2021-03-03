@@ -7,9 +7,7 @@ package dbhandler
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
-	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
-	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	models "gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	reflect "reflect"
 )
 
@@ -37,10 +35,10 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 }
 
 // CallsGetsByUserID mocks base method
-func (m *MockDBHandler) CallsGetsByUserID(arg0 context.Context, arg1 uint64, arg2 string, arg3 uint64) ([]*call.Call, error) {
+func (m *MockDBHandler) CallsGetsByUserID(arg0 context.Context, arg1 uint64, arg2 string, arg3 uint64) ([]*models.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallsGetsByUserID", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].([]*call.Call)
+	ret0, _ := ret[0].([]*models.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -52,10 +50,10 @@ func (mr *MockDBHandlerMockRecorder) CallsGetsByUserID(arg0, arg1, arg2, arg3 in
 }
 
 // ConferenceGetsByUserID mocks base method
-func (m *MockDBHandler) ConferenceGetsByUserID(arg0 context.Context, arg1 uint64, arg2 string, arg3 uint64) ([]*conference.Conference, error) {
+func (m *MockDBHandler) ConferenceGetsByUserID(arg0 context.Context, arg1 uint64, arg2 string, arg3 uint64) ([]*models.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGetsByUserID", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].([]*conference.Conference)
+	ret0, _ := ret[0].([]*models.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -67,7 +65,7 @@ func (mr *MockDBHandlerMockRecorder) ConferenceGetsByUserID(arg0, arg1, arg2, ar
 }
 
 // UserCreate mocks base method
-func (m *MockDBHandler) UserCreate(arg0 context.Context, arg1 *user.User) error {
+func (m *MockDBHandler) UserCreate(arg0 context.Context, arg1 *models.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserCreate", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -81,10 +79,10 @@ func (mr *MockDBHandlerMockRecorder) UserCreate(arg0, arg1 interface{}) *gomock.
 }
 
 // UserGet mocks base method
-func (m *MockDBHandler) UserGet(arg0 context.Context, arg1 uint64) (*user.User, error) {
+func (m *MockDBHandler) UserGet(arg0 context.Context, arg1 uint64) (*models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserGet", arg0, arg1)
-	ret0, _ := ret[0].(*user.User)
+	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -96,10 +94,10 @@ func (mr *MockDBHandlerMockRecorder) UserGet(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // UserGetByUsername mocks base method
-func (m *MockDBHandler) UserGetByUsername(arg0 context.Context, arg1 string) (*user.User, error) {
+func (m *MockDBHandler) UserGetByUsername(arg0 context.Context, arg1 string) (*models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserGetByUsername", arg0, arg1)
-	ret0, _ := ret[0].(*user.User)
+	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -111,10 +109,10 @@ func (mr *MockDBHandlerMockRecorder) UserGetByUsername(arg0, arg1 interface{}) *
 }
 
 // UserGetFromDB mocks base method
-func (m *MockDBHandler) UserGetFromDB(arg0 context.Context, arg1 uint64) (*user.User, error) {
+func (m *MockDBHandler) UserGetFromDB(arg0 context.Context, arg1 uint64) (*models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserGetFromDB", arg0, arg1)
-	ret0, _ := ret[0].(*user.User)
+	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -126,10 +124,10 @@ func (mr *MockDBHandlerMockRecorder) UserGetFromDB(arg0, arg1 interface{}) *gomo
 }
 
 // UserGets mocks base method
-func (m *MockDBHandler) UserGets(arg0 context.Context) ([]*user.User, error) {
+func (m *MockDBHandler) UserGets(arg0 context.Context) ([]*models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserGets", arg0)
-	ret0, _ := ret[0].([]*user.User)
+	ret0, _ := ret[0].([]*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -141,7 +139,7 @@ func (mr *MockDBHandlerMockRecorder) UserGets(arg0 interface{}) *gomock.Call {
 }
 
 // UserSetToCache mocks base method
-func (m *MockDBHandler) UserSetToCache(arg0 context.Context, arg1 *user.User) error {
+func (m *MockDBHandler) UserSetToCache(arg0 context.Context, arg1 *models.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserSetToCache", arg0, arg1)
 	ret0, _ := ret[0].(error)

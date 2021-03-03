@@ -14,9 +14,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmextension"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -36,17 +34,17 @@ func TestExtensionsPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		user        models.User
 		requestBody request.BodyExtensionsPOST
-		reqExt      *extension.Extension
+		reqExt      *models.Extension
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID:         1,
-				Permission: user.PermissionAdmin,
+				Permission: models.UserPermissionAdmin,
 			},
 			request.BodyExtensionsPOST{
 				Name:      "test name",
@@ -55,7 +53,7 @@ func TestExtensionsPOST(t *testing.T) {
 				Extension: "test",
 				Password:  "password",
 			},
-			&extension.Extension{
+			&models.Extension{
 				UserID:    1,
 				Name:      "test name",
 				Detail:    "test detail",
@@ -73,7 +71,7 @@ func TestExtensionsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -84,7 +82,7 @@ func TestExtensionsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().ExtensionCreate(&tt.user, tt.reqExt).Return(&extension.Extension{}, nil)
+			mockSvc.EXPECT().ExtensionCreate(&tt.user, tt.reqExt).Return(&models.Extension{}, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/extensions", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -106,17 +104,17 @@ func TestExtensionsGET(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		user     models.User
 		DomainID uuid.UUID
 		ext      []*rmextension.Extension
 
-		expectExt []*extension.Extension
+		expectExt []*models.Extension
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("f92c19b2-6fb6-11eb-859c-0378f27fc22f"),
@@ -131,7 +129,7 @@ func TestExtensionsGET(t *testing.T) {
 					Password:  "password",
 				},
 			},
-			[]*extension.Extension{
+			[]*models.Extension{
 				{
 					ID:        uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
 					UserID:    1,
@@ -152,7 +150,7 @@ func TestExtensionsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -178,16 +176,16 @@ func TestExtensionsIDGET(t *testing.T) {
 
 	type test struct {
 		name string
-		user user.User
+		user models.User
 		ext  *rmextension.Extension
 
-		expectExt *extension.Extension
+		expectExt *models.Extension
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			&rmextension.Extension{
@@ -199,7 +197,7 @@ func TestExtensionsIDGET(t *testing.T) {
 				Extension: "test",
 				Password:  "password",
 			},
-			&extension.Extension{
+			&models.Extension{
 				ID:        uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
 				UserID:    1,
 				DomainID:  uuid.FromStringOrNil("2ff2b962-6fb0-11eb-a768-e3780d10e360"),
@@ -218,7 +216,7 @@ func TestExtensionsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -244,18 +242,18 @@ func TestExtensionsIDPUT(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		user        models.User
 		extID       uuid.UUID
 		requestBody request.BodyExtensionsIDPUT
-		expectExt   *extension.Extension
+		expectExt   *models.Extension
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID:         1,
-				Permission: user.PermissionAdmin,
+				Permission: models.UserPermissionAdmin,
 			},
 			uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
 			request.BodyExtensionsIDPUT{
@@ -263,7 +261,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 				Detail:   "test detail",
 				Password: "update password",
 			},
-			&extension.Extension{
+			&models.Extension{
 				ID:       uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
 				Name:     "test name",
 				Detail:   "test detail",
@@ -279,7 +277,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -290,7 +288,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().ExtensionUpdate(&tt.user, tt.expectExt).Return(&extension.Extension{}, nil)
+			mockSvc.EXPECT().ExtensionUpdate(&tt.user, tt.expectExt).Return(&models.Extension{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/extensions/"+tt.extID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -312,14 +310,14 @@ func TestExtensionsIDDELETE(t *testing.T) {
 
 	type test struct {
 		name  string
-		user  user.User
+		user  models.User
 		extID uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("be0c2b70-6fb0-11eb-849d-3f923b334d3b"),
@@ -333,7 +331,7 @@ func TestExtensionsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -30,7 +30,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 // 	}
 
 // 	// create an user
-// 	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+// 	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 // 	user, err := serviceHandler.UserCreate(body.Username, body.Password)
 // 	if err != nil {
 // 		c.AbortWithStatus(400)
@@ -57,7 +57,7 @@ func login(c *gin.Context) {
 	})
 	log.Debugf("Logging in.")
 
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	token, err := serviceHandler.AuthLogin(body.Username, body.Password)
 	if err != nil {
 		log.Debugf("Login failed. err: %v", err)

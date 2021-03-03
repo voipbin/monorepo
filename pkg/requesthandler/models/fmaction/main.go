@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // Action struct
@@ -16,16 +16,16 @@ type Action struct {
 }
 
 // ConvertAction return converted action.Action
-func (r *Action) ConvertAction() *action.Action {
-	return &action.Action{
+func (r *Action) ConvertAction() *models.Action {
+	return &models.Action{
 		ID:     r.ID,
-		Type:   action.Type(r.Type),
+		Type:   models.ActionType(r.Type),
 		Option: r.Option,
 	}
 }
 
 // CreateAction returns created fmaction from the action.Action.
-func CreateAction(a *action.Action) *Action {
+func CreateAction(a *models.Action) *Action {
 	return &Action{
 		ID:     a.ID,
 		Type:   string(a.Type),

@@ -7,9 +7,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -34,7 +32,7 @@ func extensionsPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -42,7 +40,7 @@ func extensionsPOST(c *gin.Context) {
 	})
 
 	// create a extension
-	e := &extension.Extension{
+	e := &models.Extension{
 		UserID:   u.ID,
 		Name:     body.Name,
 		Detail:   body.Detail,
@@ -52,7 +50,7 @@ func extensionsPOST(c *gin.Context) {
 		Password:  body.Password,
 	}
 
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	ext, err := serviceHandler.ExtensionCreate(&u, e)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
@@ -95,7 +93,7 @@ func extensionsGET(c *gin.Context) {
 		return
 	}
 
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log = log.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -110,7 +108,7 @@ func extensionsGET(c *gin.Context) {
 	}
 
 	// get service
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get extensions
 	domainID := uuid.FromStringOrNil(requestParam.DomainID)
@@ -155,7 +153,7 @@ func extensionsIDGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -163,7 +161,7 @@ func extensionsIDGET(c *gin.Context) {
 	})
 	log.Debug("Executing extensionsIDGET.")
 
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.ExtensionGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get a domain. err: %v", err)
@@ -199,14 +197,14 @@ func extensionsIDPUT(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
 		"permission": u.Permission,
 	})
 
-	f := &extension.Extension{
+	f := &models.Extension{
 		ID:       id,
 		Name:     body.Name,
 		Detail:   body.Detail,
@@ -214,7 +212,7 @@ func extensionsIDPUT(c *gin.Context) {
 	}
 
 	// update a domain
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.ExtensionUpdate(&u, f)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
@@ -244,7 +242,7 @@ func extensionsIDDELETE(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -252,7 +250,7 @@ func extensionsIDDELETE(c *gin.Context) {
 	})
 
 	// delete a domain
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.ExtensionDelete(&u, id); err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)

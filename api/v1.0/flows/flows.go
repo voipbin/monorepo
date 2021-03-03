@@ -7,9 +7,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -34,7 +32,7 @@ func flowsPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -42,7 +40,7 @@ func flowsPOST(c *gin.Context) {
 	})
 
 	// create a flow
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	flow, err := serviceHandler.FlowCreate(&u, uuid.Must(uuid.NewV4()), body.Name, body.Detail, body.Actions, true)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
@@ -83,7 +81,7 @@ func flowsGET(c *gin.Context) {
 		return
 	}
 
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log = log.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -98,7 +96,7 @@ func flowsGET(c *gin.Context) {
 	}
 
 	// get service
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get flows
 	flows, err := serviceHandler.FlowGets(&u, pageSize, requestParam.PageToken)
@@ -142,7 +140,7 @@ func flowsIDGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -150,7 +148,7 @@ func flowsIDGET(c *gin.Context) {
 	})
 	log.Debug("Executing flowsIDGET.")
 
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.FlowGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get a flow. err: %v", err)
@@ -186,14 +184,14 @@ func flowsIDPUT(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
 		"permission": u.Permission,
 	})
 
-	f := &flow.Flow{
+	f := &models.Flow{
 		ID:      id,
 		Name:    body.Name,
 		Detail:  body.Detail,
@@ -201,7 +199,7 @@ func flowsIDPUT(c *gin.Context) {
 	}
 
 	// update a flow
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.FlowUpdate(&u, f)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
@@ -231,7 +229,7 @@ func flowsIDDELETE(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -239,7 +237,7 @@ func flowsIDDELETE(c *gin.Context) {
 	})
 
 	// delete a flow
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.FlowDelete(&u, id); err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
 		c.AbortWithStatus(400)

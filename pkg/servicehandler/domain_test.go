@@ -7,8 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
@@ -28,20 +27,20 @@ func TestDomainCreate(t *testing.T) {
 
 	type test struct {
 		name string
-		user *user.User
+		user *models.User
 
 		DomainName      string
 		DomainTmpName   string
 		DomainTmpDetail string
 
 		response  *rmdomain.Domain
-		expectRes *domain.Domain
+		expectRes *models.Domain
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			"test.sip.voipbin.net",
@@ -54,7 +53,7 @@ func TestDomainCreate(t *testing.T) {
 				Name:       "test",
 				Detail:     "test detail",
 			},
-			&domain.Domain{
+			&models.Domain{
 				ID:         uuid.FromStringOrNil("5b06161c-6ed9-11eb-85e4-f38ba2415baf"),
 				UserID:     1,
 				DomainName: "test.sip.voipbin.net",
@@ -94,21 +93,21 @@ func TestDomainUpdate(t *testing.T) {
 
 	type test struct {
 		name   string
-		user   *user.User
-		domain *domain.Domain
+		user   *models.User
+		domain *models.Domain
 
 		requestDomain *rmdomain.Domain
 		response      *rmdomain.Domain
-		expectRes     *domain.Domain
+		expectRes     *models.Domain
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
-			&domain.Domain{
+			&models.Domain{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "update name",
@@ -127,7 +126,7 @@ func TestDomainUpdate(t *testing.T) {
 				Name:       "update name",
 				Detail:     "update detail",
 			},
-			&domain.Domain{
+			&models.Domain{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
 				UserID:     1,
 				DomainName: "test.sip.voipbin.net",
@@ -167,7 +166,7 @@ func TestDomainDelete(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     *user.User
+		user     *models.User
 		domainID uuid.UUID
 
 		response *rmdomain.Domain
@@ -176,7 +175,7 @@ func TestDomainDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
@@ -217,17 +216,17 @@ func TestDomainGet(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     *user.User
+		user     *models.User
 		DomainID uuid.UUID
 
 		response  *rmdomain.Domain
-		expectRes *domain.Domain
+		expectRes *models.Domain
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
@@ -239,7 +238,7 @@ func TestDomainGet(t *testing.T) {
 				Name:       "test",
 				Detail:     "test detail",
 			},
-			&domain.Domain{
+			&models.Domain{
 				ID:         uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
 				UserID:     1,
 				DomainName: "test.sip.voipbin.net",
@@ -279,18 +278,18 @@ func TestDomainGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
+		user      *models.User
 		pageToken string
 		pageSize  uint64
 
 		response  []rmdomain.Domain
-		expectRes []*domain.Domain
+		expectRes []*models.Domain
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			"2020-10-20T01:00:00.995000",
@@ -312,7 +311,7 @@ func TestDomainGets(t *testing.T) {
 					Detail:     "test detail2",
 				},
 			},
-			[]*domain.Domain{
+			[]*models.Domain{
 				{
 					ID:         uuid.FromStringOrNil("cbd2f846-6eda-11eb-a1b5-c39b7ed749b1"),
 					UserID:     1,

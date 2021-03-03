@@ -1,4 +1,4 @@
-package domain
+package models
 
 import "github.com/gofrs/uuid"
 

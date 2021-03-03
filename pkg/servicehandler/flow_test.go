@@ -7,9 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
@@ -30,27 +28,27 @@ func TestFlowCreate(t *testing.T) {
 
 	type test struct {
 		name       string
-		user       *user.User
+		user       *models.User
 		flowID     uuid.UUID
 		flowName   string
 		flowDetail string
-		actions    []action.Action
+		actions    []models.Action
 		persist    bool
 
 		response  *fmflow.Flow
-		expectRes *flow.Flow
+		expectRes *models.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
 			"test",
 			"test detail",
-			[]action.Action{},
+			[]models.Action{},
 			true,
 			&fmflow.Flow{
 				ID:      uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
@@ -60,12 +58,12 @@ func TestFlowCreate(t *testing.T) {
 				Actions: []fmaction.Action{},
 				Persist: true,
 			},
-			&flow.Flow{
+			&models.Flow{
 				ID:      uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
 				UserID:  1,
 				Name:    "test",
 				Detail:  "test detail",
-				Actions: []action.Action{},
+				Actions: []models.Action{},
 				Persist: true,
 			},
 		},
@@ -103,25 +101,25 @@ func TestFlowUpdate(t *testing.T) {
 
 	type test struct {
 		name string
-		user *user.User
-		flow *flow.Flow
+		user *models.User
+		flow *models.Flow
 
 		requestFlow *fmflow.Flow
 		response    *fmflow.Flow
-		expectRes   *flow.Flow
+		expectRes   *models.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
-			&flow.Flow{
+			&models.Flow{
 				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
 				Name:    "update name",
 				Detail:  "update detail",
-				Actions: []action.Action{},
+				Actions: []models.Action{},
 			},
 			&fmflow.Flow{
 				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
@@ -137,12 +135,12 @@ func TestFlowUpdate(t *testing.T) {
 				Actions: []fmaction.Action{},
 				Persist: true,
 			},
-			&flow.Flow{
+			&models.Flow{
 				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
 				UserID:  1,
 				Name:    "update name",
 				Detail:  "update detail",
-				Actions: []action.Action{},
+				Actions: []models.Action{},
 				Persist: true,
 			},
 		},
@@ -178,7 +176,7 @@ func TestFlowDelete(t *testing.T) {
 
 	type test struct {
 		name   string
-		user   *user.User
+		user   *models.User
 		flowID uuid.UUID
 
 		response *fmflow.Flow
@@ -187,7 +185,7 @@ func TestFlowDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
@@ -228,17 +226,17 @@ func TestFlowGet(t *testing.T) {
 
 	type test struct {
 		name   string
-		user   *user.User
+		user   *models.User
 		flowID uuid.UUID
 
 		response  *fmflow.Flow
-		expectRes *flow.Flow
+		expectRes *models.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
@@ -250,17 +248,17 @@ func TestFlowGet(t *testing.T) {
 				Detail:  "test detail",
 				Actions: []fmaction.Action{},
 			},
-			&flow.Flow{
+			&models.Flow{
 				ID:      uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
 				UserID:  1,
 				Name:    "test",
 				Detail:  "test detail",
-				Actions: []action.Action{},
+				Actions: []models.Action{},
 			},
 		},
 		{
 			"action answer",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
@@ -277,15 +275,15 @@ func TestFlowGet(t *testing.T) {
 					},
 				},
 			},
-			&flow.Flow{
+			&models.Flow{
 				ID:     uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
 				UserID: 1,
 				Name:   "test",
 				Detail: "test detail",
-				Actions: []action.Action{
+				Actions: []models.Action{
 					{
 						ID:   uuid.FromStringOrNil("61f86f60-66af-11eb-917f-838fd6836e1f"),
-						Type: action.TypeAnswer,
+						Type: models.ActionTypeAnswer,
 					},
 				},
 			},
@@ -322,18 +320,18 @@ func TestFlowGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
+		user      *models.User
 		pageToken string
 		pageSize  uint64
 
 		response  []fmflow.Flow
-		expectRes []*flow.Flow
+		expectRes []*models.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			"2020-10-20T01:00:00.995000",
@@ -355,26 +353,26 @@ func TestFlowGets(t *testing.T) {
 					Actions: []fmaction.Action{},
 				},
 			},
-			[]*flow.Flow{
+			[]*models.Flow{
 				{
 					ID:      uuid.FromStringOrNil("ccda6eb2-0c5c-11eb-ae7e-a3ae4bcd3975"),
 					UserID:  1,
 					Name:    "test1",
 					Detail:  "test detail1",
-					Actions: []action.Action{},
+					Actions: []models.Action{},
 				},
 				{
 					ID:      uuid.FromStringOrNil("d950aef4-0c5c-11eb-82dd-3b31d4ba2ea4"),
 					UserID:  1,
 					Name:    "test2",
 					Detail:  "test detail2",
-					Actions: []action.Action{},
+					Actions: []models.Action{},
 				},
 			},
 		},
 		{
 			"1 action",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			"2020-10-20T01:00:00.995000",
@@ -394,16 +392,16 @@ func TestFlowGets(t *testing.T) {
 					},
 				},
 			},
-			[]*flow.Flow{
+			[]*models.Flow{
 				{
 					ID:     uuid.FromStringOrNil("5a109d00-66ae-11eb-ad00-bbcf73569888"),
 					UserID: 1,
 					Name:   "test1",
 					Detail: "test detail1",
-					Actions: []action.Action{
+					Actions: []models.Action{
 						{
 							ID:   uuid.FromStringOrNil("775f5cde-66ae-11eb-9626-0f488d332e1e"),
-							Type: action.TypeAnswer,
+							Type: models.ActionTypeAnswer,
 						},
 					},
 				},

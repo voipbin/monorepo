@@ -7,7 +7,7 @@ package cachehandler
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	models "gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	reflect "reflect"
 )
 
@@ -49,10 +49,10 @@ func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 }
 
 // UserGet mocks base method
-func (m *MockCacheHandler) UserGet(arg0 context.Context, arg1 uint64) (*user.User, error) {
+func (m *MockCacheHandler) UserGet(arg0 context.Context, arg1 uint64) (*models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserGet", arg0, arg1)
-	ret0, _ := ret[0].(*user.User)
+	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -64,7 +64,7 @@ func (mr *MockCacheHandlerMockRecorder) UserGet(arg0, arg1 interface{}) *gomock.
 }
 
 // UserSet mocks base method
-func (m *MockCacheHandler) UserSet(arg0 context.Context, arg1 *user.User) error {
+func (m *MockCacheHandler) UserSet(arg0 context.Context, arg1 *models.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserSet", arg0, arg1)
 	ret0, _ := ret[0].(error)

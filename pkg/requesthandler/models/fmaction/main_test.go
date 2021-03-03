@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 func TestConvertAction(t *testing.T) {
@@ -17,7 +17,7 @@ func TestConvertAction(t *testing.T) {
 	type test struct {
 		name         string
 		action       *Action
-		expectAction *action.Action
+		expectAction *models.Action
 	}
 
 	tests := []test{
@@ -27,9 +27,9 @@ func TestConvertAction(t *testing.T) {
 				ID:   uuid.FromStringOrNil("b3c0647e-6781-11eb-903a-f33daa2ee7c3"),
 				Type: "answer",
 			},
-			&action.Action{
+			&models.Action{
 				ID:   uuid.FromStringOrNil("b3c0647e-6781-11eb-903a-f33daa2ee7c3"),
-				Type: action.TypeAnswer,
+				Type: models.ActionTypeAnswer,
 			},
 		},
 		{
@@ -39,9 +39,9 @@ func TestConvertAction(t *testing.T) {
 				Type:   "conference_join",
 				Option: []byte(`{conference_id":"4b0d3e14-7701-4f59-944e-91f0e66cce22"}`),
 			},
-			&action.Action{
+			&models.Action{
 				ID:     uuid.FromStringOrNil("456cf9fa-6782-11eb-9b4f-fbde8ed2192e"),
-				Type:   action.TypeConferenceJoin,
+				Type:   models.ActionTypeConferenceJoin,
 				Option: []byte(`{conference_id":"4b0d3e14-7701-4f59-944e-91f0e66cce22"}`),
 			},
 		},
@@ -51,9 +51,9 @@ func TestConvertAction(t *testing.T) {
 				ID:   uuid.FromStringOrNil("ca9d8ffe-6787-11eb-94ca-bfb3a1122783"),
 				Type: "echo",
 			},
-			&action.Action{
+			&models.Action{
 				ID:   uuid.FromStringOrNil("ca9d8ffe-6787-11eb-94ca-bfb3a1122783"),
-				Type: action.TypeEcho,
+				Type: models.ActionTypeEcho,
 			},
 		},
 	}
@@ -75,16 +75,16 @@ func TestCreateAction(t *testing.T) {
 
 	type test struct {
 		name         string
-		action       *action.Action
+		action       *models.Action
 		expectAction *Action
 	}
 
 	tests := []test{
 		{
 			"answer",
-			&action.Action{
+			&models.Action{
 				ID:   uuid.FromStringOrNil("654aa32a-6788-11eb-9894-a75cf57ce24a"),
-				Type: action.TypeAnswer,
+				Type: models.ActionTypeAnswer,
 			},
 			&Action{
 				ID:   uuid.FromStringOrNil("654aa32a-6788-11eb-9894-a75cf57ce24a"),
@@ -93,9 +93,9 @@ func TestCreateAction(t *testing.T) {
 		},
 		{
 			"conference_join",
-			&action.Action{
+			&models.Action{
 				ID:     uuid.FromStringOrNil("6571092a-6788-11eb-9bc3-ab00dcd060a0"),
-				Type:   action.TypeConferenceJoin,
+				Type:   models.ActionTypeConferenceJoin,
 				Option: []byte(`{conference_id":"659ed044-6788-11eb-8b58-3f997557f9df"}`),
 			},
 			&Action{
@@ -106,9 +106,9 @@ func TestCreateAction(t *testing.T) {
 		},
 		{
 			"echo",
-			&action.Action{
+			&models.Action{
 				ID:   uuid.FromStringOrNil("7021b888-6788-11eb-8a4e-a3a71029cdbd"),
-				Type: action.TypeEcho,
+				Type: models.ActionTypeEcho,
 			},
 			&Action{
 				ID:   uuid.FromStringOrNil("7021b888-6788-11eb-8a4e-a3a71029cdbd"),

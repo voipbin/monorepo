@@ -14,9 +14,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -36,16 +34,16 @@ func TestDomainsPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		user        models.User
 		requestBody request.BodyDomainsPOST
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID:         1,
-				Permission: user.PermissionAdmin,
+				Permission: models.UserPermissionAdmin,
 			},
 			request.BodyDomainsPOST{
 				Name:       "test name",
@@ -62,7 +60,7 @@ func TestDomainsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -73,7 +71,7 @@ func TestDomainsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().DomainCreate(&tt.user, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&domain.Domain{}, nil)
+			mockSvc.EXPECT().DomainCreate(&tt.user, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&models.Domain{}, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/domains", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -95,16 +93,16 @@ func TestDomainsIDGET(t *testing.T) {
 
 	type test struct {
 		name   string
-		user   user.User
+		user   models.User
 		domain *rmdomain.Domain
 
-		expectDomain *domain.Domain
+		expectDomain *models.Domain
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			&rmdomain.Domain{
@@ -114,7 +112,7 @@ func TestDomainsIDGET(t *testing.T) {
 				Detail:     "test detail",
 				UserID:     1,
 			},
-			&domain.Domain{
+			&models.Domain{
 				ID:         uuid.FromStringOrNil("8c769d1e-6edb-11eb-a141-8bb08ceaaa69"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test name",
@@ -131,7 +129,7 @@ func TestDomainsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -157,25 +155,25 @@ func TestDomainsIDPUT(t *testing.T) {
 
 	type test struct {
 		name         string
-		user         user.User
+		user         models.User
 		domainID     uuid.UUID
 		requestBody  request.BodyDomainsIDPUT
-		expectDomain *domain.Domain
+		expectDomain *models.Domain
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID:         1,
-				Permission: user.PermissionAdmin,
+				Permission: models.UserPermissionAdmin,
 			},
 			uuid.FromStringOrNil("91f5852a-6edb-11eb-86c9-f3e5fc2d3a80"),
 			request.BodyDomainsIDPUT{
 				Name:   "test name",
 				Detail: "test detail",
 			},
-			&domain.Domain{
+			&models.Domain{
 				ID:     uuid.FromStringOrNil("91f5852a-6edb-11eb-86c9-f3e5fc2d3a80"),
 				Name:   "test name",
 				Detail: "test detail",
@@ -190,7 +188,7 @@ func TestDomainsIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -201,7 +199,7 @@ func TestDomainsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().DomainUpdate(&tt.user, tt.expectDomain).Return(&domain.Domain{}, nil)
+			mockSvc.EXPECT().DomainUpdate(&tt.user, tt.expectDomain).Return(&models.Domain{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/domains/"+tt.domainID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -223,14 +221,14 @@ func TestDomainsIDDELETE(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		user     models.User
 		domainID uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("5d41b834-6edc-11eb-8d71-f7a08bdfd253"),
@@ -244,7 +242,7 @@ func TestDomainsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

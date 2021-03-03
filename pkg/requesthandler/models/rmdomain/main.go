@@ -3,7 +3,7 @@ package rmdomain
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // Domain struct
@@ -22,9 +22,9 @@ type Domain struct {
 }
 
 // ConvertDomain returns converted data from rmdomain.Domain to domain.Domain
-func (f *Domain) ConvertDomain() *domain.Domain {
+func (f *Domain) ConvertDomain() *models.Domain {
 
-	res := &domain.Domain{
+	res := &models.Domain{
 		ID:     f.ID,
 		UserID: f.UserID,
 
@@ -42,7 +42,7 @@ func (f *Domain) ConvertDomain() *domain.Domain {
 }
 
 // CreateDomain returns converted data from domain.Domain to rmdomain.Domain
-func CreateDomain(f *domain.Domain) *Domain {
+func CreateDomain(f *models.Domain) *Domain {
 
 	res := &Domain{
 		ID:     f.ID,
