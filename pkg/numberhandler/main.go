@@ -28,6 +28,8 @@ type NumberHandler interface {
 	GetNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*models.Number, error)
 
 	ReleaseNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
+
+	UpdateNumber(ctx context.Context, numb *models.Number) (*models.Number, error)
 }
 
 // numberHandler structure for service handle

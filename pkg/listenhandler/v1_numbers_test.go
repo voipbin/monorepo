@@ -364,3 +364,79 @@ func TestProcessV1NumbersGet(t *testing.T) {
 		})
 	}
 }
+
+func TestProcessV1NumbersIDPut(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:    mockSock,
+		db:            mockDB,
+		reqHandler:    mockReq,
+		numberHandler: mockNumber,
+	}
+
+	type test struct {
+		name       string
+		id         uuid.UUID
+		updateInfo *models.Number
+		resultData *models.Number
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+			&models.Number{
+				ID:     uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+				FlowID: uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
+			},
+			&models.Number{
+				ID:                  uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+				FlowID:              uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderReferenceID: "",
+				Status:              models.NumberStatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+			},
+			&rabbitmqhandler.Request{
+				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","number":"+821021656521","flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockNumber.EXPECT().UpdateNumber(gomock.Any(), tt.updateInfo).Return(tt.resultData, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+
+		})
+	}
+}

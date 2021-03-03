@@ -66,6 +66,7 @@ func TestNumberCreate(t *testing.T) {
 
 			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 			res, err := h.NumberGet(context.Background(), tt.number.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -179,7 +180,6 @@ func TestNumberDelete(t *testing.T) {
 			}
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID)
 			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 			if err := h.NumberDelete(ctx, tt.number.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -187,12 +187,98 @@ func TestNumberDelete(t *testing.T) {
 
 			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 			res, err := h.NumberGet(context.Background(), tt.number.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if res.TMDelete == "" || res.TMUpdate == "" {
+				t.Errorf("Wrong match. expect: not empty, got: empty")
+			}
+			res.TMCreate = ""
+			res.TMDelete = ""
+			res.TMUpdate = ""
+
+			if reflect.DeepEqual(tt.expectNumber, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectNumber, res)
+			}
+		})
+	}
+}
+
+func TestNumberUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name         string
+		number       *models.Number
+		updateNumber *models.Number
+		expectNumber *models.Number
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&models.Number{
+				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "1580568175064384684",
+				Status:              models.NumberStatusActive,
+				T38Enabled:          true,
+				EmergencyEnabled:    false,
+				TMPurchase:          "2021-02-26 18:26:49.000",
+			},
+			&models.Number{
+				ID:     uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
+				FlowID: uuid.FromStringOrNil("9496e31a-7c54-11eb-915d-3f8ab244a929"),
+			},
+			&models.Number{
+				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
+				Number:              "+821021656521",
+				FlowID:              uuid.FromStringOrNil("9496e31a-7c54-11eb-915d-3f8ab244a929"),
+				UserID:              1,
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "1580568175064384684",
+				Status:              models.NumberStatusActive,
+				T38Enabled:          true,
+				EmergencyEnabled:    false,
+				TMPurchase:          "2021-02-26 18:26:49.000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
+
+			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
+			if err := h.NumberCreate(ctx, tt.number); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
+			if err := h.NumberUpdate(ctx, tt.updateNumber); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
+			res, err := h.NumberGet(context.Background(), tt.number.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.TMUpdate == "" {
 				t.Errorf("Wrong match. expect: not empty, got: empty")
 			}
 			res.TMCreate = ""

@@ -13,11 +13,6 @@ create table numbers(
   t38_enabled         boolean,    -- T38 eanbled
   emergency_enabled   boolean,    -- Emergency available
 
-  -- country       varchar(3),   -- iso country code
-  -- region        varchar(128), -- region
-  -- postal_code   varchar(16),  --
-  -- feature       json,         --
-
   -- timestamps
   tm_purchase datetime(6),
   tm_create   datetime(6),  --
