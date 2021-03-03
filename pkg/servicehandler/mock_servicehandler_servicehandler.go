@@ -419,6 +419,21 @@ func (mr *MockServiceHandlerMockRecorder) OrderNumberCreate(u, num interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrderNumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).OrderNumberCreate), u, num)
 }
 
+// OrderNumberGet mocks base method
+func (m *MockServiceHandler) OrderNumberGet(u *models.User, id uuid.UUID) (*models.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OrderNumberGet", u, id)
+	ret0, _ := ret[0].(*models.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OrderNumberGet indicates an expected call of OrderNumberGet
+func (mr *MockServiceHandlerMockRecorder) OrderNumberGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrderNumberGet", reflect.TypeOf((*MockServiceHandler)(nil).OrderNumberGet), u, id)
+}
+
 // OrderNumberGets mocks base method
 func (m *MockServiceHandler) OrderNumberGets(u *models.User, size uint64, token string) ([]*models.Number, error) {
 	m.ctrl.T.Helper()
@@ -432,6 +447,21 @@ func (m *MockServiceHandler) OrderNumberGets(u *models.User, size uint64, token 
 func (mr *MockServiceHandlerMockRecorder) OrderNumberGets(u, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrderNumberGets", reflect.TypeOf((*MockServiceHandler)(nil).OrderNumberGets), u, size, token)
+}
+
+// OrderNumberDelete mocks base method
+func (m *MockServiceHandler) OrderNumberDelete(u *models.User, id uuid.UUID) (*models.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OrderNumberDelete", u, id)
+	ret0, _ := ret[0].(*models.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OrderNumberDelete indicates an expected call of OrderNumberDelete
+func (mr *MockServiceHandlerMockRecorder) OrderNumberDelete(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrderNumberDelete", reflect.TypeOf((*MockServiceHandler)(nil).OrderNumberDelete), u, id)
 }
 
 // RecordingGet mocks base method

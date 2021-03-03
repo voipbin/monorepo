@@ -92,6 +92,132 @@ func TestOrderNumbersGET(t *testing.T) {
 	}
 }
 
+func TestOrderNumbersIDGET(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name     string
+		user     models.User
+		numberID uuid.UUID
+		uri      string
+
+		resNumber *models.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+			models.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
+			"/v1.0/order_numbers/3ab6711c-7be6-11eb-8da6-d31a9f3d45a6",
+			&models.Number{
+				ID:               uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
+				Number:           "+821021656521",
+				UserID:           1,
+				Status:           "active",
+				T38Enabled:       false,
+				EmergencyEnabled: false,
+				TMPurchase:       "",
+				TMCreate:         "",
+				TMUpdate:         "",
+				TMDelete:         "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().OrderNumberGet(&tt.user, tt.numberID).Return(tt.resNumber, nil)
+			req, _ := http.NewRequest("GET", tt.uri, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func TestOrderNumbersIDDELETE(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name     string
+		user     models.User
+		numberID uuid.UUID
+		uri      string
+
+		resNumber *models.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+			models.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
+			"/v1.0/order_numbers/d905c26e-7be6-11eb-b92a-ab4802b4bde3",
+			&models.Number{
+				ID:               uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
+				Number:           "+821021656521",
+				UserID:           1,
+				Status:           "active",
+				T38Enabled:       false,
+				EmergencyEnabled: false,
+				TMPurchase:       "",
+				TMCreate:         "",
+				TMUpdate:         "",
+				TMDelete:         "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().OrderNumberDelete(&tt.user, tt.numberID).Return(tt.resNumber, nil)
+			req, _ := http.NewRequest("DELETE", tt.uri, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
 func TestOrderNumbersPOST(t *testing.T) {
 
 	// create mock

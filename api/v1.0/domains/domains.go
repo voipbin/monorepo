@@ -16,7 +16,7 @@ import (
 // @Summary Create a new domain and returns detail created domain info.
 // @Description Create a new domain and returns detail created domain info.
 // @Produce json
-// @Success 200 {object} domain.Domain
+// @Success 200 {object} models.Domain
 // @Router /v1.0/domains [post]
 func domainsPOST(c *gin.Context) {
 
@@ -57,7 +57,7 @@ func domainsPOST(c *gin.Context) {
 // @Summary Gets a list of domains.
 // @Description Gets a list of domains
 // @Produce json
-// @Success 200 {array} domain.Domain
+// @Success 200 {array} models.Domain
 // @Router /v1.0/domains [get]
 func domainsGET(c *gin.Context) {
 
@@ -128,7 +128,7 @@ func domainsGET(c *gin.Context) {
 // @Produce json
 // @Param id path string true "The ID of the domain"
 // @Param token query string true "JWT token"
-// @Success 200 {object} domain.Domain
+// @Success 200 {object} models.Domain
 // @Router /v1.0/domains/{id} [get]
 func domainsIDGET(c *gin.Context) {
 	// get id
@@ -165,7 +165,7 @@ func domainsIDGET(c *gin.Context) {
 // @Summary Update a domain and reuturns updated domain info.
 // @Description Update a domain and returns detail updated domain info.
 // @Produce json
-// @Success 200 {object} domain.Domain
+// @Success 200 {object} models.Domain
 // @Router /v1.0/domains/{id} [put]
 func domainsIDPUT(c *gin.Context) {
 

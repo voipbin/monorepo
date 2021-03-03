@@ -10,4 +10,8 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	orderNumbers.GET("", orderNumbersGET)
 	orderNumbers.POST("", orderNumbersPOST)
+
+	orderNumbers.GET("/:id", orderNumbersIDGET)
+	orderNumbers.DELETE("/:id", orderNumbersIDDELETE)
+
 }

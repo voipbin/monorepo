@@ -16,7 +16,7 @@ import (
 // @Summary Create a new flow and returns detail created flow info.
 // @Description Create a new flow and returns detail created flow info.
 // @Produce json
-// @Success 200 {object} flow.Flow
+// @Success 200 {object} models.Flow
 // @Router /v1.0/flows [post]
 func flowsPOST(c *gin.Context) {
 
@@ -57,7 +57,7 @@ func flowsPOST(c *gin.Context) {
 // @Summary Gets a list of flows.
 // @Description Gets a list of flows
 // @Produce json
-// @Success 200 {array} flow.Flow
+// @Success 200 {array} models.Flow
 // @Router /v1.0/flows [get]
 func flowsGET(c *gin.Context) {
 
@@ -128,7 +128,7 @@ func flowsGET(c *gin.Context) {
 // @Produce json
 // @Param id path string true "The ID of the flow"
 // @Param token query string true "JWT token"
-// @Success 200 {object} flow.Flow
+// @Success 200 {object} models.Flow
 // @Router /v1.0/flows/{id} [get]
 func flowsIDGET(c *gin.Context) {
 	// get id
@@ -165,7 +165,7 @@ func flowsIDGET(c *gin.Context) {
 // @Summary Update a flow and reuturns updated flow info.
 // @Description Update a flow and returns detail updated flow info.
 // @Produce json
-// @Success 200 {object} flow.Flow
+// @Success 200 {object} models.Flow
 // @Router /v1.0/flows/{id} [put]
 func flowsIDPUT(c *gin.Context) {
 
