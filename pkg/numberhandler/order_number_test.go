@@ -231,13 +231,38 @@ func TestGetOrderNumbers(t *testing.T) {
 				},
 			},
 		},
+		{
+			"empty token",
+			1,
+			10,
+			"",
+			[]*models.Number{
+				{
+					ID:                  uuid.FromStringOrNil("b72d1844-7bdd-11eb-a2bb-4370f115b44c"),
+					Number:              "+821021656521",
+					UserID:              1,
+					ProviderName:        models.NumberProviderNameTelnyx,
+					ProviderReferenceID: "1580568175064384684",
+					Status:              models.NumberStatusActive,
+					T38Enabled:          false,
+					EmergencyEnabled:    false,
+					TMPurchase:          "2021-02-26 18:26:49.000",
+					TMCreate:            "2021-02-26 18:26:49.000",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.numbers, nil)
+			if tt.pageToken == "" {
+				mockDB.EXPECT().NumberGets(gomock.Any(), tt.userID, tt.pageSize, gomock.Any()).Return(tt.numbers, nil)
+			} else {
+				mockDB.EXPECT().NumberGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.numbers, nil)
+			}
+
 			res, err := h.GetOrderNumbers(ctx, tt.userID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

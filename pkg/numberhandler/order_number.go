@@ -89,6 +89,10 @@ func (h *numberHandler) GetOrderNumbers(ctx context.Context, userID uint64, page
 	)
 	log.Debugf("GetOrderNumbers. user_id: %d", userID)
 
+	if pageToken == "" {
+		pageToken = getCurTime()
+	}
+
 	numbers, err := h.db.NumberGets(ctx, userID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get numbers. user_id: %d, err:%v", userID, err)
