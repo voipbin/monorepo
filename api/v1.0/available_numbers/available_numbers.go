@@ -17,7 +17,7 @@ import (
 // @Produce  json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param country_code query string true "The ISO country code"
-// @Success 200 {object} response.BodyRecordingsGET
+// @Success 200 {object} response.BodyAvailableNumbersGET
 // @Router /v1.0/available_numbers [get]
 func availableNumbersGET(c *gin.Context) {
 
@@ -73,42 +73,3 @@ func availableNumbersGET(c *gin.Context) {
 
 	c.JSON(200, res)
 }
-
-// // recordingsIDGET handles GET /recordings/<id> request.
-// // It returns a detail recording info.
-// // @Summary Returns a detail recording information.
-// // @Description Returns a detial recording information of the given recording id.
-// // @Produce json
-// // @Success 200 {object} recording.Recording
-// // @Router /v1.0/recordings/{id} [get]
-// func recordingsIDGET(c *gin.Context) {
-
-// 	// get id
-// 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-
-// 	tmp, exists := c.Get("user")
-// 	if exists != true {
-// 		logrus.Errorf("Could not find user info.")
-// 		c.AbortWithStatus(400)
-// 		return
-// 	}
-
-// 	// get user
-// 	u := tmp.(models.User)
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"id":         u.ID,
-// 		"username":   u.Username,
-// 		"permission": u.Permission,
-// 	})
-// 	log.Debug("Executing recordingsIDGET.")
-
-// 	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
-// 	res, err := serviceHandler.RecordingGet(&u, id)
-// 	if err != nil {
-// 		log.Errorf("Could not get a recording info. err: %v", err)
-// 		c.AbortWithStatus(400)
-// 		return
-// 	}
-
-// 	c.JSON(200, res)
-// }

@@ -95,7 +95,7 @@ func conferencesGET(c *gin.Context) {
 // @Produce json
 // @Param token query string true "JWT token"
 // @Param call body request.BodyConferencesPOST true "The conference detail"
-// @Success 200 {object} conference.Conference
+// @Success 200 {object} models.Conference
 // @Router /v1.0/conferences [post]
 func conferencesPOST(c *gin.Context) {
 	var requestBody request.BodyConferencesPOST
@@ -130,7 +130,7 @@ func conferencesPOST(c *gin.Context) {
 // @Produce json
 // @Param id path string true "The ID of the conference"
 // @Param token query string true "JWT token"
-// @Success 200 {object} conference.Conference
+// @Success 200 {object} models.Conference
 // @Router /v1.0/conferences/{id} [get]
 func conferencesIDGET(c *gin.Context) {
 	// get id

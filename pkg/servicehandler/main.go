@@ -56,7 +56,9 @@ type ServiceHandler interface {
 
 	// order numbers handler
 	OrderNumberCreate(u *models.User, num string) (*models.Number, error)
+	OrderNumberGet(u *models.User, id uuid.UUID) (*models.Number, error)
 	OrderNumberGets(u *models.User, size uint64, token string) ([]*models.Number, error)
+	OrderNumberDelete(u *models.User, id uuid.UUID) (*models.Number, error)
 
 	// recording handlers
 	RecordingGet(u *models.User, id uuid.UUID) (*models.Recording, error)

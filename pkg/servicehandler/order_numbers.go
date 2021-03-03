@@ -1,6 +1,9 @@
 package servicehandler
 
 import (
+	"fmt"
+
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
@@ -20,7 +23,7 @@ func (h *serviceHandler) OrderNumberGets(u *models.User, size uint64, token stri
 	// get available numbers
 	tmps, err := h.reqHandler.NMOrderNumberGets(u.ID, token, size)
 	if err != nil {
-		log.Infof("Could not get available numbers info. err: %v", err)
+		log.Infof("Could not get order numbers info. err: %v", err)
 		return nil, err
 	}
 
@@ -34,15 +37,20 @@ func (h *serviceHandler) OrderNumberGets(u *models.User, size uint64, token stri
 	return res, nil
 }
 
-// AvailableNumberGets sends a handles available number get
-// It sends a request to the number-manager to getting a list of calls.
-// it returns list of available numbers if it succeed.
+// OrderNumberCreate handles order number create request.
+// It sends a request to the number-manager to create a new order number.
+// it returns created number information if it succeed.
 func (h *serviceHandler) OrderNumberCreate(u *models.User, num string) (*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
 		"numbers":  num,
 	})
+
+	if num == "" {
+		log.Errorf("Not acceptable number. num: %s", num)
+		return nil, fmt.Errorf("not acceptable number. num: %s", num)
+	}
 
 	// create numbers
 	tmp, err := h.reqHandler.NMOrderNumberCreate(u.ID, num)
@@ -52,4 +60,63 @@ func (h *serviceHandler) OrderNumberCreate(u *models.User, num string) (*models.
 	}
 
 	return tmp.ConvertNumber(), nil
+}
+
+// OrderNumberGet handles order number get request.
+// It sends a request to the number-manager to get a existed order number.
+// it returns got number information if it succeed.
+func (h *serviceHandler) OrderNumberGet(u *models.User, id uuid.UUID) (*models.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"number":   id,
+	})
+
+	// get number info
+	res, err := h.reqHandler.NMOrderNumberGet(id)
+	if err != nil {
+		log.Errorf("Could not get number info. err: %v", err)
+		return nil, err
+	}
+
+	// permission check
+	if u.HasPermission(models.UserPermissionAdmin) != true && res.UserID != u.ID {
+		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, res.UserID)
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	return res.ConvertNumber(), nil
+}
+
+// OrderNumberDelete handles order number delete request.
+// It sends a request to the number-manager to delete a existed order number.
+// it returns deleted number information if it succeed.
+func (h *serviceHandler) OrderNumberDelete(u *models.User, id uuid.UUID) (*models.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"number":   id,
+	})
+
+	// get number info
+	tmp, err := h.reqHandler.NMOrderNumberGet(id)
+	if err != nil {
+		log.Errorf("Could not get number info. err: %v", err)
+		return nil, err
+	}
+
+	// permission check
+	if u.HasPermission(models.UserPermissionAdmin) != true && tmp.UserID != u.ID {
+		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, tmp.UserID)
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// delete numbers
+	res, err := h.reqHandler.NMOrderNumberDelete(id)
+	if err != nil {
+		log.Infof("Could not delete numbers info. err: %v", err)
+		return nil, err
+	}
+
+	return res.ConvertNumber(), nil
 }

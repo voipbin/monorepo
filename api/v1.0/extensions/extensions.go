@@ -16,7 +16,7 @@ import (
 // @Summary Create a new domain and returns detail created extension info.
 // @Description Create a new extension and returns detail created extension info.
 // @Produce json
-// @Success 200 {object} extension.Extension
+// @Success 200 {object} models.Extension
 // @Router /v1.0/extensions [post]
 func extensionsPOST(c *gin.Context) {
 
@@ -67,7 +67,7 @@ func extensionsPOST(c *gin.Context) {
 // @Summary Gets a list of extensions.
 // @Description Gets a list of extensions
 // @Produce json
-// @Success 200 {array} extension.Extension
+// @Success 200 {array} models.Extension
 // @Router /v1.0/extensions [get]
 func extensionsGET(c *gin.Context) {
 
@@ -141,7 +141,7 @@ func extensionsGET(c *gin.Context) {
 // @Produce json
 // @Param id path string true "The ID of the extension"
 // @Param token query string true "JWT token"
-// @Success 200 {object} extension.Extension
+// @Success 200 {object} models.Extension
 // @Router /v1.0/extension/{id} [get]
 func extensionsIDGET(c *gin.Context) {
 	// get id
@@ -178,7 +178,7 @@ func extensionsIDGET(c *gin.Context) {
 // @Summary Update a extension and reuturns updated extension info.
 // @Description Update a extension and returns detail updated extension info.
 // @Produce json
-// @Success 200 {object} extension.Extension
+// @Success 200 {object} models.Extension
 // @Router /v1.0/extensions/{id} [put]
 func extensionsIDPUT(c *gin.Context) {
 
