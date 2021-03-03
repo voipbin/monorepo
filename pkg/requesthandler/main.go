@@ -12,7 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
@@ -115,7 +115,7 @@ type RequestHandler interface {
 
 	// flow
 	// flow actions
-	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error)
+	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []models.Action, persist bool) (*fmflow.Flow, error)
 	FMFlowDelete(flowID uuid.UUID) error
 	FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error)
 	FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error)

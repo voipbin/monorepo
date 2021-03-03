@@ -6,12 +6,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // RecordingGet returns downloadable url for recording
-func (h *serviceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error) {
+func (h *serviceHandler) RecordingGet(u *models.User, id uuid.UUID) (*models.Recording, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -29,7 +28,7 @@ func (h *serviceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Re
 	}
 
 	// check the recording ownership
-	if u.HasPermission(user.PermissionAdmin) != true && u.ID != recording.UserID {
+	if u.HasPermission(models.UserPermissionAdmin) != true && u.ID != recording.UserID {
 		log.Error("The user has no permission for this recording.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -42,7 +41,7 @@ func (h *serviceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Re
 // RecordingGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error) {
+func (h *serviceHandler) RecordingGets(u *models.User, size uint64, token string) ([]*models.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -60,7 +59,7 @@ func (h *serviceHandler) RecordingGets(u *user.User, size uint64, token string) 
 		return nil, err
 	}
 
-	res := []*recording.Recording{}
+	res := []*models.Recording{}
 	for _, tmpRecord := range tmp {
 		record := tmpRecord.Convert()
 		res = append(res, record)

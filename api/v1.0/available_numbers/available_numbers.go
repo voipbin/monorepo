@@ -6,8 +6,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -42,7 +41,7 @@ func availableNumbersGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -60,7 +59,7 @@ func availableNumbersGET(c *gin.Context) {
 	}
 
 	// get service and available numbers
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	availableNumbers, err := serviceHandler.AvailableNumberGets(&u, pageSize, countryCode)
 	if err != nil {
 		logrus.Errorf("Could not get available numbers. err: %v", err)
@@ -95,7 +94,7 @@ func availableNumbersGET(c *gin.Context) {
 // 	}
 
 // 	// get user
-// 	u := tmp.(user.User)
+// 	u := tmp.(models.User)
 // 	log := logrus.WithFields(logrus.Fields{
 // 		"id":         u.ID,
 // 		"username":   u.Username,
@@ -103,7 +102,7 @@ func availableNumbersGET(c *gin.Context) {
 // 	})
 // 	log.Debug("Executing recordingsIDGET.")
 
-// 	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+// 	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 // 	res, err := serviceHandler.RecordingGet(&u, id)
 // 	if err != nil {
 // 		log.Errorf("Could not get a recording info. err: %v", err)

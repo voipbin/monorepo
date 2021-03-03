@@ -7,8 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -32,7 +31,7 @@ func recordingfilesIDGET(c *gin.Context) {
 	}
 
 	// get user
-	u := tmp.(user.User)
+	u := tmp.(models.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -40,7 +39,7 @@ func recordingfilesIDGET(c *gin.Context) {
 	})
 	log.Debug("Executing recordingfilesIDGET.")
 
-	serviceHandler := c.MustGet(api.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 	url, err := serviceHandler.RecordingfileGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get a recordingfile. err: %v", err)

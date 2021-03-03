@@ -8,15 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 )
@@ -27,56 +19,56 @@ type ServiceHandler interface {
 	AuthLogin(username, password string) (string, error)
 
 	// available numbers
-	AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*number.AvailableNumber, error)
+	AvailableNumberGets(u *models.User, size uint64, countryCode string) ([]*models.AvailableNumber, error)
 
 	// call handlers
-	CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error)
-	CallGet(u *user.User, callID uuid.UUID) (*call.Call, error)
-	CallGets(u *user.User, size uint64, token string) ([]*call.Call, error)
-	CallDelete(u *user.User, callID uuid.UUID) error
+	CallCreate(u *models.User, flowID uuid.UUID, source, destination models.CallAddress) (*models.Call, error)
+	CallGet(u *models.User, callID uuid.UUID) (*models.Call, error)
+	CallGets(u *models.User, size uint64, token string) ([]*models.Call, error)
+	CallDelete(u *models.User, callID uuid.UUID) error
 
 	// conference handlers
-	ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error)
-	ConferenceDelete(u *user.User, confID uuid.UUID) error
-	ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error)
-	ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error)
+	ConferenceCreate(u *models.User, confType models.ConferenceType, name, detail string) (*models.Conference, error)
+	ConferenceDelete(u *models.User, confID uuid.UUID) error
+	ConferenceGet(u *models.User, id uuid.UUID) (*models.Conference, error)
+	ConferenceGets(u *models.User, size uint64, token string) ([]*models.Conference, error)
 
 	// domain handlers
-	DomainCreate(u *user.User, domainName, name, detail string) (*domain.Domain, error)
-	DomainDelete(u *user.User, id uuid.UUID) error
-	DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, error)
-	DomainGets(u *user.User, size uint64, token string) ([]*domain.Domain, error)
-	DomainUpdate(u *user.User, d *domain.Domain) (*domain.Domain, error)
+	DomainCreate(u *models.User, domainName, name, detail string) (*models.Domain, error)
+	DomainDelete(u *models.User, id uuid.UUID) error
+	DomainGet(u *models.User, id uuid.UUID) (*models.Domain, error)
+	DomainGets(u *models.User, size uint64, token string) ([]*models.Domain, error)
+	DomainUpdate(u *models.User, d *models.Domain) (*models.Domain, error)
 
 	// extension handlers
-	ExtensionCreate(u *user.User, e *extension.Extension) (*extension.Extension, error)
-	ExtensionDelete(u *user.User, id uuid.UUID) error
-	ExtensionGet(u *user.User, id uuid.UUID) (*extension.Extension, error)
-	ExtensionGets(u *user.User, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error)
-	ExtensionUpdate(u *user.User, d *extension.Extension) (*extension.Extension, error)
+	ExtensionCreate(u *models.User, e *models.Extension) (*models.Extension, error)
+	ExtensionDelete(u *models.User, id uuid.UUID) error
+	ExtensionGet(u *models.User, id uuid.UUID) (*models.Extension, error)
+	ExtensionGets(u *models.User, domainID uuid.UUID, size uint64, token string) ([]*models.Extension, error)
+	ExtensionUpdate(u *models.User, d *models.Extension) (*models.Extension, error)
 
 	// flow handlers
-	FlowCreate(u *user.User, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
-	FlowDelete(u *user.User, id uuid.UUID) error
-	FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
-	FlowGets(u *user.User, pageSize uint64, pageToken string) ([]*flow.Flow, error)
-	FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, error)
+	FlowCreate(u *models.User, id uuid.UUID, name, detail string, actions []models.Action, persist bool) (*models.Flow, error)
+	FlowDelete(u *models.User, id uuid.UUID) error
+	FlowGet(u *models.User, id uuid.UUID) (*models.Flow, error)
+	FlowGets(u *models.User, pageSize uint64, pageToken string) ([]*models.Flow, error)
+	FlowUpdate(u *models.User, f *models.Flow) (*models.Flow, error)
 
 	// order numbers handler
-	OrderNumberCreate(u *user.User, num string) (*number.Number, error)
-	OrderNumberGets(u *user.User, size uint64, token string) ([]*number.Number, error)
+	OrderNumberCreate(u *models.User, num string) (*models.Number, error)
+	OrderNumberGets(u *models.User, size uint64, token string) ([]*models.Number, error)
 
 	// recording handlers
-	RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error)
-	RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error)
+	RecordingGet(u *models.User, id uuid.UUID) (*models.Recording, error)
+	RecordingGets(u *models.User, size uint64, token string) ([]*models.Recording, error)
 
 	// recordingfile handlers
-	RecordingfileGet(u *user.User, id uuid.UUID) (string, error)
+	RecordingfileGet(u *models.User, id uuid.UUID) (string, error)
 
 	// user handlers
-	UserCreate(username, password string, permission uint64) (*user.User, error)
-	UserGet(userID uint64) (*user.User, error)
-	UserGets() ([]*user.User, error)
+	UserCreate(username, password string, permission uint64) (*models.User, error)
+	UserGet(userID uint64) (*models.User, error)
+	UserGets() ([]*models.User, error)
 }
 
 type serviceHandler struct {

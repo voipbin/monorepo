@@ -3,14 +3,13 @@ package servicehandler
 import (
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // OrderNumberGets sends a request to getting a list of ordered numbers
 // It sends a request to the number-manager to getting a list of order_numbers.
 // it returns list of order numbers if it succeed.
-func (h *serviceHandler) OrderNumberGets(u *user.User, size uint64, token string) ([]*number.Number, error) {
+func (h *serviceHandler) OrderNumberGets(u *models.User, size uint64, token string) ([]*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -26,7 +25,7 @@ func (h *serviceHandler) OrderNumberGets(u *user.User, size uint64, token string
 	}
 
 	// create result
-	res := []*number.Number{}
+	res := []*models.Number{}
 	for _, tmp := range tmps {
 		c := tmp.ConvertNumber()
 		res = append(res, c)
@@ -38,7 +37,7 @@ func (h *serviceHandler) OrderNumberGets(u *user.User, size uint64, token string
 // AvailableNumberGets sends a handles available number get
 // It sends a request to the number-manager to getting a list of calls.
 // it returns list of available numbers if it succeed.
-func (h *serviceHandler) OrderNumberCreate(u *user.User, num string) (*number.Number, error) {
+func (h *serviceHandler) OrderNumberCreate(u *models.User, num string) (*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,

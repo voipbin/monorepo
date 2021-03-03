@@ -13,9 +13,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -34,17 +32,17 @@ func TestOrderNumbersGET(t *testing.T) {
 
 	type test struct {
 		name string
-		user user.User
+		user models.User
 		uri  string
 		req  request.ParamOrderNumbersGET
 
-		resNumbers []*number.Number
+		resNumbers []*models.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			"/v1.0/order_numbers?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
@@ -54,7 +52,7 @@ func TestOrderNumbersGET(t *testing.T) {
 					PageToken: "2021-03-02 03:23:20.995000",
 				},
 			},
-			[]*number.Number{
+			[]*models.Number{
 				{
 					ID:               uuid.FromStringOrNil("31ee638c-7b23-11eb-858a-33e73c4f82f7"),
 					Number:           "+821021656521",
@@ -78,7 +76,7 @@ func TestOrderNumbersGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -104,7 +102,7 @@ func TestOrderNumbersPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		user        models.User
 		uri         string
 		requestBody request.BodyOrderNumbersPOST
 	}
@@ -112,7 +110,7 @@ func TestOrderNumbersPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			"/v1.0/order_numbers",
@@ -129,7 +127,7 @@ func TestOrderNumbersPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

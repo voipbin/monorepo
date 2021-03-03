@@ -11,9 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -32,18 +30,18 @@ func TestRecordingfilesIDGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
-		recording   recording.Recording
+		user        models.User
+		recording   models.Recording
 		downloadURL string
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
-			recording.Recording{
+			models.Recording{
 				ID: uuid.FromStringOrNil("79bf1fee-61e2-11eb-b0e8-6b21f6734c33"),
 			},
 			"https://test.com/call_776c8a94-34bd-11eb-abef-0b279f3eabc1_2020.wav?token=token",
@@ -57,7 +55,7 @@ func TestRecordingfilesIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

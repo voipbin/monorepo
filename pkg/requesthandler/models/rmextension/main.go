@@ -3,7 +3,7 @@ package rmextension
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
 // Extension struct
@@ -28,9 +28,9 @@ type Extension struct {
 }
 
 // ConvertExtension returns converted data from rmextension.Extension to extension.Extension
-func (f *Extension) ConvertExtension() *extension.Extension {
+func (f *Extension) ConvertExtension() *models.Extension {
 
-	res := &extension.Extension{
+	res := &models.Extension{
 		ID:     f.ID,
 		UserID: f.UserID,
 
@@ -50,7 +50,7 @@ func (f *Extension) ConvertExtension() *extension.Extension {
 }
 
 // CreateDomain returns converted data from domain.Domain to rmdomain.Domain
-func CreateDomain(f *extension.Extension) *Extension {
+func CreateDomain(f *models.Extension) *Extension {
 
 	res := &Extension{
 		ID:     f.ID,

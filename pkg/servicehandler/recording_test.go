@@ -7,8 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
@@ -28,20 +27,20 @@ func TestRecordingGets(t *testing.T) {
 
 	type test struct {
 		name string
-		user *user.User
+		user *models.User
 
 		size  uint64
 		token string
 
 		// response  *fmflow.Flow
 		response  []cmrecording.Recording
-		expectRes []*recording.Recording
+		expectRes []*models.Recording
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&user.User{
+			&models.User{
 				ID: 1,
 			},
 			10,
@@ -60,7 +59,7 @@ func TestRecordingGets(t *testing.T) {
 				},
 			},
 
-			[]*recording.Recording{
+			[]*models.Recording{
 				{
 					ID:          uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
 					UserID:      1,

@@ -1,4 +1,4 @@
-package number
+package models
 
 // AvailableNumber struct represent number information
 type AvailableNumber struct {

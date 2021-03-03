@@ -14,11 +14,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/api"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -37,29 +33,29 @@ func TestCallsPOST(t *testing.T) {
 
 	type test struct {
 		name string
-		user user.User
+		user models.User
 		req  request.BodyCallsPOST
-		flow *flow.Flow
+		flow *models.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			request.BodyCallsPOST{
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: models.CallAddress{
+					Type:   models.CallAddressTypeSIP,
 					Target: "source@test.voipbin.net",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeSIP,
+				Destination: models.CallAddress{
+					Type:   models.CallAddressTypeSIP,
 					Target: "destination@test.voipbin.net",
 				},
-				Actions: []action.Action{},
+				Actions: []models.Action{},
 			},
-			&flow.Flow{
+			&models.Flow{
 				ID: uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
 			},
 		},
@@ -72,7 +68,7 @@ func TestCallsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -109,16 +105,16 @@ func TestCallsGET(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      user.User
+		user      models.User
 		req       request.ParamCallsGET
-		resCalls  []*call.Call
+		resCalls  []*models.Call
 		expectRes string
 	}
 
 	tests := []test{
 		{
 			"1 item",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			request.ParamCallsGET{
@@ -127,7 +123,7 @@ func TestCallsGET(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*call.Call{
+			[]*models.Call{
 				{
 					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					TMCreate: "2020-09-20T03:23:21.995000",
@@ -137,7 +133,7 @@ func TestCallsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			user.User{
+			models.User{
 				ID: 1,
 			},
 			request.ParamCallsGET{
@@ -146,7 +142,7 @@ func TestCallsGET(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*call.Call{
+			[]*models.Call{
 				{
 					ID:       uuid.FromStringOrNil("668e6ee6-f989-11ea-abca-bf1ca885b142"),
 					TMCreate: "2020-09-20T03:23:21.995000",
@@ -171,7 +167,7 @@ func TestCallsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(api.OBJServiceHandler, mockSvc)
+				c.Set(models.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
