@@ -55,10 +55,10 @@ type ServiceHandler interface {
 	FlowUpdate(u *models.User, f *models.Flow) (*models.Flow, error)
 
 	// order numbers handler
-	OrderNumberCreate(u *models.User, num string) (*models.Number, error)
-	OrderNumberGet(u *models.User, id uuid.UUID) (*models.Number, error)
-	OrderNumberGets(u *models.User, size uint64, token string) ([]*models.Number, error)
-	OrderNumberDelete(u *models.User, id uuid.UUID) (*models.Number, error)
+	NumberCreate(u *models.User, num string) (*models.Number, error)
+	NumberGet(u *models.User, id uuid.UUID) (*models.Number, error)
+	NumberGets(u *models.User, size uint64, token string) ([]*models.Number, error)
+	NumberDelete(u *models.User, id uuid.UUID) (*models.Number, error)
 
 	// recording handlers
 	RecordingGet(u *models.User, id uuid.UUID) (*models.Recording, error)

@@ -12,13 +12,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// NMOrderNumberCreate sends a request to the number-manager
-// to create an order number.
-// Returns created order number
-func (r *requestHandler) NMOrderNumberCreate(userID uint64, numb string) (*nmnumber.Number, error) {
-	uri := fmt.Sprintf("/v1/order_numbers")
+// NMNumberCreate sends a request to the number-manager
+// to create an number.
+// Returns created number
+func (r *requestHandler) NMNumberCreate(userID uint64, numb string) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers")
 
-	data := &request.NMV1DataOrderNumbersPost{
+	data := &request.NMV1DataNumbersPost{
 		UserID: userID,
 		Number: numb,
 	}
@@ -28,7 +28,7 @@ func (r *requestHandler) NMOrderNumberCreate(userID uint64, numb string) (*nmnum
 		return nil, err
 	}
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodPost, resourceNumberOrderNumbers, 15, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodPost, resourceNumberNumbers, 15, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -46,13 +46,13 @@ func (r *requestHandler) NMOrderNumberCreate(userID uint64, numb string) (*nmnum
 	return &resData, nil
 }
 
-// NMOrderNumberGets sends a request to number-manager
-// to get a list of order numbers.
-// Returns list of order numbers
-func (r *requestHandler) NMOrderNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
-	uri := fmt.Sprintf("/v1/order_numbers?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+// NMNumberGets sends a request to number-manager
+// to get a list of numbers.
+// Returns list of numbers
+func (r *requestHandler) NMNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberOrderNumbers, 15, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -70,13 +70,13 @@ func (r *requestHandler) NMOrderNumberGets(userID uint64, pageToken string, page
 	return resData, nil
 }
 
-// NMOrderNumberGet sends a request to number-manager
-// to get a given id of order number.
-// Returns order number
-func (r *requestHandler) NMOrderNumberGet(numberID uuid.UUID) (*nmnumber.Number, error) {
-	uri := fmt.Sprintf("/v1/order_numbers/%s", numberID)
+// NMNumberGet sends a request to number-manager
+// to get a given id of number.
+// Returns number
+func (r *requestHandler) NMNumberGet(numberID uuid.UUID) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/%s", numberID)
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberOrderNumbers, 15, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -94,13 +94,13 @@ func (r *requestHandler) NMOrderNumberGet(numberID uuid.UUID) (*nmnumber.Number,
 	return &resData, nil
 }
 
-// NMOrderNumberDelete sends a request to number-manager
-// to delete a ordered number.
-// Returns deletedd order number
-func (r *requestHandler) NMOrderNumberDelete(id uuid.UUID) (*nmnumber.Number, error) {
-	uri := fmt.Sprintf("/v1/order_numbers/%s", id)
+// NMNumberDelete sends a request to number-manager
+// to delete a number.
+// Returns deletedd number
+func (r *requestHandler) NMNumberDelete(id uuid.UUID) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/%s", id)
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodDelete, resourceNumberOrderNumbers, 15, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, 15, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

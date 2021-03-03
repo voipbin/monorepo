@@ -9,10 +9,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 )
 
-// OrderNumberGets sends a request to getting a list of ordered numbers
-// It sends a request to the number-manager to getting a list of order_numbers.
+// NumberGets sends a request to getting a list of ordered numbers
+// It sends a request to the number-manager to getting a list of numbers.
 // it returns list of order numbers if it succeed.
-func (h *serviceHandler) OrderNumberGets(u *models.User, size uint64, token string) ([]*models.Number, error) {
+func (h *serviceHandler) NumberGets(u *models.User, size uint64, token string) ([]*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -21,7 +21,7 @@ func (h *serviceHandler) OrderNumberGets(u *models.User, size uint64, token stri
 	})
 
 	// get available numbers
-	tmps, err := h.reqHandler.NMOrderNumberGets(u.ID, token, size)
+	tmps, err := h.reqHandler.NMNumberGets(u.ID, token, size)
 	if err != nil {
 		log.Infof("Could not get order numbers info. err: %v", err)
 		return nil, err
@@ -37,10 +37,10 @@ func (h *serviceHandler) OrderNumberGets(u *models.User, size uint64, token stri
 	return res, nil
 }
 
-// OrderNumberCreate handles order number create request.
+// NumberCreate handles order number create request.
 // It sends a request to the number-manager to create a new order number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) OrderNumberCreate(u *models.User, num string) (*models.Number, error) {
+func (h *serviceHandler) NumberCreate(u *models.User, num string) (*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -53,7 +53,7 @@ func (h *serviceHandler) OrderNumberCreate(u *models.User, num string) (*models.
 	}
 
 	// create numbers
-	tmp, err := h.reqHandler.NMOrderNumberCreate(u.ID, num)
+	tmp, err := h.reqHandler.NMNumberCreate(u.ID, num)
 	if err != nil {
 		log.Infof("Could not get available numbers info. err: %v", err)
 		return nil, err
@@ -62,10 +62,10 @@ func (h *serviceHandler) OrderNumberCreate(u *models.User, num string) (*models.
 	return tmp.ConvertNumber(), nil
 }
 
-// OrderNumberGet handles order number get request.
+// NumberGet handles order number get request.
 // It sends a request to the number-manager to get a existed order number.
 // it returns got number information if it succeed.
-func (h *serviceHandler) OrderNumberGet(u *models.User, id uuid.UUID) (*models.Number, error) {
+func (h *serviceHandler) NumberGet(u *models.User, id uuid.UUID) (*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -73,7 +73,7 @@ func (h *serviceHandler) OrderNumberGet(u *models.User, id uuid.UUID) (*models.N
 	})
 
 	// get number info
-	res, err := h.reqHandler.NMOrderNumberGet(id)
+	res, err := h.reqHandler.NMNumberGet(id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -88,10 +88,10 @@ func (h *serviceHandler) OrderNumberGet(u *models.User, id uuid.UUID) (*models.N
 	return res.ConvertNumber(), nil
 }
 
-// OrderNumberDelete handles order number delete request.
+// NumberDelete handles order number delete request.
 // It sends a request to the number-manager to delete a existed order number.
 // it returns deleted number information if it succeed.
-func (h *serviceHandler) OrderNumberDelete(u *models.User, id uuid.UUID) (*models.Number, error) {
+func (h *serviceHandler) NumberDelete(u *models.User, id uuid.UUID) (*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -99,7 +99,7 @@ func (h *serviceHandler) OrderNumberDelete(u *models.User, id uuid.UUID) (*model
 	})
 
 	// get number info
-	tmp, err := h.reqHandler.NMOrderNumberGet(id)
+	tmp, err := h.reqHandler.NMNumberGet(id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -112,7 +112,7 @@ func (h *serviceHandler) OrderNumberDelete(u *models.User, id uuid.UUID) (*model
 	}
 
 	// delete numbers
-	res, err := h.reqHandler.NMOrderNumberDelete(id)
+	res, err := h.reqHandler.NMNumberDelete(id)
 	if err != nil {
 		log.Infof("Could not delete numbers info. err: %v", err)
 		return nil, err
