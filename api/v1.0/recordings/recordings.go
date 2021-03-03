@@ -80,7 +80,7 @@ func recordingsGET(c *gin.Context) {
 // @Summary Returns a detail recording information.
 // @Description Returns a detial recording information of the given recording id.
 // @Produce json
-// @Success 200 {object} recording.Recording
+// @Success 200 {object} models.Recording
 // @Router /v1.0/recordings/{id} [get]
 func recordingsIDGET(c *gin.Context) {
 

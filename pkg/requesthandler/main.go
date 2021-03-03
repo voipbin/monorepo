@@ -88,56 +88,52 @@ func init() {
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
 
-	// availalbe_number
-	NMAvailableNumbersGet(userID uint64, pageSize uint64, countryCode string) ([]nmnumber.AvailableNumber, error)
-
-	NMOrderNumberCreate(userID uint64, numb string) (*nmnumber.Number, error)
-	NMOrderNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
-
-	// call
+	// call: call
 	CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error)
 	CMCallDelete(callID uuid.UUID) error
 	CMCallGet(callID uuid.UUID) (*cmcall.Call, error)
 	CMCallGets(userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error)
-	// CallCallHealth(id uuid.UUID, delay, retryCount int) error
-	// CallCallActionNext(id uuid.UUID) error
-	// CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
-	// CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
-	// conference
+	// call: conference
 	CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string) (*cmconference.Conference, error)
 	CMConferenceDelete(conferenceID uuid.UUID) error
 	CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error)
 
-	// recordings
+	// call: recordings
 	CMRecordingGet(id uuid.UUID) (*cmrecording.Recording, error)
 	CMRecordingGets(userID uint64, size uint64, token string) ([]cmrecording.Recording, error)
 
-	// flow
-	// flow actions
+	// flow: flow
 	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []models.Action, persist bool) (*fmflow.Flow, error)
 	FMFlowDelete(flowID uuid.UUID) error
 	FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error)
 	FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMFlowUpdate(f *fmflow.Flow) (*fmflow.Flow, error)
 
-	// registrar
-	// domain
+	// number: availalbe_number
+	NMAvailableNumbersGet(userID uint64, pageSize uint64, countryCode string) ([]nmnumber.AvailableNumber, error)
+
+	// number: order number
+	NMOrderNumberCreate(userID uint64, numb string) (*nmnumber.Number, error)
+	NMOrderNumberDelete(id uuid.UUID) (*nmnumber.Number, error)
+	NMOrderNumberGet(numberID uuid.UUID) (*nmnumber.Number, error)
+	NMOrderNumberGets(userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
+
+	// registrar: domain
 	RMDomainCreate(userID uint64, domainName, name, detail string) (*rmdomain.Domain, error)
 	RMDomainDelete(domainID uuid.UUID) error
 	RMDomainGet(domainID uuid.UUID) (*rmdomain.Domain, error)
 	RMDomainGets(userID uint64, pageToken string, pageSize uint64) ([]rmdomain.Domain, error)
 	RMDomainUpdate(f *rmdomain.Domain) (*rmdomain.Domain, error)
 
-	// extension
+	// registrar: extension
 	RMExtensionCreate(e *rmextension.Extension) (*rmextension.Extension, error)
 	RMExtensionDelete(extensionID uuid.UUID) error
 	RMExtensionGet(extensionID uuid.UUID) (*rmextension.Extension, error)
 	RMExtensionGets(domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error)
 	RMExtensionUpdate(f *rmextension.Extension) (*rmextension.Extension, error)
 
-	// storage
-	// recording
+	// storage: recording
 	STRecordingGet(id string) (string, error)
 }
 

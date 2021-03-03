@@ -85,6 +85,77 @@ func TestOrderNumberGets(t *testing.T) {
 	}
 }
 
+func TestOrderNumberGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	type test struct {
+		name string
+		user *models.User
+		id   uuid.UUID
+
+		response  *nmnumber.Number
+		expectRes *models.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&models.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+
+			&nmnumber.Number{
+				ID:                  uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "",
+				Status:              nmnumber.NumberStatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+			},
+			&models.Number{
+				ID:               uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+				Number:           "+821021656521",
+				UserID:           1,
+				Status:           "active",
+				T38Enabled:       false,
+				EmergencyEnabled: false,
+				TMPurchase:       "",
+				TMCreate:         "",
+				TMUpdate:         "",
+				TMDelete:         "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockReq.EXPECT().NMOrderNumberGet(tt.id).Return(tt.response, nil)
+
+			res, err := h.OrderNumberGet(tt.user, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func TestOrderNumberCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -150,6 +221,78 @@ func TestOrderNumberCreate(t *testing.T) {
 			}
 
 			res.ID = uuid.Nil
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestOrderNumberDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	type test struct {
+		name string
+		user *models.User
+		id   uuid.UUID
+
+		response  *nmnumber.Number
+		expectRes *models.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&models.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
+
+			&nmnumber.Number{
+				ID:                  uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "",
+				Status:              nmnumber.NumberStatusDeleted,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+			},
+			&models.Number{
+				ID:               uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
+				Number:           "+821021656521",
+				UserID:           1,
+				Status:           "deleted",
+				T38Enabled:       false,
+				EmergencyEnabled: false,
+				TMPurchase:       "",
+				TMCreate:         "",
+				TMUpdate:         "",
+				TMDelete:         "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockReq.EXPECT().NMOrderNumberGet(tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NMOrderNumberDelete(tt.id).Return(tt.response, nil)
+
+			res, err := h.OrderNumberDelete(tt.user, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
