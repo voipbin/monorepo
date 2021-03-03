@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -105,6 +106,55 @@ func (h *listenHandler) processV1NumbersIDGet(req *rabbitmqhandler.Request) (*ra
 	number, err := h.numberHandler.GetNumber(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a number. number: %s, err: %v", id, err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(number)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", number, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1NumbersIDPut handles PUT /v1/numbers/<id> request
+func (h *listenHandler) processV1NumbersIDPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(req.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var reqData request.V1DataNumbersIDPut
+	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
+		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", req.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"number": id,
+			"flow":   reqData.FlowID,
+		},
+	)
+	log.Debugf("Executing processV1NumbersIDPut. number: %s", id)
+
+	// create update number info
+	tmpNumber := &models.Number{
+		ID:     id,
+		FlowID: reqData.FlowID,
+	}
+	ctx := context.Background()
+	number, err := h.numberHandler.UpdateNumber(ctx, tmpNumber)
+	if err != nil {
+		log.Debugf("Could not update the number. number: %s, err: %v", id, err)
 		return simpleResponse(500), nil
 	}
 

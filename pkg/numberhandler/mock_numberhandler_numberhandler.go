@@ -139,3 +139,18 @@ func (mr *MockNumberHandlerMockRecorder) ReleaseNumber(ctx, id interface{}) *gom
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseNumber", reflect.TypeOf((*MockNumberHandler)(nil).ReleaseNumber), ctx, id)
 }
+
+// UpdateNumber mocks base method
+func (m *MockNumberHandler) UpdateNumber(ctx context.Context, numb *models.Number) (*models.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNumber", ctx, numb)
+	ret0, _ := ret[0].(*models.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateNumber indicates an expected call of UpdateNumber
+func (mr *MockNumberHandlerMockRecorder) UpdateNumber(ctx, numb interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNumber", reflect.TypeOf((*MockNumberHandler)(nil).UpdateNumber), ctx, numb)
+}

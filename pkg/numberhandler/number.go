@@ -102,3 +102,25 @@ func (h *numberHandler) GetNumbers(ctx context.Context, userID uint64, pageSize 
 
 	return numbers, nil
 }
+
+func (h *numberHandler) UpdateNumber(ctx context.Context, numb *models.Number) (*models.Number, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"number": numb,
+		},
+	)
+	log.Debugf("UpdateNumber. number: %d", numb.ID)
+
+	if err := h.db.NumberUpdate(ctx, numb); err != nil {
+		log.Errorf("Could not set flow_id to number. number: %s, err:%v", numb.ID, err)
+		return nil, err
+	}
+
+	res, err := h.db.NumberGet(ctx, numb.ID)
+	if err != nil {
+		log.Errorf("Could not get the updated number. number: %s, err: %v", numb.ID, err)
+		return nil, err
+	}
+
+	return res, nil
+}

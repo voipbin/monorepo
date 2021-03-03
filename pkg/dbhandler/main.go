@@ -30,8 +30,8 @@ type DBHandler interface {
 	NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*models.Number, error)
 	NumberSetToCache(ctx context.Context, num *models.Number) error
 	NumberSetToCacheByNumber(ctx context.Context, num *models.Number) error
+	NumberUpdate(ctx context.Context, numb *models.Number) error
 	NumberUpdateToCache(ctx context.Context, id uuid.UUID) error
-	NumberUpdateToCacheByNumber(ctx context.Context, num string) error
 }
 
 // handler database handler

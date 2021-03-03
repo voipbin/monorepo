@@ -103,6 +103,10 @@ func (h *handler) NumberSetToCache(ctx context.Context, num *models.Number) erro
 		return err
 	}
 
+	if err := h.NumberSetToCacheByNumber(ctx, num); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -115,21 +119,6 @@ func (h *handler) NumberUpdateToCache(ctx context.Context, id uuid.UUID) error {
 	}
 
 	if err := h.NumberSetToCache(ctx, res); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// NumberUpdateToCacheByNumber gets the number by number from the DB and update the cache.
-func (h *handler) NumberUpdateToCacheByNumber(ctx context.Context, num string) error {
-
-	res, err := h.NumberGetFromDBByNumber(ctx, num)
-	if err != nil {
-		return err
-	}
-
-	if err := h.NumberSetToCacheByNumber(ctx, res); err != nil {
 		return err
 	}
 
@@ -296,7 +285,6 @@ func (h *handler) NumberCreate(ctx context.Context, n *models.Number) error {
 
 	// update the cache
 	h.NumberUpdateToCache(ctx, n.ID)
-	h.NumberUpdateToCacheByNumber(ctx, n.Number)
 
 	return nil
 }
@@ -323,8 +311,31 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 
 	// update the cache
 	h.NumberUpdateToCache(ctx, id)
-	tmpNum, _ := h.NumberGet(ctx, id)
-	h.NumberSetToCacheByNumber(ctx, tmpNum)
+
+	return nil
+}
+
+// NumberUpdate updates number.
+func (h *handler) NumberUpdate(ctx context.Context, numb *models.Number) error {
+	q := `
+	update numbers set
+		flow_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q,
+		numb.FlowID.Bytes(),
+		getCurTime(),
+		numb.ID.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. NumberUpdate. err: %v", err)
+	}
+
+	// update the cache
+	h.NumberUpdateToCache(ctx, numb.ID)
 
 	return nil
 }

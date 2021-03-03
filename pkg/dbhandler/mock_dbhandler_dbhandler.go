@@ -196,6 +196,20 @@ func (mr *MockDBHandlerMockRecorder) NumberSetToCacheByNumber(ctx, num interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberSetToCacheByNumber", reflect.TypeOf((*MockDBHandler)(nil).NumberSetToCacheByNumber), ctx, num)
 }
 
+// NumberUpdate mocks base method
+func (m *MockDBHandler) NumberUpdate(ctx context.Context, numb *models.Number) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberUpdate", ctx, numb)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NumberUpdate indicates an expected call of NumberUpdate
+func (mr *MockDBHandlerMockRecorder) NumberUpdate(ctx, numb interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdate", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdate), ctx, numb)
+}
+
 // NumberUpdateToCache mocks base method
 func (m *MockDBHandler) NumberUpdateToCache(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -208,18 +222,4 @@ func (m *MockDBHandler) NumberUpdateToCache(ctx context.Context, id uuid.UUID) e
 func (mr *MockDBHandlerMockRecorder) NumberUpdateToCache(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateToCache), ctx, id)
-}
-
-// NumberUpdateToCacheByNumber mocks base method
-func (m *MockDBHandler) NumberUpdateToCacheByNumber(ctx context.Context, num string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberUpdateToCacheByNumber", ctx, num)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// NumberUpdateToCacheByNumber indicates an expected call of NumberUpdateToCacheByNumber
-func (mr *MockDBHandlerMockRecorder) NumberUpdateToCacheByNumber(ctx, num interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateToCacheByNumber", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateToCacheByNumber), ctx, num)
 }
