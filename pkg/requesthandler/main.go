@@ -4,6 +4,7 @@ package requesthandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
@@ -192,102 +193,57 @@ func uriUnescape(u string) string {
 }
 
 // SendARIRequest send a request to the Asterisk-proxy and return the response
-func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
-
-	// creat a request message
-	m := &rabbitmqhandler.Request{
-		URI:      uri,
-		Method:   method,
-		DataType: dataType,
-		Data:     data,
-	}
+func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	// create target
 	target := fmt.Sprintf("asterisk.%s.request", asteriskID)
 
-	log.WithFields(log.Fields{
-		"request": m,
-	}).Debugf("Sending request to the asterisk. queue: %s, method: %s, uri: %s", target, m.Method, uriUnescape(m.URI))
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
-	defer cancel()
-
-	res, err := r.sendRequest(ctx, target, resource, m)
-	if err != nil {
-		return nil, fmt.Errorf("could not send the request to the asterisk. err: %v", err)
-	}
-
-	log.WithFields(log.Fields{
-		"response": res,
-	}).Debugf("Received response. status_code: %d", res.StatusCode)
-
-	return res, nil
+	return r.sendRequest(target, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
-func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	// creat a request message
-	m := &rabbitmqhandler.Request{
-		URI:      uri,
-		Method:   method,
-		DataType: dataType,
-		Data:     data,
-	}
-
-	log.WithFields(log.Fields{
-		"request": m,
-	}).Debugf("Sending request to the flow-manager. queue: %s, method: %s, uri: %s", r.queueFlow, m.Method, uriUnescape(m.URI))
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
-	defer cancel()
-
-	res, err := r.sendRequest(ctx, r.queueFlow, resource, m)
-	if err != nil {
-		return nil, fmt.Errorf("could not send the request to the flow-manager. err: %v", err)
-	}
-
-	log.WithFields(log.Fields{
-		"response": res,
-	}).Debugf("Received response. status_code: %d", res.StatusCode)
-
-	return res, nil
+	return r.sendRequest(r.queueFlow, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestTTS send a request to the tts-manager and return the response
-func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	// creat a request message
-	m := &rabbitmqhandler.Request{
-		URI:      uri,
-		Method:   method,
-		DataType: dataType,
-		Data:     data,
-	}
-
-	log.WithFields(log.Fields{
-		"request": m,
-	}).Debugf("Sending request to the tts-manager. queue: %s, method: %s, uri: %s", r.queueTTS, m.Method, uriUnescape(m.URI))
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
-	defer cancel()
-
-	res, err := r.sendRequest(ctx, r.queueTTS, resource, m)
-	if err != nil {
-		return nil, fmt.Errorf("could not send the request to the tts-manager. err: %v", err)
-	}
-
-	log.WithFields(log.Fields{
-		"response": res,
-	}).Debugf("Received response. status_code: %d", res.StatusCode)
-
-	return res, nil
+	return r.sendRequest(r.queueTTS, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestCall send a request to the Asterisk-proxy and return the response
 // timeout second
 // delayed millisecond
 func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueCall, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestRegistrar send a request to the registrar-manager and return the response
+func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueRegistrar, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestNumber send a request to the number-manager and return the response
+func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueNumber, uri, method, resource, timeout, delayed, dataType, data)
+
+}
+
+// sendRequest sends a request to the given destination.
+func (r *requestHandler) sendRequest(queue string, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	log.WithFields(log.Fields{
+		"queue":     queue,
+		"method":    method,
+		"uri":       uri,
+		"data_type": dataType,
+		"delayed":   delayed,
+	}).Debugf("Sending a request. queue: %s, method: %s, uri: %s", queue, method, uri)
 
 	// creat a request message
 	req := &rabbitmqhandler.Request{
@@ -297,11 +253,6 @@ func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.Requ
 		Data:     data,
 	}
 
-	log.WithFields(log.Fields{
-		"request": req,
-		"delayed": delayed,
-	}).Debugf("Sending request to the call-manager. queue: %s, method: %s, uri: %s", r.queueCall, req.Method, uriUnescape(req.URI))
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 
@@ -309,86 +260,28 @@ func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.Requ
 	case delayed > 0:
 		// send scheduled message.
 		// we don't expect the response message here.
-		if err := r.sendDelayedRequest(ctx, r.exchangeDelay, resource, delayed, req); err != nil {
+		if err := r.sendDelayedRequest(ctx, r.exchangeDelay, queue, resource, delayed, req); err != nil {
 			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
 		}
 		return nil, nil
 
 	default:
-		res, err := r.sendRequest(ctx, r.queueCall, resource, req)
+		res, err := r.sendDirectRequest(ctx, queue, resource, req)
 		if err != nil {
-			return nil, fmt.Errorf("could not send the request to the call-manager. err: %v", err)
+			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 		}
 
 		log.WithFields(log.Fields{
-			"response": res,
-		}).Debugf("Received response. status_code: %d", res.StatusCode)
+			"method": method,
+			"uri":    uri,
+			"res":    res,
+		}).Debugf("Received result. queue: %s, method: %s, uri: %s, status_code: %d", queue, method, uri, res.StatusCode)
 		return res, nil
 	}
 }
 
-// sendRequestRegistrar send a request to the registrar-manager and return the response
-func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
-
-	// creat a request message
-	m := &rabbitmqhandler.Request{
-		URI:      uri,
-		Method:   method,
-		DataType: dataType,
-		Data:     data,
-	}
-
-	log.WithFields(log.Fields{
-		"request": m,
-	}).Debugf("Sending request to the registrar-manager. queue: %s, method: %s, uri: %s", r.queueRegistrar, m.Method, uriUnescape(m.URI))
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
-	defer cancel()
-
-	res, err := r.sendRequest(ctx, r.queueRegistrar, resource, m)
-	if err != nil {
-		return nil, fmt.Errorf("could not send the request to the registrar-manager. err: %v", err)
-	}
-
-	log.WithFields(log.Fields{
-		"response": res,
-	}).Debugf("Received response. status_code: %d", res.StatusCode)
-
-	return res, nil
-}
-
-// sendRequestNumber send a request to the number-manager and return the response
-func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
-
-	// creat a request message
-	m := &rabbitmqhandler.Request{
-		URI:      uri,
-		Method:   method,
-		DataType: dataType,
-		Data:     data,
-	}
-
-	log.WithFields(log.Fields{
-		"request": m,
-	}).Debugf("Sending request to the number-manager. queue: %s, method: %s, uri: %s", r.queueNumber, m.Method, uriUnescape(m.URI))
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
-	defer cancel()
-
-	res, err := r.sendRequest(ctx, r.queueNumber, resource, m)
-	if err != nil {
-		return nil, fmt.Errorf("could not send the request to the number-manager. err: %v", err)
-	}
-
-	log.WithFields(log.Fields{
-		"response": res,
-	}).Debugf("Received response. status_code: %d", res.StatusCode)
-
-	return res, nil
-}
-
-// sendRequest sends the request to the target
-func (r *requestHandler) sendRequest(ctx context.Context, target string, resource resource, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// sendDirectRequest sends the request to the target without delay
+func (r *requestHandler) sendDirectRequest(ctx context.Context, target string, resource resource, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	start := time.Now()
 	res, err := r.sock.PublishRPC(ctx, target, req)
@@ -400,10 +293,10 @@ func (r *requestHandler) sendRequest(ctx context.Context, target string, resourc
 
 // sendDelayedRequest sends the delayed request to the target
 // delay unit is millisecond.
-func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, resource resource, delay int, req *rabbitmqhandler.Request) error {
+func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, queue string, resource resource, delay int, req *rabbitmqhandler.Request) error {
 
 	start := time.Now()
-	err := r.sock.PublishExchangeDelayedRequest(r.exchangeDelay, r.queueCall, req, delay)
+	err := r.sock.PublishExchangeDelayedRequest(r.exchangeDelay, queue, req, delay)
 	elapsed := time.Since(start)
 	promRequestProcessTime.WithLabelValues(target, string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
 

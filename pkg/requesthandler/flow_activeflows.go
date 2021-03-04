@@ -28,7 +28,7 @@ func (r *requestHandler) FlowActvieFlowPost(callID, flowID uuid.UUID) (*activefl
 		return nil, err
 	}
 
-	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, ContentTypeJSON, m)
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (r *requestHandler) FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*act
 		return nil, err
 	}
 
-	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, ContentTypeJSON, m)
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
