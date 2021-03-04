@@ -464,6 +464,21 @@ func (mr *MockServiceHandlerMockRecorder) NumberDelete(u, id interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberDelete", reflect.TypeOf((*MockServiceHandler)(nil).NumberDelete), u, id)
 }
 
+// NumberUpdate mocks base method
+func (m *MockServiceHandler) NumberUpdate(u *models.User, numb *models.Number) (*models.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberUpdate", u, numb)
+	ret0, _ := ret[0].(*models.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberUpdate indicates an expected call of NumberUpdate
+func (mr *MockServiceHandlerMockRecorder) NumberUpdate(u, numb interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdate", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdate), u, numb)
+}
+
 // RecordingGet mocks base method
 func (m *MockServiceHandler) RecordingGet(u *models.User, id uuid.UUID) (*models.Recording, error) {
 	m.ctrl.T.Helper()

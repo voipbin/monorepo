@@ -329,3 +329,85 @@ func TestNMNumberDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestNMNumberUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := requestHandler{
+		sock:           mockSock,
+		exchangeDelay:  "bin-manager.delay",
+		queueCall:      "bin-manager.call-manager.request",
+		queueFlow:      "bin-manager.flow-manager.request",
+		queueStorage:   "bin-manager.storage-manager.request",
+		queueRegistrar: "bin-manager.registrar-manager.request",
+		queueNumber:    "bin-manager.number-manager.request",
+	}
+
+	type test struct {
+		name string
+
+		number *nmnumber.Number
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectResult *nmnumber.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			&nmnumber.Number{
+				ID:     uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
+				FlowID: uuid.FromStringOrNil("d45aae76-7c5b-11eb-9542-eb46d11b1c1a"),
+			},
+
+			"bin-manager.number-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/numbers/d3877fec-7c5b-11eb-bb46-07fe08c74815",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"flow_id":"d45aae76-7c5b-11eb-9542-eb46d11b1c1a"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815","number":"+821021656521","flow_id":"d45aae76-7c5b-11eb-9542-eb46d11b1c1a","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+			&nmnumber.Number{
+				ID:                  uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
+				FlowID:              uuid.FromStringOrNil("d45aae76-7c5b-11eb-9542-eb46d11b1c1a"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "",
+				Status:              nmnumber.NumberStatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+				TMPurchase:          "",
+				TMCreate:            "",
+				TMUpdate:            "",
+				TMDelete:            "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.NMNumberUpdate(tt.number)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectResult, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+			}
+		})
+	}
+}

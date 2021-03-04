@@ -156,6 +156,61 @@ func TestOrderNumberGet(t *testing.T) {
 	}
 }
 
+func TestOrderNumberGetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	type test struct {
+		name string
+		user *models.User
+		id   uuid.UUID
+
+		response *nmnumber.Number
+	}
+
+	tests := []test{
+		{
+			"deleted item",
+			&models.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
+
+			&nmnumber.Number{
+				ID:                  uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "",
+				Status:              nmnumber.NumberStatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+				TMDelete:            "2021-03-02 01:00:00.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockReq.EXPECT().NMNumberGet(tt.id).Return(tt.response, nil)
+
+			_, err := h.NumberGet(tt.user, tt.id)
+			if err == nil {
+				t.Error("Wrong match. expect: err, got: ok")
+			}
+		})
+	}
+}
+
 func TestNumberCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -295,6 +350,162 @@ func TestNumberDelete(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestNumberUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	type test struct {
+		name         string
+		user         *models.User
+		updateNumber *models.Number
+
+		updateNMNumber *nmnumber.Number
+		responseGet    *nmnumber.Number
+		responseUpdate *nmnumber.Number
+		expectRes      *models.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&models.User{
+				ID: 1,
+			},
+			&models.Number{
+				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
+			},
+
+			&nmnumber.Number{
+				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
+			},
+			&nmnumber.Number{
+				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "",
+				Status:              nmnumber.NumberStatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+			},
+			&nmnumber.Number{
+				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				FlowID:              uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "",
+				Status:              nmnumber.NumberStatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+			},
+			&models.Number{
+				ID:               uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				FlowID:           uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
+				Number:           "+821021656521",
+				UserID:           1,
+				Status:           "active",
+				T38Enabled:       false,
+				EmergencyEnabled: false,
+				TMPurchase:       "",
+				TMCreate:         "",
+				TMUpdate:         "",
+				TMDelete:         "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockReq.EXPECT().NMNumberGet(tt.updateNumber.ID).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NMNumberUpdate(tt.updateNMNumber).Return(tt.responseUpdate, nil)
+
+			res, err := h.NumberUpdate(tt.user, tt.updateNumber)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestNumberUpdateError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	type test struct {
+		name         string
+		user         *models.User
+		updateNumber *models.Number
+
+		updateNMNumber *nmnumber.Number
+		responseGet    *nmnumber.Number
+	}
+
+	tests := []test{
+		{
+			"deleted item",
+			&models.User{
+				ID: 1,
+			},
+			&models.Number{
+				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
+			},
+
+			&nmnumber.Number{
+				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
+			},
+			&nmnumber.Number{
+				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				Number:              "+821021656521",
+				UserID:              1,
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "",
+				Status:              nmnumber.NumberStatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+				TMDelete:            "2021-03-02 01:00:00.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockReq.EXPECT().NMNumberGet(tt.updateNumber.ID).Return(tt.responseGet, nil)
+
+			_, err := h.NumberUpdate(tt.user, tt.updateNumber)
+			if err == nil {
+				t.Error("Wrong match. expect: err, got: ok")
 			}
 		})
 	}
