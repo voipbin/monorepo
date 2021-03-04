@@ -14,7 +14,7 @@ func (r *requestHandler) RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstCo
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
-	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, ContentTypeJSON, nil)
+	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (r *requestHandler) RMV1ContactsPut(endpoint string) error {
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
-	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPut, resourceCallChannelsHealth, requestTimeoutDefault, ContentTypeJSON, nil)
+	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPut, resourceCallChannelsHealth, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

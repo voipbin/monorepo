@@ -22,7 +22,7 @@ func (r *requestHandler) TTSSpeechesPOST(text, gender, language string) (string,
 		return "", err
 	}
 
-	res, err := r.sendRequestTTS(uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, requestTimeoutDefault, ContentTypeJSON, m)
+	res, err := r.sendRequestTTS(uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return "", err
 	}

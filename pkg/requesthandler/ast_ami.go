@@ -50,7 +50,7 @@ func (r *requestHandler) AstAMIRedirect(asteriskID, channelID, context, exten, p
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstAMI, requestTimeoutDefault, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstAMI, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

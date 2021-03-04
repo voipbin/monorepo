@@ -14,7 +14,7 @@ func (r *requestHandler) NMV1NumbersNumberGet(num string) (*nmnumber.Number, err
 
 	uri := fmt.Sprintf("/v1/numbers/%s", url.QueryEscape(num))
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, requestTimeoutDefault, ContentTypeJSON, nil)
+	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
