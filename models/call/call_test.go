@@ -6,8 +6,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
 func TestParseAddressByCallerID(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/number"
 )
 
 const (

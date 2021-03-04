@@ -2,8 +2,8 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 )
 
 // V1DataCallsPost is

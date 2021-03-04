@@ -8,10 +8,10 @@ import (
 	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
-	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
-	channel "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
+	action "gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	reflect "reflect"
 )
 
