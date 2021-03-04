@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/nmnumber"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -91,6 +92,8 @@ const (
 
 	resourceFlowsActions resource = "flows/actions"
 
+	resourceNumberNumbers resource = "number/numbers"
+
 	resourceTTSSpeeches resource = "tts/speeches"
 )
 
@@ -140,6 +143,9 @@ type RequestHandler interface {
 	FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
 	FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error)
 
+	// nm numbers
+	NMV1NumbersNumberGet(num string) (*nmnumber.Number, error)
+
 	// rm contacts
 	RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstContact, error)
 	RMV1ContactsPut(endpoint string) error
@@ -157,10 +163,11 @@ type requestHandler struct {
 	queueFlow      string
 	queueTTS       string
 	queueRegistrar string
+	queueNumber    string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueTTS, queueRegistrar string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueTTS, queueRegistrar, queueNumber string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
@@ -169,6 +176,7 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, qu
 		queueFlow:      queueFlow,
 		queueTTS:       queueTTS,
 		queueRegistrar: queueRegistrar,
+		queueNumber:    queueNumber,
 	}
 
 	return h
@@ -340,6 +348,36 @@ func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler
 	res, err := r.sendRequest(ctx, r.queueRegistrar, resource, m)
 	if err != nil {
 		return nil, fmt.Errorf("could not send the request to the registrar-manager. err: %v", err)
+	}
+
+	log.WithFields(log.Fields{
+		"response": res,
+	}).Debugf("Received response. status_code: %d", res.StatusCode)
+
+	return res, nil
+}
+
+// sendRequestNumber send a request to the number-manager and return the response
+func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	// creat a request message
+	m := &rabbitmqhandler.Request{
+		URI:      uri,
+		Method:   method,
+		DataType: dataType,
+		Data:     data,
+	}
+
+	log.WithFields(log.Fields{
+		"request": m,
+	}).Debugf("Sending request to the number-manager. queue: %s, method: %s, uri: %s", r.queueNumber, m.Method, uriUnescape(m.URI))
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	defer cancel()
+
+	res, err := r.sendRequest(ctx, r.queueNumber, resource, m)
+	if err != nil {
+		return nil, fmt.Errorf("could not send the request to the number-manager. err: %v", err)
 	}
 
 	log.WithFields(log.Fields{

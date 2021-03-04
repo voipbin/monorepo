@@ -11,10 +11,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/nmnumber"
 )
 
 func TestGetTypeContextIncomingCall(t *testing.T) {
@@ -477,7 +477,7 @@ func TestTypeFlowStart(t *testing.T) {
 		channel *channel.Channel
 		data    map[string]interface{}
 		call    *call.Call
-		numb    *number.Number
+		numb    *nmnumber.Number
 	}
 
 	tests := []test{
@@ -500,7 +500,7 @@ func TestTypeFlowStart(t *testing.T) {
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
 			},
-			&number.Number{
+			&nmnumber.Number{
 				ID:     uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
 				FlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
 				UserID: 1,
@@ -512,7 +512,7 @@ func TestTypeFlowStart(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutFlow).Return(nil)
-			mockDB.EXPECT().NumberGetByNumber(gomock.Any(), tt.channel.DestinationNumber).Return(tt.numb, nil)
+			mockReq.EXPECT().NMV1NumbersNumberGet(tt.channel.DestinationNumber).Return(tt.numb, nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().FlowActvieFlowPost(gomock.Any(), tt.numb.FlowID).Return(nil, nil)
 			mockReq.EXPECT().FlowActvieFlowNextGet(gomock.Any(), action.IDBegin).Return(&action.Action{Type: action.TypeHangup}, nil)
