@@ -34,6 +34,7 @@ var rabbitQueueARIEvent = flag.String("rabbit_queue_arievent", "asterisk.all.eve
 var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
 var rabbitQueueTTSRequest = flag.String("rabbit_queue_tts", "bin-manager.tts-manager.request", "rabbitmq queue name for tts request")
 var rabbitQueueRegistrarRequest = flag.String("rabbit_queue_registrar", "bin-manager.registrar-manager.request", "rabbitmq queue name for registrar request")
+var rabbitQueueNumberRequest = flag.String("rabbit_queue_number", "bin-manager.number-manager.request", "rabbitmq queue name for number request")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
 var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.call-manager.event", "rabbitmq queue name for event notify")
 
@@ -153,6 +154,7 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueFlowRequest,
 		*rabbitQueueTTSRequest,
 		*rabbitQueueRegistrarRequest,
+		*rabbitQueueNumberRequest,
 	)
 
 	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)
@@ -183,6 +185,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueFlowRequest,
 		*rabbitQueueTTSRequest,
 		*rabbitQueueRegistrarRequest,
+		*rabbitQueueNumberRequest,
 	)
 
 	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)

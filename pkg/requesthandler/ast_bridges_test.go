@@ -17,7 +17,14 @@ func TestAstBridgeGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay", "bin-manager.call-manager.request", "bin-manager.flow-manager.request", "bin-manager.tts-manager.request", "bin-manager.registrar-manager.request")
+	reqHandler := requestHandler{
+		sock:           mockSock,
+		exchangeDelay:  "bin-manager.delay",
+		queueCall:      "bin-manager.call-manager.request",
+		queueFlow:      "bin-manager.flow-manager.request",
+		queueTTS:       "bin-manager.tts-manager.request",
+		queueRegistrar: "bin-manager.registrar-manager.request",
+	}
 
 	type test struct {
 		name       string

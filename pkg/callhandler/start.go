@@ -18,10 +18,10 @@ import (
 
 // StasisStart event's context types
 const (
-	contextIncomingCall    = "call-in"
-	contextOutgoingCall    = "call-out"
-	contextRecording       = "call-record"
-	contextFromServiceCall = "call-svc"
+	contextIncomingCall    = "call-in"     // context for the incoming channel
+	contextOutgoingCall    = "call-out"    // context for the outgoing channel
+	contextRecording       = "call-record" // context for the channel which created only for recording
+	contextFromServiceCall = "call-svc"    // context for the channel where it came back to stasis from the other asterisk application
 )
 
 // domain types
@@ -65,6 +65,7 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) error {
 }
 
 // StartCallHandle starts the call handle service
+//
 func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]interface{}) error {
 
 	// check the stasis's context
@@ -304,8 +305,8 @@ func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]interfa
 		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	// get number
-	numb, err := h.db.NumberGetByNumber(ctx, cn.DestinationNumber)
+	// get number info
+	numb, err := h.reqHandler.NMV1NumbersNumberGet(cn.DestinationNumber)
 	if err != nil {
 		log.Debugf("Could not find number info. err: %v", err)
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)

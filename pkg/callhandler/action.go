@@ -181,9 +181,11 @@ func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error 
 		})
 
 	var option action.OptionAnswer
-	if err := json.Unmarshal(act.Option, &option); err != nil {
-		log.Errorf("could not parse the option. err: %v", err)
-		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+	if act.Option != nil {
+		if err := json.Unmarshal(act.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
 	}
 
 	// set option

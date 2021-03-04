@@ -12,6 +12,7 @@ import (
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	nmnumber "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/nmnumber"
 	rmastcontact "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
 	reflect "reflect"
 )
@@ -392,6 +393,21 @@ func (m *MockRequestHandler) FlowActvieFlowNextGet(callID, actionID uuid.UUID) (
 func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowNextGet(callID, actionID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActvieFlowNextGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowActvieFlowNextGet), callID, actionID)
+}
+
+// NMV1NumbersNumberGet mocks base method
+func (m *MockRequestHandler) NMV1NumbersNumberGet(num string) (*nmnumber.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NMV1NumbersNumberGet", num)
+	ret0, _ := ret[0].(*nmnumber.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NMV1NumbersNumberGet indicates an expected call of NMV1NumbersNumberGet
+func (mr *MockRequestHandlerMockRecorder) NMV1NumbersNumberGet(num interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumbersNumberGet", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumbersNumberGet), num)
 }
 
 // RMV1ContactsGet mocks base method
