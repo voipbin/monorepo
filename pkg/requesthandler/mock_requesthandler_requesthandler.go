@@ -7,11 +7,11 @@ package requesthandler
 import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
-	activeflow "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/activeflow"
-	ari "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
-	channel "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
+	action "gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	activeflow "gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
+	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	rmastcontact "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
 	reflect "reflect"
 )

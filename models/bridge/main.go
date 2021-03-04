@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
 // Bridge struct represent asterisk's bridge information

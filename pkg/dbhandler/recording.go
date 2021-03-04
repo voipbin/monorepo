@@ -7,7 +7,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
 const (

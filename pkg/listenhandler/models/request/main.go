@@ -1,7 +1,7 @@
 package request
 
 import (
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
 // Pagination is pagination structure for request

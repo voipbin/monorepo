@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )

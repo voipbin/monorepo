@@ -7,9 +7,9 @@ package conferencehandler
 import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	conference "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
-	channel "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	reflect "reflect"
 )
 

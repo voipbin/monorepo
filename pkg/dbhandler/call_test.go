@@ -10,9 +10,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
 )
 
 func TestCallCreate(t *testing.T) {

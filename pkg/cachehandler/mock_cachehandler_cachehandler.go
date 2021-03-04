@@ -8,12 +8,12 @@ import (
 	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/call"
-	number "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/number"
-	recording "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler/models/recording"
-	conference "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler/models/conference"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/bridge"
-	channel "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler/models/channel"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	number "gitlab.com/voipbin/bin-manager/call-manager.git/models/number"
+	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	reflect "reflect"
 )
 
