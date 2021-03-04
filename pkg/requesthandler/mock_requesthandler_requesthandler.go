@@ -323,6 +323,21 @@ func (mr *MockRequestHandlerMockRecorder) NMNumberGets(userID, pageToken, pageSi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMNumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NMNumberGets), userID, pageToken, pageSize)
 }
 
+// NMNumberUpdate mocks base method
+func (m *MockRequestHandler) NMNumberUpdate(num *nmnumber.Number) (*nmnumber.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NMNumberUpdate", num)
+	ret0, _ := ret[0].(*nmnumber.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NMNumberUpdate indicates an expected call of NMNumberUpdate
+func (mr *MockRequestHandlerMockRecorder) NMNumberUpdate(num interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMNumberUpdate", reflect.TypeOf((*MockRequestHandler)(nil).NMNumberUpdate), num)
+}
+
 // RMDomainCreate mocks base method
 func (m *MockRequestHandler) RMDomainCreate(userID uint64, domainName, name, detail string) (*rmdomain.Domain, error) {
 	m.ctrl.T.Helper()

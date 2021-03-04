@@ -7,11 +7,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
 )
 
-// NumberGets sends a request to getting a list of ordered numbers
+// NumberGets sends a request to getting a list of numbers
 // It sends a request to the number-manager to getting a list of numbers.
-// it returns list of order numbers if it succeed.
+// it returns list of numbers if it succeed.
 func (h *serviceHandler) NumberGets(u *models.User, size uint64, token string) ([]*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
@@ -23,7 +24,7 @@ func (h *serviceHandler) NumberGets(u *models.User, size uint64, token string) (
 	// get available numbers
 	tmps, err := h.reqHandler.NMNumberGets(u.ID, token, size)
 	if err != nil {
-		log.Infof("Could not get order numbers info. err: %v", err)
+		log.Infof("Could not get numbers info. err: %v", err)
 		return nil, err
 	}
 
@@ -37,8 +38,8 @@ func (h *serviceHandler) NumberGets(u *models.User, size uint64, token string) (
 	return res, nil
 }
 
-// NumberCreate handles order number create request.
-// It sends a request to the number-manager to create a new order number.
+// NumberCreate handles number create request.
+// It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
 func (h *serviceHandler) NumberCreate(u *models.User, num string) (*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -62,8 +63,8 @@ func (h *serviceHandler) NumberCreate(u *models.User, num string) (*models.Numbe
 	return tmp.ConvertNumber(), nil
 }
 
-// NumberGet handles order number get request.
-// It sends a request to the number-manager to get a existed order number.
+// NumberGet handles number get request.
+// It sends a request to the number-manager to get a existed number.
 // it returns got number information if it succeed.
 func (h *serviceHandler) NumberGet(u *models.User, id uuid.UUID) (*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -85,11 +86,16 @@ func (h *serviceHandler) NumberGet(u *models.User, id uuid.UUID) (*models.Number
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	if res.TMDelete != "" {
+		log.Debugf("Deleted item.")
+		return nil, fmt.Errorf("not found")
+	}
+
 	return res.ConvertNumber(), nil
 }
 
-// NumberDelete handles order number delete request.
-// It sends a request to the number-manager to delete a existed order number.
+// NumberDelete handles number delete request.
+// It sends a request to the number-manager to delete a existed number.
 // it returns deleted number information if it succeed.
 func (h *serviceHandler) NumberDelete(u *models.User, id uuid.UUID) (*models.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -111,6 +117,11 @@ func (h *serviceHandler) NumberDelete(u *models.User, id uuid.UUID) (*models.Num
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	if tmp.TMDelete != "" {
+		log.Debugf("Deleted item.")
+		return nil, fmt.Errorf("not found")
+	}
+
 	// delete numbers
 	res, err := h.reqHandler.NMNumberDelete(id)
 	if err != nil {
@@ -119,4 +130,43 @@ func (h *serviceHandler) NumberDelete(u *models.User, id uuid.UUID) (*models.Num
 	}
 
 	return res.ConvertNumber(), nil
+}
+
+// NumberUpdate handles number create request.
+// It sends a request to the number-manager to create a new number.
+// it returns created number information if it succeed.
+func (h *serviceHandler) NumberUpdate(u *models.User, numb *models.Number) (*models.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"user":     u.ID,
+		"username": u.Username,
+		"number":   numb,
+	})
+
+	// get number
+	tmpNumb, err := h.reqHandler.NMNumberGet(numb.ID)
+	if err != nil {
+		log.Errorf("Could not get number info. err: %v", err)
+		return nil, err
+	}
+
+	// permission check
+	if u.HasPermission(models.UserPermissionAdmin) != true && tmpNumb.UserID != u.ID {
+		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, tmpNumb.UserID)
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	if tmpNumb.TMDelete != "" {
+		log.Debugf("Deleted item.")
+		return nil, fmt.Errorf("not found")
+	}
+
+	// update number
+	nNumb := nmnumber.CreateNumber(numb)
+	tmp, err := h.reqHandler.NMNumberUpdate(nNumb)
+	if err != nil {
+		log.Errorf("Could not update the number info. err: %v", err)
+		return nil, err
+	}
+
+	return tmp.ConvertNumber(), nil
 }

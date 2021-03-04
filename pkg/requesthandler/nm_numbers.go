@@ -117,3 +117,36 @@ func (r *requestHandler) NMNumberDelete(id uuid.UUID) (*nmnumber.Number, error) 
 
 	return &resData, nil
 }
+
+// NMNumberUpdate sends a request to the number-manager
+// to update a number.
+// Returns updated number info
+func (r *requestHandler) NMNumberUpdate(num *nmnumber.Number) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/%s", num.ID)
+
+	data := &request.NMV1DataNumbersIDPut{
+		FlowID: num.FlowID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, 15, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData nmnumber.Number
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
+}
