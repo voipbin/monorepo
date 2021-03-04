@@ -154,6 +154,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	if err != nil {
 		uri = "could not unescape uri"
 	}
+	m.URI = uri
 
 	logrus.WithFields(
 		logrus.Fields{
