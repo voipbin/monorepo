@@ -230,7 +230,7 @@ func TestNumbersPOST(t *testing.T) {
 		name        string
 		user        models.User
 		uri         string
-		requestBody request.BodyOrderNumbersPOST
+		requestBody request.BodyNumbersPOST
 	}
 
 	tests := []test{
@@ -240,7 +240,7 @@ func TestNumbersPOST(t *testing.T) {
 				ID: 1,
 			},
 			"/v1.0/numbers",
-			request.BodyOrderNumbersPOST{
+			request.BodyNumbersPOST{
 				Number: "+821021656521",
 			},
 		},
@@ -266,6 +266,85 @@ func TestNumbersPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 			req, _ := http.NewRequest("POST", tt.uri, bytes.NewBuffer(body))
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func TestNumbersIDPUT(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name     string
+		user     models.User
+		numberID uuid.UUID
+		uri      string
+
+		requestBody   request.BodyNumbersIDPUT
+		requestNumber *models.Number
+		resNumber     *models.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+			models.User{
+				ID: 1,
+			},
+			uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
+			"/v1.0/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
+			request.BodyNumbersIDPUT{
+				FlowID: uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
+			},
+			&models.Number{
+				ID:     uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
+				FlowID: uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
+			},
+			&models.Number{
+				ID:               uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
+				FlowID:           uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
+				Number:           "+821021656521",
+				UserID:           1,
+				Status:           "active",
+				T38Enabled:       false,
+				EmergencyEnabled: false,
+				TMPurchase:       "",
+				TMCreate:         "",
+				TMUpdate:         "",
+				TMDelete:         "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().NumberUpdate(&tt.user, tt.requestNumber).Return(tt.resNumber, nil)
+
+			// create body
+			body, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+			req, _ := http.NewRequest("PUT", tt.uri, bytes.NewBuffer(body))
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

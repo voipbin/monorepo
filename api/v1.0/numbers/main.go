@@ -13,5 +13,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	numbers.GET("/:id", numbersIDGET)
 	numbers.DELETE("/:id", numbersIDDELETE)
+	numbers.PUT("/:id", numbersIDPUT)
 
 }
