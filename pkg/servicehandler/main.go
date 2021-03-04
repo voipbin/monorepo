@@ -59,6 +59,7 @@ type ServiceHandler interface {
 	NumberGet(u *models.User, id uuid.UUID) (*models.Number, error)
 	NumberGets(u *models.User, size uint64, token string) ([]*models.Number, error)
 	NumberDelete(u *models.User, id uuid.UUID) (*models.Number, error)
+	NumberUpdate(u *models.User, numb *models.Number) (*models.Number, error)
 
 	// recording handlers
 	RecordingGet(u *models.User, id uuid.UUID) (*models.Recording, error)

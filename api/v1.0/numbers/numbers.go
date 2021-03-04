@@ -137,7 +137,7 @@ func numbersIDGET(c *gin.Context) {
 // @Router /v1.0/numbers [post]
 func numbersPOST(c *gin.Context) {
 
-	var body request.BodyOrderNumbersPOST
+	var body request.BodyNumbersPOST
 	if err := c.BindJSON(&body); err != nil {
 		c.AbortWithStatus(400)
 		return
@@ -212,5 +212,54 @@ func numbersIDDELETE(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
+	return
+}
+
+// numbersIDPUT handles PUT /numbers request.
+// It creates a new order number with the given info and returns created order number.
+// @Summary Create a new number and returns detail created number info.
+// @Description Create a new number and returns detail created number info.
+// @Produce json
+// @Success 200 {object} models.Number
+// @Router /v1.0/numbers/{id} [post]
+func numbersIDPUT(c *gin.Context) {
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	var body request.BodyNumbersIDPUT
+	if err := c.BindJSON(&body); err != nil {
+		c.AbortWithStatus(400)
+		return
+	}
+
+	tmp, exists := c.Get("user")
+	if exists != true {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(models.User)
+	log := logrus.WithFields(logrus.Fields{
+		"id":         u.ID,
+		"username":   u.Username,
+		"permission": u.Permission,
+	})
+
+	tmpN := &models.Number{
+		ID:     id,
+		FlowID: body.FlowID,
+	}
+
+	// update a number
+	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	numb, err := serviceHandler.NumberUpdate(&u, tmpN)
+	if err != nil {
+		log.Errorf("Could not update a number. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, numb)
 	return
 }
