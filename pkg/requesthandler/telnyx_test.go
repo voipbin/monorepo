@@ -88,7 +88,6 @@ func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
 				MessagingProfileName:  "",
 				NumberBlockID:         "",
 				CreatedAt:             "2021-02-26T18:26:49.277Z",
-				UpdatedAt:             "2021-02-27T17:44:09.724Z",
 			},
 		},
 	}
@@ -101,6 +100,7 @@ func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			res.UpdatedAt = ""
 			if reflect.DeepEqual(tt.expectRes, res) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}

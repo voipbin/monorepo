@@ -263,7 +263,7 @@ func TestProcessV1NumbersNumberGet(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/numbers/+821021656521",
+				URI:    "/v1/numbers/%2B821021656521",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
