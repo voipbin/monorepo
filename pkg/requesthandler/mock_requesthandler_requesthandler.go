@@ -154,3 +154,17 @@ func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(userID, id, name, detail,
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), userID, id, name, detail, actions, persist)
 }
+
+// NMNumberFlowDelete mocks base method
+func (m *MockRequestHandler) NMNumberFlowDelete(flowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NMNumberFlowDelete", flowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NMNumberFlowDelete indicates an expected call of NMNumberFlowDelete
+func (mr *MockRequestHandlerMockRecorder) NMNumberFlowDelete(flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMNumberFlowDelete", reflect.TypeOf((*MockRequestHandler)(nil).NMNumberFlowDelete), flowID)
+}

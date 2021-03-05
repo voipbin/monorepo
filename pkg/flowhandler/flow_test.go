@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler"
 )
 
 func TestFlowCreate(t *testing.T) {
@@ -82,8 +83,10 @@ func TestFlowDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
 	h := &flowHandler{
-		db: mockDB,
+		db:         mockDB,
+		reqHandler: mockReq,
 	}
 
 	type test struct {
@@ -101,6 +104,7 @@ func TestFlowDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(nil)
+			mockReq.EXPECT().NMNumberFlowDelete(tt.flowID).Return(nil)
 
 			h.FlowDelete(context.Background(), tt.flowID)
 		})
