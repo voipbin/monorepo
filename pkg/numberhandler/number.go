@@ -103,6 +103,7 @@ func (h *numberHandler) GetNumbers(ctx context.Context, userID uint64, pageSize 
 	return numbers, nil
 }
 
+// UpdateNumber updates the number
 func (h *numberHandler) UpdateNumber(ctx context.Context, numb *models.Number) (*models.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{

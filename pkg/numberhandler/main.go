@@ -29,6 +29,8 @@ type NumberHandler interface {
 
 	ReleaseNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
 
+	RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUID) error
+
 	UpdateNumber(ctx context.Context, numb *models.Number) (*models.Number, error)
 }
 

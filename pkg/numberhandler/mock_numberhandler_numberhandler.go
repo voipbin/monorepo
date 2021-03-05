@@ -140,6 +140,20 @@ func (mr *MockNumberHandlerMockRecorder) ReleaseNumber(ctx, id interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseNumber", reflect.TypeOf((*MockNumberHandler)(nil).ReleaseNumber), ctx, id)
 }
 
+// RemoveNumbersFlowID mocks base method
+func (m *MockNumberHandler) RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveNumbersFlowID", ctx, flowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveNumbersFlowID indicates an expected call of RemoveNumbersFlowID
+func (mr *MockNumberHandlerMockRecorder) RemoveNumbersFlowID(ctx, flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveNumbersFlowID", reflect.TypeOf((*MockNumberHandler)(nil).RemoveNumbersFlowID), ctx, flowID)
+}
+
 // UpdateNumber mocks base method
 func (m *MockNumberHandler) UpdateNumber(ctx context.Context, numb *models.Number) (*models.Number, error) {
 	m.ctrl.T.Helper()

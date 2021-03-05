@@ -236,6 +236,31 @@ func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, to
 	return res, nil
 }
 
+// NumberGetsByFlowID returns a list of numbers by flow_id.
+func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*models.Number, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where flow_id = ? and tm_create < ? and tm_delete is null order by tm_create desc limit ?", numberSelect)
+
+	rows, err := h.db.Query(q, flowID.Bytes(), token, size)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. NumberGetsByFlowID. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*models.Number{}
+	for rows.Next() {
+		u, err := h.numberGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. NumberGetsByFlowID, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // NumberCreate creates a new number record.
 func (h *handler) NumberCreate(ctx context.Context, n *models.Number) error {
 	q := `insert into numbers(
