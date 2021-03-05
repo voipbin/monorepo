@@ -7,7 +7,7 @@ type Number struct {
 	ID     uuid.UUID `json:"id"`
 	Number string    `json:"number"`
 	FlowID uuid.UUID `json:"flow_id"`
-	UserID uint64    `json:"user_id"`
+	UserID uint64    `json:"-"` // we don't expose this to the client.
 
 	Status string `json:"status"`
 
