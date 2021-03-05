@@ -168,6 +168,21 @@ func (mr *MockDBHandlerMockRecorder) NumberGets(ctx, userID, size, token interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGets", reflect.TypeOf((*MockDBHandler)(nil).NumberGets), ctx, userID, size, token)
 }
 
+// NumberGetsByFlowID mocks base method
+func (m *MockDBHandler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*models.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberGetsByFlowID", ctx, flowID, size, token)
+	ret0, _ := ret[0].([]*models.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberGetsByFlowID indicates an expected call of NumberGetsByFlowID
+func (mr *MockDBHandlerMockRecorder) NumberGetsByFlowID(ctx, flowID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByFlowID), ctx, flowID, size, token)
+}
+
 // NumberSetToCache mocks base method
 func (m *MockDBHandler) NumberSetToCache(ctx context.Context, num *models.Number) error {
 	m.ctrl.T.Helper()

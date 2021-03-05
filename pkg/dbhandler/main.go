@@ -28,6 +28,7 @@ type DBHandler interface {
 	NumberGetFromDB(ctx context.Context, id uuid.UUID) (*models.Number, error)
 	NumberGetFromDBByNumber(ctx context.Context, numb string) (*models.Number, error)
 	NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*models.Number, error)
+	NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*models.Number, error)
 	NumberSetToCache(ctx context.Context, num *models.Number) error
 	NumberSetToCacheByNumber(ctx context.Context, num *models.Number) error
 	NumberUpdate(ctx context.Context, numb *models.Number) error

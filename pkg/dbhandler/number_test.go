@@ -127,6 +127,84 @@ func TestNumberGets(t *testing.T) {
 	}
 }
 
+func TestNumberGetsByFlowID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name string
+
+		flowID  uuid.UUID
+		numbers []*models.Number
+
+		expectNum int
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("66beabfe-7d20-11eb-9b69-375c485b40fa"),
+			[]*models.Number{
+				{
+					ID:     uuid.FromStringOrNil("5d73b940-7d20-11eb-8335-97856a00f2c6"),
+					UserID: 1,
+					FlowID: uuid.FromStringOrNil("66beabfe-7d20-11eb-9b69-375c485b40fa"),
+				},
+			},
+			1,
+		},
+		{
+			"3 flows, but grep 2",
+			uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
+			[]*models.Number{
+				{
+					ID:     uuid.FromStringOrNil("109347b6-7d21-11eb-bdd4-c7226a0e1c81"),
+					UserID: 1,
+					FlowID: uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
+				},
+				{
+					ID:     uuid.FromStringOrNil("10b60706-7d21-11eb-90ae-2305526adf47"),
+					UserID: 1,
+					FlowID: uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
+				},
+				{
+					ID:     uuid.FromStringOrNil("10cf5ee0-7d21-11eb-9733-b73b63288625"),
+					UserID: 1,
+					FlowID: uuid.FromStringOrNil("10eff100-7d21-11eb-b275-6ff5cde65beb"),
+				},
+			},
+			2,
+		},
+	}
+
+	// creates numbers for test
+	h := NewHandler(dbTest, mockCache)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			// create numbers
+			for _, n := range tt.numbers {
+				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+				mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
+				h.NumberCreate(ctx, n)
+			}
+
+			res, err := h.NumberGetsByFlowID(ctx, tt.flowID, 100, getCurTime())
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if len(res) != tt.expectNum {
+				t.Errorf("Wrong match. expect: %d, got: %v", tt.expectNum, len(res))
+			}
+		})
+	}
+}
+
 func TestNumberDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
