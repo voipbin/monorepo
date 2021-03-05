@@ -3,8 +3,10 @@ package numbers
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -106,7 +108,8 @@ func TestNumbersIDGET(t *testing.T) {
 		numberID uuid.UUID
 		uri      string
 
-		resNumber *models.Number
+		resNumber  *models.Number
+		expectBody []byte
 	}
 
 	tests := []test{
@@ -129,6 +132,7 @@ func TestNumbersIDGET(t *testing.T) {
 				TMUpdate:         "",
 				TMDelete:         "",
 			},
+			[]byte(`{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 		},
 	}
 
@@ -150,6 +154,15 @@ func TestNumbersIDGET(t *testing.T) {
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			resBytes, err := ioutil.ReadAll(w.Body)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(resBytes, tt.expectBody) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectBody, resBytes)
 			}
 		})
 	}
