@@ -91,10 +91,19 @@ func (h *flowHandler) FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow,
 }
 
 // FlowDelete delets the given flow
+// And it also removes the related flow_id from the number-manager
 func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 	err := h.db.FlowDelete(ctx, id)
 	if err != nil {
 		return err
+	}
+
+	// send related flow-id clean up request to the number-manager
+	if err := h.reqHandler.NMNumberFlowDelete(id); err != nil {
+		logrus.Errorf("Could not clean up the flow_id from the number-manager. err: %v", err)
+		// we don't return the err here, because the flow has been removed already.
+		// and the numbers which have the removed flow-id are OK too, because
+		// when the call-manager request the flow, that request will be failed too.
 	}
 
 	return nil

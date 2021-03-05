@@ -64,6 +64,8 @@ const (
 
 	resourceFlowActions resource = "flows/actions"
 	resourceFlowFlows   resource = "flows"
+
+	resourceNumberNumberFlows resource = "number/number_flows"
 )
 
 func init() {
@@ -74,6 +76,7 @@ func init() {
 
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
+	////// call-manager
 	// call
 	CMCallAddChainedCall(callID uuid.UUID, chainedCallID uuid.UUID) error
 	CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error)
@@ -85,9 +88,13 @@ type RequestHandler interface {
 	CMConferenceDelete(conferenceID uuid.UUID) error
 	CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error)
 
-	// flow actions
+	////// flow-manager
 	// FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
 	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error)
+
+	////// number-manager
+	// number_flows
+	NMNumberFlowDelete(flowID uuid.UUID) error
 }
 
 type requestHandler struct {
@@ -95,18 +102,20 @@ type requestHandler struct {
 
 	exchangeDelay string
 
-	queueCall string
-	queueFlow string
+	queueCall   string
+	queueFlow   string
+	queueNumber string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueNumber string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
 		exchangeDelay: exchangeDelay,
 		queueCall:     queueCall,
 		queueFlow:     queueFlow,
+		queueNumber:   queueNumber,
 	}
 
 	return h
@@ -120,12 +129,20 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.Requ
 	return r.sendRequest(r.queueFlow, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestCall send a request to the Asterisk-proxy and return the response
+// sendRequestCall send a request to the call-manager and return the response
 // timeout second
 // delayed millisecond
 func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(r.queueCall, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestNumber send a request to the number-manager and return the response
+// timeout second
+// delayed millisecond
+func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueNumber, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequest sends a request to the given destination.
