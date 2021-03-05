@@ -1,6 +1,6 @@
 FROM debian:stable-slim
 
-ARG ASTERISK_VERSION=18.2.1
+ARG ASTERISK_VERSION=18.2.2
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 
 RUN apt-get update
