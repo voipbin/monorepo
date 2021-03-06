@@ -1,5 +1,5 @@
 definitions:
-  action.Action:
+  models.Action:
     properties:
       id:
         type: string
@@ -8,19 +8,22 @@ definitions:
       type:
         type: string
     type: object
-  call.Address:
+  models.AvailableNumber:
     properties:
-      name:
-        description: Name.
+      country:
         type: string
-      target:
-        description: Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
+      features:
+        items:
+          type: string
+        type: array
+      number:
         type: string
-      type:
-        description: Type of address. must be one of ["sip", "tel"].
+      postal_code:
+        type: string
+      region:
         type: string
     type: object
-  call.Call:
+  models.Call:
     properties:
       chained_call_ids:
         description: Chained call ids
@@ -31,7 +34,7 @@ definitions:
         description: Currently joined conference id.
         type: string
       destination:
-        $ref: '#/definitions/call.Address'
+        $ref: '#/definitions/models.CallAddress'
         description: Destination info
         type: object
       direction:
@@ -61,7 +64,7 @@ definitions:
           type: string
         type: array
       source:
-        $ref: '#/definitions/call.Address'
+        $ref: '#/definitions/models.CallAddress'
         description: Source info
         type: object
       status:
@@ -89,7 +92,19 @@ definitions:
         description: Call owner's ID.
         type: integer
     type: object
-  conference.Conference:
+  models.CallAddress:
+    properties:
+      name:
+        description: Name.
+        type: string
+      target:
+        description: Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
+        type: string
+      type:
+        description: Type of address. must be one of ["sip", "tel"].
+        type: string
+    type: object
+  models.Conference:
     properties:
       call_ids:
         description: Currently joined call IDs.
@@ -132,7 +147,7 @@ definitions:
         description: Conference owner's ID.
         type: integer
     type: object
-  domain.Domain:
+  models.Domain:
     properties:
       detail:
         description: Detail
@@ -156,7 +171,7 @@ definitions:
       user_id:
         type: integer
     type: object
-  extension.Extension:
+  models.Extension:
     properties:
       detail:
         type: string
@@ -179,12 +194,12 @@ definitions:
       user_id:
         type: integer
     type: object
-  flow.Flow:
+  models.Flow:
     properties:
       actions:
         description: Actions
         items:
-          $ref: '#/definitions/action.Action'
+          $ref: '#/definitions/models.Action'
         type: array
       detail:
         description: Detail
@@ -205,7 +220,31 @@ definitions:
         description: Updated timestamp.
         type: string
     type: object
-  recording.Recording:
+  models.Number:
+    properties:
+      emergency_enabled:
+        type: boolean
+      flow_id:
+        type: string
+      id:
+        type: string
+      number:
+        type: string
+      status:
+        type: string
+      t38_enabled:
+        type: boolean
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_purchase:
+        description: timestamp
+        type: string
+      tm_update:
+        type: string
+    type: object
+  models.Recording:
     properties:
       filename:
         type: string
@@ -236,15 +275,15 @@ definitions:
     properties:
       actions:
         items:
-          $ref: '#/definitions/action.Action'
+          $ref: '#/definitions/models.Action'
         type: array
       destination:
-        $ref: '#/definitions/call.Address'
+        $ref: '#/definitions/models.CallAddress'
         type: object
       event_url:
         type: string
       source:
-        $ref: '#/definitions/call.Address'
+        $ref: '#/definitions/models.CallAddress'
         type: object
     required:
     - destination
@@ -261,13 +300,29 @@ definitions:
     required:
     - type
     type: object
+  response.BodyAvailableNumbersGET:
+    properties:
+      result:
+        items:
+          $ref: '#/definitions/models.AvailableNumber'
+        type: array
+    type: object
   response.BodyCallsGET:
     properties:
       next_page_token:
         type: string
       result:
         items:
-          $ref: '#/definitions/call.Call'
+          $ref: '#/definitions/models.Call'
+        type: array
+    type: object
+  response.BodyNumbersGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/models.Number'
         type: array
     type: object
   response.BodyRecordingsGET:
@@ -276,7 +331,7 @@ definitions:
         type: string
       result:
         items:
-          $ref: '#/definitions/recording.Recording'
+          $ref: '#/definitions/models.Recording'
         type: array
     type: object
 host: api.voipbin.net
@@ -299,6 +354,27 @@ paths:
         "200":
           description: '{"message": "pong"}'
       summary: Returns message pong
+  /v1.0/available_numbers:
+    get:
+      description: get available numbers of the country
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The ISO country code
+        in: query
+        name: country_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyAvailableNumbersGET'
+      summary: List available numbers
   /v1.0/calls:
     get:
       description: get calls of the user
@@ -334,7 +410,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/call.Call'
+            $ref: '#/definitions/models.Call'
       summary: Make an outbound call
   /v1.0/calls/{id}:
     delete:
@@ -351,7 +427,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/call.Call'
+            $ref: '#/definitions/models.Call'
       summary: Hangup the call
     get:
       description: Returns detail call info of the given call id.
@@ -372,7 +448,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/call.Call'
+            $ref: '#/definitions/models.Call'
       summary: Returns detail call info.
   /v1.0/conferences:
     get:
@@ -419,7 +495,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/conference.Conference'
+            $ref: '#/definitions/models.Conference'
       summary: Create a new conferences
   /v1.0/conferences/{id}:
     delete:
@@ -459,7 +535,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/conference.Conference'
+            $ref: '#/definitions/models.Conference'
       summary: Returns detail conference info.
   /v1.0/domains:
     get:
@@ -471,7 +547,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/domain.Domain'
+              $ref: '#/definitions/models.Domain'
             type: array
       summary: Gets a list of domains.
     post:
@@ -482,7 +558,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Domain'
+            $ref: '#/definitions/models.Domain'
       summary: Create a new domain and returns detail created domain info.
   /v1.0/domains/{id}:
     delete:
@@ -511,7 +587,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Domain'
+            $ref: '#/definitions/models.Domain'
       summary: Returns detail domain info.
     put:
       description: Update a domain and returns detail updated domain info.
@@ -521,7 +597,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Domain'
+            $ref: '#/definitions/models.Domain'
       summary: Update a domain and reuturns updated domain info.
   /v1.0/extension/{id}:
     get:
@@ -543,7 +619,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/extension.Extension'
+            $ref: '#/definitions/models.Extension'
       summary: Returns detail extension info.
   /v1.0/extensions:
     get:
@@ -555,7 +631,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/extension.Extension'
+              $ref: '#/definitions/models.Extension'
             type: array
       summary: Gets a list of extensions.
     post:
@@ -566,7 +642,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/extension.Extension'
+            $ref: '#/definitions/models.Extension'
       summary: Create a new domain and returns detail created extension info.
   /v1.0/extensions/{id}:
     delete:
@@ -584,7 +660,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/extension.Extension'
+            $ref: '#/definitions/models.Extension'
       summary: Update a extension and reuturns updated extension info.
   /v1.0/flows:
     get:
@@ -596,7 +672,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/flow.Flow'
+              $ref: '#/definitions/models.Flow'
             type: array
       summary: Gets a list of flows.
     post:
@@ -607,7 +683,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/flow.Flow'
+            $ref: '#/definitions/models.Flow'
       summary: Create a new flow and returns detail created flow info.
   /v1.0/flows/{id}:
     delete:
@@ -636,7 +712,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/flow.Flow'
+            $ref: '#/definitions/models.Flow'
       summary: Returns detail flow info.
     put:
       description: Update a flow and returns detail updated flow info.
@@ -646,8 +722,92 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/flow.Flow'
+            $ref: '#/definitions/models.Flow'
       summary: Update a flow and reuturns updated flow info.
+  /v1.0/numbers:
+    get:
+      description: get order numbers of the country
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The ISO country code
+        in: query
+        name: country_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyNumbersGET'
+      summary: List order numbers
+    post:
+      description: Create a new number and returns detail created number info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Number'
+      summary: Create a new number and returns detail created number info.
+  /v1.0/numbers/{id}:
+    delete:
+      description: delete order number of the given id and returns deleted item.
+      parameters:
+      - description: The ID of the order number
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Number'
+      summary: Delete order number
+    get:
+      description: get order number of the given id
+      parameters:
+      - description: The ID of the order number
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Number'
+      summary: Get order number
+    post:
+      description: Create a new number and returns detail created number info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Number'
+      summary: Create a new number and returns detail created number info.
   /v1.0/recordingfiles/{id}:
     get:
       description: Download the recording file
@@ -685,6 +845,6 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/recording.Recording'
+            $ref: '#/definitions/models.Recording'
       summary: Returns a detail recording information.
 swagger: "2.0"

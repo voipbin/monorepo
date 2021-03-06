@@ -17,7 +17,7 @@ Welcome to voipbin's documentation!
    domain
    extension
    flow
-   order-number
+   number
    recording
 
 
