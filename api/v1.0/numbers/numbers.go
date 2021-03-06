@@ -18,7 +18,7 @@ import (
 // @Produce  json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param country_code query string true "The ISO country code"
-// @Success 200 {object} response.BodyOrderNumbersGET
+// @Success 200 {object} response.BodyNumbersGET
 // @Router /v1.0/numbers [get]
 func numbersGET(c *gin.Context) {
 

@@ -42,7 +42,7 @@ Parameters
         }
     }
 
-* conference_id<string>: conference's id to join.
+* *conference_id*: conference's id to join.
 
 Example
 +++++++
@@ -77,9 +77,9 @@ Parameters
         }
     }
 
-* source: Source address.
-* destinations: Destination addresses.
-* unchained: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
+* *source*: Source address.
+* *destinations*: Destination addresses.
+* *unchained*: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 
 Example
 +++++++
@@ -101,7 +101,7 @@ Example
         }
     }
 
-DTMF_Receive
+DTMF Receive
 ------------
 Receives the DTMFs for given duration or numbers.
 
@@ -118,9 +118,9 @@ Parameters
         }
     }
 
-* max_number_key: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.
-* duration: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.
-* finish_on_key: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.
+* *max_number_key*: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.
+* *duration*: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.
+* *finish_on_key*: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.
 
 Example
 +++++++
@@ -135,7 +135,7 @@ Example
         }
     }
 
-DTMF_Send
+DTMF Send
 ---------
 Sends the DTMFs with given duration and interval.
 
@@ -152,9 +152,9 @@ Parameters
         }
     }
 
-* dtmfs: The dtmf string to send. Allowed set of characters: 0-9,A-D, #, '*'; with a maximum of 100 keys.
-* duration: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
-* finish_on_key: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
+* *dtmfs*: The dtmf string to send. Allowed set of characters: 0-9,A-D, #, '*'; with a maximum of 100 keys.
+* *duration*: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
+* *finish_on_key*: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
 
 Example
 +++++++
@@ -185,8 +185,8 @@ Parameters
         }
     }
 
-* duration: Echo duration. ms.
-* dtmf: Sending back the DTMF.
+* *duration*: Echo duration. ms.
+* *dtmf*: Sending back the DTMF.
 
 Example
 +++++++
@@ -237,8 +237,8 @@ Parameters
         }
     }
 
-* event_url: The url for flow patching.
-* event_method: The method for flow patching.
+* *event_url*: The url for flow patching.
+* *event_method*: The method for flow patching.
 
 Example
 +++++++
@@ -269,7 +269,7 @@ Parameters
         }
     }
 
-* stream_urls: Stream url array for media.
+* *stream_urls*: Stream url array for media.
 
 Example
 +++++++
@@ -302,11 +302,11 @@ Parameters
         }
     }
 
-* format: Format to encode audio in. wav, mp3, ogg.
-* end_of_silence: Maximum duration of silence, in seconds. 0 for no limit.
-* end_of_key: DTMF input to terminate recording. none, any, \*, #.
-* duration: Maximum duration of the recording, in seconds. 0 for no limit.
-* beep_start: Play beep when recording begins
+* *format*: Format to encode audio in. wav, mp3, ogg.
+* *end_of_silence*: Maximum duration of silence, in seconds. 0 for no limit.
+* *end_of_key*: DTMF input to terminate recording. none, any, \*, #.
+* *duration*: Maximum duration of the recording, in seconds. 0 for no limit.
+* *beep_start*: Play beep when recording begins
 
 Example
 +++++++
@@ -355,9 +355,9 @@ Parameters
         }
     }
 
-* text: Text to speech. SSML(https://cloud.google.com/text-to-speech/docs/ssml) supported.
-* gender: male/female.
-* language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).
+* *text*: Text to speech. SSML(https://cloud.google.com/text-to-speech/docs/ssml) supported.
+* *gender*: male/female.
+* *language*: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).
 
 Example
 +++++++
