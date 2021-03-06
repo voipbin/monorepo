@@ -43,6 +43,38 @@ var doc = `{
                 }
             }
         },
+        "/v1.0/available_numbers": {
+            "get": {
+                "description": "get available numbers of the country",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List available numbers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The ISO country code",
+                        "name": "country_code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyAvailableNumbersGET"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/calls": {
             "get": {
                 "description": "get calls of the user",
@@ -94,7 +126,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/call.Call"
+                            "$ref": "#/definitions/models.Call"
                         }
                     }
                 }
@@ -127,7 +159,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/call.Call"
+                            "$ref": "#/definitions/models.Call"
                         }
                     }
                 }
@@ -151,7 +183,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/call.Call"
+                            "$ref": "#/definitions/models.Call"
                         }
                     }
                 }
@@ -222,7 +254,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/conference.Conference"
+                            "$ref": "#/definitions/models.Conference"
                         }
                     }
                 }
@@ -255,7 +287,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/conference.Conference"
+                            "$ref": "#/definitions/models.Conference"
                         }
                     }
                 }
@@ -300,7 +332,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.Domain"
+                                "$ref": "#/definitions/models.Domain"
                             }
                         }
                     }
@@ -316,7 +348,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.Domain"
+                            "$ref": "#/definitions/models.Domain"
                         }
                     }
                 }
@@ -349,7 +381,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.Domain"
+                            "$ref": "#/definitions/models.Domain"
                         }
                     }
                 }
@@ -364,7 +396,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.Domain"
+                            "$ref": "#/definitions/models.Domain"
                         }
                     }
                 }
@@ -407,7 +439,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/extension.Extension"
+                            "$ref": "#/definitions/models.Extension"
                         }
                     }
                 }
@@ -426,7 +458,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/extension.Extension"
+                                "$ref": "#/definitions/models.Extension"
                             }
                         }
                     }
@@ -442,7 +474,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/extension.Extension"
+                            "$ref": "#/definitions/models.Extension"
                         }
                     }
                 }
@@ -459,7 +491,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/extension.Extension"
+                            "$ref": "#/definitions/models.Extension"
                         }
                     }
                 }
@@ -488,7 +520,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/flow.Flow"
+                                "$ref": "#/definitions/models.Flow"
                             }
                         }
                     }
@@ -504,7 +536,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/flow.Flow"
+                            "$ref": "#/definitions/models.Flow"
                         }
                     }
                 }
@@ -537,7 +569,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/flow.Flow"
+                            "$ref": "#/definitions/models.Flow"
                         }
                     }
                 }
@@ -552,7 +584,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/flow.Flow"
+                            "$ref": "#/definitions/models.Flow"
                         }
                     }
                 }
@@ -565,6 +597,132 @@ var doc = `{
                 "summary": "Delete a existing flow.",
                 "responses": {
                     "200": {}
+                }
+            }
+        },
+        "/v1.0/numbers": {
+            "get": {
+                "description": "get order numbers of the country",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List order numbers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The ISO country code",
+                        "name": "country_code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyNumbersGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new number and returns detail created number info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new number and returns detail created number info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Number"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/numbers/{id}": {
+            "get": {
+                "description": "get order number of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get order number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the order number",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Number"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new number and returns detail created number info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new number and returns detail created number info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Number"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete order number of the given id and returns deleted item.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete order number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the order number",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Number"
+                        }
+                    }
                 }
             }
         },
@@ -622,7 +780,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/recording.Recording"
+                            "$ref": "#/definitions/models.Recording"
                         }
                     }
                 }
@@ -630,7 +788,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "action.Action": {
+        "models.Action": {
             "type": "object",
             "properties": {
                 "id": {
@@ -644,24 +802,30 @@ var doc = `{
                 }
             }
         },
-        "call.Address": {
+        "models.AvailableNumber": {
             "type": "object",
             "properties": {
-                "name": {
-                    "description": "Name.",
+                "country": {
                     "type": "string"
                 },
-                "target": {
-                    "description": "Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).",
+                "features": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "number": {
                     "type": "string"
                 },
-                "type": {
-                    "description": "Type of address. must be one of [\"sip\", \"tel\"].",
+                "postal_code": {
+                    "type": "string"
+                },
+                "region": {
                     "type": "string"
                 }
             }
         },
-        "call.Call": {
+        "models.Call": {
             "type": "object",
             "properties": {
                 "chained_call_ids": {
@@ -678,7 +842,7 @@ var doc = `{
                 "destination": {
                     "description": "Destination info",
                     "type": "object",
-                    "$ref": "#/definitions/call.Address"
+                    "$ref": "#/definitions/models.CallAddress"
                 },
                 "direction": {
                     "description": "Call's direction.",
@@ -718,7 +882,7 @@ var doc = `{
                 "source": {
                     "description": "Source info",
                     "type": "object",
-                    "$ref": "#/definitions/call.Address"
+                    "$ref": "#/definitions/models.CallAddress"
                 },
                 "status": {
                     "description": "Call's status.",
@@ -754,7 +918,24 @@ var doc = `{
                 }
             }
         },
-        "conference.Conference": {
+        "models.CallAddress": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Name.",
+                    "type": "string"
+                },
+                "target": {
+                    "description": "Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Type of address. must be one of [\"sip\", \"tel\"].",
+                    "type": "string"
+                }
+            }
+        },
+        "models.Conference": {
             "type": "object",
             "properties": {
                 "call_ids": {
@@ -813,7 +994,7 @@ var doc = `{
                 }
             }
         },
-        "domain.Domain": {
+        "models.Domain": {
             "type": "object",
             "properties": {
                 "detail": {
@@ -847,7 +1028,7 @@ var doc = `{
                 }
             }
         },
-        "extension.Extension": {
+        "models.Extension": {
             "type": "object",
             "properties": {
                 "detail": {
@@ -882,14 +1063,14 @@ var doc = `{
                 }
             }
         },
-        "flow.Flow": {
+        "models.Flow": {
             "type": "object",
             "properties": {
                 "actions": {
                     "description": "Actions",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/action.Action"
+                        "$ref": "#/definitions/models.Action"
                     }
                 },
                 "detail": {
@@ -918,7 +1099,43 @@ var doc = `{
                 }
             }
         },
-        "recording.Recording": {
+        "models.Number": {
+            "type": "object",
+            "properties": {
+                "emergency_enabled": {
+                    "type": "boolean"
+                },
+                "flow_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "t38_enabled": {
+                    "type": "boolean"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_purchase": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Recording": {
             "type": "object",
             "properties": {
                 "filename": {
@@ -969,19 +1186,19 @@ var doc = `{
                 "actions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/action.Action"
+                        "$ref": "#/definitions/models.Action"
                     }
                 },
                 "destination": {
                     "type": "object",
-                    "$ref": "#/definitions/call.Address"
+                    "$ref": "#/definitions/models.CallAddress"
                 },
                 "event_url": {
                     "type": "string"
                 },
                 "source": {
                     "type": "object",
-                    "$ref": "#/definitions/call.Address"
+                    "$ref": "#/definitions/models.CallAddress"
                 }
             }
         },
@@ -1002,6 +1219,17 @@ var doc = `{
                 }
             }
         },
+        "response.BodyAvailableNumbersGET": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AvailableNumber"
+                    }
+                }
+            }
+        },
         "response.BodyCallsGET": {
             "type": "object",
             "properties": {
@@ -1011,7 +1239,21 @@ var doc = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/call.Call"
+                        "$ref": "#/definitions/models.Call"
+                    }
+                }
+            }
+        },
+        "response.BodyNumbersGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Number"
                     }
                 }
             }
@@ -1025,7 +1267,7 @@ var doc = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/recording.Recording"
+                        "$ref": "#/definitions/models.Recording"
                     }
                 }
             }
