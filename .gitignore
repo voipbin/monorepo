@@ -1,0 +1,4 @@
+vendor
+webhook-manager
+.vscode
+!cmd/*
