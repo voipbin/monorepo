@@ -170,6 +170,20 @@ func (mr *MockRabbitMockRecorder) PublishExchangeDelayedRequest(exchange, key, r
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishExchangeDelayedRequest", reflect.TypeOf((*MockRabbit)(nil).PublishExchangeDelayedRequest), exchange, key, req, delay)
 }
 
+// PublishExchangeEvent mocks base method
+func (m *MockRabbit) PublishExchangeEvent(exchange, key string, evt *Event) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishExchangeEvent", exchange, key, evt)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishExchangeEvent indicates an expected call of PublishExchangeEvent
+func (mr *MockRabbitMockRecorder) PublishExchangeEvent(exchange, key, evt interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishExchangeEvent", reflect.TypeOf((*MockRabbit)(nil).PublishExchangeEvent), exchange, key, evt)
+}
+
 // PublishExchangeRequest mocks base method
 func (m *MockRabbit) PublishExchangeRequest(exchange, key string, req *Request) error {
 	m.ctrl.T.Helper()
