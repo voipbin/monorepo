@@ -28,9 +28,10 @@ type Response struct {
 
 // Event struct
 type Event struct {
-	Type     EventType       `json:"type"`
-	DataType string          `json:"data_type"`
-	Data     json.RawMessage `json:"data,omitempty"`
+	Type      EventType       `json:"type"`
+	Publisher string          `json:"publisher"`
+	DataType  string          `json:"data_type"`
+	Data      json.RawMessage `json:"data,omitempty"`
 }
 
 // RequestMethod type
