@@ -131,6 +131,15 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *Request)
 	}
 }
 
+// PublishExchangeEvent sends a message to rabbitmq
+func (r *rabbit) PublishExchangeEvent(exchange, key string, evt *Event) error {
+	message, err := json.Marshal(evt)
+	if err != nil {
+		return err
+	}
+	return r.publishExchange(exchange, key, message, nil)
+}
+
 // PublishMessage sends a message to rabbitmq
 func (r *rabbit) PublishExchangeRequest(exchange, key string, req *Request) error {
 	message, err := json.Marshal(req)
