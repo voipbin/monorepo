@@ -68,6 +68,7 @@ type Rabbit interface {
 	ExchangeDeclareForDelay(name string, durable, autoDelete, internal, noWait bool) error
 
 	PublishExchangeDelayedRequest(exchange, key string, req *Request, delay int) error
+	PublishExchangeEvent(exchange, key string, evt *Event) error
 	PublishExchangeRequest(exchange, key string, req *Request) error
 	PublishEvent(queueName string, evt *Event) error
 	PublishRequest(queueName string, req *Request) error
