@@ -48,6 +48,9 @@ var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 func main() {
+
+	logrus.Info("Starting webhook-manager.")
+
 	// connect to database
 	sqlDB, err := sql.Open("mysql", *dbDSN)
 	if err != nil {
@@ -82,7 +85,7 @@ func init() {
 	// init prometheus setting
 	initProm(*promEndpoint, *promListenAddr)
 
-	logrus.Info("init finished.")
+	logrus.Info("Init finished.")
 }
 
 // signalHandler catches signals and set the done
