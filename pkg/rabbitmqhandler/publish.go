@@ -149,13 +149,26 @@ func (r *rabbit) PublishExchangeRequest(exchange, key string, req *Request) erro
 	return r.publishExchange(exchange, key, message, nil)
 }
 
-// PublishExchangeDelayedRequest sends a delayed request to rabbitmq
+// PublishExchangeDelayedRequest sends a delayed request to the rabbitmq exchange
 // delay is ms.
 func (r *rabbit) PublishExchangeDelayedRequest(exchange, key string, req *Request, delay int) error {
 	headers := make(amqp.Table)
 	headers["x-delay"] = delay
 
 	message, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+	return r.publishExchange(exchange, key, message, headers)
+}
+
+// PublishExchangeDelayedEvent sends a delayed event to the rabbitmq exchange
+// delay is ms.
+func (r *rabbit) PublishExchangeDelayedEvent(exchange, key string, evt *Event, delay int) error {
+	headers := make(amqp.Table)
+	headers["x-delay"] = delay
+
+	message, err := json.Marshal(evt)
 	if err != nil {
 		return err
 	}
