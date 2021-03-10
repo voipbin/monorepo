@@ -1,6 +1,6 @@
-package eventhandler
+package arihandler
 
-//go:generate mockgen -destination ./mock_eventhandler_eventhandler.go -package eventhandler -source ./main.go EventHandler
+//go:generate mockgen -destination ./mock_arihandler_arihandler.go -package arihandler -source ./main.go EventHandler
 
 import (
 	"context"

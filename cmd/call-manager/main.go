@@ -14,12 +14,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arihandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/eventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -36,8 +37,8 @@ var rabbitQueueTTSRequest = flag.String("rabbit_queue_tts", "bin-manager.tts-man
 var rabbitQueueRegistrarRequest = flag.String("rabbit_queue_registrar", "bin-manager.registrar-manager.request", "rabbitmq queue name for registrar request")
 var rabbitQueueNumberRequest = flag.String("rabbit_queue_number", "bin-manager.number-manager.request", "rabbitmq queue name for number request")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.call-manager.event", "rabbitmq queue name for event notify")
 
+var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.call-manager.event", "rabbitmq exchange name for event notify")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -157,12 +158,13 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueNumberRequest,
 	)
 
-	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)
-	eventHandler := eventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, callHandler)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, *rabbitExchangeDelay, *rabbitExchangeNotify)
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
+	eventHandler := arihandler.NewEventHandler(rabbitSock, db, cache, reqHandler, callHandler)
 
 	// run
 	if err := eventHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
-		logrus.Errorf("Could not run the eventhandler correctly. err: %v", err)
+		logrus.Errorf("Could not run the arihandler correctly. err: %v", err)
 	}
 
 	return nil
@@ -188,7 +190,8 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueNumberRequest,
 	)
 
-	callHandler := callhandler.NewCallHandler(reqHandler, db, cache)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, *rabbitExchangeDelay, *rabbitExchangeNotify)
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
 	conferenceHandler := conferencehandler.NewConferHandler(reqHandler, db, cache)
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler, conferenceHandler)
 

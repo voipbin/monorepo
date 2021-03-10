@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
@@ -43,10 +44,11 @@ type CallHandler interface {
 
 // callHandler structure for service handle
 type callHandler struct {
-	reqHandler  requesthandler.RequestHandler
-	db          dbhandler.DBHandler
-	cache       cachehandler.CacheHandler
-	confHandler conferencehandler.ConferenceHandler
+	reqHandler    requesthandler.RequestHandler
+	db            dbhandler.DBHandler
+	cache         cachehandler.CacheHandler
+	confHandler   conferencehandler.ConferenceHandler
+	notifyHandler notifyhandler.NotifyHandler
 }
 
 // contextType
@@ -98,13 +100,14 @@ func init() {
 }
 
 // NewCallHandler returns new service handler
-func NewCallHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) CallHandler {
+func NewCallHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) CallHandler {
 
 	h := &callHandler{
-		reqHandler:  r,
-		db:          db,
-		cache:       cache,
-		confHandler: conferencehandler.NewConferHandler(r, db, cache),
+		reqHandler:    r,
+		notifyHandler: n,
+		db:            db,
+		cache:         cache,
+		confHandler:   conferencehandler.NewConferHandler(r, db, cache),
 	}
 
 	return h

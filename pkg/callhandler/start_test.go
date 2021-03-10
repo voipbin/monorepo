@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/nmnumber"
 )
@@ -57,13 +58,15 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -107,6 +110,8 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+			mockNotify.EXPECT().CallCreate(tt.call)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
@@ -124,13 +129,15 @@ func TestTypeConferenceStart(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -175,6 +182,8 @@ func TestTypeConferenceStart(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.conference, nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutConference).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+			mockNotify.EXPECT().CallCreate(tt.call)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 
@@ -193,13 +202,15 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -228,6 +239,9 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 				ChannelID:  "48a5446a-e3b1-11ea-b837-83239d9eb45f",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
+				Destination: call.Address{
+					Target: string(action.TypeAnswer),
+				},
 			},
 		},
 	}
@@ -249,6 +263,8 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.All()).Return(tt.call, nil)
+			mockNotify.EXPECT().CallCreate(tt.call)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 
@@ -266,13 +282,15 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -302,6 +320,9 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 				ChannelID:  "b1d1bf90-d2b3-11ea-8a02-035ed6a04322",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
+				Destination: call.Address{
+					Target: string(action.TypeStreamEcho),
+				},
 			},
 			&action.Action{
 				ID:     action.IDBegin,
@@ -316,6 +337,8 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+			mockNotify.EXPECT().CallCreate(tt.call)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
@@ -332,13 +355,15 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -368,6 +393,9 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 				ChannelID:  "3098c01e-dcee-11ea-b8a3-4be6fd851ab3",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
+				Destination: call.Address{
+					Target: string(action.TypeConferenceJoin),
+				},
 			},
 			&action.Action{
 				ID:     action.IDBegin,
@@ -382,6 +410,8 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+			mockNotify.EXPECT().CallCreate(tt.call)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
@@ -397,13 +427,15 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -433,6 +465,9 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 				ChannelID:  "b6721d82-e71d-11ea-a38d-5fa75c625072",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
+				Destination: call.Address{
+					Target: string(action.TypePlay),
+				},
 			},
 			&action.Action{
 				ID:     action.IDBegin,
@@ -448,6 +483,8 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+			mockNotify.EXPECT().CallCreate(tt.call)
 			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
@@ -463,13 +500,15 @@ func TestTypeFlowStart(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -497,8 +536,16 @@ func TestTypeFlowStart(t *testing.T) {
 				ID:         uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
 				AsteriskID: "80:fa:5b:5e:da:81",
 				ChannelID:  "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
+				FlowID:     uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
+				Destination: call.Address{
+					Type:   call.AddressTypeTel,
+					Target: "+123456789",
+				},
+				Action: action.Action{
+					ID: action.IDBegin,
+				},
 			},
 			&nmnumber.Number{
 				ID:     uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
@@ -514,6 +561,8 @@ func TestTypeFlowStart(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutFlow).Return(nil)
 			mockReq.EXPECT().NMV1NumbersNumberGet(tt.channel.DestinationNumber).Return(tt.numb, nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+			mockNotify.EXPECT().CallCreate(tt.call)
 			mockReq.EXPECT().FlowActvieFlowPost(gomock.Any(), tt.numb.FlowID).Return(nil, nil)
 			mockReq.EXPECT().FlowActvieFlowNextGet(gomock.Any(), action.IDBegin).Return(&action.Action{Type: action.TypeHangup}, nil)
 

@@ -53,18 +53,13 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 	}
 
 	// create a call
-	if err := h.createCall(ctx, cTmp); err != nil {
-		log.Errorf("Could not create a call for outgoing call. err: %v", err)
-		return nil, err
-	}
-
-	// get created call
-	c, err := h.db.CallGet(ctx, id)
+	c, err := h.createCall(ctx, cTmp)
 	if err != nil {
-		log.Errorf("Could not get a created call for outgoing call. err: %v", err)
+		log.Errorf("Could not create a call for outgoing call. err: %v", err)
 		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, getCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
+
 		return nil, err
 	}
 

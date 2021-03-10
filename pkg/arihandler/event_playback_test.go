@@ -1,4 +1,4 @@
-package eventhandler
+package arihandler
 
 import (
 	"fmt"
