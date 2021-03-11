@@ -9,14 +9,92 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmconference"
 )
+
+func TestActiveFlowCreate(t *testing.T) {
+	// we can't test this function.
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
+		name         string
+		flow         *flow.Flow
+		callID       uuid.UUID
+		expectActive *activeflow.ActiveFlow
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&flow.Flow{
+				ID:      uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				Actions: []action.Action{},
+			},
+			uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
+			&activeflow.ActiveFlow{
+				CallID: uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
+				FlowID: uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				Actions: []action.Action{},
+			},
+		},
+		{
+			"webhoook uri",
+			&flow.Flow{
+				ID:         uuid.FromStringOrNil("2c30890e-8233-11eb-a29c-4f8994729ffe"),
+				WebhookURI: "https://test.com/webhook_uri",
+				Actions:    []action.Action{},
+			},
+			uuid.FromStringOrNil("308ddd4e-8233-11eb-9079-2ba011592aa6"),
+			&activeflow.ActiveFlow{
+				CallID:     uuid.FromStringOrNil("308ddd4e-8233-11eb-9079-2ba011592aa6"),
+				FlowID:     uuid.FromStringOrNil("2c30890e-8233-11eb-a29c-4f8994729ffe"),
+				WebhookURI: "https://test.com/webhook_uri",
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				Actions: []action.Action{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
+			mockDB.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectActive).Return(nil)
+			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.expectActive, nil)
+
+			// mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&activeflow.ActiveFlow{}, nil)
+			// mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+			res, err := h.ActiveFlowCreate(ctx, tt.callID, tt.flow.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectActive) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectActive, res)
+			}
+		})
+	}
+}
 
 func TestActiveFlowUpdateCurrentAction(t *testing.T) {
 	mc := gomock.NewController(t)
@@ -86,11 +164,11 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				Actions: []action.Action{
-					action.Action{
+					{
 						ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
 						Type: action.TypeAnswer,
 					},
-					action.Action{
+					{
 						ID:   uuid.FromStringOrNil("c9fffcf4-0737-11eb-a28f-2bc0bae5eeaf"),
 						Type: action.TypeAnswer,
 					},
@@ -125,11 +203,11 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 					ID: action.IDStart,
 				},
 				Actions: []action.Action{
-					action.Action{
+					{
 						ID:   uuid.FromStringOrNil("97f96f9c-08a4-11eb-8ea0-57d38a96eca3"),
 						Type: action.TypeAnswer,
 					},
-					action.Action{
+					{
 						ID:   uuid.FromStringOrNil("a9b365ee-08a4-11eb-87c5-e7b9e9ea9de3"),
 						Type: action.TypeAnswer,
 					},
@@ -218,45 +296,45 @@ func TestAppendActionsAfterID(t *testing.T) {
 		{
 			"normal",
 			[]action.Action{
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("c0a54954-0a96-11eb-80b2-8b6ef3a21db9"),
 				},
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("ce32b80e-0a96-11eb-9ca3-3f423a830f93"),
 				},
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("ce32b80e-0a96-11eb-9ca3-3f423a830f93"),
 				},
 			},
 			[]action.Action{
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("e14c605c-0a96-11eb-9542-233abdd04f35"),
 				},
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("e1858a8a-0a96-11eb-bf05-ab02488632d7"),
 				},
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("e1b6e8d2-0a96-11eb-be8e-131d2f0bf1fe"),
 				},
 			},
 
 			[]action.Action{
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("c0a54954-0a96-11eb-80b2-8b6ef3a21db9"),
 				},
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("ce32b80e-0a96-11eb-9ca3-3f423a830f93"),
 				},
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("e14c605c-0a96-11eb-9542-233abdd04f35"),
 				},
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("e1858a8a-0a96-11eb-bf05-ab02488632d7"),
 				},
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("e1b6e8d2-0a96-11eb-be8e-131d2f0bf1fe"),
 				},
-				action.Action{
+				{
 					ID: uuid.FromStringOrNil("ce32b80e-0a96-11eb-9ca3-3f423a830f93"),
 				},
 			},
@@ -322,7 +400,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
 				},
 				Actions: []action.Action{
-					action.Action{
+					{
 						ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
 						Type:   action.TypeConnect,
 						Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
@@ -342,7 +420,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 				Target: "+123456789",
 			},
 			[]cmcall.Address{
-				cmcall.Address{
+				{
 					Type:   cmcall.AddressTypeTel,
 					Target: "+987654321",
 				},
@@ -366,7 +444,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
 				},
 				Actions: []action.Action{
-					action.Action{
+					{
 						ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
 						Type:   action.TypeConnect,
 						Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
@@ -386,11 +464,11 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 				Target: "+123456789",
 			},
 			[]cmcall.Address{
-				cmcall.Address{
+				{
 					Type:   cmcall.AddressTypeTel,
 					Target: "+987654321",
 				},
-				cmcall.Address{
+				{
 					Type:   cmcall.AddressTypeTel,
 					Target: "+9876543210",
 				},
@@ -414,7 +492,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
 				},
 				Actions: []action.Action{
-					action.Action{
+					{
 						ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
 						Type:   action.TypeConnect,
 						Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
@@ -434,11 +512,11 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 				Target: "+123456789",
 			},
 			[]cmcall.Address{
-				cmcall.Address{
+				{
 					Type:   cmcall.AddressTypeTel,
 					Target: "+987654321",
 				},
-				cmcall.Address{
+				{
 					Type:   cmcall.AddressTypeTel,
 					Target: "+9876543210",
 				},
@@ -500,12 +578,12 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 					Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
 				},
 				Actions: []action.Action{
-					action.Action{
+					{
 						ID:     uuid.FromStringOrNil("005a71ac-0c25-11eb-b9ba-ffa78e01ffc9"),
 						Type:   action.TypeConnect,
 						Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
 					},
-					action.Action{
+					{
 						ID:   uuid.FromStringOrNil("686ece64-0c25-11eb-a025-ffd0ed1b73d2"),
 						Type: action.TypeEcho,
 					},

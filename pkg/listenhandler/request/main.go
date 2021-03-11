@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // V1DataActiveFlowsPost is
@@ -42,6 +42,8 @@ type V1DataFlowPost struct {
 type V1DataFlowIDPut struct {
 	Name   string `json:"name"`   // name
 	Detail string `json:"detail"` // detail
+
+	WebhookURI string `json:"webhook_uri"` // webhook destination
 
 	Actions []action.Action `json:"actions"` // actions
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
 
 // ActiveFlowSetToCache sets the given callflow to the cache

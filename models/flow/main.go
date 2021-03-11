@@ -5,7 +5,8 @@ import (
 	"reflect"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // Flow struct
@@ -16,7 +17,8 @@ type Flow struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
-	Persist bool `json:"persist"`
+	Persist    bool   `json:"persist"`
+	WebhookURI string `json:"webhook_uri"`
 
 	Actions []action.Action `json:"actions"`
 

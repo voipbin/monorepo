@@ -8,9 +8,9 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler"
 )
 

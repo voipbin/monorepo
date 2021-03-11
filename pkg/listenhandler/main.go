@@ -204,6 +204,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "notfound"
 	}
 
+	logrus.WithFields(
+		logrus.Fields{
+			"response": response,
+			"err":      err,
+		}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
+
 	return response, err
 }
 

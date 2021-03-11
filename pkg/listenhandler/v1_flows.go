@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/request"
 )
 
@@ -70,10 +70,11 @@ func (h *listenHandler) v1FlowsIDPut(req *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// create a update flow
 	f := &flow.Flow{
-		ID:      flowID,
-		Name:    reqData.Name,
-		Detail:  reqData.Detail,
-		Actions: reqData.Actions,
+		ID:         flowID,
+		Name:       reqData.Name,
+		Detail:     reqData.Detail,
+		WebhookURI: reqData.WebhookURI,
+		Actions:    reqData.Actions,
 	}
 
 	flow, err := h.flowHandler.FlowUpdate(ctx, f)

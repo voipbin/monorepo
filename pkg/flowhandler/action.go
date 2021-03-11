@@ -11,8 +11,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
 )
 
 // actionPatchGet gets the action from the remote.

@@ -11,9 +11,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
 // DBHandler interface for call_manager database handle

@@ -8,8 +8,8 @@ import (
 	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
-	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	reflect "reflect"
 )
 

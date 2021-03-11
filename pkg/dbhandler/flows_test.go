@@ -9,9 +9,9 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
 func TestFlowCreate(t *testing.T) {
@@ -166,12 +166,14 @@ func TestFlowGetsByUserID(t *testing.T) {
 					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
 					UserID:   1,
 					Name:     "test2",
+					Persist:  true,
 					TMCreate: "2020-04-18T03:23:17.995000",
 				},
 				{
 					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
 					UserID:   1,
 					Name:     "test1",
+					Persist:  true,
 					TMCreate: "2020-04-18T03:22:17.995000",
 				},
 			},
@@ -202,7 +204,7 @@ func TestFlowGetsByUserID(t *testing.T) {
 	}
 }
 
-func TestFlowSetData(t *testing.T) {
+func TestFlowUpdate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -276,6 +278,36 @@ func TestFlowSetData(t *testing.T) {
 					{
 						ID:   uuid.FromStringOrNil("d158cc12-6761-11eb-b60e-23b7402d1c55"),
 						Type: action.TypeEcho,
+					},
+				},
+			},
+		},
+		{
+			"webhook uri update",
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("6c756dba-822c-11eb-89a4-b34c6cca8de3"),
+			},
+			&flow.Flow{
+				ID:         uuid.FromStringOrNil("6c756dba-822c-11eb-89a4-b34c6cca8de3"),
+				Name:       "test name",
+				Detail:     "test detail",
+				WebhookURI: "https://test.com/webhook_uri",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("7189632e-822c-11eb-8dd1-037145055acf"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&flow.Flow{
+				ID:         uuid.FromStringOrNil("6c756dba-822c-11eb-89a4-b34c6cca8de3"),
+				Name:       "test name",
+				Detail:     "test detail",
+				WebhookURI: "https://test.com/webhook_uri",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("7189632e-822c-11eb-8dd1-037145055acf"),
+						Type: action.TypeAnswer,
 					},
 				},
 			},

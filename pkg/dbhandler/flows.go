@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 const (
@@ -19,6 +19,9 @@ const (
 
 		name,
 		detail,
+
+		persist,
+		webhook_uri,
 
 		actions,
 
@@ -41,6 +44,9 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 
 		&res.Name,
 		&res.Detail,
+
+		&res.Persist,
+		&res.WebhookURI,
 
 		&actions,
 
@@ -114,11 +120,15 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 		name,
 		detail,
 
+		persist,
+		webhook_uri,
+
 		actions,
 
 		tm_create
 	) values(
 		?, ?, ?, ?,
+		?, ?,
 		?,
 		?
 		)`
@@ -139,6 +149,9 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
 		f.Name,
 		f.Detail,
+
+		f.Persist,
+		f.WebhookURI,
 
 		tmpActions,
 
@@ -246,6 +259,7 @@ func (h *handler) FlowUpdate(ctx context.Context, f *flow.Flow) error {
 	update flows set
 		name = ?,
 		detail = ?,
+		webhook_uri = ?,
 		actions = ?,
 		tm_update = ?
 	where
@@ -257,7 +271,7 @@ func (h *handler) FlowUpdate(ctx context.Context, f *flow.Flow) error {
 		return fmt.Errorf("could not marshal actions. FlowUpdate. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, f.Name, f.Detail, tmpActions, getCurTime(), f.ID.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, f.Name, f.Detail, f.WebhookURI, tmpActions, getCurTime(), f.ID.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. FlowUpdate. err: %v", err)
 	}
 
