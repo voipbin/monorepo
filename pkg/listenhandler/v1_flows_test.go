@@ -8,10 +8,10 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
 )
 
 func TestFlowsPost(t *testing.T) {
@@ -212,7 +212,54 @@ func TestV1FlowsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","user_id":0,"name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","user_id":0,"name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+		{
+			"persist true",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows/53b8aeb4-822b-11eb-82fe-a3c14b4e38de",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+				Data:     nil,
+			},
+			&flow.Flow{
+				ID:      uuid.FromStringOrNil("53b8aeb4-822b-11eb-82fe-a3c14b4e38de"),
+				Persist: true,
+				Actions: []action.Action{
+					{
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","user_id":0,"name":"","detail":"","persist":true,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+		{
+			"webhook uri set",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows/53b8aeb4-822b-11eb-82fe-a3c14b4e38de",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+				Data:     nil,
+			},
+			&flow.Flow{
+				ID:         uuid.FromStringOrNil("53b8aeb4-822b-11eb-82fe-a3c14b4e38de"),
+				Persist:    true,
+				WebhookURI: "http://pchero21.com/test_webhook",
+				Actions: []action.Action{
+					{
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","user_id":0,"name":"","detail":"","persist":true,"webhook_uri":"http://pchero21.com/test_webhook","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -227,7 +274,7 @@ func TestV1FlowsIDGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -295,7 +342,44 @@ func TestV1FlowsIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","user_id":0,"name":"update name","detail":"update detail","persist":false,"actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","user_id":0,"name":"update name","detail":"update detail","persist":false,"webhook_uri":"","actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+		{
+			"webhook uri update",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows/2fea2826-822d-11eb-8bcc-97bfc5739d38",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"update name","detail":"update detail","webhook_uri":"https://test.com/update_webhook","actions":[{"type":"answer"}]}`),
+			},
+			&flow.Flow{
+				ID:         uuid.FromStringOrNil("2fea2826-822d-11eb-8bcc-97bfc5739d38"),
+				Name:       "update name",
+				Detail:     "update detail",
+				WebhookURI: "https://test.com/update_webhook",
+				Actions: []action.Action{
+					{
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&flow.Flow{
+				ID:         uuid.FromStringOrNil("2fea2826-822d-11eb-8bcc-97bfc5739d38"),
+				Name:       "update name",
+				Detail:     "update detail",
+				WebhookURI: "https://test.com/update_webhook",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("3aa85b98-822d-11eb-9020-e7d103dc0571"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"2fea2826-822d-11eb-8bcc-97bfc5739d38","user_id":0,"name":"update name","detail":"update detail","persist":false,"webhook_uri":"https://test.com/update_webhook","actions":[{"id":"3aa85b98-822d-11eb-9020-e7d103dc0571","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -425,7 +509,7 @@ func TestV1FlowsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"13a7aeaa-0c4d-11eb-8210-073d8779e386","user_id":0,"name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""},{"id":"3645134e-0c4d-11eb-a2da-4bb8abe75c48","user_id":0,"name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"13a7aeaa-0c4d-11eb-8210-073d8779e386","user_id":0,"name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""},{"id":"3645134e-0c4d-11eb-a2da-4bb8abe75c48","user_id":0,"name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -457,7 +541,7 @@ func TestV1FlowsGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

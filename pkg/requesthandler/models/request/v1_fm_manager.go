@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // FMV1DataFlowPost is

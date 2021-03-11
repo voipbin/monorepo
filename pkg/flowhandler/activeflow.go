@@ -8,9 +8,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmconference"
 )
@@ -19,7 +19,7 @@ import (
 func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
 
 	// get flow
-	flow, err := h.db.FlowGet(ctx, flowID)
+	f, err := h.db.FlowGet(ctx, flowID)
 	if err != nil {
 		logrus.Errorf("Could not get the flow. err: %v", err)
 		return nil, err
@@ -28,15 +28,16 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 	// create activeflow
 	curTime := getCurTime()
 	tmpAF := &activeflow.ActiveFlow{
-		CallID: callID,
-		FlowID: flowID,
-		UserID: flow.UserID,
+		CallID:     callID,
+		FlowID:     flowID,
+		UserID:     f.UserID,
+		WebhookURI: f.WebhookURI,
 
 		CurrentAction: action.Action{
 			ID: action.IDStart,
 		},
 
-		Actions: flow.Actions,
+		Actions: f.Actions,
 
 		TMCreate: curTime,
 		TMUpdate: curTime,
@@ -292,7 +293,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	tmpCF := &flow.Flow{
 		UserID: cf.UserID,
 		Actions: []action.Action{
-			action.Action{
+			{
 				Type:   action.TypeConferenceJoin,
 				Option: optString,
 			},
