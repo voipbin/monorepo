@@ -35,8 +35,6 @@ def upgrade():
             name varchar(255),
             detail text,
 
-            persist bool,
-
             actions json,
 
             -- timestamps
