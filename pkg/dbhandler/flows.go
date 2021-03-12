@@ -152,7 +152,7 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
 		tmpActions,
 
-		f.TMCreate,
+		getCurTime(),
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. FlowCreate. err: %v", err)

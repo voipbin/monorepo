@@ -37,10 +37,10 @@ func TestFlowCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
 
-			h.FlowCreate(context.Background(), &flow.Flow{}, true)
+			h.FlowCreate(context.Background(), &flow.Flow{})
 
 		})
 	}
@@ -130,7 +130,8 @@ func TestFlowCreatePersistTrue(t *testing.T) {
 		{
 			"normal",
 			&flow.Flow{
-				ID: uuid.FromStringOrNil("8bf11004-ef06-11ea-91ed-0ba639a6618b"),
+				ID:      uuid.FromStringOrNil("8bf11004-ef06-11ea-91ed-0ba639a6618b"),
+				Persist: true,
 			},
 		},
 	}
@@ -139,10 +140,10 @@ func TestFlowCreatePersistTrue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowCreate(gomock.Any(), tt.flow).Return(nil)
-			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
+			mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.flow, nil)
 
-			h.FlowCreate(ctx, tt.flow, true)
+			h.FlowCreate(ctx, tt.flow)
 		})
 	}
 }
@@ -166,7 +167,7 @@ func TestFlowCreatePersistFalse(t *testing.T) {
 		{
 			"normal",
 			&flow.Flow{
-				ID: uuid.FromStringOrNil("ebb1b7a0-ef06-11ea-900b-d7f31a9b7baa"),
+				Persist: false,
 			},
 		},
 	}
@@ -175,10 +176,10 @@ func TestFlowCreatePersistFalse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowSetToCache(gomock.Any(), tt.flow).Return(nil)
-			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
+			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.flow, nil)
 
-			h.FlowCreate(ctx, tt.flow, false)
+			h.FlowCreate(ctx, tt.flow)
 		})
 	}
 }
