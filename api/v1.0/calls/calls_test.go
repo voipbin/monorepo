@@ -32,10 +32,11 @@ func TestCallsPOST(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name string
-		user models.User
-		req  request.BodyCallsPOST
-		flow *models.Flow
+		name    string
+		user    models.User
+		req     request.BodyCallsPOST
+		reqFlow *models.Flow
+		resFlow *models.Flow
 	}
 
 	tests := []test{
@@ -56,7 +57,48 @@ func TestCallsPOST(t *testing.T) {
 				Actions: []models.Action{},
 			},
 			&models.Flow{
-				ID: uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
+				Name:    "temp",
+				Detail:  "tmp outbound flow",
+				Actions: []models.Action{},
+				Persist: false,
+			},
+			&models.Flow{
+				ID:      uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
+				Name:    "temp",
+				Detail:  "tmp outbound flow",
+				Actions: []models.Action{},
+			},
+		},
+		{
+			"with webhook",
+			models.User{
+				ID: 1,
+			},
+			request.BodyCallsPOST{
+				WebhookURI: "https://test.com/webhook",
+				Source: models.CallAddress{
+					Type:   models.CallAddressTypeSIP,
+					Target: "source@test.voipbin.net",
+				},
+				Destination: models.CallAddress{
+					Type:   models.CallAddressTypeSIP,
+					Target: "destination@test.voipbin.net",
+				},
+				Actions: []models.Action{},
+			},
+			&models.Flow{
+				Name:       "temp",
+				Detail:     "tmp outbound flow",
+				WebhookURI: "https://test.com/webhook",
+				Actions:    []models.Action{},
+				Persist:    false,
+			},
+			&models.Flow{
+				ID:         uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
+				Name:       "temp",
+				Detail:     "tmp outbound flow",
+				WebhookURI: "https://test.com/webhook",
+				Actions:    []models.Action{},
 			},
 		},
 	}
@@ -83,8 +125,8 @@ func TestCallsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().FlowCreate(&tt.user, uuid.Nil, "temp", "tmp outbound flow", tt.req.Actions, false).Return(tt.flow, nil)
-			mockSvc.EXPECT().CallCreate(&tt.user, tt.flow.ID, tt.req.Source, tt.req.Destination).Return(nil, nil)
+			mockSvc.EXPECT().FlowCreate(&tt.user, tt.reqFlow).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().CallCreate(&tt.user, tt.resFlow.ID, tt.req.Source, tt.req.Destination).Return(nil, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -129,7 +171,7 @@ func TestCallsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -156,7 +198,7 @@ func TestCallsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"668e6ee6-f989-11ea-abca-bf1ca885b142","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"5d8167e0-f989-11ea-8b34-2b0a03c78fc5","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"61c6626a-f989-11ea-abbf-97944933fee9","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"668e6ee6-f989-11ea-abca-bf1ca885b142","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"5d8167e0-f989-11ea-8b34-2b0a03c78fc5","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"61c6626a-f989-11ea-abbf-97944933fee9","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -177,6 +219,75 @@ func TestCallsGET(t *testing.T) {
 
 			mockSvc.EXPECT().CallGets(&tt.user, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
 
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+func TestCallsIDGET(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name      string
+		user      models.User
+		resCall   *models.Call
+		expectRes string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			models.User{
+				ID: 1,
+			},
+			&models.Call{
+				ID:       uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
+				TMCreate: "2020-09-20T03:23:21.995000",
+			},
+			`{"id":"395518ca-830a-11eb-badc-b3582bc51917","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
+		},
+		{
+			"webhook",
+			models.User{
+				ID: 1,
+			},
+			&models.Call{
+				ID:         uuid.FromStringOrNil("9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353"),
+				WebhookURI: "https://test.com/tesadf",
+				TMCreate:   "2020-09-20T03:23:21.995000",
+			},
+			`{"id":"9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"https://test.com/tesadf","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			reqQuery := fmt.Sprintf("/v1.0/calls/%s", tt.resCall.ID)
+			req, _ := http.NewRequest("GET", reqQuery, nil)
+
+			mockSvc.EXPECT().CallGet(&tt.user, tt.resCall.ID).Return(tt.resCall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

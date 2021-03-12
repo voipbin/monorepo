@@ -41,7 +41,14 @@ func callsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create flow
-	flow, err := serviceHandler.FlowCreate(&u, uuid.Nil, "temp", "tmp outbound flow", requestBody.Actions, false)
+	f := &models.Flow{
+		Name:       "temp",
+		Detail:     "tmp outbound flow",
+		Actions:    requestBody.Actions,
+		Persist:    false,
+		WebhookURI: requestBody.WebhookURI,
+	}
+	flow, err := serviceHandler.FlowCreate(&u, f)
 	if err != nil {
 		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)

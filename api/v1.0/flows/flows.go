@@ -41,14 +41,21 @@ func flowsPOST(c *gin.Context) {
 
 	// create a flow
 	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
-	flow, err := serviceHandler.FlowCreate(&u, uuid.Must(uuid.NewV4()), body.Name, body.Detail, body.Actions, true)
+	f := &models.Flow{
+		Name:       body.Name,
+		Detail:     body.Detail,
+		Actions:    body.Actions,
+		Persist:    true,
+		WebhookURI: body.WebhookURI,
+	}
+	res, err := serviceHandler.FlowCreate(&u, f)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.JSON(200, flow)
+	c.JSON(200, res)
 	return
 }
 
