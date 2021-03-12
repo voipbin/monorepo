@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -320,32 +321,30 @@ func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]interfa
 		return fmt.Errorf("could not get a number info by the destination. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	// create a call
+	// create a temp call info
 	tmpCall := call.NewCallByChannel(cn, call.UserIDAdmin, call.TypeSipService, call.DirectionIncoming, data)
 	tmpCall.FlowID = numb.FlowID
-	tmpCall.Action = action.Action{
-		ID: action.IDBegin,
+
+	// create active flow
+	af, err := h.reqHandler.FlowActvieFlowPost(tmpCall.ID, numb.FlowID)
+	if err != nil {
+		af = &activeflow.ActiveFlow{}
+		log.Errorf("Could not get an active flow info. Created dummy active flow. This call will be hungup. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)
 	}
+	log.Debugf("Created an active flow. active-flow: %v", af)
+	tmpCall.WebhookURI = af.WebhookURI
+	tmpCall.Action = af.CurrentAction
+
 	c, err := h.createCall(ctx, tmpCall)
 	if err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+		return fmt.Errorf("Could not create a call. call: %s, err: %v", c.ID, err)
 	}
 	log = log.WithFields(
 		logrus.Fields{
-			"call":      c.ID,
-			"type":      c.Type,
-			"direction": c.Direction,
+			"call": c,
 		})
-	log.Debugf("Created a call. call: %v", c)
-
-	// create active flow
-	af, err := h.reqHandler.FlowActvieFlowPost(c.ID, numb.FlowID)
-	if err != nil {
-		h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
-	}
-	log.Debugf("Created an active flow. active-flow: %v", af)
+	log.Debugf("Created a call. call: %s", c.ID)
 
 	return h.ActionNext(c)
 }

@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -41,6 +42,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 		source      call.Address
 		destination call.Address
 
+		af                *activeflow.ActiveFlow
 		expectCall        *call.Call
 		expectEndpointDst string
 		expectVariables   map[string]string
@@ -63,6 +65,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Target: "testoutgoing@test.com",
 			},
 
+			&activeflow.ActiveFlow{},
 			&call.Call{
 				ID:        uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 				UserID:    1,
@@ -107,6 +110,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Target: "+123456789",
 			},
 
+			&activeflow.ActiveFlow{},
 			&call.Call{
 				ID:        uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 				UserID:    1,
@@ -136,6 +140,55 @@ func TestCreateCallOutgoing(t *testing.T) {
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
 			},
 		},
+		{
+			"callflow has an webhook",
+			uuid.FromStringOrNil("4347bd52-8304-11eb-b239-4bec34310838"),
+			1,
+			uuid.FromStringOrNil("4394ad24-8304-11eb-b397-ff7bf34c829f"),
+			call.Address{
+				Type:   call.AddressTypeTel,
+				Name:   "test",
+				Target: "+99999888",
+			},
+			call.Address{
+				Type:   call.AddressTypeTel,
+				Name:   "test target",
+				Target: "+123456789",
+			},
+
+			&activeflow.ActiveFlow{
+				WebhookURI: "https://test.com/wwasdd",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("4347bd52-8304-11eb-b239-4bec34310838"),
+				UserID:     1,
+				ChannelID:  call.TestChannelID,
+				FlowID:     uuid.FromStringOrNil("4394ad24-8304-11eb-b397-ff7bf34c829f"),
+				Type:       call.TypeFlow,
+				Status:     call.StatusDialing,
+				Direction:  call.DirectionOutgoing,
+				WebhookURI: "https://test.com/wwasdd",
+				Source: call.Address{
+					Type:   call.AddressTypeTel,
+					Name:   "test",
+					Target: "+99999888",
+				},
+				Destination: call.Address{
+					Type:   call.AddressTypeTel,
+					Name:   "test target",
+					Target: "+123456789",
+				},
+				Action: action.Action{
+					ID: action.IDBegin,
+				},
+			},
+			// "pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
+			"pjsip/call-out/sip:+123456789@sip.telnyx.com;transport=udp",
+			map[string]string{
+				"CALLERID(all)":                         "+99999888",
+				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -144,7 +197,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().CallCreate(tt.expectCall)
-			mockReq.EXPECT().FlowActvieFlowPost(tt.id, tt.flowID).Return(nil, nil)
+			mockReq.EXPECT().FlowActvieFlowPost(tt.id, tt.flowID).Return(tt.af, nil)
 			mockReq.EXPECT().AstChannelCreate(requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", contextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
 
 			res, err := h.CreateCallOutgoing(tt.id, tt.userID, tt.flowID, tt.source, tt.destination)

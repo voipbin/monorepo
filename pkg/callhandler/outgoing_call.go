@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
@@ -35,6 +36,14 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 	})
 	log.Debug("Creating a call for outgoing.")
 
+	// create active-flow
+	af, err := h.reqHandler.FlowActvieFlowPost(id, flowID)
+	if err != nil {
+		af = &activeflow.ActiveFlow{}
+		log.Errorf("Could not get an active flow for outgoing call. Created dummy active flow. This call will be hungup. call: %s, flow: %s, err: %v", id, flowID, err)
+	}
+	log.Debugf("Created active-flow. active-flow: %v", af)
+
 	channelID := uuid.Must(uuid.NewV4()).String()
 	cTmp := &call.Call{
 		ID:          id,
@@ -44,6 +53,7 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 		Type:        call.TypeFlow,
 		Status:      call.StatusDialing,
 		Direction:   call.DirectionOutgoing,
+		WebhookURI:  af.WebhookURI,
 		Source:      source,
 		Destination: destination,
 		Action: action.Action{
@@ -62,18 +72,6 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 
 		return nil, err
 	}
-
-	// create active-flow
-	af, err := h.reqHandler.FlowActvieFlowPost(c.ID, flowID)
-	if err != nil {
-		log.Errorf("Could not create an active-flow for outgoing call. err: %v", err)
-
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, getCurTime()); err != nil {
-			log.Errorf("Could not hangup the call. err: %v", err)
-		}
-		return nil, err
-	}
-	log.Debugf("Created active-flow. active-flow: %v", af)
 
 	// get a endpoint destination
 	endpointDst, err := h.getEndpointDestination(destination)
