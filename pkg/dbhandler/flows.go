@@ -20,7 +20,6 @@ const (
 		name,
 		detail,
 
-		persist,
 		webhook_uri,
 
 		actions,
@@ -45,7 +44,6 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 		&res.Name,
 		&res.Detail,
 
-		&res.Persist,
 		&res.WebhookURI,
 
 		&actions,
@@ -60,6 +58,7 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 	if err := json.Unmarshal([]byte(actions), &res.Actions); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the data. FlowGet. err: %v", err)
 	}
+	res.Persist = true
 
 	return res, nil
 }
@@ -120,7 +119,6 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 		name,
 		detail,
 
-		persist,
 		webhook_uri,
 
 		actions,
@@ -128,7 +126,7 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 		tm_create
 	) values(
 		?, ?, ?, ?,
-		?, ?,
+		?,
 		?,
 		?
 		)`
@@ -150,7 +148,6 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 		f.Name,
 		f.Detail,
 
-		f.Persist,
 		f.WebhookURI,
 
 		tmpActions,
