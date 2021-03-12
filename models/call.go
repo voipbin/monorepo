@@ -24,6 +24,7 @@ type Call struct {
 	Direction    CallDirection    `json:"direction"`     // Call's direction.
 	HangupBy     CallHangupBy     `json:"hangup_by"`     // Describe which endpoint sent the hangup request first.
 	HangupReason CallHangupReason `json:"hangup_reason"` // Desribe detail of hangup reason.
+	WebhookURI   string           `json:"webhook_uri"`   // Webhook destination uri
 
 	TMCreate string `json:"tm_create"` // Timestamp. Created time.
 	TMUpdate string `json:"tm_update"` // Timestamp. Updated time.

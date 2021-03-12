@@ -37,6 +37,8 @@ func TestFlowsPOST(t *testing.T) {
 		name        string
 		user        models.User
 		requestBody request.BodyFlowsPOST
+		reqFlow     *models.Flow
+		resFlow     *models.Flow
 	}
 
 	tests := []test{
@@ -49,6 +51,67 @@ func TestFlowsPOST(t *testing.T) {
 			request.BodyFlowsPOST{
 				Name:   "test name",
 				Detail: "test detail",
+				Actions: []models.Action{
+					{
+						Type: models.ActionTypeAnswer,
+					},
+				},
+			},
+			&models.Flow{
+				Name:    "test name",
+				Detail:  "test detail",
+				Persist: true,
+				Actions: []models.Action{
+					{
+						Type: models.ActionTypeAnswer,
+					},
+				},
+			},
+			&models.Flow{
+				ID:      uuid.FromStringOrNil("264b18d4-82fa-11eb-919b-9f55a7f6ace1"),
+				Name:    "test name",
+				Detail:  "test detail",
+				Persist: true,
+				Actions: []models.Action{
+					{
+						Type: models.ActionTypeAnswer,
+					},
+				},
+			},
+		},
+		{
+			"webhook",
+			models.User{
+				ID:         1,
+				Permission: models.UserPermissionAdmin,
+			},
+			request.BodyFlowsPOST{
+				Name:       "test name",
+				Detail:     "test detail",
+				WebhookURI: "https://test.com/webhook",
+				Actions: []models.Action{
+					{
+						Type: models.ActionTypeAnswer,
+					},
+				},
+			},
+			&models.Flow{
+				Name:       "test name",
+				Detail:     "test detail",
+				Persist:    true,
+				WebhookURI: "https://test.com/webhook",
+				Actions: []models.Action{
+					{
+						Type: models.ActionTypeAnswer,
+					},
+				},
+			},
+			&models.Flow{
+				ID:         uuid.FromStringOrNil("7413ccc8-82fa-11eb-9826-3b9adf174ed9"),
+				Name:       "test name",
+				Detail:     "test detail",
+				Persist:    true,
+				WebhookURI: "https://test.com/webhook",
 				Actions: []models.Action{
 					{
 						Type: models.ActionTypeAnswer,
@@ -76,7 +139,7 @@ func TestFlowsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowCreate(&tt.user, gomock.Any(), tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Actions, true).Return(&models.Flow{}, nil)
+			mockSvc.EXPECT().FlowCreate(&tt.user, tt.reqFlow).Return(tt.resFlow, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/flows", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 

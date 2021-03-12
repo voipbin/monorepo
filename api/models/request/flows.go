@@ -4,9 +4,10 @@ import "gitlab.com/voipbin/bin-manager/api-manager.git/models"
 
 // BodyFlowsPOST is rquest body define for POST /flows
 type BodyFlowsPOST struct {
-	Name    string          `json:"name"`
-	Detail  string          `json:"detail"`
-	Actions []models.Action `json:"actions"`
+	Name       string          `json:"name"`
+	Detail     string          `json:"detail"`
+	WebhookURI string          `json:"webhook_uri"`
+	Actions    []models.Action `json:"actions"`
 }
 
 // ParamFlowsGET is rquest param define for GET /flows
@@ -16,7 +17,8 @@ type ParamFlowsGET struct {
 
 // BodyFlowsIDPUT is rquest body define for PUT /flows/{id}
 type BodyFlowsIDPUT struct {
-	Name    string          `json:"name"`
-	Detail  string          `json:"detail"`
-	Actions []models.Action `json:"actions"`
+	Name       string          `json:"name"`
+	Detail     string          `json:"detail"`
+	WebhookURI string          `json:"webhook_uri"`
+	Actions    []models.Action `json:"actions"`
 }

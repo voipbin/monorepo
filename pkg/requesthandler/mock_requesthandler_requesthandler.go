@@ -7,7 +7,6 @@ package requesthandler
 import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	models "gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	cmcall "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
 	cmconference "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
 	cmrecording "gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
@@ -175,18 +174,18 @@ func (mr *MockRequestHandlerMockRecorder) CMRecordingGets(userID, size, token in
 }
 
 // FMFlowCreate mocks base method
-func (m *MockRequestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []models.Action, persist bool) (*fmflow.Flow, error) {
+func (m *MockRequestHandler) FMFlowCreate(f *fmflow.Flow) (*fmflow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMFlowCreate", userID, id, name, detail, actions, persist)
+	ret := m.ctrl.Call(m, "FMFlowCreate", f)
 	ret0, _ := ret[0].(*fmflow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FMFlowCreate indicates an expected call of FMFlowCreate
-func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(userID, id, name, detail, actions, persist interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), userID, id, name, detail, actions, persist)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), f)
 }
 
 // FMFlowDelete mocks base method

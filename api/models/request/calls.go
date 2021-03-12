@@ -8,8 +8,8 @@ import (
 type BodyCallsPOST struct {
 	Source      models.CallAddress `json:"source" binding:"required"`
 	Destination models.CallAddress `json:"destination" binding:"required"`
+	WebhookURI  string             `json:"webhook_uri"`
 	Actions     []models.Action    `json:"actions"`
-	EventURL    string             `json:"event_url"`
 	// MachineDetection string          `json:"machine_detection"`
 }
 

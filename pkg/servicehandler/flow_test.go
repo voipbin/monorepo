@@ -27,13 +27,10 @@ func TestFlowCreate(t *testing.T) {
 	}
 
 	type test struct {
-		name       string
-		user       *models.User
-		flowID     uuid.UUID
-		flowName   string
-		flowDetail string
-		actions    []models.Action
-		persist    bool
+		name    string
+		user    *models.User
+		flow    *models.Flow
+		reqFlow *fmflow.Flow
 
 		response  *fmflow.Flow
 		expectRes *models.Flow
@@ -45,11 +42,20 @@ func TestFlowCreate(t *testing.T) {
 			&models.User{
 				ID: 1,
 			},
-			uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
-			"test",
-			"test detail",
-			[]models.Action{},
-			true,
+			&models.Flow{
+				UserID:  1,
+				Name:    "test",
+				Detail:  "test detail",
+				Actions: []models.Action{},
+				Persist: true,
+			},
+			&fmflow.Flow{
+				UserID:  1,
+				Name:    "test",
+				Detail:  "test detail",
+				Actions: []fmaction.Action{},
+				Persist: true,
+			},
 			&fmflow.Flow{
 				ID:      uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
 				UserID:  1,
@@ -67,15 +73,53 @@ func TestFlowCreate(t *testing.T) {
 				Persist: true,
 			},
 		},
+		{
+			"webhook",
+			&models.User{
+				ID: 1,
+			},
+			&models.Flow{
+				UserID:     1,
+				Name:       "test",
+				Detail:     "test detail",
+				Actions:    []models.Action{},
+				Persist:    true,
+				WebhookURI: "https://test.com/webhook",
+			},
+			&fmflow.Flow{
+				UserID:     1,
+				Name:       "test",
+				Detail:     "test detail",
+				Actions:    []fmaction.Action{},
+				Persist:    true,
+				WebhookURI: "https://test.com/webhook",
+			},
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("5d70b47c-82f5-11eb-9d41-53331f170b23"),
+				UserID:     1,
+				Name:       "test",
+				Detail:     "test detail",
+				Actions:    []fmaction.Action{},
+				Persist:    true,
+				WebhookURI: "https://test.com/webhook",
+			},
+			&models.Flow{
+				ID:         uuid.FromStringOrNil("5d70b47c-82f5-11eb-9d41-53331f170b23"),
+				UserID:     1,
+				Name:       "test",
+				Detail:     "test detail",
+				Actions:    []models.Action{},
+				Persist:    true,
+				WebhookURI: "https://test.com/webhook",
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// ctx := context.Background()
 
-			mockReq.EXPECT().FMFlowCreate(tt.user.ID, tt.flowID, tt.flowName, tt.flowDetail, tt.actions, tt.persist).Return(tt.response, nil)
-
-			res, err := h.FlowCreate(tt.user, tt.flowID, tt.flowName, tt.flowDetail, tt.actions, tt.persist)
+			mockReq.EXPECT().FMFlowCreate(tt.reqFlow).Return(tt.response, nil)
+			res, err := h.FlowCreate(tt.user, tt.flow)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
