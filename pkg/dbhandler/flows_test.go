@@ -39,6 +39,7 @@ func TestFlowCreate(t *testing.T) {
 				ID:       uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
 				Name:     "test flow name",
 				Detail:   "test flow detail",
+				Persist:  true,
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 		},
@@ -57,9 +58,10 @@ func TestFlowCreate(t *testing.T) {
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
-				Name:   "test flow name",
-				Detail: "test flow detail",
+				ID:      uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
+				Name:    "test flow name",
+				Detail:  "test flow detail",
+				Persist: true,
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("9613a4e8-88e5-11ea-beeb-e7a27ea4b0f7"),
@@ -85,9 +87,10 @@ func TestFlowCreate(t *testing.T) {
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
-				Name:   "test flow name",
-				Detail: "test flow detail",
+				ID:      uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
+				Name:    "test flow name",
+				Detail:  "test flow detail",
+				Persist: true,
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
@@ -235,9 +238,10 @@ func TestFlowUpdate(t *testing.T) {
 				},
 			},
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
-				Name:   "test name",
-				Detail: "test detail",
+				ID:      uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
+				Name:    "test name",
+				Detail:  "test detail",
+				Persist: true,
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("a915c10c-6760-11eb-86c1-530dc1cd7cc9"),
@@ -267,9 +271,10 @@ func TestFlowUpdate(t *testing.T) {
 				},
 			},
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
-				Name:   "test name",
-				Detail: "test detail",
+				ID:      uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
+				Name:    "test name",
+				Detail:  "test detail",
+				Persist: true,
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("c642ab68-6761-11eb-942e-4fa4f2851c63"),
@@ -303,6 +308,7 @@ func TestFlowUpdate(t *testing.T) {
 				ID:         uuid.FromStringOrNil("6c756dba-822c-11eb-89a4-b34c6cca8de3"),
 				Name:       "test name",
 				Detail:     "test detail",
+				Persist:    true,
 				WebhookURI: "https://test.com/webhook_uri",
 				Actions: []action.Action{
 					{
