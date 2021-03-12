@@ -35,6 +35,7 @@ type Call struct {
 	Direction    Direction              `json:"direction"`
 	HangupBy     HangupBy               `json:"hangup_by"`
 	HangupReason HangupReason           `json:"hangup_reason"`
+	WebhookURI   string                 `json:"webhook_uri"`
 
 	// timestamp
 	TMCreate string `json:"tm_create"`
@@ -147,6 +148,7 @@ func (h *Call) ConvertCall() *models.Call {
 		Direction:    models.CallDirection(h.Direction),
 		HangupBy:     models.CallHangupBy(h.HangupBy),
 		HangupReason: models.CallHangupReason(h.HangupReason),
+		WebhookURI:   h.WebhookURI,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

@@ -14,7 +14,8 @@ type Flow struct {
 
 	Actions []Action `json:"actions"` // Actions
 
-	Persist bool `json:"-"` // Persist
+	Persist    bool   `json:"-"` // Persist
+	WebhookURI string `json:"webhook_uri"`
 
 	TMCreate string `json:"tm_create"` // Created timestamp.
 	TMUpdate string `json:"tm_update"` // Updated timestamp.

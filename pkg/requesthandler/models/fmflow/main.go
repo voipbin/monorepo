@@ -17,7 +17,8 @@ type Flow struct {
 
 	Actions []fmaction.Action `json:"actions"`
 
-	Persist bool `json:"persist"`
+	Persist    bool   `json:"persist"`
+	WebhookURI string `json:"webhook_uri"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
@@ -39,7 +40,8 @@ func (f *Flow) ConvertFlow() *models.Flow {
 		Name:   f.Name,
 		Detail: f.Detail,
 
-		Persist: f.Persist,
+		Persist:    f.Persist,
+		WebhookURI: f.WebhookURI,
 
 		Actions: actions,
 
@@ -66,7 +68,8 @@ func CreateFlow(f *models.Flow) *Flow {
 		Name:   f.Name,
 		Detail: f.Detail,
 
-		Persist: f.Persist,
+		Persist:    f.Persist,
+		WebhookURI: f.WebhookURI,
 
 		Actions: actions,
 
