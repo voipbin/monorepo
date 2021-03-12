@@ -291,7 +291,8 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	}
 
 	tmpCF := &flow.Flow{
-		UserID: cf.UserID,
+		UserID:  cf.UserID,
+		Persist: false,
 		Actions: []action.Action{
 			{
 				Type:   action.TypeConferenceJoin,
@@ -307,7 +308,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	}
 
 	// create a flow
-	connectCF, err := h.FlowCreate(ctx, tmpCF, false)
+	connectCF, err := h.FlowCreate(ctx, tmpCF)
 	if err != nil {
 		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 		return fmt.Errorf("could not create a call flow. err: %v", err)

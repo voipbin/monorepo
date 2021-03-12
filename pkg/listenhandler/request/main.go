@@ -25,11 +25,11 @@ type V1DataActiveFlowsIDNextGet struct {
 // v1 data type request struct for
 // /v1/flows POST
 type V1DataFlowPost struct {
-	ID     uuid.UUID `json:"id"`      // flow's id
-	UserID uint64    `json:"user_id"` // flow's owner
+	UserID uint64 `json:"user_id"` // flow's owner
 
-	Name   string `json:"name"`   // name
-	Detail string `json:"detail"` // detail
+	Name       string `json:"name"`        // name
+	Detail     string `json:"detail"`      // detail
+	WebhookURI string `json:"webhook_uri"` // webhook destination
 
 	Actions []action.Action `json:"actions"` // actions
 
@@ -40,9 +40,8 @@ type V1DataFlowPost struct {
 // v1 data type request struct for
 // /v1/flows/{id} PUT
 type V1DataFlowIDPut struct {
-	Name   string `json:"name"`   // name
-	Detail string `json:"detail"` // detail
-
+	Name       string `json:"name"`        // name
+	Detail     string `json:"detail"`      // detail
 	WebhookURI string `json:"webhook_uri"` // webhook destination
 
 	Actions []action.Action `json:"actions"` // actions

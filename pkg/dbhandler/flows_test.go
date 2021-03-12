@@ -120,6 +120,7 @@ func TestFlowCreate(t *testing.T) {
 			}
 			t.Logf("Created flow. flow: %v", res)
 
+			tt.expectFlow.TMCreate = res.TMCreate
 			if reflect.DeepEqual(tt.expectFlow, res) == false {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectFlow, res)
 			}
@@ -150,34 +151,30 @@ func TestFlowGetsByUserID(t *testing.T) {
 			"2020-04-18T03:30:17.000000",
 			[]flow.Flow{
 				{
-					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
-					UserID:   1,
-					Name:     "test1",
-					Persist:  true,
-					TMCreate: "2020-04-18T03:22:17.995000",
+					ID:      uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					UserID:  1,
+					Name:    "test1",
+					Persist: true,
 				},
 				{
-					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					UserID:   1,
-					Name:     "test2",
-					Persist:  true,
-					TMCreate: "2020-04-18T03:23:17.995000",
+					ID:      uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+					UserID:  1,
+					Name:    "test2",
+					Persist: true,
 				},
 			},
 			[]*flow.Flow{
 				{
-					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					UserID:   1,
-					Name:     "test2",
-					Persist:  true,
-					TMCreate: "2020-04-18T03:23:17.995000",
+					ID:      uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+					UserID:  1,
+					Name:    "test2",
+					Persist: true,
 				},
 				{
-					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
-					UserID:   1,
-					Name:     "test1",
-					Persist:  true,
-					TMCreate: "2020-04-18T03:22:17.995000",
+					ID:      uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					UserID:  1,
+					Name:    "test1",
+					Persist: true,
 				},
 			},
 		},
@@ -195,9 +192,13 @@ func TestFlowGetsByUserID(t *testing.T) {
 				}
 			}
 
-			flows, err := h.FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit)
+			flows, err := h.FlowGetsByUserID(ctx, tt.userID, getCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			for _, flow := range flows {
+				flow.TMCreate = ""
 			}
 
 			if reflect.DeepEqual(flows, tt.expectFlow) != true {

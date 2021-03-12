@@ -114,7 +114,7 @@ func TestFlowsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.expectFlow, false).Return(&flow.Flow{}, nil)
+			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.expectFlow).Return(&flow.Flow{}, nil)
 
 			h.processRequest(tt.request)
 		})

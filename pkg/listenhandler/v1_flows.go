@@ -134,17 +134,16 @@ func (h *listenHandler) v1FlowsPost(req *rabbitmqhandler.Request) (*rabbitmqhand
 	}
 
 	flow := &flow.Flow{
-		ID:      reqData.ID,
-		UserID:  reqData.UserID,
-		Name:    reqData.Name,
-		Detail:  reqData.Detail,
-		Actions: reqData.Actions,
-
-		TMCreate: getCurTime(),
+		UserID:     reqData.UserID,
+		Name:       reqData.Name,
+		Detail:     reqData.Detail,
+		Actions:    reqData.Actions,
+		WebhookURI: reqData.WebhookURI,
+		Persist:    reqData.Persist,
 	}
 
 	// create flow
-	resFlow, err := h.flowHandler.FlowCreate(ctx, flow, reqData.Persist)
+	resFlow, err := h.flowHandler.FlowCreate(ctx, flow)
 	if err != nil {
 		logrus.Errorf("Could not create anew flow. err: %v", err)
 		return nil, err

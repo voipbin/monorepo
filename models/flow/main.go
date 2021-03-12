@@ -33,6 +33,7 @@ func (a *Flow) Matches(x interface{}) bool {
 	c := *a
 
 	c.TMCreate = comp.TMCreate
+	c.TMUpdate = comp.TMUpdate
 
 	return reflect.DeepEqual(c, *comp)
 }
