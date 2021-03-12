@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -8,6 +9,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
@@ -31,6 +33,8 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 		request      *rabbitmqhandler.Request
 		expectCallID uuid.UUID
 		expectFlowID uuid.UUID
+		af           *activeflow.ActiveFlow
+		expectRes    *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -44,20 +48,41 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 			},
 			uuid.FromStringOrNil("1d8dacf4-05ee-11eb-9eae-037ddd66443e"),
 			uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+			&activeflow.ActiveFlow{
+				CallID:     uuid.FromStringOrNil("1d8dacf4-05ee-11eb-9eae-037ddd66443e"),
+				FlowID:     uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+				UserID:     0,
+				WebhookURI: "",
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				Actions: []action.Action{},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"call_id":"1d8dacf4-05ee-11eb-9eae-037ddd66443e","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","user_id":0,"webhook_uri":"","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectCallID, tt.expectFlowID).Return(nil, nil)
+			mockFlowHandler.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectCallID, tt.expectFlowID).Return(tt.af, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.StatusCode != 200 {
-				t.Errorf("Wrong match. expect: 200, got: %d", res.StatusCode)
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
+
+			// if res.StatusCode != 200 {
+			// 	t.Errorf("Wrong match. expect: 200, got: %d", res.StatusCode)
+			// }
+
+			// t.Errorf("%v", res)
 		})
 	}
 }
