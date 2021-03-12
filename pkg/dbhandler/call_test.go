@@ -378,6 +378,51 @@ func TestCallCreate(t *testing.T) {
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 		},
+		{
+			"with webhook uri",
+			call.Call{
+				ID:         uuid.FromStringOrNil("0813245e-82d4-11eb-9397-03985e8fd671"),
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ChannelID:  "2ea6097e-82d4-11eb-9b51-8321658856d9",
+				FlowID:     uuid.FromStringOrNil("0f2cea0e-82d4-11eb-8974-9ffb1acae327"),
+				Type:       call.TypeFlow,
+				UserID:     1,
+				WebhookURI: "https://test.com/webhook",
+
+				Source: call.Address{
+					Type: call.AddressTypeSIP,
+				},
+				Destination: call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+			call.Call{
+				ID:         uuid.FromStringOrNil("0813245e-82d4-11eb-9397-03985e8fd671"),
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ChannelID:  "2ea6097e-82d4-11eb-9b51-8321658856d9",
+				FlowID:     uuid.FromStringOrNil("0f2cea0e-82d4-11eb-8974-9ffb1acae327"),
+				Type:       call.TypeFlow,
+				UserID:     1,
+				WebhookURI: "https://test.com/webhook",
+
+				ChainedCallIDs: []uuid.UUID{},
+
+				RecordingIDs: []uuid.UUID{},
+
+				Source: call.Address{
+					Type: call.AddressTypeSIP,
+				},
+				Destination: call.Address{},
+
+				Status:    call.StatusRinging,
+				Direction: call.DirectionIncoming,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+			},
+		},
 	}
 
 	for _, tt := range tests {

@@ -12,6 +12,7 @@ type ActiveFlow struct {
 	FlowID        uuid.UUID     `json:"flow_id"`
 	UserID        uint64        `json:"user_id"`
 	CurrentAction action.Action `json:"current_action"`
+	WebhookURI    string        `json:"webhook_uri"`
 
 	Actions []action.Action `json:"actions"`
 

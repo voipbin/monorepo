@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
@@ -515,8 +516,9 @@ func TestTypeFlowStart(t *testing.T) {
 		name    string
 		channel *channel.Channel
 		data    map[string]interface{}
-		call    *call.Call
 		numb    *nmnumber.Number
+		af      *activeflow.ActiveFlow
+		call    *call.Call
 	}
 
 	tests := []test{
@@ -531,6 +533,18 @@ func TestTypeFlowStart(t *testing.T) {
 			map[string]interface{}{
 				"context": "call-in",
 				"domain":  "pstn.voipbin.net",
+			},
+			&nmnumber.Number{
+				ID:     uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
+				FlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
+				UserID: 1,
+			},
+			&activeflow.ActiveFlow{
+				CallID: uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
+				FlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
+				CurrentAction: action.Action{
+					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				},
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
@@ -547,10 +561,47 @@ func TestTypeFlowStart(t *testing.T) {
 					ID: action.IDBegin,
 				},
 			},
+		},
+		{
+			"webhook",
+			&channel.Channel{
+				ID:                "f0426396-82e0-11eb-a230-c32d9b79e36a",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000949",
+				DestinationNumber: "+123456789",
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "pstn.voipbin.net",
+			},
 			&nmnumber.Number{
-				ID:     uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
-				FlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
+				ID:     uuid.FromStringOrNil("f06df84e-82e0-11eb-9ca5-7f84ada50218"),
+				FlowID: uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
 				UserID: 1,
+			},
+			&activeflow.ActiveFlow{
+				CallID:     uuid.FromStringOrNil("f0ae2504-82e0-11eb-8981-5752f356cf57"),
+				FlowID:     uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
+				WebhookURI: "https://test.com/webhook",
+				CurrentAction: action.Action{
+					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				},
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f0ae2504-82e0-11eb-8981-5752f356cf57"),
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ChannelID:  "f0426396-82e0-11eb-a230-c32d9b79e36a",
+				FlowID:     uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
+				Type:       call.TypeSipService,
+				Direction:  call.DirectionIncoming,
+				WebhookURI: "https://test.com/webhook",
+				Destination: call.Address{
+					Type:   call.AddressTypeTel,
+					Target: "+123456789",
+				},
+				Action: action.Action{
+					ID: action.IDBegin,
+				},
 			},
 		},
 	}
@@ -560,10 +611,10 @@ func TestTypeFlowStart(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutFlow).Return(nil)
 			mockReq.EXPECT().NMV1NumbersNumberGet(tt.channel.DestinationNumber).Return(tt.numb, nil)
+			mockReq.EXPECT().FlowActvieFlowPost(gomock.Any(), tt.numb.FlowID).Return(tt.af, nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().CallCreate(tt.call)
-			mockReq.EXPECT().FlowActvieFlowPost(gomock.Any(), tt.numb.FlowID).Return(nil, nil)
 			mockReq.EXPECT().FlowActvieFlowNextGet(gomock.Any(), action.IDBegin).Return(&action.Action{Type: action.TypeHangup}, nil)
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
