@@ -48,7 +48,7 @@ type ServiceHandler interface {
 	ExtensionUpdate(u *models.User, d *models.Extension) (*models.Extension, error)
 
 	// flow handlers
-	FlowCreate(u *models.User, id uuid.UUID, name, detail string, actions []models.Action, persist bool) (*models.Flow, error)
+	FlowCreate(u *models.User, f *models.Flow) (*models.Flow, error)
 	FlowDelete(u *models.User, id uuid.UUID) error
 	FlowGet(u *models.User, id uuid.UUID) (*models.Flow, error)
 	FlowGets(u *models.User, pageSize uint64, pageToken string) ([]*models.Flow, error)

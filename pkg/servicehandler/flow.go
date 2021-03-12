@@ -11,16 +11,23 @@ import (
 )
 
 // FlowCreate is a service handler for flow creation.
-func (h *serviceHandler) FlowCreate(u *models.User, id uuid.UUID, name, detail string, actions []models.Action, persist bool) (*models.Flow, error) {
+func (h *serviceHandler) FlowCreate(u *models.User, f *models.Flow) (*models.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":    u.ID,
-		"flow":    id,
-		"name":    name,
-		"persist": persist,
+		"name":    f.Name,
+		"persist": f.Persist,
+		"webhook": f.WebhookURI,
 	})
-	log.Debug("Creating a new flow.")
 
-	tmp, err := h.reqHandler.FMFlowCreate(u.ID, id, name, detail, actions, persist)
+	fmFlow := fmflow.CreateFlow(f)
+	fmFlow.UserID = u.ID
+	log.WithFields(
+		logrus.Fields{
+			"flow": fmFlow,
+		},
+	).Debugf("Creating a new flow. flow: %s", fmFlow.ID)
+
+	tmp, err := h.reqHandler.FMFlowCreate(fmFlow)
 	if err != nil {
 		log.Errorf("Could not create a new flow. err: %v", err)
 		return nil, err

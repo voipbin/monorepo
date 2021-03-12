@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -33,17 +32,11 @@ func TestFMFlowCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		userID     uint64
-		flowID     uuid.UUID
-		flowName   string
-		flowDetail string
-		actions    []models.Action
-		persist    bool
-
-		response *rabbitmqhandler.Response
+		flow *fmflow.Flow
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
 		expectResult  *fmflow.Flow
 	}
 
@@ -51,16 +44,14 @@ func TestFMFlowCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
-			uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
-			"test flow",
-			"test flow detail",
-			[]models.Action{},
-			true,
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true,"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
+				UserID:     1,
+				Name:       "test flow",
+				Detail:     "test flow detail",
+				Actions:    []fmaction.Action{},
+				Persist:    true,
+				WebhookURI: "",
 			},
 
 			"bin-manager.flow-manager.request",
@@ -68,7 +59,12 @@ func TestFMFlowCreate(t *testing.T) {
 				URI:      "/v1/flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true}`),
+				Data:     []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true,"webhook_uri":""}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true,"webhook_uri":"","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 			&fmflow.Flow{
 				ID:       uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
@@ -82,13 +78,50 @@ func TestFMFlowCreate(t *testing.T) {
 				TMDelete: "",
 			},
 		},
-	}
+		{
+			"webhook",
+
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("c409a736-82f3-11eb-839a-ebe51df950d4"),
+				UserID:     1,
+				Name:       "test flow",
+				Detail:     "test flow detail",
+				Actions:    []fmaction.Action{},
+				Persist:    true,
+				WebhookURI: "https://test.com/webhook",
+			},
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"id":"c409a736-82f3-11eb-839a-ebe51df950d4","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true,"webhook_uri":"https://test.com/webhook"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c409a736-82f3-11eb-839a-ebe51df950d4","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true,"webhook_uri":"https://test.com/webhook","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+			},
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("c409a736-82f3-11eb-839a-ebe51df950d4"),
+				UserID:     1,
+				Name:       "test flow",
+				Detail:     "test flow detail",
+				Actions:    []fmaction.Action{},
+				Persist:    true,
+				WebhookURI: "https://test.com/webhook",
+				TMCreate:   "2020-09-20 03:23:20.995000",
+				TMUpdate:   "",
+				TMDelete:   "",
+			},
+		}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMFlowCreate(tt.userID, tt.flowID, tt.flowName, tt.flowDetail, tt.actions, tt.persist)
+			// res, err := reqHandler.FMFlowCreate(tt.userID, tt.flowID, tt.flowName, tt.flowDetail, tt.actions, tt.persist)
+			res, err := reqHandler.FMFlowCreate(tt.flow)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

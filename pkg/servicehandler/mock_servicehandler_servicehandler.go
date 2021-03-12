@@ -331,18 +331,18 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(u, d interface{}) *gom
 }
 
 // FlowCreate mocks base method
-func (m *MockServiceHandler) FlowCreate(u *models.User, id uuid.UUID, name, detail string, actions []models.Action, persist bool) (*models.Flow, error) {
+func (m *MockServiceHandler) FlowCreate(u *models.User, f *models.Flow) (*models.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowCreate", u, id, name, detail, actions, persist)
+	ret := m.ctrl.Call(m, "FlowCreate", u, f)
 	ret0, _ := ret[0].(*models.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowCreate indicates an expected call of FlowCreate
-func (mr *MockServiceHandlerMockRecorder) FlowCreate(u, id, name, detail, actions, persist interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) FlowCreate(u, f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockServiceHandler)(nil).FlowCreate), u, id, name, detail, actions, persist)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockServiceHandler)(nil).FlowCreate), u, f)
 }
 
 // FlowDelete mocks base method
