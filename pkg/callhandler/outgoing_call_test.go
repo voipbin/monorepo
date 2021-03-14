@@ -65,7 +65,11 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Target: "testoutgoing@test.com",
 			},
 
-			&activeflow.ActiveFlow{},
+			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID: action.IDBegin,
+				},
+			},
 			&call.Call{
 				ID:        uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 				UserID:    1,
@@ -110,7 +114,11 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Target: "+123456789",
 			},
 
-			&activeflow.ActiveFlow{},
+			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID: action.IDBegin,
+				},
+			},
 			&call.Call{
 				ID:        uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 				UserID:    1,
@@ -158,6 +166,9 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 			&activeflow.ActiveFlow{
 				WebhookURI: "https://test.com/wwasdd",
+				CurrentAction: action.Action{
+					ID: action.IDBegin,
+				},
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("4347bd52-8304-11eb-b239-4bec34310838"),

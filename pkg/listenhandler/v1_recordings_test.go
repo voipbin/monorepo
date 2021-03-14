@@ -54,7 +54,7 @@ func TestProcessV1RecordingsGet(t *testing.T) {
 			10,
 			"2020-05-03 21:35:02.809",
 			[]*recording.Recording{
-				&recording.Recording{
+				{
 					ID:          uuid.FromStringOrNil("cfa4d576-6128-11eb-b69b-9f7a738a1ad7"),
 					UserID:      0,
 					Type:        recording.TypeCall,
