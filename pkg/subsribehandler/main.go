@@ -13,12 +13,25 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
 )
 
-// pagination parameters
+// list of publishers
 const (
-	PageSize  = "page_size"
-	PageToken = "page_token"
+	publisherAPIManager       = "api-manager"
+	publisherCallManager      = "call-manager"
+	publisherFlowManager      = "flow-manager"
+	publisherNumberManager    = "number-manager"
+	publisherRegistrarManager = "registrar-manager"
+	publisherStorageManager   = "storage-manager"
+	publisherTTSManager       = "tts-manager"
+)
+
+// list of call-manager event type
+const (
+	cmCallCreate = "call_create"
+	cmCallUpdate = "call_update"
+	cmCallHangup = "call_hangup"
 )
 
 // SubscribeHandler interface
@@ -33,6 +46,8 @@ type subscribeHandler struct {
 
 	subscribeQueue    string
 	subscribesTargets string
+
+	webhookHandler webhookhandler.WebhookHandler
 }
 
 var (
@@ -54,7 +69,7 @@ var (
 				50, 100, 500, 1000, 3000,
 			},
 		},
-		[]string{"type"},
+		[]string{"publisher", "type"},
 	)
 )
 
@@ -79,6 +94,8 @@ func NewSubscribeHandler(
 	subscribeQueue string,
 	subscribeTargets string,
 ) SubscribeHandler {
+	webhookHandler := webhookhandler.NewWebhookHandler(db, cache)
+
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
 		db:         db,
@@ -86,6 +103,7 @@ func NewSubscribeHandler(
 
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
+		webhookHandler:    webhookHandler,
 	}
 
 	return h
@@ -136,33 +154,32 @@ func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
 // processEvent processes the event message
 func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
-	var err error
-
-	logrus.WithFields(
+	log := logrus.WithFields(
 		logrus.Fields{
-			"type":      m.Type,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		}).Debugf("Received request. type: %s", m.Type)
+			"message": m,
+		},
+	)
+	log.Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
 
+	var err error
 	start := time.Now()
 	switch {
+
+	case m.Publisher == publisherCallManager && (m.Type == cmCallCreate || m.Type == cmCallUpdate || m.Type == cmCallHangup):
+		err = h.processEventCMCallCommon(m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		err = fmt.Errorf("could not find event handler. type: %s", m.Type)
+		err = fmt.Errorf("could not find an event handler")
 	}
 	elapsed := time.Since(start)
-	promEventProcessTime.WithLabelValues(string(m.Type)).Observe(float64(elapsed.Milliseconds()))
+	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))
 
-	// default error handler
 	if err != nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"data": m.Data,
-			}).Errorf("Could not process the event correctly. type: %s, err: %v", m.Type, err)
+		log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
+		return
 	}
 
 	return
