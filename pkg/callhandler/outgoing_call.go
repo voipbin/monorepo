@@ -8,7 +8,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
@@ -56,10 +55,8 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 		WebhookURI:  af.WebhookURI,
 		Source:      source,
 		Destination: destination,
-		Action: action.Action{
-			ID: action.IDBegin,
-		},
-		TMCreate: getCurTime(),
+		Action:      af.CurrentAction,
+		TMCreate:    getCurTime(),
 	}
 
 	// create a call

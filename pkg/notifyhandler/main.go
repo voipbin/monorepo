@@ -66,37 +66,7 @@ const (
 	eventTypeCallCreate eventType = "call_create"
 )
 
-type resource string
-
-const (
-	resourceAstBridges              resource = "ast/bridges"
-	resourceAstBridgesAddChannel    resource = "ast/bridges/addchannel"
-	resourceAstBridgesRemoveChannel resource = "ast/bridges/removechannel"
-
-	resourceAstAMI resource = "ast/ami"
-
-	resourceAstChannels         resource = "ast/channels"
-	resourceAstChannelsAnswer   resource = "ast/channels/answer"
-	resourceAstChannelsContinue resource = "ast/channels/continue"
-	resourceAstChannelsDial     resource = "ast/channels/dial"
-	resourceAstChannelsHangup   resource = "ast/channels/hangup"
-	resourceAstChannelsPlay     resource = "ast/channels/play"
-	resourceAstChannelsRecord   resource = "ast/channels/record"
-	resourceAstChannelsSnoop    resource = "ast/channels/snoop"
-	resourceAstChannelsVar      resource = "ast/channels/var"
-
-	resourceCallCalls              resource = "call/calls"
-	resourceCallCallsActionNext    resource = "call/calls/action-next"
-	resourceCallCallsActionTimeout resource = "call/calls/action-timeout"
-	resourceCallCallsHealth        resource = "call/calls/health"
-	resourceCallChannelsHealth     resource = "call/channels/health"
-
-	resourceFlowsActions resource = "flows/actions"
-
-	resourceNumberNumbers resource = "number/numbers"
-
-	resourceTTSSpeeches resource = "tts/speeches"
-)
+const constPublisher = "call-manager"
 
 func init() {
 	prometheus.MustRegister(
@@ -155,7 +125,7 @@ func (r *notifyHandler) publishNotify(eventType eventType, dataType string, data
 	// creat a request message
 	evt := &rabbitmqhandler.Event{
 		Type:      rabbitmqhandler.EventType(eventType),
-		Publisher: "call-manager",
+		Publisher: constPublisher,
 		DataType:  dataType,
 		Data:      data,
 	}
