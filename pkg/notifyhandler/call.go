@@ -23,7 +23,7 @@ func (r *notifyHandler) CallCreate(c *call.Call) {
 		return
 	}
 
-	if err := r.publishNotify(eventTypeCallCreate, ContentTypeJSON, m, 0); err != nil {
+	if err := r.publishNotify(eventTypeCallCreated, dataTypeJSON, m, 0); err != nil {
 		log.Errorf("Could not publish the notify. err: %v", err)
 		return
 	}
