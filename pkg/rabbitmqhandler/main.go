@@ -28,7 +28,7 @@ type Response struct {
 
 // Event struct
 type Event struct {
-	Type      EventType       `json:"type"`
+	Type      string          `json:"type"`
 	Publisher string          `json:"publisher"`
 	DataType  string          `json:"data_type"`
 	Data      json.RawMessage `json:"data,omitempty"`
@@ -43,14 +43,6 @@ const (
 	RequestMethodGet    RequestMethod = "GET"
 	RequestMethodPut    RequestMethod = "PUT"
 	RequestMethodDelete RequestMethod = "DELETE"
-)
-
-// EventType type
-type EventType string
-
-// List of EventType
-const (
-	EventTypeCall EventType = "cm_call"
 )
 
 // Rabbit defines rabbit queue interfaces
