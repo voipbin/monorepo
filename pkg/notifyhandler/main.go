@@ -17,16 +17,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// contents type
+// Data types
 var (
-	ContentTypeText = "text/plain"
-	ContentTypeJSON = "application/json"
-)
-
-// group asterisk id
-var (
-	AsteriskIDCall       = "call"       // asterisk-call
-	AsteriskIDConference = "conference" // asterisk-conference
+	dataTypeText = "text/plain"
+	dataTypeJSON = "application/json"
 )
 
 const requestTimeoutDefault int = 3 // default request timeout
@@ -60,13 +54,16 @@ var (
 	)
 )
 
+// eventType
 type eventType string
 
+// list of event types
 const (
-	eventTypeCallCreate eventType = "call_create"
+	eventTypeCallCreated eventType = "call_created"
 )
 
-const constPublisher = "call-manager"
+// const event publisher
+const eventPublisher = "call-manager"
 
 func init() {
 	prometheus.MustRegister(
@@ -124,8 +121,8 @@ func (r *notifyHandler) publishNotify(eventType eventType, dataType string, data
 
 	// creat a request message
 	evt := &rabbitmqhandler.Event{
-		Type:      rabbitmqhandler.EventType(eventType),
-		Publisher: constPublisher,
+		Type:      string(eventType),
+		Publisher: eventPublisher,
 		DataType:  dataType,
 		Data:      data,
 	}
