@@ -38,6 +38,7 @@ func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason
 		// we don't channel hangup here, we are assumming the channel has already gone.
 		return err
 	}
+	h.notifyHandler.CallHungup(c)
 
 	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
 	return nil

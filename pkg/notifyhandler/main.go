@@ -60,6 +60,8 @@ type eventType string
 // list of event types
 const (
 	eventTypeCallCreated eventType = "call_created"
+	eventTypeCallUpdated eventType = "call_updated"
+	eventTypeCallHungup  eventType = "call_hungup"
 )
 
 // const event publisher
@@ -74,7 +76,9 @@ func init() {
 // NotifyHandler intreface
 type NotifyHandler interface {
 	// call
-	CallCreate(c *call.Call)
+	CallCreated(c *call.Call)
+	CallUpdated(c *call.Call)
+	CallHungup(c *call.Call)
 }
 
 type notifyHandler struct {

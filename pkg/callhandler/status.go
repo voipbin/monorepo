@@ -27,6 +27,13 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 	if err := h.db.CallSetStatus(ctx, c.ID, call.StatusRinging, cn.TMRinging); err != nil {
 		return err
 	}
+
+	res, err := h.db.CallGet(ctx, c.ID)
+	if err != nil {
+		return err
+	}
+	h.notifyHandler.CallUpdated(res)
+
 	return nil
 }
 
@@ -48,11 +55,17 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 		return err
 	}
 
+	res, err := h.db.CallGet(ctx, c.ID)
+	if err != nil {
+		return err
+	}
+	h.notifyHandler.CallUpdated(res)
+
 	if c.Direction == call.DirectionIncoming {
 		// nothing to do with incoming call at here.
 		return nil
 	}
 
 	// todo: if the direciton is outgoing, we need to do some flow actions at here.
-	return h.ActionNext(c)
+	return h.ActionNext(res)
 }
