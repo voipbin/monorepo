@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	db "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -89,7 +90,7 @@ func init() {
 }
 
 // NewEventHandler create EventHandler
-func NewEventHandler(sock rabbitmqhandler.Rabbit, db db.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, callHandler callhandler.CallHandler) EventHandler {
+func NewEventHandler(sock rabbitmqhandler.Rabbit, db db.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, callHandler callhandler.CallHandler, confHandler conferencehandler.ConferenceHandler) EventHandler {
 	handler := &eventHandler{
 		rabbitSock: sock,
 		db:         db,
@@ -98,7 +99,7 @@ func NewEventHandler(sock rabbitmqhandler.Rabbit, db db.DBHandler, cache cacheha
 
 	handler.reqHandler = reqHandler
 	handler.callHandler = callHandler
-	handler.confHandler = conferencehandler.NewConferHandler(reqHandler, db, cache)
+	handler.confHandler = confHandler
 
 	return handler
 }

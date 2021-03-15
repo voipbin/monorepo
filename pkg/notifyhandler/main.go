@@ -59,9 +59,10 @@ type eventType string
 
 // list of event types
 const (
-	eventTypeCallCreated eventType = "call_created"
-	eventTypeCallUpdated eventType = "call_updated"
-	eventTypeCallHungup  eventType = "call_hungup"
+	eventTypeCallCreated   eventType = "call_created"
+	eventTypeCallUpdated   eventType = "call_updated"
+	eventTypeCallHungup    eventType = "call_hungup"
+	eventTypeCallConnected eventType = "call_connected"
 )
 
 // const event publisher

@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
@@ -19,9 +20,10 @@ func TestTerminate(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewConferHandler(mockReq, mockDB, mockCache)
+	h := NewConferHandler(mockReq, mockNotify, mockDB, mockCache)
 
 	type test struct {
 		name       string

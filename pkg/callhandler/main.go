@@ -107,7 +107,7 @@ func NewCallHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandl
 		notifyHandler: n,
 		db:            db,
 		cache:         cache,
-		confHandler:   conferencehandler.NewConferHandler(r, db, cache),
+		confHandler:   conferencehandler.NewConferHandler(r, n, db, cache),
 	}
 
 	return h
