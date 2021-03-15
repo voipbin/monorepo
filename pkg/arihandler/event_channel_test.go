@@ -48,7 +48,6 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// h := NewEventHandler(mockSock, mockDB, mockRequest, mockSvc)
 			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,
@@ -102,7 +101,6 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// h := NewEventHandler(mockSock, mockDB, mockRequest, mockCall)
 			h := eventHandler{
 				db:          mockDB,
 				rabbitSock:  mockSock,

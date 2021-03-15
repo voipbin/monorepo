@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -42,6 +43,15 @@ func (h *conferenceHandler) joined(cn *channel.Channel, br *bridge.Bridge) error
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return err
 	}
+
+	// get updated call
+	tmpCall, err := h.db.CallGet(ctx, c.ID)
+	if err != nil {
+		log.Errorf("Could not get updated call info. err: %v", err)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return err
+	}
+	h.notifyHandler.CallUpdated(tmpCall)
 
 	// add the call to conference
 	if err := h.db.ConferenceAddCallID(ctx, br.ConferenceID, c.ID); err != nil {

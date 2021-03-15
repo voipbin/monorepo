@@ -160,7 +160,8 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
-	eventHandler := arihandler.NewEventHandler(rabbitSock, db, cache, reqHandler, callHandler)
+	confHandler := conferencehandler.NewConferHandler(reqHandler, notifyHandler, db, cache)
+	eventHandler := arihandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confHandler)
 
 	// run
 	if err := eventHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
@@ -192,7 +193,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
-	conferenceHandler := conferencehandler.NewConferHandler(reqHandler, db, cache)
+	conferenceHandler := conferencehandler.NewConferHandler(reqHandler, notifyHandler, db, cache)
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler, conferenceHandler)
 
 	// run

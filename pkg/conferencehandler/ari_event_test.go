@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
@@ -20,13 +21,15 @@ func TestARIChannelLeftBridge(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	h := &conferenceHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-		cache:      mockCache,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		cache:         mockCache,
 	}
 
 	type test struct {
@@ -69,6 +72,8 @@ func TestARIChannelLeftBridge(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.call.ID, uuid.Nil)
 			mockDB.EXPECT().ConferenceRemoveCallID(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
+			mockNotify.EXPECT().CallUpdated(tt.call)
 			mockReq.EXPECT().CallCallActionNext(gomock.Any()).Return(nil)
 
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.bridge.ConferenceID).Return(tt.conference, nil)
@@ -86,13 +91,15 @@ func TestARIChannelEnteredBridgeTypeCall(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	h := &conferenceHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-		cache:      mockCache,
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		cache:         mockCache,
 	}
 
 	type test struct {
@@ -125,6 +132,8 @@ func TestARIChannelEnteredBridgeTypeCall(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.call.ID, tt.bridge.ConferenceID)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockNotify.EXPECT().CallUpdated(tt.call)
 			mockDB.EXPECT().ConferenceAddCallID(gomock.Any(), tt.bridge.ConferenceID, tt.call.ID).Return(nil)
 
 			err := h.ARIChannelEnteredBridge(tt.channel, tt.bridge)

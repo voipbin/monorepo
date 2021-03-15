@@ -116,6 +116,14 @@ func (h *conferenceHandler) leavedChannelCall(cn *channel.Channel, br *bridge.Br
 	}
 	promConferenceLeaveTotal.WithLabelValues(string(br.ConferenceType)).Inc()
 
+	// get call
+	tmpCall, err := h.db.CallGetByChannelID(ctx, cn.ID)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return err
+	}
+	h.notifyHandler.CallUpdated(tmpCall)
+
 	// send a call action next
 	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
 		log.Debugf("Could not send the call action next request. err: %v", err)
