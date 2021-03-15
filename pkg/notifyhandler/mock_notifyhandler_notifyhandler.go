@@ -33,14 +33,38 @@ func (m *MockNotifyHandler) EXPECT() *MockNotifyHandlerMockRecorder {
 	return m.recorder
 }
 
-// CallCreate mocks base method
-func (m *MockNotifyHandler) CallCreate(c *call.Call) {
+// CallCreated mocks base method
+func (m *MockNotifyHandler) CallCreated(c *call.Call) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CallCreate", c)
+	m.ctrl.Call(m, "CallCreated", c)
 }
 
-// CallCreate indicates an expected call of CallCreate
-func (mr *MockNotifyHandlerMockRecorder) CallCreate(c interface{}) *gomock.Call {
+// CallCreated indicates an expected call of CallCreated
+func (mr *MockNotifyHandlerMockRecorder) CallCreated(c interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockNotifyHandler)(nil).CallCreate), c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreated", reflect.TypeOf((*MockNotifyHandler)(nil).CallCreated), c)
+}
+
+// CallUpdated mocks base method
+func (m *MockNotifyHandler) CallUpdated(c *call.Call) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CallUpdated", c)
+}
+
+// CallUpdated indicates an expected call of CallUpdated
+func (mr *MockNotifyHandlerMockRecorder) CallUpdated(c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallUpdated", reflect.TypeOf((*MockNotifyHandler)(nil).CallUpdated), c)
+}
+
+// CallHungup mocks base method
+func (m *MockNotifyHandler) CallHungup(c *call.Call) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CallHungup", c)
+}
+
+// CallHungup indicates an expected call of CallHungup
+func (mr *MockNotifyHandlerMockRecorder) CallHungup(c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHungup", reflect.TypeOf((*MockNotifyHandler)(nil).CallHungup), c)
 }

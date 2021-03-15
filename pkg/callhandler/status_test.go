@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
@@ -19,13 +20,15 @@ func TestUpdateStatusRinging(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -51,6 +54,8 @@ func TestUpdateStatusRinging(t *testing.T) {
 		ctx := context.Background()
 
 		mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusRinging, tt.channel.TMRinging).Return(nil)
+		mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+		mockNotify.EXPECT().CallUpdated(tt.call)
 
 		if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -63,13 +68,15 @@ func TestUpdateStatusRingingFail(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -145,13 +152,15 @@ func TestUpdateStatusProgressing(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -189,6 +198,8 @@ func TestUpdateStatusProgressing(t *testing.T) {
 		ctx := context.Background()
 
 		mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer).Return(nil)
+		mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+		mockNotify.EXPECT().CallUpdated(tt.call)
 
 		if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)

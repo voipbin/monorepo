@@ -1,5 +1,5 @@
 # call-manager
-Handling the call. 
+Handling the call.
 Execute the atomic call actions.
 
 # Usage
@@ -85,5 +85,14 @@ Echo back. Sound only.
 ## stream_echo
 Echo back. Sound/Video/DTMF.
 
+# Events
+## call_crested
+Notification event for call creating.
+
+## call_updated
+Notification event for call's status updating.
+
+## call_hungup
+Notification event for call's hangup.
 
 # Note

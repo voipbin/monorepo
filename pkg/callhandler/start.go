@@ -67,7 +67,7 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call,
 		return nil, err
 	}
 
-	h.notifyHandler.CallCreate(res)
+	h.notifyHandler.CallCreated(res)
 	return res, nil
 }
 
