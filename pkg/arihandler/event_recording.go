@@ -32,9 +32,16 @@ func (h *eventHandler) eventHandlerRecordingStarted(ctx context.Context, evt int
 
 	// update record state to recording
 	if err := h.db.RecordingSetStatus(ctx, r.ID, recording.StatusRecording, string(e.Timestamp)); err != nil {
-		log.Errorf("Could not update the record status to recording. err: %v", err)
+		log.Errorf("Could not update the recording status to recording. err: %v", err)
 		return err
 	}
+
+	tmpRecording, err := h.db.RecordingGet(ctx, r.ID)
+	if err != nil {
+		log.Errorf("Could not get the updated recording info. err: %v", err)
+		return err
+	}
+	h.notifyHandler.RecordingStarted(tmpRecording)
 
 	return nil
 }
@@ -69,6 +76,13 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 		log.Errorf("Could not update the record status to end. err: %v", err)
 		return err
 	}
+
+	tmpRecording, err := h.db.RecordingGet(ctx, r.ID)
+	if err != nil {
+		log.Errorf("Could not get the updated recording info. err: %v", err)
+		return err
+	}
+	h.notifyHandler.RecordingFinished(tmpRecording)
 
 	// set empty recordID
 	switch r.Type {

@@ -7,6 +7,7 @@ package notifyhandler
 import (
 	gomock "github.com/golang/mock/gomock"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	reflect "reflect"
 )
 
@@ -67,4 +68,28 @@ func (m *MockNotifyHandler) CallHungup(c *call.Call) {
 func (mr *MockNotifyHandlerMockRecorder) CallHungup(c interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHungup", reflect.TypeOf((*MockNotifyHandler)(nil).CallHungup), c)
+}
+
+// RecordingStarted mocks base method
+func (m *MockNotifyHandler) RecordingStarted(r *recording.Recording) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RecordingStarted", r)
+}
+
+// RecordingStarted indicates an expected call of RecordingStarted
+func (mr *MockNotifyHandlerMockRecorder) RecordingStarted(r interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStarted", reflect.TypeOf((*MockNotifyHandler)(nil).RecordingStarted), r)
+}
+
+// RecordingFinished mocks base method
+func (m *MockNotifyHandler) RecordingFinished(r *recording.Recording) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RecordingFinished", r)
+}
+
+// RecordingFinished indicates an expected call of RecordingFinished
+func (mr *MockNotifyHandlerMockRecorder) RecordingFinished(r interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingFinished", reflect.TypeOf((*MockNotifyHandler)(nil).RecordingFinished), r)
 }
