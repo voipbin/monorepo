@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -59,10 +60,13 @@ type eventType string
 
 // list of event types
 const (
-	eventTypeCallCreated   eventType = "call_created"
-	eventTypeCallUpdated   eventType = "call_updated"
-	eventTypeCallHungup    eventType = "call_hungup"
-	eventTypeCallConnected eventType = "call_connected"
+	// call
+	eventTypeCallCreated eventType = "call_created"
+	eventTypeCallUpdated eventType = "call_updated"
+	eventTypeCallHungup  eventType = "call_hungup"
+
+	eventTypeRecordingStarted  eventType = "recording_started"
+	eventTypeRecordingFinished eventType = "recording_finished"
 )
 
 // const event publisher
@@ -80,6 +84,10 @@ type NotifyHandler interface {
 	CallCreated(c *call.Call)
 	CallUpdated(c *call.Call)
 	CallHungup(c *call.Call)
+
+	// recording
+	RecordingStarted(r *recording.Recording)
+	RecordingFinished(r *recording.Recording)
 }
 
 type notifyHandler struct {

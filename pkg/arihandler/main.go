@@ -41,9 +41,10 @@ type eventHandler struct {
 	cache      cachehandler.CacheHandler
 	rabbitSock rabbitmqhandler.Rabbit
 
-	reqHandler  requesthandler.RequestHandler
-	callHandler callhandler.CallHandler
-	confHandler conferencehandler.ConferenceHandler
+	reqHandler    requesthandler.RequestHandler
+	notifyHandler notifyhandler.NotifyHandler
+	callHandler   callhandler.CallHandler
+	confHandler   conferencehandler.ConferenceHandler
 }
 
 var (
@@ -91,17 +92,18 @@ func init() {
 
 // NewEventHandler create EventHandler
 func NewEventHandler(sock rabbitmqhandler.Rabbit, db db.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, callHandler callhandler.CallHandler, confHandler conferencehandler.ConferenceHandler) EventHandler {
-	handler := &eventHandler{
+	h := &eventHandler{
 		rabbitSock: sock,
 		db:         db,
 		cache:      cache,
 	}
 
-	handler.reqHandler = reqHandler
-	handler.callHandler = callHandler
-	handler.confHandler = confHandler
+	h.reqHandler = reqHandler
+	h.notifyHandler = notifyHandler
+	h.callHandler = callHandler
+	h.confHandler = confHandler
 
-	return handler
+	return h
 }
 
 // Run starts to receive ARI event and process it.

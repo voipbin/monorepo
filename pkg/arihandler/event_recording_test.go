@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -20,13 +21,15 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockReq,
-		callHandler: mockSvc,
+		db:            mockDB,
+		rabbitSock:    mockSock,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		callHandler:   mockSvc,
 	}
 
 	type test struct {
@@ -57,6 +60,8 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 
 			mockDB.EXPECT().RecordingGetByFilename(gomock.Any(), tt.recording.Filename).Return(tt.recording, nil)
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusRecording, tt.timestamp).Return(nil)
+			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
+			mockNotify.EXPECT().RecordingStarted(tt.recording)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -72,13 +77,15 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockSvc := callhandler.NewMockCallHandler(mc)
 
 	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockReq,
-		callHandler: mockSvc,
+		db:            mockDB,
+		rabbitSock:    mockSock,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		callHandler:   mockSvc,
 	}
 
 	type test struct {
@@ -113,6 +120,8 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 			mockDB.EXPECT().RecordingGetByFilename(gomock.Any(), tt.recording.Filename).Return(tt.recording, nil)
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
 			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
+			mockNotify.EXPECT().RecordingFinished(tt.recording)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
