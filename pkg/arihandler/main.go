@@ -10,7 +10,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
@@ -129,37 +128,49 @@ func (h *eventHandler) Run(queue, receiver string) error {
 	// receive ARI event
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(queue, receiver, false, false, false, h.processEvent)
-			if err != nil {
-				log.Errorf("Could not consume the ARI event message correctly. err: %v", err)
-			}
+			h.rabbitSock.ConsumeMessageOpt(queue, receiver, false, false, false, h.processEventRun)
 		}
 	}()
 	return nil
 }
 
+func (h *eventHandler) processEventRun(m *rabbitmqhandler.Event) error {
+	go func() {
+		if err := h.processEvent(m); err != nil {
+			logrus.Errorf("Could not consume the ARI event message correctly. err: %v", err)
+		}
+	}()
+
+	return nil
+}
+
 // processEvent processes received ARI event
 func (h *eventHandler) processEvent(m *rabbitmqhandler.Event) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"event": m,
+		},
+	)
+
 	if m.Type != "ari_event" {
-		return fmt.Errorf("Wrong event type recevied. type: %s", m.Type)
+		return fmt.Errorf("wrong event type received. type: %s", m.Type)
 	}
 
 	// parse
 	event, evt, err := ari.Parse([]byte(m.Data))
 	if err != nil {
-		return err
+		return fmt.Errorf("could not parse the message. err: %v", err)
+
 	}
 
-	log := log.WithFields(
-		log.Fields{
+	log = log.WithFields(
+		logrus.Fields{
 			"asterisk": event.AsteriskID,
 			"type":     event.Type,
-		})
+		},
+	)
 
-	log.WithFields(
-		logrus.Fields{
-			"event": m,
-		}).Debugf("Received ARI event. type: %s", event.Type)
+	log.Debugf("Received ARI event. type: %s", event.Type)
 	promARIEventTotal.WithLabelValues(string(event.Type), event.AsteriskID).Inc()
 
 	// processMap maps ARIEvent name and event handler.
@@ -196,11 +207,7 @@ func (h *eventHandler) processEvent(m *rabbitmqhandler.Event) error {
 	promARIProcessTime.WithLabelValues(event.AsteriskID, string(event.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
-		log.WithFields(
-			logrus.Fields{
-				"event": m,
-			}).Errorf("Could not process the ari event correctly. err: %v", err)
-		return err
+		return fmt.Errorf("could not process the ari event correctly. err: %v", err)
 	}
 
 	return nil

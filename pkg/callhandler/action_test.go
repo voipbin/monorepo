@@ -259,6 +259,8 @@ func TestActionExecuteTalk(t *testing.T) {
 		expectSSML     string
 		expectGender   string
 		expectLanguage string
+		filename       string
+		expectURI      []string
 	}
 
 	tests := []test{
@@ -278,14 +280,16 @@ func TestActionExecuteTalk(t *testing.T) {
 			`hello world`,
 			"male",
 			"en-US",
+			"tts/tmp_filename.wav",
+			[]string{"sound:http://localhost:8000/tts/tmp_filename.wav"},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().TTSSpeechesPOST(tt.expectSSML, tt.expectGender, tt.expectLanguage).Return("https://signedurl.wav", nil)
-			mockReq.EXPECT().AstChannelPlay(tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, []string{"sound:https://signedurl.wav"}, "").Return(nil)
+			mockReq.EXPECT().TTSSpeechesPOST(tt.expectSSML, tt.expectGender, tt.expectLanguage).Return(tt.filename, nil)
+			mockReq.EXPECT().AstChannelPlay(tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, tt.expectURI, "").Return(nil)
 
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

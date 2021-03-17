@@ -89,6 +89,18 @@ var (
 		},
 		[]string{"type"},
 	)
+
+	promCallActionProcessTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "call_action_process_time",
+			Help:      "Process time of action execution",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000,
+			},
+		},
+		[]string{"type"},
+	)
 )
 
 func init() {
@@ -96,6 +108,7 @@ func init() {
 		promCallCreateTotal,
 		promCallHangupTotal,
 		promCallActionTotal,
+		promCallActionProcessTime,
 	)
 }
 
