@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -42,6 +43,7 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	})
 	log.Debugf("Executing the action. action_type: %s", a.Type)
 
+	start := time.Now()
 	var err error
 	switch a.Type {
 	case action.TypeAnswer:
@@ -81,6 +83,8 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 		log.Errorf("Could not find action handle found. call: %s, action: %s, type: %s", c.ID, a.ID, a.Type)
 		err = fmt.Errorf("no action handler found")
 	}
+	elapsed := time.Since(start)
+	promCallActionProcessTime.WithLabelValues(string(a.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	//  if the action execution has failed move to the next action
 	if err != nil {
@@ -483,10 +487,11 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 	}
 
 	// send request for create wav file
-	url, err := h.reqHandler.TTSSpeechesPOST(option.Text, option.Gender, option.Language)
+	filename, err := h.reqHandler.TTSSpeechesPOST(option.Text, option.Gender, option.Language)
 	if err != nil {
 		return fmt.Errorf("could not create tts wav. err: %v", err)
 	}
+	url := fmt.Sprintf("http://localhost:8000/%s", filename)
 
 	// create a media string array
 	var medias []string
