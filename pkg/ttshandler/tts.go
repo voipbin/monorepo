@@ -19,20 +19,18 @@ func (h *ttsHandler) TTSCreate(text string, lang string, gender string) (string,
 	// create hash/target
 	filename := h.filenameHashGenerator(text, lang, gender)
 	target := fmt.Sprintf("%s/%s", bucketDirectory, filename)
-	downloadLink := h.createDownloadLink(filename)
 
 	log := logrus.WithFields(
 		logrus.Fields{
-			"filename":      filename,
-			"target":        target,
-			"download_link": downloadLink,
+			"filename": filename,
+			"target":   target,
 		},
 	)
 
 	// check exists
 	if h.bucketHandler.FileExist(target) == true {
 		log.Infof("The target file is already exsits.")
-		return downloadLink, nil
+		return target, nil
 	}
 
 	// create audio
@@ -50,7 +48,7 @@ func (h *ttsHandler) TTSCreate(text string, lang string, gender string) (string,
 	}
 	log.Debugf("Created and uploaded tts wav file to the bucket correctly. target: %s", target)
 
-	return downloadLink, nil
+	return target, nil
 }
 
 // filenameHashGenerator generates hashed filename for tts wav file.
@@ -62,8 +60,4 @@ func (h *ttsHandler) filenameHashGenerator(text string, lang string, gender stri
 	bs := sh1.Sum(nil)
 
 	return fmt.Sprintf("%x.wav", bs)
-}
-
-func (h *ttsHandler) createDownloadLink(filename string) string {
-	return fmt.Sprintf("http://%s/v1.0/tts/%s", h.httpListenAddr, filename)
 }

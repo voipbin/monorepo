@@ -4,5 +4,5 @@ package response
 // v1 response type struct for
 // /v1/speeches POST
 type V1ResponseSpeechesPost struct {
-	URL string `json:"url"`
+	Filename string `json:"filename"`
 }
