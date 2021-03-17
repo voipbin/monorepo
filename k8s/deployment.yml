@@ -48,8 +48,6 @@ spec:
             - 'voipbin-production'
             - '-gcp_bucket_name'
             - 'voipbin-voip-media-bucket-europe-west4'
-            - '-http_listen_addr'
-            - '10.164.15.246'
 
           ports:
             - name: metrics
