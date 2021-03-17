@@ -39,7 +39,7 @@ sed -i 's/VOIPBIN_OUTBOUND_PROXY/'$VOIPBIN_OUTBOUND_PROXY_ADDR'/g' /etc/asterisk
 /bin/mount --bind /mnt/recording /var/spool/asterisk/recording
 
 # Start http server for local file get
-cd / && python3 -m http.server 8000 &
+cd /mnt && python3 -m http.server 8000 &
 
 # Start asterisk
 /usr/sbin/asterisk -fvvvvvvvg
