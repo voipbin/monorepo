@@ -21,6 +21,7 @@ const (
 		status,
 		format,
 		filename,
+		webhook_uri,
 
 		asterisk_id,
 		channel_id,
@@ -48,6 +49,7 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 		&res.Status,
 		&res.Format,
 		&res.Filename,
+		&res.WebhookURI,
 
 		&res.AsteriskID,
 		&res.ChannelID,
@@ -135,6 +137,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		status,
 		format,
 		filename,
+		webhook_uri,
 
 		asterisk_id,
 		channel_id,
@@ -142,7 +145,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		tm_create
 
 	) values(
-		?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?, ?,
 		?, ?,
 		?
 	)`
@@ -155,6 +158,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		c.Status,
 		c.Format,
 		c.Filename,
+		c.WebhookURI,
 
 		c.AsteriskID,
 		c.ChannelID,
