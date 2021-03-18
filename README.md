@@ -4,6 +4,35 @@ Database scheme manage project for bin-manager
 
 After run this project using the gitlab-ci/cd, the used pod and job will be remained. But it will be destroyed once this poject runs in pipelie again.
 
+# Add alembic change
+Add the database change.
+
+```
+$ cd bin-manager
+$ alembic -c alembic.ini revision -m "<your change title>"
+```
+
+# Rollback
+Rollback the database change.
+
+```
+$ cd bin-manager
+```
+
+Run one of the below.
+```
+$ alembic -c alembic.ini downgrade -1
+$ alembic -c alembic.ini downgrade ae1027a6acf
+```
+
+# Run
+Need a connection to the VPN.
+
+```
+$ cd bin-manager
+$ alembic -c alembic.ini upgrade head
+```
+
 # Status check
 ```
 $ alembic current --verbose                                                                   7s
@@ -36,30 +65,3 @@ Path: /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/bin-manager/m
 ...
 ```
 
-# Run
-Need a connection to the VPN.
-
-```
-$ cd bin-manager
-$ alembic -c alembic.ini upgrade head
-```
-
-# Rollback
-
-```
-$ cd bin-manager
-```
-
-Run one of the below.
-```
-$ alembic -c alembic.ini downgrade -1
-$ alembic -c alembic.ini downgrade ae1027a6acf
-```
-
-
-# Make alembic change
-
-```
-$ cd bin-manager
-$ alembic -c alembic.ini revision -m "<your change title>"
-```
