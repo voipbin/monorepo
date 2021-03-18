@@ -41,8 +41,8 @@ func TestRecordingStarted(t *testing.T) {
 				Status:      recording.StatusRecording,
 			},
 			&rabbitmqhandler.Event{
-				Type:      string(eventTypeRecordingStarted),
-				Publisher: eventPublisher,
+				Type:      string(EventTypeRecordingStarted),
+				Publisher: EventPublisher,
 				DataType:  dataTypeJSON,
 				Data:      []byte(`{"id":"70fb0206-8618-11eb-96de-eb0202c2e333","user_id":1,"type":"call","reference_id":"82f0c770-8618-11eb-971f-3bef56169bec","status":"recording","format":"","filename":"","webhook_uri":"","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
@@ -58,8 +58,8 @@ func TestRecordingStarted(t *testing.T) {
 				WebhookURI:  "http://test.com/test_webhook",
 			},
 			&rabbitmqhandler.Event{
-				Type:      string(eventTypeRecordingStarted),
-				Publisher: eventPublisher,
+				Type:      string(EventTypeRecordingStarted),
+				Publisher: EventPublisher,
 				DataType:  dataTypeJSON,
 				Data:      []byte(`{"id":"a29148ce-878b-11eb-a518-83192db03b8d","user_id":1,"type":"call","reference_id":"a31758d8-878b-11eb-b410-3bd79a48fa1f","status":"recording","format":"","filename":"","webhook_uri":"http://test.com/test_webhook","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
@@ -106,8 +106,8 @@ func TestRecordingFinished(t *testing.T) {
 				Status:      recording.StatusEnd,
 			},
 			&rabbitmqhandler.Event{
-				Type:      string(eventTypeRecordingFinished),
-				Publisher: eventPublisher,
+				Type:      string(EventTypeRecordingFinished),
+				Publisher: EventPublisher,
 				DataType:  dataTypeJSON,
 				Data:      []byte(`{"id":"d7edc1ec-8618-11eb-9740-9bc23366bed2","user_id":1,"type":"call","reference_id":"dbb39734-8618-11eb-89c7-3f96da5df55e","status":"ended","format":"","filename":"","webhook_uri":"","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},

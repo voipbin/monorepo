@@ -8,7 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 )
 
-func (r *notifyHandler) callCommon(t eventType, c *call.Call) {
+func (r *notifyHandler) callCommon(t EventType, c *call.Call) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call":       c,
@@ -34,20 +34,20 @@ func (r *notifyHandler) callCommon(t eventType, c *call.Call) {
 // CallCreated sends the notify for call creation.
 func (r *notifyHandler) CallCreated(c *call.Call) {
 
-	r.callCommon(eventTypeCallCreated, c)
+	r.callCommon(EventTypeCallCreated, c)
 	return
 }
 
 // CallUpdated sends the notify for call update.
 func (r *notifyHandler) CallUpdated(c *call.Call) {
-	r.callCommon(eventTypeCallUpdated, c)
+	r.callCommon(EventTypeCallUpdated, c)
 
 	return
 }
 
 // CallHungup sends the notify for call hangup.
 func (r *notifyHandler) CallHungup(c *call.Call) {
-	r.callCommon(eventTypeCallHungup, c)
+	r.callCommon(EventTypeCallHungup, c)
 
 	return
 }

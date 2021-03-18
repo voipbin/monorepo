@@ -8,7 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
-func (n *notifyHandler) recordingCommon(t eventType, r *recording.Recording) {
+func (n *notifyHandler) recordingCommon(t EventType, r *recording.Recording) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"recording":  r,
@@ -34,13 +34,13 @@ func (n *notifyHandler) recordingCommon(t eventType, r *recording.Recording) {
 // RecordingStarted sends the notify for recording started.
 func (n *notifyHandler) RecordingStarted(r *recording.Recording) {
 
-	n.recordingCommon(eventTypeRecordingStarted, r)
+	n.recordingCommon(EventTypeRecordingStarted, r)
 	return
 }
 
 // RecordingFinished sends the notify for recording finished.
 func (n *notifyHandler) RecordingFinished(r *recording.Recording) {
 
-	n.recordingCommon(eventTypeRecordingFinished, r)
+	n.recordingCommon(EventTypeRecordingFinished, r)
 	return
 }
