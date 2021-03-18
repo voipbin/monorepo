@@ -18,6 +18,23 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
+// EventType
+type EventType string
+
+// list of event types
+const (
+	// call
+	EventTypeCallCreated EventType = "call_created"
+	EventTypeCallUpdated EventType = "call_updated"
+	EventTypeCallHungup  EventType = "call_hungup"
+
+	EventTypeRecordingStarted  EventType = "recording_started"
+	EventTypeRecordingFinished EventType = "recording_finished"
+)
+
+// const event publisher
+const EventPublisher = "call-manager"
+
 // Data types
 var (
 	dataTypeText = "text/plain"
@@ -54,23 +71,6 @@ var (
 		[]string{"type"},
 	)
 )
-
-// eventType
-type eventType string
-
-// list of event types
-const (
-	// call
-	eventTypeCallCreated eventType = "call_created"
-	eventTypeCallUpdated eventType = "call_updated"
-	eventTypeCallHungup  eventType = "call_hungup"
-
-	eventTypeRecordingStarted  eventType = "recording_started"
-	eventTypeRecordingFinished eventType = "recording_finished"
-)
-
-// const event publisher
-const eventPublisher = "call-manager"
 
 func init() {
 	prometheus.MustRegister(
@@ -124,7 +124,7 @@ func uriUnescape(u string) string {
 }
 
 // publishNotify publishes a notify message.
-func (r *notifyHandler) publishNotify(eventType eventType, dataType string, data json.RawMessage, timeout int) error {
+func (r *notifyHandler) publishNotify(eventType EventType, dataType string, data json.RawMessage, timeout int) error {
 
 	log.WithFields(log.Fields{
 		"type":      eventType,
@@ -135,7 +135,7 @@ func (r *notifyHandler) publishNotify(eventType eventType, dataType string, data
 	// creat a request message
 	evt := &rabbitmqhandler.Event{
 		Type:      string(eventType),
-		Publisher: eventPublisher,
+		Publisher: EventPublisher,
 		DataType:  dataType,
 		Data:      data,
 	}
