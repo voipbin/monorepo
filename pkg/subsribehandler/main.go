@@ -29,9 +29,12 @@ const (
 
 // list of call-manager event type
 const (
-	cmCallCreate = "call_create"
-	cmCallUpdate = "call_update"
-	cmCallHangup = "call_hangup"
+	cmCallCreate = "call_created"
+	cmCallUpdate = "call_updated"
+	cmCallHangup = "call_hungup"
+
+	cmRecordingStarted  = "recording_started"
+	cmRecordingFinished = "recording_finished"
 )
 
 // SubscribeHandler interface
@@ -165,8 +168,14 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	start := time.Now()
 	switch {
 
+	//// call-manager
+	// call
 	case m.Publisher == publisherCallManager && (m.Type == cmCallCreate || m.Type == cmCallUpdate || m.Type == cmCallHangup):
 		err = h.processEventCMCallCommon(m)
+
+	// recording
+	case m.Publisher == publisherCallManager && (m.Type == cmRecordingStarted || m.Type == cmRecordingFinished):
+		err = h.processEventCMRecordingCommon(m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
