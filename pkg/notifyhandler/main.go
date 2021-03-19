@@ -18,7 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// EventType
+// EventType string
 type EventType string
 
 // list of event types
@@ -32,7 +32,7 @@ const (
 	EventTypeRecordingFinished EventType = "recording_finished"
 )
 
-// const event publisher
+// EventPublisher type
 const EventPublisher = "call-manager"
 
 // Data types

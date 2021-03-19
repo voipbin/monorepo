@@ -38,7 +38,12 @@ func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason
 		// we don't channel hangup here, we are assumming the channel has already gone.
 		return err
 	}
-	h.notifyHandler.CallHungup(c)
+	tmpCall, err := h.db.CallGet(ctx, c.ID)
+	if err != nil {
+		logrus.Errorf("Could not get hungup call data. call: %s, err: %v", c.ID, err)
+		return nil
+	}
+	h.notifyHandler.CallHungup(tmpCall)
 
 	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
 	return nil
