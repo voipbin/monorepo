@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -31,7 +31,7 @@ func (h *listenHandler) processV1DomainsPost(m *rabbitmqhandler.Request) (*rabbi
 	}
 
 	// create a new domain
-	tmpDomain := &models.Domain{
+	tmpDomain := &domain.Domain{
 		UserID:     reqData.UserID,
 		Name:       reqData.Name,
 		Detail:     reqData.Detail,
@@ -113,7 +113,7 @@ func (h *listenHandler) processV1DomainsIDPut(req *rabbitmqhandler.Request) (*ra
 	}
 
 	// create a update domain info
-	tmpDomain := &models.Domain{
+	tmpDomain := &domain.Domain{
 		ID:     domainID,
 		Name:   reqData.Name,
 		Detail: reqData.Detail,

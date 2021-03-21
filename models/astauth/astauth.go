@@ -1,4 +1,4 @@
-package models
+package astauth
 
 // AstAuth struct for Asterisk's auth
 type AstAuth struct {

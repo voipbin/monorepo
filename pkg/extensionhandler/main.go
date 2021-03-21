@@ -10,7 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
@@ -18,12 +18,12 @@ import (
 
 // ExtensionHandler is interface for service handle
 type ExtensionHandler interface {
-	ExtensionCreate(ctx context.Context, e *models.Extension) (*models.Extension, error)
+	ExtensionCreate(ctx context.Context, e *extension.Extension) (*extension.Extension, error)
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
 	ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) error
-	ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error)
-	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error)
-	ExtensionUpdate(ctx context.Context, e *models.Extension) (*models.Extension, error)
+	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
+	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
+	ExtensionUpdate(ctx context.Context, e *extension.Extension) (*extension.Extension, error)
 }
 
 // extensionHandler structure for service handle

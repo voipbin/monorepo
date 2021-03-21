@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 )
@@ -26,13 +26,13 @@ func TestDomainCreate(t *testing.T) {
 
 	type test struct {
 		name   string
-		domain *models.Domain
+		domain *domain.Domain
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Domain{
+			&domain.Domain{
 				UserID:     1,
 				DomainName: "test.sip.voipbin.net",
 			},
@@ -65,13 +65,13 @@ func TestDomainUpdate(t *testing.T) {
 
 	type test struct {
 		name   string
-		domain *models.Domain
+		domain *domain.Domain
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("43b1c268-6eed-11eb-87ce-8f9d9ae03b04"),
 				UserID:     1,
 				Name:       "update name",

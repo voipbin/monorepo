@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -37,7 +37,7 @@ func (h *listenHandler) processV1ExtensionsPost(m *rabbitmqhandler.Request) (*ra
 	}
 
 	// create a new extension
-	e := &models.Extension{
+	e := &extension.Extension{
 		UserID: reqData.UserID,
 
 		Name:     reqData.Name,
@@ -122,7 +122,7 @@ func (h *listenHandler) processV1ExtensionsIDPut(req *rabbitmqhandler.Request) (
 	}
 
 	// create a update domain info
-	tmpExt := &models.Extension{
+	tmpExt := &extension.Extension{
 		ID:       extID,
 		Name:     reqData.Name,
 		Detail:   reqData.Detail,

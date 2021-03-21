@@ -8,7 +8,7 @@ import (
 	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	models "gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	reflect "reflect"
 )
 
@@ -36,10 +36,10 @@ func (m *MockExtensionHandler) EXPECT() *MockExtensionHandlerMockRecorder {
 }
 
 // ExtensionCreate mocks base method
-func (m *MockExtensionHandler) ExtensionCreate(ctx context.Context, e *models.Extension) (*models.Extension, error) {
+func (m *MockExtensionHandler) ExtensionCreate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionCreate", ctx, e)
-	ret0, _ := ret[0].(*models.Extension)
+	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -79,10 +79,10 @@ func (mr *MockExtensionHandlerMockRecorder) ExtensionDeleteByDomainID(ctx, domai
 }
 
 // ExtensionGet mocks base method
-func (m *MockExtensionHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+func (m *MockExtensionHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGet", ctx, id)
-	ret0, _ := ret[0].(*models.Extension)
+	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -94,10 +94,10 @@ func (mr *MockExtensionHandlerMockRecorder) ExtensionGet(ctx, id interface{}) *g
 }
 
 // ExtensionGetsByDomainID mocks base method
-func (m *MockExtensionHandler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error) {
+func (m *MockExtensionHandler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGetsByDomainID", ctx, domainID, token, limit)
-	ret0, _ := ret[0].([]*models.Extension)
+	ret0, _ := ret[0].([]*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -109,10 +109,10 @@ func (mr *MockExtensionHandlerMockRecorder) ExtensionGetsByDomainID(ctx, domainI
 }
 
 // ExtensionUpdate mocks base method
-func (m *MockExtensionHandler) ExtensionUpdate(ctx context.Context, e *models.Extension) (*models.Extension, error) {
+func (m *MockExtensionHandler) ExtensionUpdate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionUpdate", ctx, e)
-	ret0, _ := ret[0].(*models.Extension)
+	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

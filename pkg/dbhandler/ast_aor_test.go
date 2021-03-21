@@ -8,7 +8,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
 
@@ -20,18 +20,18 @@ func TestAstAORCreate(t *testing.T) {
 
 	type test struct {
 		name      string
-		aor       *models.AstAOR
-		expectAOR *models.AstAOR
+		aor       *astaor.AstAOR
+		expectAOR *astaor.AstAOR
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.AstAOR{
+			&astaor.AstAOR{
 				ID:          getStringPointer("test1@test.sip.voipbin.net"),
 				MaxContacts: getIntegerPointer(1),
 			},
-			&models.AstAOR{
+			&astaor.AstAOR{
 				ID:          getStringPointer("test1@test.sip.voipbin.net"),
 				MaxContacts: getIntegerPointer(1),
 			},
@@ -69,13 +69,13 @@ func TestAstAORDelete(t *testing.T) {
 
 	type test struct {
 		name string
-		aor  *models.AstAOR
+		aor  *astaor.AstAOR
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.AstAOR{
+			&astaor.AstAOR{
 				ID:          getStringPointer("05fb910e-6e04-11eb-b8f6-73501fb47ab3@test.sip.voipbin.net"),
 				MaxContacts: getIntegerPointer(1),
 			},

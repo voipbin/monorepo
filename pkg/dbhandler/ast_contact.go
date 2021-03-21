@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 )
 
 const (
@@ -31,8 +31,8 @@ const (
 	`
 )
 
-func (h *handler) astContactGetFromRow(row *sql.Rows) (*models.AstContact, error) {
-	res := &models.AstContact{}
+func (h *handler) astContactGetFromRow(row *sql.Rows) (*astcontact.AstContact, error) {
+	res := &astcontact.AstContact{}
 	if err := row.Scan(
 		&res.ID,
 		&res.URI,
@@ -57,7 +57,7 @@ func (h *handler) astContactGetFromRow(row *sql.Rows) (*models.AstContact, error
 }
 
 // AstContactsSetToCache sets the given AstContact to the cache
-func (h *handler) AstContactsSetToCache(ctx context.Context, ednpoint string, contacts []*models.AstContact) error {
+func (h *handler) AstContactsSetToCache(ctx context.Context, ednpoint string, contacts []*astcontact.AstContact) error {
 	if err := h.cache.AstContactsSet(ctx, ednpoint, contacts); err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (h *handler) AstContactsSetToCache(ctx context.Context, ednpoint string, co
 }
 
 // AstContactGetsFromCache returns AstContact from the cache.
-func (h *handler) AstContactGetsFromCache(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+func (h *handler) AstContactGetsFromCache(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 
 	// get from cache
 	res, err := h.cache.AstContactsGet(ctx, endpoint)
@@ -84,7 +84,7 @@ func (h *handler) AstContactDeleteFromCache(ctx context.Context, endpoint string
 }
 
 // AstContactGetsByEndpoint returns AstContact from the DB.
-func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 	// get from cache
 	if res, err := h.AstContactGetsFromCache(ctx, endpoint); err == nil {
 		return res, nil
@@ -98,7 +98,7 @@ func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string)
 	}
 	defer rows.Close()
 
-	res := []*models.AstContact{}
+	res := []*astcontact.AstContact{}
 	for rows.Next() {
 		u, err := h.astContactGetFromRow(rows)
 		if err != nil {

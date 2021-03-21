@@ -7,12 +7,15 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
 // ExtensionCreate creates a new extension
 // in this func, it creates all releated asterisk resource as well.
-func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *models.Extension) (*models.Extension, error) {
+func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -36,7 +39,7 @@ func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *models.Extens
 	// create aor
 	maxContacts := 1
 	removeExisting := "yes"
-	aor := &models.AstAOR{
+	aor := &astaor.AstAOR{
 		ID:             &commonID,
 		MaxContacts:    &maxContacts,
 		RemoveExisting: &removeExisting,
@@ -48,7 +51,7 @@ func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *models.Extens
 
 	// create auth
 	authType := "userpass"
-	auth := &models.AstAuth{
+	auth := &astauth.AstAuth{
 		ID:       &commonID,
 		AuthType: &authType,
 		Username: &e.Extension,
@@ -61,7 +64,7 @@ func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *models.Extens
 	}
 
 	// create endpoint
-	endpoint := &models.AstEndpoint{
+	endpoint := &astendpoint.AstEndpoint{
 		ID:   &commonID,
 		AORs: &commonID,
 		Auth: &commonID,
@@ -72,7 +75,7 @@ func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *models.Extens
 	}
 
 	// create extension
-	ext := &models.Extension{
+	ext := &extension.Extension{
 		ID:     uuid.Must(uuid.NewV4()),
 		UserID: e.UserID,
 
@@ -102,12 +105,12 @@ func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *models.Extens
 }
 
 // ExtensionGet gets a exists extension
-func (h *extensionHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+func (h *extensionHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	return h.dbBin.ExtensionGet(ctx, id)
 }
 
 // ExtensionUpdate updates a exists extension
-func (h *extensionHandler) ExtensionUpdate(ctx context.Context, e *models.Extension) (*models.Extension, error) {
+func (h *extensionHandler) ExtensionUpdate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user_id":   e.UserID,
@@ -128,7 +131,7 @@ func (h *extensionHandler) ExtensionUpdate(ctx context.Context, e *models.Extens
 	ext.Password = e.Password
 
 	// update ast_auth
-	auth := &models.AstAuth{
+	auth := &astauth.AstAuth{
 		ID:       &ext.AuthID,
 		Password: &ext.Password,
 	}
@@ -209,7 +212,7 @@ func (h *extensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domain
 }
 
 // ExtensionGetsByDomainID returns list of extensions
-func (h *extensionHandler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error) {
+func (h *extensionHandler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
 
 	exts, err := h.dbBin.ExtensionGetsByDomainID(ctx, domainID, token, limit)
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
@@ -25,14 +25,14 @@ func TestContactGetsByDomainID(t *testing.T) {
 	type test struct {
 		name     string
 		endpoint string
-		contacts []*models.AstContact
+		contacts []*astcontact.AstContact
 	}
 
 	tests := []test{
 		{
 			"test normal",
 			"test@test.sip.voipbin.net",
-			[]*models.AstContact{
+			[]*astcontact.AstContact{
 				{
 					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
 					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",

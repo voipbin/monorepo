@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 )
 
 const (
@@ -29,8 +29,8 @@ const (
 )
 
 // domainGetFromRow gets the domain from the row
-func (h *handler) domainGetFromRow(row *sql.Rows) (*models.Domain, error) {
-	res := &models.Domain{}
+func (h *handler) domainGetFromRow(row *sql.Rows) (*domain.Domain, error) {
+	res := &domain.Domain{}
 	if err := row.Scan(
 		&res.ID,
 		&res.UserID,
@@ -50,7 +50,7 @@ func (h *handler) domainGetFromRow(row *sql.Rows) (*models.Domain, error) {
 }
 
 // DomainGetFromDB returns Domain from the DB.
-func (h *handler) DomainGetFromDB(ctx context.Context, id uuid.UUID) (*models.Domain, error) {
+func (h *handler) DomainGetFromDB(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
 	q := fmt.Sprintf("%s where id = ? and tm_delete is null", domainSelect)
 
@@ -88,7 +88,7 @@ func (h *handler) DomainUpdateToCache(ctx context.Context, id uuid.UUID) error {
 }
 
 // DomainSetToCache sets the given Domain to the cache
-func (h *handler) DomainSetToCache(ctx context.Context, e *models.Domain) error {
+func (h *handler) DomainSetToCache(ctx context.Context, e *domain.Domain) error {
 	if err := h.cache.DomainSet(ctx, e); err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (h *handler) DomainSetToCache(ctx context.Context, e *models.Domain) error 
 }
 
 // DomainGetFromCache returns Domain from the cache.
-func (h *handler) DomainGetFromCache(ctx context.Context, id uuid.UUID) (*models.Domain, error) {
+func (h *handler) DomainGetFromCache(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
 	// get from cache
 	res, err := h.cache.DomainGet(ctx, id)
@@ -120,7 +120,7 @@ func (h *handler) DomainDeleteFromCache(ctx context.Context, id uuid.UUID) error
 }
 
 // DomainCreate creates new Domain record.
-func (h *handler) DomainCreate(ctx context.Context, b *models.Domain) error {
+func (h *handler) DomainCreate(ctx context.Context, b *domain.Domain) error {
 	q := `insert into domains(
 		id,
 		user_id,
@@ -158,7 +158,7 @@ func (h *handler) DomainCreate(ctx context.Context, b *models.Domain) error {
 }
 
 // DomainUpdate updates new Domain record.
-func (h *handler) DomainUpdate(ctx context.Context, b *models.Domain) error {
+func (h *handler) DomainUpdate(ctx context.Context, b *domain.Domain) error {
 	q := `
 	update domains set
 		name = ?,
@@ -185,7 +185,7 @@ func (h *handler) DomainUpdate(ctx context.Context, b *models.Domain) error {
 }
 
 // DomainGet returns Domain.
-func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error) {
+func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
 	res, err := h.DomainGetFromCache(ctx, id)
 	if err == nil {
@@ -204,7 +204,7 @@ func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, 
 }
 
 // DomainGetByDomainName gets the domain by the given domain_name.
-func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) (*models.Domain, error) {
+func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
 
 	q := fmt.Sprintf("%s where domain_name = ? and tm_delete is NULL", domainSelect)
 
@@ -227,7 +227,7 @@ func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) 
 }
 
 // DomainGetsByUserID returns list of domains.
-func (h *handler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Domain, error) {
+func (h *handler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
@@ -247,7 +247,7 @@ func (h *handler) DomainGetsByUserID(ctx context.Context, userID uint64, token s
 	}
 	defer rows.Close()
 
-	res := []*models.Domain{}
+	res := []*domain.Domain{}
 	for rows.Next() {
 		u, err := h.domainGetFromRow(rows)
 		if err != nil {

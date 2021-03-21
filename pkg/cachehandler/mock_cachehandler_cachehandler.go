@@ -8,7 +8,12 @@ import (
 	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	models "gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	astaor "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
+	astauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
+	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
+	astendpoint "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
+	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	reflect "reflect"
 )
 
@@ -64,10 +69,10 @@ func (mr *MockCacheHandlerMockRecorder) AstAORDel(ctx, id interface{}) *gomock.C
 }
 
 // AstAORGet mocks base method
-func (m *MockCacheHandler) AstAORGet(ctx context.Context, id string) (*models.AstAOR, error) {
+func (m *MockCacheHandler) AstAORGet(ctx context.Context, id string) (*astaor.AstAOR, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORGet", ctx, id)
-	ret0, _ := ret[0].(*models.AstAOR)
+	ret0, _ := ret[0].(*astaor.AstAOR)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -79,7 +84,7 @@ func (mr *MockCacheHandlerMockRecorder) AstAORGet(ctx, id interface{}) *gomock.C
 }
 
 // AstAORSet mocks base method
-func (m *MockCacheHandler) AstAORSet(ctx context.Context, e *models.AstAOR) error {
+func (m *MockCacheHandler) AstAORSet(ctx context.Context, e *astaor.AstAOR) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORSet", ctx, e)
 	ret0, _ := ret[0].(error)
@@ -107,10 +112,10 @@ func (mr *MockCacheHandlerMockRecorder) AstAuthDel(ctx, id interface{}) *gomock.
 }
 
 // AstAuthGet mocks base method
-func (m *MockCacheHandler) AstAuthGet(ctx context.Context, id string) (*models.AstAuth, error) {
+func (m *MockCacheHandler) AstAuthGet(ctx context.Context, id string) (*astauth.AstAuth, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthGet", ctx, id)
-	ret0, _ := ret[0].(*models.AstAuth)
+	ret0, _ := ret[0].(*astauth.AstAuth)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -122,7 +127,7 @@ func (mr *MockCacheHandlerMockRecorder) AstAuthGet(ctx, id interface{}) *gomock.
 }
 
 // AstAuthSet mocks base method
-func (m *MockCacheHandler) AstAuthSet(ctx context.Context, e *models.AstAuth) error {
+func (m *MockCacheHandler) AstAuthSet(ctx context.Context, e *astauth.AstAuth) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthSet", ctx, e)
 	ret0, _ := ret[0].(error)
@@ -150,10 +155,10 @@ func (mr *MockCacheHandlerMockRecorder) AstContactsDel(ctx, endpoint interface{}
 }
 
 // AstContactsGet mocks base method
-func (m *MockCacheHandler) AstContactsGet(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+func (m *MockCacheHandler) AstContactsGet(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstContactsGet", ctx, endpoint)
-	ret0, _ := ret[0].([]*models.AstContact)
+	ret0, _ := ret[0].([]*astcontact.AstContact)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -165,7 +170,7 @@ func (mr *MockCacheHandlerMockRecorder) AstContactsGet(ctx, endpoint interface{}
 }
 
 // AstContactsSet mocks base method
-func (m *MockCacheHandler) AstContactsSet(ctx context.Context, endpoint string, contacts []*models.AstContact) error {
+func (m *MockCacheHandler) AstContactsSet(ctx context.Context, endpoint string, contacts []*astcontact.AstContact) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstContactsSet", ctx, endpoint, contacts)
 	ret0, _ := ret[0].(error)
@@ -193,10 +198,10 @@ func (mr *MockCacheHandlerMockRecorder) AstEndpointDel(ctx, id interface{}) *gom
 }
 
 // AstEndpointGet mocks base method
-func (m *MockCacheHandler) AstEndpointGet(ctx context.Context, id string) (*models.AstEndpoint, error) {
+func (m *MockCacheHandler) AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointGet", ctx, id)
-	ret0, _ := ret[0].(*models.AstEndpoint)
+	ret0, _ := ret[0].(*astendpoint.AstEndpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -208,7 +213,7 @@ func (mr *MockCacheHandlerMockRecorder) AstEndpointGet(ctx, id interface{}) *gom
 }
 
 // AstEndpointSet mocks base method
-func (m *MockCacheHandler) AstEndpointSet(ctx context.Context, e *models.AstEndpoint) error {
+func (m *MockCacheHandler) AstEndpointSet(ctx context.Context, e *astendpoint.AstEndpoint) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointSet", ctx, e)
 	ret0, _ := ret[0].(error)
@@ -222,10 +227,10 @@ func (mr *MockCacheHandlerMockRecorder) AstEndpointSet(ctx, e interface{}) *gomo
 }
 
 // DomainGet mocks base method
-func (m *MockCacheHandler) DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error) {
+func (m *MockCacheHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGet", ctx, id)
-	ret0, _ := ret[0].(*models.Domain)
+	ret0, _ := ret[0].(*domain.Domain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -237,7 +242,7 @@ func (mr *MockCacheHandlerMockRecorder) DomainGet(ctx, id interface{}) *gomock.C
 }
 
 // DomainSet mocks base method
-func (m *MockCacheHandler) DomainSet(ctx context.Context, e *models.Domain) error {
+func (m *MockCacheHandler) DomainSet(ctx context.Context, e *domain.Domain) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainSet", ctx, e)
 	ret0, _ := ret[0].(error)
@@ -265,10 +270,10 @@ func (mr *MockCacheHandlerMockRecorder) DomainDel(ctx, id interface{}) *gomock.C
 }
 
 // ExtensionGet mocks base method
-func (m *MockCacheHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+func (m *MockCacheHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGet", ctx, id)
-	ret0, _ := ret[0].(*models.Extension)
+	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -280,7 +285,7 @@ func (mr *MockCacheHandlerMockRecorder) ExtensionGet(ctx, id interface{}) *gomoc
 }
 
 // ExtensionSet mocks base method
-func (m *MockCacheHandler) ExtensionSet(ctx context.Context, e *models.Extension) error {
+func (m *MockCacheHandler) ExtensionSet(ctx context.Context, e *extension.Extension) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionSet", ctx, e)
 	ret0, _ := ret[0].(error)

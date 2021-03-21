@@ -4,12 +4,11 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
-
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 )
 
 // ContactGetsByEndpoint returns list of contacts
-func (h *contactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+func (h *contactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 	logrus.Debugf("Getting a contact info. endpoint: %s", endpoint)
 
 	contacts, err := h.dbAst.AstContactGetsByEndpoint(ctx, endpoint)

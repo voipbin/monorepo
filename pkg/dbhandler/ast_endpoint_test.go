@@ -8,7 +8,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
 
@@ -20,20 +20,20 @@ func TestAstEndpointCreate(t *testing.T) {
 
 	type test struct {
 		name           string
-		endpoint       *models.AstEndpoint
-		expectEndpoint *models.AstEndpoint
+		endpoint       *astendpoint.AstEndpoint
+		expectEndpoint *astendpoint.AstEndpoint
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.AstEndpoint{
+			&astendpoint.AstEndpoint{
 				ID:        getStringPointer("test1@test.sip.voipbin.net"),
 				AORs:      getStringPointer("test1@test.sip.voipbin.net"),
 				Auth:      getStringPointer("test1@test.sip.voipbin.net"),
 				Transport: getStringPointer("transport-tcp"),
 			},
-			&models.AstEndpoint{
+			&astendpoint.AstEndpoint{
 				ID:        getStringPointer("test1@test.sip.voipbin.net"),
 				AORs:      getStringPointer("test1@test.sip.voipbin.net"),
 				Auth:      getStringPointer("test1@test.sip.voipbin.net"),
@@ -73,13 +73,13 @@ func TestAstEndpointDelete(t *testing.T) {
 
 	type test struct {
 		name     string
-		endpoint *models.AstEndpoint
+		endpoint *astendpoint.AstEndpoint
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.AstEndpoint{
+			&astendpoint.AstEndpoint{
 				ID:        getStringPointer("0f1e4e7e-6e00-11eb-91a1-9f89915551df@test.sip.voipbin.net"),
 				AORs:      getStringPointer("0f1e4e7e-6e00-11eb-91a1-9f89915551df@test.sip.voipbin.net"),
 				Auth:      getStringPointer("0f1e4e7e-6e00-11eb-91a1-9f89915551df@test.sip.voipbin.net"),

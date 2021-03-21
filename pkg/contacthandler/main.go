@@ -9,7 +9,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
@@ -17,7 +17,7 @@ import (
 
 // ContactHandler is interface for service handle
 type ContactHandler interface {
-	ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*models.AstContact, error)
+	ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error)
 	ContactRefreshByEndpoint(ctx context.Context, endpoint string) error
 }
 
