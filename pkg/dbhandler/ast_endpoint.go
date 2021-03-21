@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 )
 
 const (
@@ -23,8 +23,8 @@ const (
 	`
 )
 
-func (h *handler) astEndpointGetFromRow(row *sql.Rows) (*models.AstEndpoint, error) {
-	res := &models.AstEndpoint{}
+func (h *handler) astEndpointGetFromRow(row *sql.Rows) (*astendpoint.AstEndpoint, error) {
+	res := &astendpoint.AstEndpoint{}
 	if err := row.Scan(
 		&res.ID,
 		&res.Transport,
@@ -41,7 +41,7 @@ func (h *handler) astEndpointGetFromRow(row *sql.Rows) (*models.AstEndpoint, err
 }
 
 // AstEndpointGetFromDB returns AstEndpoint from the DB.
-func (h *handler) AstEndpointGetFromDB(ctx context.Context, id string) (*models.AstEndpoint, error) {
+func (h *handler) AstEndpointGetFromDB(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
 
 	q := fmt.Sprintf("%s where id = ?", astEndpointSelect)
 
@@ -79,7 +79,7 @@ func (h *handler) AstEndpointUpdateToCache(ctx context.Context, id string) error
 }
 
 // AstEdnpointSetToCache sets the given AstEndpoint to the cache
-func (h *handler) AstEndpointSetToCache(ctx context.Context, ednpoint *models.AstEndpoint) error {
+func (h *handler) AstEndpointSetToCache(ctx context.Context, ednpoint *astendpoint.AstEndpoint) error {
 	if err := h.cache.AstEndpointSet(ctx, ednpoint); err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (h *handler) AstEndpointSetToCache(ctx context.Context, ednpoint *models.As
 }
 
 // AstEndpointGetFromCache returns AstEndpoint from the cache.
-func (h *handler) AstEndpointGetFromCache(ctx context.Context, id string) (*models.AstEndpoint, error) {
+func (h *handler) AstEndpointGetFromCache(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
 
 	// get from cache
 	res, err := h.cache.AstEndpointGet(ctx, id)
@@ -100,7 +100,7 @@ func (h *handler) AstEndpointGetFromCache(ctx context.Context, id string) (*mode
 }
 
 // AstEndpointCreate creates new asterisk-endpoint record.
-func (h *handler) AstEndpointCreate(ctx context.Context, b *models.AstEndpoint) error {
+func (h *handler) AstEndpointCreate(ctx context.Context, b *astendpoint.AstEndpoint) error {
 	q := `insert into ps_endpoints(
 		id,
 		transport,
@@ -137,7 +137,7 @@ func (h *handler) AstEndpointCreate(ctx context.Context, b *models.AstEndpoint) 
 }
 
 // AstEndpointGet returns AstEndpoint.
-func (h *handler) AstEndpointGet(ctx context.Context, id string) (*models.AstEndpoint, error) {
+func (h *handler) AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
 
 	res, err := h.AstEndpointGetFromCache(ctx, id)
 	if err == nil {

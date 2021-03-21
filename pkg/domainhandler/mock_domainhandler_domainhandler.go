@@ -8,7 +8,7 @@ import (
 	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	models "gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	reflect "reflect"
 )
 
@@ -36,10 +36,10 @@ func (m *MockDomainHandler) EXPECT() *MockDomainHandlerMockRecorder {
 }
 
 // DomainCreate mocks base method
-func (m *MockDomainHandler) DomainCreate(ctx context.Context, d *models.Domain) (*models.Domain, error) {
+func (m *MockDomainHandler) DomainCreate(ctx context.Context, d *domain.Domain) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainCreate", ctx, d)
-	ret0, _ := ret[0].(*models.Domain)
+	ret0, _ := ret[0].(*domain.Domain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +65,10 @@ func (mr *MockDomainHandlerMockRecorder) DomainDelete(ctx, id interface{}) *gomo
 }
 
 // DomainGet mocks base method
-func (m *MockDomainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error) {
+func (m *MockDomainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGet", ctx, id)
-	ret0, _ := ret[0].(*models.Domain)
+	ret0, _ := ret[0].(*domain.Domain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -80,10 +80,10 @@ func (mr *MockDomainHandlerMockRecorder) DomainGet(ctx, id interface{}) *gomock.
 }
 
 // DomainGetsByUserID mocks base method
-func (m *MockDomainHandler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Domain, error) {
+func (m *MockDomainHandler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGetsByUserID", ctx, userID, token, limit)
-	ret0, _ := ret[0].([]*models.Domain)
+	ret0, _ := ret[0].([]*domain.Domain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -95,10 +95,10 @@ func (mr *MockDomainHandlerMockRecorder) DomainGetsByUserID(ctx, userID, token, 
 }
 
 // DomainUpdate mocks base method
-func (m *MockDomainHandler) DomainUpdate(ctx context.Context, d *models.Domain) (*models.Domain, error) {
+func (m *MockDomainHandler) DomainUpdate(ctx context.Context, d *domain.Domain) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainUpdate", ctx, d)
-	ret0, _ := ret[0].(*models.Domain)
+	ret0, _ := ret[0].(*domain.Domain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

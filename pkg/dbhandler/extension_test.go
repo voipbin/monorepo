@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
 
@@ -22,14 +22,14 @@ func TestExtensionCreate(t *testing.T) {
 
 	type test struct {
 		name      string
-		ext       *models.Extension
-		expectExt *models.Extension
+		ext       *extension.Extension
+		expectExt *extension.Extension
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Extension{
+			&extension.Extension{
 				ID:     uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
 				UserID: 1,
 
@@ -42,7 +42,7 @@ func TestExtensionCreate(t *testing.T) {
 				Extension: "608cbfae-6ebc-11eb-a74b-671d17dda173",
 				Password:  "7818abce-6ebc-11eb-b4fe-e748480c228a",
 			},
-			&models.Extension{
+			&extension.Extension{
 				ID:     uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
 				UserID: 1,
 
@@ -90,13 +90,13 @@ func TestExtensionDelete(t *testing.T) {
 
 	type test struct {
 		name string
-		ext  *models.Extension
+		ext  *extension.Extension
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Extension{
+			&extension.Extension{
 				ID:     uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
 				UserID: 1,
 
@@ -150,8 +150,8 @@ func TestExtensionGetsByDomainID(t *testing.T) {
 		name             string
 		domainID         uuid.UUID
 		limit            uint64
-		extensions       []models.Extension
-		expectExtensions []*models.Extension
+		extensions       []extension.Extension
+		expectExtensions []*extension.Extension
 	}
 
 	tests := []test{
@@ -159,7 +159,7 @@ func TestExtensionGetsByDomainID(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
 			10,
-			[]models.Extension{
+			[]extension.Extension{
 				{
 					ID:       uuid.FromStringOrNil("1d2cb402-6f49-11eb-a22c-5f2f23cba3a2"),
 					UserID:   1,
@@ -173,7 +173,7 @@ func TestExtensionGetsByDomainID(t *testing.T) {
 					DomainID: uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
 				},
 			},
-			[]*models.Extension{
+			[]*extension.Extension{
 				{
 					ID:       uuid.FromStringOrNil("1d792bb6-6f49-11eb-be2e-0ff2f1c87d93"),
 					UserID:   1,
@@ -226,15 +226,15 @@ func TestExtensionUpdate(t *testing.T) {
 
 	type test struct {
 		name            string
-		extension       *models.Extension
-		updateExtension *models.Extension
-		expectExtension *models.Extension
+		extension       *extension.Extension
+		updateExtension *extension.Extension
+		expectExtension *extension.Extension
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Extension{
+			&extension.Extension{
 				ID:     uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
 				UserID: 1,
 
@@ -245,7 +245,7 @@ func TestExtensionUpdate(t *testing.T) {
 				Extension: "test",
 				Password:  "password",
 			},
-			&models.Extension{
+			&extension.Extension{
 				ID:     uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
 				UserID: 1,
 				Name:   "update name",
@@ -253,7 +253,7 @@ func TestExtensionUpdate(t *testing.T) {
 
 				Password: "update password",
 			},
-			&models.Extension{
+			&extension.Extension{
 				ID:     uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
 				UserID: 1,
 

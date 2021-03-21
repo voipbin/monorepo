@@ -6,8 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
 const (
@@ -36,8 +35,8 @@ const (
 )
 
 // extensionGetFromRow gets the extension from the row
-func (h *handler) extensionGetFromRow(row *sql.Rows) (*models.Extension, error) {
-	res := &models.Extension{}
+func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, error) {
+	res := &extension.Extension{}
 	if err := row.Scan(
 		&res.ID,
 		&res.UserID,
@@ -64,7 +63,7 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*models.Extension, error) 
 }
 
 // ExtensionGetFromDB returns Extension from the DB.
-func (h *handler) ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+func (h *handler) ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 
 	q := fmt.Sprintf("%s where id = ?", extensionSelect)
 
@@ -102,7 +101,7 @@ func (h *handler) ExtensionUpdateToCache(ctx context.Context, id uuid.UUID) erro
 }
 
 // ExtensionSetToCache sets the given extension to the cache
-func (h *handler) ExtensionSetToCache(ctx context.Context, e *models.Extension) error {
+func (h *handler) ExtensionSetToCache(ctx context.Context, e *extension.Extension) error {
 	if err := h.cache.ExtensionSet(ctx, e); err != nil {
 		return err
 	}
@@ -111,7 +110,7 @@ func (h *handler) ExtensionSetToCache(ctx context.Context, e *models.Extension) 
 }
 
 // ExtensionGetFromCache returns Extension from the cache.
-func (h *handler) ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+func (h *handler) ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 
 	// get from cache
 	res, err := h.cache.ExtensionGet(ctx, id)
@@ -123,7 +122,7 @@ func (h *handler) ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*mod
 }
 
 // ExtensionCreate creates new Extension record.
-func (h *handler) ExtensionCreate(ctx context.Context, b *models.Extension) error {
+func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) error {
 	q := `insert into extensions(
 		id,
 		user_id,
@@ -177,7 +176,7 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *models.Extension) erro
 }
 
 // ExtensionGet returns extension.
-func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*models.Extension, error) {
+func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 
 	res, err := h.ExtensionGetFromCache(ctx, id)
 	if err == nil {
@@ -216,7 +215,7 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // ExtensionUpdate updates extension record.
-func (h *handler) ExtensionUpdate(ctx context.Context, b *models.Extension) error {
+func (h *handler) ExtensionUpdate(ctx context.Context, b *extension.Extension) error {
 	q := `
 	update extensions set
 		name = ?,
@@ -245,7 +244,7 @@ func (h *handler) ExtensionUpdate(ctx context.Context, b *models.Extension) erro
 }
 
 // ExtensionGetsByDomainID returns list of extensions.
-func (h *handler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*models.Extension, error) {
+func (h *handler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
@@ -265,7 +264,7 @@ func (h *handler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUI
 	}
 	defer rows.Close()
 
-	res := []*models.Extension{}
+	res := []*extension.Extension{}
 	for rows.Next() {
 		u, err := h.extensionGetFromRow(rows)
 		if err != nil {

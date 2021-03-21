@@ -8,7 +8,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
 
@@ -20,14 +20,14 @@ func TestAstAuthCreate(t *testing.T) {
 
 	type test struct {
 		name       string
-		auth       *models.AstAuth
-		expectAuth *models.AstAuth
+		auth       *astauth.AstAuth
+		expectAuth *astauth.AstAuth
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.AstAuth{
+			&astauth.AstAuth{
 				ID:       getStringPointer("test1@test.sip.voipbin.net"),
 				AuthType: getStringPointer("userpass"),
 
@@ -36,7 +36,7 @@ func TestAstAuthCreate(t *testing.T) {
 
 				Realm: getStringPointer("test.sip.voipbin.net"),
 			},
-			&models.AstAuth{
+			&astauth.AstAuth{
 				ID:       getStringPointer("test1@test.sip.voipbin.net"),
 				AuthType: getStringPointer("userpass"),
 
@@ -79,13 +79,13 @@ func TestAstAuthDelete(t *testing.T) {
 
 	type test struct {
 		name string
-		auth *models.AstAuth
+		auth *astauth.AstAuth
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.AstAuth{
+			&astauth.AstAuth{
 				ID:       getStringPointer("dcd14fe0-6df8-11eb-96b2-9f307c0f50bf@test.sip.voipbin.net"),
 				AuthType: getStringPointer("userpass"),
 
@@ -128,25 +128,25 @@ func TestAstAuthUpdate(t *testing.T) {
 
 	type test struct {
 		name       string
-		auth       *models.AstAuth
-		updateAuth *models.AstAuth
-		expectAuth *models.AstAuth
+		auth       *astauth.AstAuth
+		updateAuth *astauth.AstAuth
+		expectAuth *astauth.AstAuth
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.AstAuth{
+			&astauth.AstAuth{
 				ID:       getStringPointer("fc48baa8-6f41-11eb-9209-ff1f20a9494e"),
 				AuthType: getStringPointer("userpass"),
 				Username: getStringPointer("test"),
 				Password: getStringPointer("password"),
 			},
-			&models.AstAuth{
+			&astauth.AstAuth{
 				ID:       getStringPointer("fc48baa8-6f41-11eb-9209-ff1f20a9494e"),
 				Password: getStringPointer("update password"),
 			},
-			&models.AstAuth{
+			&astauth.AstAuth{
 				ID:       getStringPointer("fc48baa8-6f41-11eb-9209-ff1f20a9494e"),
 				AuthType: getStringPointer("userpass"),
 				Username: getStringPointer("test"),

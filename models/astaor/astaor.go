@@ -1,4 +1,4 @@
-package models
+package astaor
 
 // AstAOR strcut is for Asterisk's AOR info
 type AstAOR struct {

@@ -1,4 +1,4 @@
-package models
+package astcontact
 
 // AstContact for ast_contact table
 type AstContact struct {

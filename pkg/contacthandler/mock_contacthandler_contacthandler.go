@@ -7,7 +7,7 @@ package contacthandler
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	models "gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	reflect "reflect"
 )
 
@@ -35,10 +35,10 @@ func (m *MockContactHandler) EXPECT() *MockContactHandlerMockRecorder {
 }
 
 // ContactGetsByEndpoint mocks base method
-func (m *MockContactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*models.AstContact, error) {
+func (m *MockContactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactGetsByEndpoint", ctx, endpoint)
-	ret0, _ := ret[0].([]*models.AstContact)
+	ret0, _ := ret[0].([]*astcontact.AstContact)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

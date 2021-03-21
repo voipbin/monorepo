@@ -15,7 +15,6 @@ require (
 	github.com/prometheus/procfs v0.4.0 // indirect
 	github.com/sirupsen/logrus v1.7.0
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/api-manager.git v0.0.0-20210208052420-ffe12f15736f
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210206131226-ca5d2cbbfe65
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect

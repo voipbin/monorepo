@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
 
@@ -22,19 +22,19 @@ func TestDomainCreate(t *testing.T) {
 
 	type test struct {
 		name         string
-		domain       *models.Domain
-		expectDomain *models.Domain
+		domain       *domain.Domain
+		expectDomain *domain.Domain
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("f8f75f20-6e0c-11eb-8dba-435a87e89b48"),
 				UserID:     1,
 				DomainName: "test.sip.voipbin.net",
 			},
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("f8f75f20-6e0c-11eb-8dba-435a87e89b48"),
 				UserID:     1,
 				DomainName: "test.sip.voipbin.net",
@@ -42,14 +42,14 @@ func TestDomainCreate(t *testing.T) {
 		},
 		{
 			"with name detail",
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("d55f111a-6edf-11eb-b978-277f5400b4e8"),
 				UserID:     1,
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test1.sip.voipbin.net",
 			},
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("d55f111a-6edf-11eb-b978-277f5400b4e8"),
 				UserID:     1,
 				Name:       "test name",
@@ -91,13 +91,13 @@ func ExtensionCreate(t *testing.T) {
 
 	type test struct {
 		name   string
-		domain *models.Domain
+		domain *domain.Domain
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("81b73c40-6e0d-11eb-9a4b-0fe8ac8ec4c3"),
 				UserID:     1,
 				DomainName: "81b73c40-6e0d-11eb-9a4b-0fe8ac8ec4c3.sip.voipbin.net",
@@ -137,13 +137,13 @@ func TestDomainGetByDomainName(t *testing.T) {
 
 	type test struct {
 		name   string
-		domain *models.Domain
+		domain *domain.Domain
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("3e765cc0-6ee1-11eb-b9e9-33589a46f50e"),
 				UserID:     1,
 				DomainName: "5140d1b4-6ee1-11eb-b35e-03eb172540ec.sip.voipbin.net",
@@ -184,8 +184,8 @@ func TestDomainGetsByUserID(t *testing.T) {
 		name          string
 		userID        uint64
 		limit         uint64
-		domains       []models.Domain
-		expectDomains []*models.Domain
+		domains       []domain.Domain
+		expectDomains []*domain.Domain
 	}
 
 	tests := []test{
@@ -193,7 +193,7 @@ func TestDomainGetsByUserID(t *testing.T) {
 			"have no actions",
 			4,
 			10,
-			[]models.Domain{
+			[]domain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("ef2f65b8-6ee4-11eb-a688-dbb959113359"),
 					UserID:     4,
@@ -207,7 +207,7 @@ func TestDomainGetsByUserID(t *testing.T) {
 					DomainName: "05c29e76-6ee5-11eb-bc50-6b162fbf37b3.sip.voipbin.net",
 				},
 			},
-			[]*models.Domain{
+			[]*domain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("05c29e76-6ee5-11eb-bc50-6b162fbf37b3"),
 					UserID:     4,
@@ -260,27 +260,27 @@ func TestDomainUpdate(t *testing.T) {
 
 	type test struct {
 		name         string
-		domain       *models.Domain
-		updateDomain *models.Domain
-		expectDomain *models.Domain
+		domain       *domain.Domain
+		updateDomain *domain.Domain
+		expectDomain *domain.Domain
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
 				UserID:     1,
 				DomainName: "8e11791c-6eec-11eb-9d29-835387182e69.sip.voipbin.net",
 			},
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
 				UserID:     1,
 				Name:       "update name",
 				Detail:     "update detail",
 				DomainName: "8e11791c-6eec-11eb-9d29-835387182e69.sip.voipbin.net",
 			},
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
 				UserID:     1,
 				Name:       "update name",

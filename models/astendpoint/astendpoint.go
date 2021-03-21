@@ -1,4 +1,4 @@
-package models
+package astendpoint
 
 // AstEndpoint for ast_endpoint table
 type AstEndpoint struct {

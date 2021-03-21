@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
@@ -32,8 +32,8 @@ func TestProcessV1ExtensionsPost(t *testing.T) {
 
 	type test struct {
 		name         string
-		reqExtension *models.Extension
-		resExtension *models.Extension
+		reqExtension *extension.Extension
+		resExtension *extension.Extension
 		request      *rabbitmqhandler.Request
 		expectRes    *rabbitmqhandler.Response
 	}
@@ -41,13 +41,13 @@ func TestProcessV1ExtensionsPost(t *testing.T) {
 	tests := []test{
 		{
 			"empty addresses",
-			&models.Extension{
+			&extension.Extension{
 				UserID:    1,
 				DomainID:  uuid.FromStringOrNil("42dd6424-6ebf-11eb-8630-6b91b6089dc4"),
 				Extension: "45eb6bac-6ebf-11eb-bcf3-3b9157826d22",
 				Password:  "4b1f7a6e-6ebf-11eb-a47e-5351700cd612",
 			},
-			&models.Extension{
+			&extension.Extension{
 				ID:     uuid.FromStringOrNil("3f4bc63e-6ebf-11eb-b7de-df47266bf559"),
 				UserID: 1,
 
@@ -112,7 +112,7 @@ func TestV1ExtensionsGet(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 		request   *rabbitmqhandler.Request
-		exts      []*models.Extension
+		exts      []*extension.Extension
 
 		expectRes *rabbitmqhandler.Response
 	}
@@ -128,7 +128,7 @@ func TestV1ExtensionsGet(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			[]*models.Extension{
+			[]*extension.Extension{
 				{
 					ID:       uuid.FromStringOrNil("c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec"),
 					UserID:   2,
@@ -155,7 +155,7 @@ func TestV1ExtensionsGet(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			[]*models.Extension{},
+			[]*extension.Extension{},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -198,8 +198,8 @@ func TestProcessV1ExtensionsPut(t *testing.T) {
 
 	type test struct {
 		name      string
-		reqExt    *models.Extension
-		resExt    *models.Extension
+		reqExt    *extension.Extension
+		resExt    *extension.Extension
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
 	}
@@ -207,13 +207,13 @@ func TestProcessV1ExtensionsPut(t *testing.T) {
 	tests := []test{
 		{
 			"empty addresses",
-			&models.Extension{
+			&extension.Extension{
 				ID:       uuid.FromStringOrNil("6dc9dd22-6f4e-11eb-8059-2fe116db7a2b"),
 				Name:     "update name",
 				Detail:   "update detail",
 				Password: "update password",
 			},
-			&models.Extension{
+			&extension.Extension{
 				ID:       uuid.FromStringOrNil("6dc9dd22-6f4e-11eb-8059-2fe116db7a2b"),
 				UserID:   1,
 				Name:     "update name",

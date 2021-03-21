@@ -8,11 +8,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 )
 
 // DomainCreate creates a new domain and returns a created domain info
-func (h *domainHandler) DomainCreate(ctx context.Context, d *models.Domain) (*models.Domain, error) {
+func (h *domainHandler) DomainCreate(ctx context.Context, d *domain.Domain) (*domain.Domain, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -52,7 +52,7 @@ func (h *domainHandler) DomainCreate(ctx context.Context, d *models.Domain) (*mo
 }
 
 // GetDomain returns domain
-func (h *domainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*models.Domain, error) {
+func (h *domainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 	res, err := h.dbBin.DomainGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (h *domainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*models.Do
 }
 
 // DomainGetsByUserID returns list of domains
-func (h *domainHandler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Domain, error) {
+func (h *domainHandler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error) {
 
 	domains, err := h.dbBin.DomainGetsByUserID(ctx, userID, token, limit)
 	if err != nil {
@@ -74,7 +74,7 @@ func (h *domainHandler) DomainGetsByUserID(ctx context.Context, userID uint64, t
 }
 
 // DomainUpdate updates the domain info
-func (h *domainHandler) DomainUpdate(ctx context.Context, d *models.Domain) (*models.Domain, error) {
+func (h *domainHandler) DomainUpdate(ctx context.Context, d *domain.Domain) (*domain.Domain, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"domain": d,

@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/contacthandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
 )
@@ -30,7 +30,7 @@ func TestV1ContactsGet(t *testing.T) {
 		name     string
 		endpoint string
 		request  *rabbitmqhandler.Request
-		contacts []*models.AstContact
+		contacts []*astcontact.AstContact
 
 		expectRes *rabbitmqhandler.Response
 	}
@@ -44,7 +44,7 @@ func TestV1ContactsGet(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			[]*models.AstContact{
+			[]*astcontact.AstContact{
 				{
 					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
 					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
@@ -77,7 +77,7 @@ func TestV1ContactsGet(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			[]*models.AstContact{},
+			[]*astcontact.AstContact{},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",

@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
 )
@@ -29,8 +29,8 @@ func TestProcessV1DomainsPost(t *testing.T) {
 
 	type test struct {
 		name      string
-		reqDomain *models.Domain
-		resDomain *models.Domain
+		reqDomain *domain.Domain
+		resDomain *domain.Domain
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
 	}
@@ -38,11 +38,11 @@ func TestProcessV1DomainsPost(t *testing.T) {
 	tests := []test{
 		{
 			"empty addresses",
-			&models.Domain{
+			&domain.Domain{
 				UserID:     1,
 				DomainName: "0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net",
 			},
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("1744ccb4-6e13-11eb-b08d-bb42431b2fb3"),
 				UserID:     1,
 				DomainName: "0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net",
@@ -97,7 +97,7 @@ func TestV1DomainsGet(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 		request   *rabbitmqhandler.Request
-		domains   []*models.Domain
+		domains   []*domain.Domain
 
 		expectRes *rabbitmqhandler.Response
 	}
@@ -113,7 +113,7 @@ func TestV1DomainsGet(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			[]*models.Domain{
+			[]*domain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("abd3467a-6ee6-11eb-824f-c386fbaad128"),
 					UserID:     2,
@@ -140,7 +140,7 @@ func TestV1DomainsGet(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			[]*models.Domain{},
+			[]*domain.Domain{},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -181,8 +181,8 @@ func TestProcessV1DomainsPut(t *testing.T) {
 
 	type test struct {
 		name      string
-		reqDomain *models.Domain
-		resDomain *models.Domain
+		reqDomain *domain.Domain
+		resDomain *domain.Domain
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
 	}
@@ -190,12 +190,12 @@ func TestProcessV1DomainsPut(t *testing.T) {
 	tests := []test{
 		{
 			"empty addresses",
-			&models.Domain{
+			&domain.Domain{
 				ID:     uuid.FromStringOrNil("f4f3c3f4-6eee-11eb-8463-cf5490689c2e"),
 				Name:   "update name",
 				Detail: "update detail",
 			},
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("f4f3c3f4-6eee-11eb-8463-cf5490689c2e"),
 				UserID:     1,
 				Name:       "update name",

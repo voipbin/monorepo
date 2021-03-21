@@ -8,7 +8,11 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
@@ -25,39 +29,39 @@ func TestExtensionCreate(t *testing.T) {
 
 	type test struct {
 		name     string
-		ext      *models.Extension
-		domain   *models.Domain
-		aor      *models.AstAOR
-		auth     *models.AstAuth
-		endpoint *models.AstEndpoint
+		ext      *extension.Extension
+		domain   *domain.Domain
+		aor      *astaor.AstAOR
+		auth     *astauth.AstAuth
+		endpoint *astendpoint.AstEndpoint
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Extension{
+			&extension.Extension{
 				UserID:    1,
 				DomainID:  uuid.FromStringOrNil("ce060aae-6ec1-11eb-a550-cb46a3229b89"),
 				Extension: "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
 				Password:  "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
 			},
-			&models.Domain{
+			&domain.Domain{
 				ID:         uuid.FromStringOrNil("ce060aae-6ec1-11eb-a550-cb46a3229b89"),
 				DomainName: "test.sip.voipbin.net",
 			},
-			&models.AstAOR{
+			&astaor.AstAOR{
 				ID:             getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
 				MaxContacts:    getIntegerPointer(1),
 				RemoveExisting: getStringPointer("yes"),
 			},
-			&models.AstAuth{
+			&astauth.AstAuth{
 				ID:       getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
 				AuthType: getStringPointer("userpass"),
 				Username: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4"),
 				Password: getStringPointer("cf6917ba-6ec1-11eb-8810-e3829c2dfab8"),
 				Realm:    getStringPointer("test.sip.voipbin.net"),
 			},
-			&models.AstEndpoint{
+			&astendpoint.AstEndpoint{
 				ID:   getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
 				AORs: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
 				Auth: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
@@ -94,16 +98,16 @@ func TestExtensionUpdate(t *testing.T) {
 
 	type test struct {
 		name       string
-		ext        *models.Extension
-		updateAuth *models.AstAuth
-		updateExt  *models.Extension
-		updatedExt *models.Extension
+		ext        *extension.Extension
+		updateAuth *astauth.AstAuth
+		updateExt  *extension.Extension
+		updatedExt *extension.Extension
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Extension{
+			&extension.Extension{
 				ID:        uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
 				UserID:    1,
 				Name:      "update name",
@@ -112,11 +116,11 @@ func TestExtensionUpdate(t *testing.T) {
 				Extension: "66f6b86c-6f44-11eb-ab55-934942c23f91",
 				Password:  "update password",
 			},
-			&models.AstAuth{
+			&astauth.AstAuth{
 				ID:       getStringPointer("66f6b86c-6f44-11eb-ab55-934942c23f91@test.sip.voipbin.net"),
 				Password: getStringPointer("update password"),
 			},
-			&models.Extension{
+			&extension.Extension{
 				ID:        uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
 				UserID:    1,
 				Name:      "update name",
@@ -125,7 +129,7 @@ func TestExtensionUpdate(t *testing.T) {
 				Extension: "66f6b86c-6f44-11eb-ab55-934942c23f91",
 				Password:  "update password",
 			},
-			&models.Extension{
+			&extension.Extension{
 				ID:        uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
 				UserID:    1,
 				Name:      "update name",
@@ -166,13 +170,13 @@ func TestExtensionDelete(t *testing.T) {
 
 	type test struct {
 		name string
-		ext  *models.Extension
+		ext  *extension.Extension
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Extension{
+			&extension.Extension{
 				ID:         uuid.FromStringOrNil("4a6b7618-6f46-11eb-a2fb-1f7595db4195"),
 				UserID:     1,
 				Name:       "test name",
@@ -213,13 +217,13 @@ func TestExtensionGet(t *testing.T) {
 
 	type test struct {
 		name string
-		ext  *models.Extension
+		ext  *extension.Extension
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Extension{
+			&extension.Extension{
 				ID:         uuid.FromStringOrNil("798f8bcc-6f47-11eb-8908-efd77279298d"),
 				UserID:     1,
 				Name:       "test name",
@@ -264,7 +268,7 @@ func TestExtensionGetsByDomainID(t *testing.T) {
 		name     string
 		domainID uuid.UUID
 		token    string
-		exts     []*models.Extension
+		exts     []*extension.Extension
 	}
 
 	tests := []test{
@@ -272,7 +276,7 @@ func TestExtensionGetsByDomainID(t *testing.T) {
 			"test normal",
 			uuid.FromStringOrNil("bd57214a-6f4b-11eb-aad8-579de27e6b7f"),
 			"2021-02-15 17:31:59.519672",
-			[]*models.Extension{
+			[]*extension.Extension{
 				{
 					ID:         uuid.FromStringOrNil("c9c736a4-6f4b-11eb-899a-575b7ce222e6"),
 					UserID:     1,
