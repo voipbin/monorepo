@@ -12,8 +12,8 @@ import (
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	nmnumber "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/nmnumber"
-	rmastcontact "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
+	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	reflect "reflect"
 )
 
@@ -396,10 +396,10 @@ func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowNextGet(callID, actionID
 }
 
 // NMV1NumbersNumberGet mocks base method
-func (m *MockRequestHandler) NMV1NumbersNumberGet(num string) (*nmnumber.Number, error) {
+func (m *MockRequestHandler) NMV1NumbersNumberGet(num string) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NMV1NumbersNumberGet", num)
-	ret0, _ := ret[0].(*nmnumber.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -411,10 +411,10 @@ func (mr *MockRequestHandlerMockRecorder) NMV1NumbersNumberGet(num interface{}) 
 }
 
 // RMV1ContactsGet mocks base method
-func (m *MockRequestHandler) RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstContact, error) {
+func (m *MockRequestHandler) RMV1ContactsGet(endpoint string) ([]*astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RMV1ContactsGet", endpoint)
-	ret0, _ := ret[0].([]*rmastcontact.AstContact)
+	ret0, _ := ret[0].([]*astcontact.AstContact)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

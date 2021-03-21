@@ -12,8 +12,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // getSerialize returns cached serialized info.

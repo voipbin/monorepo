@@ -17,7 +17,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 )
@@ -115,9 +114,6 @@ type DBHandler interface {
 	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status, timestamp string) error
 	RecordingSetToCache(ctx context.Context, r *recording.Recording) error
 	RecordingUpdateToCache(ctx context.Context, id uuid.UUID) error
-
-	// numbers
-	NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error)
 }
 
 // handler database handler

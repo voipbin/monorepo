@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 )
 
 func TestCreateCallOutgoing(t *testing.T) {
@@ -335,7 +335,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 	type test struct {
 		name               string
 		destination        *call.Address
-		contacts           []*rmastcontact.AstContact
+		contacts           []*astcontact.AstContact
 		expectEndpointDest string
 	}
 
@@ -346,7 +346,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 				Type:   call.AddressTypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
-			[]*rmastcontact.AstContact{
+			[]*astcontact.AstContact{
 				{
 					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
 					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
@@ -373,7 +373,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 				Type:   call.AddressTypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
-			[]*rmastcontact.AstContact{
+			[]*astcontact.AstContact{
 				{
 					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
 					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
@@ -417,7 +417,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 				Type:   call.AddressTypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
-			[]*rmastcontact.AstContact{
+			[]*astcontact.AstContact{
 				{
 					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
 					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=ws^3Brinstance=8a1f981a77f30a22",
@@ -444,7 +444,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 				Type:   call.AddressTypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
-			[]*rmastcontact.AstContact{
+			[]*astcontact.AstContact{
 				{
 					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
 					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=wss^3Brinstance=8a1f981a77f30a22",
@@ -502,7 +502,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
 	type test struct {
 		name        string
 		destination *call.Address
-		contacts    []*rmastcontact.AstContact
+		contacts    []*astcontact.AstContact
 	}
 
 	tests := []test{
@@ -512,7 +512,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
 				Type:   call.AddressTypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
-			[]*rmastcontact.AstContact{},
+			[]*astcontact.AstContact{},
 		},
 	}
 

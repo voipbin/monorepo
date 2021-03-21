@@ -18,9 +18,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/nmnumber"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
+	// "gitlab.com/voipbin/bin-manager/call-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 )
 
 // contents type
@@ -145,10 +146,10 @@ type RequestHandler interface {
 	FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error)
 
 	// nm numbers
-	NMV1NumbersNumberGet(num string) (*nmnumber.Number, error)
+	NMV1NumbersNumberGet(num string) (*number.Number, error)
 
 	// rm contacts
-	RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstContact, error)
+	RMV1ContactsGet(endpoint string) ([]*astcontact.AstContact, error)
 	RMV1ContactsPut(endpoint string) error
 
 	// tts speeches

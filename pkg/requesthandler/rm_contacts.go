@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/rmastcontact"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 )
 
 // RMV1ContactsGet sends the /v1/contacts GET request to registrar-manager
-func (r *requestHandler) RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstContact, error) {
+func (r *requestHandler) RMV1ContactsGet(endpoint string) ([]*astcontact.AstContact, error) {
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
@@ -23,12 +23,12 @@ func (r *requestHandler) RMV1ContactsGet(endpoint string) ([]*rmastcontact.AstCo
 		return nil, fmt.Errorf("could not find action")
 	}
 
-	var tmpContacts []rmastcontact.AstContact
+	var tmpContacts []astcontact.AstContact
 	if err := json.Unmarshal([]byte(res.Data), &tmpContacts); err != nil {
 		return nil, err
 	}
 
-	var contacts []*rmastcontact.AstContact
+	var contacts []*astcontact.AstContact
 	for _, c := range tmpContacts {
 		contacts = append(contacts, &c)
 	}

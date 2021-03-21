@@ -12,8 +12,8 @@ import (
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
-	number "gitlab.com/voipbin/bin-manager/call-manager.git/models/number"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	reflect "reflect"
 )
 

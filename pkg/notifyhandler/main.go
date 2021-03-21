@@ -51,15 +51,10 @@ const (
 	DelayHour   int = DelayMinute * 60
 )
 
-// default stasis application name.
-// normally, we don't need to use this, because proxy will set this automatically.
-// but, some of Asterisk ARI required application name. this is for that.
-const defaultAstStasisApp = "voipbin"
-
 var (
 	metricsNamespace = "call_manager"
 
-	promRequestProcessTime = prometheus.NewHistogramVec(
+	promNotifyProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
 			Name:      "notify_process_time",
@@ -70,11 +65,21 @@ var (
 		},
 		[]string{"type"},
 	)
+
+	promNotifyTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "notify_total",
+			Help:      "Total number of sent notification.",
+		},
+		[]string{"type"},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(
-		promRequestProcessTime,
+		promNotifyProcessTime,
+		promNotifyTotal,
 	)
 }
 
@@ -157,13 +162,15 @@ func (r *notifyHandler) publishNotify(eventType EventType, dataType string, data
 		if err != nil {
 			return fmt.Errorf("could not publish the event. err: %v", err)
 		}
-
-		log.WithFields(log.Fields{
-			"event": evt,
-		}).Debugf("Published event. type: %s", evt.Type)
-
-		return nil
 	}
+
+	promNotifyTotal.WithLabelValues(evt.Type).Inc()
+	log.WithFields(log.Fields{
+		"event": evt,
+	}).Debugf("Published event. type: %s", evt.Type)
+
+	return nil
+
 }
 
 // publishDirectEvnt publish the event to the target without delay
@@ -172,7 +179,7 @@ func (r *notifyHandler) publishDirectEvnt(ctx context.Context, evt *rabbitmqhand
 	start := time.Now()
 	err := r.sock.PublishExchangeEvent(r.exchangeNotify, "", evt)
 	elapsed := time.Since(start)
-	promRequestProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
+	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	return err
 }
@@ -184,7 +191,7 @@ func (r *notifyHandler) sendDelayedEvent(ctx context.Context, delay int, evt *ra
 	start := time.Now()
 	err := r.sock.PublishExchangeDelayedEvent(r.exchangeDelay, r.exchangeNotify, evt, delay)
 	elapsed := time.Since(start)
-	promRequestProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
+	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	return err
 }

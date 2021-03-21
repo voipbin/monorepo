@@ -16,7 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler/models/nmnumber"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 func TestGetTypeContextIncomingCall(t *testing.T) {
@@ -516,7 +516,7 @@ func TestTypeFlowStart(t *testing.T) {
 		name    string
 		channel *channel.Channel
 		data    map[string]interface{}
-		numb    *nmnumber.Number
+		numb    *number.Number
 		af      *activeflow.ActiveFlow
 		call    *call.Call
 	}
@@ -534,7 +534,7 @@ func TestTypeFlowStart(t *testing.T) {
 				"context": "call-in",
 				"domain":  "pstn.voipbin.net",
 			},
-			&nmnumber.Number{
+			&number.Number{
 				ID:     uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
 				FlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
 				UserID: 1,
@@ -574,7 +574,7 @@ func TestTypeFlowStart(t *testing.T) {
 				"context": "call-in",
 				"domain":  "pstn.voipbin.net",
 			},
-			&nmnumber.Number{
+			&number.Number{
 				ID:     uuid.FromStringOrNil("f06df84e-82e0-11eb-9ca5-7f84ada50218"),
 				FlowID: uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
 				UserID: 1,
