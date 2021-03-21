@@ -3,7 +3,7 @@ package telnyx
 import (
 	"strings"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // PhoneNumber struct struct
@@ -82,19 +82,19 @@ const (
 )
 
 // ConvertNumber returns converted number
-func (t *PhoneNumber) ConvertNumber() *models.Number {
+func (t *PhoneNumber) ConvertNumber() *number.Number {
 
 	// convert purchaseat
 	tmPurchase := strings.ReplaceAll(t.PurchasedAt, "T", " ")
 	tmPurchase = strings.ReplaceAll(tmPurchase, "Z", ".000")
 
-	res := &models.Number{
+	res := &number.Number{
 		Number: t.PhoneNumber,
 
-		ProviderName:        models.NumberProviderNameTelnyx,
+		ProviderName:        number.ProviderNameTelnyx,
 		ProviderReferenceID: t.ID,
 
-		Status: models.NumberStatus(t.Status),
+		Status: number.Status(t.Status),
 
 		T38Enabled:       t.T38FaxGatewayEnabled,
 		EmergencyEnabled: t.EmergencyEnabled,

@@ -7,7 +7,8 @@ package numberhandlertelnyx
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	models "gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	reflect "reflect"
 )
 
@@ -35,10 +36,10 @@ func (m *MockNumberHandler) EXPECT() *MockNumberHandlerMockRecorder {
 }
 
 // GetAvailableNumbers mocks base method
-func (m *MockNumberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*models.AvailableNumber, error) {
+func (m *MockNumberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAvailableNumbers", countyCode, limit)
-	ret0, _ := ret[0].([]*models.AvailableNumber)
+	ret0, _ := ret[0].([]*availablenumber.AvailableNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,31 +51,31 @@ func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit i
 }
 
 // CreateOrderNumbers mocks base method
-func (m *MockNumberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*models.Number, error) {
+func (m *MockNumberHandler) CreateOrderNumbers(userID uint64, numbs []string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrderNumbers", userID, numbers)
-	ret0, _ := ret[0].([]*models.Number)
+	ret := m.ctrl.Call(m, "CreateOrderNumbers", userID, numbs)
+	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateOrderNumbers indicates an expected call of CreateOrderNumbers
-func (mr *MockNumberHandlerMockRecorder) CreateOrderNumbers(userID, numbers interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) CreateOrderNumbers(userID, numbs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrderNumbers", reflect.TypeOf((*MockNumberHandler)(nil).CreateOrderNumbers), userID, numbers)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrderNumbers", reflect.TypeOf((*MockNumberHandler)(nil).CreateOrderNumbers), userID, numbs)
 }
 
 // ReleaseOrderNumber mocks base method
-func (m *MockNumberHandler) ReleaseOrderNumber(ctx context.Context, number *models.Number) (*models.Number, error) {
+func (m *MockNumberHandler) ReleaseOrderNumber(ctx context.Context, numb *number.Number) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReleaseOrderNumber", ctx, number)
-	ret0, _ := ret[0].(*models.Number)
+	ret := m.ctrl.Call(m, "ReleaseOrderNumber", ctx, numb)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReleaseOrderNumber indicates an expected call of ReleaseOrderNumber
-func (mr *MockNumberHandlerMockRecorder) ReleaseOrderNumber(ctx, number interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) ReleaseOrderNumber(ctx, numb interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseOrderNumber", reflect.TypeOf((*MockNumberHandler)(nil).ReleaseOrderNumber), ctx, number)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseOrderNumber", reflect.TypeOf((*MockNumberHandler)(nil).ReleaseOrderNumber), ctx, numb)
 }

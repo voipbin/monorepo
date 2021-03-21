@@ -7,11 +7,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // CreateNumbers creates a new order numbers of given numbers
-func (h *numberHandler) CreateNumbers(userID uint64, numbers []string) ([]*models.Number, error) {
+func (h *numberHandler) CreateNumbers(userID uint64, numbers []string) ([]*number.Number, error) {
 	logrus.Debugf("CreateNumbers. user_id: %d, numbers: %v", userID, numbers)
 
 	// use telnyx as a default
@@ -19,7 +19,7 @@ func (h *numberHandler) CreateNumbers(userID uint64, numbers []string) ([]*model
 }
 
 // CreateNumber creates a new order numbers of given numbers
-func (h *numberHandler) CreateNumber(userID uint64, number string) (*models.Number, error) {
+func (h *numberHandler) CreateNumber(userID uint64, number string) (*number.Number, error) {
 	logrus.Debugf("CreateNumber. user_id: %d, number: %v", userID, number)
 
 	// use telnyx as a default
@@ -33,7 +33,7 @@ func (h *numberHandler) CreateNumber(userID uint64, number string) (*models.Numb
 }
 
 // ReleaseNumber release/deleted an existed ordered number
-func (h *numberHandler) ReleaseNumber(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (h *numberHandler) ReleaseNumber(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	logrus.Debugf("ReleaseNumber. number: %s", id)
 
 	number, err := h.db.NumberGet(ctx, id)
@@ -46,7 +46,7 @@ func (h *numberHandler) ReleaseNumber(ctx context.Context, id uuid.UUID) (*model
 }
 
 // GetNumberByNumber returns number info of the given number
-func (h *numberHandler) GetNumberByNumber(ctx context.Context, num string) (*models.Number, error) {
+func (h *numberHandler) GetNumberByNumber(ctx context.Context, num string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"number_number": num,
@@ -64,7 +64,7 @@ func (h *numberHandler) GetNumberByNumber(ctx context.Context, num string) (*mod
 }
 
 // GetNumber returns number info of the given id
-func (h *numberHandler) GetNumber(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (h *numberHandler) GetNumber(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"number_id": id,
@@ -82,7 +82,7 @@ func (h *numberHandler) GetNumber(ctx context.Context, id uuid.UUID) (*models.Nu
 }
 
 // GetNumbers returns list of numbers info of the given user_id
-func (h *numberHandler) GetNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*models.Number, error) {
+func (h *numberHandler) GetNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user_id": userID,
@@ -104,7 +104,7 @@ func (h *numberHandler) GetNumbers(ctx context.Context, userID uint64, pageSize 
 }
 
 // UpdateNumber updates the number
-func (h *numberHandler) UpdateNumber(ctx context.Context, numb *models.Number) (*models.Number, error) {
+func (h *numberHandler) UpdateNumber(ctx context.Context, numb *number.Number) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"number": numb,

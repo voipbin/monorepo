@@ -1,4 +1,4 @@
-package models
+package number
 
 import "github.com/gofrs/uuid"
 
@@ -9,10 +9,10 @@ type Number struct {
 	FlowID uuid.UUID `json:"flow_id"`
 	UserID uint64    `json:"user_id"`
 
-	ProviderName        NumberProviderName `json:"provider_name"`
-	ProviderReferenceID string             `json:"provider_reference_id"`
+	ProviderName        ProviderName `json:"provider_name"`
+	ProviderReferenceID string       `json:"provider_reference_id"`
 
-	Status NumberStatus `json:"status"`
+	Status Status `json:"status"`
 
 	T38Enabled       bool `json:"t38_enabled"`
 	EmergencyEnabled bool `json:"emergency_enabled"`
@@ -25,21 +25,21 @@ type Number struct {
 	TMDelete string `json:"tm_delete"`
 }
 
-// NumberProviderName type
-type NumberProviderName string
+// ProviderName type
+type ProviderName string
 
 // list of NumberProvider
 const (
-	NumberProviderNameTelnyx      NumberProviderName = "telnyx"
-	NumberProviderNameTwilio      NumberProviderName = "twilio"
-	NumberProviderNameMessagebird NumberProviderName = "messagebird"
+	ProviderNameTelnyx      ProviderName = "telnyx"
+	ProviderNameTwilio      ProviderName = "twilio"
+	ProviderNameMessagebird ProviderName = "messagebird"
 )
 
-// NumberStatus type
-type NumberStatus string
+// Status type
+type Status string
 
 // List of NumberStatus types
 const (
-	NumberStatusActive  NumberStatus = "active"
-	NumberStatusDeleted NumberStatus = "deleted"
+	StatusActive  Status = "active"
+	StatusDeleted Status = "deleted"
 )

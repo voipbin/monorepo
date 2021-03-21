@@ -9,7 +9,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
@@ -17,9 +18,9 @@ import (
 
 // NumberHandler is interface for service handle
 type NumberHandler interface {
-	GetAvailableNumbers(countyCode string, limit uint) ([]*models.AvailableNumber, error)
-	CreateOrderNumbers(userID uint64, numbers []string) ([]*models.Number, error)
-	ReleaseOrderNumber(ctx context.Context, number *models.Number) (*models.Number, error)
+	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
+	CreateOrderNumbers(userID uint64, numbs []string) ([]*number.Number, error)
+	ReleaseOrderNumber(ctx context.Context, numb *number.Number) (*number.Number, error)
 }
 
 // numberHandler structure for service handle

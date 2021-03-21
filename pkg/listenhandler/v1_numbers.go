@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -147,7 +147,7 @@ func (h *listenHandler) processV1NumbersIDPut(req *rabbitmqhandler.Request) (*ra
 	log.Debugf("Executing processV1NumbersIDPut. number: %s", id)
 
 	// create update number info
-	tmpNumber := &models.Number{
+	tmpNumber := &number.Number{
 		ID:     id,
 		FlowID: reqData.FlowID,
 	}

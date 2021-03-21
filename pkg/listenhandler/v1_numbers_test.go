@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
@@ -34,7 +34,7 @@ func TestProcessV1NumbersPost(t *testing.T) {
 		name          string
 		userID        uint64
 		number        string
-		createdNumber *models.Number
+		createdNumber *number.Number
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
@@ -45,14 +45,14 @@ func TestProcessV1NumbersPost(t *testing.T) {
 			"1 number",
 			1,
 			"+821021656521",
-			&models.Number{
+			&number.Number{
 
 				ID:                  uuid.FromStringOrNil("3a379dce-792a-11eb-a8e1-9f51cab620f8"),
 				Number:              "+821021656521",
 				UserID:              1,
-				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
@@ -106,7 +106,7 @@ func TestProcessV1NumbersIDDelete(t *testing.T) {
 	type test struct {
 		name       string
 		id         uuid.UUID
-		resultData *models.Number
+		resultData *number.Number
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
@@ -116,13 +116,13 @@ func TestProcessV1NumbersIDDelete(t *testing.T) {
 		{
 			"1 number",
 			uuid.FromStringOrNil("9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f"),
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f"),
 				Number:              "+821021656521",
 				UserID:              1,
-				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
-				Status:              models.NumberStatusDeleted,
+				Status:              number.StatusDeleted,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
@@ -174,7 +174,7 @@ func TestProcessV1NumbersIDGet(t *testing.T) {
 	type test struct {
 		name       string
 		id         uuid.UUID
-		resultData *models.Number
+		resultData *number.Number
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
@@ -184,13 +184,13 @@ func TestProcessV1NumbersIDGet(t *testing.T) {
 		{
 			"1 number",
 			uuid.FromStringOrNil("7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad"),
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad"),
 				Number:              "+821021656521",
 				UserID:              1,
-				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
@@ -242,7 +242,7 @@ func TestProcessV1NumbersNumberGet(t *testing.T) {
 	type test struct {
 		name       string
 		num        string
-		resultData *models.Number
+		resultData *number.Number
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
@@ -252,13 +252,13 @@ func TestProcessV1NumbersNumberGet(t *testing.T) {
 		{
 			"1 number",
 			"+821021656521",
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("52f48d94-7a57-11eb-bda1-57eb6d071e62"),
 				Number:              "+821021656521",
 				UserID:              1,
-				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
@@ -312,7 +312,7 @@ func TestProcessV1NumbersGet(t *testing.T) {
 		userID     uint64
 		pageSize   uint64
 		pageToken  string
-		resultData []*models.Number
+		resultData []*number.Number
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
@@ -324,14 +324,14 @@ func TestProcessV1NumbersGet(t *testing.T) {
 			1,
 			10,
 			"2021-03-01 03:30:17.000000",
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("eeafd418-7a4e-11eb-8750-9bb0ca1d7926"),
 					Number:              "+821021656521",
 					UserID:              1,
-					ProviderName:        models.NumberProviderNameTelnyx,
+					ProviderName:        number.ProviderNameTelnyx,
 					ProviderReferenceID: "",
-					Status:              models.NumberStatusActive,
+					Status:              number.StatusActive,
 					T38Enabled:          false,
 					EmergencyEnabled:    false,
 				},
@@ -384,8 +384,8 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 	type test struct {
 		name       string
 		id         uuid.UUID
-		updateInfo *models.Number
-		resultData *models.Number
+		updateInfo *number.Number
+		resultData *number.Number
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
@@ -395,18 +395,18 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
-			&models.Number{
+			&number.Number{
 				ID:     uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
 				FlowID: uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
 			},
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
 				FlowID:              uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
 				Number:              "+821021656521",
 				UserID:              1,
-				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},

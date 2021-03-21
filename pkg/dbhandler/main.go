@@ -11,7 +11,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 )
 
@@ -19,19 +19,19 @@ import (
 type DBHandler interface {
 
 	// number
-	NumberCreate(ctx context.Context, n *models.Number) error
+	NumberCreate(ctx context.Context, n *number.Number) error
 	NumberDelete(ctx context.Context, id uuid.UUID) error
-	NumberGet(ctx context.Context, id uuid.UUID) (*models.Number, error)
-	NumberGetByNumber(ctx context.Context, numb string) (*models.Number, error)
-	NumberGetFromCache(ctx context.Context, id uuid.UUID) (*models.Number, error)
-	NumberGetFromCacheByNumber(ctx context.Context, numb string) (*models.Number, error)
-	NumberGetFromDB(ctx context.Context, id uuid.UUID) (*models.Number, error)
-	NumberGetFromDBByNumber(ctx context.Context, numb string) (*models.Number, error)
-	NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*models.Number, error)
-	NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*models.Number, error)
-	NumberSetToCache(ctx context.Context, num *models.Number) error
-	NumberSetToCacheByNumber(ctx context.Context, num *models.Number) error
-	NumberUpdate(ctx context.Context, numb *models.Number) error
+	NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error)
+	NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error)
+	NumberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error)
+	NumberGetFromCacheByNumber(ctx context.Context, numb string) (*number.Number, error)
+	NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error)
+	NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error)
+	NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*number.Number, error)
+	NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error)
+	NumberSetToCache(ctx context.Context, num *number.Number) error
+	NumberSetToCacheByNumber(ctx context.Context, num *number.Number) error
+	NumberUpdate(ctx context.Context, numb *number.Number) error
 	NumberUpdateToCache(ctx context.Context, id uuid.UUID) error
 }
 

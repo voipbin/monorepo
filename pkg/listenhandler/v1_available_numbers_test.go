@@ -7,7 +7,8 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
@@ -33,7 +34,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 		name        string
 		countryCode string
 		pageSize    uint
-		numbers     []*models.AvailableNumber
+		numbers     []*availablenumber.AvailableNumber
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
@@ -44,7 +45,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 			"empty numbers",
 			"US",
 			1,
-			[]*models.AvailableNumber{},
+			[]*availablenumber.AvailableNumber{},
 			&rabbitmqhandler.Request{
 				URI:    "/v1/available_numbers?country_code=US&page_size=1",
 				Method: rabbitmqhandler.RequestMethodGet,
@@ -59,14 +60,14 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 			"1 number entry",
 			"US",
 			1,
-			[]*models.AvailableNumber{
+			[]*availablenumber.AvailableNumber{
 				{
 					Number:       "+16188850188",
-					ProviderName: models.NumberProviderNameTelnyx,
+					ProviderName: number.ProviderNameTelnyx,
 					Country:      "US",
 					Region:       "IL",
-					Features: []models.AvailableNumberFeature{
-						models.AvailableNumberFeatureEmergency, models.AvailableNumberFeatureFax, models.AvailableNumberFeatureVoice, models.AvailableNumberFeatureSMS,
+					Features: []availablenumber.Feature{
+						availablenumber.FeatureEmergency, availablenumber.FeatureFax, availablenumber.FeatureVoice, availablenumber.FeatureSMS,
 					},
 				},
 			},
