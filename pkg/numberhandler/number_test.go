@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
@@ -36,7 +36,7 @@ func TestCreateNumbersTelnyx(t *testing.T) {
 		userID  uint64
 		numbers []string
 
-		expectRes []*models.Number
+		expectRes []*number.Number
 	}
 
 	tests := []test{
@@ -44,11 +44,11 @@ func TestCreateNumbersTelnyx(t *testing.T) {
 			"normal us",
 			1,
 			[]string{"+821021656521"},
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:           uuid.FromStringOrNil("84cdc0a8-79d8-11eb-9179-ffc8c4fc9756"),
 					Number:       "+821021656521",
-					ProviderName: models.NumberProviderNameTelnyx,
+					ProviderName: number.ProviderNameTelnyx,
 				},
 			},
 		},
@@ -92,7 +92,7 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 		userID uint64
 		number string
 
-		expectRes *models.Number
+		expectRes *number.Number
 	}
 
 	tests := []test{
@@ -100,10 +100,10 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 			"normal us",
 			1,
 			"+821021656521",
-			&models.Number{
+			&number.Number{
 				ID:           uuid.FromStringOrNil("61afc712-7b25-11eb-b31f-5357d050c809"),
 				Number:       "+821021656521",
-				ProviderName: models.NumberProviderNameTelnyx,
+				ProviderName: number.ProviderNameTelnyx,
 			},
 		},
 	}
@@ -112,7 +112,7 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			tmpNumbers := []string{tt.number}
-			tmpExpRes := []*models.Number{tt.expectRes}
+			tmpExpRes := []*number.Number{tt.expectRes}
 			mockTelnyx.EXPECT().CreateOrderNumbers(tt.userID, tmpNumbers).Return(tmpExpRes, nil)
 
 			res, err := h.CreateNumber(tt.userID, tt.number)
@@ -146,20 +146,20 @@ func TestGetNumber(t *testing.T) {
 	type test struct {
 		name     string
 		numberID uuid.UUID
-		number   *models.Number
+		number   *number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
 			uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
 				Number:              "+821021656521",
 				UserID:              1,
-				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "1580568175064384684",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
@@ -207,7 +207,7 @@ func TestGetNumbers(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		numbers []*models.Number
+		numbers []*number.Number
 	}
 
 	tests := []test{
@@ -216,14 +216,14 @@ func TestGetNumbers(t *testing.T) {
 			1,
 			10,
 			"2021-02-26 18:26:49.000",
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("da535752-7a4d-11eb-aec4-5bac74c24370"),
 					Number:              "+821021656521",
 					UserID:              1,
-					ProviderName:        models.NumberProviderNameTelnyx,
+					ProviderName:        number.ProviderNameTelnyx,
 					ProviderReferenceID: "1580568175064384684",
-					Status:              models.NumberStatusActive,
+					Status:              number.StatusActive,
 					T38Enabled:          false,
 					EmergencyEnabled:    false,
 					TMPurchase:          "2021-02-26 18:26:49.000",
@@ -236,14 +236,14 @@ func TestGetNumbers(t *testing.T) {
 			1,
 			10,
 			"",
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("b72d1844-7bdd-11eb-a2bb-4370f115b44c"),
 					Number:              "+821021656521",
 					UserID:              1,
-					ProviderName:        models.NumberProviderNameTelnyx,
+					ProviderName:        number.ProviderNameTelnyx,
 					ProviderReferenceID: "1580568175064384684",
-					Status:              models.NumberStatusActive,
+					Status:              number.StatusActive,
 					T38Enabled:          false,
 					EmergencyEnabled:    false,
 					TMPurchase:          "2021-02-26 18:26:49.000",
@@ -293,26 +293,26 @@ func TestUpdateNumber(t *testing.T) {
 
 	type test struct {
 		name         string
-		updateNumber *models.Number
-		number       *models.Number
+		updateNumber *number.Number
+		number       *number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
 			// uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
-			&models.Number{
+			&number.Number{
 				ID:     uuid.FromStringOrNil("1e5f4238-7c58-11eb-a6aa-fb7278bbb0bc"),
 				FlowID: uuid.FromStringOrNil("1f71c61e-7c58-11eb-8d07-6f618f90475f"),
 			},
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("1e5f4238-7c58-11eb-a6aa-fb7278bbb0bc"),
 				FlowID:              uuid.FromStringOrNil("1f71c61e-7c58-11eb-8d07-6f618f90475f"),
 				Number:              "+821021656521",
 				UserID:              1,
-				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "1580568175064384684",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",

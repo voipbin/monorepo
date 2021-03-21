@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
@@ -32,14 +32,14 @@ func TestRemoveNumbersFlowID(t *testing.T) {
 
 	type test struct {
 		name    string
-		numbers []*models.Number
+		numbers []*number.Number
 		flowID  uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:     uuid.FromStringOrNil("e9e983b2-7d22-11eb-acd3-13c2efec905d"),
 					FlowID: uuid.FromStringOrNil("dd92f3fa-7d22-11eb-be53-47ee94a9bce3"),
@@ -49,7 +49,7 @@ func TestRemoveNumbersFlowID(t *testing.T) {
 		},
 		{
 			"3 items",
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:     uuid.FromStringOrNil("094aa406-7d24-11eb-81d5-2f5e99ab6fc1"),
 					FlowID: uuid.FromStringOrNil("0974bd22-7d24-11eb-8517-8f90f5f6be56"),

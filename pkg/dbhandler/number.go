@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 const (
@@ -37,8 +37,8 @@ const (
 )
 
 // numberGetFromRow gets the number from the row.
-func (h *handler) numberGetFromRow(row *sql.Rows) (*models.Number, error) {
-	res := &models.Number{}
+func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
+	res := &number.Number{}
 	if err := row.Scan(
 		&res.ID,
 		&res.Number,
@@ -65,7 +65,7 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*models.Number, error) {
 }
 
 // NumberGetFromCacheByNumber returns number from the cache by number.
-func (h *handler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (*models.Number, error) {
+func (h *handler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (*number.Number, error) {
 
 	// get from cache
 	res, err := h.cache.NumberGetByNumber(ctx, numb)
@@ -77,7 +77,7 @@ func (h *handler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (
 }
 
 // NumberSetToCacheByNumber sets the given number to the cache
-func (h *handler) NumberSetToCacheByNumber(ctx context.Context, num *models.Number) error {
+func (h *handler) NumberSetToCacheByNumber(ctx context.Context, num *number.Number) error {
 	if err := h.cache.NumberSetByNumber(ctx, num); err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (h *handler) NumberSetToCacheByNumber(ctx context.Context, num *models.Numb
 }
 
 // NumberGetFromCache returns number from the cache.
-func (h *handler) NumberGetFromCache(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (h *handler) NumberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 
 	// get from cache
 	res, err := h.cache.NumberGet(ctx, id)
@@ -98,7 +98,7 @@ func (h *handler) NumberGetFromCache(ctx context.Context, id uuid.UUID) (*models
 }
 
 // NumberSetToCache sets the given number to the cache
-func (h *handler) NumberSetToCache(ctx context.Context, num *models.Number) error {
+func (h *handler) NumberSetToCache(ctx context.Context, num *number.Number) error {
 	if err := h.cache.NumberSet(ctx, num); err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (h *handler) NumberUpdateToCache(ctx context.Context, id uuid.UUID) error {
 }
 
 // NumberGetFromDB returns number info from the DB.
-func (h *handler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (h *handler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", numberSelect)
@@ -150,7 +150,7 @@ func (h *handler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*models.Nu
 }
 
 // NumberGetFromDBByNumber returns number info from the DB by number.
-func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*models.Number, error) {
+func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where number = ? and tm_delete is null", numberSelect)
@@ -174,7 +174,7 @@ func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*mo
 }
 
 // NumberGet returns number.
-func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 
 	res, err := h.NumberGetFromCache(ctx, id)
 	if err == nil {
@@ -193,7 +193,7 @@ func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*models.Number, 
 }
 
 // NumberGetByNumber returns number by number.
-func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*models.Number, error) {
+func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error) {
 
 	res, err := h.NumberGetFromCacheByNumber(ctx, numb)
 	if err == nil {
@@ -212,7 +212,7 @@ func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*models.N
 }
 
 // NumberGets returns a list of numbers.
-func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*models.Number, error) {
+func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*number.Number, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? and tm_delete is null order by tm_create desc limit ?", numberSelect)
@@ -223,7 +223,7 @@ func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, to
 	}
 	defer rows.Close()
 
-	res := []*models.Number{}
+	res := []*number.Number{}
 	for rows.Next() {
 		u, err := h.numberGetFromRow(rows)
 		if err != nil {
@@ -237,7 +237,7 @@ func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, to
 }
 
 // NumberGetsByFlowID returns a list of numbers by flow_id.
-func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*models.Number, error) {
+func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where flow_id = ? and tm_create < ? and tm_delete is null order by tm_create desc limit ?", numberSelect)
@@ -248,7 +248,7 @@ func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size
 	}
 	defer rows.Close()
 
-	res := []*models.Number{}
+	res := []*number.Number{}
 	for rows.Next() {
 		u, err := h.numberGetFromRow(rows)
 		if err != nil {
@@ -262,7 +262,7 @@ func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size
 }
 
 // NumberCreate creates a new number record.
-func (h *handler) NumberCreate(ctx context.Context, n *models.Number) error {
+func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 	q := `insert into numbers(
 		id,
 		number,
@@ -329,7 +329,7 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 		`
 
 	curTime := getCurTime()
-	_, err := h.db.Exec(q, string(models.NumberStatusDeleted), curTime, curTime, id.Bytes())
+	_, err := h.db.Exec(q, string(number.StatusDeleted), curTime, curTime, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. NumberDelete. err: %v", err)
 	}
@@ -341,7 +341,7 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // NumberUpdate updates number.
-func (h *handler) NumberUpdate(ctx context.Context, numb *models.Number) error {
+func (h *handler) NumberUpdate(ctx context.Context, numb *number.Number) error {
 	q := `
 	update numbers set
 		flow_id = ?,

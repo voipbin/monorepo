@@ -1,6 +1,9 @@
 package telnyx
 
-import "gitlab.com/voipbin/bin-manager/number-manager.git/models"
+import (
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+)
 
 // AvailableNumber type
 type AvailableNumber struct {
@@ -40,11 +43,11 @@ type AvailableMetaData struct {
 }
 
 // ConvertAvailableNumber returns converted number
-func (t *AvailableNumber) ConvertAvailableNumber() *models.AvailableNumber {
+func (t *AvailableNumber) ConvertAvailableNumber() *availablenumber.AvailableNumber {
 
-	res := &models.AvailableNumber{
+	res := &availablenumber.AvailableNumber{
 		Number:       t.PhoneNumber,
-		ProviderName: models.NumberProviderNameTelnyx,
+		ProviderName: number.ProviderNameTelnyx,
 	}
 
 	for _, tmp := range t.RegionInformation {
@@ -57,20 +60,20 @@ func (t *AvailableNumber) ConvertAvailableNumber() *models.AvailableNumber {
 
 	for _, tmp := range t.Features {
 		switch tmp.Name {
-		case string(models.AvailableNumberFeatureEmergency):
-			res.Features = append(res.Features, models.AvailableNumberFeatureEmergency)
+		case string(availablenumber.FeatureEmergency):
+			res.Features = append(res.Features, availablenumber.FeatureEmergency)
 
-		case string(models.AvailableNumberFeatureFax):
-			res.Features = append(res.Features, models.AvailableNumberFeatureFax)
+		case string(availablenumber.FeatureFax):
+			res.Features = append(res.Features, availablenumber.FeatureFax)
 
-		case string(models.AvailableNumberFeatureMMS):
-			res.Features = append(res.Features, models.AvailableNumberFeatureMMS)
+		case string(availablenumber.FeatureMMS):
+			res.Features = append(res.Features, availablenumber.FeatureMMS)
 
-		case string(models.AvailableNumberFeatureSMS):
-			res.Features = append(res.Features, models.AvailableNumberFeatureSMS)
+		case string(availablenumber.FeatureSMS):
+			res.Features = append(res.Features, availablenumber.FeatureSMS)
 
-		case string(models.AvailableNumberFeatureVoice):
-			res.Features = append(res.Features, models.AvailableNumberFeatureVoice)
+		case string(availablenumber.FeatureVoice):
+			res.Features = append(res.Features, availablenumber.FeatureVoice)
 		}
 	}
 

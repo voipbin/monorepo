@@ -2,12 +2,11 @@ package numberhandlertelnyx
 
 import (
 	"github.com/sirupsen/logrus"
-
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 )
 
 // GetAvailableNumbers gets the numbers from the number providers
-func (h *numberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*models.AvailableNumber, error) {
+func (h *numberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
 
 	// send a request number providers
 
@@ -22,7 +21,7 @@ func (h *numberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*m
 
 	// messagebird
 
-	res := []*models.AvailableNumber{}
+	res := []*availablenumber.AvailableNumber{}
 	for _, tmp := range tmpNumbers {
 		res = append(res, tmp.ConvertAvailableNumber())
 	}

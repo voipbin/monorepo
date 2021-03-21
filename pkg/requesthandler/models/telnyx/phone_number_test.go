@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 func TestPhoneNumberConvertNumber(t *testing.T) {
@@ -17,7 +17,7 @@ func TestPhoneNumberConvertNumber(t *testing.T) {
 		name   string
 		number *PhoneNumber
 
-		expectRes *models.Number
+		expectRes *number.Number
 	}
 
 	tests := []test{
@@ -46,9 +46,9 @@ func TestPhoneNumberConvertNumber(t *testing.T) {
 				CreatedAt:             "2021-02-25T17:54:53.965Z",
 				UpdatedAt:             "2021-02-25T17:54:55.001Z",
 			},
-			&models.Number{
+			&number.Number{
 				Number:              "+15078888932",
-				ProviderName:        models.NumberProviderNameTelnyx,
+				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "1579827332531618841",
 				Status:              "active",
 				T38Enabled:          true,

@@ -10,7 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
@@ -19,19 +20,19 @@ import (
 
 // NumberHandler is interface for service handle
 type NumberHandler interface {
-	GetAvailableNumbers(countyCode string, limit uint) ([]*models.AvailableNumber, error)
+	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
 
-	CreateNumbers(userID uint64, numbers []string) ([]*models.Number, error)
-	CreateNumber(userID uint64, number string) (*models.Number, error)
-	GetNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
-	GetNumberByNumber(ctx context.Context, num string) (*models.Number, error)
-	GetNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*models.Number, error)
+	CreateNumbers(userID uint64, numbs []string) ([]*number.Number, error)
+	CreateNumber(userID uint64, numb string) (*number.Number, error)
+	GetNumber(ctx context.Context, id uuid.UUID) (*number.Number, error)
+	GetNumberByNumber(ctx context.Context, num string) (*number.Number, error)
+	GetNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*number.Number, error)
 
-	ReleaseNumber(ctx context.Context, id uuid.UUID) (*models.Number, error)
+	ReleaseNumber(ctx context.Context, id uuid.UUID) (*number.Number, error)
 
 	RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUID) error
 
-	UpdateNumber(ctx context.Context, numb *models.Number) (*models.Number, error)
+	UpdateNumber(ctx context.Context, numb *number.Number) (*number.Number, error)
 }
 
 // numberHandler structure for service handle

@@ -8,7 +8,7 @@ import (
 	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	models "gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	reflect "reflect"
 )
 
@@ -36,7 +36,7 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 }
 
 // NumberCreate mocks base method
-func (m *MockDBHandler) NumberCreate(ctx context.Context, n *models.Number) error {
+func (m *MockDBHandler) NumberCreate(ctx context.Context, n *number.Number) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberCreate", ctx, n)
 	ret0, _ := ret[0].(error)
@@ -64,10 +64,10 @@ func (mr *MockDBHandlerMockRecorder) NumberDelete(ctx, id interface{}) *gomock.C
 }
 
 // NumberGet mocks base method
-func (m *MockDBHandler) NumberGet(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (m *MockDBHandler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGet", ctx, id)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -79,10 +79,10 @@ func (mr *MockDBHandlerMockRecorder) NumberGet(ctx, id interface{}) *gomock.Call
 }
 
 // NumberGetByNumber mocks base method
-func (m *MockDBHandler) NumberGetByNumber(ctx context.Context, numb string) (*models.Number, error) {
+func (m *MockDBHandler) NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGetByNumber", ctx, numb)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -94,10 +94,10 @@ func (mr *MockDBHandlerMockRecorder) NumberGetByNumber(ctx, numb interface{}) *g
 }
 
 // NumberGetFromCache mocks base method
-func (m *MockDBHandler) NumberGetFromCache(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (m *MockDBHandler) NumberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGetFromCache", ctx, id)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -109,10 +109,10 @@ func (mr *MockDBHandlerMockRecorder) NumberGetFromCache(ctx, id interface{}) *go
 }
 
 // NumberGetFromCacheByNumber mocks base method
-func (m *MockDBHandler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (*models.Number, error) {
+func (m *MockDBHandler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGetFromCacheByNumber", ctx, numb)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -124,10 +124,10 @@ func (mr *MockDBHandlerMockRecorder) NumberGetFromCacheByNumber(ctx, numb interf
 }
 
 // NumberGetFromDB mocks base method
-func (m *MockDBHandler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (m *MockDBHandler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGetFromDB", ctx, id)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -139,10 +139,10 @@ func (mr *MockDBHandlerMockRecorder) NumberGetFromDB(ctx, id interface{}) *gomoc
 }
 
 // NumberGetFromDBByNumber mocks base method
-func (m *MockDBHandler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*models.Number, error) {
+func (m *MockDBHandler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGetFromDBByNumber", ctx, numb)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -154,10 +154,10 @@ func (mr *MockDBHandlerMockRecorder) NumberGetFromDBByNumber(ctx, numb interface
 }
 
 // NumberGets mocks base method
-func (m *MockDBHandler) NumberGets(ctx context.Context, userID, size uint64, token string) ([]*models.Number, error) {
+func (m *MockDBHandler) NumberGets(ctx context.Context, userID, size uint64, token string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGets", ctx, userID, size, token)
-	ret0, _ := ret[0].([]*models.Number)
+	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -169,10 +169,10 @@ func (mr *MockDBHandlerMockRecorder) NumberGets(ctx, userID, size, token interfa
 }
 
 // NumberGetsByFlowID mocks base method
-func (m *MockDBHandler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*models.Number, error) {
+func (m *MockDBHandler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGetsByFlowID", ctx, flowID, size, token)
-	ret0, _ := ret[0].([]*models.Number)
+	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -184,7 +184,7 @@ func (mr *MockDBHandlerMockRecorder) NumberGetsByFlowID(ctx, flowID, size, token
 }
 
 // NumberSetToCache mocks base method
-func (m *MockDBHandler) NumberSetToCache(ctx context.Context, num *models.Number) error {
+func (m *MockDBHandler) NumberSetToCache(ctx context.Context, num *number.Number) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberSetToCache", ctx, num)
 	ret0, _ := ret[0].(error)
@@ -198,7 +198,7 @@ func (mr *MockDBHandlerMockRecorder) NumberSetToCache(ctx, num interface{}) *gom
 }
 
 // NumberSetToCacheByNumber mocks base method
-func (m *MockDBHandler) NumberSetToCacheByNumber(ctx context.Context, num *models.Number) error {
+func (m *MockDBHandler) NumberSetToCacheByNumber(ctx context.Context, num *number.Number) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberSetToCacheByNumber", ctx, num)
 	ret0, _ := ret[0].(error)
@@ -212,7 +212,7 @@ func (mr *MockDBHandlerMockRecorder) NumberSetToCacheByNumber(ctx, num interface
 }
 
 // NumberUpdate mocks base method
-func (m *MockDBHandler) NumberUpdate(ctx context.Context, numb *models.Number) error {
+func (m *MockDBHandler) NumberUpdate(ctx context.Context, numb *number.Number) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberUpdate", ctx, numb)
 	ret0, _ := ret[0].(error)

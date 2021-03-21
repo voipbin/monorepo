@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
-	models "gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 type handler struct {
@@ -25,10 +25,10 @@ type CacheHandler interface {
 
 	NumberDel(ctx context.Context, id uuid.UUID) error
 	NumberDelByNumber(ctx context.Context, num string) error
-	NumberGet(ctx context.Context, id uuid.UUID) (*models.Number, error)
-	NumberGetByNumber(ctx context.Context, num string) (*models.Number, error)
-	NumberSet(ctx context.Context, numb *models.Number) error
-	NumberSetByNumber(ctx context.Context, numb *models.Number) error
+	NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error)
+	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
+	NumberSet(ctx context.Context, numb *number.Number) error
+	NumberSetByNumber(ctx context.Context, numb *number.Number) error
 }
 
 // NewHandler creates DBHandler

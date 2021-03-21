@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 )
 
@@ -22,31 +22,31 @@ func TestNumberCreate(t *testing.T) {
 
 	type test struct {
 		name         string
-		number       *models.Number
-		expectNumber *models.Number
+		number       *number.Number
+		expectNumber *number.Number
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("8290e0be-7905-11eb-90c7-d3d5addc947a"),
 				Number:              "+821021656521",
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("8290e0be-7905-11eb-90c7-d3d5addc947a"),
 				Number:              "+821021656521",
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
@@ -110,7 +110,7 @@ func TestNumberGets(t *testing.T) {
 	h := NewHandler(dbTest, mockCache)
 	mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 	mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
-	h.NumberCreate(context.Background(), &models.Number{ID: uuid.FromStringOrNil("82337ace-790e-11eb-a269-f75aee0055a8"), UserID: 1})
+	h.NumberCreate(context.Background(), &number.Number{ID: uuid.FromStringOrNil("82337ace-790e-11eb-a269-f75aee0055a8"), UserID: 1})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -137,7 +137,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 		name string
 
 		flowID  uuid.UUID
-		numbers []*models.Number
+		numbers []*number.Number
 
 		expectNum int
 	}
@@ -146,7 +146,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("66beabfe-7d20-11eb-9b69-375c485b40fa"),
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:     uuid.FromStringOrNil("5d73b940-7d20-11eb-8335-97856a00f2c6"),
 					UserID: 1,
@@ -158,7 +158,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 		{
 			"3 flows, but grep 2",
 			uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:     uuid.FromStringOrNil("109347b6-7d21-11eb-bdd4-c7226a0e1c81"),
 					UserID: 1,
@@ -213,32 +213,32 @@ func TestNumberDelete(t *testing.T) {
 
 	type test struct {
 		name         string
-		number       *models.Number
-		expectNumber *models.Number
+		number       *number.Number
+		expectNumber *number.Number
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
 				Number:              "+821021656521",
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
 
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
 				Number:              "+821021656521",
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
-				Status:              models.NumberStatusDeleted,
+				Status:              number.StatusDeleted,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
@@ -293,37 +293,37 @@ func TestNumberUpdate(t *testing.T) {
 
 	type test struct {
 		name         string
-		number       *models.Number
-		updateNumber *models.Number
-		expectNumber *models.Number
+		number       *number.Number
+		updateNumber *number.Number
+		expectNumber *number.Number
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
 				Number:              "+821021656521",
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
-			&models.Number{
+			&number.Number{
 				ID:     uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
 				FlowID: uuid.FromStringOrNil("9496e31a-7c54-11eb-915d-3f8ab244a929"),
 			},
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
 				Number:              "+821021656521",
 				FlowID:              uuid.FromStringOrNil("9496e31a-7c54-11eb-915d-3f8ab244a929"),
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
-				Status:              models.NumberStatusActive,
+				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",

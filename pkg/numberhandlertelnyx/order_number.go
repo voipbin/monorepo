@@ -6,11 +6,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // CreateOrderNumbers creates a new order numbers of given numbers from the telnyx
-func (h *numberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*models.Number, error) {
+func (h *numberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"numbers": numbers,
@@ -25,7 +25,7 @@ func (h *numberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*
 	}
 
 	// create db record for each ordered numbers
-	res := []*models.Number{}
+	res := []*number.Number{}
 	for _, number := range numbers {
 		tmpNumber, err := h.createNumberByTelnyxOrderNumber(userID, number)
 		if err != nil {
@@ -41,7 +41,7 @@ func (h *numberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*
 }
 
 // createNumberByTelnyxOrderNumber creates a number by ordered number to the telnyx.
-func (h *numberHandler) createNumberByTelnyxOrderNumber(userID uint64, number string) (*models.Number, error) {
+func (h *numberHandler) createNumberByTelnyxOrderNumber(userID uint64, number string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"number": number,
@@ -96,7 +96,7 @@ func (h *numberHandler) createNumberByTelnyxOrderNumber(userID uint64, number st
 }
 
 // ReleseOrderNumbers release an existed order number from the telnyx
-func (h *numberHandler) ReleaseOrderNumber(ctx context.Context, number *models.Number) (*models.Number, error) {
+func (h *numberHandler) ReleaseOrderNumber(ctx context.Context, number *number.Number) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"number": number,

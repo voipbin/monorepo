@@ -6,7 +6,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 func TestConvertAvailableNumber(t *testing.T) {
@@ -17,7 +18,7 @@ func TestConvertAvailableNumber(t *testing.T) {
 		name   string
 		number *AvailableNumber
 
-		expectRes *models.AvailableNumber
+		expectRes *availablenumber.AvailableNumber
 	}
 
 	tests := []test{
@@ -63,14 +64,14 @@ func TestConvertAvailableNumber(t *testing.T) {
 					},
 				},
 			},
-			&models.AvailableNumber{
+			&availablenumber.AvailableNumber{
 				Number:       "+16188850188",
-				ProviderName: models.NumberProviderNameTelnyx,
+				ProviderName: number.ProviderNameTelnyx,
 
 				Country: "US",
 				Region:  "IL",
-				Features: []models.AvailableNumberFeature{
-					models.AvailableNumberFeatureEmergency, models.AvailableNumberFeatureFax, models.AvailableNumberFeatureVoice, models.AvailableNumberFeatureSMS,
+				Features: []availablenumber.Feature{
+					availablenumber.FeatureEmergency, availablenumber.FeatureFax, availablenumber.FeatureVoice, availablenumber.FeatureSMS,
 				},
 			},
 		},

@@ -8,7 +8,7 @@ import (
 	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	models "gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	reflect "reflect"
 )
 
@@ -78,10 +78,10 @@ func (mr *MockCacheHandlerMockRecorder) NumberDelByNumber(ctx, num interface{}) 
 }
 
 // NumberGet mocks base method
-func (m *MockCacheHandler) NumberGet(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (m *MockCacheHandler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGet", ctx, id)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -93,10 +93,10 @@ func (mr *MockCacheHandlerMockRecorder) NumberGet(ctx, id interface{}) *gomock.C
 }
 
 // NumberGetByNumber mocks base method
-func (m *MockCacheHandler) NumberGetByNumber(ctx context.Context, num string) (*models.Number, error) {
+func (m *MockCacheHandler) NumberGetByNumber(ctx context.Context, num string) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGetByNumber", ctx, num)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -108,7 +108,7 @@ func (mr *MockCacheHandlerMockRecorder) NumberGetByNumber(ctx, num interface{}) 
 }
 
 // NumberSet mocks base method
-func (m *MockCacheHandler) NumberSet(ctx context.Context, numb *models.Number) error {
+func (m *MockCacheHandler) NumberSet(ctx context.Context, numb *number.Number) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberSet", ctx, numb)
 	ret0, _ := ret[0].(error)
@@ -122,7 +122,7 @@ func (mr *MockCacheHandlerMockRecorder) NumberSet(ctx, numb interface{}) *gomock
 }
 
 // NumberSetByNumber mocks base method
-func (m *MockCacheHandler) NumberSetByNumber(ctx context.Context, numb *models.Number) error {
+func (m *MockCacheHandler) NumberSetByNumber(ctx context.Context, numb *number.Number) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberSetByNumber", ctx, numb)
 	ret0, _ := ret[0].(error)

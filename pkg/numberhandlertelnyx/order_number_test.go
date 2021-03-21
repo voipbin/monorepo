@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
@@ -93,13 +93,13 @@ func TestReleaseNumber(t *testing.T) {
 
 	type test struct {
 		name   string
-		number *models.Number
+		number *number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&models.Number{
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("d8659476-79e1-11eb-a59b-9301c8a84847"),
 				ProviderReferenceID: "1580568175064384684",
 			},

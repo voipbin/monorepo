@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	models "gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // getSerialize returns cached serialized info.
@@ -48,10 +48,10 @@ func (h *handler) delSerialize(ctx context.Context, key string) error {
 }
 
 // NumberGetByNumber returns number call info
-func (h *handler) NumberGetByNumber(ctx context.Context, num string) (*models.Number, error) {
+func (h *handler) NumberGetByNumber(ctx context.Context, num string) (*number.Number, error) {
 	key := fmt.Sprintf("number-number:%s", num)
 
-	var res models.Number
+	var res number.Number
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (h *handler) NumberGetByNumber(ctx context.Context, num string) (*models.Nu
 }
 
 // NumberSetByNumber sets the number info into the cache.
-func (h *handler) NumberSetByNumber(ctx context.Context, numb *models.Number) error {
+func (h *handler) NumberSetByNumber(ctx context.Context, numb *number.Number) error {
 	key := fmt.Sprintf("number-number:%s", numb.Number)
 
 	if err := h.setSerialize(ctx, key, numb); err != nil {
@@ -82,10 +82,10 @@ func (h *handler) NumberDelByNumber(ctx context.Context, num string) error {
 }
 
 // NumberGet returns number call info
-func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	key := fmt.Sprintf("number:%s", id)
 
-	var res models.Number
+	var res number.Number
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*models.Number, 
 }
 
 // NumberSet sets the number info into the cache.
-func (h *handler) NumberSet(ctx context.Context, numb *models.Number) error {
+func (h *handler) NumberSet(ctx context.Context, numb *number.Number) error {
 	key := fmt.Sprintf("number:%s", numb.ID)
 
 	if err := h.setSerialize(ctx, key, numb); err != nil {

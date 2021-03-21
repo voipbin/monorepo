@@ -8,7 +8,8 @@ import (
 	context "context"
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	models "gitlab.com/voipbin/bin-manager/number-manager.git/models"
+	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	reflect "reflect"
 )
 
@@ -36,10 +37,10 @@ func (m *MockNumberHandler) EXPECT() *MockNumberHandlerMockRecorder {
 }
 
 // GetAvailableNumbers mocks base method
-func (m *MockNumberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*models.AvailableNumber, error) {
+func (m *MockNumberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAvailableNumbers", countyCode, limit)
-	ret0, _ := ret[0].([]*models.AvailableNumber)
+	ret0, _ := ret[0].([]*availablenumber.AvailableNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -51,40 +52,40 @@ func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit i
 }
 
 // CreateNumbers mocks base method
-func (m *MockNumberHandler) CreateNumbers(userID uint64, numbers []string) ([]*models.Number, error) {
+func (m *MockNumberHandler) CreateNumbers(userID uint64, numbs []string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNumbers", userID, numbers)
-	ret0, _ := ret[0].([]*models.Number)
+	ret := m.ctrl.Call(m, "CreateNumbers", userID, numbs)
+	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateNumbers indicates an expected call of CreateNumbers
-func (mr *MockNumberHandlerMockRecorder) CreateNumbers(userID, numbers interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) CreateNumbers(userID, numbs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumbers", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumbers), userID, numbers)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumbers", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumbers), userID, numbs)
 }
 
 // CreateNumber mocks base method
-func (m *MockNumberHandler) CreateNumber(userID uint64, number string) (*models.Number, error) {
+func (m *MockNumberHandler) CreateNumber(userID uint64, numb string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNumber", userID, number)
-	ret0, _ := ret[0].(*models.Number)
+	ret := m.ctrl.Call(m, "CreateNumber", userID, numb)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateNumber indicates an expected call of CreateNumber
-func (mr *MockNumberHandlerMockRecorder) CreateNumber(userID, number interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) CreateNumber(userID, numb interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumber", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumber), userID, number)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumber", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumber), userID, numb)
 }
 
 // GetNumber mocks base method
-func (m *MockNumberHandler) GetNumber(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (m *MockNumberHandler) GetNumber(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNumber", ctx, id)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -96,10 +97,10 @@ func (mr *MockNumberHandlerMockRecorder) GetNumber(ctx, id interface{}) *gomock.
 }
 
 // GetNumberByNumber mocks base method
-func (m *MockNumberHandler) GetNumberByNumber(ctx context.Context, num string) (*models.Number, error) {
+func (m *MockNumberHandler) GetNumberByNumber(ctx context.Context, num string) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNumberByNumber", ctx, num)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -111,10 +112,10 @@ func (mr *MockNumberHandlerMockRecorder) GetNumberByNumber(ctx, num interface{})
 }
 
 // GetNumbers mocks base method
-func (m *MockNumberHandler) GetNumbers(ctx context.Context, userID, pageSize uint64, pageToken string) ([]*models.Number, error) {
+func (m *MockNumberHandler) GetNumbers(ctx context.Context, userID, pageSize uint64, pageToken string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNumbers", ctx, userID, pageSize, pageToken)
-	ret0, _ := ret[0].([]*models.Number)
+	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -126,10 +127,10 @@ func (mr *MockNumberHandlerMockRecorder) GetNumbers(ctx, userID, pageSize, pageT
 }
 
 // ReleaseNumber mocks base method
-func (m *MockNumberHandler) ReleaseNumber(ctx context.Context, id uuid.UUID) (*models.Number, error) {
+func (m *MockNumberHandler) ReleaseNumber(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReleaseNumber", ctx, id)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -155,10 +156,10 @@ func (mr *MockNumberHandlerMockRecorder) RemoveNumbersFlowID(ctx, flowID interfa
 }
 
 // UpdateNumber mocks base method
-func (m *MockNumberHandler) UpdateNumber(ctx context.Context, numb *models.Number) (*models.Number, error) {
+func (m *MockNumberHandler) UpdateNumber(ctx context.Context, numb *number.Number) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateNumber", ctx, numb)
-	ret0, _ := ret[0].(*models.Number)
+	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
