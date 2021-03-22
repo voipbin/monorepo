@@ -60,6 +60,20 @@ type OptionConnect struct {
 	Unchained    bool              `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 }
 
+// OptionDTMFReceive defines action dtmf_receive's option.
+type OptionDTMFReceive struct {
+	Duration    int    `json:"duration"`       // dtmf receiving duration. ms
+	FinishOnKey string `json:"finish_on_key"`  // If set, determines which DTMF triggers the next step. The end key is not included in the resulting variable. If not set, no key will trigger the next step.
+	MaxNumKey   int    `json:"max_number_key"` // An optional limit to the number of DTMF events that should be gathered before continuing to the next step.
+}
+
+// OptionDTMFSend defines action dtmf_send's option.
+type OptionDTMFSend struct {
+	DTMFs    string `json:"dtmfs"`    // Keys to send. Allowed set of characters: 0-9, A-D, #, *; with a maximum of 100 keys.
+	Duration int    `json:"duration"` // Duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
+	Interval int    `json:"interval"` // Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
+}
+
 // OptionEcho struct
 type OptionEcho struct {
 	Duration int `json:"duration"`
@@ -78,10 +92,31 @@ type OptionPatch struct {
 
 // OptionPlay defines action play's option.
 type OptionPlay struct {
-	StreamURL []string `json:"stream_url"` // stream url for media
+	StreamURLs []string `json:"stream_urls"` // stream url for media
+}
+
+// OptionRecordingStart defines action record's option.
+type OptionRecordingStart struct {
+	Format       string `json:"format"`         // Format to encode audio in. wav, mp3, ogg
+	EndOfSilence int    `json:"end_of_silence"` // Maximum duration of silence, in seconds. 0 for no limit.
+	EndOfKey     string `json:"end_of_key"`     // DTMF input to terminate recording. none, any, *, #
+	Duration     int    `json:"duration"`       // Maximum duration of the recording, in seconds. 0 for no limit.
+	BeepStart    bool   `json:"beep_start"`     // Play beep when recording begins.
+}
+
+// OptionRecordingStop defines action record's option.
+type OptionRecordingStop struct {
+	// no option
 }
 
 // OptionStreamEcho defines action stream_echo's option.
 type OptionStreamEcho struct {
 	Duration int `json:"duration"`
+}
+
+// OptionTalk defines action talk's option.
+type OptionTalk struct {
+	Text     string `json:"text"`     // the text to read(SSML format or plain text)
+	Gender   string `json:"gender"`   // gender(male/female/neutral)
+	Language string `json:"language"` // IETF locale-name(ko-KR, en-US)
 }
