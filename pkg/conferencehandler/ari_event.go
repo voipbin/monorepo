@@ -43,7 +43,7 @@ func (h *conferenceHandler) ariStasisStartContextJoin(cn *channel.Channel, data 
 		return fmt.Errorf("could not put the channel to the bridge. id: %s, asterisk: %s, bridge: %s, err: %v", cn.ID, cn.AsteriskID, cn.DestinationNumber, err)
 	}
 
-	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, "", 30); err != nil {
+	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, "", defaultDialTimeout); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
 		return fmt.Errorf("could not dial the channel. id: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}

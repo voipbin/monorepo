@@ -46,6 +46,11 @@ const (
 	contextConferenceIncoming string = "conf-in"
 )
 
+// List of default values
+const (
+	defaultDialTimeout = 60 // default outgoing dial timeout
+)
+
 var (
 	metricsNamespace = "call_manager"
 

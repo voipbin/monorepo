@@ -625,3 +625,63 @@ func TestTypeFlowStart(t *testing.T) {
 		})
 	}
 }
+
+func TestStartHandlerContextOutgoingCall(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
+	}
+
+	type test struct {
+		name    string
+		channel *channel.Channel
+		data    map[string]interface{}
+		call    *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&channel.Channel{
+				ID:                "08959a96-8b31-11eb-a5aa-cb0965a824f8",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000949",
+				DestinationNumber: "+123456789",
+			},
+			map[string]interface{}{
+				"context": "call-in",
+				"domain":  "pstn.voipbin.net",
+				"call_id": "086c90e2-8b31-11eb-b3a0-4ba972148103",
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("086c90e2-8b31-11eb-b3a0-4ba972148103"),
+				AsteriskID: "80:fa:5b:5e:da:81",
+				ChannelID:  "08959a96-8b31-11eb-a5aa-cb0965a824f8",
+				Type:       call.TypeSipService,
+				Direction:  call.DirectionIncoming,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().CallSetAsteriskID(gomock.Any(), tt.call.ID, tt.channel.AsteriskID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockReq.EXPECT().AstChannelDial(tt.channel.AsteriskID, tt.channel.ID, tt.channel.ID, defaultDialTimeout).Return(nil)
+
+			if err := h.startHandlerContextOutgoingCall(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
