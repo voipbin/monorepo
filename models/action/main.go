@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
 // Action struct
@@ -34,22 +36,6 @@ const (
 	TypeStreamEcho     Type = "stream_echo"
 )
 
-// AddressType type
-type AddressType string
-
-// List of CallAddressType
-const (
-	AddressTypeSIP AddressType = "sip"
-	AddressTypeTel AddressType = "tel"
-)
-
-// Address contains source/destination detail info.
-type Address struct {
-	Type   AddressType `json:"type"`   // type of address
-	Target string      `json:"target"` // parsed destination
-	Name   string      `json:"name"`   // parsed name
-}
-
 // OptionAnswer defines action answer's option.
 type OptionAnswer struct {
 	// no option
@@ -62,9 +48,9 @@ type OptionConferenceJoin struct {
 
 // OptionConnect defines action connect's optoin.
 type OptionConnect struct {
-	Source       Address   `json:"source"`       // source infromation.
-	Destinations []Address `json:"destinations"` // target destinations.
-	Unchained    bool      `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
+	Source       address.Address   `json:"source"`       // source infromation.
+	Destinations []address.Address `json:"destinations"` // target destinations.
+	Unchained    bool              `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 }
 
 // OptionEcho struct

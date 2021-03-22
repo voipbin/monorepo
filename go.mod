@@ -3,18 +3,15 @@ module gitlab.com/voipbin/bin-manager/flow-manager.git
 go 1.14
 
 require (
-	github.com/go-redis/redis/v8 v8.5.0
+	github.com/go-redis/redis/v8 v8.7.1
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gofrs/uuid v4.0.0+incompatible
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.5.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/prometheus/client_golang v1.9.0
-	github.com/prometheus/procfs v0.3.0 // indirect
-	github.com/sirupsen/logrus v1.7.0
+	github.com/prometheus/client_golang v1.10.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210310025927-7b5001ff78a9
-	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
-	google.golang.org/genproto v0.0.0-20210204154452-deb828366460 // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210322014347-b91defb4fa6f
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210314173554-61bfbbbd5633
 )

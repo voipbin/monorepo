@@ -1,4 +1,4 @@
-FROM golang:1.14.2-alpine
+FROM golang:1.16-alpine
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
