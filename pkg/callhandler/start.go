@@ -185,7 +185,7 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, cn.ID, 30); err != nil {
+	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, cn.ID, defaultDialTimeout); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
