@@ -10,11 +10,11 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
 
 // StasisStart event's context types
@@ -274,7 +274,7 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 
 	// create an action
 	action := &action.Action{
-		ID:     action.IDBegin,
+		ID:     action.IDStart,
 		Type:   action.TypeConferenceJoin,
 		Option: opt,
 	}
@@ -431,7 +431,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 
 		// create an action
 		resAct = &action.Action{
-			ID:     action.IDBegin,
+			ID:     action.IDStart,
 			Type:   action.TypeAnswer,
 			Option: opt,
 		}
@@ -448,7 +448,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 
 		// create an action
 		resAct = &action.Action{
-			ID:     action.IDBegin,
+			ID:     action.IDStart,
 			Type:   action.TypeConferenceJoin,
 			Option: opt,
 		}
@@ -463,7 +463,6 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		// create default option for echo
 		option := action.OptionEcho{
 			Duration: 180 * 1000, // duration 180 sec
-			DTMF:     true,
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
@@ -472,7 +471,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 
 		// create an action
 		resAct = &action.Action{
-			ID:     action.IDBegin,
+			ID:     action.IDStart,
 			Type:   action.TypeEcho,
 			Option: opt,
 		}
@@ -494,7 +493,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 
 		// create an action
 		resAct = &action.Action{
-			ID:     action.IDBegin,
+			ID:     action.IDStart,
 			Type:   action.TypePlay,
 			Option: opt,
 		}
@@ -511,7 +510,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 
 		// create an action
 		resAct = &action.Action{
-			ID:     action.IDBegin,
+			ID:     action.IDStart,
 			Type:   action.TypeStreamEcho,
 			Option: opt,
 		}

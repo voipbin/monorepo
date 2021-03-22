@@ -8,14 +8,14 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 )
 
@@ -68,7 +68,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 			&activeflow.ActiveFlow{
 				CurrentAction: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 			},
 			&call.Call{
@@ -90,7 +90,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 					Target: "testoutgoing@test.com",
 				},
 				Action: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 			},
 			"pjsip/call-out/sip:testoutgoing@test.com",
@@ -117,7 +117,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 			&activeflow.ActiveFlow{
 				CurrentAction: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 			},
 			&call.Call{
@@ -139,7 +139,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 					Target: "+123456789",
 				},
 				Action: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 			},
 			// "pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
@@ -168,7 +168,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 			&activeflow.ActiveFlow{
 				WebhookURI: "https://test.com/wwasdd",
 				CurrentAction: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 			},
 			&call.Call{
@@ -191,7 +191,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 					Target: "+123456789",
 				},
 				Action: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 			},
 			// "pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",

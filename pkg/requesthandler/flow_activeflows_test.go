@@ -7,9 +7,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
 
 func TestFlowActvieFlowPost(t *testing.T) {
@@ -50,7 +50,7 @@ func TestFlowActvieFlowPost(t *testing.T) {
 				FlowID: uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"),
 				UserID: 0,
 				CurrentAction: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 				Actions: []action.Action{},
 			},
@@ -79,7 +79,7 @@ func TestFlowActvieFlowPost(t *testing.T) {
 				UserID:     0,
 				WebhookURI: "https://test.com/test_webhook",
 				CurrentAction: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 				Actions: []action.Action{},
 			},
