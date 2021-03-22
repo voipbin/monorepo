@@ -13,6 +13,8 @@ type Action struct {
 	ID     uuid.UUID       `json:"id"`
 	Type   Type            `json:"type"`
 	Option json.RawMessage `json:"option,omitempty"`
+
+	TMExecute string `json:"tm_execute,omitempty"` // represent when this action has executed. This is used in call-manager.
 }
 
 // static ActionID
@@ -29,11 +31,16 @@ const (
 	TypeAnswer         Type = "answer"
 	TypeConferenceJoin Type = "conference_join"
 	TypeConnect        Type = "connect"
+	TypeDTMFReceive    Type = "dtmf_receive" // receive the dtmfs.
+	TypeDTMFSend       Type = "dtmf_send"    // send the dtmfs.
 	TypeEcho           Type = "echo"
 	TypeHangup         Type = "hangup"
 	TypePatch          Type = "patch"
 	TypePlay           Type = "play"
+	TypeRecordingStart Type = "recording_start" // startr the record of the given call.
+	TypeRecordingStop  Type = "recording_stop"  // stop the record of the given call.
 	TypeStreamEcho     Type = "stream_echo"
+	TypeTalk           Type = "talk" // generate audio from the given text(ssml or plain text) and play it.
 )
 
 // OptionAnswer defines action answer's option.
