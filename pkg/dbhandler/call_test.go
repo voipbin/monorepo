@@ -11,6 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 )
@@ -37,8 +38,8 @@ func TestCallCreate(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),
 				Type:       call.TypeFlow,
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -55,8 +56,8 @@ func TestCallCreate(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -73,10 +74,10 @@ func TestCallCreate(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("1909503a-2825-11eb-bfc4-037a1ce4266d"),
 				Type:       call.TypeFlow,
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -93,10 +94,10 @@ func TestCallCreate(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -114,10 +115,10 @@ func TestCallCreate(t *testing.T) {
 				Type:         call.TypeFlow,
 				MasterCallID: uuid.FromStringOrNil("cf3c6046-24be-11eb-8b61-074f38be56e4"),
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -135,10 +136,10 @@ func TestCallCreate(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -159,10 +160,10 @@ func TestCallCreate(t *testing.T) {
 					uuid.FromStringOrNil("10e34906-24bf-11eb-b3dd-63551f2b9bde"),
 				},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -182,10 +183,10 @@ func TestCallCreate(t *testing.T) {
 
 				RecordingIDs: []uuid.UUID{},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -207,10 +208,10 @@ func TestCallCreate(t *testing.T) {
 					uuid.FromStringOrNil("3323a3b2-24bf-11eb-9955-27bf0b4927b7"),
 				},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -231,10 +232,10 @@ func TestCallCreate(t *testing.T) {
 
 				RecordingIDs: []uuid.UUID{},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -253,10 +254,10 @@ func TestCallCreate(t *testing.T) {
 
 				RecordingID: uuid.FromStringOrNil("acf747a2-2825-11eb-ac11-37bc826b0ba6"),
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -275,10 +276,10 @@ func TestCallCreate(t *testing.T) {
 				RecordingID:  uuid.FromStringOrNil("acf747a2-2825-11eb-ac11-37bc826b0ba6"),
 				RecordingIDs: []uuid.UUID{},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -300,10 +301,10 @@ func TestCallCreate(t *testing.T) {
 					uuid.FromStringOrNil("df718b70-2825-11eb-b7b4-5f3b1137dd3c"),
 				},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -324,10 +325,10 @@ func TestCallCreate(t *testing.T) {
 					uuid.FromStringOrNil("df718b70-2825-11eb-b7b4-5f3b1137dd3c"),
 				},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -345,10 +346,10 @@ func TestCallCreate(t *testing.T) {
 				Type:       call.TypeFlow,
 				UserID:     1,
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -367,10 +368,10 @@ func TestCallCreate(t *testing.T) {
 
 				RecordingIDs: []uuid.UUID{},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -389,10 +390,10 @@ func TestCallCreate(t *testing.T) {
 				UserID:     1,
 				WebhookURI: "https://test.com/webhook",
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -412,10 +413,10 @@ func TestCallCreate(t *testing.T) {
 
 				RecordingIDs: []uuid.UUID{},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -524,8 +525,8 @@ func TestCallSetStatus(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -540,8 +541,8 @@ func TestCallSetStatus(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionIncoming,
@@ -613,8 +614,8 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChannelID:  "2505d858-8687-11ea-8723-d35628256201",
 				Type:       call.TypeFlow,
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -629,8 +630,8 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -647,10 +648,10 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChannelID:  "2aa510da-8687-11ea-b1b4-3f62cf9e4def",
 				Type:       call.TypeFlow,
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -665,10 +666,10 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source: call.Address{
-					Type: call.AddressTypeSIP,
+				Source: address.Address{
+					Type: address.TypeSIP,
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -734,8 +735,8 @@ func TestCallCallSetHangup(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -750,8 +751,8 @@ func TestCallCallSetHangup(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusHangup,
 				Direction: call.DirectionIncoming,
@@ -822,8 +823,8 @@ func TestCallSetFlowID(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -841,8 +842,8 @@ func TestCallSetFlowID(t *testing.T) {
 
 				FlowID: uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -905,8 +906,8 @@ func TestCallSetConferenceID(t *testing.T) {
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -924,8 +925,8 @@ func TestCallSetConferenceID(t *testing.T) {
 
 				ConfID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -988,8 +989,8 @@ func TestCallSetAction(t *testing.T) {
 				Type:       call.TypeFlow,
 				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -1012,8 +1013,8 @@ func TestCallSetAction(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Action: action.Action{
 					ID:     uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
@@ -1036,8 +1037,8 @@ func TestCallSetAction(t *testing.T) {
 				Type:       call.TypeFlow,
 				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -1059,8 +1060,8 @@ func TestCallSetAction(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 
 				Action: action.Action{
 					ID:   uuid.FromStringOrNil("a1e3ff02-8d04-11ea-b30b-9fb57c4036f4"),

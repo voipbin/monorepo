@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -39,8 +40,8 @@ func TestCreateCallOutgoing(t *testing.T) {
 		id          uuid.UUID
 		userID      uint64
 		flowID      uuid.UUID
-		source      call.Address
-		destination call.Address
+		source      address.Address
+		destination address.Address
 
 		af                *activeflow.ActiveFlow
 		expectCall        *call.Call
@@ -54,13 +55,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 			uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 			1,
 			uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
-			call.Address{
-				Type:   call.AddressTypeSIP,
+			address.Address{
+				Type:   address.TypeSIP,
 				Name:   "test",
 				Target: "testsrc@test.com",
 			},
-			call.Address{
-				Type:   call.AddressTypeSIP,
+			address.Address{
+				Type:   address.TypeSIP,
 				Name:   "test target",
 				Target: "testoutgoing@test.com",
 			},
@@ -78,13 +79,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Type:      call.TypeFlow,
 				Status:    call.StatusDialing,
 				Direction: call.DirectionOutgoing,
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: address.Address{
+					Type:   address.TypeSIP,
 					Name:   "test",
 					Target: "testsrc@test.com",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeSIP,
+				Destination: address.Address{
+					Type:   address.TypeSIP,
 					Name:   "test target",
 					Target: "testoutgoing@test.com",
 				},
@@ -103,13 +104,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 			uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 			1,
 			uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
-			call.Address{
-				Type:   call.AddressTypeTel,
+			address.Address{
+				Type:   address.TypeTel,
 				Name:   "test",
 				Target: "+99999888",
 			},
-			call.Address{
-				Type:   call.AddressTypeTel,
+			address.Address{
+				Type:   address.TypeTel,
 				Name:   "test target",
 				Target: "+123456789",
 			},
@@ -127,13 +128,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Type:      call.TypeFlow,
 				Status:    call.StatusDialing,
 				Direction: call.DirectionOutgoing,
-				Source: call.Address{
-					Type:   call.AddressTypeTel,
+				Source: address.Address{
+					Type:   address.TypeTel,
 					Name:   "test",
 					Target: "+99999888",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeTel,
+				Destination: address.Address{
+					Type:   address.TypeTel,
 					Name:   "test target",
 					Target: "+123456789",
 				},
@@ -153,13 +154,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 			uuid.FromStringOrNil("4347bd52-8304-11eb-b239-4bec34310838"),
 			1,
 			uuid.FromStringOrNil("4394ad24-8304-11eb-b397-ff7bf34c829f"),
-			call.Address{
-				Type:   call.AddressTypeTel,
+			address.Address{
+				Type:   address.TypeTel,
 				Name:   "test",
 				Target: "+99999888",
 			},
-			call.Address{
-				Type:   call.AddressTypeTel,
+			address.Address{
+				Type:   address.TypeTel,
 				Name:   "test target",
 				Target: "+123456789",
 			},
@@ -179,13 +180,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Status:     call.StatusDialing,
 				Direction:  call.DirectionOutgoing,
 				WebhookURI: "https://test.com/wwasdd",
-				Source: call.Address{
-					Type:   call.AddressTypeTel,
+				Source: address.Address{
+					Type:   address.TypeTel,
 					Name:   "test",
 					Target: "+99999888",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeTel,
+				Destination: address.Address{
+					Type:   address.TypeTel,
 					Name:   "test target",
 					Target: "+123456789",
 				},
@@ -240,15 +241,15 @@ func TestGetEndpointDestinationTypeTel(t *testing.T) {
 
 	type test struct {
 		name               string
-		destination        *call.Address
+		destination        *address.Address
 		expectEndpointDest string
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&call.Address{
-				Type:   call.AddressTypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+1234567890",
 			},
 			"pjsip/call-out/sip:+1234567890@sip.telnyx.com;transport=udp",
@@ -287,15 +288,15 @@ func TestGetEndpointDestinationTypeSIP(t *testing.T) {
 
 	type test struct {
 		name               string
-		destination        *call.Address
+		destination        *address.Address
 		expectEndpointDest string
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&call.Address{
-				Type:   call.AddressTypeSIP,
+			&address.Address{
+				Type:   address.TypeSIP,
 				Target: "test@test.com",
 			},
 			"pjsip/call-out/sip:test@test.com",
@@ -334,7 +335,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 
 	type test struct {
 		name               string
-		destination        *call.Address
+		destination        *address.Address
 		contacts           []*astcontact.AstContact
 		expectEndpointDest string
 	}
@@ -342,8 +343,8 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&call.Address{
-				Type:   call.AddressTypeSIP,
+			&address.Address{
+				Type:   address.TypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -369,8 +370,8 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 		},
 		{
 			"2 contacts",
-			&call.Address{
-				Type:   call.AddressTypeSIP,
+			&address.Address{
+				Type:   address.TypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -413,8 +414,8 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 		},
 		{
 			"transport ws",
-			&call.Address{
-				Type:   call.AddressTypeSIP,
+			&address.Address{
+				Type:   address.TypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -440,8 +441,8 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 		},
 		{
 			"transport wss",
-			&call.Address{
-				Type:   call.AddressTypeSIP,
+			&address.Address{
+				Type:   address.TypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -501,15 +502,15 @@ func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
 
 	type test struct {
 		name        string
-		destination *call.Address
+		destination *address.Address
 		contacts    []*astcontact.AstContact
 	}
 
 	tests := []test{
 		{
 			"no contact",
-			&call.Address{
-				Type:   call.AddressTypeSIP,
+			&address.Address{
+				Type:   address.TypeSIP,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{},

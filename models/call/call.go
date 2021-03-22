@@ -7,6 +7,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
@@ -29,8 +30,8 @@ type Call struct {
 	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // recording ids
 
 	// source/destination
-	Source      Address `json:"source"`
-	Destination Address `json:"destination"`
+	Source      address.Address `json:"source"`
+	Destination address.Address `json:"destination"`
 
 	// info
 	Status       Status                 `json:"status"`
@@ -65,22 +66,6 @@ const (
 	TypeConference Type = "conference"  // conference call.
 	TypeSipService Type = "sip-service" // sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.
 )
-
-// AddressType type
-type AddressType string
-
-// List of CallAddressType
-const (
-	AddressTypeSIP AddressType = "sip"
-	AddressTypeTel AddressType = "tel"
-)
-
-// Address contains source/destination detail info.
-type Address struct {
-	Type   AddressType `json:"type"`   // type of address
-	Target string      `json:"target"` // parsed destination
-	Name   string      `json:"name"`   // parsed name
-}
 
 // Status type
 type Status string
@@ -158,8 +143,8 @@ func NewCall(
 	flowID uuid.UUID,
 	cType Type,
 
-	source *Address,
-	destination *Address,
+	source *address.Address,
+	destination *address.Address,
 
 	status Status,
 	data map[string]interface{},
@@ -195,8 +180,8 @@ func NewCall(
 // NewCallByChannel creates a Call and return it.
 func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction Direction, data map[string]interface{}) *Call {
 	// create a call
-	source := CreateAddressByChannelSource(cn)
-	destination := CreateAddressByChannelDestination(cn)
+	source := address.CreateAddressByChannelSource(cn)
+	destination := address.CreateAddressByChannelDestination(cn)
 	status := GetStatusByChannelState(cn.State)
 
 	c := &Call{
@@ -221,47 +206,6 @@ func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction 
 	}
 
 	return c
-}
-
-// CreateAddressByChannelSource creates and return the Address using channel's source.
-func CreateAddressByChannelSource(cn *channel.Channel) *Address {
-	r := &Address{
-		Type:   AddressTypeTel,
-		Target: cn.SourceNumber,
-		Name:   cn.SourceName,
-	}
-	return r
-}
-
-// CreateAddressByChannelDestination creates and return the Address using channel's destination.
-func CreateAddressByChannelDestination(cn *channel.Channel) *Address {
-	r := &Address{
-		Type:   AddressTypeTel,
-		Target: cn.DestinationNumber,
-		Name:   cn.DestinationName,
-	}
-	return r
-}
-
-// ParseAddressByCallerID parsing the ari's CallerID and returns Address
-func ParseAddressByCallerID(e *ari.CallerID) *Address {
-	r := &Address{
-		Type:   AddressTypeTel,
-		Target: e.Number,
-		Name:   e.Name,
-	}
-
-	return r
-}
-
-// NewAddressByDialplan parsing the ari's CallerID and returns Address
-func NewAddressByDialplan(e *ari.DialplanCEP) *Address {
-	r := &Address{
-		Type:   AddressTypeTel,
-		Target: e.Exten,
-	}
-
-	return r
 }
 
 // GetStatusByChannelState return Status by the ChannelState.
