@@ -2,6 +2,7 @@ package action
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 
 	"github.com/gofrs/uuid"
@@ -24,6 +25,10 @@ func (a *Action) Matches(x interface{}) bool {
 	act := *a
 	act.TMExecute = compAction.TMExecute
 	return reflect.DeepEqual(&act, compAction)
+}
+
+func (a *Action) String() string {
+	return fmt.Sprintf("%v", *a)
 }
 
 // static ActionID
