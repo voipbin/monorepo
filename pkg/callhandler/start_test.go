@@ -7,8 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -17,6 +15,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
@@ -100,9 +100,9 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 				Direction:  call.DirectionIncoming,
 			},
 			&action.Action{
-				ID:     action.IDBegin,
+				ID:     action.IDStart,
 				Type:   action.TypeEcho,
-				Option: []byte(`{"duration":180000,"dtmf":true}`),
+				Option: []byte(`{"duration":180000}`),
 			},
 		},
 	}
@@ -257,7 +257,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 			}
 
 			action := &action.Action{
-				ID:     action.IDBegin,
+				ID:     action.IDStart,
 				Type:   action.TypeAnswer,
 				Option: opt,
 			}
@@ -327,7 +327,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 				},
 			},
 			&action.Action{
-				ID:     action.IDBegin,
+				ID:     action.IDStart,
 				Type:   action.TypeStreamEcho,
 				Option: []byte(`{"duration":180000}`),
 			},
@@ -400,7 +400,7 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 				},
 			},
 			&action.Action{
-				ID:     action.IDBegin,
+				ID:     action.IDStart,
 				Type:   action.TypeConferenceJoin,
 				Option: []byte(`{"conference_id":"037a20b9-d11d-4b63-a135-ae230cafd495"}`),
 			},
@@ -472,7 +472,7 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 				},
 			},
 			&action.Action{
-				ID:     action.IDBegin,
+				ID:     action.IDStart,
 				Type:   action.TypePlay,
 				Option: []byte(`{"stream_urls":["https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"]}`),
 			},
@@ -559,7 +559,7 @@ func TestTypeFlowStart(t *testing.T) {
 					Target: "+123456789",
 				},
 				Action: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 			},
 		},
@@ -601,7 +601,7 @@ func TestTypeFlowStart(t *testing.T) {
 					Target: "+123456789",
 				},
 				Action: action.Action{
-					ID: action.IDBegin,
+					ID: action.IDStart,
 				},
 			},
 		},
@@ -616,7 +616,7 @@ func TestTypeFlowStart(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().CallCreated(tt.call)
-			mockReq.EXPECT().FlowActvieFlowNextGet(gomock.Any(), action.IDBegin).Return(&action.Action{Type: action.TypeHangup}, nil)
+			mockReq.EXPECT().FlowActvieFlowNextGet(gomock.Any(), action.IDStart).Return(&action.Action{Type: action.TypeHangup}, nil)
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
