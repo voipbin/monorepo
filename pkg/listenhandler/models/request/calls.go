@@ -2,28 +2,29 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
 // V1DataCallsPost is
 // v1 data type request struct for
 // /v1/calls POST
 type V1DataCallsPost struct {
-	FlowID      uuid.UUID    `json:"flow_id"`
-	UserID      uint64       `json:"user_id"`
-	Source      call.Address `json:"source"`
-	Destination call.Address `json:"destination"`
+	FlowID      uuid.UUID       `json:"flow_id"`
+	UserID      uint64          `json:"user_id"`
+	Source      address.Address `json:"source"`
+	Destination address.Address `json:"destination"`
 }
 
 // V1DataCallsIDPost is
 // v1 data type request struct for
 // /v1/calls/<id> POST
 type V1DataCallsIDPost struct {
-	FlowID      uuid.UUID    `json:"flow_id"`
-	UserID      uint64       `json:"user_id"`
-	Source      call.Address `json:"source"`
-	Destination call.Address `json:"destination"`
+	FlowID      uuid.UUID       `json:"flow_id"`
+	UserID      uint64          `json:"user_id"`
+	Source      address.Address `json:"source"`
+	Destination address.Address `json:"destination"`
 }
 
 // V1DataCallsIDHealth is

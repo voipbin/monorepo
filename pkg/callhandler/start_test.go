@@ -9,6 +9,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
@@ -240,7 +241,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 				ChannelID:  "48a5446a-e3b1-11ea-b837-83239d9eb45f",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: call.Address{
+				Destination: address.Address{
 					Target: string(action.TypeAnswer),
 				},
 			},
@@ -321,7 +322,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 				ChannelID:  "b1d1bf90-d2b3-11ea-8a02-035ed6a04322",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: call.Address{
+				Destination: address.Address{
 					Target: string(action.TypeStreamEcho),
 				},
 			},
@@ -394,7 +395,7 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 				ChannelID:  "3098c01e-dcee-11ea-b8a3-4be6fd851ab3",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: call.Address{
+				Destination: address.Address{
 					Target: string(action.TypeConferenceJoin),
 				},
 			},
@@ -466,7 +467,7 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 				ChannelID:  "b6721d82-e71d-11ea-a38d-5fa75c625072",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: call.Address{
+				Destination: address.Address{
 					Target: string(action.TypePlay),
 				},
 			},
@@ -553,8 +554,8 @@ func TestTypeFlowStart(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: call.Address{
-					Type:   call.AddressTypeTel,
+				Destination: address.Address{
+					Type:   address.TypeTel,
 					Target: "+123456789",
 				},
 				Action: action.Action{
@@ -595,8 +596,8 @@ func TestTypeFlowStart(t *testing.T) {
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
 				WebhookURI: "https://test.com/webhook",
-				Destination: call.Address{
-					Type:   call.AddressTypeTel,
+				Destination: address.Address{
+					Type:   address.TypeTel,
 					Target: "+123456789",
 				},
 				Action: action.Action{

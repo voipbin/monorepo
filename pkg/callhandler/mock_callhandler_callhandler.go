@@ -9,6 +9,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	action "gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -109,7 +110,7 @@ func (mr *MockCallHandlerMockRecorder) ARIStasisStart(cn, data interface{}) *gom
 }
 
 // CreateCallOutgoing mocks base method
-func (m *MockCallHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
+func (m *MockCallHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source, destination address.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateCallOutgoing", id, userID, flowID, source, destination)
 	ret0, _ := ret[0].(*call.Call)

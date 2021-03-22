@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
@@ -24,7 +25,7 @@ const (
 )
 
 // CreateCallOutgoing creates a call for outgoing
-func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source call.Address, destination call.Address) (*call.Call, error) {
+func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"id":          id,
@@ -88,7 +89,7 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 
 	// create a source endpoint
 	var endpointSrc string
-	if source.Type == call.AddressTypeTel {
+	if source.Type == address.TypeTel {
 		endpointSrc = source.Target
 	} else {
 		endpointSrc = fmt.Sprintf("\"%s\" <sip:%s>", source.Name, source.Target)
@@ -117,13 +118,13 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 }
 
 // getEndpointDestination returns corresponded endpoint's destination address for Asterisk's dialing
-func (h *callHandler) getEndpointDestination(destination call.Address) (string, error) {
+func (h *callHandler) getEndpointDestination(destination address.Address) (string, error) {
 
 	var res string
 
 	// create a destination endpoint
 	// if the type is tel type, uses default gw
-	if destination.Type == call.AddressTypeTel {
+	if destination.Type == address.TypeTel {
 		res = fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx, constTransportUDP)
 		return res, nil
 	}

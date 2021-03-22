@@ -7,6 +7,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -40,7 +41,7 @@ func TestCallCreated(t *testing.T) {
 				ChannelID:  "48a5446a-e3b1-11ea-b837-83239d9eb45f",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: call.Address{
+				Destination: address.Address{
 					Target: string(action.TypeAnswer),
 				},
 			},
@@ -91,7 +92,7 @@ func TestCallUpdated(t *testing.T) {
 				ChannelID:  "5675714c-853b-11eb-a9a0-8340e19df2d1",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: call.Address{
+				Destination: address.Address{
 					Target: string(action.TypeAnswer),
 				},
 			},
@@ -142,7 +143,7 @@ func TestCallHungup(t *testing.T) {
 				ChannelID:  "719ad61a-853b-11eb-aad3-0ff51d63724c",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: call.Address{
+				Destination: address.Address{
 					Target: string(action.TypeAnswer),
 				},
 			},

@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -303,8 +304,8 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				ID:          uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
 				UserID:      1,
 				FlowID:      uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 			},
 
 			&rabbitmqhandler.Request{
@@ -325,12 +326,12 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				ID:     uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
 				UserID: 1,
 				FlowID: uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: address.Address{
+					Type:   address.TypeSIP,
 					Target: "test_source@127.0.0.1:5061",
 					Name:   "test_source",
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 			},
 
 			&rabbitmqhandler.Request{
@@ -351,13 +352,13 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				ID:     uuid.FromStringOrNil("f93eef0c-ed79-11ea-85cb-b39596cdf7ff"),
 				UserID: 1,
 				FlowID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: address.Address{
+					Type:   address.TypeSIP,
 					Target: "test_source@127.0.0.1:5061",
 					Name:   "test_source",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeSIP,
+				Destination: address.Address{
+					Type:   address.TypeSIP,
 					Target: "test_destination@127.0.0.1:5061",
 					Name:   "test_destination",
 				},
@@ -423,8 +424,8 @@ func TestProcessV1CallsPost(t *testing.T) {
 				ID:          uuid.FromStringOrNil("72d56d08-f3a8-11ea-9c0c-ef8258d54f42"),
 				UserID:      1,
 				FlowID:      uuid.FromStringOrNil("78fd1276-f3a8-11ea-9734-6735e73fd720"),
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 			},
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls",
@@ -444,12 +445,12 @@ func TestProcessV1CallsPost(t *testing.T) {
 				ID:     uuid.FromStringOrNil("cd561ba6-f3a8-11ea-b7ac-57b19fa28e09"),
 				UserID: 1,
 				FlowID: uuid.FromStringOrNil("d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1"),
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: address.Address{
+					Type:   address.TypeSIP,
 					Target: "test_source@127.0.0.1:5061",
 					Name:   "test_source",
 				},
-				Destination: call.Address{},
+				Destination: address.Address{},
 			},
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls",
@@ -469,13 +470,13 @@ func TestProcessV1CallsPost(t *testing.T) {
 				ID:     uuid.FromStringOrNil("09b84a24-f3a9-11ea-80f6-d7e6af125065"),
 				UserID: 1,
 				FlowID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: address.Address{
+					Type:   address.TypeSIP,
 					Target: "test_source@127.0.0.1:5061",
 					Name:   "test_source",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeSIP,
+				Destination: address.Address{
+					Type:   address.TypeSIP,
 					Target: "test_destination@127.0.0.1:5061",
 					Name:   "test_destination",
 				},
@@ -539,8 +540,8 @@ func TestProcessV1CallsIDDelete(t *testing.T) {
 			&call.Call{
 				ID:          uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
 				UserID:      1,
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 			},
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/91a0b50e-f4ec-11ea-b64c-1bf53742d0d8",
@@ -604,8 +605,8 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 			&call.Call{
 				ID:          uuid.FromStringOrNil("37b3a214-0afd-11eb-88ea-7bdd69288e90"),
 				UserID:      1,
-				Source:      call.Address{},
-				Destination: call.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 			},
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/37b3a214-0afd-11eb-88ea-7bdd69288e90/action-next",
