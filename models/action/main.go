@@ -2,6 +2,7 @@ package action
 
 import (
 	"encoding/json"
+	"reflect"
 
 	"github.com/gofrs/uuid"
 
@@ -15,6 +16,14 @@ type Action struct {
 	Option json.RawMessage `json:"option,omitempty"`
 
 	TMExecute string `json:"tm_execute,omitempty"` // represent when this action has executed. This is used in call-manager.
+}
+
+// Matches return true if the given items are the same
+func (a *Action) Matches(x interface{}) bool {
+	compAction := x.(*Action)
+	act := *a
+	act.TMExecute = compAction.TMExecute
+	return reflect.DeepEqual(&act, compAction)
 }
 
 // static ActionID
