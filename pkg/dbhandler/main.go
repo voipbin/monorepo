@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate mockgen -destination ./mock_dbhandler_dbhandler.go -package dbhandler -source ./main.go DBHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler_dbhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"database/sql"

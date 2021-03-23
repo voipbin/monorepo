@@ -1,6 +1,6 @@
 package webhookhandler
 
-//go:generate mockgen -destination ./mock_webhookhandler_webhookhandler.go -package webhookhandler -source ./main.go WebhookHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package webhookhandler -destination ./mock_webhookhandler_webhookhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"net/http"
