@@ -1,6 +1,6 @@
 package audiohandler
 
-//go:generate mockgen -destination ./mock_audiohandler_audiohandler.go -package audiohandler -source ./main.go AudioHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package audiohandler -destination ./mock_audiohandler_audiohandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

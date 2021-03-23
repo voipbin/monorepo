@@ -1,6 +1,6 @@
 package ttshandler
 
-//go:generate mockgen -destination ./mock_ttshandler_ttshandler.go -package ttshandler -source ./main.go TTSHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package ttshandler -destination ./mock_ttshandler_ttshandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"github.com/sirupsen/logrus"
