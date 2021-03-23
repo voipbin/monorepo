@@ -8,11 +8,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmconference"
 )
 
 // FlowCreate creates a flow
@@ -270,7 +270,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	}
 
 	// create conference room for connect
-	cf, err := h.reqHandler.CMConferenceCreate(af.UserID, cmconference.TypeConnect, "", "", 86400)
+	cf, err := h.reqHandler.CMConferenceCreate(af.UserID, conference.TypeConnect, "", "", 86400)
 	if err != nil {
 		log.Errorf("Could not create conference for connect. err: %v", err)
 		return fmt.Errorf("could not create conference for connect. err: %v", err)
@@ -317,14 +317,14 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	// create a call for each destination
 	successCount := 0
 	for _, dest := range optConnect.Destinations {
-		source := cmcall.Address{
-			Type:   cmcall.AddressType(optConnect.Source.Type),
+		source := address.Address{
+			Type:   address.Type(optConnect.Source.Type),
 			Target: optConnect.Source.Target,
 			Name:   optConnect.Source.Name,
 		}
 
-		destination := cmcall.Address{
-			Type:   cmcall.AddressType(dest.Type),
+		destination := address.Address{
+			Type:   address.Type(dest.Type),
 			Target: dest.Target,
 			Name:   dest.Name,
 		}

@@ -9,13 +9,14 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmconference"
 )
 
 func TestActiveFlowCreate(t *testing.T) {
@@ -376,10 +377,10 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 		callID       uuid.UUID
 		act          *action.Action
 		af           activeflow.ActiveFlow
-		cf           *cmconference.Conference
+		cf           *conference.Conference
 		connectFlow  *flow.Flow
-		source       cmcall.Address
-		destinations []cmcall.Address
+		source       address.Address
+		destinations []address.Address
 		unchained    bool
 	}
 
@@ -407,7 +408,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					},
 				},
 			},
-			&cmconference.Conference{
+			&conference.Conference{
 				ID:     uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
 				UserID: 1,
 			},
@@ -415,13 +416,13 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 				ID:     uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
 				UserID: 1,
 			},
-			cmcall.Address{
-				Type:   cmcall.AddressTypeTel,
+			address.Address{
+				Type:   address.TypeTel,
 				Target: "+123456789",
 			},
-			[]cmcall.Address{
+			[]address.Address{
 				{
-					Type:   cmcall.AddressTypeTel,
+					Type:   address.TypeTel,
 					Target: "+987654321",
 				},
 			},
@@ -451,7 +452,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					},
 				},
 			},
-			&cmconference.Conference{
+			&conference.Conference{
 				ID:     uuid.FromStringOrNil("cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"),
 				UserID: 1,
 			},
@@ -459,17 +460,17 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 				ID:     uuid.FromStringOrNil("cc480ff8-2710-11eb-8869-0fcf3d58fd6a"),
 				UserID: 1,
 			},
-			cmcall.Address{
-				Type:   cmcall.AddressTypeTel,
+			address.Address{
+				Type:   address.TypeTel,
 				Target: "+123456789",
 			},
-			[]cmcall.Address{
+			[]address.Address{
 				{
-					Type:   cmcall.AddressTypeTel,
+					Type:   address.TypeTel,
 					Target: "+987654321",
 				},
 				{
-					Type:   cmcall.AddressTypeTel,
+					Type:   address.TypeTel,
 					Target: "+9876543210",
 				},
 			},
@@ -499,7 +500,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					},
 				},
 			},
-			&cmconference.Conference{
+			&conference.Conference{
 				ID:     uuid.FromStringOrNil("2266e688-2712-11eb-aab4-eb00b0a3efbe"),
 				UserID: 1,
 			},
@@ -507,17 +508,17 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 				ID:     uuid.FromStringOrNil("229ef410-2712-11eb-9dea-a737f7b6ef2b"),
 				UserID: 1,
 			},
-			cmcall.Address{
-				Type:   cmcall.AddressTypeTel,
+			address.Address{
+				Type:   address.TypeTel,
 				Target: "+123456789",
 			},
-			[]cmcall.Address{
+			[]address.Address{
 				{
-					Type:   cmcall.AddressTypeTel,
+					Type:   address.TypeTel,
 					Target: "+987654321",
 				},
 				{
-					Type:   cmcall.AddressTypeTel,
+					Type:   address.TypeTel,
 					Target: "+9876543210",
 				},
 			},
@@ -529,11 +530,11 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
-			mockReq.EXPECT().CMConferenceCreate(tt.af.UserID, cmconference.TypeConnect, "", "", 86400).Return(tt.cf, nil)
+			mockReq.EXPECT().CMConferenceCreate(tt.af.UserID, conference.TypeConnect, "", "", 86400).Return(tt.cf, nil)
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
 			for i := range tt.destinations {
-				mockReq.EXPECT().CMCallCreate(tt.connectFlow.UserID, tt.connectFlow.ID, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
+				mockReq.EXPECT().CMCallCreate(tt.connectFlow.UserID, tt.connectFlow.ID, tt.source, tt.destinations[i]).Return(&call.Call{ID: uuid.Nil}, nil)
 				if tt.unchained == false {
 					mockReq.EXPECT().CMCallAddChainedCall(tt.callID, uuid.Nil).Return(nil)
 				}

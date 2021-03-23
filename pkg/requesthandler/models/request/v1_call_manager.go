@@ -3,9 +3,9 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmconference"
 )
 
 // V1DataAsterisksIDChannelsIDHealth is
@@ -22,10 +22,10 @@ type V1DataAsterisksIDChannelsIDHealth struct {
 // v1 data type request struct for
 // /v1/calls/<id> POST
 type V1DataCallsIDPost struct {
-	FlowID      uuid.UUID      `json:"flow_id"`
-	UserID      uint64         `json:"user_id"`
-	Source      cmcall.Address `json:"source"`
-	Destination cmcall.Address `json:"destination"`
+	FlowID      uuid.UUID       `json:"flow_id"`
+	UserID      uint64          `json:"user_id"`
+	Source      address.Address `json:"source"`
+	Destination address.Address `json:"destination"`
 }
 
 // V1DataCallsIDHealth is
@@ -57,7 +57,7 @@ type V1DataConferencesIDDelete struct {
 // v1 data type request struct for
 // /v1/conferences/<id>" POST
 type V1DataConferencesIDPost struct {
-	Type    cmconference.Type      `json:"type"`
+	Type    conference.Type        `json:"type"`
 	UserID  uint64                 `json:"user_id"`
 	Name    string                 `json:"name"`
 	Detail  string                 `json:"detail"`
