@@ -1,6 +1,6 @@
 package notifyhandler
 
-//go:generate mockgen -destination ./mock_notifyhandler_notifyhandler.go -package notifyhandler -source ./main.go NotifyHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package notifyhandler -destination ./mock_notifyhandler_notifyhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

@@ -1,6 +1,6 @@
 package conferencehandler
 
-//go:generate mockgen -destination ./mock_conferencehandler_conferencehandler.go -package conferencehandler gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler ConferenceHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package conferencehandler -destination ./mock_conferencehandler_conferencehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"fmt"
