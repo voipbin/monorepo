@@ -1,6 +1,6 @@
 package numberhandlertelnyx
 
-//go:generate mockgen -destination ./mock_numberhandler_numberhandler.go -package numberhandlertelnyx -source ./main.go NumberHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package numberhandlertelnyx -destination ./mock_numberhandler_numberhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
