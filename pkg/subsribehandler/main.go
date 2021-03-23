@@ -1,6 +1,6 @@
 package subscribehandler
 
-//go:generate mockgen -destination ./mock_subscribehandler_subscribehandler.go -package subscribehandler -source ./main.go SubscribeHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package subscribehandler -destination ./mock_subscribehandler_subscribehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"fmt"
