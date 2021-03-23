@@ -1,6 +1,6 @@
 package callhandler
 
-//go:generate mockgen -destination ./mock_callhandler_callhandler.go -package callhandler -source ./main.go CallHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package callhandler -destination ./mock_callhandler_callhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

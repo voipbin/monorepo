@@ -1,6 +1,6 @@
 package arihandler
 
-//go:generate mockgen -destination ./mock_arihandler_arihandler.go -package arihandler -source ./main.go EventHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package arihandler -destination ./mock_arihandler_arihandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

@@ -1,6 +1,6 @@
 package requesthandler
 
-//go:generate mockgen -destination ./mock_requesthandler_requesthandler.go -package requesthandler -source ./main.go RequestHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package requesthandler -destination ./mock_requesthandler_requesthandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+
 	// "gitlab.com/voipbin/bin-manager/call-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
