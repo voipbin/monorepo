@@ -6,15 +6,16 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/request"
 )
 
 // CMCallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination address.Address) (*call.Call, error) {
 	uri := fmt.Sprintf("/v1/calls")
 
 	data := &request.V1DataCallsIDPost{
@@ -39,7 +40,7 @@ func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, d
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var c cmcall.Call
+	var c call.Call
 	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, d
 // CMCallGet sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
+func (r *requestHandler) CMCallGet(callID uuid.UUID) (*call.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", callID)
 
 	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
@@ -64,7 +65,7 @@ func (r *requestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var c cmcall.Call
+	var c call.Call
 	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
 		return nil, err
 	}
@@ -75,7 +76,7 @@ func (r *requestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 // CMCallHangup sends a request to call-manager
 // to hangup the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CMCallHangup(callID uuid.UUID) (*cmcall.Call, error) {
+func (r *requestHandler) CMCallHangup(callID uuid.UUID) (*call.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", callID)
 
 	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
@@ -89,7 +90,7 @@ func (r *requestHandler) CMCallHangup(callID uuid.UUID) (*cmcall.Call, error) {
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var c cmcall.Call
+	var c call.Call
 	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
 		return nil, err
 	}

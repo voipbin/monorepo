@@ -7,8 +7,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
 )
 
 func TestCMCallAddChainedCall(t *testing.T) {
@@ -33,7 +34,7 @@ func TestCMCallAddChainedCall(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		// expectResult  *fmflow.Flow
+		// expectResult  *flow.Flow
 	}
 
 	tests := []test{
@@ -89,7 +90,7 @@ func TestCMCallHangup(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *cmcall.Call
+		expectResult  *call.Call
 	}
 
 	tests := []test{
@@ -110,12 +111,12 @@ func TestCMCallHangup(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: "application/json",
 			},
-			&cmcall.Call{
+			&call.Call{
 				ID:          uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
 				UserID:      1,
 				FlowID:      uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
-				Source:      cmcall.Address{},
-				Destination: cmcall.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 			},
 		},
 	}

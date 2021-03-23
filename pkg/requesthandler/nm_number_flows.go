@@ -8,9 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// FMFlowCreate sends a request to flow-manager
-// to creating a flow.
-// it returns created flow if it succeed.
+// NMNumberFlowDelete sends a request to number-manager
+// to delete a flow from the number.
 func (r *requestHandler) NMNumberFlowDelete(flowID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/number_flows/%s", flowID)
 

@@ -6,15 +6,15 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmconference"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/request"
 )
 
 // CMConferenceGet sends a request to call-manager
 // to getting a conference information.
 // it returns created conference if it succeed.
-func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
+func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
 	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, []byte(""))
@@ -28,7 +28,7 @@ func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var conference cmconference.Conference
+	var conference conference.Conference
 	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 // it returns created conference if it succeed.
 // timeout(sec)
 // it the timeout set to 0 means no timeout.
-func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string, timeout int) (*cmconference.Conference, error) {
+func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType conference.Type, name string, detail string, timeout int) (*conference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences")
 
 	data := &request.V1DataConferencesIDPost{
@@ -88,7 +88,7 @@ func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconf
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var conference cmconference.Conference
+	var conference conference.Conference
 	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
 		return nil, err
 	}

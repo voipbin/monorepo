@@ -1,6 +1,6 @@
 package cachehandler
 
-//go:generate mockgen -destination ./mock_cachehandler_cachehandler.go -package cachehandler gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler CacheHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_cachehandler_cachehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

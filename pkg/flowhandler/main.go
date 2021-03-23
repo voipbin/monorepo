@@ -1,6 +1,6 @@
 package flowhandler
 
-//go:generate mockgen -destination ./mock_flowhandler_flowhandler.go -package flowhandler gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler FlowHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package flowhandler -destination ./mock_flowhandler_flowhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -28,7 +28,7 @@ type FlowHandler interface {
 	ActiveFlowCreate(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
 	ActiveFlowNextActionGet(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
 
-	FlowCreate(ctx context.Context, flow *flow.Flow) (*flow.Flow, error)
+	FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow, error)
 	FlowDelete(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error)

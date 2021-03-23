@@ -8,14 +8,14 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/fmflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/request"
 )
 
 // FMFlowCreate sends a request to flow-manager
 // to creating a flow.
 // it returns created flow if it succeed.
-func (r *requestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
+func (r *requestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows")
 
 	data := &request.FMV1DataFlowPost{
@@ -43,7 +43,7 @@ func (r *requestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail 
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res fmflow.Flow
+	var res flow.Flow
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

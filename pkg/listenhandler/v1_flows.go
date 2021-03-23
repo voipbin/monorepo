@@ -12,7 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/request"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
 )
 
 // v1FlowsIDGet handles /v1/flows/{id} GET request

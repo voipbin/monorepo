@@ -1,6 +1,6 @@
 package requesthandler
 
-//go:generate mockgen -destination ./mock_requesthandler_requesthandler.go -package requesthandler -source main.go RequestHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package requesthandler -destination ./mock_requesthandler_requesthandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -12,11 +12,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmcall"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/cmconference"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/fmflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 // contents type
@@ -79,18 +80,18 @@ type RequestHandler interface {
 	////// call-manager
 	// call
 	CMCallAddChainedCall(callID uuid.UUID, chainedCallID uuid.UUID) error
-	CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error)
-	CMCallGet(callID uuid.UUID) (*cmcall.Call, error)
-	CMCallHangup(callID uuid.UUID) (*cmcall.Call, error)
+	CMCallCreate(userID uint64, flowID uuid.UUID, source, destination address.Address) (*call.Call, error)
+	CMCallGet(callID uuid.UUID) (*call.Call, error)
+	CMCallHangup(callID uuid.UUID) (*call.Call, error)
 
 	// conference
-	CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string, timeout int) (*cmconference.Conference, error)
+	CMConferenceCreate(userID uint64, conferenceType conference.Type, name string, detail string, timeout int) (*conference.Conference, error)
 	CMConferenceDelete(conferenceID uuid.UUID) error
-	CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error)
+	CMConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error)
 
 	////// flow-manager
 	// FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
-	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error)
+	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
 
 	////// number-manager
 	// number_flows

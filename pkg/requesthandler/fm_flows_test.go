@@ -9,7 +9,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/fmflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 func TestFMFlowCreate(t *testing.T) {
@@ -38,7 +38,7 @@ func TestFMFlowCreate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *fmflow.Flow
+		expectResult  *flow.Flow
 	}
 
 	tests := []test{
@@ -64,7 +64,7 @@ func TestFMFlowCreate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true}`),
 			},
-			&fmflow.Flow{
+			&flow.Flow{
 				ID:       uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
 				UserID:   1,
 				Name:     "test flow",
