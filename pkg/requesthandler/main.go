@@ -1,6 +1,6 @@
 package requesthandler
 
-//go:generate mockgen -destination ./mock_requesthandler_requesthandler.go -package requesthandler -source main.go RequestHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package requesthandler -destination ./mock_requesthandler_requesthandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
