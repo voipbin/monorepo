@@ -1,6 +1,6 @@
 package contacthandler
 
-//go:generate mockgen -destination ./mock_contacthandler_contacthandler.go -package contacthandler -source ./main.go ContactHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package contacthandler -destination ./mock_contacthandler_contacthandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
