@@ -1,6 +1,6 @@
 package extensionhandler
 
-//go:generate mockgen -destination ./mock_extensionhandler_extensionhandler.go -package extensionhandler -source ./main.go ExtensionHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package extensionhandler -destination ./mock_extensionhandler_extensionhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

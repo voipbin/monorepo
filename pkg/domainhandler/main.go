@@ -1,6 +1,6 @@
 package domainhandler
 
-//go:generate mockgen -destination ./mock_domainhandler_domainhandler.go -package domainhandler -source ./main.go DomainHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package domainhandler -destination ./mock_domainhandler_domainhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
