@@ -1,6 +1,6 @@
 package buckethandler
 
-//go:generate mockgen -destination ./mock_buckethandler_buckethandler.go -package buckethandler -source ./main.go BucketHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package buckethandler -destination ./mock_buckethandler_buckethandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
