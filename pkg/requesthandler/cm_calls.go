@@ -81,7 +81,7 @@ func (r *requestHandler) CMCallGet(callID uuid.UUID) (*cmcall.Call, error) {
 func (r *requestHandler) CMCallGets(userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
 
-	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallCall, 30, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
