@@ -1,13 +1,16 @@
 package calls
 
 import (
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -18,7 +21,7 @@ import (
 // @Description dialing to destination
 // @Produce  json
 // @Param call body request.BodyCallsPOST true "The call detail"
-// @Success 200 {object} models.Call
+// @Success 200 {object} call.Call
 // @Router /v1.0/calls [post]
 func callsPOST(c *gin.Context) {
 
@@ -35,13 +38,13 @@ func callsPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
 	// get service
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create flow
-	f := &models.Flow{
+	f := &flow.Flow{
 		Name:       "temp",
 		Detail:     "tmp outbound flow",
 		Actions:    requestBody.Actions,
@@ -73,7 +76,7 @@ func callsPOST(c *gin.Context) {
 // @Description Hangup the call of the given id
 // @Produce json
 // @Param id path string true "The ID of the call"
-// @Success 200 {object} models.Call
+// @Success 200 {object} call.Call
 // @Router /v1.0/calls/{id} [delete]
 func callsIDDelete(c *gin.Context) {
 
@@ -86,10 +89,10 @@ func callsIDDelete(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
 	// get service
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// hangup the call
 	err := serviceHandler.CallDelete(&u, id)
@@ -133,10 +136,10 @@ func callsGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
 	// get service
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -175,7 +178,7 @@ func callsGET(c *gin.Context) {
 // @Produce json
 // @Param id path string true "The ID of the call"
 // @Param token query string true "JWT token"
-// @Success 200 {object} models.Call
+// @Success 200 {object} call.Call
 // @Router /v1.0/calls/{id} [get]
 func callsIDGET(c *gin.Context) {
 	// get id
@@ -187,7 +190,7 @@ func callsIDGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -195,7 +198,7 @@ func callsIDGET(c *gin.Context) {
 	})
 	log.Debug("Executing callsIDGET.")
 
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CallGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get a call. err: %v", err)

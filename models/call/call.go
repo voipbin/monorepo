@@ -1,49 +1,38 @@
-package cmcall
+package call
 
 import (
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmaction"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 )
 
-// Call struct represent asterisk's channel information
+// Call struct represent asterisk's channel information for client show
 type Call struct {
-	// identity
-	ID         uuid.UUID `json:"id"`
-	UserID     uint64    `json:"user_id"`
-	AsteriskID string    `json:"asterisk_id"`
-	ChannelID  string    `json:"channel_id"`
-	FlowID     uuid.UUID `json:"flow_id"` // flow id
-	ConfID     uuid.UUID `json:"conf_id"` // currently joined conference id
-	Type       Type      `json:"type"`    // call type
+	ID     uuid.UUID `json:"id"`      // Call's ID.
+	UserID uint64    `json:"user_id"` // Call owner's ID.
+	FlowID uuid.UUID `json:"flow_id"` // Attached flow id
+	ConfID uuid.UUID `json:"conf_id"` // Currently joined conference id.
+	Type   Type      `json:"type"`    // Call's type.
 
-	// etc info
-	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
-	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // chained call ids
-	RecordingID    uuid.UUID   `json:"recording_id"`     // recording id(current)
-	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // recording ids
+	MasterCallID   uuid.UUID   `json:"master_call_id"`   // Master call id
+	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // Chained call ids
+	RecordingID    uuid.UUID   `json:"recording_id"`     // Recording id(current)
+	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // Recording ids
 
-	// source/destination
-	Source      Address `json:"source"`
-	Destination Address `json:"destination"`
+	Source      Address `json:"source"`      // Source info
+	Destination Address `json:"destination"` // Destination info
 
-	// info
-	Status       Status                 `json:"status"`
-	Data         map[string]interface{} `json:"data"`
-	Action       cmaction.Action        `json:"action"`
-	Direction    Direction              `json:"direction"`
-	HangupBy     HangupBy               `json:"hangup_by"`
-	HangupReason HangupReason           `json:"hangup_reason"`
-	WebhookURI   string                 `json:"webhook_uri"`
+	Status       Status       `json:"status"`        // Call's status.
+	Direction    Direction    `json:"direction"`     // Call's direction.
+	HangupBy     HangupBy     `json:"hangup_by"`     // Describe which endpoint sent the hangup request first.
+	HangupReason HangupReason `json:"hangup_reason"` // Desribe detail of hangup reason.
+	WebhookURI   string       `json:"webhook_uri"`   // Webhook destination uri
 
-	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
+	TMCreate string `json:"tm_create"` // Timestamp. Created time.
+	TMUpdate string `json:"tm_update"` // Timestamp. Updated time.
 
-	TMProgressing string `json:"tm_progressing"`
-	TMRinging     string `json:"tm_ringing"`
-	TMHangup      string `json:"tm_hangup"`
+	TMProgressing string `json:"tm_progressing"` // Timestamp. Progressing time.
+	TMRinging     string `json:"tm_ringing"`     // Timestamp. Ringing time.
+	TMHangup      string `json:"tm_hangup"`      // Timestamp. Hangup time.
 }
 
 // Type type
@@ -68,9 +57,9 @@ const (
 
 // Address contains source/destination detail info.
 type Address struct {
-	Type   AddressType `json:"type"`   // type of address
-	Target string      `json:"target"` // parsed destination
-	Name   string      `json:"name"`   // parsed name
+	Type   AddressType `json:"type"`   // Type of address. must be one of ["sip", "tel"].
+	Target string      `json:"target"` // Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
+	Name   string      `json:"name"`   // Name.
 }
 
 // Status type
@@ -89,10 +78,10 @@ const (
 // Direction type
 type Direction string
 
-// List of CallDirection
+// List of Direction
 const (
-	DirectionIncoming Direction = "incoming"
-	DirectionOutgoing Direction = "outgoing"
+	DirectionIncoming Direction = "incoming" // Call comming from outside of the voipbin.
+	DirectionOutgoing Direction = "outgoing" // Call is generating from the voipbin.
 )
 
 // HangupBy type
@@ -119,35 +108,35 @@ const (
 )
 
 // ConvertCall returns call.Call from cmall.Call
-func (h *Call) ConvertCall() *models.Call {
-	c := &models.Call{
+func ConvertCall(h *cmcall.Call) *Call {
+	c := &Call{
 		ID:     h.ID,
 		UserID: h.UserID,
 		FlowID: h.FlowID,
 		ConfID: h.ConfID,
-		Type:   models.CallType(h.Type),
+		Type:   Type(h.Type),
 
 		MasterCallID:   h.MasterCallID,
 		ChainedCallIDs: h.ChainedCallIDs,
 		RecordingID:    h.RecordingID,
 		RecordingIDs:   h.RecordingIDs,
 
-		Source: models.CallAddress{
-			Type:   models.CallAddressType(h.Source.Type),
+		Source: Address{
+			Type:   AddressType(h.Source.Type),
 			Name:   h.Source.Name,
 			Target: h.Source.Target,
 		},
-		Destination: models.CallAddress{
-			Type:   models.CallAddressType(h.Destination.Type),
+		Destination: Address{
+			Type:   AddressType(h.Destination.Type),
 			Name:   h.Destination.Name,
 			Target: h.Destination.Target,
 		},
 
-		Status: models.CallStatus(h.Status),
+		Status: Status(h.Status),
 
-		Direction:    models.CallDirection(h.Direction),
-		HangupBy:     models.CallHangupBy(h.HangupBy),
-		HangupReason: models.CallHangupReason(h.HangupReason),
+		Direction:    Direction(h.Direction),
+		HangupBy:     HangupBy(h.HangupBy),
+		HangupReason: HangupReason(h.HangupReason),
 		WebhookURI:   h.WebhookURI,
 
 		TMCreate: h.TMCreate,

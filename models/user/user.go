@@ -1,4 +1,4 @@
-package models
+package user
 
 // User data model
 type User struct {
@@ -7,7 +7,7 @@ type User struct {
 	Username     string `json:"username"` // User's username
 	PasswordHash string `json:"-"`        // Hashed Password
 
-	Permission UserPermission `json:"permission"` // User's permission.
+	Permission Permission `json:"permission"` // User's permission.
 
 	TMCreate string `json:"tm_create"` // Created timestamp.
 	TMUpdate string `json:"tm_update"` // Updated timestamp.
@@ -28,11 +28,11 @@ func (u *User) Serialize() map[string]interface{} {
 func (u *User) Read(m map[string]interface{}) {
 	u.ID = uint64(m["id"].(float64))
 	u.Username = m["username"].(string)
-	u.Permission = UserPermission(m["permission"].(float64))
+	u.Permission = Permission(m["permission"].(float64))
 }
 
 // HasPermission returns true if the user has the given permission
-func (u *User) HasPermission(perm UserPermission) bool {
+func (u *User) HasPermission(perm Permission) bool {
 
 	if u.Permission&perm == 0 {
 		return false
@@ -40,11 +40,11 @@ func (u *User) HasPermission(perm UserPermission) bool {
 	return true
 }
 
-// UserPermission type
-type UserPermission uint64
+// Permission type
+type Permission uint64
 
 // Permission
 const (
-	UserPermissionNone  UserPermission = 0x0000
-	UserPermissionAdmin UserPermission = 0x0001
+	PermissionNone  Permission = 0x0000
+	PermissionAdmin Permission = 0x0001
 )

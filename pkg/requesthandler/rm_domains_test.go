@@ -9,8 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 )
 
 func TestRMDomainCreate(t *testing.T) {

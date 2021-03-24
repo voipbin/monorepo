@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 )
 
 // CallGet returns call.
-func (h *handler) CallsGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*models.Call, error) {
+func (h *handler) CallsGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*call.Call, error) {
 
 	// prepare
 	q := `
@@ -51,7 +51,7 @@ func (h *handler) CallsGetsByUserID(ctx context.Context, userID uint64, token st
 	}
 	defer rows.Close()
 
-	var res []*models.Call
+	var res []*call.Call
 	for rows.Next() {
 		u, err := h.callGetFromRow(rows)
 		if err != nil {
@@ -65,10 +65,10 @@ func (h *handler) CallsGetsByUserID(ctx context.Context, userID uint64, token st
 }
 
 // callGetFromRow gets the call from the row.
-func (h *handler) callGetFromRow(row *sql.Rows) (*models.Call, error) {
+func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	var source string
 	var destination string
-	res := &models.Call{}
+	res := &call.Call{}
 	if err := row.Scan(
 		&res.ID,
 		&res.UserID,

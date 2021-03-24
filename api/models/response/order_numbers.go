@@ -1,9 +1,9 @@
 package response
 
-import "gitlab.com/voipbin/bin-manager/api-manager.git/models"
+import "gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 
 // BodyNumbersGET is rquest body define for GET /numbers
 type BodyNumbersGET struct {
-	Result []*models.Number `json:"result"`
+	Result []*number.Number `json:"result"`
 	Pagination
 }

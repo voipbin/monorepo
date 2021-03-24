@@ -7,13 +7,14 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
 // ConferenceGet gets the conference.
 // It returns conference info if it succeed.
-func (h *serviceHandler) ConferenceGet(u *models.User, id uuid.UUID) (*models.Conference, error) {
+func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":       u.ID,
 		"username":   u.Username,
@@ -27,10 +28,10 @@ func (h *serviceHandler) ConferenceGet(u *models.User, id uuid.UUID) (*models.Co
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
 	}
-	c := res.Convert()
+	c := conference.Convert(res)
 
 	// check permission
-	if u.Permission != models.UserPermissionAdmin && u.ID != c.UserID {
+	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
 		log.Info("The user has no permission for this conference.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -40,7 +41,7 @@ func (h *serviceHandler) ConferenceGet(u *models.User, id uuid.UUID) (*models.Co
 
 // ConferenceGets gets the list of conference.
 // It returns list of calls if it succeed.
-func (h *serviceHandler) ConferenceGets(u *models.User, size uint64, token string) ([]*models.Conference, error) {
+func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -58,14 +59,14 @@ func (h *serviceHandler) ConferenceGets(u *models.User, size uint64, token strin
 	res, err := h.dbHandler.ConferenceGetsByUserID(ctx, u.ID, token, size)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
-		return []*models.Conference{}, nil
+		return []*conference.Conference{}, nil
 	}
 
 	return res, nil
 }
 
 // ConferenceCreate is a service handler for conference creating.
-func (h *serviceHandler) ConferenceCreate(u *models.User, confType models.ConferenceType, name, detail string) (*models.Conference, error) {
+func (h *serviceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user":     u.ID,
@@ -83,12 +84,12 @@ func (h *serviceHandler) ConferenceCreate(u *models.User, confType models.Confer
 	}
 
 	// create conference
-	res := &models.Conference{
+	res := &conference.Conference{
 		ID:     conf.ID,
-		Type:   models.ConferenceType(conf.Type),
+		Type:   conference.Type(conf.Type),
 		UserID: conf.UserID,
 
-		Status: models.ConferenceStatus(conf.Status),
+		Status: conference.Status(conf.Status),
 		Name:   conf.Name,
 		Detail: conf.Detail,
 
@@ -103,7 +104,7 @@ func (h *serviceHandler) ConferenceCreate(u *models.User, confType models.Confer
 }
 
 // ConferenceDelete is a service handler for conference creating.
-func (h *serviceHandler) ConferenceDelete(u *models.User, confID uuid.UUID) error {
+func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user":       u.ID,

@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // NMNumberCreate sends a request to the number-manager

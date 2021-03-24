@@ -4,13 +4,15 @@ import (
 	"reflect"
 	"testing"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
+	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
 func TestConferenceCreate(t *testing.T) {
@@ -22,21 +24,21 @@ func TestConferenceCreate(t *testing.T) {
 
 	type test struct {
 		name             string
-		user             *models.User
-		confType         models.ConferenceType
+		user             *user.User
+		confType         conference.Type
 		confName         string
 		confDetail       string
 		cmConference     *cmconference.Conference
-		expectConference *models.Conference
+		expectConference *conference.Conference
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
-			models.ConferenceTypeConference,
+			conference.TypeConference,
 			"test name",
 			"test detail",
 			&cmconference.Conference{
@@ -51,11 +53,11 @@ func TestConferenceCreate(t *testing.T) {
 
 				CallIDs: []uuid.UUID{},
 			},
-			&models.Conference{
+			&conference.Conference{
 				ID:   uuid.FromStringOrNil("cea799a4-efce-11ea-9115-03d321ec6ff8"),
-				Type: models.ConferenceTypeConference,
+				Type: conference.TypeConference,
 
-				Status: models.ConferenceStatusProgressing,
+				Status: conference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
 
@@ -94,7 +96,7 @@ func TestConferenceDelete(t *testing.T) {
 
 	type test struct {
 		name         string
-		user         *models.User
+		user         *user.User
 		confID       uuid.UUID
 		cmConference *cmconference.Conference
 	}
@@ -102,7 +104,7 @@ func TestConferenceDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
@@ -149,7 +151,7 @@ func TestConferenceGets(t *testing.T) {
 
 	type test struct {
 		name  string
-		user  *models.User
+		user  *user.User
 		token string
 		limit uint64
 	}
@@ -157,7 +159,7 @@ func TestConferenceGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
 			"2020-09-20T03:23:20.995000",
@@ -172,7 +174,7 @@ func TestConferenceGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockDB.EXPECT().ConferenceGetsByUserID(gomock.Any(), tt.user.ID, tt.token, tt.limit).Return([]*models.Conference{}, nil)
+			mockDB.EXPECT().ConferenceGetsByUserID(gomock.Any(), tt.user.ID, tt.token, tt.limit).Return([]*conference.Conference{}, nil)
 
 			_, err := h.ConferenceGets(tt.user, tt.limit, tt.token)
 			if err != nil {
