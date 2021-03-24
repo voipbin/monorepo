@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // getSerialize returns cached serialized info.
@@ -36,10 +36,10 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 }
 
 // UserGet returns cached user info
-func (h *handler) UserGet(ctx context.Context, id uint64) (*models.User, error) {
+func (h *handler) UserGet(ctx context.Context, id uint64) (*user.User, error) {
 	key := fmt.Sprintf("user:%d", id)
 
-	var res models.User
+	var res user.User
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func (h *handler) UserGet(ctx context.Context, id uint64) (*models.User, error) 
 }
 
 // UserSet sets the user info into the cache.
-func (h *handler) UserSet(ctx context.Context, u *models.User) error {
+func (h *handler) UserSet(ctx context.Context, u *user.User) error {
 	key := fmt.Sprintf("user:%d", u.ID)
 
 	if err := h.setSerialize(ctx, key, u); err != nil {

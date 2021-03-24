@@ -6,9 +6,10 @@ import (
 	"reflect"
 	"testing"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 )
 
@@ -20,20 +21,20 @@ func TestUserCreate(t *testing.T) {
 
 	type test struct {
 		name       string
-		user       *models.User
-		expectUser *models.User
+		user       *user.User
+		expectUser *user.User
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			&models.User{
+			&user.User{
 				ID:           1,
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TMCreate:     "2020-04-18T03:22:17.995000",
 			},
-			&models.User{
+			&user.User{
 				ID:           1,
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
@@ -73,35 +74,35 @@ func TestUserGets(t *testing.T) {
 
 	type test struct {
 		name       string
-		user       []*models.User
-		expectUser []*models.User
+		user       []*user.User
+		expectUser []*user.User
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			[]*models.User{
-				&models.User{
+			[]*user.User{
+				&user.User{
 					ID:           2,
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TMCreate:     "2020-04-18T03:22:17.995000",
 				},
-				&models.User{
+				&user.User{
 					ID:           3,
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TMCreate:     "2020-04-18T03:22:17.995000",
 				},
 			},
-			[]*models.User{
-				&models.User{
+			[]*user.User{
+				&user.User{
 					ID:           2,
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TMCreate:     "2020-04-18T03:22:17.995000",
 				},
-				&models.User{
+				&user.User{
 					ID:           3,
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",

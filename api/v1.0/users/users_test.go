@@ -10,8 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -30,33 +31,33 @@ func TestUsersPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        models.User
+		user        user.User
 		requestBody RequestBodyUsersPOST
 	}
 
 	tests := []test{
 		{
 			"admin permission user",
-			models.User{
+			user.User{
 				ID:         1,
-				Permission: models.UserPermissionAdmin,
+				Permission: user.PermissionAdmin,
 			},
 			RequestBodyUsersPOST{
 				Username:   "username-0a790e7a-f15c-11ea-9582-7f1f242cd6f8",
 				Password:   "password-0d6e5248-f15c-11ea-b916-379c5bd787a4",
-				Permission: uint64(models.UserPermissionAdmin),
+				Permission: uint64(user.PermissionAdmin),
 			},
 		},
 		{
 			"none permission user",
-			models.User{
+			user.User{
 				ID:         1,
-				Permission: models.UserPermissionAdmin,
+				Permission: user.PermissionAdmin,
 			},
 			RequestBodyUsersPOST{
 				Username:   "username-4880078e-f15f-11ea-afe3-ebf4eb79cf50",
 				Password:   "password-4bb9412c-f15f-11ea-b37b-533f30888631",
-				Permission: uint64(models.UserPermissionNone),
+				Permission: uint64(user.PermissionNone),
 			},
 		},
 	}
@@ -68,7 +69,7 @@ func TestUsersPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -101,15 +102,15 @@ func TestUsersGET(t *testing.T) {
 
 	type test struct {
 		name string
-		user models.User
+		user user.User
 	}
 
 	tests := []test{
 		{
 			"admin permission user",
-			models.User{
+			user.User{
 				ID:         1,
-				Permission: models.UserPermissionAdmin,
+				Permission: user.PermissionAdmin,
 			},
 		},
 	}
@@ -121,7 +122,7 @@ func TestUsersGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

@@ -1,15 +1,16 @@
 package servicehandler
 
 import (
-	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"github.com/sirupsen/logrus"
 )
 
 // AvailableNumberGets sends a handles available number get
 // It sends a request to the number-manager to getting a list of calls.
 // it returns list of available numbers if it succeed.
-func (h *serviceHandler) AvailableNumberGets(u *models.User, size uint64, countryCode string) ([]*models.AvailableNumber, error) {
+func (h *serviceHandler) AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":         u.ID,
 		"username":     u.Username,
@@ -25,9 +26,9 @@ func (h *serviceHandler) AvailableNumberGets(u *models.User, size uint64, countr
 	}
 
 	// create result
-	res := []*models.AvailableNumber{}
+	res := []*availablenumber.AvailableNumber{}
 	for _, tmp := range tmps {
-		c := tmp.ConvertNumber()
+		c := availablenumber.ConvertNumber(&tmp)
 		res = append(res, c)
 	}
 

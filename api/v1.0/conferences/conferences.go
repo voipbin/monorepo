@@ -1,13 +1,15 @@
 package conferences
 
 import (
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -53,10 +55,10 @@ func conferencesGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
 	// get service
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -95,7 +97,7 @@ func conferencesGET(c *gin.Context) {
 // @Produce json
 // @Param token query string true "JWT token"
 // @Param call body request.BodyConferencesPOST true "The conference detail"
-// @Success 200 {object} models.Conference
+// @Success 200 {object} conference.Conference
 // @Router /v1.0/conferences [post]
 func conferencesPOST(c *gin.Context) {
 	var requestBody request.BodyConferencesPOST
@@ -111,9 +113,9 @@ func conferencesPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
-	servicehandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := servicehandler.ConferenceCreate(&u, requestBody.Type, requestBody.Name, requestBody.Detail)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
@@ -130,7 +132,7 @@ func conferencesPOST(c *gin.Context) {
 // @Produce json
 // @Param id path string true "The ID of the conference"
 // @Param token query string true "JWT token"
-// @Success 200 {object} models.Conference
+// @Success 200 {object} conference.Conference
 // @Router /v1.0/conferences/{id} [get]
 func conferencesIDGET(c *gin.Context) {
 	// get id
@@ -142,9 +144,9 @@ func conferencesIDGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
-	servicehandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := servicehandler.ConferenceGet(&u, id)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
@@ -174,9 +176,9 @@ func conferencesIDDELETE(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
-	servicehandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	err := servicehandler.ConferenceDelete(&u, id)
 	if err != nil {
 		c.AbortWithStatus(400)

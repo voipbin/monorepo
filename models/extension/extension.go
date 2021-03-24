@@ -1,9 +1,8 @@
-package rmextension
+package extension
 
 import (
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
 // Extension struct
@@ -15,10 +14,6 @@ type Extension struct {
 	Detail   string    `json:"detail"`
 	DomainID uuid.UUID `json:"domain_id"`
 
-	EndpointID string `json:"endpoint_id"`
-	AORID      string `json:"aor_id"`
-	AuthID     string `json:"auth_id"`
-
 	Extension string `json:"extension"`
 	Password  string `json:"password"`
 
@@ -28,9 +23,9 @@ type Extension struct {
 }
 
 // ConvertExtension returns converted data from rmextension.Extension to extension.Extension
-func (f *Extension) ConvertExtension() *models.Extension {
+func ConvertExtension(f *rmextension.Extension) *Extension {
 
-	res := &models.Extension{
+	res := &Extension{
 		ID:     f.ID,
 		UserID: f.UserID,
 
@@ -50,9 +45,9 @@ func (f *Extension) ConvertExtension() *models.Extension {
 }
 
 // CreateDomain returns converted data from domain.Domain to rmdomain.Domain
-func CreateDomain(f *models.Extension) *Extension {
+func CreateDomain(f *Extension) *rmextension.Extension {
 
-	res := &Extension{
+	res := &rmextension.Extension{
 		ID:     f.ID,
 		UserID: f.UserID,
 

@@ -4,14 +4,16 @@ import (
 	"reflect"
 	"testing"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmaction"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 )
 
 func TestCallCreate(t *testing.T) {
@@ -23,27 +25,27 @@ func TestCallCreate(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        *models.User
+		user        *user.User
 		flowID      uuid.UUID
-		source      models.CallAddress
-		destination models.CallAddress
+		source      call.Address
+		destination call.Address
 		cmCall      *cmcall.Call
-		expectCall  models.Call
+		expectCall  call.Call
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-			models.CallAddress{
-				Type:   models.CallAddressTypeSIP,
+			call.Address{
+				Type:   call.AddressTypeSIP,
 				Target: "testsource@test.com",
 			},
-			models.CallAddress{
-				Type:   models.CallAddressTypeSIP,
+			call.Address{
+				Type:   call.AddressTypeSIP,
 				Target: "testdestination@test.com",
 			},
 			&cmcall.Call{
@@ -55,40 +57,39 @@ func TestCallCreate(t *testing.T) {
 				ConfID:     uuid.Nil,
 				Type:       cmcall.TypeFlow,
 
-				Source: cmcall.Address{
-					Type:   cmcall.AddressTypeSIP,
+				Source: cmaddress.Address{
+					Type:   cmaddress.TypeSIP,
 					Target: "testsource@test.com",
 				},
-				Destination: cmcall.Address{
-					Type:   cmcall.AddressTypeSIP,
+				Destination: cmaddress.Address{
+					Type:   cmaddress.TypeSIP,
 					Target: "testdestination@test.com",
 				},
 
 				Status:       cmcall.StatusDialing,
 				Data:         map[string]interface{}{},
-				Action:       cmaction.Action{},
 				Direction:    cmcall.DirectionIncoming,
 				HangupBy:     "",
 				HangupReason: "",
 			},
-			models.Call{
+			call.Call{
 				ID:     uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
 				UserID: 1,
 				FlowID: uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
 				ConfID: uuid.Nil,
-				Type:   models.CallTypeFlow,
+				Type:   call.TypeFlow,
 
-				Source: models.CallAddress{
-					Type:   models.CallAddressTypeSIP,
+				Source: call.Address{
+					Type:   call.AddressTypeSIP,
 					Target: "testsource@test.com",
 				},
-				Destination: models.CallAddress{
-					Type:   models.CallAddressTypeSIP,
+				Destination: call.Address{
+					Type:   call.AddressTypeSIP,
 					Target: "testdestination@test.com",
 				},
 
-				Status:       models.CallStatusDialing,
-				Direction:    models.CallDirectionIncoming,
+				Status:       call.StatusDialing,
+				Direction:    call.DirectionIncoming,
 				HangupBy:     "",
 				HangupReason: "",
 			},
@@ -131,7 +132,7 @@ func TestCallDelete(t *testing.T) {
 
 	type test struct {
 		name   string
-		user   *models.User
+		user   *user.User
 		callID uuid.UUID
 		call   *cmcall.Call
 	}
@@ -139,7 +140,7 @@ func TestCallDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 2,
 			},
 			uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),

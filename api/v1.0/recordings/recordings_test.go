@@ -6,12 +6,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -30,8 +33,8 @@ func TestRecordingsIDGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        models.User
-		recording   *models.Recording
+		user        user.User
+		recording   *recording.Recording
 		recordingID string
 		downloadURL string
 	}
@@ -39,10 +42,10 @@ func TestRecordingsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
-			&models.Recording{
+			&recording.Recording{
 				ID: uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929"),
 			},
 			"call_776c8a94-34bd-11eb-abef-0b279f3eabc1_2020-04-18T03:22:17.995000Z.wav",
@@ -57,7 +60,7 @@ func TestRecordingsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

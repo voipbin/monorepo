@@ -6,11 +6,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // RecordingGet returns downloadable url for recording
-func (h *serviceHandler) RecordingGet(u *models.User, id uuid.UUID) (*models.Recording, error) {
+func (h *serviceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -20,7 +21,7 @@ func (h *serviceHandler) RecordingGet(u *models.User, id uuid.UUID) (*models.Rec
 	)
 
 	// get recording info from call-manager
-	recording, err := h.reqHandler.CMRecordingGet(id)
+	rec, err := h.reqHandler.CMRecordingGet(id)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -28,12 +29,12 @@ func (h *serviceHandler) RecordingGet(u *models.User, id uuid.UUID) (*models.Rec
 	}
 
 	// check the recording ownership
-	if u.HasPermission(models.UserPermissionAdmin) != true && u.ID != recording.UserID {
+	if u.HasPermission(user.PermissionAdmin) != true && u.ID != rec.UserID {
 		log.Error("The user has no permission for this recording.")
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	res := recording.Convert()
+	res := recording.Convert(rec)
 
 	return res, nil
 }
@@ -41,7 +42,7 @@ func (h *serviceHandler) RecordingGet(u *models.User, id uuid.UUID) (*models.Rec
 // RecordingGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) RecordingGets(u *models.User, size uint64, token string) ([]*models.Recording, error) {
+func (h *serviceHandler) RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -59,9 +60,9 @@ func (h *serviceHandler) RecordingGets(u *models.User, size uint64, token string
 		return nil, err
 	}
 
-	res := []*models.Recording{}
+	res := []*recording.Recording{}
 	for _, tmpRecord := range tmp {
-		record := tmpRecord.Convert()
+		record := recording.Convert(&tmpRecord)
 		res = append(res, record)
 	}
 

@@ -12,12 +12,15 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmaction"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 func setupServer(app *gin.Engine) {
@@ -35,86 +38,86 @@ func TestFlowsPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        models.User
+		user        user.User
 		requestBody request.BodyFlowsPOST
-		reqFlow     *models.Flow
-		resFlow     *models.Flow
+		reqFlow     *flow.Flow
+		resFlow     *flow.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID:         1,
-				Permission: models.UserPermissionAdmin,
+				Permission: user.PermissionAdmin,
 			},
 			request.BodyFlowsPOST{
 				Name:   "test name",
 				Detail: "test detail",
-				Actions: []models.Action{
+				Actions: []action.Action{
 					{
-						Type: models.ActionTypeAnswer,
+						Type: action.TypeAnswer,
 					},
 				},
 			},
-			&models.Flow{
+			&flow.Flow{
 				Name:    "test name",
 				Detail:  "test detail",
 				Persist: true,
-				Actions: []models.Action{
+				Actions: []action.Action{
 					{
-						Type: models.ActionTypeAnswer,
+						Type: action.TypeAnswer,
 					},
 				},
 			},
-			&models.Flow{
+			&flow.Flow{
 				ID:      uuid.FromStringOrNil("264b18d4-82fa-11eb-919b-9f55a7f6ace1"),
 				Name:    "test name",
 				Detail:  "test detail",
 				Persist: true,
-				Actions: []models.Action{
+				Actions: []action.Action{
 					{
-						Type: models.ActionTypeAnswer,
+						Type: action.TypeAnswer,
 					},
 				},
 			},
 		},
 		{
 			"webhook",
-			models.User{
+			user.User{
 				ID:         1,
-				Permission: models.UserPermissionAdmin,
+				Permission: user.PermissionAdmin,
 			},
 			request.BodyFlowsPOST{
 				Name:       "test name",
 				Detail:     "test detail",
 				WebhookURI: "https://test.com/webhook",
-				Actions: []models.Action{
+				Actions: []action.Action{
 					{
-						Type: models.ActionTypeAnswer,
+						Type: action.TypeAnswer,
 					},
 				},
 			},
-			&models.Flow{
+			&flow.Flow{
 				Name:       "test name",
 				Detail:     "test detail",
 				Persist:    true,
 				WebhookURI: "https://test.com/webhook",
-				Actions: []models.Action{
+				Actions: []action.Action{
 					{
-						Type: models.ActionTypeAnswer,
+						Type: action.TypeAnswer,
 					},
 				},
 			},
-			&models.Flow{
+			&flow.Flow{
 				ID:         uuid.FromStringOrNil("7413ccc8-82fa-11eb-9826-3b9adf174ed9"),
 				Name:       "test name",
 				Detail:     "test detail",
 				Persist:    true,
 				WebhookURI: "https://test.com/webhook",
-				Actions: []models.Action{
+				Actions: []action.Action{
 					{
-						Type: models.ActionTypeAnswer,
+						Type: action.TypeAnswer,
 					},
 				},
 			},
@@ -128,7 +131,7 @@ func TestFlowsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -161,16 +164,16 @@ func TestFlowsIDGET(t *testing.T) {
 
 	type test struct {
 		name string
-		user models.User
+		user user.User
 		flow *fmflow.Flow
 
-		expectFlow *models.Flow
+		expectFlow *flow.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			&fmflow.Flow{
@@ -185,15 +188,15 @@ func TestFlowsIDGET(t *testing.T) {
 					},
 				},
 			},
-			&models.Flow{
+			&flow.Flow{
 				ID:     uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
 				Name:   "test name",
 				Detail: "test detail",
 				UserID: 1,
-				Actions: []models.Action{
+				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-						Type: models.ActionTypeAnswer,
+						Type: action.TypeAnswer,
 					},
 				},
 			},
@@ -207,7 +210,7 @@ func TestFlowsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -233,36 +236,36 @@ func TestFlowsIDPUT(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        models.User
+		user        user.User
 		flowID      uuid.UUID
 		requestBody request.BodyFlowsIDPUT
-		expectFlow  *models.Flow
+		expectFlow  *flow.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID:         1,
-				Permission: models.UserPermissionAdmin,
+				Permission: user.PermissionAdmin,
 			},
 			uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
 			request.BodyFlowsIDPUT{
 				Name:   "test name",
 				Detail: "test detail",
-				Actions: []models.Action{
+				Actions: []action.Action{
 					{
-						Type: models.ActionTypeAnswer,
+						Type: action.TypeAnswer,
 					},
 				},
 			},
-			&models.Flow{
+			&flow.Flow{
 				ID:     uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
 				Name:   "test name",
 				Detail: "test detail",
-				Actions: []models.Action{
+				Actions: []action.Action{
 					{
-						Type: models.ActionTypeAnswer,
+						Type: action.TypeAnswer,
 					},
 				},
 			},
@@ -276,7 +279,7 @@ func TestFlowsIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -287,7 +290,7 @@ func TestFlowsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowUpdate(&tt.user, tt.expectFlow).Return(&models.Flow{}, nil)
+			mockSvc.EXPECT().FlowUpdate(&tt.user, tt.expectFlow).Return(&flow.Flow{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/flows/"+tt.flowID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -309,14 +312,14 @@ func TestFlowsIDDELETE(t *testing.T) {
 
 	type test struct {
 		name   string
-		user   models.User
+		user   user.User
 		flowID uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("d466f900-67cb-11eb-b2ff-1f9adc48f842"),
@@ -330,7 +333,7 @@ func TestFlowsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

@@ -3,11 +3,13 @@ package recordingfiles
 import (
 	"net/http"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -31,7 +33,7 @@ func recordingfilesIDGET(c *gin.Context) {
 	}
 
 	// get user
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -39,7 +41,7 @@ func recordingfilesIDGET(c *gin.Context) {
 	})
 	log.Debug("Executing recordingfilesIDGET.")
 
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	url, err := serviceHandler.RecordingfileGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get a recordingfile. err: %v", err)
