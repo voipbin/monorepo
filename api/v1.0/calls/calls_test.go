@@ -12,9 +12,13 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -33,72 +37,72 @@ func TestCallsPOST(t *testing.T) {
 
 	type test struct {
 		name    string
-		user    models.User
+		user    user.User
 		req     request.BodyCallsPOST
-		reqFlow *models.Flow
-		resFlow *models.Flow
+		reqFlow *flow.Flow
+		resFlow *flow.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			request.BodyCallsPOST{
-				Source: models.CallAddress{
-					Type:   models.CallAddressTypeSIP,
+				Source: call.Address{
+					Type:   call.AddressTypeSIP,
 					Target: "source@test.voipbin.net",
 				},
-				Destination: models.CallAddress{
-					Type:   models.CallAddressTypeSIP,
+				Destination: call.Address{
+					Type:   call.AddressTypeSIP,
 					Target: "destination@test.voipbin.net",
 				},
-				Actions: []models.Action{},
+				Actions: []action.Action{},
 			},
-			&models.Flow{
+			&flow.Flow{
 				Name:    "temp",
 				Detail:  "tmp outbound flow",
-				Actions: []models.Action{},
+				Actions: []action.Action{},
 				Persist: false,
 			},
-			&models.Flow{
+			&flow.Flow{
 				ID:      uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
 				Name:    "temp",
 				Detail:  "tmp outbound flow",
-				Actions: []models.Action{},
+				Actions: []action.Action{},
 			},
 		},
 		{
 			"with webhook",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			request.BodyCallsPOST{
 				WebhookURI: "https://test.com/webhook",
-				Source: models.CallAddress{
-					Type:   models.CallAddressTypeSIP,
+				Source: call.Address{
+					Type:   call.AddressTypeSIP,
 					Target: "source@test.voipbin.net",
 				},
-				Destination: models.CallAddress{
-					Type:   models.CallAddressTypeSIP,
+				Destination: call.Address{
+					Type:   call.AddressTypeSIP,
 					Target: "destination@test.voipbin.net",
 				},
-				Actions: []models.Action{},
+				Actions: []action.Action{},
 			},
-			&models.Flow{
+			&flow.Flow{
 				Name:       "temp",
 				Detail:     "tmp outbound flow",
 				WebhookURI: "https://test.com/webhook",
-				Actions:    []models.Action{},
+				Actions:    []action.Action{},
 				Persist:    false,
 			},
-			&models.Flow{
+			&flow.Flow{
 				ID:         uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
 				Name:       "temp",
 				Detail:     "tmp outbound flow",
 				WebhookURI: "https://test.com/webhook",
-				Actions:    []models.Action{},
+				Actions:    []action.Action{},
 			},
 		},
 	}
@@ -110,7 +114,7 @@ func TestCallsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -147,16 +151,16 @@ func TestCallsGET(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      models.User
+		user      user.User
 		req       request.ParamCallsGET
-		resCalls  []*models.Call
+		resCalls  []*call.Call
 		expectRes string
 	}
 
 	tests := []test{
 		{
 			"1 item",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			request.ParamCallsGET{
@@ -165,7 +169,7 @@ func TestCallsGET(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*models.Call{
+			[]*call.Call{
 				{
 					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					TMCreate: "2020-09-20T03:23:21.995000",
@@ -175,7 +179,7 @@ func TestCallsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			request.ParamCallsGET{
@@ -184,7 +188,7 @@ func TestCallsGET(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*models.Call{
+			[]*call.Call{
 				{
 					ID:       uuid.FromStringOrNil("668e6ee6-f989-11ea-abca-bf1ca885b142"),
 					TMCreate: "2020-09-20T03:23:21.995000",
@@ -209,7 +213,7 @@ func TestCallsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -241,18 +245,18 @@ func TestCallsIDGET(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      models.User
-		resCall   *models.Call
+		user      user.User
+		resCall   *call.Call
 		expectRes string
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
-			&models.Call{
+			&call.Call{
 				ID:       uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
 				TMCreate: "2020-09-20T03:23:21.995000",
 			},
@@ -260,10 +264,10 @@ func TestCallsIDGET(t *testing.T) {
 		},
 		{
 			"webhook",
-			models.User{
+			user.User{
 				ID: 1,
 			},
-			&models.Call{
+			&call.Call{
 				ID:         uuid.FromStringOrNil("9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353"),
 				WebhookURI: "https://test.com/tesadf",
 				TMCreate:   "2020-09-20T03:23:21.995000",
@@ -279,7 +283,7 @@ func TestCallsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

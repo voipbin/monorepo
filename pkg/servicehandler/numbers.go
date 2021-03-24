@@ -5,15 +5,15 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // NumberGets sends a request to getting a list of numbers
 // It sends a request to the number-manager to getting a list of numbers.
 // it returns list of numbers if it succeed.
-func (h *serviceHandler) NumberGets(u *models.User, size uint64, token string) ([]*models.Number, error) {
+func (h *serviceHandler) NumberGets(u *user.User, size uint64, token string) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -29,9 +29,9 @@ func (h *serviceHandler) NumberGets(u *models.User, size uint64, token string) (
 	}
 
 	// create result
-	res := []*models.Number{}
+	res := []*number.Number{}
 	for _, tmp := range tmps {
-		c := tmp.ConvertNumber()
+		c := number.ConvertNumber(&tmp)
 		res = append(res, c)
 	}
 
@@ -41,7 +41,7 @@ func (h *serviceHandler) NumberGets(u *models.User, size uint64, token string) (
 // NumberCreate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberCreate(u *models.User, num string) (*models.Number, error) {
+func (h *serviceHandler) NumberCreate(u *user.User, num string) (*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -60,13 +60,14 @@ func (h *serviceHandler) NumberCreate(u *models.User, num string) (*models.Numbe
 		return nil, err
 	}
 
-	return tmp.ConvertNumber(), nil
+	res := number.ConvertNumber(tmp)
+	return res, nil
 }
 
 // NumberGet handles number get request.
 // It sends a request to the number-manager to get a existed number.
 // it returns got number information if it succeed.
-func (h *serviceHandler) NumberGet(u *models.User, id uuid.UUID) (*models.Number, error) {
+func (h *serviceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -81,7 +82,7 @@ func (h *serviceHandler) NumberGet(u *models.User, id uuid.UUID) (*models.Number
 	}
 
 	// permission check
-	if u.HasPermission(models.UserPermissionAdmin) != true && res.UserID != u.ID {
+	if u.HasPermission(user.PermissionAdmin) != true && res.UserID != u.ID {
 		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, res.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -91,13 +92,15 @@ func (h *serviceHandler) NumberGet(u *models.User, id uuid.UUID) (*models.Number
 		return nil, fmt.Errorf("not found")
 	}
 
-	return res.ConvertNumber(), nil
+	tmp := number.ConvertNumber(res)
+
+	return tmp, nil
 }
 
 // NumberDelete handles number delete request.
 // It sends a request to the number-manager to delete a existed number.
 // it returns deleted number information if it succeed.
-func (h *serviceHandler) NumberDelete(u *models.User, id uuid.UUID) (*models.Number, error) {
+func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -112,7 +115,7 @@ func (h *serviceHandler) NumberDelete(u *models.User, id uuid.UUID) (*models.Num
 	}
 
 	// permission check
-	if u.HasPermission(models.UserPermissionAdmin) != true && tmp.UserID != u.ID {
+	if u.HasPermission(user.PermissionAdmin) != true && tmp.UserID != u.ID {
 		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, tmp.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -129,13 +132,14 @@ func (h *serviceHandler) NumberDelete(u *models.User, id uuid.UUID) (*models.Num
 		return nil, err
 	}
 
-	return res.ConvertNumber(), nil
+	tmpNum := number.ConvertNumber(res)
+	return tmpNum, nil
 }
 
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdate(u *models.User, numb *models.Number) (*models.Number, error) {
+func (h *serviceHandler) NumberUpdate(u *user.User, numb *number.Number) (*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -150,7 +154,7 @@ func (h *serviceHandler) NumberUpdate(u *models.User, numb *models.Number) (*mod
 	}
 
 	// permission check
-	if u.HasPermission(models.UserPermissionAdmin) != true && tmpNumb.UserID != u.ID {
+	if u.HasPermission(user.PermissionAdmin) != true && tmpNumb.UserID != u.ID {
 		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, tmpNumb.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -161,12 +165,13 @@ func (h *serviceHandler) NumberUpdate(u *models.User, numb *models.Number) (*mod
 	}
 
 	// update number
-	nNumb := nmnumber.CreateNumber(numb)
+	nNumb := number.CreateNumber(numb)
 	tmp, err := h.reqHandler.NMNumberUpdate(nNumb)
 	if err != nil {
 		log.Errorf("Could not update the number info. err: %v", err)
 		return nil, err
 	}
 
-	return tmp.ConvertNumber(), nil
+	res := number.ConvertNumber(tmp)
+	return res, nil
 }

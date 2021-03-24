@@ -1,9 +1,9 @@
 package response
 
-import "gitlab.com/voipbin/bin-manager/api-manager.git/models"
+import "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 
 // BodyCallsGET is rquest body define for GET /calls
 type BodyCallsGET struct {
-	Result []*models.Call `json:"result"`
+	Result []*call.Call `json:"result"`
 	Pagination
 }

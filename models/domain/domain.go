@@ -1,30 +1,30 @@
-package rmdomain
+package domain
 
 import (
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 )
 
-// Domain struct
+// Domain struct for client show
 type Domain struct {
 	ID     uuid.UUID `json:"id"`
 	UserID uint64    `json:"user_id"`
 
 	DomainName string `json:"domain_name"`
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name   string `json:"name"`   // Name
+	Detail string `json:"detail"` // Detail
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create"` // Created timestamp.
+	TMUpdate string `json:"tm_update"` // Updated timestamp.
+	TMDelete string `json:"tm_delete"` // Deleted timestamp.
+
 }
 
 // ConvertDomain returns converted data from rmdomain.Domain to domain.Domain
-func (f *Domain) ConvertDomain() *models.Domain {
+func ConvertDomain(f *rmdomain.Domain) *Domain {
 
-	res := &models.Domain{
+	res := &Domain{
 		ID:     f.ID,
 		UserID: f.UserID,
 
@@ -42,9 +42,9 @@ func (f *Domain) ConvertDomain() *models.Domain {
 }
 
 // CreateDomain returns converted data from domain.Domain to rmdomain.Domain
-func CreateDomain(f *models.Domain) *Domain {
+func CreateDomain(f *Domain) *rmdomain.Domain {
 
-	res := &Domain{
+	res := &rmdomain.Domain{
 		ID:     f.ID,
 		UserID: f.UserID,
 

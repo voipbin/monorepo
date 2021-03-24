@@ -6,14 +6,15 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *models.User, flowID uuid.UUID, source, destination models.CallAddress) (*models.Call, error) {
+func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":        u.ID,
 		"username":    u.Username,
@@ -23,13 +24,13 @@ func (h *serviceHandler) CallCreate(u *models.User, flowID uuid.UUID, source, de
 	})
 
 	// parse source/destination
-	addrSrc := cmcall.Address{
-		Type:   cmcall.AddressType(source.Type),
+	addrSrc := cmaddress.Address{
+		Type:   cmaddress.Type(source.Type),
 		Target: source.Target,
 		Name:   source.Name,
 	}
-	addrDest := cmcall.Address{
-		Type:   cmcall.AddressType(destination.Type),
+	addrDest := cmaddress.Address{
+		Type:   cmaddress.Type(destination.Type),
 		Target: destination.Target,
 		Name:   destination.Name,
 	}
@@ -43,7 +44,7 @@ func (h *serviceHandler) CallCreate(u *models.User, flowID uuid.UUID, source, de
 	}
 
 	// create call.Call
-	c := res.ConvertCall()
+	c := call.ConvertCall(res)
 
 	return c, err
 }
@@ -51,7 +52,7 @@ func (h *serviceHandler) CallCreate(u *models.User, flowID uuid.UUID, source, de
 // CallGet sends a request to call-manager
 // to getting a call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallGet(u *models.User, callID uuid.UUID) (*models.Call, error) {
+func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -66,13 +67,13 @@ func (h *serviceHandler) CallGet(u *models.User, callID uuid.UUID) (*models.Call
 		return nil, err
 	}
 
-	if u.Permission != models.UserPermissionAdmin && u.ID != c.UserID {
+	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
 		log.Info("The user has no permission for this call.")
 		return nil, fmt.Errorf("user has no permission")
 	}
 
 	// convert
-	res := c.ConvertCall()
+	res := call.ConvertCall(c)
 
 	return res, nil
 }
@@ -80,7 +81,7 @@ func (h *serviceHandler) CallGet(u *models.User, callID uuid.UUID) (*models.Call
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) CallGets(u *models.User, size uint64, token string) ([]*models.Call, error) {
+func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -100,9 +101,9 @@ func (h *serviceHandler) CallGets(u *models.User, size uint64, token string) ([]
 	}
 
 	// create result
-	res := []*models.Call{}
+	res := []*call.Call{}
 	for _, tmp := range tmps {
-		c := tmp.ConvertCall()
+		c := call.ConvertCall(&tmp)
 		res = append(res, c)
 	}
 
@@ -112,7 +113,7 @@ func (h *serviceHandler) CallGets(u *models.User, size uint64, token string) ([]
 // CallDelete sends a request to call-manager
 // to hangup the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallDelete(u *models.User, callID uuid.UUID) error {
+func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -127,7 +128,7 @@ func (h *serviceHandler) CallDelete(u *models.User, callID uuid.UUID) error {
 	}
 
 	// check call's ownership
-	if u.Permission != models.UserPermissionAdmin && u.ID != c.UserID {
+	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
 		log.Info("The user has no permission for this call.")
 		return fmt.Errorf("user has no permission")
 	}

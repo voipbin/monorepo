@@ -11,8 +11,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -31,18 +33,18 @@ func TestConferencesIDGET(t *testing.T) {
 
 	type test struct {
 		name       string
-		user       models.User
-		conference *models.Conference
+		user       user.User
+		conference *conference.Conference
 	}
 
 	tests := []test{
 		{
 			"simple test",
-			models.User{
+			user.User{
 				ID:         1,
-				Permission: models.UserPermissionAdmin,
+				Permission: user.PermissionAdmin,
 			},
-			&models.Conference{
+			&conference.Conference{
 				ID: uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
 			},
 		},
@@ -55,7 +57,7 @@ func TestConferencesIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -83,25 +85,25 @@ func TestConferencesPOST(t *testing.T) {
 
 	type test struct {
 		name       string
-		user       models.User
-		confType   models.ConferenceType
+		user       user.User
+		confType   conference.Type
 		confName   string
 		confDetail string
-		conference *models.Conference
+		conference *conference.Conference
 	}
 
 	tests := []test{
 		{
 			"conference type",
-			models.User{
+			user.User{
 				ID: 1,
 			},
-			models.ConferenceTypeConference,
+			conference.TypeConference,
 			"conference name",
 			"conference detail",
-			&models.Conference{
+			&conference.Conference{
 				ID:   uuid.FromStringOrNil("ee1e90cc-ac7a-11ea-8474-e740530b4266"),
-				Type: models.ConferenceTypeConference,
+				Type: conference.TypeConference,
 			},
 		},
 	}
@@ -113,7 +115,7 @@ func TestConferencesPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -145,18 +147,18 @@ func TestConferencesIDDELETE(t *testing.T) {
 
 	type test struct {
 		name       string
-		user       models.User
-		conference *models.Conference
+		user       user.User
+		conference *conference.Conference
 	}
 
 	tests := []test{
 		{
 			"simple test",
-			models.User{
+			user.User{
 				ID:         1,
-				Permission: models.UserPermissionAdmin,
+				Permission: user.PermissionAdmin,
 			},
-			&models.Conference{
+			&conference.Conference{
 				ID: uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
 			},
 		},
@@ -169,7 +171,7 @@ func TestConferencesIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

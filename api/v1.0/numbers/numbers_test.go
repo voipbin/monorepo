@@ -9,13 +9,16 @@ import (
 	"reflect"
 	"testing"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -34,17 +37,17 @@ func TestNumbersGET(t *testing.T) {
 
 	type test struct {
 		name string
-		user models.User
+		user user.User
 		uri  string
 		req  request.ParamNumbersGET
 
-		resNumbers []*models.Number
+		resNumbers []*number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			"/v1.0/numbers?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
@@ -54,7 +57,7 @@ func TestNumbersGET(t *testing.T) {
 					PageToken: "2021-03-02 03:23:20.995000",
 				},
 			},
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:               uuid.FromStringOrNil("31ee638c-7b23-11eb-858a-33e73c4f82f7"),
 					Number:           "+821021656521",
@@ -78,7 +81,7 @@ func TestNumbersGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -104,23 +107,23 @@ func TestNumbersIDGET(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     models.User
+		user     user.User
 		numberID uuid.UUID
 		uri      string
 
-		resNumber  *models.Number
+		resNumber  *number.Number
 		expectBody []byte
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 			"/v1.0/numbers/3ab6711c-7be6-11eb-8da6-d31a9f3d45a6",
-			&models.Number{
+			&number.Number{
 				ID:               uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 				Number:           "+821021656521",
 				UserID:           1,
@@ -143,7 +146,7 @@ func TestNumbersIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -178,22 +181,22 @@ func TestNumbersIDDELETE(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     models.User
+		user     user.User
 		numberID uuid.UUID
 		uri      string
 
-		resNumber *models.Number
+		resNumber *number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
 			"/v1.0/numbers/d905c26e-7be6-11eb-b92a-ab4802b4bde3",
-			&models.Number{
+			&number.Number{
 				ID:               uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
 				Number:           "+821021656521",
 				UserID:           1,
@@ -215,7 +218,7 @@ func TestNumbersIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -241,7 +244,7 @@ func TestNumbersPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        models.User
+		user        user.User
 		uri         string
 		requestBody request.BodyNumbersPOST
 	}
@@ -249,7 +252,7 @@ func TestNumbersPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			"/v1.0/numbers",
@@ -266,7 +269,7 @@ func TestNumbersPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)
@@ -298,19 +301,19 @@ func TestNumbersIDPUT(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     models.User
+		user     user.User
 		numberID uuid.UUID
 		uri      string
 
 		requestBody   request.BodyNumbersIDPUT
-		requestNumber *models.Number
-		resNumber     *models.Number
+		requestNumber *number.Number
+		resNumber     *number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
@@ -318,11 +321,11 @@ func TestNumbersIDPUT(t *testing.T) {
 			request.BodyNumbersIDPUT{
 				FlowID: uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
 			},
-			&models.Number{
+			&number.Number{
 				ID:     uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
 				FlowID: uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
 			},
-			&models.Number{
+			&number.Number{
 				ID:               uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
 				FlowID:           uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
 				Number:           "+821021656521",
@@ -345,7 +348,7 @@ func TestNumbersIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

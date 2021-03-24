@@ -9,8 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 func TestNMNumberCreate(t *testing.T) {
@@ -66,7 +66,7 @@ func TestNMNumberCreate(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusActive,
+				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 				TMPurchase:          "",
@@ -148,7 +148,7 @@ func TestNMNumberGets(t *testing.T) {
 					UserID:              1,
 					ProviderName:        "telnyx",
 					ProviderReferenceID: "",
-					Status:              nmnumber.NumberStatusActive,
+					Status:              nmnumber.StatusActive,
 					T38Enabled:          false,
 					EmergencyEnabled:    false,
 					TMPurchase:          "",
@@ -226,7 +226,7 @@ func TestNMNumberGet(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusActive,
+				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 				TMPurchase:          "",
@@ -303,7 +303,7 @@ func TestNMNumberDelete(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusDeleted,
+				Status:              nmnumber.StatusDeleted,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 				TMPurchase:          "",
@@ -385,7 +385,7 @@ func TestNMNumberUpdate(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusActive,
+				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 				TMPurchase:          "",
