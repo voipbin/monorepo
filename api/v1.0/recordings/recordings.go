@@ -1,13 +1,15 @@
 package recordings
 
 import (
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -41,10 +43,10 @@ func recordingsGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
 	// get service
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -80,7 +82,7 @@ func recordingsGET(c *gin.Context) {
 // @Summary Returns a detail recording information.
 // @Description Returns a detial recording information of the given recording id.
 // @Produce json
-// @Success 200 {object} models.Recording
+// @Success 200 {object} recording.Recording
 // @Router /v1.0/recordings/{id} [get]
 func recordingsIDGET(c *gin.Context) {
 
@@ -95,7 +97,7 @@ func recordingsIDGET(c *gin.Context) {
 	}
 
 	// get user
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -103,7 +105,7 @@ func recordingsIDGET(c *gin.Context) {
 	})
 	log.Debug("Executing recordingsIDGET.")
 
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.RecordingGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get a recording info. err: %v", err)

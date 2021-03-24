@@ -5,12 +5,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // RecordingfileGet returns downloadable url for recording
-func (h *serviceHandler) RecordingfileGet(u *models.User, id uuid.UUID) (string, error) {
+func (h *serviceHandler) RecordingfileGet(u *user.User, id uuid.UUID) (string, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -28,7 +27,7 @@ func (h *serviceHandler) RecordingfileGet(u *models.User, id uuid.UUID) (string,
 	}
 
 	// check the recording ownership
-	if u.HasPermission(models.UserPermissionAdmin) != true && u.ID != recording.UserID {
+	if u.HasPermission(user.PermissionAdmin) != true && u.ID != recording.UserID {
 		log.Error("The user has no permission for this recording.")
 		return "", fmt.Errorf("user has no permission")
 	}

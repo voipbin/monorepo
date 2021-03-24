@@ -7,15 +7,16 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // CMCallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmaddress.Address) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls")
 
 	data := &request.V1DataCallsIDPost{

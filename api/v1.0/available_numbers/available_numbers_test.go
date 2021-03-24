@@ -6,11 +6,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -29,22 +32,22 @@ func TestAvailableNumbersGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        models.User
+		user        user.User
 		pageSize    uint64
 		countryCode string
 
-		resAvailableNumbers []*models.AvailableNumber
+		resAvailableNumbers []*availablenumber.AvailableNumber
 	}
 
 	tests := []test{
 		{
 			"normal",
-			models.User{
+			user.User{
 				ID: 1,
 			},
 			10,
 			"US",
-			[]*models.AvailableNumber{
+			[]*availablenumber.AvailableNumber{
 				{
 					Number:   "+16188850188",
 					Country:  "US",
@@ -62,7 +65,7 @@ func TestAvailableNumbersGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set(models.OBJServiceHandler, mockSvc)
+				c.Set(common.OBJServiceHandler, mockSvc)
 				c.Set("user", tt.user)
 			})
 			setupServer(r)

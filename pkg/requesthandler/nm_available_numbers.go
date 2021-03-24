@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 )
 
 // NMAvailableNumbersGet sends a request to number-manager
 // to getting a list of available numbers.
-func (r *requestHandler) NMAvailableNumbersGet(userID uint64, pageSize uint64, countryCode string) ([]nmnumber.AvailableNumber, error) {
+func (r *requestHandler) NMAvailableNumbersGet(userID uint64, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error) {
 	uri := fmt.Sprintf("/v1/available_numbers?page_size=%d&user_id=%d&country_code=%s", pageSize, userID, countryCode)
 
 	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceStorageRecording, 15, 0, ContentTypeJSON, nil)
@@ -23,7 +23,7 @@ func (r *requestHandler) NMAvailableNumbersGet(userID uint64, pageSize uint64, c
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var data []nmnumber.AvailableNumber
+	var data []nmavailablenumber.AvailableNumber
 	if err := json.Unmarshal([]byte(res.Data), &data); err != nil {
 		return nil, err
 	}

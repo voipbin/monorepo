@@ -1,13 +1,16 @@
 package domains
 
 import (
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -16,7 +19,7 @@ import (
 // @Summary Create a new domain and returns detail created domain info.
 // @Description Create a new domain and returns detail created domain info.
 // @Produce json
-// @Success 200 {object} models.Domain
+// @Success 200 {object} domain.Domain
 // @Router /v1.0/domains [post]
 func domainsPOST(c *gin.Context) {
 
@@ -32,7 +35,7 @@ func domainsPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -40,7 +43,7 @@ func domainsPOST(c *gin.Context) {
 	})
 
 	// create a domain
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	domain, err := serviceHandler.DomainCreate(&u, body.DomainName, body.Name, body.Detail)
 	if err != nil {
 		log.Errorf("Could not create a domain. err: %v", err)
@@ -57,7 +60,7 @@ func domainsPOST(c *gin.Context) {
 // @Summary Gets a list of domains.
 // @Description Gets a list of domains
 // @Produce json
-// @Success 200 {array} models.Domain
+// @Success 200 {array} domain.Domain
 // @Router /v1.0/domains [get]
 func domainsGET(c *gin.Context) {
 
@@ -81,7 +84,7 @@ func domainsGET(c *gin.Context) {
 		return
 	}
 
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log = log.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -96,7 +99,7 @@ func domainsGET(c *gin.Context) {
 	}
 
 	// get service
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get domains
 	domains, err := serviceHandler.DomainGets(&u, pageSize, requestParam.PageToken)
@@ -128,7 +131,7 @@ func domainsGET(c *gin.Context) {
 // @Produce json
 // @Param id path string true "The ID of the domain"
 // @Param token query string true "JWT token"
-// @Success 200 {object} models.Domain
+// @Success 200 {object} domain.Domain
 // @Router /v1.0/domains/{id} [get]
 func domainsIDGET(c *gin.Context) {
 	// get id
@@ -140,7 +143,7 @@ func domainsIDGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -148,7 +151,7 @@ func domainsIDGET(c *gin.Context) {
 	})
 	log.Debug("Executing domainsIDGET.")
 
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.DomainGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get a domain. err: %v", err)
@@ -165,7 +168,7 @@ func domainsIDGET(c *gin.Context) {
 // @Summary Update a domain and reuturns updated domain info.
 // @Description Update a domain and returns detail updated domain info.
 // @Produce json
-// @Success 200 {object} models.Domain
+// @Success 200 {object} domain.Domain
 // @Router /v1.0/domains/{id} [put]
 func domainsIDPUT(c *gin.Context) {
 
@@ -184,21 +187,21 @@ func domainsIDPUT(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
 		"permission": u.Permission,
 	})
 
-	f := &models.Domain{
+	f := &domain.Domain{
 		ID:     id,
 		Name:   body.Name,
 		Detail: body.Detail,
 	}
 
 	// update a domain
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.DomainUpdate(&u, f)
 	if err != nil {
 		log.Errorf("Could not create a domain. err: %v", err)
@@ -228,7 +231,7 @@ func domainsIDDELETE(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -236,7 +239,7 @@ func domainsIDDELETE(c *gin.Context) {
 	})
 
 	// delete a domain
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.DomainDelete(&u, id); err != nil {
 		log.Errorf("Could not create a domain. err: %v", err)
 		c.AbortWithStatus(400)

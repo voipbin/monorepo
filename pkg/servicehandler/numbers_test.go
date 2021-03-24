@@ -4,13 +4,15 @@ import (
 	"reflect"
 	"testing"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 func TestOrderNumberGets(t *testing.T) {
@@ -27,18 +29,18 @@ func TestOrderNumberGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *models.User
+		user      *user.User
 		pageToken string
 		pageSize  uint64
 
 		response  []nmnumber.Number
-		expectRes []*models.Number
+		expectRes []*number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
 			"2021-03-01 01:00:00.995000",
@@ -51,12 +53,12 @@ func TestOrderNumberGets(t *testing.T) {
 					UserID:              1,
 					ProviderName:        "telnyx",
 					ProviderReferenceID: "",
-					Status:              nmnumber.NumberStatusActive,
+					Status:              nmnumber.StatusActive,
 					T38Enabled:          false,
 					EmergencyEnabled:    false,
 				},
 			},
-			[]*models.Number{
+			[]*number.Number{
 				{
 					ID:               uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 					Number:           "+821021656521",
@@ -99,17 +101,17 @@ func TestOrderNumberGet(t *testing.T) {
 
 	type test struct {
 		name string
-		user *models.User
+		user *user.User
 		id   uuid.UUID
 
 		response  *nmnumber.Number
-		expectRes *models.Number
+		expectRes *number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
@@ -120,11 +122,11 @@ func TestOrderNumberGet(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusActive,
+				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&models.Number{
+			&number.Number{
 				ID:               uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 				Number:           "+821021656521",
 				UserID:           1,
@@ -170,7 +172,7 @@ func TestOrderNumberGetError(t *testing.T) {
 
 	type test struct {
 		name string
-		user *models.User
+		user *user.User
 		id   uuid.UUID
 
 		response *nmnumber.Number
@@ -179,7 +181,7 @@ func TestOrderNumberGetError(t *testing.T) {
 	tests := []test{
 		{
 			"deleted item",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
@@ -190,7 +192,7 @@ func TestOrderNumberGetError(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusActive,
+				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 				TMDelete:            "2021-03-02 01:00:00.995000",
@@ -225,17 +227,17 @@ func TestNumberCreate(t *testing.T) {
 
 	type test struct {
 		name    string
-		user    *models.User
+		user    *user.User
 		numbers string
 
 		response  *nmnumber.Number
-		expectRes *models.Number
+		expectRes *number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
 			"+821021656521",
@@ -246,11 +248,11 @@ func TestNumberCreate(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusActive,
+				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&models.Number{
+			&number.Number{
 				Number:           "+821021656521",
 				UserID:           1,
 				Status:           "active",
@@ -297,17 +299,17 @@ func TestNumberDelete(t *testing.T) {
 
 	type test struct {
 		name string
-		user *models.User
+		user *user.User
 		id   uuid.UUID
 
 		response  *nmnumber.Number
-		expectRes *models.Number
+		expectRes *number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
 			uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
@@ -318,11 +320,11 @@ func TestNumberDelete(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusDeleted,
+				Status:              nmnumber.StatusDeleted,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&models.Number{
+			&number.Number{
 				ID:               uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
 				Number:           "+821021656521",
 				UserID:           1,
@@ -369,22 +371,22 @@ func TestNumberUpdate(t *testing.T) {
 
 	type test struct {
 		name         string
-		user         *models.User
-		updateNumber *models.Number
+		user         *user.User
+		updateNumber *number.Number
 
 		updateNMNumber *nmnumber.Number
 		responseGet    *nmnumber.Number
 		responseUpdate *nmnumber.Number
-		expectRes      *models.Number
+		expectRes      *number.Number
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
-			&models.Number{
+			&number.Number{
 				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
 			},
@@ -399,7 +401,7 @@ func TestNumberUpdate(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusActive,
+				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
@@ -410,11 +412,11 @@ func TestNumberUpdate(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusActive,
+				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&models.Number{
+			&number.Number{
 				ID:               uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 				FlowID:           uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
 				Number:           "+821021656521",
@@ -462,8 +464,8 @@ func TestNumberUpdateError(t *testing.T) {
 
 	type test struct {
 		name         string
-		user         *models.User
-		updateNumber *models.Number
+		user         *user.User
+		updateNumber *number.Number
 
 		updateNMNumber *nmnumber.Number
 		responseGet    *nmnumber.Number
@@ -472,10 +474,10 @@ func TestNumberUpdateError(t *testing.T) {
 	tests := []test{
 		{
 			"deleted item",
-			&models.User{
+			&user.User{
 				ID: 1,
 			},
-			&models.Number{
+			&number.Number{
 				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
 			},
@@ -490,7 +492,7 @@ func TestNumberUpdateError(t *testing.T) {
 				UserID:              1,
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
-				Status:              nmnumber.NumberStatusActive,
+				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 				TMDelete:            "2021-03-02 01:00:00.995000",

@@ -3,9 +3,9 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
 // V1DataAsterisksIDChannelsIDHealth is
@@ -22,10 +22,10 @@ type V1DataAsterisksIDChannelsIDHealth struct {
 // v1 data type request struct for
 // /v1/calls/<id> POST
 type V1DataCallsIDPost struct {
-	FlowID      uuid.UUID      `json:"flow_id"`
-	UserID      uint64         `json:"user_id"`
-	Source      cmcall.Address `json:"source"`
-	Destination cmcall.Address `json:"destination"`
+	FlowID      uuid.UUID         `json:"flow_id"`
+	UserID      uint64            `json:"user_id"`
+	Source      cmaddress.Address `json:"source"`
+	Destination cmaddress.Address `json:"destination"`
 }
 
 // V1DataCallsIDHealth is
@@ -41,9 +41,9 @@ type V1DataCallsIDHealth struct {
 // v1 data type for CallsIDActionTimeout
 // /v1/calls/<id>/action-timeout POST
 type V1DataCallsIDActionTimeout struct {
-	ActionID   uuid.UUID         `json:"action_id"`
-	ActionType models.ActionType `json:"action_type"`
-	TMExecute  string            `json:"tm_execute"` // represent when this action has executed.
+	ActionID   uuid.UUID   `json:"action_id"`
+	ActionType action.Type `json:"action_type"`
+	TMExecute  string      `json:"tm_execute"` // represent when this action has executed.
 }
 
 // V1DataConferencesIDDelete is

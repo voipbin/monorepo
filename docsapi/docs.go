@@ -126,7 +126,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Call"
+                            "$ref": "#/definitions/call.Call"
                         }
                     }
                 }
@@ -159,7 +159,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Call"
+                            "$ref": "#/definitions/call.Call"
                         }
                     }
                 }
@@ -183,7 +183,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Call"
+                            "$ref": "#/definitions/call.Call"
                         }
                     }
                 }
@@ -254,7 +254,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Conference"
+                            "$ref": "#/definitions/conference.Conference"
                         }
                     }
                 }
@@ -287,7 +287,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Conference"
+                            "$ref": "#/definitions/conference.Conference"
                         }
                     }
                 }
@@ -332,7 +332,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Domain"
+                                "$ref": "#/definitions/domain.Domain"
                             }
                         }
                     }
@@ -348,7 +348,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Domain"
+                            "$ref": "#/definitions/domain.Domain"
                         }
                     }
                 }
@@ -381,7 +381,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Domain"
+                            "$ref": "#/definitions/domain.Domain"
                         }
                     }
                 }
@@ -396,7 +396,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Domain"
+                            "$ref": "#/definitions/domain.Domain"
                         }
                     }
                 }
@@ -439,7 +439,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Extension"
+                            "$ref": "#/definitions/extension.Extension"
                         }
                     }
                 }
@@ -458,7 +458,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Extension"
+                                "$ref": "#/definitions/extension.Extension"
                             }
                         }
                     }
@@ -474,7 +474,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Extension"
+                            "$ref": "#/definitions/extension.Extension"
                         }
                     }
                 }
@@ -491,7 +491,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Extension"
+                            "$ref": "#/definitions/extension.Extension"
                         }
                     }
                 }
@@ -520,7 +520,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Flow"
+                                "$ref": "#/definitions/flow.Flow"
                             }
                         }
                     }
@@ -536,7 +536,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Flow"
+                            "$ref": "#/definitions/flow.Flow"
                         }
                     }
                 }
@@ -569,7 +569,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Flow"
+                            "$ref": "#/definitions/flow.Flow"
                         }
                     }
                 }
@@ -584,7 +584,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Flow"
+                            "$ref": "#/definitions/flow.Flow"
                         }
                     }
                 }
@@ -641,7 +641,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Number"
+                            "$ref": "#/definitions/number.Number"
                         }
                     }
                 }
@@ -674,7 +674,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Number"
+                            "$ref": "#/definitions/number.Number"
                         }
                     }
                 }
@@ -689,7 +689,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Number"
+                            "$ref": "#/definitions/number.Number"
                         }
                     }
                 }
@@ -720,7 +720,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Number"
+                            "$ref": "#/definitions/number.Number"
                         }
                     }
                 }
@@ -780,7 +780,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Recording"
+                            "$ref": "#/definitions/recording.Recording"
                         }
                     }
                 }
@@ -788,7 +788,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "models.Action": {
+        "action.Action": {
             "type": "object",
             "properties": {
                 "id": {
@@ -802,7 +802,7 @@ var doc = `{
                 }
             }
         },
-        "models.AvailableNumber": {
+        "availablenumber.AvailableNumber": {
             "type": "object",
             "properties": {
                 "country": {
@@ -825,7 +825,7 @@ var doc = `{
                 }
             }
         },
-        "models.Call": {
+        "call.Call": {
             "type": "object",
             "properties": {
                 "chained_call_ids": {
@@ -842,7 +842,7 @@ var doc = `{
                 "destination": {
                     "description": "Destination info",
                     "type": "object",
-                    "$ref": "#/definitions/models.CallAddress"
+                    "$ref": "#/definitions/call.CallAddress"
                 },
                 "direction": {
                     "description": "Call's direction.",
@@ -882,7 +882,7 @@ var doc = `{
                 "source": {
                     "description": "Source info",
                     "type": "object",
-                    "$ref": "#/definitions/models.CallAddress"
+                    "$ref": "#/definitions/call.CallAddress"
                 },
                 "status": {
                     "description": "Call's status.",
@@ -918,7 +918,7 @@ var doc = `{
                 }
             }
         },
-        "models.CallAddress": {
+        "call.CallAddress": {
             "type": "object",
             "properties": {
                 "name": {
@@ -935,7 +935,7 @@ var doc = `{
                 }
             }
         },
-        "models.Conference": {
+        "conference.Conference": {
             "type": "object",
             "properties": {
                 "call_ids": {
@@ -994,7 +994,7 @@ var doc = `{
                 }
             }
         },
-        "models.Domain": {
+        "domain.Domain": {
             "type": "object",
             "properties": {
                 "detail": {
@@ -1028,7 +1028,7 @@ var doc = `{
                 }
             }
         },
-        "models.Extension": {
+        "extension.Extension": {
             "type": "object",
             "properties": {
                 "detail": {
@@ -1063,14 +1063,14 @@ var doc = `{
                 }
             }
         },
-        "models.Flow": {
+        "flow.Flow": {
             "type": "object",
             "properties": {
                 "actions": {
                     "description": "Actions",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Action"
+                        "$ref": "#/definitions/action.Action"
                     }
                 },
                 "detail": {
@@ -1099,7 +1099,7 @@ var doc = `{
                 }
             }
         },
-        "models.Number": {
+        "number.Number": {
             "type": "object",
             "properties": {
                 "emergency_enabled": {
@@ -1135,7 +1135,7 @@ var doc = `{
                 }
             }
         },
-        "models.Recording": {
+        "recording.Recording": {
             "type": "object",
             "properties": {
                 "filename": {
@@ -1186,19 +1186,19 @@ var doc = `{
                 "actions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Action"
+                        "$ref": "#/definitions/action.Action"
                     }
                 },
                 "destination": {
                     "type": "object",
-                    "$ref": "#/definitions/models.CallAddress"
+                    "$ref": "#/definitions/call.CallAddress"
                 },
                 "event_url": {
                     "type": "string"
                 },
                 "source": {
                     "type": "object",
-                    "$ref": "#/definitions/models.CallAddress"
+                    "$ref": "#/definitions/call.CallAddress"
                 }
             }
         },
@@ -1225,7 +1225,7 @@ var doc = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.AvailableNumber"
+                        "$ref": "#/definitions/availablenumber.AvailableNumber"
                     }
                 }
             }
@@ -1239,7 +1239,7 @@ var doc = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Call"
+                        "$ref": "#/definitions/call.Call"
                     }
                 }
             }
@@ -1253,7 +1253,7 @@ var doc = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Number"
+                        "$ref": "#/definitions/number.Number"
                     }
                 }
             }
@@ -1267,7 +1267,7 @@ var doc = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Recording"
+                        "$ref": "#/definitions/recording.Recording"
                     }
                 }
             }

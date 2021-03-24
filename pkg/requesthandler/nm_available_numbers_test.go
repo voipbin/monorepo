@@ -6,8 +6,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 )
 
 func TestNMAvailableNumbersGet(t *testing.T) {
@@ -36,7 +36,7 @@ func TestNMAvailableNumbersGet(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 
-		expectResult []nmnumber.AvailableNumber
+		expectResult []nmavailablenumber.AvailableNumber
 	}
 
 	tests := []test{
@@ -58,13 +58,13 @@ func TestNMAvailableNumbersGet(t *testing.T) {
 				DataType:   "application/json",
 				Data:       []byte(`[{"number":"+16188850188","provider_name":"telnyx","country":"US","region":"IL","postal_code":"","features":["emergency","fax","voice","sms"],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
-			[]nmnumber.AvailableNumber{
+			[]nmavailablenumber.AvailableNumber{
 				{
 					Number:       "+16188850188",
 					ProviderName: "telnyx",
 					Country:      "US",
 					Region:       "IL",
-					Features:     []string{"emergency", "fax", "voice", "sms"},
+					Features:     []nmavailablenumber.Feature{"emergency", "fax", "voice", "sms"},
 				},
 			},
 		},

@@ -1,13 +1,13 @@
 package cachehandler
 
-//go:generate mockgen -destination ./mock_cachehandler_cachehandler.go -package cachehandler gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler CacheHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_cachehandler_cachehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
 
-	"github.com/go-redis/redis/v8"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"github.com/go-redis/redis/v8"
 )
 
 type handler struct {
@@ -22,8 +22,8 @@ type handler struct {
 type CacheHandler interface {
 	Connect() error
 
-	UserGet(ctx context.Context, id uint64) (*models.User, error)
-	UserSet(ctx context.Context, u *models.User) error
+	UserGet(ctx context.Context, id uint64) (*user.User, error)
+	UserSet(ctx context.Context, u *user.User) error
 }
 
 // NewHandler creates DBHandler

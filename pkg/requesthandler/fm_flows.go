@@ -7,15 +7,15 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 // FMFlowCreate sends a request to flow-manager
 // to creating a flow.
 // it returns created flow if it succeed.
-// func (r *requestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []models.Action, persist bool) (*fmflow.Flow, error) {
+// func (r *requestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
 func (r *requestHandler) FMFlowCreate(f *fmflow.Flow) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows")
 

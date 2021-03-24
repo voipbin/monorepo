@@ -5,11 +5,10 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
-func (h *serviceHandler) UserCreate(username, password string, permission uint64) (*models.User, error) {
+func (h *serviceHandler) UserCreate(username, password string, permission uint64) (*user.User, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"Username":   username,
 		"Permission": permission,
@@ -31,10 +30,10 @@ func (h *serviceHandler) UserCreate(username, password string, permission uint64
 	}
 
 	// create user
-	u := &models.User{
+	u := &user.User{
 		Username:     username,
 		PasswordHash: hashPassword,
-		Permission:   models.UserPermission(permission),
+		Permission:   user.Permission(permission),
 	}
 
 	if err := h.dbHandler.UserCreate(ctx, u); err != nil {
@@ -52,7 +51,7 @@ func (h *serviceHandler) UserCreate(username, password string, permission uint64
 }
 
 // UserGet returns user info of given userID.
-func (h *serviceHandler) UserGet(userID uint64) (*models.User, error) {
+func (h *serviceHandler) UserGet(userID uint64) (*user.User, error) {
 	ctx := context.Background()
 	res, err := h.dbHandler.UserGet(ctx, userID)
 	if err != nil {
@@ -64,7 +63,7 @@ func (h *serviceHandler) UserGet(userID uint64) (*models.User, error) {
 }
 
 // UserGets returns list of all users
-func (h *serviceHandler) UserGets() ([]*models.User, error) {
+func (h *serviceHandler) UserGets() ([]*user.User, error) {
 	ctx := context.Background()
 	res, err := h.dbHandler.UserGets(ctx)
 	if err != nil {

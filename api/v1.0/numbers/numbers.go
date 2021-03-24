@@ -1,13 +1,16 @@
 package numbers
 
 import (
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -42,7 +45,7 @@ func numbersGET(c *gin.Context) {
 		return
 	}
 
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log = log.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -57,7 +60,7 @@ func numbersGET(c *gin.Context) {
 	}
 
 	// get service
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get order numbers
 	numbers, err := serviceHandler.NumberGets(&u, pageSize, requestParam.PageToken)
@@ -89,7 +92,7 @@ func numbersGET(c *gin.Context) {
 // @Produce  json
 // @Param id path string true "The ID of the order number"
 // @Param token query string true "JWT token"
-// @Success 200 {object} models.Number
+// @Success 200 {object} number.Number
 // @Router /v1.0/numbers/{id} [get]
 func numbersIDGET(c *gin.Context) {
 
@@ -102,7 +105,7 @@ func numbersIDGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -116,7 +119,7 @@ func numbersIDGET(c *gin.Context) {
 	log.Debugf("numbersIDGET. Received request detail. number_id: %s", id)
 
 	// get order number
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.NumberGet(&u, id)
 	if err != nil {
 		log.Errorf("Could not get an order number. err: %v", err)
@@ -133,7 +136,7 @@ func numbersIDGET(c *gin.Context) {
 // @Summary Create a new number and returns detail created number info.
 // @Description Create a new number and returns detail created number info.
 // @Produce json
-// @Success 200 {object} models.Number
+// @Success 200 {object} number.Number
 // @Router /v1.0/numbers [post]
 func numbersPOST(c *gin.Context) {
 
@@ -149,7 +152,7 @@ func numbersPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
@@ -157,7 +160,7 @@ func numbersPOST(c *gin.Context) {
 	})
 
 	// create a number
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	numb, err := serviceHandler.NumberCreate(&u, body.Number)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
@@ -176,7 +179,7 @@ func numbersPOST(c *gin.Context) {
 // @Produce  json
 // @Param id path string true "The ID of the order number"
 // @Param token query string true "JWT token"
-// @Success 200 {object} models.Number
+// @Success 200 {object} number.Number
 // @Router /v1.0/numbers/{id} [delete]
 func numbersIDDELETE(c *gin.Context) {
 
@@ -189,7 +192,7 @@ func numbersIDDELETE(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -203,7 +206,7 @@ func numbersIDDELETE(c *gin.Context) {
 	log.Debugf("numbersIDDELETE. Received request detail. number_id: %s", id)
 
 	// delete order number
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.NumberDelete(&u, id)
 	if err != nil {
 		log.Errorf("Could not delete an order number. err: %v", err)
@@ -220,7 +223,7 @@ func numbersIDDELETE(c *gin.Context) {
 // @Summary Create a new number and returns detail created number info.
 // @Description Create a new number and returns detail created number info.
 // @Produce json
-// @Success 200 {object} models.Number
+// @Success 200 {object} number.Number
 // @Router /v1.0/numbers/{id} [post]
 func numbersIDPUT(c *gin.Context) {
 
@@ -239,20 +242,20 @@ func numbersIDPUT(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(models.User)
+	u := tmp.(user.User)
 	log := logrus.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
 		"permission": u.Permission,
 	})
 
-	tmpN := &models.Number{
+	tmpN := &number.Number{
 		ID:     id,
 		FlowID: body.FlowID,
 	}
 
 	// update a number
-	serviceHandler := c.MustGet(models.OBJServiceHandler).(servicehandler.ServiceHandler)
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	numb, err := serviceHandler.NumberUpdate(&u, tmpN)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)

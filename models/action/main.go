@@ -1,17 +1,17 @@
-package cmaction
+package action
 
 import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
-// Action struct
+// Action struct for client show
 type Action struct {
 	ID     uuid.UUID       `json:"id"`
 	Type   Type            `json:"type"`
 	Option json.RawMessage `json:"option,omitempty"`
-	Next   uuid.UUID       `json:"next"`
 }
 
 // Type type
@@ -48,5 +48,23 @@ type OptionPlay struct {
 
 // OptionStreamEcho defines action stream_echo's option.
 type OptionStreamEcho struct {
-	Duration int `json:"duration"`
+	Duration int `json:"duration"` // echo duration. ms
+}
+
+// ConvertAction return converted action.Action
+func ConvertAction(r *fmaction.Action) *Action {
+	return &Action{
+		ID:     r.ID,
+		Type:   Type(r.Type),
+		Option: r.Option,
+	}
+}
+
+// CreateAction returns created fmaction from the action.Action.
+func CreateAction(a *Action) *fmaction.Action {
+	return &fmaction.Action{
+		ID:     a.ID,
+		Type:   fmaction.Type(a.Type),
+		Option: a.Option,
+	}
 }

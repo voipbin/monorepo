@@ -1,6 +1,6 @@
 package requesthandler
 
-//go:generate mockgen -destination ./mock_requesthandler_requesthandler.go -package requesthandler -source main.go RequestHandler
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package requesthandler -destination ./mock_requesthandler_requesthandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -12,14 +12,16 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmcall"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmconference"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/cmrecording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/fmflow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/nmnumber"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmextension"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
 // contents type
@@ -88,7 +90,7 @@ func init() {
 type RequestHandler interface {
 
 	// call: call
-	CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmcall.Address) (*cmcall.Call, error)
+	CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmaddress.Address) (*cmcall.Call, error)
 	CMCallDelete(callID uuid.UUID) error
 	CMCallGet(callID uuid.UUID) (*cmcall.Call, error)
 	CMCallGets(userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error)
@@ -110,7 +112,7 @@ type RequestHandler interface {
 	FMFlowUpdate(f *fmflow.Flow) (*fmflow.Flow, error)
 
 	// number: availalbe_number
-	NMAvailableNumbersGet(userID uint64, pageSize uint64, countryCode string) ([]nmnumber.AvailableNumber, error)
+	NMAvailableNumbersGet(userID uint64, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)
 
 	// number: order number
 	NMNumberCreate(userID uint64, numb string) (*nmnumber.Number, error)

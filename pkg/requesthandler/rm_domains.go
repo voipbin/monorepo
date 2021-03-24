@@ -8,8 +8,8 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/rmdomain"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 )
 
 // RMDomainCreate sends a request to registrar-manager
