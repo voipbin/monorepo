@@ -56,15 +56,7 @@ const (
 	DefaultSipServiceOptionConferenceID = "037a20b9-d11d-4b63-a135-ae230cafd495" // default conference ID for conference@sip-service
 )
 
-// createCall create a call record. All of call creation process need to use this.
 func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call, error) {
-
-	// set default time stamp
-	c.TMUpdate = defaultTimeStamp
-	c.TMRinging = defaultTimeStamp
-	c.TMProgressing = defaultTimeStamp
-	c.TMHangup = defaultTimeStamp
-
 	if err := h.db.CallCreate(ctx, c); err != nil {
 		return nil, err
 	}

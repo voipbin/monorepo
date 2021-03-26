@@ -126,10 +126,6 @@ func (a *Call) Matches(x interface{}) bool {
 		c.ChannelID = comp.ChannelID
 	}
 	c.TMCreate = comp.TMCreate
-	c.TMUpdate = comp.TMUpdate
-	c.TMRinging = comp.TMRinging
-	c.TMProgressing = comp.TMProgressing
-	c.TMHangup = comp.TMHangup
 
 	return reflect.DeepEqual(c, *comp)
 }
