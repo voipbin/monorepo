@@ -13,6 +13,12 @@ import (
 // createConference is handy function for creating a conference.
 // it increases corresponded counter
 func (h *conferenceHandler) createConference(ctx context.Context, cf *conference.Conference) error {
+
+	// set timestamp
+	cf.TMCreate = getCurTime()
+	cf.TMUpdate = defaultTimeStamp
+	cf.TMDelete = defaultTimeStamp
+
 	// create a conference record
 	if err := h.db.ConferenceCreate(ctx, cf); err != nil {
 		return fmt.Errorf("could not create a conference. err: %v", err)

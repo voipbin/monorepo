@@ -1,6 +1,9 @@
 package conference
 
 import (
+	"fmt"
+	"reflect"
+
 	uuid "github.com/gofrs/uuid"
 )
 
@@ -26,6 +29,20 @@ type Conference struct {
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
+}
+
+// Matches return true if the given items are the same
+func (a *Conference) Matches(x interface{}) bool {
+	comp := x.(*Conference)
+	c := *a
+
+	c.TMCreate = comp.TMCreate
+
+	return reflect.DeepEqual(c, *comp)
+}
+
+func (a *Conference) String() string {
+	return fmt.Sprintf("%v", *a)
 }
 
 // Type conference types

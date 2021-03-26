@@ -5,6 +5,7 @@ package conferencehandler
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -48,7 +49,8 @@ const (
 
 // List of default values
 const (
-	defaultDialTimeout = 60 // default outgoing dial timeout
+	defaultDialTimeout = 60                     // default outgoing dial timeout
+	defaultTimeStamp   = "0000-01-01 00:00:000" // default timestamp
 )
 
 var (
@@ -134,4 +136,12 @@ func isContextConf(contextType string) bool {
 	}
 
 	return false
+}
+
+// getCurTime return current utc time string
+func getCurTime() string {
+	now := time.Now().UTC().String()
+	res := strings.TrimSuffix(now, " +0000 UTC")
+
+	return res
 }
