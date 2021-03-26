@@ -560,6 +560,12 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 
 		AsteriskID: c.AsteriskID,
 		ChannelID:  channelID,
+
+		TMStart: defaultTimeStamp,
+		TMEnd:   defaultTimeStamp,
+
+		TMUpdate: defaultTimeStamp,
+		TMDelete: defaultTimeStamp,
 	}
 
 	if err := h.db.RecordingCreate(ctx, rec); err != nil {

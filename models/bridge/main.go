@@ -1,10 +1,13 @@
 package bridge
 
 import (
+	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
@@ -35,6 +38,22 @@ type Bridge struct {
 	TMCreate string
 	TMUpdate string
 	TMDelete string
+}
+
+// Matches return true if the given items are the same
+func (a *Bridge) Matches(x interface{}) bool {
+	comp := x.(*Bridge)
+	c := *a
+
+	c.TMCreate = comp.TMCreate
+	c.TMUpdate = comp.TMUpdate
+	c.TMDelete = comp.TMDelete
+
+	return reflect.DeepEqual(c, *comp)
+}
+
+func (a *Bridge) String() string {
+	return fmt.Sprintf("%v", *a)
 }
 
 // Tech type

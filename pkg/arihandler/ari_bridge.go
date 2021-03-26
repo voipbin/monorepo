@@ -14,6 +14,9 @@ func (h *eventHandler) eventHandlerBridgeCreated(ctx context.Context, evt interf
 	e := evt.(*ari.BridgeCreated)
 
 	b := bridge.NewBridgeByBridgeCreated(e)
+
+	b.TMUpdate = defaultTimeStamp
+	b.TMDelete = defaultTimeStamp
 	if err := h.db.BridgeCreate(ctx, b); err != nil {
 		return err
 	}
