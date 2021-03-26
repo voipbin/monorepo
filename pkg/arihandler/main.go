@@ -48,7 +48,7 @@ type eventHandler struct {
 
 // List of default values
 const (
-	defaultTimeStamp = "0000-01-01 00:00:000" // default timestamp
+	defaultTimeStamp = "9999-01-01 00:00:000" // default timestamp
 )
 
 var (
