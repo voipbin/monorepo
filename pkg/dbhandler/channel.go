@@ -11,8 +11,50 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
+const (
+	// select query for call get
+	channelSelect = `
+	select
+		asterisk_id,
+		id,
+		name,
+		type,
+		tech,
+
+		sip_call_id,
+		sip_transport,
+
+		src_name,
+		src_number,
+		dst_name,
+		dst_number,
+
+		state,
+		data,
+		stasis,
+		bridge_id,
+
+		dial_result,
+		hangup_cause,
+
+		direction,
+
+		tm_create,
+		tm_update,
+
+		tm_answer,
+		tm_ringing,
+		tm_end
+
+	from
+		channels
+	where
+		id = ?
+	`
+)
+
 // ChannelCreate creates new channel record and returns the created channel record.
-func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) error {
+func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 	q := `insert into channels(
 		asterisk_id,
 		id,
@@ -38,7 +80,13 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 
 		direction,
 
-		tm_create
+		tm_create,
+		tm_update,
+
+		tm_answer,
+		tm_ringing,
+		tm_end
+
 	) values(
 		?, ?, ?, ?, ?,
 		?, ?,
@@ -46,48 +94,54 @@ func (h *handler) ChannelCreate(ctx context.Context, channel *channel.Channel) e
 		?, ?, ?, ?,
 		?, ?,
 		?,
-		?
+		?, ?,
+		?, ?, ?
 		)
 	`
 
-	tmpData, err := json.Marshal(channel.Data)
+	tmpData, err := json.Marshal(c.Data)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not marshal. err: %v", err)
+		return fmt.Errorf("ChannelCreate: Could not marshal. err: %v", err)
 	}
 
 	_, err = h.db.Exec(q,
-		channel.AsteriskID,
-		channel.ID,
-		channel.Name,
-		channel.Type,
-		channel.Tech,
+		c.AsteriskID,
+		c.ID,
+		c.Name,
+		c.Type,
+		c.Tech,
 
-		channel.SIPCallID,
-		channel.SIPTransport,
+		c.SIPCallID,
+		c.SIPTransport,
 
-		channel.SourceName,
-		channel.SourceNumber,
-		channel.DestinationName,
-		channel.DestinationNumber,
+		c.SourceName,
+		c.SourceNumber,
+		c.DestinationName,
+		c.DestinationNumber,
 
-		channel.State,
+		c.State,
 		tmpData,
-		channel.Stasis,
-		channel.BridgeID,
+		c.Stasis,
+		c.BridgeID,
 
-		channel.DialResult,
-		channel.HangupCause,
+		c.DialResult,
+		c.HangupCause,
 
-		channel.Direction,
+		c.Direction,
 
-		channel.TMCreate,
+		c.TMCreate,
+		c.TMUpdate,
+
+		c.TMAnswer,
+		c.TMRinging,
+		c.TMEnd,
 	)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not execute query. err: %v", err)
+		return fmt.Errorf("ChannelCreate: Could not execute query. err: %v", err)
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, channel.ID)
+	h.ChannelUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -520,46 +574,7 @@ func (h *handler) ChannelGetFromCache(ctx context.Context, id string) (*channel.
 // ChannelGetFromDB returns channel from the DB.
 func (h *handler) ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error) {
 
-	// prepare
-	q := `select
-	asterisk_id,
-	id,
-	name,
-	type,
-	tech,
-
-	sip_call_id,
-	sip_transport,
-
-	src_name,
-	src_number,
-	dst_name,
-	dst_number,
-
-	state,
-	data,
-	stasis,
-	bridge_id,
-
-	dial_result,
-	hangup_cause,
-
-	direction,
-
-	coalesce(tm_create, '') as tm_create,
-	coalesce(tm_update, '') as tm_update,
-
-	coalesce(tm_answer, '') as tm_answer,
-	coalesce(tm_ringing, '') as tm_ringing,
-	coalesce(tm_end, '') as tm_end
-
-	from
-		channels
-	where
-		id = ?
-	`
-
-	row, err := h.db.Query(q, id)
+	row, err := h.db.Query(channelSelect, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChannelGet. err: %v", err)
 	}

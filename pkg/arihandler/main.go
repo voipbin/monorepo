@@ -46,6 +46,11 @@ type eventHandler struct {
 	confHandler   conferencehandler.ConferenceHandler
 }
 
+// List of default values
+const (
+	defaultTimeStamp = "0000-01-01 00:00:000" // default timestamp
+)
+
 var (
 	metricsNamespace = "call_manager"
 
