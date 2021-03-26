@@ -59,7 +59,11 @@ func main() {
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
 		return
+	} else if err := sqlDB.Ping(); err != nil {
+		logrus.Errorf("Could not set the connection correctly. err: %v", err)
+		return
 	}
+
 	defer sqlDB.Close()
 
 	// connect to cache

@@ -40,12 +40,12 @@ const (
 		hangup_reason,
 		webhook_uri,
 
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
+		tm_create,
+		tm_update,
 
-		coalesce(tm_progressing, '') as tm_progressing,
-		coalesce(tm_ringing, '') as tm_ringing,
-		coalesce(tm_hangup, '') as tm_hangup
+		tm_progressing,
+		tm_ringing,
+		tm_hangup
 
 	from
 		calls
@@ -155,13 +155,19 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		hangup_reason,
 		webhook_uri,
 
-		tm_create
+		tm_create,
+		tm_update,
+
+		tm_progressing,
+		tm_ringing,
+		tm_hangup
 	) values(
 		?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?, ?,
-		?
+		?, ?,
+		?, ?, ?
 		)`
 
 	if c.ChainedCallIDs == nil {
@@ -228,6 +234,11 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.WebhookURI,
 
 		c.TMCreate,
+		c.TMUpdate,
+
+		c.TMProgressing,
+		c.TMRinging,
+		c.TMHangup,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. CallCreate. err: %v", err)
