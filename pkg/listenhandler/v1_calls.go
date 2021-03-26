@@ -40,20 +40,21 @@ func (h *listenHandler) processV1CallsGet(req *rabbitmqhandler.Request) (*rabbit
 		"token": pageToken,
 	})
 
-	log.Debug("Getting calls.")
-	recordings, err := h.db.CallGets(context.Background(), userID, pageSize, pageToken)
+	logrus.Debugf("test call gets start")
+	calls, err := h.db.CallGets(context.Background(), userID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(recordings)
+	logrus.Debugf("test marshaling calls")
+	data, err := json.Marshal(calls)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", recordings, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", calls, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
+	logrus.Debugf("test making response")
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",

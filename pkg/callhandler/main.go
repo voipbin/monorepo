@@ -22,6 +22,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
+const (
+	defaultTimeStamp = "0000-01-01 00:00:000"
+)
+
 // CallHandler is interface for service handle
 type CallHandler interface {
 	ARIChannelDestroyed(cn *channel.Channel) error
