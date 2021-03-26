@@ -29,9 +29,9 @@ const (
 		recording_id,
 		recording_ids,
 
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
+		tm_create,
+		tm_update,
+		tm_delete
 
 	from
 		conferences
@@ -168,13 +168,15 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		recording_id,
 		recording_ids,
 
-		tm_create
+		tm_create,
+		tm_update,
+		tm_delete
 	) values(
 		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?,
 		?, ?,
-		?
+		?, ?, ?
 		)
 	`
 
@@ -209,7 +211,9 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		cf.RecordingID.Bytes(),
 		recordingIDs,
 
-		getCurTime(),
+		cf.TMCreate,
+		cf.TMUpdate,
+		cf.TMDelete,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceCreate. err: %v", err)
