@@ -17,6 +17,10 @@ func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt inter
 	e := evt.(*ari.ChannelCreated)
 
 	cn := channel.NewChannelByChannelCreated(e)
+	cn.TMUpdate = defaultTimeStamp
+	cn.TMAnswer = defaultTimeStamp
+	cn.TMRinging = defaultTimeStamp
+	cn.TMEnd = defaultTimeStamp
 	if err := h.db.ChannelCreate(ctx, cn); err != nil {
 		return err
 	}
