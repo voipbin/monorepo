@@ -26,12 +26,12 @@ const (
 		asterisk_id,
 		channel_id,
 
-		coalesce(tm_start, '') as tm_start,
-		coalesce(tm_end, '') as tm_end,
+		tm_start,
+		tm_end,
 
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
+		tm_create,
+		tm_update,
+		tm_delete
 
 	from
 		recordings
@@ -142,12 +142,18 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		asterisk_id,
 		channel_id,
 
-		tm_create
+		tm_start,
+		tm_end,
+
+		tm_create,
+		tm_update,
+		tm_delete
 
 	) values(
 		?, ?, ?, ?, ?, ?, ?, ?,
 		?, ?,
-		?
+		?, ?,
+		?, ?, ?
 	)`
 
 	_, err := h.db.Exec(q,
@@ -163,7 +169,12 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		c.AsteriskID,
 		c.ChannelID,
 
+		c.TMStart,
+		c.TMEnd,
+
 		getCurTime(),
+		c.TMUpdate,
+		c.TMDelete,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. RecordingCreate. err: %v", err)

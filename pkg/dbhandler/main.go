@@ -127,7 +127,10 @@ var (
 	ErrNotFound = errors.New("Record not found")
 )
 
-const defaultDelayTimeout = time.Millisecond * 150
+// list of default values
+const (
+	defaultDelayTimeout = time.Millisecond * 150
+)
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {

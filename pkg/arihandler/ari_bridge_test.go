@@ -48,6 +48,8 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 				ChannelIDs: []string{},
 
 				TMCreate: "2020-05-09T12:41:43.591",
+				TMUpdate: defaultTimeStamp,
+				TMDelete: defaultTimeStamp,
 			},
 		},
 	}

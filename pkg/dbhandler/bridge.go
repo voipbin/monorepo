@@ -31,9 +31,9 @@ const (
 		conference_type,
 		conference_join,
 
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
+		tm_create,
+		tm_update,
+		tm_delete
 	from
 		bridges
 	`
@@ -159,14 +159,16 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		conference_type,
 		conference_join,
 
-		tm_create
+		tm_create,
+		tm_update,
+		tm_delete
 	) values(
 		?, ?, ?,
 		?, ?, ?, ?,
 		?, ?,
 		?,
 		?, ?, ?,
-		?
+		?, ?, ?
 		)
 	`
 
@@ -195,6 +197,8 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		b.ConferenceJoin,
 
 		b.TMCreate,
+		b.TMUpdate,
+		b.TMDelete,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeCreate. err: %v", err)
