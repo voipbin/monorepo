@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -40,12 +41,12 @@ const (
 		hangup_reason,
 		webhook_uri,
 
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
+		tm_create,
+		tm_update,
 
-		coalesce(tm_progressing, '') as tm_progressing,
-		coalesce(tm_ringing, '') as tm_ringing,
-		coalesce(tm_hangup, '') as tm_hangup
+		tm_progressing,
+		tm_ringing,
+		tm_hangup
 
 	from
 		calls
@@ -155,13 +156,19 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		hangup_reason,
 		webhook_uri,
 
-		tm_create
+		tm_create,
+		tm_update,
+
+		tm_progressing,
+		tm_ringing,
+		tm_hangup
 	) values(
 		?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?, ?,
-		?
+		?, ?,
+		?, ?, ?
 		)`
 
 	if c.ChainedCallIDs == nil {
@@ -228,6 +235,11 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.WebhookURI,
 
 		c.TMCreate,
+		c.TMUpdate,
+
+		c.TMProgressing,
+		c.TMRinging,
+		c.TMHangup,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. CallCreate. err: %v", err)
@@ -288,11 +300,13 @@ func (h *handler) CallGets(ctx context.Context, userID uint64, size uint64, toke
 	// prepare
 	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", callSelect)
 
+	logrus.Debugf("test execute query")
 	rows, err := h.db.Query(q, userID, token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGets. err: %v", err)
 	}
 	defer rows.Close()
+	logrus.Debugf("test executed query")
 
 	res := []*call.Call{}
 	for rows.Next() {
@@ -302,7 +316,9 @@ func (h *handler) CallGets(ctx context.Context, userID uint64, size uint64, toke
 		}
 
 		res = append(res, u)
+		logrus.Debugf("test end get")
 	}
+	logrus.Debugf("test end gets")
 
 	return res, nil
 }

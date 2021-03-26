@@ -164,13 +164,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		uri = "could not unescape uri"
 	}
 
-	logrus.WithFields(
+	log := logrus.WithFields(
 		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		}).Debugf("Received request. method: %s, uri: %s", m.Method, uri)
+			"request": m,
+		})
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
 	start := time.Now()
 	switch {
@@ -279,11 +277,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-			}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, uri)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -291,17 +285,17 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	elapsed := time.Since(start)
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
-	// default error handler
 	if err != nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-				"error":  err,
-			}).Errorf("Could not process the request correctly. data: %s", m.Data)
+		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, uri)
 		response = simpleResponse(400)
 		err = nil
 		requestType = "notfound"
+	} else {
+		log.WithFields(
+			logrus.Fields{
+				"response": response,
+			},
+		).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 	}
 
 	return response, err
