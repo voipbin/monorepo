@@ -41,5 +41,8 @@ sed -i 's/VOIPBIN_OUTBOUND_PROXY/'$VOIPBIN_OUTBOUND_PROXY_ADDR'/g' /etc/asterisk
 # Start http server for local file get
 cd /mnt && python3 -m http.server 8000 &
 
+# Start asterisk-exporter
+/asterisk-exporter -web_listen_address ":2112" &
+
 # Start asterisk
 /usr/sbin/asterisk -fvvvvvvvg
