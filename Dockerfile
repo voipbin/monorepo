@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/voipbin/voip/asterisk-docker:18.2.2
+FROM registry.gitlab.com/voipbin/voip/asterisk-docker:18.3.0
 
 # Copy service accounts
 COPY etc/service_accounts /service_accounts
@@ -10,5 +10,5 @@ COPY etc/asterisk /etc/asterisk
 COPY etc/scripts/* /
 
 # Download asterisk-exporter
-RUN ["wget", "https://github.com/pchero/asterisk-exporter/releases/download/0.0.1/asterisk-exporter-0.0.1-linux-amd64", "-O", "/asterisk-exporter"]
+RUN ["wget", "https://github.com/pchero/asterisk-exporter/releases/download/0.0.2/asterisk-exporter-0.0.2-linux-amd64", "-O", "/asterisk-exporter"]
 RUN ["chmod", "755", "/asterisk-exporter"]
