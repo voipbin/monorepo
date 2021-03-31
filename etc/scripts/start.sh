@@ -31,5 +31,8 @@ sed -i 's/VOIPBIN_HOSTNAME/'$HOSTNAME'/g' /etc/asterisk/*
 /bin/mkdir -p /var/spool/asterisk/recording
 /bin/mount --bind /mnt/recording /var/spool/asterisk/recording
 
+# Start asterisk-exporter
+/asterisk-exporter -web_listen_address ":2112" &
+
 # Start asterisk
 /usr/sbin/asterisk -fvvvvvvvg
