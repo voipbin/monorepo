@@ -143,18 +143,18 @@ func (mr *MockRequestHandlerMockRecorder) CMConferenceGet(conferenceID interface
 }
 
 // FMFlowCreate mocks base method.
-func (m *MockRequestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (m *MockRequestHandler) FMFlowCreate(userID uint64, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMFlowCreate", userID, id, name, detail, actions, persist)
+	ret := m.ctrl.Call(m, "FMFlowCreate", userID, name, detail, actions, persist)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FMFlowCreate indicates an expected call of FMFlowCreate.
-func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(userID, id, name, detail, actions, persist interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(userID, name, detail, actions, persist interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), userID, id, name, detail, actions, persist)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), userID, name, detail, actions, persist)
 }
 
 // NMNumberFlowDelete mocks base method.

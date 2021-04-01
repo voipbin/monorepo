@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/request"
 )
 
 // CMConferenceGet sends a request to call-manager
@@ -64,7 +64,7 @@ func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType conference.Type, name string, detail string, timeout int) (*conference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences")
 
-	data := &request.V1DataConferencesIDPost{
+	data := &cmrequest.V1DataConferencesIDPost{
 		Type:    conferenceType,
 		UserID:  userID,
 		Name:    name,

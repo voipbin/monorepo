@@ -28,7 +28,6 @@ func TestFMFlowCreate(t *testing.T) {
 		name string
 
 		userID     uint64
-		flowID     uuid.UUID
 		flowName   string
 		flowDetail string
 		actions    []action.Action
@@ -46,7 +45,6 @@ func TestFMFlowCreate(t *testing.T) {
 			"normal",
 
 			1,
-			uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
 			"test flow",
 			"test flow detail",
 			[]action.Action{},
@@ -62,7 +60,7 @@ func TestFMFlowCreate(t *testing.T) {
 				URI:      "/v1/flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true}`),
+				Data:     []byte(`{"user_id":1,"name":"test flow","detail":"test flow detail","webhook_uri":"","actions":[],"persist":true}`),
 			},
 			&flow.Flow{
 				ID:       uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
@@ -82,7 +80,7 @@ func TestFMFlowCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMFlowCreate(tt.userID, tt.flowID, tt.flowName, tt.flowDetail, tt.actions, tt.persist)
+			res, err := reqHandler.FMFlowCreate(tt.userID, tt.flowName, tt.flowDetail, tt.actions, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
