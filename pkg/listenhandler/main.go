@@ -260,6 +260,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ConferencesPost(m)
 		requestType = "/v1/conferences"
 
+	// GET /conferences
+	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ConferencesGet(m)
+		requestType = "/v1/conferences"
+
 	//////////////
 	// recordings
 	//////////////

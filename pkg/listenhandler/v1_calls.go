@@ -266,7 +266,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmqhandler.Request) (
 		})
 	log.Debug("Executing processV1CallsIDHealthPost.")
 
-	var data request.V1DataCallsIDHealth
+	var data request.V1DataCallsIDHealthPost
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 		return nil, err
 	}
@@ -306,7 +306,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmqhandler.Req
 		})
 	log.Debug("Executing processV1CallsIDActionTimeoutPost.")
 
-	var data request.V1DataCallsIDActionTimeout
+	var data request.V1DataCallsIDActionTimeoutPost
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 		return nil, err
 	}
@@ -384,7 +384,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(m *rabbitmqhandler.Re
 		})
 	log.Debug("Executing processV1CallsIDChainedCallIDsPost.")
 
-	var data request.V1DataCallsIDChainedCallIDs
+	var data request.V1DataCallsIDChainedCallIDsPost
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 		return nil, err
 	}

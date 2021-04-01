@@ -27,27 +27,27 @@ type V1DataCallsIDPost struct {
 	Destination address.Address `json:"destination"`
 }
 
-// V1DataCallsIDHealth is
+// V1DataCallsIDHealthPost is
 // v1 data type request struct for
 // CallsIDHealth
 // /v1/calls/<id>/health-check POST
-type V1DataCallsIDHealth struct {
+type V1DataCallsIDHealthPost struct {
 	RetryCount int `json:"retry_count"`
 	Delay      int `json:"delay"`
 }
 
-// V1DataCallsIDActionTimeout is
+// V1DataCallsIDActionTimeoutPost is
 // v1 data type for CallsIDActionTimeout
 // /v1/calls/<id>/action-timeout POST
-type V1DataCallsIDActionTimeout struct {
+type V1DataCallsIDActionTimeoutPost struct {
 	ActionID   uuid.UUID   `json:"action_id"`
 	ActionType action.Type `json:"action_type"`
 	TMExecute  string      `json:"tm_execute"` // represent when this action has executed.
 }
 
-// V1DataCallsIDChainedCallIDs is
-// v1 data type for V1DataCallsIDChainedCallIDs
+// V1DataCallsIDChainedCallIDsPost is
+// v1 data type for V1DataCallsIDChainedCallIDsPost
 // /v1/calls/<id>/chained-call-ids POST
-type V1DataCallsIDChainedCallIDs struct {
+type V1DataCallsIDChainedCallIDsPost struct {
 	ChainedCallID uuid.UUID `json:"chained_call_id"`
 }

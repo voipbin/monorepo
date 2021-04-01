@@ -31,12 +31,14 @@ func TestConferenceCreate(t *testing.T) {
 			"type conference",
 			&conference.Conference{
 				ID:     uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
+				UserID: 1,
 				Type:   conference.TypeConference,
 				Name:   "test type conference",
 				Detail: "test type conference detail",
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
+				UserID:       1,
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
@@ -285,6 +287,67 @@ func TestConferenceSetData(t *testing.T) {
 			res.TMCreate = ""
 			if reflect.DeepEqual(tt.expectConference, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectConference, res)
+			}
+		})
+	}
+}
+
+func TestConferenceGets(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		db:    dbTest,
+		cache: mockCache,
+	}
+
+	type test struct {
+		name string
+
+		userID uint64
+		count  int
+	}
+
+	tests := []test{
+		{
+			"normal",
+			99,
+			10,
+		},
+		{
+			"empty",
+			98,
+			0,
+		},
+	}
+
+	// creates calls for test
+	mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
+	h.ConferenceCreate(context.Background(), &conference.Conference{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), UserID: 1})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			ctx := context.Background()
+
+			for i := 0; i < tt.count; i++ {
+				cf := &conference.Conference{
+					ID:     uuid.Must(uuid.NewV4()),
+					UserID: tt.userID,
+				}
+
+				mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
+				h.ConferenceCreate(ctx, cf)
+			}
+
+			res, err := h.ConferenceGets(ctx, tt.userID, 10, getCurTime())
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if len(res) != tt.count {
+				t.Errorf("Wrong match. expect: %d, got: %v", tt.count, len(res))
 			}
 		})
 	}

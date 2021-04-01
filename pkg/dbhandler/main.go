@@ -96,6 +96,7 @@ type DBHandler interface {
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
+	ConferenceGets(ctx context.Context, userID uint64, size uint64, token string) ([]*conference.Conference, error)
 	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
@@ -130,6 +131,7 @@ var (
 // list of default values
 const (
 	defaultDelayTimeout = time.Millisecond * 150
+	defaultTimeStamp    = "9999-01-01 00:00:000"
 )
 
 // NewHandler creates DBHandler
