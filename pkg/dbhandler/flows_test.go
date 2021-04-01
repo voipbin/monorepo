@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gofrs/uuid"
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -19,6 +19,10 @@ func TestFlowCreate(t *testing.T) {
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		db:    dbTest,
+		cache: mockCache,
+	}
 
 	type test struct {
 		name       string
@@ -33,14 +37,14 @@ func TestFlowCreate(t *testing.T) {
 				ID:       uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
 				Name:     "test flow name",
 				Detail:   "test flow detail",
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18 03:22:17.995000",
 			},
 			&flow.Flow{
 				ID:       uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
 				Name:     "test flow name",
 				Detail:   "test flow detail",
 				Persist:  true,
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18 03:22:17.995000",
 			},
 		},
 		{
@@ -105,7 +109,6 @@ func TestFlowCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
 			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
@@ -133,6 +136,10 @@ func TestFlowGetsByUserID(t *testing.T) {
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		db:    dbTest,
+		cache: mockCache,
+	}
 
 	type test struct {
 		name       string
@@ -151,30 +158,34 @@ func TestFlowGetsByUserID(t *testing.T) {
 			"2020-04-18T03:30:17.000000",
 			[]flow.Flow{
 				{
-					ID:      uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
-					UserID:  1,
-					Name:    "test1",
-					Persist: true,
+					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					UserID:   1,
+					Name:     "test1",
+					Persist:  true,
+					TMDelete: defaultTimeStamp,
 				},
 				{
-					ID:      uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					UserID:  1,
-					Name:    "test2",
-					Persist: true,
+					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+					UserID:   1,
+					Name:     "test2",
+					Persist:  true,
+					TMDelete: defaultTimeStamp,
 				},
 			},
 			[]*flow.Flow{
 				{
-					ID:      uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					UserID:  1,
-					Name:    "test2",
-					Persist: true,
+					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+					UserID:   1,
+					Name:     "test2",
+					Persist:  true,
+					TMDelete: defaultTimeStamp,
 				},
 				{
-					ID:      uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
-					UserID:  1,
-					Name:    "test1",
-					Persist: true,
+					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					UserID:   1,
+					Name:     "test1",
+					Persist:  true,
+					TMDelete: defaultTimeStamp,
 				},
 			},
 		},
@@ -182,7 +193,6 @@ func TestFlowGetsByUserID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
 			ctx := context.Background()
 
 			for _, flow := range tt.flows {
@@ -367,9 +377,11 @@ func TestFlowDelete(t *testing.T) {
 			"normal deletion",
 			&flow.Flow{
 				ID:       uuid.FromStringOrNil("9f59d11a-67c1-11eb-9cf4-1b8a94365c22"),
+				UserID:   3,
 				Name:     "test flow name",
 				Detail:   "test flow detail",
 				TMCreate: "2020-04-18T03:22:17.995000",
+				TMDelete: defaultTimeStamp,
 			},
 		},
 	}
@@ -389,9 +401,15 @@ func TestFlowDelete(t *testing.T) {
 			}
 
 			mockCache.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(nil, fmt.Errorf("error"))
-			if _, err := h.FlowGet(context.Background(), tt.flow.ID); err == nil {
-				t.Errorf("Wrong match. expect: err, got: ok")
+			res, err := h.FlowGet(context.Background(), tt.flow.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			if res.TMDelete == defaultTimeStamp {
+				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
+			}
+
 		})
 	}
 }

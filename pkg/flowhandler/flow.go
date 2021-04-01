@@ -23,6 +23,9 @@ func (h *flowHandler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, er
 func (h *flowHandler) FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow, error) {
 
 	f.ID = uuid.Must(uuid.NewV4())
+	f.TMCreate = getCurTime()
+	f.TMUpdate = defaultTimeStamp
+	f.TMDelete = defaultTimeStamp
 
 	// set action id
 	for i := range f.Actions {
