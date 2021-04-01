@@ -958,6 +958,21 @@ func (mr *MockDBHandlerMockRecorder) ConferenceGetFromDB(ctx, id interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetFromDB), ctx, id)
 }
 
+// ConferenceGets mocks base method.
+func (m *MockDBHandler) ConferenceGets(ctx context.Context, userID, size uint64, token string) ([]*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceGets", ctx, userID, size, token)
+	ret0, _ := ret[0].([]*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceGets indicates an expected call of ConferenceGets.
+func (mr *MockDBHandlerMockRecorder) ConferenceGets(ctx, userID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGets), ctx, userID, size, token)
+}
+
 // ConferenceRemoveCallID mocks base method.
 func (m *MockDBHandler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error {
 	m.ctrl.T.Helper()

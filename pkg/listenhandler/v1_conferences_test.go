@@ -15,6 +15,71 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
+func TestProcessV1ConferencesGets(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock: mockSock,
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	type test struct {
+		name      string
+		request   *rabbitmqhandler.Request
+		userID    uint64
+		pageSize  uint64
+		pageToken string
+		confs     []*conference.Conference
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"basic",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			1,
+			10,
+			"2020-05-03 21:35:02.809",
+			[]*conference.Conference{
+				{
+					ID:     uuid.FromStringOrNil("0addf332-9312-11eb-95e8-9b90e44428a0"),
+					UserID: 1,
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"0addf332-9312-11eb-95e8-9b90e44428a0","user_id":1,"type":"","bridge_id":"","status":"","name":"","detail":"","data":null,"timeout":0,"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().ConferenceGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.confs, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
 func TestProcessV1ConferencesPostTypeConference(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
