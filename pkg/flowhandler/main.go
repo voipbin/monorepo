@@ -35,6 +35,11 @@ type FlowHandler interface {
 	FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow, error)
 }
 
+// list of default values
+const (
+	defaultTimeStamp = "9999-01-01 00:00:000"
+)
+
 // NewFlowHandler return FlowHandler
 func NewFlowHandler(db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler) FlowHandler {
 	h := &flowHandler{

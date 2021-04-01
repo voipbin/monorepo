@@ -30,18 +30,26 @@ func TestFlowCreate(t *testing.T) {
 
 	tests := []test{
 		{
-			"test normal",
+			"normal",
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("7ae994f6-92a4-11eb-8085-3bfd5ed58227"),
+				Name:   "test name",
+				Detail: "test detail",
+			},
+		},
+		{
+			"test empty",
 			&flow.Flow{},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
-
-			h.FlowCreate(context.Background(), &flow.Flow{})
-
+			h.FlowCreate(ctx, tt.flow)
 		})
 	}
 }

@@ -24,9 +24,9 @@ const (
 
 		actions,
 
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
+		tm_create,
+		tm_update,
+		tm_delete
 	from
 		flows
 	`
@@ -123,12 +123,14 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
 		actions,
 
-		tm_create
+		tm_create,
+		tm_update,
+		tm_delete
 	) values(
 		?, ?, ?, ?,
 		?,
 		?,
-		?
+		?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
 	if err != nil {
@@ -152,7 +154,9 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
 		tmpActions,
 
-		getCurTime(),
+		f.TMCreate,
+		f.TMUpdate,
+		f.TMDelete,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. FlowCreate. err: %v", err)
@@ -167,7 +171,7 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 func (h *handler) FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where tm_delete is null and id = ?", flowSelect)
+	q := fmt.Sprintf("%s where id = ?", flowSelect)
 
 	stmt, err := h.db.PrepareContext(ctx, q)
 	if err != nil {
@@ -222,7 +226,7 @@ func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token str
 	q := fmt.Sprintf(`
 		%s
 		where
-			tm_delete is null
+			tm_delete >= ?
 			and user_id = ?
 			and tm_create < ?
 		order by
@@ -230,7 +234,7 @@ func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token str
 		limit ?
 	`, flowSelect)
 
-	rows, err := h.db.Query(q, userID, token, limit)
+	rows, err := h.db.Query(q, defaultTimeStamp, userID, token, limit)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. FlowGetsByUserID. err: %v", err)
 	}
