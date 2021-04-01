@@ -8,8 +8,8 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/request"
 )
 
 // CMCallCreate sends a request to call-manager
@@ -18,7 +18,8 @@ import (
 func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination address.Address) (*call.Call, error) {
 	uri := fmt.Sprintf("/v1/calls")
 
-	data := &request.V1DataCallsIDPost{
+	data := &cmrequest.V1DataCallsIDPost{
+		UserID:      userID,
 		FlowID:      flowID,
 		Source:      source,
 		Destination: destination,
@@ -104,7 +105,7 @@ func (r *requestHandler) CMCallHangup(callID uuid.UUID) (*call.Call, error) {
 func (r *requestHandler) CMCallAddChainedCall(callID uuid.UUID, chainedCallID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/calls/%s/chained-call-ids", callID)
 
-	data := &request.V1DataCallsIDChainedCallIDsPost{
+	data := &cmrequest.V1DataCallsIDChainedCallIDs{
 		ChainedCallID: chainedCallID,
 	}
 

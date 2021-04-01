@@ -91,7 +91,7 @@ type RequestHandler interface {
 
 	////// flow-manager
 	// FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
-	FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
+	FMFlowCreate(userID uint64, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
 
 	////// number-manager
 	// number_flows

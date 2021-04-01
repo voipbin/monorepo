@@ -4,22 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler/models/request"
+	fmrequest "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
 )
 
 // FMFlowCreate sends a request to flow-manager
 // to creating a flow.
 // it returns created flow if it succeed.
-func (r *requestHandler) FMFlowCreate(userID uint64, id uuid.UUID, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (r *requestHandler) FMFlowCreate(userID uint64, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows")
 
-	data := &request.FMV1DataFlowPost{
-		ID:      id,
+	data := &fmrequest.V1DataFlowPost{
 		UserID:  userID,
 		Name:    name,
 		Detail:  detail,
