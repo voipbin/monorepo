@@ -9,19 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 )
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
-	CallsGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*call.Call, error)
-
-	ConferenceGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*conference.Conference, error)
-
 	UserCreate(ctx context.Context, b *user.User) error
 	UserGet(ctx context.Context, id uint64) (*user.User, error)
 	UserGetFromDB(ctx context.Context, id uint64) (*user.User, error)
