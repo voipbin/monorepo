@@ -248,9 +248,18 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 func (h *handler) ConferenceGets(ctx context.Context, userID uint64, size uint64, token string) ([]*conference.Conference, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", conferenceSelect)
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete >= ?
+			and user_id = ?
+			and tm_create < ?
+		order by
+			tm_create desc
+		limit ?
+	`, conferenceSelect)
 
-	rows, err := h.db.Query(q, userID, token, size)
+	rows, err := h.db.Query(q, defaultTimeStamp, userID, token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferenceGets. err: %v", err)
 	}
