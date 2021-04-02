@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	rmrequest "gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 )
 
 // RMExtensionCreate sends a request to registrar-manager
@@ -18,7 +18,7 @@ import (
 func (r *requestHandler) RMExtensionCreate(e *rmextension.Extension) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions")
 
-	data := &request.RMV1DataExtensionsPost{
+	data := &rmrequest.V1DataExtensionsPost{
 		UserID:    e.UserID,
 		Name:      e.Name,
 		Detail:    e.Detail,
@@ -101,7 +101,7 @@ func (r *requestHandler) RMExtensionDelete(extensionID uuid.UUID) error {
 func (r *requestHandler) RMExtensionUpdate(f *rmextension.Extension) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", f.ID)
 
-	data := &request.RMV1DataExtensionsIDPut{
+	data := &rmrequest.V1DataExtensionsIDPut{
 		Name:     f.Name,
 		Detail:   f.Detail,
 		Password: f.Password,

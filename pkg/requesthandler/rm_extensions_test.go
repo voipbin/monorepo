@@ -58,7 +58,7 @@ func TestRMExtensionCreate(t *testing.T) {
 				URI:      "/v1/extensions",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"user_id":1,"name":"test name","detail":"test detail","domain_id":"22de2e58-6f9e-11eb-8fee-ef16005005d7","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a"}`),
+				Data:     []byte(`{"user_id":1,"domain_id":"22de2e58-6f9e-11eb-8fee-ef16005005d7","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a","name":"test name","detail":"test detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,

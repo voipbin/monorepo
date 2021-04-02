@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -19,7 +19,7 @@ import (
 func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmaddress.Address) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls")
 
-	data := &request.V1DataCallsIDPost{
+	data := &cmrequest.V1DataCallsIDPost{
 		UserID:      userID,
 		FlowID:      flowID,
 		Source:      source,

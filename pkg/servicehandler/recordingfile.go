@@ -34,7 +34,7 @@ func (h *serviceHandler) RecordingfileGet(u *user.User, id uuid.UUID) (string, e
 
 	// get download url from storage-manager
 	log.Debugf("Getting recording file. recording: %s", recording.Filename)
-	url, err := h.reqHandler.STRecordingGet(recording.Filename)
+	url, err := h.reqHandler.SMRecordingGet(recording.Filename)
 	if err != nil {
 		log.Errorf("Could not get download url. err: %v", err)
 		return "", err

@@ -9,8 +9,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
-	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
@@ -35,36 +33,6 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
-}
-
-// CallsGetsByUserID mocks base method.
-func (m *MockDBHandler) CallsGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*call.Call, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallsGetsByUserID", ctx, userID, token, limit)
-	ret0, _ := ret[0].([]*call.Call)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CallsGetsByUserID indicates an expected call of CallsGetsByUserID.
-func (mr *MockDBHandlerMockRecorder) CallsGetsByUserID(ctx, userID, token, limit interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallsGetsByUserID", reflect.TypeOf((*MockDBHandler)(nil).CallsGetsByUserID), ctx, userID, token, limit)
-}
-
-// ConferenceGetsByUserID mocks base method.
-func (m *MockDBHandler) ConferenceGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*conference.Conference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceGetsByUserID", ctx, userID, token, limit)
-	ret0, _ := ret[0].([]*conference.Conference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferenceGetsByUserID indicates an expected call of ConferenceGetsByUserID.
-func (mr *MockDBHandlerMockRecorder) ConferenceGetsByUserID(ctx, userID, token, limit interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetsByUserID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetsByUserID), ctx, userID, token, limit)
 }
 
 // UserCreate mocks base method.

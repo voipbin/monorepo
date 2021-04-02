@@ -9,9 +9,10 @@ require (
 	github.com/gin-contrib/gzip v0.0.3 // indirect
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-openapi/spec v0.20.3 // indirect
+	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-redis/redis/v8 v8.8.0
-	github.com/go-sql-driver/mysql v1.5.0
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.5.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
@@ -24,14 +25,15 @@ require (
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.3.0
 	github.com/swaggo/swag v1.7.0
-	github.com/ugorji/go v1.2.4 // indirect
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210323023239-40396bac8bc8
+	github.com/ugorji/go v1.2.5 // indirect
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210401181828-39f83862bad2
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210314173554-61bfbbbd5633
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210323015604-2ddddc9182d3
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210401061929-70b309d80bfe
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210323024014-e746d8159826
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210321121353-4946f2db3798
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210323024036-8c44f8dca2de
+	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210323024331-0732164cf894
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20210323141857-08027d57d8cf // indirect
-	google.golang.org/genproto v0.0.0-20210323160006-e668133fea6a // indirect
+	golang.org/x/text v0.3.6 // indirect
+	google.golang.org/genproto v0.0.0-20210402141018-6c239bbf2bb1 // indirect
 )
