@@ -3,13 +3,39 @@ package requesthandler
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
 	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
+
+// CMConferenceGets sends a request to call-manager
+// to getting a list of conference info.
+// it returns detail list of conference info if it succeed.
+func (r *requestHandler) CMConferenceGets(userID uint64, pageToken string, pageSize uint64) ([]cmconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallCall, 30, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var confs []cmconference.Conference
+	if err := json.Unmarshal([]byte(res.Data), &confs); err != nil {
+		return nil, err
+	}
+
+	return confs, nil
+}
 
 // CMConferenceGet sends a request to call-manager
 // to getting a conference information.
@@ -62,7 +88,7 @@ func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string) (*cmconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences")
 
-	data := &request.V1DataConferencesIDPost{
+	data := &cmrequest.V1DataConferencesIDPost{
 		Type:    conferenceType,
 		UserID:  userID,
 		Name:    name,

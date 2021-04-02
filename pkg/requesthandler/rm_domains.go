@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+	rmrequest "gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 )
 
 // RMDomainCreate sends a request to registrar-manager
@@ -18,7 +18,7 @@ import (
 func (r *requestHandler) RMDomainCreate(userID uint64, domainName, name, detail string) (*rmdomain.Domain, error) {
 	uri := fmt.Sprintf("/v1/domains")
 
-	data := &request.RMV1DataDomainsPost{
+	data := &rmrequest.V1DataDomainsPost{
 		UserID:     userID,
 		DomainName: domainName,
 		Name:       name,
@@ -99,7 +99,7 @@ func (r *requestHandler) RMDomainDelete(domainID uuid.UUID) error {
 func (r *requestHandler) RMDomainUpdate(f *rmdomain.Domain) (*rmdomain.Domain, error) {
 	uri := fmt.Sprintf("/v1/domains/%s", f.ID)
 
-	data := &request.RMV1DataDomainsIDPut{
+	data := &rmrequest.V1DataDomainsIDPut{
 		Name:   f.Name,
 		Detail: f.Detail,
 	}

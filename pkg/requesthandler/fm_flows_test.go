@@ -59,7 +59,7 @@ func TestFMFlowCreate(t *testing.T) {
 				URI:      "/v1/flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true,"webhook_uri":""}`),
+				Data:     []byte(`{"user_id":1,"name":"test flow","detail":"test flow detail","webhook_uri":"","actions":[],"persist":true}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -95,7 +95,7 @@ func TestFMFlowCreate(t *testing.T) {
 				URI:      "/v1/flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"c409a736-82f3-11eb-839a-ebe51df950d4","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"persist":true,"webhook_uri":"https://test.com/webhook"}`),
+				Data:     []byte(`{"user_id":1,"name":"test flow","detail":"test flow detail","webhook_uri":"https://test.com/webhook","actions":[],"persist":true}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -114,7 +114,8 @@ func TestFMFlowCreate(t *testing.T) {
 				TMUpdate:   "",
 				TMDelete:   "",
 			},
-		}}
+		},
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -178,7 +179,7 @@ func TestFMFlowUpdate(t *testing.T) {
 				URI:      "/v1/flows/7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[]}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","webhook_uri":"","actions":[]}`),
 			},
 			&fmflow.Flow{
 				ID:       uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),

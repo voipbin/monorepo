@@ -4,12 +4,11 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
@@ -148,12 +147,18 @@ func TestConferenceGets(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
 
 	type test struct {
-		name  string
-		user  *user.User
-		token string
-		limit uint64
+		name      string
+		user      *user.User
+		token     string
+		limit     uint64
+		response  []cmconference.Conference
+		expectRes []*conference.Conference
 	}
 
 	tests := []test{
@@ -164,21 +169,31 @@ func TestConferenceGets(t *testing.T) {
 			},
 			"2020-09-20T03:23:20.995000",
 			10,
+			[]cmconference.Conference{
+				{
+					ID:     uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
+					UserID: 1,
+				},
+			},
+			[]*conference.Conference{
+				{
+					ID:     uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
+					UserID: 1,
+				},
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-
-			mockDB.EXPECT().ConferenceGetsByUserID(gomock.Any(), tt.user.ID, tt.token, tt.limit).Return([]*conference.Conference{}, nil)
-
-			_, err := h.ConferenceGets(tt.user, tt.limit, tt.token)
+			mockReq.EXPECT().CMConferenceGets(tt.user.ID, tt.token, tt.limit).Return(tt.response, nil)
+			res, err := h.ConferenceGets(tt.user, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}

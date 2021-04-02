@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	nmrequest "gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
 )
 
 // NMNumberCreate sends a request to the number-manager
@@ -18,7 +18,7 @@ import (
 func (r *requestHandler) NMNumberCreate(userID uint64, numb string) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers")
 
-	data := &request.NMV1DataNumbersPost{
+	data := &nmrequest.V1DataNumbersPost{
 		UserID: userID,
 		Number: numb,
 	}
@@ -124,7 +124,7 @@ func (r *requestHandler) NMNumberDelete(id uuid.UUID) (*nmnumber.Number, error) 
 func (r *requestHandler) NMNumberUpdate(num *nmnumber.Number) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", num.ID)
 
-	data := &request.NMV1DataNumbersIDPut{
+	data := &nmrequest.V1DataNumbersIDPut{
 		FlowID: num.FlowID,
 	}
 
