@@ -333,8 +333,9 @@ func TestConferenceGets(t *testing.T) {
 
 			for i := 0; i < tt.count; i++ {
 				cf := &conference.Conference{
-					ID:     uuid.Must(uuid.NewV4()),
-					UserID: tt.userID,
+					ID:       uuid.Must(uuid.NewV4()),
+					UserID:   tt.userID,
+					TMDelete: defaultTimeStamp,
 				}
 
 				mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
