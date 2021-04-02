@@ -99,6 +99,7 @@ type RequestHandler interface {
 	CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string) (*cmconference.Conference, error)
 	CMConferenceDelete(conferenceID uuid.UUID) error
 	CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error)
+	CMConferenceGets(userID uint64, pageToken string, pageSize uint64) ([]cmconference.Conference, error)
 
 	// call: recordings
 	CMRecordingGet(id uuid.UUID) (*cmrecording.Recording, error)
@@ -136,7 +137,7 @@ type RequestHandler interface {
 	RMExtensionUpdate(f *rmextension.Extension) (*rmextension.Extension, error)
 
 	// storage: recording
-	STRecordingGet(id string) (string, error)
+	SMRecordingGet(id string) (string, error)
 }
 
 type requestHandler struct {

@@ -1,7 +1,6 @@
 package servicehandler
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -53,13 +52,18 @@ func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string)
 		token = getCurTime()
 	}
 
-	log.Debugf("Get conferences. token: %s", token)
-	// get calls
-	ctx := context.Background()
-	res, err := h.dbHandler.ConferenceGetsByUserID(ctx, u.ID, token, size)
+	// get conferences
+	tmps, err := h.reqHandler.CMConferenceGets(u.ID, token, size)
 	if err != nil {
-		log.Infof("Could not get calls info. err: %v", err)
-		return []*conference.Conference{}, nil
+		log.Infof("Could not get conferences info. err: %v", err)
+		return nil, err
+	}
+
+	// create result
+	res := []*conference.Conference{}
+	for _, tmp := range tmps {
+		c := conference.Convert(&tmp)
+		res = append(res, c)
 	}
 
 	return res, nil

@@ -146,6 +146,21 @@ func (mr *MockRequestHandlerMockRecorder) CMConferenceGet(conferenceID interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceGet), conferenceID)
 }
 
+// CMConferenceGets mocks base method.
+func (m *MockRequestHandler) CMConferenceGets(userID uint64, pageToken string, pageSize uint64) ([]conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMConferenceGets", userID, pageToken, pageSize)
+	ret0, _ := ret[0].([]conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMConferenceGets indicates an expected call of CMConferenceGets.
+func (mr *MockRequestHandlerMockRecorder) CMConferenceGets(userID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceGets", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceGets), userID, pageToken, pageSize)
+}
+
 // CMRecordingGet mocks base method.
 func (m *MockRequestHandler) CMRecordingGet(id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
@@ -488,17 +503,17 @@ func (mr *MockRequestHandlerMockRecorder) RMExtensionUpdate(f interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMExtensionUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RMExtensionUpdate), f)
 }
 
-// STRecordingGet mocks base method.
-func (m *MockRequestHandler) STRecordingGet(id string) (string, error) {
+// SMRecordingGet mocks base method.
+func (m *MockRequestHandler) SMRecordingGet(id string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "STRecordingGet", id)
+	ret := m.ctrl.Call(m, "SMRecordingGet", id)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// STRecordingGet indicates an expected call of STRecordingGet.
-func (mr *MockRequestHandlerMockRecorder) STRecordingGet(id interface{}) *gomock.Call {
+// SMRecordingGet indicates an expected call of SMRecordingGet.
+func (mr *MockRequestHandlerMockRecorder) SMRecordingGet(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "STRecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).STRecordingGet), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMRecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).SMRecordingGet), id)
 }

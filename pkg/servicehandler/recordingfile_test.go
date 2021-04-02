@@ -65,7 +65,7 @@ func TestRecordingfileGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().CMRecordingGet(tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().STRecordingGet(tt.response.Filename).Return(tt.responseST, nil)
+			mockReq.EXPECT().SMRecordingGet(tt.response.Filename).Return(tt.responseST, nil)
 
 			res, err := h.RecordingfileGet(tt.user, tt.id)
 			if err != nil {
