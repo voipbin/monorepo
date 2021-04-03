@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -11,10 +12,21 @@ import (
 // ConferenceConferenceTerminate sends the request for conference terminating
 // conferenceID: conference id
 // delay: millisecond
-func (r *requestHandler) CallConferenceTerminate(conferenceID uuid.UUID, delay int) error {
+func (r *requestHandler) CallConferenceTerminate(conferenceID uuid.UUID, reason string, delay int) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallChannelsHealth, requestTimeoutDefault, delay, ContentTypeJSON, nil)
+	type Data struct {
+		Reason string `json:"reason"`
+	}
+
+	m, err := json.Marshal(Data{
+		reason,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallChannelsHealth, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

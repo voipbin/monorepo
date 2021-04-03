@@ -79,20 +79,6 @@ func (mr *MockConferenceHandlerMockRecorder) ARIStasisStart(cn, data interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockConferenceHandler)(nil).ARIStasisStart), cn, data)
 }
 
-// Destroy mocks base method.
-func (m *MockConferenceHandler) Destroy(id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Destroy", id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Destroy indicates an expected call of Destroy.
-func (mr *MockConferenceHandlerMockRecorder) Destroy(id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destroy", reflect.TypeOf((*MockConferenceHandler)(nil).Destroy), id)
-}
-
 // Join mocks base method.
 func (m *MockConferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -137,15 +123,15 @@ func (mr *MockConferenceHandlerMockRecorder) Start(reqConf interface{}) *gomock.
 }
 
 // Terminate mocks base method.
-func (m *MockConferenceHandler) Terminate(conferenceID uuid.UUID) error {
+func (m *MockConferenceHandler) Terminate(conferenceID uuid.UUID, reason string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Terminate", conferenceID)
+	ret := m.ctrl.Call(m, "Terminate", conferenceID, reason)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Terminate indicates an expected call of Terminate.
-func (mr *MockConferenceHandlerMockRecorder) Terminate(conferenceID interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Terminate(conferenceID, reason interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockConferenceHandler)(nil).Terminate), conferenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockConferenceHandler)(nil).Terminate), conferenceID, reason)
 }

@@ -61,7 +61,7 @@ func TestStartTypeConference(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.conference, nil)
 
 			if tt.reqConf.Timeout > 0 {
-				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), tt.reqConf.Timeout*1000).Return(nil)
+				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), "timeout", tt.reqConf.Timeout*1000).Return(nil)
 			}
 
 			h.Start(tt.reqConf)
@@ -116,7 +116,7 @@ func TestStartTypeConnect(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.conference, nil)
 
 			if tt.reqConf.Timeout > 0 {
-				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), tt.reqConf.Timeout*1000).Return(nil)
+				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), "timeout", tt.reqConf.Timeout*1000).Return(nil)
 			}
 
 			h.Start(tt.reqConf)

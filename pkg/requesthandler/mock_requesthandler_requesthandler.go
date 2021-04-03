@@ -338,17 +338,17 @@ func (mr *MockRequestHandlerMockRecorder) CallChannelHealth(asteriskID, channelI
 }
 
 // CallConferenceTerminate mocks base method.
-func (m *MockRequestHandler) CallConferenceTerminate(conferenceID uuid.UUID, delay int) error {
+func (m *MockRequestHandler) CallConferenceTerminate(conferenceID uuid.UUID, reason string, delay int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallConferenceTerminate", conferenceID, delay)
+	ret := m.ctrl.Call(m, "CallConferenceTerminate", conferenceID, reason, delay)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallConferenceTerminate indicates an expected call of CallConferenceTerminate.
-func (mr *MockRequestHandlerMockRecorder) CallConferenceTerminate(conferenceID, delay interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallConferenceTerminate(conferenceID, reason, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceTerminate", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceTerminate), conferenceID, delay)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceTerminate", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceTerminate), conferenceID, reason, delay)
 }
 
 // FlowActionGet mocks base method.

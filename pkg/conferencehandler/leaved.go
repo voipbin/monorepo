@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 // leaved handles event the channel has left from the bridge
@@ -172,12 +173,10 @@ func (h *conferenceHandler) leavedConference(cn *channel.Channel, br *bridge.Bri
 	}
 	log.Debug("The conference is terminatable.")
 
-	if err := h.Destroy(br.ConferenceID); err != nil {
-		log.Errorf("Could not destory the conference. err: %v", err)
-		return
+	// send the conference termination request
+	if err := h.reqHandler.CallConferenceTerminate(br.ConferenceID, "normal terminating", requesthandler.DelayNow); err != nil {
+		log.Errorf("Could not send the conference terminate request. err: %v", err)
 	}
-
-	return
 }
 
 // isTerminatable returns true if the given conference is terminatable

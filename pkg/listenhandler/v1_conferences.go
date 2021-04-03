@@ -122,7 +122,16 @@ func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmqhandler.Request)
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	if err := h.conferenceHandler.Terminate(id); err != nil {
+	var data request.V1DataConferencesIDDelete
+	if m.Data != nil {
+		if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+			return nil, err
+		}
+	} else {
+		data.Reason = ""
+	}
+
+	if err := h.conferenceHandler.Terminate(id, data.Reason); err != nil {
 		log.Errorf("Could not terminate the conference. err: %v", err)
 		return simpleResponse(400), nil
 	}

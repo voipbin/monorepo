@@ -27,11 +27,10 @@ type ConferenceHandler interface {
 	ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error
 	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
 
-	Destroy(id uuid.UUID) error
 	Start(reqConf *conference.Conference) (*conference.Conference, error)
 	Join(conferenceID, callID uuid.UUID) error
 	Leave(conferenceID, callID uuid.UUID) error
-	Terminate(conferenceID uuid.UUID) error
+	Terminate(conferenceID uuid.UUID, reason string) error
 }
 
 // conferenceHandler structure for service handle
