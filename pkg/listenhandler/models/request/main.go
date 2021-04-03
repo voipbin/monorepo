@@ -20,13 +20,6 @@ type V1DataAsterisksIDChannelsIDHealth struct {
 	Delay         int `json:"delay"`
 }
 
-// V1DataConferencesIDDelete is
-// v1 data type request struct for
-// /v1/conferences/<id>" DELETE
-type V1DataConferencesIDDelete struct {
-	Reason string `json:"reason,omitempty"`
-}
-
 // V1DataConferencesIDPost is
 // v1 data type request struct for
 // /v1/conferences/<id>" POST
