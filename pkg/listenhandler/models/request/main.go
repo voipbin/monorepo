@@ -1,9 +1,5 @@
 package request
 
-import (
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
-)
-
 // Pagination is pagination structure for request
 type Pagination struct {
 	PageSize  uint64 `form:"page_size" json:"page_size"`
@@ -18,23 +14,4 @@ type V1DataAsterisksIDChannelsIDHealth struct {
 	RetryCount    int `json:"retry_count"`
 	RetryCountMax int `json:"retry_count_max"`
 	Delay         int `json:"delay"`
-}
-
-// V1DataConferencesIDDelete is
-// v1 data type request struct for
-// /v1/conferences/<id>" DELETE
-type V1DataConferencesIDDelete struct {
-	Reason string `json:"reason,omitempty"`
-}
-
-// V1DataConferencesIDPost is
-// v1 data type request struct for
-// /v1/conferences/<id>" POST
-type V1DataConferencesIDPost struct {
-	Type    conference.Type        `json:"type"`
-	UserID  uint64                 `json:"user_id"`
-	Name    string                 `json:"name"`
-	Detail  string                 `json:"detail"`
-	Timeout int                    `json:"timeout"` // timeout. second
-	Data    map[string]interface{} `json:"data"`
 }

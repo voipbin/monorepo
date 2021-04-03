@@ -12,7 +12,7 @@ type Conference struct {
 	ID       uuid.UUID `json:"id"`
 	UserID   uint64    `json:"user_id"`
 	Type     Type      `json:"type"`
-	BridgeID string    `json:"bridge_id"`
+	BridgeID string    `json:"bridge_id"` // bridge id for this conference
 
 	Status Status `json:"status"`
 
@@ -21,7 +21,7 @@ type Conference struct {
 	Data    map[string]interface{} `json:"data"`
 	Timeout int                    `json:"timeout"` // timeout. second
 
-	CallIDs []uuid.UUID `json:"call_ids"`
+	CallIDs []uuid.UUID `json:"call_ids"` // list of call ids of conference
 
 	RecordingID  uuid.UUID   `json:"recording_id"`
 	RecordingIDs []uuid.UUID `json:"recording_ids"`

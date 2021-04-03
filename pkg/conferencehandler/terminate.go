@@ -11,13 +11,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
-// Terminate is final task to terminating the conference
-func (h *conferenceHandler) Terminate(id uuid.UUID, reason string) error {
+// Terminate is terminating the conference
+func (h *conferenceHandler) Terminate(id uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
 			"conference": id,
-			"reason":     reason,
 		},
 	)
 
@@ -29,8 +28,7 @@ func (h *conferenceHandler) Terminate(id uuid.UUID, reason string) error {
 
 	// if the conference is already terminated or stopping, just return at here
 	if cf.Status == conference.StatusTerminated || cf.Status == conference.StatusTerminating {
-		log.Infof("The conference is already terminated or being terminated. status: %s", cf.Status)
-
+		log.Infof("The conference is already terminated or terminating. status: %s", cf.Status)
 		return nil
 	}
 	log.Debug("Terminating the conference.")
@@ -41,13 +39,39 @@ func (h *conferenceHandler) Terminate(id uuid.UUID, reason string) error {
 		return err
 	}
 
-	// hangup all channels from the conference bridge
-	br, err := h.db.BridgeGet(ctx, cf.BridgeID)
-	if err != nil {
-		log.Errorf("Could not get bridge info. bridge: %s, err: %v", cf.BridgeID, err)
+	// check remains calls in the conference
+	if len(cf.CallIDs) > 0 {
+		// hangup all channels from the conference bridge
+		br, err := h.db.BridgeGet(ctx, cf.BridgeID)
+		if err != nil {
+			log.Errorf("Could not get bridge info. bridge: %s, err: %v", cf.BridgeID, err)
+			return err
+		}
+		log.Infof("The conference is terminating. Hangup all channels in conference bridge. conference: %s", cf.ID)
+
+		h.hangupAllChannelsInBridge(br)
+
+		return nil
+	}
+
+	if err := h.Destroy(id); err != nil {
+		log.Errorf("Could not destory the conference correctly. err: %v", err)
 		return err
 	}
-	h.hangupAllChannelsInBridge(br)
+
+	return nil
+}
+
+// Destroy is terminate the conference without any condition check.
+// So, this function must be called in the last step except terminate the conference in forcedly.
+func (h *conferenceHandler) Destroy(id uuid.UUID) error {
+	ctx := context.Background()
+	log := logrus.WithFields(
+		logrus.Fields{
+			"conference": id,
+		},
+	)
+	log.Debugf("Destroying the conference. conference: %s", id)
 
 	// update conference status to terminated
 	if err := h.db.ConferenceEnd(ctx, id); err != nil {
@@ -57,7 +81,15 @@ func (h *conferenceHandler) Terminate(id uuid.UUID, reason string) error {
 			}).Errorf("Could not terminate the conference. err: %v", err)
 		return err
 	}
+
+	cf, err := h.db.ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get destroyed conference info. err: %v", err)
+		return err
+	}
 	promConferenceCloseTotal.WithLabelValues(string(cf.Type)).Inc()
+
+	// we need to notify the conference is destroyed here
 
 	return nil
 }
