@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+
 	// "gitlab.com/voipbin/bin-manager/call-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -138,7 +139,7 @@ type RequestHandler interface {
 	CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
 	// cm conference
-	CallConferenceTerminate(conferenceID uuid.UUID, delay int) error
+	CallConferenceTerminate(conferenceID uuid.UUID, reason string, delay int) error
 
 	// fm actions
 	FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
