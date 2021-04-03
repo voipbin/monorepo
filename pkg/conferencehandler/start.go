@@ -87,7 +87,7 @@ func (h *conferenceHandler) startConference(req *conference.Conference) (*confer
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {
-		if err := h.reqHandler.CallConferenceTerminate(conferenceID, "timeout", cf.Timeout*1000); err != nil {
+		if err := h.reqHandler.CallConferenceTerminate(conferenceID, cf.Timeout*1000); err != nil {
 			log.Errorf("Could not start conference timeout. err: %v", err)
 		}
 	}
