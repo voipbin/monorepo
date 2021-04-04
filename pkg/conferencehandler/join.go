@@ -147,18 +147,30 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 
 // isBridgeExist returns true if the given bridge does exist
 func (h *conferenceHandler) isBridgeExist(ctx context.Context, id string) bool {
-	br, err := h.db.BridgeGet(ctx, id)
-	if err != nil {
+	if id == "" {
+		logrus.Debugf("The bridge id is invalid. Consider this bridge does not exist. bridge: %s", id)
 		return false
 	}
 
-	if br.TMDelete != "" {
+	br, err := h.db.BridgeGet(ctx, id)
+	if err != nil {
+		logrus.Debugf("Could not get bridge info from the database. Consider this bridge does not exist. bridge: %s, err: %v", id, err)
+		return false
+	}
+
+	if br.TMDelete < defaultTimeStamp {
+		logrus.WithFields(
+			logrus.Fields{
+				"bridge": br,
+			},
+		).Debugf("The bridge info marked as deleted. Consider this bridge does not exist. bridge: %s", id)
 		return false
 	}
 
 	// get bridge from the asterisk
 	_, err = h.reqHandler.AstBridgeGet(br.AsteriskID, br.ID)
 	if err != nil {
+		logrus.Debugf("Could not get bridge info from the asterisk. Consider this bridge does not exist. bridge: %s, err: %v", id, err)
 		return false
 	}
 

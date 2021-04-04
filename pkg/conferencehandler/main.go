@@ -50,8 +50,17 @@ const (
 
 // List of default values
 const (
-	defaultDialTimeout = 60                     // default outgoing dial timeout
-	defaultTimeStamp   = "9999-01-01 00:00:000" // default timestamp
+	defaultDialTimeout = 60                           // default outgoing dial timeout
+	defaultTimeStamp   = "9999-01-01 00:00:00.000000" // default timestamp
+)
+
+// conference termination type
+type termType string
+
+const (
+	termTypeNone         termType = "none"
+	termTypeTerminatable termType = "terminatable" // the conference is terminatable
+	termTypeDestroyable  termType = "destroyable"  // the conference is destroyable
 )
 
 var (
