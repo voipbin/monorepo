@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
-func TestIsTerminatable(t *testing.T) {
+func TestGetTerminateType(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -29,7 +29,7 @@ func TestIsTerminatable(t *testing.T) {
 	type test struct {
 		name       string
 		conference *conference.Conference
-		expactRes  bool
+		expactRes  termType
 	}
 
 	tests := []test{
@@ -42,27 +42,67 @@ func TestIsTerminatable(t *testing.T) {
 					uuid.FromStringOrNil("21510778-a2c5-11ea-8109-8313c4dd63a6"),
 				},
 			},
-			false,
+			termTypeNone,
 		},
 		{
 			"conference has no call",
 			&conference.Conference{
-				ID:   uuid.FromStringOrNil("2174c0dc-a2c5-11ea-a265-93c7fc3f9dd1"),
-				Type: conference.TypeConference,
+				ID:      uuid.FromStringOrNil("2174c0dc-a2c5-11ea-a265-93c7fc3f9dd1"),
+				Type:    conference.TypeConference,
+				CallIDs: []uuid.UUID{},
+			},
+			termTypeNone,
+		},
+		{
+			"conference is terminating has a call",
+			&conference.Conference{
+				ID:     uuid.FromStringOrNil("2174c0dc-a2c5-11ea-a265-93c7fc3f9dd1"),
+				Type:   conference.TypeConference,
+				Status: conference.StatusTerminating,
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("219dfc18-a2c5-11ea-8482-af13d9f6b2dd"),
 				},
 			},
-			false,
+			termTypeTerminatable,
+		},
+		{
+			"conference is terminating has no call",
+			&conference.Conference{
+				ID:      uuid.FromStringOrNil("2174c0dc-a2c5-11ea-a265-93c7fc3f9dd1"),
+				Type:    conference.TypeConference,
+				Status:  conference.StatusTerminating,
+				CallIDs: []uuid.UUID{},
+			},
+			termTypeDestroyable,
+		},
+		{
+			"connect has a call",
+			&conference.Conference{
+				ID:   uuid.FromStringOrNil("162c9192-94e5-11eb-b0e8-0be2148bceaf"),
+				Type: conference.TypeConnect,
+				CallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("19737adc-94e5-11eb-a434-075840d0564d"),
+				},
+			},
+			termTypeTerminatable,
+		},
+		{
+			"connect has no call",
+			&conference.Conference{
+				ID:      uuid.FromStringOrNil("2a19047e-94e5-11eb-bd12-df8f679653a1"),
+				Type:    conference.TypeConnect,
+				CallIDs: []uuid.UUID{},
+			},
+			termTypeDestroyable,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-			res := h.isTerminatable(context.Background(), tt.conference.ID)
+			res := h.getTerminateType(context.Background(), tt.conference.ID)
 			if tt.expactRes != res {
-				t.Errorf("Wrong match. expect: %t, got: %t", tt.expactRes, res)
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expactRes, res)
 			}
 		})
 	}

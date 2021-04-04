@@ -131,7 +131,7 @@ var (
 // list of default values
 const (
 	defaultDelayTimeout = time.Millisecond * 150
-	defaultTimeStamp    = "9999-01-01 00:00:000"
+	defaultTimeStamp    = "9999-01-01 00:00:00.000000"
 )
 
 // NewHandler creates DBHandler

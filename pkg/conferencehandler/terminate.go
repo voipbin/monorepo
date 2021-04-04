@@ -73,18 +73,54 @@ func (h *conferenceHandler) Destroy(id uuid.UUID) error {
 	)
 	log.Debugf("Destroying the conference. conference: %s", id)
 
+	// get coference
+	conf, err := h.db.ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get conference for delete. conference: %s, err: %v", id, err)
+		return err
+	}
+
+	// if the conference holding the bridge for conference,
+	// we need to delete the bridge here.
+	// but we don't do anything for errors here, because we want to mark the conference as a deleted whatever.
+	if h.isBridgeExist(ctx, conf.BridgeID) == true {
+		// get bridge
+		br, err := h.db.BridgeGet(ctx, conf.BridgeID)
+		if err != nil {
+			log.Errorf("Could not get bridge from the database. conference: %s, err: %v", id, err)
+		} else {
+			// delete bridge
+			log.WithFields(
+				logrus.Fields{
+					"bridge": br,
+				},
+			).Debugf("The conference holding the bridge. Deleting the bridge and hangup the channels in the bridge. conference: %s, bridge: %s", id, br.ID)
+
+			// hangup the all channels in the conference bridge
+			// we don't expect there are left channels in the conference bridge here
+			// but call this function here to be sure.
+			h.hangupAllChannelsInBridge(br)
+
+			// delete the bridge
+			if err := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); err != nil {
+				log.Errorf("Could not delete the conference bridge correctly. conference: %s, err: %v", id, err)
+			}
+		}
+	}
+
 	// update conference status to terminated
 	if err := h.db.ConferenceEnd(ctx, id); err != nil {
 		log.WithFields(
 			logrus.Fields{
 				"conference": id.String(),
-			}).Errorf("Could not terminate the conference. err: %v", err)
+			}).Errorf("Could not terminate the conference. conference: %s, err: %v", id, err)
 		return err
 	}
 
+	// get destroyed conference
 	cf, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get destroyed conference info. err: %v", err)
+		log.Errorf("Could not get destroyed conference info. conference: %s, err: %v", id, err)
 		return err
 	}
 	promConferenceCloseTotal.WithLabelValues(string(cf.Type)).Inc()

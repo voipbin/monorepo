@@ -153,11 +153,10 @@ func (h *conferenceHandler) leavedBridge(cn *channel.Channel, br *bridge.Bridge)
 }
 
 func (h *conferenceHandler) leavedConference(cn *channel.Channel, br *bridge.Bridge) {
+	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
-			"conference": br.ConferenceID,
-			"bridge":     br.ID,
-			"asterisk":   br.AsteriskID,
+			"bridge": br,
 		},
 	)
 
@@ -166,35 +165,47 @@ func (h *conferenceHandler) leavedConference(cn *channel.Channel, br *bridge.Bri
 		return
 	}
 
-	if h.isTerminatable(context.Background(), br.ConferenceID) == false {
-		// the conference is not finished yet.
-		return
-	}
-	log.Debug("The conference is terminatable.")
+	t := h.getTerminateType(ctx, br.ConferenceID)
+	switch t {
+	case termTypeTerminatable:
+		log.Debugf("The conference is terminatable. Terminate the conference. conference: %s", br.ConferenceID)
+		h.Terminate(br.ConferenceID)
 
-	if err := h.Destroy(br.ConferenceID); err != nil {
-		log.Errorf("Could not destory the conference. err: %v", err)
-		return
+	case termTypeDestroyable:
+		log.Debugf("The conference is destroyable. Destroy the conference. conference: %s", br.ConferenceID)
+		h.Destroy(br.ConferenceID)
+
+	default:
+		log.Debugf("The conference is not terminatable yet. conference: %s", br.ConferenceID)
 	}
 
 	return
 }
 
-// isTerminatable returns true if the given conference is terminatable
-// return false if it gets error
-func (h *conferenceHandler) isTerminatable(ctx context.Context, id uuid.UUID) bool {
+// getTerminateType returns type of termination.
+func (h *conferenceHandler) getTerminateType(ctx context.Context, id uuid.UUID) termType {
+
 	// get conference
 	cf, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
 		logrus.Errorf("Could not get conference info. conference: %s, err: %v", id, err)
-		return false
+		return termTypeNone
 	}
 
+	// we don't do anything for the conference type here.
 	// the conference type's conference will be destroyed when the timeout expired.
-	// the other type's conference will be destroyed if the joined calls are lesser than 2
-	if cf.Type == conference.TypeConference || len(cf.CallIDs) > 1 {
-		return false
+	if cf.Type == conference.TypeConference && cf.Status != conference.StatusTerminating {
+		return termTypeNone
 	}
 
-	return true
+	switch len(cf.CallIDs) {
+	case 0:
+		return termTypeDestroyable
+
+	case 1:
+		return termTypeTerminatable
+
+	default:
+		return termTypeNone
+	}
 }

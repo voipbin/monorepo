@@ -112,6 +112,7 @@ func TestJoin(t *testing.T) {
 			&bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
 				ID:         "a5c525ec-dca0-11ea-b139-17780451d9da",
+				TMDelete:   defaultTimeStamp,
 			},
 		},
 	}
