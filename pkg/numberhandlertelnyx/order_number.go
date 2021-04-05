@@ -75,6 +75,10 @@ func (h *numberHandler) createNumberByTelnyxOrderNumber(userID uint64, number st
 	tmp.ID = uuid.Must(uuid.NewV4())
 	tmp.UserID = userID
 
+	tmp.TMCreate = getCurTime()
+	tmp.TMUpdate = defaultTimeStamp
+	tmp.TMDelete = defaultTimeStamp
+
 	// insert into db
 	if err := h.db.NumberCreate(ctx, tmp); err != nil {
 		log.WithFields(

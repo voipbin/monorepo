@@ -35,6 +35,11 @@ const (
 	ConnectionID string = "1526401767787464160" // telnyx's voipbin connection id
 )
 
+// List of default values
+const (
+	defaultTimeStamp = "9999-01-01 00:00:00.000000"
+)
+
 var (
 	metricsNamespace = "number_manager"
 
