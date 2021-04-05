@@ -41,12 +41,16 @@ type handler struct {
 	cache cachehandler.CacheHandler
 }
 
+// List of default values
+const (
+	defaultDelayTimeout = time.Millisecond * 150
+	defaultTimeStamp    = "9999-01-01 00:00:00.000000"
+)
+
 // handler errors
 var (
 	ErrNotFound = errors.New("Record not found")
 )
-
-const defaultDelayTimeout = time.Millisecond * 150
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {

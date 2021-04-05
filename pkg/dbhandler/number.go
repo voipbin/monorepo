@@ -26,10 +26,10 @@ const (
 		t38_enabled,
 		emergency_enabled,
 
-		coalesce(tm_purchase, '') as tm_purchase,
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
+		tm_purchase,
+		tm_create,
+		tm_update,
+		tm_delete
 
 	from
 		numbers
@@ -153,9 +153,13 @@ func (h *handler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Nu
 func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where number = ? and tm_delete is null", numberSelect)
+	q := fmt.Sprintf(`%s
+		where
+			number = ?
+			and tm_delete >= ?
+	`, numberSelect)
 
-	row, err := h.db.Query(q, numb)
+	row, err := h.db.Query(q, numb, defaultTimeStamp)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGetFromDBByNumber. err: %v", err)
 	}
@@ -215,9 +219,17 @@ func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*number.N
 func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*number.Number, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? and tm_delete is null order by tm_create desc limit ?", numberSelect)
+	q := fmt.Sprintf(`%s
+		where
+			user_id = ?
+			and tm_create < ?
+			and tm_delete >= ?
+		order by
+			tm_create
+		desc limit ?
+		`, numberSelect)
 
-	rows, err := h.db.Query(q, userID, token, size)
+	rows, err := h.db.Query(q, userID, token, defaultTimeStamp, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGets. err: %v", err)
 	}
@@ -240,9 +252,18 @@ func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, to
 func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where flow_id = ? and tm_create < ? and tm_delete is null order by tm_create desc limit ?", numberSelect)
+	q := fmt.Sprintf(`%s
+		where
+			flow_id = ?
+			and tm_create < ?
+			and tm_delete >= ?
+		order by
+			tm_create desc
+		limit ?
+		`,
+		numberSelect)
 
-	rows, err := h.db.Query(q, flowID.Bytes(), token, size)
+	rows, err := h.db.Query(q, flowID.Bytes(), token, defaultTimeStamp, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGetsByFlowID. err: %v", err)
 	}
@@ -278,13 +299,15 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		emergency_enabled,
 
 		tm_purchase,
-		tm_create
+		tm_create,
+		tm_update,
+		tm_delete
 	) values(
 		?, ?, ?, ?,
 		?, ?,
 		?,
 		?, ?,
-		?, ?
+		?, ?, ?, ?
 		)`
 
 	_, err := h.db.Exec(q,
@@ -302,7 +325,9 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		n.EmergencyEnabled,
 
 		n.TMPurchase,
-		getCurTime(),
+		n.TMCreate,
+		n.TMUpdate,
+		n.TMDelete,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. NumberCreate. err: %v", err)
