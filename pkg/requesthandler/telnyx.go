@@ -68,8 +68,8 @@ func (h *requestHandler) TelnyxAvailableNumberGets(countryCode, locality, admini
 	}
 
 	res := []*telnyx.AvailableNumber{}
-	for _, t := range resParse.Data {
-		res = append(res, &t)
+	for i := range resParse.Data {
+		res = append(res, &resParse.Data[i])
 	}
 
 	return res, nil
