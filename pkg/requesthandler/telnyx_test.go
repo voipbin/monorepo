@@ -33,6 +33,13 @@ func TestTelnyxAvailableNumberGets(t *testing.T) {
 			"",
 			1,
 		},
+		{
+			"multiple numbers us",
+			"us",
+			"",
+			"",
+			3,
+		},
 	}
 
 	for _, tt := range tests {
@@ -46,6 +53,7 @@ func TestTelnyxAvailableNumberGets(t *testing.T) {
 			if len(res) != tt.limit {
 				t.Errorf("Wrong match. expect: %d, got: %d", tt.limit, len(res))
 			}
+
 		})
 	}
 }
