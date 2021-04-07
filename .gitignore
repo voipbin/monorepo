@@ -1,0 +1,4 @@
+vendor
+stt-manager
+.vscode
+!cmd/*

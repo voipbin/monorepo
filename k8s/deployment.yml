@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stt-manager
+  labels:
+    app: stt-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stt-manager
+  template:
+    metadata:
+      labels:
+        app: stt-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: stt-manager
+          image: stt-manager-image
+          command:
+            - '/app/stt-manager'
+          args:
+            - '-prom_endpoint'
+            - '/metrics'
+            - '-prom_listen_addr'
+            - ':2112'
+            - '-dbDSN'
+            - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
+            - '-rabbit_addr'
+            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
+            - '-rabbit_queue_listen'
+            - 'bin-manager.stt-manager.request'
+            - '-rabbit_queue_notify'
+            - 'bin-manager.stt-manager.event'
+            - '-rabbit_exchange_delay'
+            - 'bin-manager.delay'
+            - '-redis_addr'
+            - '10.164.15.220:6379'
+            - '-redis_db'
+            - '1'
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            limits:
+              cpu: "30m"
+              memory: "20M"
