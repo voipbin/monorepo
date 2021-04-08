@@ -4,9 +4,11 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 )
 
 func TestSMRecordingGet(t *testing.T) {
@@ -23,19 +25,19 @@ func TestSMRecordingGet(t *testing.T) {
 	type test struct {
 		name string
 
-		id string
+		id uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 
-		expectResult string
+		expectResult *smbucketrecording.BucketRecording
 	}
 
 	tests := []test{
 		{
 			"normal",
-			"c7878bdc-93bd-11eb-ab3a-a7388c5862f4",
+			uuid.FromStringOrNil("c7878bdc-93bd-11eb-ab3a-a7388c5862f4"),
 
 			"bin-manager.storage-manager.request",
 			&rabbitmqhandler.Request{
@@ -46,9 +48,11 @@ func TestSMRecordingGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"url":"https://example.com/c7878bdc-93bd-11eb-ab3a-a7388c5862f4"}`),
+				Data:       []byte(`{"download_uri":"https://example.com/c7878bdc-93bd-11eb-ab3a-a7388c5862f4"}`),
 			},
-			"https://example.com/c7878bdc-93bd-11eb-ab3a-a7388c5862f4",
+			&smbucketrecording.BucketRecording{
+				DownloadURI: "https://example.com/c7878bdc-93bd-11eb-ab3a-a7388c5862f4",
+			},
 		},
 	}
 
