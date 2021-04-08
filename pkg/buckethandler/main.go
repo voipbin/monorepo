@@ -19,7 +19,13 @@ const (
 
 // BucketHandler intreface for GCP bucket handler
 type BucketHandler interface {
-	RecordingGetDownloadURL(recordingID string, expire time.Time) (string, error)
+	// RecordingGetDownloadURL(recordingID string, expire time.Time) (string, error)
+
+	FileExist(target string) bool
+	FileGet(target string) ([]byte, error)
+	FileGetAttrs(target string) (*storage.ObjectAttrs, error)
+	FileGetDownloadURL(target string, expire time.Time) (string, error)
+	FileUpload(src, dest string) error
 }
 
 type bucketHandler struct {

@@ -3,10 +3,11 @@ package listenhandler
 import (
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/buckethandler"
+	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/storagehandler"
 )
 
 func TestV1RecordingsIDGet(t *testing.T) {
@@ -14,17 +15,16 @@ func TestV1RecordingsIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockBucket := buckethandler.NewMockBucketHandler(mc)
-	// mockCall := callhandler.NewMockCallHandler(mc)
+	mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:    mockSock,
-		bucketHandler: mockBucket,
+		rabbitSock:     mockSock,
+		storageHandler: mockStorage,
 	}
 
 	type test struct {
 		name        string
-		recordingID string
+		recordingID uuid.UUID
 		request     *rabbitmqhandler.Request
 		expectRes   *rabbitmqhandler.Response
 	}
@@ -32,9 +32,9 @@ func TestV1RecordingsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			"call_776c8a94-34bd-11eb-abef-0b279f3eabc1_2020-04-18T03:22:17.995000Z",
+			uuid.FromStringOrNil("0c920df8-9821-11eb-91f1-976b4da76663"),
 			&rabbitmqhandler.Request{
-				URI:    "/v1/recordings/call_776c8a94-34bd-11eb-abef-0b279f3eabc1_2020-04-18T03:22:17.995000Z",
+				URI:    "/v1/recordings/0c920df8-9821-11eb-91f1-976b4da76663",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -46,8 +46,7 @@ func TestV1RecordingsIDGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockBucket.EXPECT().RecordingGetDownloadURL(tt.recordingID, gomock.Any())
-
+			mockStorage.EXPECT().GetRecording(tt.recordingID)
 			_, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

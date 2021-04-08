@@ -12,7 +12,7 @@ import (
 )
 
 // fileUpload uploads the filename to the bucket(target)
-func (h *bucketHandler) fileUpload(src, dest string) error {
+func (h *bucketHandler) FileUpload(src, dest string) error {
 
 	// open file
 	f, err := os.Open(src)
@@ -42,7 +42,7 @@ func (h *bucketHandler) fileUpload(src, dest string) error {
 }
 
 // fileExist return the true if the given target is exists in the bucket
-func (h *bucketHandler) fileExist(target string) bool {
+func (h *bucketHandler) FileExist(target string) bool {
 	ctx := context.Background()
 
 	f := h.client.Bucket(h.bucketName).Object(target)
@@ -55,8 +55,21 @@ func (h *bucketHandler) fileExist(target string) bool {
 	return true
 }
 
+// fileExist return the true if the given target is exists in the bucket
+func (h *bucketHandler) FileGetAttrs(target string) (*storage.ObjectAttrs, error) {
+	ctx := context.Background()
+
+	f := h.client.Bucket(h.bucketName).Object(target)
+	attrs, err := f.Attrs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return attrs, nil
+}
+
 // fileGetDownloadURL returns google cloud storage signed url for file download
-func (h *bucketHandler) fileGetDownloadURL(target string, expire time.Time) (string, error) {
+func (h *bucketHandler) FileGetDownloadURL(target string, expire time.Time) (string, error) {
 
 	// create opt
 	opts := &storage.SignedURLOptions{
@@ -79,7 +92,7 @@ func (h *bucketHandler) fileGetDownloadURL(target string, expire time.Time) (str
 
 // fileGet returns google cloud storage signed url for file download
 // The caller must close the returned reader.
-func (h *bucketHandler) fileGet(target string) ([]byte, error) {
+func (h *bucketHandler) FileGet(target string) ([]byte, error) {
 	ctx := context.Background()
 
 	log := logrus.WithFields(
