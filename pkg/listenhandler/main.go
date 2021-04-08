@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/buckethandler"
+	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/storagehandler"
 )
 
 // pagination parameters
@@ -25,8 +25,8 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock    rabbitmqhandler.Rabbit
-	bucketHandler buckethandler.BucketHandler
+	rabbitSock     rabbitmqhandler.Rabbit
+	storageHandler storagehandler.StorageHandler
 }
 
 var (
@@ -71,11 +71,11 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
-	bucketHandler buckethandler.BucketHandler,
+	storageHandler storagehandler.StorageHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock:    rabbitSock,
-		bucketHandler: bucketHandler,
+		rabbitSock:     rabbitSock,
+		storageHandler: storageHandler,
 	}
 
 	return h

@@ -17,6 +17,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/buckethandler"
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/storagehandler"
 )
 
 // channels
@@ -27,6 +29,7 @@ var chDone = make(chan bool, 1)
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.storage-manager.request", "rabbitmq queue name for request listen")
 var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.storage-manager.event", "rabbitmq queue name for event notify")
+var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for call request")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -119,6 +122,13 @@ func runListen() error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
+	// create request handler
+	requestHandler := requesthandler.NewRequestHandler(
+		rabbitSock,
+		*rabbitExchangeDelay,
+		*rabbitQueueCallRequest,
+	)
+
 	// create bucket handler
 	bucketHandler := buckethandler.NewBucketHandler(*gcpCredential, *gcpProjectID, *gcpBucketName)
 	if bucketHandler == nil {
@@ -126,8 +136,11 @@ func runListen() error {
 		return fmt.Errorf("could not create bucket handler")
 	}
 
+	// create storage handler
+	storageHandler := storagehandler.NewStorageHandler(requestHandler, bucketHandler)
+
 	// create listen handler
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, bucketHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, storageHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

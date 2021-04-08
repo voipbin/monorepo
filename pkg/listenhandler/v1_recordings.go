@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/listenhandler/models/response"
 )
 
 // v1RecordingsIDGet handles /v1/recordings/<id> POST request
@@ -21,24 +20,20 @@ func (h *listenHandler) v1RecordingsIDGet(req *rabbitmqhandler.Request) (*rabbit
 		return simpleResponse(400), fmt.Errorf("wrong uri")
 	}
 
-	tmpRecordingID := uriItems[3]
-	recordingID, err := url.QueryUnescape(tmpRecordingID)
+	tmpRecordingID, err := url.QueryUnescape(uriItems[3])
 	if err != nil {
 		return nil, fmt.Errorf("could not unescape the recording id. err: %v", err)
 	}
+	recordingID := uuid.FromStringOrNil(tmpRecordingID)
 
 	// get recording
-	url, err := h.bucketHandler.RecordingGetDownloadURL(recordingID, time.Now().Add(24*time.Hour))
+	rec, err := h.storageHandler.GetRecording(recordingID)
 	if err != nil {
 		logrus.Errorf("Could not get download url for recording. err: %v", err)
 		return nil, err
 	}
 
-	resMsg := &response.V1ResponseRecordingsIDGet{
-		URL: url,
-	}
-
-	data, err := json.Marshal(resMsg)
+	data, err := json.Marshal(rec)
 	if err != nil {
 		logrus.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
