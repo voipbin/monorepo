@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
@@ -33,12 +34,12 @@ func (h *serviceHandler) RecordingfileGet(u *user.User, id uuid.UUID) (string, e
 	}
 
 	// get download url from storage-manager
-	log.Debugf("Getting recording file. recording: %s", recording.Filename)
-	url, err := h.reqHandler.SMRecordingGet(recording.Filename)
+	log.Debugf("Getting recording file. recording: %s", id)
+	res, err := h.reqHandler.SMRecordingGet(id)
 	if err != nil {
 		log.Errorf("Could not get download url. err: %v", err)
 		return "", err
 	}
 
-	return url, nil
+	return res.DownloadURI, nil
 }

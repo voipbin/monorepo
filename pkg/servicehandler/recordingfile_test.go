@@ -4,15 +4,15 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 )
 
 func TestRecordingfileGet(t *testing.T) {
@@ -35,7 +35,7 @@ func TestRecordingfileGet(t *testing.T) {
 		id uuid.UUID
 
 		response   *cmrecording.Recording
-		responseST string
+		responseST *smbucketrecording.BucketRecording
 		expectRes  string
 	}
 
@@ -53,11 +53,13 @@ func TestRecordingfileGet(t *testing.T) {
 			uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
 
 			&cmrecording.Recording{
-				ID:       uuid.FromStringOrNil("8a713c1a-6146-11eb-b718-3b1336e1b263"),
+				ID:       uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
 				Filename: "call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 				UserID:   1,
 			},
-			"test.com/downloadlink.wav",
+			&smbucketrecording.BucketRecording{
+				DownloadURI: "test.com/downloadlink.wav",
+			},
 			"test.com/downloadlink.wav",
 		},
 	}
@@ -65,7 +67,7 @@ func TestRecordingfileGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().CMRecordingGet(tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().SMRecordingGet(tt.response.Filename).Return(tt.responseST, nil)
+			mockReq.EXPECT().SMRecordingGet(tt.response.ID).Return(tt.responseST, nil)
 
 			res, err := h.RecordingfileGet(tt.user, tt.id)
 			if err != nil {

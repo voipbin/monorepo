@@ -22,6 +22,7 @@ import (
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 )
 
 // contents type
@@ -137,7 +138,7 @@ type RequestHandler interface {
 	RMExtensionUpdate(f *rmextension.Extension) (*rmextension.Extension, error)
 
 	// storage: recording
-	SMRecordingGet(id string) (string, error)
+	SMRecordingGet(id uuid.UUID) (*smbucketrecording.BucketRecording, error)
 }
 
 type requestHandler struct {
