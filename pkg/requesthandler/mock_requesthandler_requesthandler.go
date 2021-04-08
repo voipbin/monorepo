@@ -18,6 +18,7 @@ import (
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	bucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 )
 
 // MockRequestHandler is a mock of RequestHandler interface.
@@ -504,10 +505,10 @@ func (mr *MockRequestHandlerMockRecorder) RMExtensionUpdate(f interface{}) *gomo
 }
 
 // SMRecordingGet mocks base method.
-func (m *MockRequestHandler) SMRecordingGet(id string) (string, error) {
+func (m *MockRequestHandler) SMRecordingGet(id uuid.UUID) (*bucketrecording.BucketRecording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SMRecordingGet", id)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(*bucketrecording.BucketRecording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
