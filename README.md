@@ -17,6 +17,8 @@ Usage of ./storage-manager:
         rabbitmq service address. (default "amqp://guest:guest@localhost:5672")
   -rabbit_exchange_delay string
         rabbitmq exchange name for delayed messaging. (default "bin-manager.delay")
+  -rabbit_queue_call string
+        rabbitmq queue name for call request (default "bin-manager.call-manager.request")
   -rabbit_queue_listen string
         rabbitmq queue name for request listen (default "bin-manager.storage-manager.request")
   -rabbit_queue_notify string

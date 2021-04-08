@@ -38,6 +38,8 @@ spec:
             - 'bin-manager.storage-manager.event'
             - '-rabbit_exchange_delay'
             - 'bin-manager.delay'
+            - '-rabbit_queue_call'
+            - 'bin-manager.call-manager.request'
             - '-gcp_credential'
             - './google_service_account.json'
             - '-gcp_project_id'
