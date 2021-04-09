@@ -19,7 +19,7 @@ const (
 
 // BucketHandler intreface for GCP bucket handler
 type BucketHandler interface {
-	// RecordingGetDownloadURL(recordingID string, expire time.Time) (string, error)
+	GetBucketName() string
 
 	FileExist(target string) bool
 	FileGet(target string) ([]byte, error)
@@ -77,4 +77,9 @@ func NewBucketHandler(credentialPath string, projectID string, bucketName string
 // Init initialize the bucket
 func (h *bucketHandler) Init() {
 	return
+}
+
+// GetBucketName returns using bucket name
+func (h *bucketHandler) GetBucketName() string {
+	return h.bucketName
 }
