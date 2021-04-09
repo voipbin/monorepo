@@ -123,11 +123,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	logrus.WithFields(
 		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		}).Debug("Received request.")
+			"request": m,
+		}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {
@@ -149,6 +146,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	}
 	elapsed := time.Since(start)
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
+
+	logrus.WithFields(
+		logrus.Fields{
+			"request":  m,
+			"response": response,
+		}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }

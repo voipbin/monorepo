@@ -15,6 +15,12 @@ func (h *storageHandler) getRecordingFilepath(filename string) string {
 	return res
 }
 
+func (h *storageHandler) getBucketpath(filepath string) string {
+
+	res := "gs://" + h.bucketHandler.GetBucketName() + "/" + filepath
+	return res
+}
+
 // GetRecording returns bucketrecording info of the given recording id.
 func (h *storageHandler) GetRecording(id uuid.UUID) (*bucketrecording.BucketRecording, error) {
 	log := logrus.WithFields(
@@ -33,13 +39,6 @@ func (h *storageHandler) GetRecording(id uuid.UUID) (*bucketrecording.BucketReco
 	// get filepath
 	filepath := h.getRecordingFilepath(rec.Filename)
 
-	// get attrs
-	attrs, err := h.bucketHandler.FileGetAttrs(filepath)
-	if err != nil {
-		log.Errorf("Could not get file attributes info from the bucket. err: %v", err)
-		return nil, err
-	}
-
 	// get download uri
 	expire := time.Now().UTC().Add(24 * time.Hour)
 	downloadURI, err := h.bucketHandler.FileGetDownloadURL(filepath, expire)
@@ -48,12 +47,15 @@ func (h *storageHandler) GetRecording(id uuid.UUID) (*bucketrecording.BucketReco
 		return nil, err
 	}
 
+	// get bucket path
+	bucketPath := h.getBucketpath(filepath)
+
 	// create recording.Recording
 	res := &bucketrecording.BucketRecording{
 		RecordingID:    id,
-		BucketURI:      attrs.MediaLink,
+		BucketURI:      bucketPath,
 		DownloadURI:    downloadURI,
-		DownloadExpire: strings.TrimSuffix(expire.String(), " +0000 UTC"),
+		TMDownloadExpire: strings.TrimSuffix(expire.String(), " +0000 UTC"),
 	}
 
 	return res, nil
