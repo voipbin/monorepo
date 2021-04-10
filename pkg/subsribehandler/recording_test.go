@@ -19,7 +19,6 @@ func TestProcessEventCMRecordingCommon(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 	mockWebhook := webhookhandler.NewMockWebhookHandler(mc)
-	// mockWebhook := webhookhandler.NewWebhookHandler(mockDB, mockCache)
 
 	h := &subscribeHandler{
 		db:             mockDB,
@@ -57,7 +56,6 @@ func TestProcessEventCMRecordingCommon(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockWebhook.EXPECT().SendEvent(tt.webhookURI, webhookhandler.MethodTypePOST, webhookhandler.DataTypeJSON, tt.expectData).Return(tt.response, nil)
 			h.processEvent(tt.event)
 		})
 	}

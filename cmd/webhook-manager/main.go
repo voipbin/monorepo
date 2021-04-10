@@ -17,7 +17,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler"
 	subscribehandler "gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/subsribehandler"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
 )
 
 // channels
@@ -126,6 +128,12 @@ func initProm(endpoint, listen string) {
 // run runs the webhook-manager
 func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 
+	// run listen
+	if err := runListen(db, cache); err != nil {
+		return err
+	}
+
+	// run subscribe
 	if err := runSubscribe(db, cache); err != nil {
 		return err
 	}
@@ -154,6 +162,26 @@ func runSubscribe(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// run
 	if err := subHandler.Run(*rabbitQueueSubscribe, *rabbitListenSubscribes); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// runListen runs the listen handler
+func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	// dbhandler
+	db := dbhandler.NewHandler(sqlDB, cache)
+
+	// rabbitmq sock connect
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	whHandler := webhookhandler.NewWebhookHandler(db, cache)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, whHandler)
+
+	// run
+	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
 	return nil

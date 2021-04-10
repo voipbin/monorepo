@@ -66,8 +66,8 @@ var (
 	promEventProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
-			Name:      "receive_request_process_time",
-			Help:      "Process time of received request",
+			Name:      "receive_subscribe_event_process_time",
+			Help:      "Process time of received subscribe event",
 			Buckets: []float64{
 				50, 100, 500, 1000, 3000,
 			},

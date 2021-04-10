@@ -2,15 +2,14 @@ package webhookhandler
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
-// SendEvent sends the webhook event to the given uri with the given method and data.
-func (h *webhookHandler) SendEvent(uri string, method MethodType, dataType DataType, data []byte) (*http.Response, error) {
+// SendMessage sends the message to the given uri with the given method and data.
+func (h *webhookHandler) SendMessage(uri string, method string, dataType string, data []byte) (*http.Response, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -21,13 +20,13 @@ func (h *webhookHandler) SendEvent(uri string, method MethodType, dataType DataT
 	)
 
 	// create request
-	req, err := http.NewRequest(string(method), uri, bytes.NewBuffer(data))
+	req, err := http.NewRequest(method, uri, bytes.NewBuffer(data))
 	if err != nil {
 		log.Errorf("Could not create request. err: %v", err)
 		return nil, err
 	}
 
-	if data != nil && dataType != DataTypeEmpty {
+	if data != nil && dataType != "" {
 		req.Header.Set("Content-Type", string(dataType))
 	}
 
@@ -55,8 +54,4 @@ func (h *webhookHandler) SendEvent(uri string, method MethodType, dataType DataT
 		},
 	).Debugf("Sent the event correctly. response_status: %d", resp.StatusCode)
 	return resp, nil
-}
-
-func (h *webhookHandler) Test() {
-	fmt.Printf("hello world")
 }
