@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	webhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
 
 // MockWebhookHandler is a mock of WebhookHandler interface.
@@ -34,29 +35,31 @@ func (m *MockWebhookHandler) EXPECT() *MockWebhookHandlerMockRecorder {
 	return m.recorder
 }
 
-// SendEvent mocks base method.
-func (m *MockWebhookHandler) SendEvent(uri string, method MethodType, dataType DataType, data []byte) (*http.Response, error) {
+// SendMessage mocks base method.
+func (m *MockWebhookHandler) SendMessage(uri, method, dataType string, data []byte) (*http.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendEvent", uri, method, dataType, data)
+	ret := m.ctrl.Call(m, "SendMessage", uri, method, dataType, data)
 	ret0, _ := ret[0].(*http.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SendEvent indicates an expected call of SendEvent.
-func (mr *MockWebhookHandlerMockRecorder) SendEvent(uri, method, dataType, data interface{}) *gomock.Call {
+// SendMessage indicates an expected call of SendMessage.
+func (mr *MockWebhookHandlerMockRecorder) SendMessage(uri, method, dataType, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendEvent", reflect.TypeOf((*MockWebhookHandler)(nil).SendEvent), uri, method, dataType, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockWebhookHandler)(nil).SendMessage), uri, method, dataType, data)
 }
 
-// Test mocks base method.
-func (m *MockWebhookHandler) Test() {
+// SendWebhook mocks base method.
+func (m *MockWebhookHandler) SendWebhook(wh *webhook.Webhook) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Test")
+	ret := m.ctrl.Call(m, "SendWebhook", wh)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// Test indicates an expected call of Test.
-func (mr *MockWebhookHandlerMockRecorder) Test() *gomock.Call {
+// SendWebhook indicates an expected call of SendWebhook.
+func (mr *MockWebhookHandlerMockRecorder) SendWebhook(wh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Test", reflect.TypeOf((*MockWebhookHandler)(nil).Test))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendWebhook", reflect.TypeOf((*MockWebhookHandler)(nil).SendWebhook), wh)
 }
