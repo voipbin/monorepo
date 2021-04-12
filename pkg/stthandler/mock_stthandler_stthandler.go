@@ -5,6 +5,9 @@
 package stthandler
 
 import (
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -29,4 +32,32 @@ func NewMockSTTHandler(ctrl *gomock.Controller) *MockSTTHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSTTHandler) EXPECT() *MockSTTHandlerMockRecorder {
 	return m.recorder
+}
+
+// CallRecording mocks base method.
+func (m *MockSTTHandler) CallRecording(callID uuid.UUID, language, webhookURI, webhookMethod string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallRecording", callID, language, webhookURI, webhookMethod)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallRecording indicates an expected call of CallRecording.
+func (mr *MockSTTHandlerMockRecorder) CallRecording(callID, language, webhookURI, webhookMethod interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallRecording", reflect.TypeOf((*MockSTTHandler)(nil).CallRecording), callID, language, webhookURI, webhookMethod)
+}
+
+// Recording mocks base method.
+func (m *MockSTTHandler) Recording(recordingID uuid.UUID, language, webhookURI, webhookMethod string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Recording", recordingID, language, webhookURI, webhookMethod)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Recording indicates an expected call of Recording.
+func (mr *MockSTTHandlerMockRecorder) Recording(recordingID, language, webhookURI, webhookMethod interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recording", reflect.TypeOf((*MockSTTHandler)(nil).Recording), recordingID, language, webhookURI, webhookMethod)
 }

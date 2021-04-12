@@ -3,14 +3,13 @@ package listenhandler
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/stthandler"
 )
@@ -32,8 +31,6 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
-	db         dbhandler.DBHandler
-	cache      cachehandler.CacheHandler
 
 	reqHandler requesthandler.RequestHandler
 	sttHandler stthandler.STTHandler
@@ -45,16 +42,11 @@ var (
 
 	// v1
 
-	// // available numbers
-	// regV1AvailableNumbers = regexp.MustCompile("/v1/available_numbers")
+	// recordings
+	regV1Recordings = regexp.MustCompile("/v1/recordings")
 
-	// // numbers
-	// regV1Numbers       = regexp.MustCompile("/v1/numbers")
-	// regV1NumbersID     = regexp.MustCompile("/v1/numbers/" + regUUID)
-	// regV1NumbersNumber = regexp.MustCompile("/v1/numbers/+" + regAny)
-
-	// // numberflows
-	// regV1NumberFlowsID = regexp.MustCompile("/v1/number_flows/" + regUUID)
+	// call-recordings
+	regV1CallRecordings = regexp.MustCompile("/v1/call_recordings")
 )
 
 var (
@@ -89,15 +81,11 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
-	db dbhandler.DBHandler,
-	cache cachehandler.CacheHandler,
 	reqHandler requesthandler.RequestHandler,
 	sttHandler stthandler.STTHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock: rabbitSock,
-		db:         db,
-		cache:      cache,
 		reqHandler: reqHandler,
 		sttHandler: sttHandler,
 	}
@@ -172,56 +160,21 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// v1
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// ////////////////////
-	// // available_numbers
-	// ////////////////////
-	// // GET /available_numbers
-	// case regV1AvailableNumbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	response, err = h.processV1AvailableNumbersGet(m)
-	// 	requestType = "/v1/available_numbers"
+	////////////////////
+	// recordings
+	////////////////////
+	// POST /recordings
+	case regV1Recordings.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1RecordingsPost(m)
+		requestType = "/v1/recordings"
 
-	// ////////////////////
-	// // numbers
-	// ////////////////////
-
-	// // DELETE /numbers/<id>
-	// case regV1NumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
-	// 	response, err = h.processV1NumbersIDDelete(m)
-	// 	requestType = "/v1/numbers"
-
-	// // GET /numbers/<id>
-	// case regV1NumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	response, err = h.processV1NumbersIDGet(m)
-	// 	requestType = "/v1/numbers"
-
-	// // PUT /numbers/<id>
-	// case regV1NumbersNumber.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPut:
-	// 	response, err = h.processV1NumbersIDPut(m)
-	// 	requestType = "/v1/numbers"
-
-	// // GET /numbers/<number>
-	// case regV1NumbersNumber.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	response, err = h.processV1NumbersNumberGet(m)
-	// 	requestType = "/v1/numbers"
-
-	// // POST /numbers
-	// case regV1Numbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	response, err = h.processV1NumbersPost(m)
-	// 	requestType = "/v1/numbers"
-
-	// // GET /numbers
-	// case regV1Numbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	response, err = h.processV1NumbersGet(m)
-	// 	requestType = "/v1/numbers"
-
-	// ////////////////////
-	// // number_flows
-	// ////////////////////
-
-	// // DELETE /number_flows/<flow_id>
-	// case regV1NumberFlowsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
-	// 	response, err = h.processV1NumberFlowsDelete(m)
-	// 	requestType = "/v1/numbers_flows"
+	////////////////////
+	// call-recordings
+	////////////////////
+	// POST /call-recordings
+	case regV1CallRecordings.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallRecordingsPost(m)
+		requestType = "/v1/call_recordings"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

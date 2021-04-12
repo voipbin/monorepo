@@ -3,10 +3,18 @@ package stthandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package stthandler -destination ./mock_stthandler_stthandler.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
+	"io/ioutil"
 	"strings"
 	"time"
 
+	speech "cloud.google.com/go/speech/apiv1"
+	"cloud.google.com/go/storage"
+	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 
 	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/dbhandler"
@@ -15,19 +23,9 @@ import (
 
 // STTHandler is interface for service handle
 type STTHandler interface {
-	// GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
+	CallRecording(callID uuid.UUID, language, webhookURI, webhookMethod string) error
 
-	// CreateNumbers(userID uint64, numbs []string) ([]*number.Number, error)
-	// CreateNumber(userID uint64, numb string) (*number.Number, error)
-	// GetNumber(ctx context.Context, id uuid.UUID) (*number.Number, error)
-	// GetNumberByNumber(ctx context.Context, num string) (*number.Number, error)
-	// GetNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*number.Number, error)
-
-	// ReleaseNumber(ctx context.Context, id uuid.UUID) (*number.Number, error)
-
-	// RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUID) error
-
-	// UpdateNumber(ctx context.Context, numb *number.Number) (*number.Number, error)
+	Recording(recordingID uuid.UUID, language, webhookURI, webhookMethod string) error
 }
 
 // sttHandler structure for service handle
@@ -35,6 +33,14 @@ type sttHandler struct {
 	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
 	cache      cachehandler.CacheHandler
+
+	// gcp info
+	clientStorgae *storage.Client
+	clientSpeech  *speech.Client
+
+	projectID  string
+	bucketName string
+	accessID   string
 }
 
 var (
@@ -57,12 +63,55 @@ func init() {
 }
 
 // NewSTTHandler returns new service handler
-func NewSTTHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) STTHandler {
+func NewSTTHandler(
+	r requesthandler.RequestHandler,
+	db dbhandler.DBHandler,
+	cache cachehandler.CacheHandler,
+	credentialPath string,
+	projectID string,
+	bucketName string,
+) STTHandler {
+
+	ctx := context.Background()
+
+	jsonKey, err := ioutil.ReadFile(credentialPath)
+	if err != nil {
+		logrus.Errorf("Could not read the credential file. err: %v", err)
+		return nil
+	}
+
+	// parse service account
+	conf, err := google.JWTConfigFromJSON(jsonKey)
+	if err != nil {
+		logrus.Errorf("Could not parse the credential file. err: %v", err)
+		return nil
+	}
+
+	// create client storage
+	clientStorage, err := storage.NewClient(ctx, option.WithCredentialsFile(credentialPath))
+	if err != nil {
+		logrus.Errorf("Could not create a new client for storage. err: %v", err)
+		return nil
+	}
+
+	// create client speech
+	clientSpeech, err := speech.NewClient(ctx, option.WithCredentialsFile(credentialPath))
+	if err != nil {
+		logrus.Errorf("Could not create a new client for speech. err: %v", err)
+		return nil
+	}
 
 	h := &sttHandler{
 		reqHandler: r,
 		db:         db,
 		cache:      cache,
+
+		clientStorgae: clientStorage,
+		clientSpeech:  clientSpeech,
+
+		projectID:  projectID,
+		bucketName: bucketName,
+		accessID:   conf.Email,
 	}
 
 	return h

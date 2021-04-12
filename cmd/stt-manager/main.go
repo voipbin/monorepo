@@ -32,6 +32,10 @@ var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672",
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.stt-manager.request", "rabbitmq queue name for request listen")
 var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.stt-manager.event", "rabbitmq queue name for event notify")
 
+var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for call-manager request")
+var rabbitQueueStorageRequest = flag.String("rabbit_queue_storage", "bin-manager.storage-manager.request", "rabbitmq queue name for storage-manager request")
+var rabbitQueueWebhookRequest = flag.String("rabbit_queue_webhook", "bin-manager.webhook-manager.request", "rabbitmq queue name for webhook-manager request")
+
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -45,6 +49,11 @@ var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test",
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
+
+// gcp info
+var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
+var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
+var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name to use")
 
 func main() {
 	fmt.Printf("Starting stt-manager.\n")
@@ -143,10 +152,13 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(
 		rabbitSock,
 		*rabbitExchangeDelay,
+		*rabbitQueueCallRequest,
+		*rabbitQueueStorageRequest,
+		*rabbitQueueWebhookRequest,
 	)
 
-	sttHandler := stthandler.NewSTTHandler(reqHandler, db, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, sttHandler)
+	sttHandler := stthandler.NewSTTHandler(reqHandler, db, cache, *gcpCredential, *gcpProjectID, *gcpBucketName)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, sttHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
