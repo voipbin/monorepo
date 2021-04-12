@@ -283,7 +283,7 @@ func (r *requestHandler) AstChannelPlay(asteriskID string, channelID string, act
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsPlay, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsPlay, 10, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
