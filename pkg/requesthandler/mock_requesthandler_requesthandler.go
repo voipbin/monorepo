@@ -5,7 +5,13 @@
 package requesthandler
 
 import (
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	bucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 )
 
 // MockRequestHandler is a mock of RequestHandler interface.
@@ -29,4 +35,63 @@ func NewMockRequestHandler(ctrl *gomock.Controller) *MockRequestHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
+}
+
+// CMCallGet mocks base method.
+func (m *MockRequestHandler) CMCallGet(callID uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMCallGet", callID)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMCallGet indicates an expected call of CMCallGet.
+func (mr *MockRequestHandlerMockRecorder) CMCallGet(callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallGet", reflect.TypeOf((*MockRequestHandler)(nil).CMCallGet), callID)
+}
+
+// CMRecordingGet mocks base method.
+func (m *MockRequestHandler) CMRecordingGet(id uuid.UUID) (*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMRecordingGet", id)
+	ret0, _ := ret[0].(*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMRecordingGet indicates an expected call of CMRecordingGet.
+func (mr *MockRequestHandlerMockRecorder) CMRecordingGet(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMRecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).CMRecordingGet), id)
+}
+
+// SMRecordingGet mocks base method.
+func (m *MockRequestHandler) SMRecordingGet(id uuid.UUID) (*bucketrecording.BucketRecording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SMRecordingGet", id)
+	ret0, _ := ret[0].(*bucketrecording.BucketRecording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SMRecordingGet indicates an expected call of SMRecordingGet.
+func (mr *MockRequestHandlerMockRecorder) SMRecordingGet(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMRecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).SMRecordingGet), id)
+}
+
+// WMWebhookPost mocks base method.
+func (m *MockRequestHandler) WMWebhookPost(reqMethod, reqURI, reqDataType string, reqData []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WMWebhookPost", reqMethod, reqURI, reqDataType, reqData)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WMWebhookPost indicates an expected call of WMWebhookPost.
+func (mr *MockRequestHandlerMockRecorder) WMWebhookPost(reqMethod, reqURI, reqDataType, reqData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMWebhookPost", reflect.TypeOf((*MockRequestHandler)(nil).WMWebhookPost), reqMethod, reqURI, reqDataType, reqData)
 }
