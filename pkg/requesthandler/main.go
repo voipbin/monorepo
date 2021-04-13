@@ -66,9 +66,12 @@ type resource string
 
 // list of resources
 const (
-	resourceCallCall         resource = "call/calls"
-	resourceCallRecordings   resource = "call/recordings"
+	resourceCallCall       resource = "call/calls"
+	resourceCallRecordings resource = "call/recordings"
+
 	resourceStorageRecording resource = "storage/recordings"
+
+	resourceWebhookWebhooks resource = "webhook/webhooks"
 )
 
 func init() {

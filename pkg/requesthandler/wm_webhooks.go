@@ -48,7 +48,9 @@ func (r *requestHandler) WMWebhookPost(reqMethod, reqURI, reqDataType string, re
 		return err
 	}
 
-	res, err := r.sendRequestStorage(uri, rabbitmqhandler.RequestMethodPost, resourceStorageRecording, 60, 0, ContentTypeJSON, requestData)
+	// sending a webhook would take a longer time.
+	// so, we are putting enough timeout here.
+	res, err := r.sendRequestWebhook(uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, 60, 0, ContentTypeJSON, requestData)
 	switch {
 	case err != nil:
 		return err
