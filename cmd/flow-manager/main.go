@@ -39,6 +39,7 @@ var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.dela
 var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for the request heading to the flow request")
 var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for the request heading to the call-manager")
 var rabbitQueueNumberRequest = flag.String("rabbit_queue_number", "bin-manager.number-manager.request", "rabbitmq queue name for the request heading to the number-manager")
+var rabbitQueueTranscribeRequest = flag.String("rabbit_queue_transcribe", "bin-manager.transcribe-manager.request", "rabbitmq queue name for the request heading to the transcribe-manager")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -154,7 +155,7 @@ func runListen(dbHandler dbhandler.DBHandler) error {
 	// create flowhandler
 	sockRequest := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	sockRequest.Connect()
-	requestHandler := requesthandler.NewRequestHandler(sockRequest, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest, *rabbitQueueNumberRequest)
+	requestHandler := requesthandler.NewRequestHandler(sockRequest, *rabbitExchangeDelay, *rabbitQueueCallRequest, *rabbitQueueFlowRequest, *rabbitQueueNumberRequest, *rabbitQueueTranscribeRequest)
 	flowHandler := flowhandler.NewFlowHandler(dbHandler, requestHandler)
 
 	// create and run the listen handler

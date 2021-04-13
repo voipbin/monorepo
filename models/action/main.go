@@ -42,20 +42,39 @@ type Type string
 
 // List of Action types
 const (
-	TypeAnswer         Type = "answer"
-	TypeConferenceJoin Type = "conference_join"
-	TypeConnect        Type = "connect"
-	TypeDTMFReceive    Type = "dtmf_receive" // receive the dtmfs.
-	TypeDTMFSend       Type = "dtmf_send"    // send the dtmfs.
-	TypeEcho           Type = "echo"
-	TypeHangup         Type = "hangup"
-	TypePatch          Type = "patch"
-	TypePlay           Type = "play"
-	TypeRecordingStart Type = "recording_start" // startr the record of the given call.
-	TypeRecordingStop  Type = "recording_stop"  // stop the record of the given call.
-	TypeStreamEcho     Type = "stream_echo"
-	TypeTalk           Type = "talk" // generate audio from the given text(ssml or plain text) and play it.
+	TypeAnswer              Type = "answer"
+	TypeConferenceJoin      Type = "conference_join"
+	TypeConnect             Type = "connect"
+	TypeDTMFReceive         Type = "dtmf_receive" // receive the dtmfs.
+	TypeDTMFSend            Type = "dtmf_send"    // send the dtmfs.
+	TypeEcho                Type = "echo"
+	TypeHangup              Type = "hangup"
+	TypePatch               Type = "patch"
+	TypePlay                Type = "play"
+	TypeRecordingStart      Type = "recording_start" // startr the record of the given call.
+	TypeRecordingStop       Type = "recording_stop"  // stop the record of the given call.
+	TypeStreamEcho          Type = "stream_echo"
+	TypeTalk                Type = "talk"                 // generate audio from the given text(ssml or plain text) and play it.
+	TypeTranscribeRecording Type = "transcribe_recording" // transcribe the recording and send it to webhook.
 )
+
+// TypeList list of type array
+var TypeList []Type = []Type{
+	TypeAnswer,
+	TypeConferenceJoin,
+	TypeConnect,
+	TypeDTMFReceive,
+	TypeDTMFSend,
+	TypeEcho,
+	TypeHangup,
+	TypePatch,
+	TypePlay,
+	TypeRecordingStart,
+	TypeRecordingStop,
+	TypeStreamEcho,
+	TypeTalk,
+	TypeTranscribeRecording,
+}
 
 // OptionAnswer defines action answer's option.
 type OptionAnswer struct {
@@ -133,4 +152,11 @@ type OptionTalk struct {
 	Text     string `json:"text"`     // the text to read(SSML format or plain text)
 	Gender   string `json:"gender"`   // gender(male/female/neutral)
 	Language string `json:"language"` // IETF locale-name(ko-KR, en-US)
+}
+
+// OptionTranscribeRecording defines action RecordingToText's option.
+type OptionTranscribeRecording struct {
+	Language      string `json:"language"`       // BCP47 format. en-US
+	WebhookURI    string `json:"webhook_uri"`    // webhook uri
+	WebhookMethod string `json:"webhook_method"` // webhook method
 }

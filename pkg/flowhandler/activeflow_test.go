@@ -630,3 +630,50 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 		})
 	}
 }
+
+func TestActiveFlowNextActionGetTypeTranscribeRecording(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &flowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	type test struct {
+		name          string
+		callID        uuid.UUID
+		language      string
+		webhookURI    string
+		WebhookMethod string
+		act           *action.Action
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
+			"en-US",
+			"http://test.com/webhook",
+			"POST",
+			&action.Action{
+				ID:     uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
+				Type:   action.TypeTranscribeRecording,
+				Option: []byte(`{"language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockReq.EXPECT().TMCallRecordingPost(tt.callID, tt.language, tt.webhookURI, tt.WebhookMethod, 120, 30).Return(nil)
+			if err := h.activeFlowHandleActionTranscribeRecording(ctx, tt.callID, tt.act); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

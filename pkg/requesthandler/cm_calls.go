@@ -105,7 +105,7 @@ func (r *requestHandler) CMCallHangup(callID uuid.UUID) (*call.Call, error) {
 func (r *requestHandler) CMCallAddChainedCall(callID uuid.UUID, chainedCallID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/calls/%s/chained-call-ids", callID)
 
-	data := &cmrequest.V1DataCallsIDChainedCallIDs{
+	data := &cmrequest.V1DataCallsIDChainedCallIDsPost{
 		ChainedCallID: chainedCallID,
 	}
 

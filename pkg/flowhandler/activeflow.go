@@ -90,6 +90,15 @@ func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.U
 
 		// do activeflow next action get again.
 		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+
+	case action.TypeTranscribeRecording:
+		if err := h.activeFlowHandleActionTranscribeRecording(ctx, callID, nextAction); err != nil {
+			log.Errorf("Could not handle the recording_to_text action correctly. err: %v", err)
+			// we can move on to the next action even it's failed
+		}
+
+		// do activeflow next action get again.
+		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
 	}
 
 	return nextAction, nil
@@ -371,6 +380,29 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	// update active flow
 	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// activeFlowHandleActionTranscribeRecording handles transcribe_recording
+func (h *flowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+
+	log := logrus.WithFields(logrus.Fields{
+		"call":   callID,
+		"action": act.ID,
+	})
+
+	var optRecordingToText action.OptionTranscribeRecording
+	if err := json.Unmarshal(act.Option, &optRecordingToText); err != nil {
+		log.Errorf("Could not unmarshal the recording_to_text option. err: %v", err)
+		return err
+	}
+
+	// transcribe-recording
+	if err := h.reqHandler.TMCallRecordingPost(callID, optRecordingToText.Language, optRecordingToText.WebhookURI, optRecordingToText.WebhookMethod, 120, 30); err != nil {
+		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
 	}
 
