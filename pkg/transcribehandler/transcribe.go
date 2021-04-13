@@ -1,4 +1,4 @@
-package stthandler
+package transcribehandler
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
 )
 
-// sttFromBucket does stt from the bucket file
-func (h *sttHandler) sttFromBucket(mediaLink string, language string) (string, error) {
+// transcribeFromBucket does transcribe from the bucket file
+func (h *transcribeHandler) transcribeFromBucket(mediaLink string, language string) (string, error) {
 
 	ctx := context.Background()
 

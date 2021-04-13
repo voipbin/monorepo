@@ -16,11 +16,11 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/stthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 )
 
 // channels
@@ -29,8 +29,8 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.stt-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.stt-manager.event", "rabbitmq queue name for event notify")
+var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.transcribe-manager.request", "rabbitmq queue name for request listen")
+var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.transcribe-manager.event", "rabbitmq queue name for event notify")
 
 var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for call-manager request")
 var rabbitQueueStorageRequest = flag.String("rabbit_queue_storage", "bin-manager.storage-manager.request", "rabbitmq queue name for storage-manager request")
@@ -43,7 +43,7 @@ var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for promet
 var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
 
 // args for database
-var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for stt-manager.")
+var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for transcribe-manager.")
 
 // args for redis
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
@@ -56,7 +56,7 @@ var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id"
 var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name to use")
 
 func main() {
-	fmt.Printf("Starting stt-manager.\n")
+	fmt.Printf("Starting transcribe-manager.\n")
 
 	// connect to database
 	sqlDB, err := sql.Open("mysql", *dbDSN)
@@ -157,8 +157,8 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueWebhookRequest,
 	)
 
-	sttHandler := stthandler.NewSTTHandler(reqHandler, db, cache, *gcpCredential, *gcpProjectID, *gcpBucketName)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, sttHandler)
+	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, cache, *gcpCredential, *gcpProjectID, *gcpBucketName)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, transcribeHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

@@ -1,26 +1,26 @@
-package stthandler
+package transcribehandler
 
 import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/text/language"
 
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/models/stt"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // Recording transcribe the recoring and send the webhook
-func (h *sttHandler) Recording(recordingID uuid.UUID, language, webhookURI, webhookMethod string) error {
+func (h *transcribeHandler) Recording(recordingID uuid.UUID, language, webhookURI, webhookMethod string) error {
 
-	// do stt recording
+	// do transcribe recording
 	tmp, err := h.transcribeRecording(recordingID, language)
 	if err != nil {
 		logrus.Errorf("Coudl not convert to text. err: %v", err)
 		return err
 	}
 
-	s := &stt.STT{
+	s := &transcribe.Transcribe{
 		ID:            uuid.Must(uuid.NewV4()),
-		Type:          stt.TypeRecording,
+		Type:          transcribe.TypeRecording,
 		ReferenceID:   recordingID,
 		Language:      language,
 		WebhookURI:    webhookURI,
@@ -39,7 +39,7 @@ func (h *sttHandler) Recording(recordingID uuid.UUID, language, webhookURI, webh
 }
 
 // transcribeRecording transcribe the recording
-func (h *sttHandler) transcribeRecording(recordingID uuid.UUID, language string) (string, error) {
+func (h *transcribeHandler) transcribeRecording(recordingID uuid.UUID, language string) (string, error) {
 
 	// validate language
 	lang := h.getBCP47LanguageCode(language)
@@ -50,7 +50,7 @@ func (h *sttHandler) transcribeRecording(recordingID uuid.UUID, language string)
 		return "", err
 	}
 
-	res, err := h.sttFromBucket(rec.BucketURI, lang)
+	res, err := h.transcribeFromBucket(rec.BucketURI, lang)
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +59,7 @@ func (h *sttHandler) transcribeRecording(recordingID uuid.UUID, language string)
 }
 
 // getBCP47LanguageCode returns BCP47 type of language code
-func (h *sttHandler) getBCP47LanguageCode(lang string) string {
+func (h *transcribeHandler) getBCP47LanguageCode(lang string) string {
 	tag := language.BCP47.Make(lang)
 
 	if tag.String() == "und" {

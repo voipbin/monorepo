@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: stt-manager
+  name: transcribe-manager
   labels:
-    app: stt-manager
+    app: transcribe-manager
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: stt-manager
+      app: transcribe-manager
   template:
     metadata:
       labels:
-        app: stt-manager
+        app: transcribe-manager
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/metrics"
@@ -21,10 +21,10 @@ spec:
       imagePullSecrets:
         - name: gitlab-auth
       containers:
-        - name: stt-manager
-          image: stt-manager-image
+        - name: transcribe-manager
+          image: transcribe-manager-image
           command:
-            - '/app/stt-manager'
+            - '/app/transcribe-manager'
           args:
             - '-prom_endpoint'
             - '/metrics'
@@ -35,9 +35,9 @@ spec:
             - '-rabbit_addr'
             - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
             - '-rabbit_queue_listen'
-            - 'bin-manager.stt-manager.request'
+            - 'bin-manager.transcribe-manager.request'
             - '-rabbit_queue_notify'
-            - 'bin-manager.stt-manager.event'
+            - 'bin-manager.transcribe-manager.event'
             - '-rabbit_exchange_delay'
             - 'bin-manager.delay'
             - '-rabbit_queue_storage'

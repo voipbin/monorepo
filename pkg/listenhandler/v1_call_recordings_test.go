@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/stthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 )
 
 func TestProcessV1CallRecordingsPost(t *testing.T) {
@@ -18,23 +18,23 @@ func TestProcessV1CallRecordingsPost(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockSTT := stthandler.NewMockSTTHandler(mc)
+	mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock: mockSock,
-		reqHandler: mockReq,
-		sttHandler: mockSTT,
+		rabbitSock:        mockSock,
+		reqHandler:        mockReq,
+		transcribeHandler: mockTranscribe,
 	}
 
 	type test struct {
-		name          string
-		sttType       string
-		referenceID   uuid.UUID
-		language      string
-		webhookURI    string
-		webhookMethod string
-		request       *rabbitmqhandler.Request
-		expectRes     *rabbitmqhandler.Response
+		name           string
+		transcribeType string
+		referenceID    uuid.UUID
+		language       string
+		webhookURI     string
+		webhookMethod  string
+		request        *rabbitmqhandler.Request
+		expectRes      *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -61,7 +61,7 @@ func TestProcessV1CallRecordingsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockSTT.EXPECT().CallRecording(tt.referenceID, tt.language, tt.webhookURI, tt.webhookMethod).Return(nil)
+			mockTranscribe.EXPECT().CallRecording(tt.referenceID, tt.language, tt.webhookURI, tt.webhookMethod).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

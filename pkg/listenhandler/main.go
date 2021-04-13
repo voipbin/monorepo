@@ -10,8 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/stthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 )
 
 // pagination parameters
@@ -21,7 +21,7 @@ const (
 )
 
 const (
-	constCosumerName = "stt-manager"
+	constCosumerName = "transcribe-manager"
 )
 
 // ListenHandler interface
@@ -32,8 +32,8 @@ type ListenHandler interface {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	reqHandler requesthandler.RequestHandler
-	sttHandler stthandler.STTHandler
+	reqHandler        requesthandler.RequestHandler
+	transcribeHandler transcribehandler.TranscribeHandler
 }
 
 var (
@@ -82,12 +82,12 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	reqHandler requesthandler.RequestHandler,
-	sttHandler stthandler.STTHandler,
+	transcribeHandler transcribehandler.TranscribeHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock: rabbitSock,
-		reqHandler: reqHandler,
-		sttHandler: sttHandler,
+		rabbitSock:        rabbitSock,
+		reqHandler:        reqHandler,
+		transcribeHandler: transcribeHandler,
 	}
 
 	return h

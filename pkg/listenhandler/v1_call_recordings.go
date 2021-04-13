@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/listenhandler/models/request"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
 )
 
 // processV1CallRecordingsPost handles POST /v1/call-recordings request
@@ -25,9 +25,9 @@ func (h *listenHandler) processV1CallRecordingsPost(m *rabbitmqhandler.Request) 
 		return simpleResponse(400), nil
 	}
 
-	// do stt
-	if err := h.sttHandler.CallRecording(reqData.ReferenceID, reqData.Language, reqData.WebhookURI, reqData.WebhookMethod); err != nil {
-		logrus.Debugf("Could not create stt. err: %v", err)
+	// do transcribe
+	if err := h.transcribeHandler.CallRecording(reqData.ReferenceID, reqData.Language, reqData.WebhookURI, reqData.WebhookMethod); err != nil {
+		logrus.Debugf("Could not create transcribe. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

@@ -1,6 +1,6 @@
-package stthandler
+package transcribehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package stthandler -destination ./mock_stthandler_stthandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package transcribehandler -destination ./mock_transcribehandler_transcribehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -16,20 +16,20 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
 )
 
-// STTHandler is interface for service handle
-type STTHandler interface {
+// TranscribeHandler is interface for service handle
+type TranscribeHandler interface {
 	CallRecording(callID uuid.UUID, language, webhookURI, webhookMethod string) error
 
 	Recording(recordingID uuid.UUID, language, webhookURI, webhookMethod string) error
 }
 
-// sttHandler structure for service handle
-type sttHandler struct {
+// transcribeHandler structure for service handle
+type transcribeHandler struct {
 	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
 	cache      cachehandler.CacheHandler
@@ -44,7 +44,7 @@ type sttHandler struct {
 }
 
 var (
-	metricsNamespace = "stt_manager"
+	metricsNamespace = "transcribe_manager"
 
 	promNumberCreateTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -62,15 +62,15 @@ func init() {
 	)
 }
 
-// NewSTTHandler returns new service handler
-func NewSTTHandler(
+// NewTranscribeHandler returns new service handler
+func NewTranscribeHandler(
 	r requesthandler.RequestHandler,
 	db dbhandler.DBHandler,
 	cache cachehandler.CacheHandler,
 	credentialPath string,
 	projectID string,
 	bucketName string,
-) STTHandler {
+) TranscribeHandler {
 
 	ctx := context.Background()
 
@@ -101,7 +101,7 @@ func NewSTTHandler(
 		return nil
 	}
 
-	h := &sttHandler{
+	h := &transcribeHandler{
 		reqHandler: r,
 		db:         db,
 		cache:      cache,

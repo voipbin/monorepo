@@ -1,4 +1,4 @@
-module gitlab.com/voipbin/bin-manager/stt-manager.git
+module gitlab.com/voipbin/bin-manager/transcribe-manager.git
 
 go 1.14
 
