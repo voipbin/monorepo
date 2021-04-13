@@ -47,7 +47,7 @@ const (
 const defaultAstStasisApp = "voipbin"
 
 var (
-	metricsNamespace = "stt_manager"
+	metricsNamespace = "transcribe_manager"
 
 	promRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{

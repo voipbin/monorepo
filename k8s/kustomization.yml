@@ -10,7 +10,7 @@ resources:
   - service.yml
 
 images:
-- name: stt-manager-image
-  newName: call-manager
+- name: transcribe-manager-image
+  newName: transcribe-manager
   newTag: latest
 

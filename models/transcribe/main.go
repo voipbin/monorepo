@@ -1,10 +1,10 @@
-package stt
+package transcribe
 
 import "github.com/gofrs/uuid"
 
-// STT struct
-type STT struct {
-	ID            uuid.UUID `json:"id"`             // STT id
+// Transcribe struct
+type Transcribe struct {
+	ID            uuid.UUID `json:"id"`             // Transcribe id
 	Type          Type      `json:"type"`           // type
 	ReferenceID   uuid.UUID `json:"reference_id"`   // recording's id
 	Language      string    `json:"language"`       // BCP47 type's language code. en-US

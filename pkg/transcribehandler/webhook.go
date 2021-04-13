@@ -1,16 +1,16 @@
-package stthandler
+package transcribehandler
 
 import (
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/models/stt"
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
 )
 
-// sendWebhook send the stt webhook.
-func (h *sttHandler) sendWebhook(s *stt.STT) error {
+// sendWebhook send the transcript result via webhook.
+func (h *transcribeHandler) sendWebhook(s *transcribe.Transcribe) error {
 
 	d, err := json.Marshal(s)
 	if err != nil {

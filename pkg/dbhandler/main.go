@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/cachehandler"
 )
 
 // DBHandler interface for database handle

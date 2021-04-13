@@ -1,13 +1,13 @@
-package stthandler
+package transcribehandler
 
 import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/stt-manager.git/models/stt"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
-func (h *sttHandler) CallRecording(callID uuid.UUID, language, webhookURI, webhookMethod string) error {
+func (h *transcribeHandler) CallRecording(callID uuid.UUID, language, webhookURI, webhookMethod string) error {
 
 	// get call info
 	c, err := h.reqHandler.CMCallGet(callID)
@@ -17,16 +17,16 @@ func (h *sttHandler) CallRecording(callID uuid.UUID, language, webhookURI, webho
 
 	for _, recordingID := range c.RecordingIDs {
 
-		// do stt recording
+		// do transcribe recording
 		tmp, err := h.transcribeRecording(recordingID, language)
 		if err != nil {
 			logrus.Errorf("Coudl not convert to text. err: %v", err)
 			continue
 		}
 
-		s := &stt.STT{
+		s := &transcribe.Transcribe{
 			ID:            uuid.Must(uuid.NewV4()),
-			Type:          stt.TypeRecording,
+			Type:          transcribe.TypeRecording,
 			ReferenceID:   recordingID,
 			Language:      language,
 			WebhookURI:    webhookURI,

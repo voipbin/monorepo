@@ -1,7 +1,7 @@
 image: voipbin/gitlab-runner:latest
 
 variables:
-  LOCAL_PACKAGE_NAME: stt-manager
+  LOCAL_PACKAGE_NAME: transcribe-manager
   GOOS: linux
   GOARCH: amd64
 
@@ -74,7 +74,7 @@ release:
   script:
     - *gcp_init
     - cd k8s
-    - kustomize edit set image stt-manager-image=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - kustomize edit set image transcribe-manager-image=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - kubectl apply -k ./ -v6
   variables:
     LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
