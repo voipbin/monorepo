@@ -27,6 +27,12 @@ func (h *flowHandler) FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow,
 	f.TMUpdate = defaultTimeStamp
 	f.TMDelete = defaultTimeStamp
 
+	// validate actions
+	if err := h.ValidateActions(f.Actions); err != nil {
+		logrus.Errorf("Could not pass the action validation. err: %v", err)
+		return nil, err
+	}
+
 	// set action id
 	for i := range f.Actions {
 		f.Actions[i].ID = uuid.Must(uuid.NewV4())

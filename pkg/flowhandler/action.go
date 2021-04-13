@@ -103,3 +103,23 @@ func (h *flowHandler) CreateActionHangup() *action.Action {
 
 	return &res
 }
+
+// ValidateActions validates actions
+func (h *flowHandler) ValidateActions(actions []action.Action) error {
+
+	for _, a := range actions {
+		found := false
+		for _, at := range action.TypeList {
+			if a.Type == at {
+				found = true
+				break
+			}
+		}
+
+		if found == false {
+			return fmt.Errorf("no support action type. type: %s", a.Type)
+		}
+	}
+
+	return nil
+}

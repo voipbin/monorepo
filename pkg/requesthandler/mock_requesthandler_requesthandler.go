@@ -170,3 +170,17 @@ func (mr *MockRequestHandlerMockRecorder) NMNumberFlowDelete(flowID interface{})
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMNumberFlowDelete", reflect.TypeOf((*MockRequestHandler)(nil).NMNumberFlowDelete), flowID)
 }
+
+// TMCallRecordingPost mocks base method.
+func (m *MockRequestHandler) TMCallRecordingPost(callID uuid.UUID, language, webhookURI, webhookMethod string, timeout, delay int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TMCallRecordingPost", callID, language, webhookURI, webhookMethod, timeout, delay)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TMCallRecordingPost indicates an expected call of TMCallRecordingPost.
+func (mr *MockRequestHandlerMockRecorder) TMCallRecordingPost(callID, language, webhookURI, webhookMethod, timeout, delay interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TMCallRecordingPost", reflect.TypeOf((*MockRequestHandler)(nil).TMCallRecordingPost), callID, language, webhookURI, webhookMethod, timeout, delay)
+}
