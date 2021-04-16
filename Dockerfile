@@ -23,7 +23,8 @@ RUN apt-get install -y \
     git \
     subversion \
     procps \
-    iputils-ping
+    iputils-ping \
+    cron
 
 # Install required apt dependencies
 RUN apt-get install -y \
