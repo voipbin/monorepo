@@ -10,7 +10,8 @@ do
         sleep 1
         continue
     else
-        echo "Stopped"
+        echo "Stopped the Asterisk. Moving recording files"
+        /cron_recording_move.sh
         break
     fi
 done
