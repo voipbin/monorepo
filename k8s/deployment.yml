@@ -78,9 +78,9 @@ spec:
             preStop:
               exec:
                 command:
-                  - /prestop.sh
+                  - /k8s_prestop.sh
           command:
-            - '/start.sh'
+            - '/k8s_start.sh'
           args:
             - 'eth0'
             - 'voipbin-voip-media-bucket-europe-west4'
