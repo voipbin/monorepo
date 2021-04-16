@@ -35,8 +35,13 @@ sed -i 's/VOIPBIN_OUTBOUND_PROXY/'$VOIPBIN_OUTBOUND_PROXY_ADDR'/g' /etc/asterisk
 
 # Start gcsfuse
 /usr/bin/gcsfuse --key-file /service_accounts/voipbin-production/service_account.json --implicit-dirs -o rw -o allow_other --file-mode 777 --dir-mode 777 $VOIPBIN_GCP_BUCKET_NAME /mnt
+
+# Set cron - recording move script
 /bin/mkdir -p /var/spool/asterisk/recording
-/bin/mount --bind /mnt/recording /var/spool/asterisk/recording
+crontab -l | { cat; echo "* * * * * /cron_recording_move.sh"; } | crontab -
+
+# Start cron
+service cron start
 
 # Start http server for local file get
 cd /mnt && python3 -m http.server 8000 &

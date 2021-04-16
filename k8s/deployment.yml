@@ -78,9 +78,9 @@ spec:
             preStop:
               exec:
                 command:
-                  - /prestop.sh
+                  - /k8s_prestop.sh
           command:
-            - '/start.sh'
+            - '/k8s_start.sh'
           args:
             - 'sip:10.164.0.20:5060'
             - 'eth0'
