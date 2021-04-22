@@ -16,6 +16,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
@@ -25,7 +26,7 @@ import (
 type TranscribeHandler interface {
 	CallRecording(callID uuid.UUID, language, webhookURI, webhookMethod string) error
 
-	Recording(recordingID uuid.UUID, language, webhookURI, webhookMethod string) error
+	Recording(recordingID uuid.UUID, language string) (*transcribe.Transcribe, error)
 }
 
 // transcribeHandler structure for service handle
