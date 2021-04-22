@@ -9,6 +9,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // MockTranscribeHandler is a mock of TranscribeHandler interface.
@@ -49,15 +50,16 @@ func (mr *MockTranscribeHandlerMockRecorder) CallRecording(callID, language, web
 }
 
 // Recording mocks base method.
-func (m *MockTranscribeHandler) Recording(recordingID uuid.UUID, language, webhookURI, webhookMethod string) error {
+func (m *MockTranscribeHandler) Recording(recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Recording", recordingID, language, webhookURI, webhookMethod)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Recording", recordingID, language)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Recording indicates an expected call of Recording.
-func (mr *MockTranscribeHandlerMockRecorder) Recording(recordingID, language, webhookURI, webhookMethod interface{}) *gomock.Call {
+func (mr *MockTranscribeHandlerMockRecorder) Recording(recordingID, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recording", reflect.TypeOf((*MockTranscribeHandler)(nil).Recording), recordingID, language, webhookURI, webhookMethod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recording", reflect.TypeOf((*MockTranscribeHandler)(nil).Recording), recordingID, language)
 }

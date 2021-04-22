@@ -9,13 +9,13 @@ import (
 )
 
 // Recording transcribe the recoring and send the webhook
-func (h *transcribeHandler) Recording(recordingID uuid.UUID, language, webhookURI, webhookMethod string) error {
+func (h *transcribeHandler) Recording(recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
 
 	// do transcribe recording
 	tmp, err := h.transcribeRecording(recordingID, language)
 	if err != nil {
 		logrus.Errorf("Coudl not convert to text. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	s := &transcribe.Transcribe{
@@ -23,19 +23,10 @@ func (h *transcribeHandler) Recording(recordingID uuid.UUID, language, webhookUR
 		Type:          transcribe.TypeRecording,
 		ReferenceID:   recordingID,
 		Language:      language,
-		WebhookURI:    webhookURI,
-		WebhookMethod: webhookMethod,
-		Transcript:    tmp,
+		Transcription: tmp,
 	}
 
-	// send webhook
-	go func() {
-		if err := h.sendWebhook(s); err != nil {
-			logrus.Errorf("Could not send the webhook correctly. err: %v", err)
-		}
-	}()
-
-	return nil
+	return s, nil
 }
 
 // transcribeRecording transcribe the recording

@@ -21,19 +21,27 @@ func (h *listenHandler) processV1RecordingsPost(m *rabbitmqhandler.Request) (*ra
 	var reqData request.V1DataRecordingsPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
 		// same call-id is already exsit
-		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		logrus.Errorf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 
 	// do transcribe
-	if err := h.transcribeHandler.Recording(reqData.ReferenceID, reqData.Language, reqData.WebhookURI, reqData.WebhookMethod); err != nil {
-		logrus.Debugf("Could not create transcribe. err: %v", err)
+	s, err := h.transcribeHandler.Recording(reqData.ReferenceID, reqData.Language)
+	if err != nil {
+		logrus.Errorf("Could not create transcribe. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	d, err := json.Marshal(s)
+	if err != nil {
+		logrus.Errorf("Could not marshal the data. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       d,
 	}
 
 	return res, nil

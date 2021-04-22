@@ -10,7 +10,7 @@ type Transcribe struct {
 	Language      string    `json:"language"`       // BCP47 type's language code. en-US
 	WebhookURI    string    `json:"webhook_uri"`    // webhook destination uri
 	WebhookMethod string    `json:"webhook_method"` // webhook method
-	Transcript    string    `json:"transcript"`     // transcript
+	Transcription string    `json:"transcription"`  // transcription
 }
 
 // Type define
