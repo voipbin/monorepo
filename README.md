@@ -14,16 +14,18 @@ Usage of ./api-manager:
         rabbitmq service address. (default "amqp://guest:guest@localhost:5672")
   -rabbit_exchange_delay string
         rabbitmq exchange name for delayed messaging. (default "bin-manager.delay")
-  -rabbit_queue_call string
+  -rabbit_queue_request_call string
         rabbitmq queue name for call request (default "bin-manager.call-manager.request")
-  -rabbit_queue_flow string
+  -rabbit_queue_request_flow string
         rabbitmq queue name for flow request (default "bin-manager.flow-manager.request")
-  -rabbit_queue_number string
+  -rabbit_queue_request_number string
         rabbitmq queue name for number request (default "bin-manager.number-manager.request")
-  -rabbit_queue_registrar string
+  -rabbit_queue_request_registrar string
         rabbitmq queue name for registrar request (default "bin-manager.registrar-manager.request")
-  -rabbit_queue_storage string
+  -rabbit_queue_request_storage string
         rabbitmq queue name for storage request (default "bin-manager.storage-manager.request")
+  -rabbit_queue_request_transcode string
+        rabbitmq queue name for transcode request (default "bin-manager.transcode-manager.request")
   -redis_addr string
         redis address. (default "127.0.0.1:6379")
   -redis_db int
@@ -33,8 +35,7 @@ Usage of ./api-manager:
   -ssl_cert string
         Cert key file for ssl connection. (default "./etc/ssl/cert.pem")
   -ssl_private string
-        Private key file for ssl connection. (default "./etc/ssl/prikey.pem")
-```
+        Private key file for ssl connection. (default "./etc/ssl/prikey.pem")```
 
 # SSL
 * See detial at `./etc/ssl`.
@@ -48,11 +49,12 @@ Usage of ./api-manager:
       -jwt_key "voipbin" \
       -rabbit_addr "amqp://guest:guest@rabbitmq.voipbin.net:5672" \
       -rabbit_exchange_delay bin-manager.delay \
-      -rabbit_queue_call bin-manager.call-manager.request \
-      -rabbit_queue_flow bin-manager.flow-manager.request \
-      -rabbit_queue_registrar bin-manager.registrar-manager.request \
-      -rabbit_queue_number bin-manager.number-manager.request \
-      -rabbit_queue_storage bin-manager.storage-manager.request \
+      -rabbit_queue_request_call bin-manager.call-manager.request \
+      -rabbit_queue_request_flow bin-manager.flow-manager.request \
+      -rabbit_queue_request_registrar bin-manager.registrar-manager.request \
+      -rabbit_queue_request_number bin-manager.number-manager.request \
+      -rabbit_queue_request_storage bin-manager.storage-manager.request \
+      -rabbit_queue_request_transcode bin-manager.transcode-manager.request \
       -redis_addr 10.164.15.220:6379 \
       -redis_db 1
 ```

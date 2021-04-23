@@ -21,11 +21,11 @@ func TestRMExtensionCreate(t *testing.T) {
 	reqHandler := requestHandler{
 		sock:           mockSock,
 		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueStorage:   "bin-manager.storage-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		queueRequestCall:      "bin-manager.call-manager.request",
+		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequestStorage:   "bin-manager.storage-manager.request",
+		queueRequestRegistrar: "bin-manager.registrar-manager.request",
+		queueRequestNumber:    "bin-manager.number-manager.request",
 	}
 
 	type test struct {
@@ -102,11 +102,11 @@ func TestRMExtensionUpdate(t *testing.T) {
 	reqHandler := requestHandler{
 		sock:           mockSock,
 		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueStorage:   "bin-manager.storage-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		queueRequestCall:      "bin-manager.call-manager.request",
+		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequestStorage:   "bin-manager.storage-manager.request",
+		queueRequestRegistrar: "bin-manager.registrar-manager.request",
+		queueRequestNumber:    "bin-manager.number-manager.request",
 	}
 
 	type test struct {
@@ -175,11 +175,11 @@ func TestRMExtensionGet(t *testing.T) {
 	reqHandler := requestHandler{
 		sock:           mockSock,
 		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueStorage:   "bin-manager.storage-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		queueRequestCall:      "bin-manager.call-manager.request",
+		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequestStorage:   "bin-manager.storage-manager.request",
+		queueRequestRegistrar: "bin-manager.registrar-manager.request",
+		queueRequestNumber:    "bin-manager.number-manager.request",
 	}
 
 	type test struct {
@@ -252,11 +252,11 @@ func TestRMExtensionDelete(t *testing.T) {
 	reqHandler := requestHandler{
 		sock:           mockSock,
 		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueStorage:   "bin-manager.storage-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		queueRequestCall:      "bin-manager.call-manager.request",
+		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequestStorage:   "bin-manager.storage-manager.request",
+		queueRequestRegistrar: "bin-manager.registrar-manager.request",
+		queueRequestNumber:    "bin-manager.number-manager.request",
 	}
 
 	type test struct {
@@ -307,11 +307,11 @@ func TestRMExtensionsGets(t *testing.T) {
 	reqHandler := requestHandler{
 		sock:           mockSock,
 		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueStorage:   "bin-manager.storage-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		queueRequestCall:      "bin-manager.call-manager.request",
+		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequestStorage:   "bin-manager.storage-manager.request",
+		queueRequestRegistrar: "bin-manager.registrar-manager.request",
+		queueRequestNumber:    "bin-manager.number-manager.request",
 	}
 
 	type test struct {

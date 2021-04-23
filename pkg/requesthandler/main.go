@@ -10,7 +10,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -23,6 +23,7 @@ import (
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // contents type
@@ -64,6 +65,7 @@ var (
 
 type resource string
 
+// list of resources
 const (
 	resourceCallCall       resource = "call/calls"
 	resourceCallConference resource = "call/conferences"
@@ -139,6 +141,9 @@ type RequestHandler interface {
 
 	// storage: recording
 	SMRecordingGet(id uuid.UUID) (*smbucketrecording.BucketRecording, error)
+
+	// transcribe: recording
+	TMRecordingPost(id uuid.UUID, language string) (*tmtranscribe.Transcribe, error)
 }
 
 type requestHandler struct {
@@ -146,73 +151,42 @@ type requestHandler struct {
 
 	exchangeDelay string
 
-	queueCall      string
-	queueFlow      string
-	queueStorage   string
-	queueRegistrar string
-	queueNumber    string
+	queueRequestCall       string
+	queueRequesstFlow      string
+	queueRequestStorage    string
+	queueRequestRegistrar  string
+	queueRequestNumber     string
+	queueRequestTranscribe string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage, queueRegistrar, queueNumber string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage, queueRegistrar, queueNumber, queueTranscode string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
-		exchangeDelay:  exchangeDelay,
-		queueCall:      queueCall,
-		queueFlow:      queueFlow,
-		queueStorage:   queueStorage,
-		queueRegistrar: queueRegistrar,
-		queueNumber:    queueNumber,
+		exchangeDelay:          exchangeDelay,
+		queueRequestCall:       queueCall,
+		queueRequesstFlow:      queueFlow,
+		queueRequestStorage:    queueStorage,
+		queueRequestRegistrar:  queueRegistrar,
+		queueRequestNumber:     queueNumber,
+		queueRequestTranscribe: queueTranscode,
 	}
 
 	return h
 }
 
-// sendRequestFlow send a request to the flow-manager and return the response
-func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
-
-	return r.sendRequest(r.queueFlow, uri, method, resource, timeout, delayed, dataType, data)
-}
-
-// sendRequestCall send a request to the Asterisk-proxy and return the response
-// timeout second
-// delayed millisecond
-func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
-
-	return r.sendRequest(r.queueCall, uri, method, resource, timeout, delayed, dataType, data)
-}
-
-// sendRequestStorage send a request to the storage-manager and return the response
-// timeout second
-// delayed millisecond
-func (r *requestHandler) sendRequestStorage(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
-
-	return r.sendRequest(r.queueStorage, uri, method, resource, timeout, delayed, dataType, data)
-}
-
-// sendRequestRegistrar send a request to the registrar-manager and return the response
-func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
-
-	return r.sendRequest(r.queueRegistrar, uri, method, resource, timeout, delayed, dataType, data)
-}
-
-// sendRequestNumber send a request to the number-manager and return the response
-func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
-
-	return r.sendRequest(r.queueNumber, uri, method, resource, timeout, delayed, dataType, data)
-}
-
 // sendRequest sends a request to the given destination.
 func (r *requestHandler) sendRequest(queue string, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	log.WithFields(log.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"queue":     queue,
 		"method":    method,
 		"uri":       uri,
 		"data_type": dataType,
 		"delayed":   delayed,
-	}).Debugf("Sending a request. queue: %s, method: %s, uri: %s", queue, method, uri)
+	})
+	log.Debugf("Sending a request. queue: %s, method: %s, uri: %s", queue, method, uri)
 
 	// creat a request message
 	req := &rabbitmqhandler.Request{
@@ -240,7 +214,7 @@ func (r *requestHandler) sendRequest(queue string, uri string, method rabbitmqha
 			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 		}
 
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"method": method,
 			"uri":    uri,
 			"res":    res,
@@ -270,4 +244,44 @@ func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, 
 	promRequestProcessTime.WithLabelValues(target, string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	return err
+}
+
+// sendRequestFlow send a request to the flow-manager and return the response
+func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueRequesstFlow, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestCall send a request to the Asterisk-proxy and return the response
+// timeout second
+// delayed millisecond
+func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueRequestCall, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestStorage send a request to the storage-manager and return the response
+// timeout second
+// delayed millisecond
+func (r *requestHandler) sendRequestStorage(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueRequestStorage, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestRegistrar send a request to the registrar-manager and return the response
+func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueRequestRegistrar, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestNumber send a request to the number-manager and return the response
+func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueRequestNumber, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestTranscribe send a request to the transcribe-manager and return the response
+func (r *requestHandler) sendRequestTranscribe(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueRequestTranscribe, uri, method, resource, timeout, delayed, dataType, data)
 }
