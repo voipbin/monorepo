@@ -17,6 +17,7 @@ import (
 	flow "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	number "gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
+	transcribe "gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
@@ -531,6 +532,21 @@ func (m *MockServiceHandler) RecordingfileGet(u *user.User, id uuid.UUID) (strin
 func (mr *MockServiceHandlerMockRecorder) RecordingfileGet(u, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingfileGet", reflect.TypeOf((*MockServiceHandler)(nil).RecordingfileGet), u, id)
+}
+
+// TranscribeCreate mocks base method.
+func (m *MockServiceHandler) TranscribeCreate(u *user.User, referencdID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeCreate", u, referencdID, language)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeCreate indicates an expected call of TranscribeCreate.
+func (mr *MockServiceHandlerMockRecorder) TranscribeCreate(u, referencdID, language interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeCreate", reflect.TypeOf((*MockServiceHandler)(nil).TranscribeCreate), u, referencdID, language)
 }
 
 // UserCreate mocks base method.
