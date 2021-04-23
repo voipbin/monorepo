@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
@@ -14,10 +16,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
-	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 )
@@ -76,6 +76,9 @@ type ServiceHandler interface {
 
 	// recordingfile handlers
 	RecordingfileGet(u *user.User, id uuid.UUID) (string, error)
+
+	// transcribe handlers
+	TranscribeCreate(u *user.User, referencdID uuid.UUID, language string) (*transcribe.Transcribe, error)
 
 	// user handlers
 	UserCreate(username, password string, permission uint64) (*user.User, error)

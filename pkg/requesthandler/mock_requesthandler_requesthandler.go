@@ -19,6 +19,7 @@ import (
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	bucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // MockRequestHandler is a mock of RequestHandler interface.
@@ -517,4 +518,19 @@ func (m *MockRequestHandler) SMRecordingGet(id uuid.UUID) (*bucketrecording.Buck
 func (mr *MockRequestHandlerMockRecorder) SMRecordingGet(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMRecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).SMRecordingGet), id)
+}
+
+// TMRecordingPost mocks base method.
+func (m *MockRequestHandler) TMRecordingPost(id uuid.UUID, language string) (*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TMRecordingPost", id, language)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TMRecordingPost indicates an expected call of TMRecordingPost.
+func (mr *MockRequestHandlerMockRecorder) TMRecordingPost(id, language interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TMRecordingPost", reflect.TypeOf((*MockRequestHandler)(nil).TMRecordingPost), id, language)
 }

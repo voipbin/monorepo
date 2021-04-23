@@ -25,6 +25,7 @@ func TestNewRequestHandler(t *testing.T) {
 		queueStorage   string
 		queueRegistrar string
 		queueNumber    string
+		queueTranscode string
 	}
 
 	tests := []test{
@@ -37,13 +38,14 @@ func TestNewRequestHandler(t *testing.T) {
 			"bin-manager.storage-manager.request",
 			"bin-manager.registrar-manager.request",
 			"bin-manager.number-manager.request",
+			"bin-manager.transcode-manager.request",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			reqHandler := NewRequestHandler(tt.sock, tt.exchangeDelay, tt.queueCall, tt.queueFlow, tt.queueStorage, tt.queueRegistrar, tt.queueNumber)
+			reqHandler := NewRequestHandler(tt.sock, tt.exchangeDelay, tt.queueCall, tt.queueFlow, tt.queueStorage, tt.queueRegistrar, tt.queueNumber, tt.queueTranscode)
 			if reqHandler == nil {
 				t.Errorf("Wrong match. expect: not nil, got: nil")
 			}

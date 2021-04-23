@@ -19,7 +19,7 @@ func TestSMRecordingGet(t *testing.T) {
 	reqHandler := requestHandler{
 		sock:          mockSock,
 		exchangeDelay: "bin-manager.delay",
-		queueStorage:  "bin-manager.storage-manager.request",
+		queueRequestStorage:  "bin-manager.storage-manager.request",
 	}
 
 	type test struct {
