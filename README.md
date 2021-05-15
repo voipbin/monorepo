@@ -1,6 +1,6 @@
 # transcribe-manager
 
-Speech-to-text service
+Speech-to-text service.
 
 # Example
 ```
