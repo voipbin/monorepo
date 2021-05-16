@@ -22,10 +22,16 @@ spec:
       imagePullSecrets:
         - name: gitlab-auth
       terminationGracePeriodSeconds: 7200 # 2 hours
+      volumes:
+        - name: shared-tmp
+          emptyDir: {}
       containers:
         # asterisk-proxy
         - name: asterisk-proxy
           image: asterisk-proxy-image
+          volumeMounts:
+            - name: shared-tmp
+              mountPath: /tmp
           resources:
             limits:
               cpu: "20m"
@@ -65,6 +71,9 @@ spec:
         # asterisk
         - name: asterisk
           image: asterisk-image
+          volumeMounts:
+            - name: shared-tmp
+              mountPath: /tmp
           securityContext:
             privileged: true
             capabilities:
