@@ -2,5 +2,5 @@
 
 # Test
 ```
-$ docker build .
+$ docker build . -t asterisk:<version>
 ```
