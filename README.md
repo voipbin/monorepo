@@ -7,6 +7,7 @@ All of call request will reach to this asterisk farm.
 ```
 asterisk-proxy
 asterisk-docker
+transcribe-agent
 ```
 
 # Test

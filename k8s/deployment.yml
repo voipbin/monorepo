@@ -26,6 +26,47 @@ spec:
         - name: shared-tmp
           emptyDir: {}
       containers:
+        # transcribe-agent
+        - name: transcribe-agent
+          image: transcribe-agent-image
+          volumeMounts:
+            - name: shared-tmp
+              mountPath: /tmp
+          resources:
+            limits:
+              cpu: "10m"
+              memory: "30M"
+          command:
+            - '/app/transcribe-agent'        # transcribe-agent
+          args:
+            - '-dbDSN'
+            - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
+            - '-gcp_credential'
+            - './google_service_account.json'
+            - '-gcp_project_id'
+            - 'voipbin-production'
+            - '-interface_name'
+            - 'eth0'
+            - '-prom_endpoint'
+            - '/metrics'
+            - '-prom_listen_addr'
+            - ':2112'
+            - '-rabbit_addr'
+            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
+            - '-rabbit_exchange_delay'
+            - 'bin-manager.delay'
+            - '-rabbit_queue_notify'
+            - 'bin-manager.transcribe-agent.event'
+            - '-rabbit_queue_request_call'
+            - 'bin-manager.call-manager.request'
+            - '-rabbit_queue_request_storage'
+            - 'bin-manager.storage-manager.request'
+            - '-rabbit_queue_request_webhook'
+            - 'bin-manager.webhook-manager.request'
+            - '-redis_addr'
+            - '10.164.15.220:6379'
+            - '-redis_db'
+            - '1'
         # asterisk-proxy
         - name: asterisk-proxy
           image: asterisk-proxy-image
@@ -34,7 +75,7 @@ spec:
               mountPath: /tmp
           resources:
             limits:
-              cpu: "20m"
+              cpu: "15m"
               memory: "30M"
           command:
             - '/app/asterisk-proxy'
@@ -80,7 +121,7 @@ spec:
                 - SYS_ADMIN
           resources:
             limits:
-              cpu: "50m"
+              cpu: "40m"
               memory: "200M"
           lifecycle:
             preStop:
