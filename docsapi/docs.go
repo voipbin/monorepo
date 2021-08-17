@@ -785,6 +785,23 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/v1.0/transcribes": {
+            "post": {
+                "description": "transcribe a recording",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a transcribe",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/transcribe.Transcribe"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -825,6 +842,23 @@ var doc = `{
                 }
             }
         },
+        "call.Address": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Name.",
+                    "type": "string"
+                },
+                "target": {
+                    "description": "Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Type of address. must be one of [\"sip\", \"tel\"].",
+                    "type": "string"
+                }
+            }
+        },
         "call.Call": {
             "type": "object",
             "properties": {
@@ -842,7 +876,7 @@ var doc = `{
                 "destination": {
                     "description": "Destination info",
                     "type": "object",
-                    "$ref": "#/definitions/call.CallAddress"
+                    "$ref": "#/definitions/call.Address"
                 },
                 "direction": {
                     "description": "Call's direction.",
@@ -882,7 +916,7 @@ var doc = `{
                 "source": {
                     "description": "Source info",
                     "type": "object",
-                    "$ref": "#/definitions/call.CallAddress"
+                    "$ref": "#/definitions/call.Address"
                 },
                 "status": {
                     "description": "Call's status.",
@@ -915,22 +949,9 @@ var doc = `{
                 "user_id": {
                     "description": "Call owner's ID.",
                     "type": "integer"
-                }
-            }
-        },
-        "call.CallAddress": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "description": "Name.",
-                    "type": "string"
                 },
-                "target": {
-                    "description": "Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "Type of address. must be one of [\"sip\", \"tel\"].",
+                "webhook_uri": {
+                    "description": "Webhook destination uri",
                     "type": "string"
                 }
             }
@@ -1096,6 +1117,9 @@ var doc = `{
                 "tm_update": {
                     "description": "Updated timestamp.",
                     "type": "string"
+                },
+                "webhook_uri": {
+                    "type": "string"
                 }
             }
         },
@@ -1191,14 +1215,14 @@ var doc = `{
                 },
                 "destination": {
                     "type": "object",
-                    "$ref": "#/definitions/call.CallAddress"
-                },
-                "event_url": {
-                    "type": "string"
+                    "$ref": "#/definitions/call.Address"
                 },
                 "source": {
                     "type": "object",
-                    "$ref": "#/definitions/call.CallAddress"
+                    "$ref": "#/definitions/call.Address"
+                },
+                "webhook_uri": {
+                    "type": "string"
                 }
             }
         },
@@ -1269,6 +1293,39 @@ var doc = `{
                     "items": {
                         "$ref": "#/definitions/recording.Recording"
                     }
+                }
+            }
+        },
+        "transcribe.Transcribe": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Transcribe id",
+                    "type": "string"
+                },
+                "language": {
+                    "description": "BCP47 type's language code. en-US",
+                    "type": "string"
+                },
+                "reference_id": {
+                    "description": "recording's id",
+                    "type": "string"
+                },
+                "transcription": {
+                    "description": "transcription",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type",
+                    "type": "string"
+                },
+                "webhook_method": {
+                    "description": "webhook method",
+                    "type": "string"
+                },
+                "webhook_uri": {
+                    "description": "webhook destination uri",
+                    "type": "string"
                 }
             }
         }
