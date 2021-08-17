@@ -23,6 +23,18 @@ definitions:
       region:
         type: string
     type: object
+  call.Address:
+    properties:
+      name:
+        description: Name.
+        type: string
+      target:
+        description: Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
+        type: string
+      type:
+        description: Type of address. must be one of ["sip", "tel"].
+        type: string
+    type: object
   call.Call:
     properties:
       chained_call_ids:
@@ -34,7 +46,7 @@ definitions:
         description: Currently joined conference id.
         type: string
       destination:
-        $ref: '#/definitions/call.CallAddress'
+        $ref: '#/definitions/call.Address'
         description: Destination info
         type: object
       direction:
@@ -64,7 +76,7 @@ definitions:
           type: string
         type: array
       source:
-        $ref: '#/definitions/call.CallAddress'
+        $ref: '#/definitions/call.Address'
         description: Source info
         type: object
       status:
@@ -91,17 +103,8 @@ definitions:
       user_id:
         description: Call owner's ID.
         type: integer
-    type: object
-  call.CallAddress:
-    properties:
-      name:
-        description: Name.
-        type: string
-      target:
-        description: Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
-        type: string
-      type:
-        description: Type of address. must be one of ["sip", "tel"].
+      webhook_uri:
+        description: Webhook destination uri
         type: string
     type: object
   conference.Conference:
@@ -219,6 +222,8 @@ definitions:
       tm_update:
         description: Updated timestamp.
         type: string
+      webhook_uri:
+        type: string
     type: object
   number.Number:
     properties:
@@ -278,13 +283,13 @@ definitions:
           $ref: '#/definitions/action.Action'
         type: array
       destination:
-        $ref: '#/definitions/call.CallAddress'
+        $ref: '#/definitions/call.Address'
         type: object
-      event_url:
-        type: string
       source:
-        $ref: '#/definitions/call.CallAddress'
+        $ref: '#/definitions/call.Address'
         type: object
+      webhook_uri:
+        type: string
     required:
     - destination
     - source
@@ -333,6 +338,30 @@ definitions:
         items:
           $ref: '#/definitions/recording.Recording'
         type: array
+    type: object
+  transcribe.Transcribe:
+    properties:
+      id:
+        description: Transcribe id
+        type: string
+      language:
+        description: BCP47 type's language code. en-US
+        type: string
+      reference_id:
+        description: recording's id
+        type: string
+      transcription:
+        description: transcription
+        type: string
+      type:
+        description: type
+        type: string
+      webhook_method:
+        description: webhook method
+        type: string
+      webhook_uri:
+        description: webhook destination uri
+        type: string
     type: object
 host: api.voipbin.net
 info:
@@ -847,4 +876,15 @@ paths:
           schema:
             $ref: '#/definitions/recording.Recording'
       summary: Returns a detail recording information.
+  /v1.0/transcribes:
+    post:
+      description: transcribe a recording
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/transcribe.Transcribe'
+      summary: Create a transcribe
 swagger: "2.0"
