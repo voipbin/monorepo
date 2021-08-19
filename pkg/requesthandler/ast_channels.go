@@ -329,3 +329,46 @@ func (r *requestHandler) AstChannelRecord(asteriskID string, channelID string, f
 	}
 	return nil
 }
+
+// AstChannelExternalMedia creates a external media.
+func (r *requestHandler) AstChannelExternalMedia(asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) error {
+
+	url := fmt.Sprintf("/ari/channels/externalMedia")
+
+	type Data struct {
+		ChannelID      string            `json:"channel_id"`
+		App            string            `json:"app"`
+		ExternalHost   string            `json:"external_host"`
+		Encapsulation  string            `json:"encapsulation,omitempty"`
+		Transport      string            `json:"transport,omitempty"`
+		ConnectionType string            `json:"connection_type,omitempty"`
+		Format         string            `json:"format"`
+		Direction      string            `json:"direction,omitempty"`
+		Data           string            `json:"data,omitempty"`
+		Variables      map[string]string `json:"variables,omitempty"`
+	}
+
+	m, err := json.Marshal(Data{
+		ChannelID:      channelID,
+		App:            defaultAstStasisApp,
+		ExternalHost:   externalHost,
+		Encapsulation:  encapsulation,
+		Transport:      transport,
+		ConnectionType: connectionType,
+		Format:         format,
+		Direction:      direction,
+		Variables:      variables,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsExternalMedia, 10, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
