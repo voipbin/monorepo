@@ -210,6 +210,20 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelDial(asteriskID, channelID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelDial", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelDial), asteriskID, channelID, caller, timeout)
 }
 
+// AstChannelExternalMedia mocks base method.
+func (m *MockRequestHandler) AstChannelExternalMedia(asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data string, variables map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelExternalMedia", asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelExternalMedia indicates an expected call of AstChannelExternalMedia.
+func (mr *MockRequestHandlerMockRecorder) AstChannelExternalMedia(asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelExternalMedia", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelExternalMedia), asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
+}
+
 // AstChannelGet mocks base method.
 func (m *MockRequestHandler) AstChannelGet(asteriskID, channelID string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()

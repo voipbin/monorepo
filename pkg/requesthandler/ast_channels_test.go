@@ -850,3 +850,79 @@ func TestAstChannelRecord(t *testing.T) {
 		})
 	}
 }
+
+func TestAstChannelExternalMedia(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := requestHandler{
+		sock:           mockSock,
+		exchangeDelay:  "bin-manager.delay",
+		queueCall:      "bin-manager.call-manager.request",
+		queueFlow:      "bin-manager.flow-manager.request",
+		queueTTS:       "bin-manager.tts-manager.request",
+		queueRegistrar: "bin-manager.registrar-manager.request",
+	}
+
+	type test struct {
+		name string
+
+		asterisk       string
+		channelID      string
+		externalHost   string
+		encapsulation  string
+		transport      string
+		connectionType string
+		format         string
+		direction      string
+		data           string
+		variables      map[string]string
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			"00:11:22:33:44:55",
+			"660486e8-ffca-11eb-aef3-6b2e6caea5a5",
+			"http://test.com/external-sample",
+			"rtp",
+			"udp",
+			"client",
+			"ulaw",
+			"both",
+			"",
+			nil,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:      "/ari/channels/externalMedia",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"channel_id":"660486e8-ffca-11eb-aef3-6b2e6caea5a5","app":"voipbin","external_host":"http://test.com/external-sample","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			err := reqHandler.AstChannelExternalMedia(tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

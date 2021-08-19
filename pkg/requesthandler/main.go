@@ -75,15 +75,16 @@ const (
 
 	resourceAstAMI resource = "ast/ami"
 
-	resourceAstChannels         resource = "ast/channels"
-	resourceAstChannelsAnswer   resource = "ast/channels/answer"
-	resourceAstChannelsContinue resource = "ast/channels/continue"
-	resourceAstChannelsDial     resource = "ast/channels/dial"
-	resourceAstChannelsHangup   resource = "ast/channels/hangup"
-	resourceAstChannelsPlay     resource = "ast/channels/play"
-	resourceAstChannelsRecord   resource = "ast/channels/record"
-	resourceAstChannelsSnoop    resource = "ast/channels/snoop"
-	resourceAstChannelsVar      resource = "ast/channels/var"
+	resourceAstChannels              resource = "ast/channels"
+	resourceAstChannelsAnswer        resource = "ast/channels/answer"
+	resourceAstChannelsContinue      resource = "ast/channels/continue"
+	resourceAstChannelsDial          resource = "ast/channels/dial"
+	resourceAstChannelsExternalMedia resource = "ast/channels/externalmedia"
+	resourceAstChannelsHangup        resource = "ast/channels/hangup"
+	resourceAstChannelsPlay          resource = "ast/channels/play"
+	resourceAstChannelsRecord        resource = "ast/channels/record"
+	resourceAstChannelsSnoop         resource = "ast/channels/snoop"
+	resourceAstChannelsVar           resource = "ast/channels/var"
 
 	resourceCallCalls              resource = "call/calls"
 	resourceCallCallsActionNext    resource = "call/calls/action-next"
@@ -124,6 +125,7 @@ type RequestHandler interface {
 	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
 	AstChannelDial(asteriskID, channelID, caller string, timeout int) error
 	AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error
+	AstChannelExternalMedia(asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) error
 	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
 	AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
