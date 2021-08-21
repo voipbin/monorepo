@@ -48,6 +48,8 @@ const (
 	TypeDTMFReceive         Type = "dtmf_receive" // receive the dtmfs.
 	TypeDTMFSend            Type = "dtmf_send"    // send the dtmfs.
 	TypeEcho                Type = "echo"
+	TypeExternalMediaStart  Type = "external_media_start"
+	TypeExternalMediaStop   Type = "external_media_stop"
 	TypeHangup              Type = "hangup"
 	TypePatch               Type = "patch"
 	TypePlay                Type = "play"
@@ -55,6 +57,8 @@ const (
 	TypeRecordingStop       Type = "recording_stop"  // stop the record of the given call.
 	TypeStreamEcho          Type = "stream_echo"
 	TypeTalk                Type = "talk"                 // generate audio from the given text(ssml or plain text) and play it.
+	TypeTranscribeStart     Type = "transcribe_start"     // start transcribe the call
+	TypeTranscribeStop      Type = "transcribe_stop"      // stop transcribe the call
 	TypeTranscribeRecording Type = "transcribe_recording" // transcribe the recording and send it to webhook.
 )
 
@@ -66,6 +70,8 @@ var TypeList []Type = []Type{
 	TypeDTMFReceive,
 	TypeDTMFSend,
 	TypeEcho,
+	TypeExternalMediaStart,
+	TypeExternalMediaStop,
 	TypeHangup,
 	TypePatch,
 	TypePlay,
@@ -73,6 +79,8 @@ var TypeList []Type = []Type{
 	TypeRecordingStop,
 	TypeStreamEcho,
 	TypeTalk,
+	TypeTranscribeStart,
+	TypeTranscribeStop,
 	TypeTranscribeRecording,
 }
 
@@ -110,6 +118,22 @@ type OptionDTMFSend struct {
 // OptionEcho struct
 type OptionEcho struct {
 	Duration int `json:"duration"`
+}
+
+// OptionExternalMediaStart defines action OptionExternalMediaStart's option.
+type OptionExternalMediaStart struct {
+	ExternalHost   string `json:"external_host"`
+	Encapsulation  string `json:"encapsulation,omitempty"`
+	Transport      string `json:"transport,omitempty"`
+	ConnectionType string `json:"connection_type,omitempty"`
+	Format         string `json:"format"`
+	Direction      string `json:"direction,omitempty"`
+	Data           string `json:"data,omitempty"`
+}
+
+// OptionExternalMediaStop defines action OptionExternalMediaStop's option
+type OptionExternalMediaStop struct {
+	// no option
 }
 
 // OptionHangup defines action hangup's option.
@@ -154,7 +178,19 @@ type OptionTalk struct {
 	Language string `json:"language"` // IETF locale-name(ko-KR, en-US)
 }
 
-// OptionTranscribeRecording defines action RecordingToText's option.
+// OptionTranscribeStart defines action TypeTranscribeStart's option.
+type OptionTranscribeStart struct {
+	Language      string `json:"language"`       // BCP47 format. en-US
+	WebhookURI    string `json:"webhook_uri"`    // webhook uri
+	WebhookMethod string `json:"webhook_method"` // webhook method
+}
+
+// OptionTranscribeStop defines action TypeTranscribeStop's option.
+type OptionTranscribeStop struct {
+	// no option
+}
+
+// OptionTranscribeRecording defines action OptionTranscribeRecording's option.
 type OptionTranscribeRecording struct {
 	Language      string `json:"language"`       // BCP47 format. en-US
 	WebhookURI    string `json:"webhook_uri"`    // webhook uri
