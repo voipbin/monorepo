@@ -53,6 +53,7 @@ var (
 	regV1CallsIDActionNext     = regexp.MustCompile("/v1/calls/" + regUUID + "/action-next")
 	regV1CallsIDActionTimeout  = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
 	regV1CallsIDChainedCallIDs = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids")
+	regV1CallsIDExternalMedia  = regexp.MustCompile("/v1/calls/" + regUUID + "/external-media")
 
 	// conferences
 	regV1ConferencesIDCallsID = regexp.MustCompile("/v1/conferences/" + regUUID + "/calls/" + regUUID)

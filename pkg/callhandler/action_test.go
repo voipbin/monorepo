@@ -7,6 +7,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -618,6 +619,71 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 			mockReq.EXPECT().AstChannelDTMF(tt.call.AsteriskID, tt.call.ChannelID, tt.expectDtmfs, tt.expectDuration, 0, tt.expectInterval, 0)
 			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, tt.expectTimeout, tt.action)
 
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionExecuteExternalMediaStart(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name   string
+		call   *call.Call
+		action *action.Action
+
+		expectHost           string
+		expectEncapsulation  string
+		expectTransport      string
+		expectConnectionType string
+		expectFormat         string
+		expectDirection      string
+		expectData           string
+	}
+
+	tests := []test{
+		{
+			"default",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("3ba00ae0-02f8-11ec-863a-abd78c8246c4"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "4455e2f4-02f8-11ec-acf9-43a391fce607",
+			},
+			&action.Action{
+				Type:   action.TypeExternalMediaStart,
+				ID:     uuid.FromStringOrNil("447f0d28-02f8-11ec-bfdb-4bb2407458ce"),
+				Option: []byte(`{"external_host":"example.com","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both","data":""}`),
+			},
+			"example.com",
+			"rtp",
+			"udp",
+			"client",
+			"ulaw",
+			"both",
+			"",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
+			mockReq.EXPECT().AstChannelExternalMedia(tt.call.AsteriskID, gomock.Any(), tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, tt.expectData, gomock.Any()).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

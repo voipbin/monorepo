@@ -209,7 +209,7 @@ func (h *eventHandler) eventHandlerChannelStateChange(ctx context.Context, evt i
 	return nil
 }
 
-// eventHandlerChannelCreated handels ChannelCreated ARI event
+// eventHandlerChannelVarset handels ChannelVarset ARI event
 func (h *eventHandler) eventHandlerChannelVarset(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelVarset)
 

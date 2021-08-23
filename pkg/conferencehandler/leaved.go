@@ -43,6 +43,9 @@ func (h *conferenceHandler) leavedChannel(cn *channel.Channel, br *bridge.Bridge
 	case channel.TypeConf, channel.TypeJoin:
 		return h.leavedChannelConf(cn, br)
 
+	case channel.TypeExternal:
+		return h.leavedChannelExternal(cn, br)
+
 	default:
 		logrus.Warnf("Could not find correct event handler. channel: %s, bridge: %s, type: %s", cn.ID, br.ID, cn.Type)
 	}
@@ -128,6 +131,16 @@ func (h *conferenceHandler) leavedChannelCall(cn *channel.Channel, br *bridge.Br
 		log.Debugf("Could not send the call action next request. err: %v", err)
 		return err
 	}
+
+	return nil
+}
+
+// leavedChannelExternal handle
+func (h *conferenceHandler) leavedChannelExternal(cn *channel.Channel, br *bridge.Bridge) error {
+	// remove all other channel in the same bridge
+	h.removeAllChannelsInBridge(br)
+
+	h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 
 	return nil
 }
