@@ -30,6 +30,16 @@ func TestGetTech(t *testing.T) {
 			"Snoop/1588549018.132-00000000",
 			TechSnoop,
 		},
+		{
+			"local",
+			"Local/5q-1629605410.6626",
+			TechLocal,
+		},
+		{
+			"unicastrtp",
+			"UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
+			TechUnicatRTP,
+		},
 	}
 
 	for _, tt := range tests {

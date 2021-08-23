@@ -48,11 +48,12 @@ type Tech string
 
 // List of Tech types
 const (
-	TechNone  Tech = ""
-	TechLocal Tech = "local"
-	TechPJSIP Tech = "pjsip"
-	TechSIP   Tech = "sip"
-	TechSnoop Tech = "snoop"
+	TechNone      Tech = ""
+	TechLocal     Tech = "local"
+	TechPJSIP     Tech = "pjsip"
+	TechSIP       Tech = "sip"
+	TechSnoop     Tech = "snoop"
+	TechUnicatRTP Tech = "unicastrtp" // external media
 )
 
 // Type represent channel's type.
@@ -60,10 +61,12 @@ type Type string
 
 // List of Context types
 const (
-	TypeNone Type = "" // the type has not defined yet.
-	TypeCall Type = "call"
-	TypeConf Type = "conf"
-	TypeJoin Type = "join"
+	TypeNone      Type = ""          // the type has not defined yet.
+	TypeCall      Type = "call"      // call channel
+	TypeConf      Type = "conf"      // conference channel
+	TypeJoin      Type = "join"      // conference joining channel
+	TypeExternal  Type = "external"  // channel for the external channel(snoop/media)
+	TypeRecording Type = "recording" // channel for the recording
 )
 
 // SIPTransport represent channel's sip transport type.
@@ -162,6 +165,8 @@ func getTech(name string) Tech {
 		return TechLocal
 	case "sip":
 		return TechSIP
+	case "unicastrtp":
+		return TechUnicatRTP
 	default:
 		return TechNone
 	}

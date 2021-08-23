@@ -19,10 +19,12 @@ import (
 
 // StasisStart event's context types
 const (
-	contextIncomingCall    = "call-in"     // context for the incoming channel
-	contextOutgoingCall    = "call-out"    // context for the outgoing channel
-	contextRecording       = "call-record" // context for the channel which created only for recording
-	contextFromServiceCall = "call-svc"    // context for the channel where it came back to stasis from the other asterisk application
+	contextIncomingCall    = "call-in"            // context for the incoming channel
+	contextOutgoingCall    = "call-out"           // context for the outgoing channel
+	contextRecording       = "call-record"        // context for the channel which created only for recording
+	contextFromServiceCall = "call-svc"           // context for the channel where it came back to stasis from the other asterisk application
+	contextExternalMedia   = "call-externalmedia" // context for the external media channel. this channel will get the media from the external
+	contextExternalSoop    = "call-externalsnoop" // context for the external snoop channel
 )
 
 // domain types
@@ -98,6 +100,12 @@ func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]inter
 	case contextRecording:
 		return h.startHandlerContextRecording(cn, data)
 
+	case contextExternalSoop:
+		return h.startHandlerContextExternalSnoop(cn, data)
+
+	case contextExternalMedia:
+		return h.startHandlerContextExternalMedia(cn, data)
+
 	default:
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return fmt.Errorf("no route found for stasisstart. asterisk_id: %s, channel_id: %s, data: %v", cn.AsteriskID, cn.ID, data)
@@ -122,6 +130,12 @@ func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel, da
 func (h *callHandler) startHandlerContextRecording(cn *channel.Channel, data map[string]interface{}) error {
 	logrus.Infof("Executing startHandlerContextRecording. channel: %s", cn.ID)
 
+	// set channel's type call.
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeRecording)); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
 	id := data["recording_id"].(string)
 	name := data["recording_name"].(string)
 	format := data["format"].(string)
@@ -130,12 +144,69 @@ func (h *callHandler) startHandlerContextRecording(cn *channel.Channel, data map
 	endKey := data["end_of_key"].(string)
 	callID := data["call_id"].(string)
 
-	logrus.Infof("Recording start. id: %s, name: %s, call: %s", id, name, callID)
-
 	if err := h.reqHandler.AstChannelRecord(cn.AsteriskID, cn.ID, name, format, duration, silence, false, endKey, "fail"); err != nil {
 		logrus.Errorf("Could not start the recording. Destorying the chanel. err: %v", err)
 
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	}
+	logrus.Infof("Recording started. id: %s, name: %s, call: %s", id, name, callID)
+
+	return nil
+}
+
+// startHandlerContextExternalSnoop handles contextExternalSnoop context type of StasisStart event.
+func (h *callHandler) startHandlerContextExternalSnoop(cn *channel.Channel, data map[string]interface{}) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"channel": cn.ID,
+		},
+	)
+	log.Infof("Executing startHandlerContextExternalSnoop. channel: %s", cn.ID)
+
+	// set channel's type call.
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeExternal)); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
+	callID := data["call_id"].(string)
+	bridgeID := data["bridge_id"].(string)
+	log.Debugf("Parsed info. call: %s, bridge: %s", callID, bridgeID)
+
+	// put the channel to the bridge
+	if err := h.reqHandler.AstBridgeAddChannel(cn.AsteriskID, bridgeID, cn.ID, "", false, false); err != nil {
+		log.Errorf("Could not add the external snoop channel to the bridge. err: %v", err)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return err
+	}
+
+	return nil
+}
+
+// startHandlerContextExternalMedia handles contextExternalMedia context type of StasisStart event.
+func (h *callHandler) startHandlerContextExternalMedia(cn *channel.Channel, data map[string]interface{}) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"channel": cn.ID,
+		},
+	)
+	log.Infof("Executing startHandlerContextExternalMedia. channel: %s", cn.ID)
+
+	// set channel's type call.
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeExternal)); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
+	callID := data["call_id"].(string)
+	bridgeID := data["bridge_id"].(string)
+	log.Debugf("Parsed info. call: %s, bridge: %s", callID, bridgeID)
+
+	// put the channel to the bridge
+	if err := h.reqHandler.AstBridgeAddChannel(cn.AsteriskID, bridgeID, cn.ID, "", false, false); err != nil {
+		log.Errorf("Could not add the external snoop channel to the bridge. err: %v", err)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return err
 	}
 
 	return nil

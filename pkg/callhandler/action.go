@@ -61,6 +61,9 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	case action.TypeEcho:
 		err = h.actionExecuteEcho(c, a)
 
+	case action.TypeExternalMediaStart:
+		err = h.actionExecuteExternalMediaStart(c, a)
+
 	case action.TypeHangup:
 		err = h.actionExecuteHangup(c, a)
 
@@ -750,6 +753,39 @@ func (h *callHandler) actionExecuteDTMFSend(c *call.Call, a *action.Action) erro
 	if err := h.reqHandler.CallCallActionTimeout(c.ID, maxTimeout, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
+
+	return nil
+}
+
+// actionExecuteExternalMediaStart executes the action type external_media_start.
+func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Action) error {
+	// ctx := context.Background()
+
+	// copy the action
+	act := *a
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call":        c.ID,
+			"action":      act.ID,
+			"action_type": act.Type,
+		})
+
+	var option action.OptionExternalMediaStart
+	if act.Option != nil {
+		if err := json.Unmarshal(act.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
+	}
+
+	if errStart := h.ExternalMediaStart(c.ID, c.UserID, option.ExternalHost, option.Encapsulation, option.Transport, option.ConnectionType, option.Format, option.Direction, option.Data); errStart != nil {
+		log.Errorf("Could not start external media. err: %v", errStart)
+		return errStart
+	}
+
+	// send next action request
+	h.reqHandler.CallCallActionNext(c.ID)
 
 	return nil
 }

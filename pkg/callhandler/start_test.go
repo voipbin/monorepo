@@ -89,7 +89,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 				DestinationNumber: string(action.TypeEcho),
 			},
 			map[string]interface{}{
-				"context": "call-in",
+				"context": contextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -160,7 +160,7 @@ func TestTypeConferenceStart(t *testing.T) {
 				DestinationNumber: "bad943d8-9b59-11ea-b409-4ba263721f17",
 			},
 			map[string]interface{}{
-				"context": "call-in",
+				"context": contextIncomingCall,
 				"domain":  "conference.voipbin.net",
 			},
 			&call.Call{
@@ -232,7 +232,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 				DestinationNumber: string(action.TypeAnswer),
 			},
 			map[string]interface{}{
-				"context": "call-in",
+				"context": contextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -313,7 +313,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 				DestinationNumber: string(action.TypeStreamEcho),
 			},
 			map[string]interface{}{
-				"context": "call-in",
+				"context": contextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -386,7 +386,7 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 				DestinationNumber: string(action.TypeConferenceJoin),
 			},
 			map[string]interface{}{
-				"context": "call-in",
+				"context": contextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -458,7 +458,7 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 				DestinationNumber: string(action.TypePlay),
 			},
 			map[string]interface{}{
-				"context": "call-in",
+				"context": contextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -532,7 +532,7 @@ func TestTypeFlowStart(t *testing.T) {
 				DestinationNumber: "+123456789",
 			},
 			map[string]interface{}{
-				"context": "call-in",
+				"context": contextIncomingCall,
 				"domain":  "pstn.voipbin.net",
 			},
 			&number.Number{
@@ -572,7 +572,7 @@ func TestTypeFlowStart(t *testing.T) {
 				DestinationNumber: "+123456789",
 			},
 			map[string]interface{}{
-				"context": "call-in",
+				"context": contextIncomingCall,
 				"domain":  "pstn.voipbin.net",
 			},
 			&number.Number{
@@ -659,7 +659,7 @@ func TestStartHandlerContextOutgoingCall(t *testing.T) {
 				DestinationNumber: "+123456789",
 			},
 			map[string]interface{}{
-				"context": "call-in",
+				"context": contextOutgoingCall,
 				"domain":  "pstn.voipbin.net",
 				"call_id": "086c90e2-8b31-11eb-b3a0-4ba972148103",
 			},
@@ -679,7 +679,109 @@ func TestStartHandlerContextOutgoingCall(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelDial(tt.channel.AsteriskID, tt.channel.ID, tt.channel.ID, defaultDialTimeout).Return(nil)
 
-			if err := h.startHandlerContextOutgoingCall(tt.channel, tt.data); err != nil {
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestStartHandlerContextExternalMedia(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
+	}
+
+	type test struct {
+		name     string
+		channel  *channel.Channel
+		data     map[string]interface{}
+		bridgeID string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&channel.Channel{
+				ID:         "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Name:       "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
+			},
+			map[string]interface{}{
+				"context":   contextExternalMedia,
+				"bridge_id": "fab96694-0300-11ec-b4d4-c3bcab7364fd",
+				"call_id":   "0648d6c0-0301-11ec-818e-53865044b15c",
+			},
+			"fab96694-0300-11ec-b4d4-c3bcab7364fd",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, tt.bridgeID, tt.channel.ID, "", false, false).Return(nil)
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestStartHandlerContextExternalSnoop(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		confHandler:   mockConf,
+	}
+
+	type test struct {
+		name     string
+		channel  *channel.Channel
+		data     map[string]interface{}
+		bridgeID string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&channel.Channel{
+				ID:         "asterisk-call-5765d977d8-c4k5q-1629607067.6639",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.132-00000000",
+			},
+			map[string]interface{}{
+				"context":   contextExternalSoop,
+				"bridge_id": "d6aecd56-0301-11ec-aee0-77d9356147eb",
+				"call_id":   "da646758-0301-11ec-b3eb-f3c05485b756",
+			},
+			"d6aecd56-0301-11ec-aee0-77d9356147eb",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, tt.bridgeID, tt.channel.ID, "", false, false).Return(nil)
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
