@@ -51,3 +51,16 @@ type V1DataCallsIDActionTimeoutPost struct {
 type V1DataCallsIDChainedCallIDsPost struct {
 	ChainedCallID uuid.UUID `json:"chained_call_id"`
 }
+
+// V1DataCallsIDExternalMediaPost is
+// v1 data type for V1DataCallsIDExternalMediaPost
+// /v1/calls/<id>/external-media POST
+type V1DataCallsIDExternalMediaPost struct {
+	ExternalHost   string `json:"external_host"`
+	Encapsulation  string `json:"encapsulation"`
+	Transport      string `json:"transport"`
+	ConnectionType string `json:"connection_type"`
+	Format         string `json:"format"`
+	Direction      string `json:"direction"`
+	Data           string `json:"data"`
+}

@@ -36,6 +36,30 @@ func TestParseChannel(t *testing.T) {
 				},
 			},
 		},
+		{
+			"unicast rtp",
+			`{"id": "asterisk-call-5765d977d8-c4k5q-1629605410.6626","name": "UnicastRTP/127.0.0.1:5090-0x7f6d54035300","state": "Down","caller": {"name": "","number": ""},"connected": {"name": "","number": ""},"accountcode": "","dialplan": {"context": "default","exten": "s","priority": 1,"app_name": "AppDial2","app_data": "(Outgoing Line)"},"creationtime": "2021-08-22T04:10:10.331+0000","language": "en","channelvars": {"UNICASTRTP_LOCAL_PORT": "10492","UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1"}}`,
+			&Channel{
+				ID:           "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
+				Name:         "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
+				Language:     "en",
+				CreationTime: "2021-08-22T04:10:10.331",
+				State:        ChannelStateDown,
+				Caller:       CallerID{},
+				Connected:    CallerID{},
+				Dialplan: DialplanCEP{
+					Context:  "default",
+					Exten:    "s",
+					Priority: 1,
+					AppName:  "AppDial2",
+					AppData:  "(Outgoing Line)",
+				},
+				ChannelVars: map[string]string{
+					"UNICASTRTP_LOCAL_PORT":    "10492",
+					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -46,7 +70,7 @@ func TestParseChannel(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectParse, channel) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectParse, channel)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectParse, channel)
 			}
 		})
 	}

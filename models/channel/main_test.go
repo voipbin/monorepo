@@ -141,3 +141,65 @@ func TestNewChannelByStasisStart(t *testing.T) {
 		})
 	}
 }
+
+func TestNewChannelByARIChannel(t *testing.T) {
+	type test struct {
+		name          string
+		ariChannel    *ari.Channel
+		expectChannel *Channel
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&ari.Channel{
+				ID:           "asterisk-call-5765d977d8-0a16-1629605410.6626",
+				Name:         "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
+				Language:     "en",
+				CreationTime: "2021-08-22T04:10:10.331",
+				State:        ari.ChannelStateDown,
+				Caller:       ari.CallerID{},
+				Connected:    ari.CallerID{},
+				Dialplan: ari.DialplanCEP{
+					Context:  "default",
+					Exten:    "s",
+					Priority: 1,
+					AppName:  "AppDial2",
+					AppData:  "(Outgoing Line)",
+				},
+				ChannelVars: map[string]string{
+					"UNICASTRTP_LOCAL_PORT":    "10492",
+					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
+				},
+			},
+			&Channel{
+				ID:   "asterisk-call-5765d977d8-0a16-1629605410.6626",
+				Name: "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
+				Tech: TechUnicatRTP,
+
+				DestinationNumber: "s",
+
+				State: ari.ChannelStateDown,
+				Data: map[string]interface{}{
+					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
+					"UNICASTRTP_LOCAL_PORT":    "10492",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// _, evt, err := ari.Parse([]byte(tt.message))
+			// if err != nil {
+			// 	t.Errorf("Wrong match. expect: ok, got: %v", err)
+			// }
+			// e := evt.(*ari.StasisStart)
+
+			channel := NewChannelByARIChannel(tt.ariChannel)
+			if !reflect.DeepEqual(tt.expectChannel, channel) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectChannel, channel)
+			}
+		})
+	}
+}

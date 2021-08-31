@@ -758,3 +758,102 @@ func TestProcessV1CallsIDChainedCallIDsDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestProcessV1CallsIDExternalMediaPost(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		db:          mockDB,
+		reqHandler:  mockReq,
+		callHandler: mockCall,
+	}
+
+	type test struct {
+		name    string
+		call    *call.Call
+		request *rabbitmqhandler.Request
+
+		expectExternalHost   string
+		expectEncapsulation  string
+		expectTransport      string
+		expectConnectionType string
+		expectFormat         string
+		expectDirection      string
+		expectData           string
+
+		extCh *channel.Channel
+
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Call{
+				ID:     uuid.FromStringOrNil("31255b7c-0a6b-11ec-87e2-afe5a545df76"),
+				UserID: 1,
+			},
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/31255b7c-0a6b-11ec-87e2-afe5a545df76/external-media",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"external_host": "127.0.0.1:5060", "encapsulation": "rtp", "transport": "udp", "connection_type": "client", "format": "ulaw", "direction": "both", "data": ""}`),
+			},
+
+			"127.0.0.1:5060",
+			"rtp",
+			"udp",
+			"client",
+			"ulaw",
+			"both",
+			"",
+
+			&channel.Channel{
+				ID: "d9f3fc36-0a7a-11ec-8f20-eb8a7aa17176",
+
+				Data: map[string]interface{}{
+					callhandler.ChannelValiableExternalMediaLocalAddress: "127.0.0.1",
+					callhandler.ChannelValiableExternalMediaLocalPort:    9000,
+				},
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"media_addr_ip":"127.0.0.1","media_addr_port":9000}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockCall.EXPECT().ExternalMediaStart(
+				tt.call.ID,
+				tt.expectExternalHost,
+				tt.expectEncapsulation,
+				tt.expectTransport,
+				tt.expectConnectionType,
+				tt.expectFormat,
+				tt.expectDirection,
+				tt.expectData,
+			).Return(tt.extCh, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

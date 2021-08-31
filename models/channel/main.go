@@ -145,6 +145,10 @@ func NewChannelByARIChannel(e *ari.Channel) *Channel {
 		Data:  make(map[string]interface{}, 1),
 	}
 
+	for k, i := range e.ChannelVars {
+		c.Data[k] = i
+	}
+
 	return c
 }
 

@@ -12,7 +12,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
@@ -42,13 +44,13 @@ func (h *listenHandler) processV1CallsGet(req *rabbitmqhandler.Request) (*rabbit
 
 	calls, err := h.db.CallGets(context.Background(), userID, pageSize, pageToken)
 	if err != nil {
-		log.Debugf("Could not get recordings. err: %v", err)
+		log.Errorf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
 	data, err := json.Marshal(calls)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", calls, err)
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", calls, err)
 		return simpleResponse(500), nil
 	}
 
@@ -427,6 +429,55 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(m *rabbitmqhandler.
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDExternalMediaPost handles /v1/calls/<id>/external-media POST request
+func (h *listenHandler) processV1CallsIDExternalMediaPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsIDExternalMediaPost.")
+
+	var data request.V1DataCallsIDExternalMediaPost
+	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+		return nil, err
+	}
+	log.WithFields(logrus.Fields{
+		"external_media": data,
+	}).Debugf("Parsed request data.")
+
+	extCh, err := h.callHandler.ExternalMediaStart(id, data.ExternalHost, data.Encapsulation, data.Transport, data.ConnectionType, data.Format, data.Direction, data.Data)
+	if err != nil {
+		log.Errorf("Could not start the external media. call: %s, err: %v", id, err)
+		return nil, err
+	}
+	log.Debugf("Created external media channel. external: %v", extCh)
+
+	resExt := &response.V1ResponseCallsIDExternalMediaPost{
+		MediaAddrIP:   extCh.Data[callhandler.ChannelValiableExternalMediaLocalAddress].(string),
+		MediaAddrPort: extCh.Data[callhandler.ChannelValiableExternalMediaLocalPort].(int),
+	}
+
+	resData, err := json.Marshal(resExt)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", resData, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       resData,
 	}
 
 	return res, nil

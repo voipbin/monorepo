@@ -125,7 +125,7 @@ type RequestHandler interface {
 	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
 	AstChannelDial(asteriskID, channelID, caller string, timeout int) error
 	AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error
-	AstChannelExternalMedia(asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) error
+	AstChannelExternalMedia(asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error)
 	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
 	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
 	AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error

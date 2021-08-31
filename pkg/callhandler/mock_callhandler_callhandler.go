@@ -182,17 +182,18 @@ func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(id, userID, flowID, so
 }
 
 // ExternalMediaStart mocks base method.
-func (m *MockCallHandler) ExternalMediaStart(id uuid.UUID, userID uint64, externalHost, encapsulation, transport, connectionType, format, direction, data string) error {
+func (m *MockCallHandler) ExternalMediaStart(id uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction, data string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExternalMediaStart", id, userID, externalHost, encapsulation, transport, connectionType, format, direction, data)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "ExternalMediaStart", id, externalHost, encapsulation, transport, connectionType, format, direction, data)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ExternalMediaStart indicates an expected call of ExternalMediaStart.
-func (mr *MockCallHandlerMockRecorder) ExternalMediaStart(id, userID, externalHost, encapsulation, transport, connectionType, format, direction, data interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) ExternalMediaStart(id, externalHost, encapsulation, transport, connectionType, format, direction, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStart", reflect.TypeOf((*MockCallHandler)(nil).ExternalMediaStart), id, userID, externalHost, encapsulation, transport, connectionType, format, direction, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStart", reflect.TypeOf((*MockCallHandler)(nil).ExternalMediaStart), id, externalHost, encapsulation, transport, connectionType, format, direction, data)
 }
 
 // HangingUp mocks base method.
