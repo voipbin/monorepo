@@ -883,6 +883,7 @@ func TestAstChannelExternalMedia(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
+		expectResult  *channel.Channel
 	}
 
 	tests := []test{
@@ -902,6 +903,7 @@ func TestAstChannelExternalMedia(t *testing.T) {
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				Data:       []byte(`{"id": "660486e8-ffca-11eb-aef3-6b2e6caea5a5","name": "UnicastRTP/127.0.0.1:5090-0x7f6d54035300","state": "Down","caller": {"name": "","number": ""},"connected": {"name": "","number": ""},"accountcode": "","dialplan": {"context": "default","exten": "s","priority": 1,"app_name": "AppDial2","app_data": "(Outgoing Line)"},"creationtime": "2021-08-22T04:10:10.331+0000","language": "en","channelvars": {"UNICASTRTP_LOCAL_PORT": "10492","UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1"}}`),
 			},
 
 			"asterisk.00:11:22:33:44:55.request",
@@ -911,6 +913,17 @@ func TestAstChannelExternalMedia(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"channel_id":"660486e8-ffca-11eb-aef3-6b2e6caea5a5","app":"voipbin","external_host":"http://test.com/external-sample","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
+			&channel.Channel{
+				ID:                "660486e8-ffca-11eb-aef3-6b2e6caea5a5",
+				Name:              "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
+				Tech:              channel.TechUnicatRTP,
+				DestinationNumber: "s",
+				State:             ari.ChannelStateDown,
+				Data: map[string]interface{}{
+					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
+					"UNICASTRTP_LOCAL_PORT":    "10492",
+				},
+			},
 		},
 	}
 
@@ -919,9 +932,12 @@ func TestAstChannelExternalMedia(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelExternalMedia(tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
+			res, err := reqHandler.AstChannelExternalMedia(tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if reflect.DeepEqual(tt.expectResult, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
 			}
 		})
 	}

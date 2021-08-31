@@ -211,11 +211,12 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelDial(asteriskID, channelID, 
 }
 
 // AstChannelExternalMedia mocks base method.
-func (m *MockRequestHandler) AstChannelExternalMedia(asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data string, variables map[string]string) error {
+func (m *MockRequestHandler) AstChannelExternalMedia(asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data string, variables map[string]string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstChannelExternalMedia", asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AstChannelExternalMedia indicates an expected call of AstChannelExternalMedia.

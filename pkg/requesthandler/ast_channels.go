@@ -331,7 +331,7 @@ func (r *requestHandler) AstChannelRecord(asteriskID string, channelID string, f
 }
 
 // AstChannelExternalMedia creates a external media.
-func (r *requestHandler) AstChannelExternalMedia(asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) error {
+func (r *requestHandler) AstChannelExternalMedia(asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error) {
 
 	url := fmt.Sprintf("/ari/channels/externalMedia")
 
@@ -360,15 +360,22 @@ func (r *requestHandler) AstChannelExternalMedia(asteriskID string, channelID st
 		Variables:      variables,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsExternalMedia, 10, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
-	return nil
+
+	tmpCh, err := ari.ParseChannel([]byte(res.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	ch := channel.NewChannelByARIChannel(tmpCh)
+	return ch, nil
 }

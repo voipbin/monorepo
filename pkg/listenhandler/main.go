@@ -213,6 +213,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1CallsIDChainedCallIDsDelete(m)
 		requestType = "/v1/calls/chained-call-ids"
 
+	// POST /calls/<id>/external-media
+	case regV1CallsIDExternalMedia.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDExternalMediaPost(m)
+		requestType = "/v1/calls/external-media"
+
 	// GET /calls/<id>
 	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1CallsIDGet(m)
