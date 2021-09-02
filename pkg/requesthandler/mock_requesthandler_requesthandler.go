@@ -37,6 +37,22 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
 }
 
+// CMCallExternalMedia mocks base method.
+func (m *MockRequestHandler) CMCallExternalMedia(callID uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction, data string) (string, int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMCallExternalMedia", callID, externalHost, encapsulation, transport, connectionType, format, direction, data)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CMCallExternalMedia indicates an expected call of CMCallExternalMedia.
+func (mr *MockRequestHandlerMockRecorder) CMCallExternalMedia(callID, externalHost, encapsulation, transport, connectionType, format, direction, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallExternalMedia", reflect.TypeOf((*MockRequestHandler)(nil).CMCallExternalMedia), callID, externalHost, encapsulation, transport, connectionType, format, direction, data)
+}
+
 // CMCallGet mocks base method.
 func (m *MockRequestHandler) CMCallGet(callID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()

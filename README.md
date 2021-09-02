@@ -2,6 +2,11 @@
 
 Speech-to-text service.
 
+# Queues
+* bin-manager.transcribe-manager.request : Listening queue for all transcribe-managers
+* bin-manager.transcribe-manager-<uuid>.request : Listening queue for specific transcribe-manager.
+* bin-manager.transcribe-manager.event : Event sending queue
+
 # Example
 ```
 ./transcribe-manager \

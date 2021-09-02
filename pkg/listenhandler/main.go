@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
@@ -26,10 +27,11 @@ const (
 
 // ListenHandler interface
 type ListenHandler interface {
-	Run(queue, exchangeDelay string) error
+	Run(queue, queueVolatile, exchangeDelay string) error
 }
 
 type listenHandler struct {
+	hostID     uuid.UUID
 	rabbitSock rabbitmqhandler.Rabbit
 
 	reqHandler        requesthandler.RequestHandler
@@ -42,11 +44,14 @@ var (
 
 	// v1
 
+	// call-recordings
+	regV1CallRecordings = regexp.MustCompile("/v1/call_recordings")
+
 	// recordings
 	regV1Recordings = regexp.MustCompile("/v1/recordings")
 
-	// call-recordings
-	regV1CallRecordings = regexp.MustCompile("/v1/call_recordings")
+	// streamings
+	regV1Streamings = regexp.MustCompile("/v1/streamings")
 )
 
 var (
@@ -80,11 +85,13 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
+	hostID uuid.UUID,
 	rabbitSock rabbitmqhandler.Rabbit,
 	reqHandler requesthandler.RequestHandler,
 	transcribeHandler transcribehandler.TranscribeHandler,
 ) ListenHandler {
 	h := &listenHandler{
+		hostID:            hostID,
 		rabbitSock:        rabbitSock,
 		reqHandler:        reqHandler,
 		transcribeHandler: transcribeHandler,
@@ -93,7 +100,8 @@ func NewListenHandler(
 	return h
 }
 
-func (h *listenHandler) Run(queue, exchangeDelay string) error {
+// runListenQueue listens the queue
+func (h *listenHandler) runListenQueue(queue string) error {
 	logrus.WithFields(logrus.Fields{
 		"queue": queue,
 	}).Info("Creating rabbitmq queue for listen.")
@@ -109,14 +117,29 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		return err
 	}
 
-	// create a exchange for delayed message
-	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
-	}
+	// receive requests
+	go func() {
+		for {
+			// consume the request
+			err := h.rabbitSock.ConsumeRPCOpt(queue, constCosumerName, false, false, false, h.processRequest)
+			if err != nil {
+				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+			}
+		}
+	}()
 
-	// bind a queue with delayed exchange
-	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
+	return nil
+}
+
+// runListenQueueVolatile listens volatile queue
+func (h *listenHandler) runListenQueueVolatile(queue string) error {
+	logrus.WithFields(logrus.Fields{
+		"queue": queue,
+	}).Info("Creating rabbitmq queue for listen.")
+
+	// declare the queue
+	if err := h.rabbitSock.QueueDeclare(queue, false, false, false, false); err != nil {
+		return fmt.Errorf("could not declare the queue volatile. err: %v", err)
 	}
 
 	// receive requests
@@ -129,6 +152,57 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 			}
 		}
 	}()
+
+	return nil
+}
+
+// runDeclareDelayQueue declares delay queue
+func (h *listenHandler) runDeclareDelayQueue(queue string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "runDeclareDelayQueue",
+		"queue": queue,
+	})
+
+	// create a exchange for delayed message
+	if err := h.rabbitSock.ExchangeDeclareForDelay(queue, true, false, false, false); err != nil {
+		log.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
+		return err
+	}
+
+	// bind a queue with delayed exchange
+	if err := h.rabbitSock.QueueBind(queue, queue, queue, false, nil); err != nil {
+		log.Errorf("Could not bind the queue and exchange. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// Run
+func (h *listenHandler) Run(queue, queueVolatile, exchangeDelay string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"queue":          queue,
+		"queue volatile": queueVolatile,
+	})
+	log.Info("Creating rabbitmq queue for listen.")
+
+	// start queue listen
+	if err := h.runListenQueue(queue); err != nil {
+		log.Errorf("Could not listen the queue. err: %v", err)
+		return err
+	}
+
+	// start volatile queue listen
+	if err := h.runListenQueueVolatile(queueVolatile); err != nil {
+		log.Errorf("Could not listen the volatile queue. err: %v", err)
+		return err
+	}
+
+	// delcare the delay queue
+	if err := h.runDeclareDelayQueue(exchangeDelay); err != nil {
+		log.Errorf("Could not declare the delay queue. err: %v", err)
+		return err
+	}
 
 	return nil
 }
@@ -175,6 +249,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CallRecordings.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallRecordingsPost(m)
 		requestType = "/v1/call_recordings"
+
+	////////////////////
+	// streamings
+	////////////////////
+	// POST /streamings
+	case regV1Streamings.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1StreamingsPost(m)
+		requestType = "/v1/streamings"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

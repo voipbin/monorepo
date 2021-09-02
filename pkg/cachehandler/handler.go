@@ -3,7 +3,12 @@ package cachehandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
+
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // getSerialize returns cached serialized info.
@@ -36,6 +41,29 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 func (h *handler) delSerialize(ctx context.Context, key string) error {
 	_, err := h.Cache.Del(ctx, key).Result()
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TranscribeGet returns cached transcribe info
+func (h *handler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
+	key := fmt.Sprintf("transcribe:%s", id)
+
+	var res transcribe.Transcribe
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// TranscribeSet sets the transcribe info into the cache.
+func (h *handler) TranscribeSet(ctx context.Context, trans *transcribe.Transcribe) error {
+	key := fmt.Sprintf("transcribe:%s", trans.ID)
+
+	if err := h.setSerialize(ctx, key, trans); err != nil {
 		return err
 	}
 

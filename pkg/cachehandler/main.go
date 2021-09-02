@@ -6,6 +6,9 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 type handler struct {
@@ -19,6 +22,9 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
+
+	TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
+	TranscribeSet(ctx context.Context, trans *transcribe.Transcribe) error
 }
 
 // NewHandler creates DBHandler

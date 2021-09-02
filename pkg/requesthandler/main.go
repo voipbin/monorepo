@@ -82,6 +82,16 @@ func init() {
 
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
+	CMCallExternalMedia(
+		callID uuid.UUID,
+		externalHost string,
+		encapsulation string,
+		transport string,
+		connectionType string,
+		format string,
+		direction string,
+		data string,
+	) (addrIP string, addrPort int, errRet error)
 	CMCallGet(callID uuid.UUID) (*cmcall.Call, error)
 	CMRecordingGet(id uuid.UUID) (*cmrecording.Recording, error)
 

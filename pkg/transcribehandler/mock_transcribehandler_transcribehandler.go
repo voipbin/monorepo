@@ -5,6 +5,7 @@
 package transcribehandler
 
 import (
+	context "context"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -62,4 +63,48 @@ func (m *MockTranscribeHandler) Recording(recordingID uuid.UUID, language string
 func (mr *MockTranscribeHandlerMockRecorder) Recording(recordingID, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recording", reflect.TypeOf((*MockTranscribeHandler)(nil).Recording), recordingID, language)
+}
+
+// StreamingTranscribeStart mocks base method.
+func (m *MockTranscribeHandler) StreamingTranscribeStart(ctx context.Context, referenceID uuid.UUID, transType transcribe.Type, language, webhookURI, webhookMethod string) (*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamingTranscribeStart", ctx, referenceID, transType, language, webhookURI, webhookMethod)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StreamingTranscribeStart indicates an expected call of StreamingTranscribeStart.
+func (mr *MockTranscribeHandlerMockRecorder) StreamingTranscribeStart(ctx, referenceID, transType, language, webhookURI, webhookMethod interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingTranscribeStart", reflect.TypeOf((*MockTranscribeHandler)(nil).StreamingTranscribeStart), ctx, referenceID, transType, language, webhookURI, webhookMethod)
+}
+
+// StreamingTranscribeStop mocks base method.
+func (m *MockTranscribeHandler) StreamingTranscribeStop(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamingTranscribeStop", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StreamingTranscribeStop indicates an expected call of StreamingTranscribeStop.
+func (mr *MockTranscribeHandlerMockRecorder) StreamingTranscribeStop(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingTranscribeStop", reflect.TypeOf((*MockTranscribeHandler)(nil).StreamingTranscribeStop), ctx, id)
+}
+
+// TranscribeGet mocks base method.
+func (m *MockTranscribeHandler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeGet", ctx, id)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeGet indicates an expected call of TranscribeGet.
+func (mr *MockTranscribeHandlerMockRecorder) TranscribeGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeGet", reflect.TypeOf((*MockTranscribeHandler)(nil).TranscribeGet), ctx, id)
 }
