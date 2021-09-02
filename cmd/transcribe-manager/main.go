@@ -11,6 +11,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gofrs/uuid"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -157,11 +158,13 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueWebhookRequest,
 	)
 
-	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, cache, *gcpCredential, *gcpProjectID, *gcpBucketName)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, transcribeHandler)
+	hostID := uuid.Must(uuid.NewV4())
+	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, cache, *gcpCredential, *gcpProjectID, *gcpBucketName, hostID)
+	listenHandler := listenhandler.NewListenHandler(hostID, rabbitSock, reqHandler, transcribeHandler)
 
 	// run
-	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+	listenVolatile := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
+	if err := listenHandler.Run(*rabbitQueueListen, listenVolatile, *rabbitExchangeDelay); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 

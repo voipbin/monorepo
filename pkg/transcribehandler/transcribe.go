@@ -3,46 +3,24 @@ package transcribehandler
 import (
 	"context"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
+
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
-// transcribeFromBucket does transcribe from the bucket file
-func (h *transcribeHandler) transcribeFromBucket(mediaLink string, language string) (string, error) {
-
-	ctx := context.Background()
-
-	// Send the contents of the audio file with the encoding and
-	// and sample rate information to be transcripted.
-	req := &speechpb.LongRunningRecognizeRequest{
-		Config: &speechpb.RecognitionConfig{
-			Encoding:        speechpb.RecognitionConfig_LINEAR16,
-			SampleRateHertz: 8000,
-			LanguageCode:    language,
+func (h *transcribeHandler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "TranscribeGet",
 		},
-		Audio: &speechpb.RecognitionAudio{
-			AudioSource: &speechpb.RecognitionAudio_Uri{
-				Uri: mediaLink,
-			},
-		},
-	}
+	)
 
-	op, err := h.clientSpeech.LongRunningRecognize(ctx, req)
+	res, err := h.cache.TranscribeGet(ctx, id)
 	if err != nil {
-		return "", err
-	}
-	resp, err := op.Wait(ctx)
-	if err != nil {
-		return "", err
+		log.Errorf("Could not get transcribe info. err: %v", err)
+		return nil, err
 	}
 
-	// Print the results.
-	for _, result := range resp.Results {
-		for _, alt := range result.Alternatives {
-			logrus.Debugf("\"%v\" (confidence=%3f)\n", alt.Transcript, alt.Confidence)
-		}
-	}
-
-	res := resp.Results[0].Alternatives[0].Transcript
 	return res, nil
 }
