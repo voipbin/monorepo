@@ -1,6 +1,6 @@
 FROM debian:stable-slim
 
-ARG ASTERISK_VERSION=18.4.0
+ARG ASTERISK_VERSION=479cc17f45e8a310d4d6039bbf501469e86828f3
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 
 RUN apt-get update
@@ -54,21 +54,21 @@ RUN apt-get install -y \
     default-libmysqlclient-dev \
     xmlstarlet \
     binutils-dev \
-    libsrtp2-dev
-
-# install packages for gcsfuse
-RUN GCSFUSE_REPO=gcsfuse-`lsb_release -c -s` && echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" > /etc/apt/sources.list.d/gcsfuse.list
-RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    libsrtp2-dev \
+    fuse
 
 # Install gcsfuse
-RUN apt-get update
-RUN apt-get install -y gcsfuse
+RUN curl -L -O https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/v0.32.0/gcsfuse_0.32.0_amd64.deb
+RUN dpkg --install gcsfuse_0.32.0_amd64.deb
 
 # Download Asterisk source
-RUN git clone --branch ${ASTERISK_VERSION} https://gerrit.asterisk.org/asterisk ${ASTERISK_SOURCE_DIRECTORY}
+RUN git clone https://gerrit.asterisk.org/asterisk ${ASTERISK_SOURCE_DIRECTORY}
+COPY patches/ /tmp/patches
 
 # Asterisk compilation & installation
 WORKDIR ${ASTERISK_SOURCE_DIRECTORY}
+RUN git checkout ${ASTERISK_VERSION}
+RUN for i in /tmp/patches/*; do patch -p0 < $i; echo "patch applied: " $i > /var/log/asterisk_patch.log; done
 RUN ./contrib/scripts/get_mp3_source.sh
 RUN ./configure --with-jansson-bundled
 RUN make menuselect.makeopts
