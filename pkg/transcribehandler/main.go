@@ -93,6 +93,8 @@ var serviceStreamings map[uuid.UUID]*streaming
 func init() {
 	defaultListenIP = getListenIP()
 
+	serviceStreamings = map[uuid.UUID]*streaming{}
+
 	prometheus.MustRegister(
 		promNumberCreateTotal,
 	)

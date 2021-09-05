@@ -20,7 +20,7 @@ func (h *transcribeHandler) serveListen() (*net.UDPConn, error) {
 		// get listen port
 		port := getRandomPort()
 		conn, err := net.ListenUDP("udp", &net.UDPAddr{
-			IP:   net.IP(defaultListenIP),
+			IP:   net.ParseIP(defaultListenIP),
 			Port: port,
 		})
 		if err != nil {
