@@ -42,7 +42,7 @@ type CallHandler interface {
 	ChainedCallIDAdd(id, chainedCallID uuid.UUID) error
 	ChainedCallIDRemove(id, chainedCallID uuid.UUID) error
 
-	ExternalMediaStart(id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string) (*channel.Channel, error)
+	ExternalMediaStart(id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error)
 }
 
 // callHandler structure for service handle

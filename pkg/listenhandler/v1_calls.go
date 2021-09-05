@@ -456,16 +456,22 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(m *rabbitmqhandler.Req
 		"external_media": data,
 	}).Debugf("Parsed request data.")
 
-	extCh, err := h.callHandler.ExternalMediaStart(id, data.ExternalHost, data.Encapsulation, data.Transport, data.ConnectionType, data.Format, data.Direction, data.Data)
+	extCh, err := h.callHandler.ExternalMediaStart(id, data.ExternalHost, data.Encapsulation, data.Transport, data.ConnectionType, data.Format, data.Direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. call: %s, err: %v", id, err)
 		return nil, err
 	}
 	log.Debugf("Created external media channel. external: %v", extCh)
 
+	ip := extCh.Data[callhandler.ChannelValiableExternalMediaLocalAddress].(string)
+	port, err := strconv.Atoi(extCh.Data[callhandler.ChannelValiableExternalMediaLocalPort].(string))
+	if err != nil {
+		log.Errorf("Could not get external media port. err: %v", err)
+		return nil, err
+	}
 	resExt := &response.V1ResponseCallsIDExternalMediaPost{
-		MediaAddrIP:   extCh.Data[callhandler.ChannelValiableExternalMediaLocalAddress].(string),
-		MediaAddrPort: extCh.Data[callhandler.ChannelValiableExternalMediaLocalPort].(int),
+		MediaAddrIP:   ip,
+		MediaAddrPort: port,
 	}
 
 	resData, err := json.Marshal(resExt)

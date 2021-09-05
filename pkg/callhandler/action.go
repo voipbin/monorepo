@@ -779,7 +779,7 @@ func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Ac
 		}
 	}
 
-	extCh, err := h.ExternalMediaStart(c.ID, option.ExternalHost, option.Encapsulation, option.Transport, option.ConnectionType, option.Format, option.Direction, option.Data)
+	extCh, err := h.ExternalMediaStart(c.ID, option.ExternalHost, option.Encapsulation, option.Transport, option.ConnectionType, option.Format, option.Direction)
 	if err != nil {
 		log.Errorf("Could not start external media. err: %v", err)
 		return err

@@ -82,11 +82,16 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call,
 }
 
 // StartCallHandle starts the call handle service
-//
 func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]interface{}) error {
 
 	// check the stasis's context
-	switch data["context"].(string) {
+	chCtx, ok := data["context"]
+	if !ok {
+		logrus.Errorf("Could not get channel context. data: %v", data)
+		return fmt.Errorf("no context found")
+	}
+
+	switch chCtx.(string) {
 
 	case contextFromServiceCall:
 		return h.startHandlerContextFromServiceCall(cn, data)
