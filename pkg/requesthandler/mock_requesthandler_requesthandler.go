@@ -14,6 +14,7 @@ import (
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // MockRequestHandler is a mock of RequestHandler interface.
@@ -183,4 +184,19 @@ func (m *MockRequestHandler) TMCallRecordingPost(callID uuid.UUID, language, web
 func (mr *MockRequestHandlerMockRecorder) TMCallRecordingPost(callID, language, webhookURI, webhookMethod, timeout, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TMCallRecordingPost", reflect.TypeOf((*MockRequestHandler)(nil).TMCallRecordingPost), callID, language, webhookURI, webhookMethod, timeout, delay)
+}
+
+// TMStreamingsPost mocks base method.
+func (m *MockRequestHandler) TMStreamingsPost(callID uuid.UUID, language, webhookURI, webhookMethod string) (*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TMStreamingsPost", callID, language, webhookURI, webhookMethod)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TMStreamingsPost indicates an expected call of TMStreamingsPost.
+func (mr *MockRequestHandlerMockRecorder) TMStreamingsPost(callID, language, webhookURI, webhookMethod interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TMStreamingsPost", reflect.TypeOf((*MockRequestHandler)(nil).TMStreamingsPost), callID, language, webhookURI, webhookMethod)
 }

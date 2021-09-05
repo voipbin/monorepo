@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // contents type
@@ -69,6 +70,7 @@ const (
 	resourceNumberNumberFlows resource = "number/number_flows"
 
 	resourceTranscribeCallRecordings resource = "transcrbice/call_recordings"
+	resourceTranscribeStreamings     resource = "transcrbice/streamings"
 )
 
 func init() {
@@ -102,6 +104,7 @@ type RequestHandler interface {
 	////// transcribe-manager
 	// call_recordings
 	TMCallRecordingPost(callID uuid.UUID, language, webhookURI, webhookMethod string, timeout, delay int) error
+	TMStreamingsPost(callID uuid.UUID, language, webhookURI, webhookMethod string) (*transcribe.Transcribe, error)
 }
 
 type requestHandler struct {

@@ -99,6 +99,15 @@ func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.U
 
 		// do activeflow next action get again.
 		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+
+	case action.TypeTranscribeStart:
+		if err := h.activeFlowHandleActionTranscribeStart(ctx, callID, nextAction); err != nil {
+			log.Errorf("Could not start the transcribe. err: %v", err)
+			// we can move on to the next action even it's failed
+		}
+
+		// do activeflow next action get again.
+		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
 	}
 
 	return nextAction, nil
@@ -406,6 +415,31 @@ func (h *flowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Cont
 		return err
 	}
 
+	return nil
+}
+
+// activeFlowHandleActionTranscribeStart handles transcribe_start
+func (h *flowHandler) activeFlowHandleActionTranscribeStart(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+
+	log := logrus.WithFields(logrus.Fields{
+		"call":   callID,
+		"action": act.ID,
+	})
+
+	var opt action.OptionTranscribeStart
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		return err
+	}
+
+	// transcribe-recording
+	trans, err := h.reqHandler.TMStreamingsPost(callID, opt.Language, opt.WebhookURI, opt.WebhookMethod)
+	if err != nil {
+		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
+		return err
+	}
+
+	log.Debugf("The streaming transcribe has started. transcribe: %v", trans)
 	return nil
 }
 

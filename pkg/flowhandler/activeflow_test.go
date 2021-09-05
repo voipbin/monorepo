@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 func TestActiveFlowCreate(t *testing.T) {
@@ -672,6 +673,66 @@ func TestActiveFlowNextActionGetTypeTranscribeRecording(t *testing.T) {
 			ctx := context.Background()
 			mockReq.EXPECT().TMCallRecordingPost(tt.callID, tt.language, tt.webhookURI, tt.WebhookMethod, 120, 30).Return(nil)
 			if err := h.activeFlowHandleActionTranscribeRecording(ctx, tt.callID, tt.act); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActiveFlowNextActionGetTypeTranscribeStart(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &flowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	type test struct {
+		name string
+
+		callID        uuid.UUID
+		language      string
+		webhookURI    string
+		WebhookMethod string
+		act           *action.Action
+
+		response *transcribe.Transcribe
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+			"en-US",
+			"http://test.com/webhook",
+			"POST",
+			&action.Action{
+				ID:     uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
+				Type:   action.TypeTranscribeStart,
+				Option: []byte(`{"language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
+			},
+
+			&transcribe.Transcribe{
+				ID:            uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
+				Type:          transcribe.TypeCall,
+				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+				HostID:        uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
+				Language:      "en-US",
+				WebhookURI:    "http://test.com/webhook",
+				WebhookMethod: "POST",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockReq.EXPECT().TMStreamingsPost(tt.callID, tt.language, tt.webhookURI, tt.WebhookMethod).Return(tt.response, nil)
+			if err := h.activeFlowHandleActionTranscribeStart(ctx, tt.callID, tt.act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
