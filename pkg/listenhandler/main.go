@@ -157,7 +157,7 @@ func (h *listenHandler) runListenQueueVolatile(queue string) error {
 }
 
 // runDeclareDelayQueue declares delay queue
-func (h *listenHandler) runDeclareDelayQueue(queue string) error {
+func (h *listenHandler) runDeclareDelayQueue(queue, exchangeDelay string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "runDeclareDelayQueue",
 		"queue": queue,
@@ -170,7 +170,7 @@ func (h *listenHandler) runDeclareDelayQueue(queue string) error {
 	}
 
 	// bind a queue with delayed exchange
-	if err := h.rabbitSock.QueueBind(queue, queue, queue, false, nil); err != nil {
+	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
 		log.Errorf("Could not bind the queue and exchange. err: %v", err)
 		return err
 	}
@@ -199,7 +199,7 @@ func (h *listenHandler) Run(queue, queueVolatile, exchangeDelay string) error {
 	}
 
 	// delcare the delay queue
-	if err := h.runDeclareDelayQueue(exchangeDelay); err != nil {
+	if err := h.runDeclareDelayQueue(queue, exchangeDelay); err != nil {
 		log.Errorf("Could not declare the delay queue. err: %v", err)
 		return err
 	}

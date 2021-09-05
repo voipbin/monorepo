@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -210,13 +211,33 @@ func (h *transcribeHandler) streamingTranscribeResultHandle(ctx context.Context,
 		},
 	)
 
+	resTranscript := ""
 	for {
 		res, err := stream.Recv()
 		if err != nil {
 			log.Errorf("Could not received the result. err: %v", err)
 			return err
 		}
+		log.Debugf("Recevied result. res: %v", res.Results)
+		if len(res.Results) == 0 {
+			return nil
+		}
 
-		log.Debugf("Recevied result. res: %v", res)
+		if res.Results[0].IsFinal == false && len(res.Results) == 1 {
+			continue
+		}
+
+		tmpTranscript := res.Results[0].Alternatives[0].Transcript
+		newTranscript := ""
+		if len(tmpTranscript) > len(resTranscript) {
+			newTranscript = tmpTranscript[len(resTranscript):]
+		}
+
+		resTranscript = tmpTranscript
+		if newTranscript != "" {
+			log.Debugf("Received new transcript. transcript: %s", newTranscript)
+		}
+
+		time.Sleep(time.Millisecond * 400)
 	}
 }
