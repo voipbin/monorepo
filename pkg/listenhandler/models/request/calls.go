@@ -62,5 +62,4 @@ type V1DataCallsIDExternalMediaPost struct {
 	ConnectionType string `json:"connection_type"`
 	Format         string `json:"format"`
 	Direction      string `json:"direction"`
-	Data           string `json:"data"`
 }

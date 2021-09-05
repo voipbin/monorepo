@@ -38,7 +38,6 @@ func TestExternalMediaStart(t *testing.T) {
 		connectionType string
 		format         string
 		direction      string
-		data           string
 
 		expectExternalHost   string
 		expectEncapsulation  string
@@ -46,7 +45,6 @@ func TestExternalMediaStart(t *testing.T) {
 		expectConnectionType string
 		expectFormat         string
 		expectDirection      string
-		expectData           string
 	}
 
 	tests := []test{
@@ -63,7 +61,6 @@ func TestExternalMediaStart(t *testing.T) {
 			"client",
 			"ulaw",
 			"both",
-			"",
 
 			"example.com",
 			"rtp",
@@ -71,7 +68,6 @@ func TestExternalMediaStart(t *testing.T) {
 			"client",
 			"ulaw",
 			"both",
-			"",
 		},
 	}
 
@@ -80,8 +76,8 @@ func TestExternalMediaStart(t *testing.T) {
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
 			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
-			mockReq.EXPECT().AstChannelExternalMedia(tt.call.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, tt.expectData, gomock.Any()).Return(&channel.Channel{}, nil)
-			_, err := h.ExternalMediaStart(tt.call.ID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data)
+			mockReq.EXPECT().AstChannelExternalMedia(tt.call.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			_, err := h.ExternalMediaStart(tt.call.ID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

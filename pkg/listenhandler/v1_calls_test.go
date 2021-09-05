@@ -786,7 +786,6 @@ func TestProcessV1CallsIDExternalMediaPost(t *testing.T) {
 		expectConnectionType string
 		expectFormat         string
 		expectDirection      string
-		expectData           string
 
 		extCh *channel.Channel
 
@@ -813,14 +812,13 @@ func TestProcessV1CallsIDExternalMediaPost(t *testing.T) {
 			"client",
 			"ulaw",
 			"both",
-			"",
 
 			&channel.Channel{
 				ID: "d9f3fc36-0a7a-11ec-8f20-eb8a7aa17176",
 
 				Data: map[string]interface{}{
 					callhandler.ChannelValiableExternalMediaLocalAddress: "127.0.0.1",
-					callhandler.ChannelValiableExternalMediaLocalPort:    9000,
+					callhandler.ChannelValiableExternalMediaLocalPort:    "9000",
 				},
 			},
 
@@ -843,7 +841,6 @@ func TestProcessV1CallsIDExternalMediaPost(t *testing.T) {
 				tt.expectConnectionType,
 				tt.expectFormat,
 				tt.expectDirection,
-				tt.expectData,
 			).Return(tt.extCh, nil)
 
 			res, err := h.processRequest(tt.request)

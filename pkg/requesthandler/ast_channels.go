@@ -357,6 +357,7 @@ func (r *requestHandler) AstChannelExternalMedia(asteriskID string, channelID st
 		ConnectionType: connectionType,
 		Format:         format,
 		Direction:      direction,
+		Data:           data,
 		Variables:      variables,
 	})
 	if err != nil {

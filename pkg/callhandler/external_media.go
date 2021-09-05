@@ -18,7 +18,7 @@ const (
 )
 
 // ExternalMediaStart starts the external media processing
-func (h *callHandler) ExternalMediaStart(id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string) (*channel.Channel, error) {
+func (h *callHandler) ExternalMediaStart(id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call_id": id,
@@ -55,14 +55,10 @@ func (h *callHandler) ExternalMediaStart(id uuid.UUID, externalHost string, enca
 	}
 
 	// create a external media channel
-	// set variables
-	variables := map[string]string{
-		"context":   contextExternalMedia,
-		"bridge_id": bridgeID.String(),
-		"call_id":   c.ID.String(),
-	}
+	// set data
+	chData := fmt.Sprintf("context=%s,bridge_id=%s,call_id=%s", contextExternalMedia, bridgeID.String(), c.ID.String())
 	extChannelID := uuid.Must(uuid.NewV4())
-	extCh, err := h.reqHandler.AstChannelExternalMedia(c.AsteriskID, extChannelID.String(), externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
+	extCh, err := h.reqHandler.AstChannelExternalMedia(c.AsteriskID, extChannelID.String(), externalHost, encapsulation, transport, connectionType, format, direction, chData, nil)
 	if err != nil {
 		log.Errorf("Could not create a external media channel. err: %v", err)
 		return nil, err
