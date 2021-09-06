@@ -49,7 +49,7 @@ func (h *callHandler) ExternalMediaStart(id uuid.UUID, externalHost string, enca
 		bridgeID,
 	)
 	snoopID := uuid.Must(uuid.NewV4())
-	if errSnoop := h.reqHandler.AstChannelCreateSnoop(c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionBoth); errSnoop != nil {
+	if errSnoop := h.reqHandler.AstChannelCreateSnoop(c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth); errSnoop != nil {
 		log.Errorf("Could not create a snoop channel for the external media. error: %v", errSnoop)
 		return nil, errSnoop
 	}
