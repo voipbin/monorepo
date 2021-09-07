@@ -6,6 +6,7 @@ import "github.com/gofrs/uuid"
 // v1 data type request struct for
 // /v1/streamings POST
 type V1DataStreamingsPost struct {
+	UserID        int64     `json:"user_id"`        // user id
 	ReferenceID   uuid.UUID `json:"reference_id"`   // call/conference id
 	Type          string    `json:"type"`           // reference type. call/conference
 	Language      string    `json:"language"`       // BCP47 type's language code. en-US

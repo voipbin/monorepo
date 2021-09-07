@@ -29,14 +29,14 @@ func (h *transcribeHandler) Recording(recordingID uuid.UUID, language string) (*
 		Language:      language,
 		WebhookURI:    "",
 		WebhookMethod: "",
-		Transcription: tmp,
+		Transcripts:   []transcribe.Transcript{*tmp},
 	}
 
 	return s, nil
 }
 
 // transcribeRecording transcribe the recording
-func (h *transcribeHandler) transcribeRecording(recordingID uuid.UUID, language string) (string, error) {
+func (h *transcribeHandler) transcribeRecording(recordingID uuid.UUID, language string) (*transcribe.Transcript, error) {
 
 	// validate language
 	lang := h.getBCP47LanguageCode(language)
@@ -44,12 +44,19 @@ func (h *transcribeHandler) transcribeRecording(recordingID uuid.UUID, language 
 	// send a request to storage-handler to get a media link
 	rec, err := h.reqHandler.SMRecordingGet(recordingID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	res, err := h.transcribeFromBucket(rec.BucketURI, lang)
+	message, err := h.transcribeFromBucket(rec.BucketURI, lang)
 	if err != nil {
-		return "", err
+		return nil, err
+	}
+
+	ts := "0000-00-00 00:00:00.00000"
+	res := &transcribe.Transcript{
+		Direction: transcribe.TranscriptDirectionBoth,
+		Message:   message,
+		TMCreate:  ts,
 	}
 
 	return res, nil

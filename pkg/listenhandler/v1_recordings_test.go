@@ -44,11 +44,15 @@ func TestProcessV1TranscribesPost(t *testing.T) {
 			uuid.FromStringOrNil("8c91343c-999f-11eb-a3f8-df8a947fe87e"),
 			"en-US",
 			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("29254ec4-a32c-11eb-9123-eb204908f78c"),
-				Type:          transcribe.TypeRecording,
-				ReferenceID:   uuid.FromStringOrNil("8c91343c-999f-11eb-a3f8-df8a947fe87e"),
-				Language:      "en-US",
-				Transcription: "hello",
+				ID:          uuid.FromStringOrNil("29254ec4-a32c-11eb-9123-eb204908f78c"),
+				Type:        transcribe.TypeRecording,
+				ReferenceID: uuid.FromStringOrNil("8c91343c-999f-11eb-a3f8-df8a947fe87e"),
+				Language:    "en-US",
+				Transcripts: []transcribe.Transcript{
+					{
+						Message: "hello",
+					},
+				},
 			},
 			&rabbitmqhandler.Request{
 				URI:      "/v1/recordings",
@@ -59,7 +63,7 @@ func TestProcessV1TranscribesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"29254ec4-a32c-11eb-9123-eb204908f78c","type":"recording","reference_id":"8c91343c-999f-11eb-a3f8-df8a947fe87e","host_id":"00000000-0000-0000-0000-000000000000","language":"en-US","webhook_uri":"","webhook_method":"","transcription":"hello"}`),
+				Data:       []byte(`{"id":"29254ec4-a32c-11eb-9123-eb204908f78c","user_id":0,"type":"recording","reference_id":"8c91343c-999f-11eb-a3f8-df8a947fe87e","host_id":"00000000-0000-0000-0000-000000000000","language":"en-US","webhook_uri":"","webhook_method":"","transcripts":[{"direction":"","message":"hello","tm_create":""}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

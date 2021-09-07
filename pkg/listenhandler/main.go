@@ -138,7 +138,7 @@ func (h *listenHandler) runListenQueueVolatile(queue string) error {
 	}).Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue
-	if err := h.rabbitSock.QueueDeclare(queue, false, false, false, false); err != nil {
+	if err := h.rabbitSock.QueueDeclare(queue, false, true, false, false); err != nil {
 		return fmt.Errorf("could not declare the queue volatile. err: %v", err)
 	}
 

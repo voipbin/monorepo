@@ -30,6 +30,7 @@ func TestProcessV1StreamingsPostPost(t *testing.T) {
 	type test struct {
 		name string
 
+		userID         int64
 		referenceID    uuid.UUID
 		transcribeType transcribe.Type
 		language       string
@@ -46,6 +47,7 @@ func TestProcessV1StreamingsPostPost(t *testing.T) {
 		{
 			"normal",
 
+			1,
 			uuid.FromStringOrNil("02c7a132-0be1-11ec-ba15-ebb66c983fba"),
 			"call",
 			"en-US",
@@ -56,7 +58,7 @@ func TestProcessV1StreamingsPostPost(t *testing.T) {
 				URI:      "/v1/streamings",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_id":"02c7a132-0be1-11ec-ba15-ebb66c983fba","type":"call","language":"en-US","webhook_uri":"test.com:8080","webhook_method":"post"}`),
+				Data:     []byte(`{"reference_id":"02c7a132-0be1-11ec-ba15-ebb66c983fba","user_id":1,"type":"call","language":"en-US","webhook_uri":"test.com:8080","webhook_method":"post"}`),
 			},
 			&transcribe.Transcribe{
 				ID:            uuid.FromStringOrNil("5f8cbc4e-0be2-11ec-8cf2-7f5531d8f428"),
@@ -70,7 +72,7 @@ func TestProcessV1StreamingsPostPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5f8cbc4e-0be2-11ec-8cf2-7f5531d8f428","type":"call","reference_id":"02c7a132-0be1-11ec-ba15-ebb66c983fba","host_id":"3a02f50c-0be6-11ec-9fa7-8792d3dfbd60","language":"en-US","webhook_uri":"test.com:8080","webhook_method":"post","transcription":""}`),
+				Data:       []byte(`{"id":"5f8cbc4e-0be2-11ec-8cf2-7f5531d8f428","user_id":0,"type":"call","reference_id":"02c7a132-0be1-11ec-ba15-ebb66c983fba","host_id":"3a02f50c-0be6-11ec-9fa7-8792d3dfbd60","language":"en-US","webhook_uri":"test.com:8080","webhook_method":"post","transcripts":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -78,7 +80,7 @@ func TestProcessV1StreamingsPostPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTranscribe.EXPECT().StreamingTranscribeStart(gomock.Any(), tt.referenceID, tt.transcribeType, tt.language, tt.webhookURI, tt.webhookMethod).Return(tt.transcribeRes, nil)
+			mockTranscribe.EXPECT().StreamingTranscribeStart(gomock.Any(), tt.userID, tt.referenceID, tt.transcribeType, tt.language, tt.webhookURI, tt.webhookMethod).Return(tt.transcribeRes, nil)
 
 			// mockTranscribe.EXPECT().Recording(tt.referenceID, tt.language).Return(tt.transcribe, nil)
 			res, err := h.processRequest(tt.request)
