@@ -90,7 +90,6 @@ type RequestHandler interface {
 		connectionType string,
 		format string,
 		direction string,
-		data string,
 	) (addrIP string, addrPort int, errRet error)
 	CMCallGet(callID uuid.UUID) (*cmcall.Call, error)
 	CMRecordingGet(id uuid.UUID) (*cmrecording.Recording, error)

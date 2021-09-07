@@ -3,32 +3,30 @@ package dbhandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler_dbhandler.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/cachehandler"
 )
 
 // DBHandler interface for database handle
 type DBHandler interface {
 
-	// // number
-	// NumberCreate(ctx context.Context, n *number.Number) error
-	// NumberDelete(ctx context.Context, id uuid.UUID) error
-	// NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error)
-	// NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error)
-	// NumberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error)
-	// NumberGetFromCacheByNumber(ctx context.Context, numb string) (*number.Number, error)
-	// NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error)
-	// NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error)
-	// NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*number.Number, error)
-	// NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error)
-	// NumberSetToCache(ctx context.Context, num *number.Number) error
-	// NumberSetToCacheByNumber(ctx context.Context, num *number.Number) error
-	// NumberUpdate(ctx context.Context, numb *number.Number) error
-	// NumberUpdateToCache(ctx context.Context, id uuid.UUID) error
+	// transcribe
+	TranscribeGetFromCache(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
+	TranscribeUpdateToCache(ctx context.Context, id uuid.UUID) error
+	TranscribeSetToCache(ctx context.Context, t *transcribe.Transcribe) error
+
+	TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *transcribe.Transcript) error
+	TranscribeCreate(ctx context.Context, t *transcribe.Transcribe) error
+	TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
+	TranscribeGetFromDB(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 }
 
 // handler database handler

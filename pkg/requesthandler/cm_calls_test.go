@@ -31,7 +31,6 @@ func TestTTSSpeechesPOST(t *testing.T) {
 		connectionType string
 		format         string
 		direction      string
-		data           string
 
 		response *rabbitmqhandler.Response
 
@@ -51,7 +50,6 @@ func TestTTSSpeechesPOST(t *testing.T) {
 			"client",
 			"ulaw",
 			"both",
-			"",
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -63,7 +61,7 @@ func TestTTSSpeechesPOST(t *testing.T) {
 				URI:      "/v1/calls/a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb/external-media",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both","data":""}`),
+				Data:     []byte(`{"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
 			"127.0.0.1",
 			9999,
@@ -75,7 +73,7 @@ func TestTTSSpeechesPOST(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			resIP, resPort, err := reqHandler.CMCallExternalMedia(tt.callID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data)
+			resIP, resPort, err := reqHandler.CMCallExternalMedia(tt.callID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

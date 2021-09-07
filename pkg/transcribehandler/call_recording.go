@@ -31,7 +31,7 @@ func (h *transcribeHandler) CallRecording(callID uuid.UUID, language, webhookURI
 			Language:      language,
 			WebhookURI:    webhookURI,
 			WebhookMethod: webhookMethod,
-			Transcription:    tmp,
+			Transcripts:   []transcribe.Transcript{*tmp},
 		}
 
 		// send webhook

@@ -48,7 +48,6 @@ func (r *requestHandler) CMCallExternalMedia(
 	connectionType string,
 	format string,
 	direction string,
-	data string,
 ) (addrIP string, addrPort int, errRet error) {
 	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
 
@@ -59,7 +58,6 @@ func (r *requestHandler) CMCallExternalMedia(
 		ConnectionType: connectionType,
 		Format:         format,
 		Direction:      direction,
-		Data:           data,
 	}
 
 	m, err := json.Marshal(reqData)

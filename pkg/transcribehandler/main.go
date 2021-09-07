@@ -26,13 +26,25 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/rtphandler"
 )
 
+const (
+	defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
+)
+
 // TranscribeHandler is interface for service handle
 type TranscribeHandler interface {
 	CallRecording(callID uuid.UUID, language, webhookURI, webhookMethod string) error
 
 	Recording(recordingID uuid.UUID, language string) (*transcribe.Transcribe, error)
 
-	StreamingTranscribeStart(ctx context.Context, referenceID uuid.UUID, transType transcribe.Type, language string, webhookURI string, webhookMethod string) (*transcribe.Transcribe, error)
+	StreamingTranscribeStart(
+		ctx context.Context,
+		userID int64,
+		referenceID uuid.UUID,
+		transType transcribe.Type,
+		language string,
+		webhookURI string,
+		webhookMethod string,
+	) (*transcribe.Transcribe, error)
 	StreamingTranscribeStop(ctx context.Context, id uuid.UUID) error
 
 	TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
@@ -82,18 +94,19 @@ var defaultListenIP string // listen ip address
 
 // streaming defines current streaming detail
 type streaming struct {
-	id     uuid.UUID
-	conn   *net.UDPConn
-	stream speechpb.Speech_StreamingRecognizeClient
+	id        uuid.UUID
+	direction transcribe.TranscriptDirection
+	conn      *net.UDPConn
+	stream    speechpb.Speech_StreamingRecognizeClient
 }
 
 // serviceStreamings contains currently serviced streaming list on the server
-var serviceStreamings map[uuid.UUID]*streaming
+var serviceStreamings map[string]*streaming
 
 func init() {
 	defaultListenIP = getListenIP()
 
-	serviceStreamings = map[uuid.UUID]*streaming{}
+	serviceStreamings = map[string]*streaming{}
 
 	prometheus.MustRegister(
 		promNumberCreateTotal,
@@ -159,6 +172,7 @@ func NewTranscribeHandler(
 }
 
 // getCurTime return current utc time string
+// 2006-01-02 15:04:05.999999999
 func getCurTime() string {
 	now := time.Now().UTC().String()
 	res := strings.TrimSuffix(now, " +0000 UTC")
@@ -167,6 +181,7 @@ func getCurTime() string {
 }
 
 // getCurTime return current utc time string
+// 2006-01-02T15:04:05Z07:00
 func getCurTimeRFC3339() string {
 	return time.Now().UTC().Format(time.RFC3339)
 }
@@ -206,22 +221,23 @@ func getIPPort(targetAddr net.Addr) (string, int) {
 	return srcIP, int(srcPort)
 }
 
-func addServiceStreaming(id uuid.UUID, conn *net.UDPConn, stream speechpb.Speech_StreamingRecognizeClient) {
+func addServiceStreaming(k string, id uuid.UUID, direction transcribe.TranscriptDirection, conn *net.UDPConn, stream speechpb.Speech_StreamingRecognizeClient) {
 	t := &streaming{
-		id:     id,
-		conn:   conn,
-		stream: stream,
+		id:        id,
+		direction: direction,
+		conn:      conn,
+		stream:    stream,
 	}
 
-	serviceStreamings[id] = t
+	serviceStreamings[k] = t
 }
 
-func deleteServiceStreaming(id uuid.UUID) {
-	delete(serviceStreamings, id)
+func deleteServiceStreaming(k string) {
+	delete(serviceStreamings, k)
 }
 
-func getServiceStreaming(id uuid.UUID) *streaming {
-	if v, ok := serviceStreamings[id]; ok {
+func getServiceStreaming(k string) *streaming {
+	if v, ok := serviceStreamings[k]; ok {
 		return v
 	}
 	return nil
