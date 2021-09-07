@@ -152,9 +152,9 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
 	////////////////////
-	// recordings
+	// webhooks
 	////////////////////
-	// POST /recordings
+	// POST /webhooks
 	case regV1Webhooks.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1WebhooksPost(m)
 		requestType = "/v1/webhooks"

@@ -1,6 +1,8 @@
 package webhookhandler
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
@@ -16,13 +18,21 @@ func (h *webhookHandler) SendWebhook(wh *webhook.Webhook) error {
 	)
 	log.Debugf("Sending an webhook. method: %s, uri: %s", wh.Method, wh.WebhookURI)
 
-	res, err := h.SendMessage(wh.WebhookURI, string(wh.Method), string(wh.DataType), wh.Data)
-	if err != nil {
-		// should we re-post this request?
-		log.Errorf("Could not send a request. err: %v", err)
-		return err
+	if wh.WebhookURI == "" {
+		log.Infof("Invalid uri target. uri: %s", wh.WebhookURI)
+		return fmt.Errorf("invalid uri target. uri: %s", wh.WebhookURI)
 	}
 
-	log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", wh.Method, wh.WebhookURI, res.StatusCode)
+	// send message
+	go func() {
+		res, err := h.SendMessage(wh.WebhookURI, string(wh.Method), string(wh.DataType), wh.Data)
+		if err != nil {
+			log.Errorf("Could not send a request. err: %v", err)
+			return
+		}
+		log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", wh.Method, wh.WebhookURI, res.StatusCode)
+
+	}()
+
 	return nil
 }
