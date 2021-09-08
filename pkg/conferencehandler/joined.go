@@ -8,6 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 func (h *conferenceHandler) joined(cn *channel.Channel, br *bridge.Bridge) error {
@@ -51,7 +52,7 @@ func (h *conferenceHandler) joined(cn *channel.Channel, br *bridge.Bridge) error
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return err
 	}
-	h.notifyHandler.CallUpdated(tmpCall)
+	h.notifyHandler.NotifyCall(ctx, tmpCall, notifyhandler.EventTypeCallUpdated)
 
 	// add the call to conference
 	if err := h.db.ConferenceAddCallID(ctx, br.ConferenceID, c.ID); err != nil {

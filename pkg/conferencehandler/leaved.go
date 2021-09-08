@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // leaved handles event the channel has left from the bridge
@@ -124,7 +125,7 @@ func (h *conferenceHandler) leavedChannelCall(cn *channel.Channel, br *bridge.Br
 		log.Errorf("Could not get call info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.CallUpdated(tmpCall)
+	h.notifyHandler.NotifyCall(ctx, tmpCall, notifyhandler.EventTypeCallUpdated)
 
 	// send a call action next
 	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {

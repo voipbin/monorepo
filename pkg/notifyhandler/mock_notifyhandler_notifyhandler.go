@@ -5,12 +5,65 @@
 package notifyhandler
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
+
+// MockWebhookMessage is a mock of WebhookMessage interface.
+type MockWebhookMessage struct {
+	ctrl     *gomock.Controller
+	recorder *MockWebhookMessageMockRecorder
+}
+
+// MockWebhookMessageMockRecorder is the mock recorder for MockWebhookMessage.
+type MockWebhookMessageMockRecorder struct {
+	mock *MockWebhookMessage
+}
+
+// NewMockWebhookMessage creates a new mock instance.
+func NewMockWebhookMessage(ctrl *gomock.Controller) *MockWebhookMessage {
+	mock := &MockWebhookMessage{ctrl: ctrl}
+	mock.recorder = &MockWebhookMessageMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockWebhookMessage) EXPECT() *MockWebhookMessageMockRecorder {
+	return m.recorder
+}
+
+// CreateWebhookEvent mocks base method.
+func (m *MockWebhookMessage) CreateWebhookEvent(t string) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateWebhookEvent", t)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateWebhookEvent indicates an expected call of CreateWebhookEvent.
+func (mr *MockWebhookMessageMockRecorder) CreateWebhookEvent(t interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWebhookEvent", reflect.TypeOf((*MockWebhookMessage)(nil).CreateWebhookEvent), t)
+}
+
+// GetWebhookURI mocks base method.
+func (m *MockWebhookMessage) GetWebhookURI() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWebhookURI")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetWebhookURI indicates an expected call of GetWebhookURI.
+func (mr *MockWebhookMessageMockRecorder) GetWebhookURI() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWebhookURI", reflect.TypeOf((*MockWebhookMessage)(nil).GetWebhookURI))
+}
 
 // MockNotifyHandler is a mock of NotifyHandler interface.
 type MockNotifyHandler struct {
@@ -35,62 +88,26 @@ func (m *MockNotifyHandler) EXPECT() *MockNotifyHandlerMockRecorder {
 	return m.recorder
 }
 
-// CallCreated mocks base method.
-func (m *MockNotifyHandler) CallCreated(c *call.Call) {
+// NotifyCall mocks base method.
+func (m *MockNotifyHandler) NotifyCall(ctx context.Context, c *call.Call, t EventType) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CallCreated", c)
+	m.ctrl.Call(m, "NotifyCall", ctx, c, t)
 }
 
-// CallCreated indicates an expected call of CallCreated.
-func (mr *MockNotifyHandlerMockRecorder) CallCreated(c interface{}) *gomock.Call {
+// NotifyCall indicates an expected call of NotifyCall.
+func (mr *MockNotifyHandlerMockRecorder) NotifyCall(ctx, c, t interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreated", reflect.TypeOf((*MockNotifyHandler)(nil).CallCreated), c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyCall", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyCall), ctx, c, t)
 }
 
-// CallHungup mocks base method.
-func (m *MockNotifyHandler) CallHungup(c *call.Call) {
+// NotifyRecording mocks base method.
+func (m *MockNotifyHandler) NotifyRecording(ctx context.Context, t EventType, c *recording.Recording) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CallHungup", c)
+	m.ctrl.Call(m, "NotifyRecording", ctx, t, c)
 }
 
-// CallHungup indicates an expected call of CallHungup.
-func (mr *MockNotifyHandlerMockRecorder) CallHungup(c interface{}) *gomock.Call {
+// NotifyRecording indicates an expected call of NotifyRecording.
+func (mr *MockNotifyHandlerMockRecorder) NotifyRecording(ctx, t, c interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHungup", reflect.TypeOf((*MockNotifyHandler)(nil).CallHungup), c)
-}
-
-// CallUpdated mocks base method.
-func (m *MockNotifyHandler) CallUpdated(c *call.Call) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CallUpdated", c)
-}
-
-// CallUpdated indicates an expected call of CallUpdated.
-func (mr *MockNotifyHandlerMockRecorder) CallUpdated(c interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallUpdated", reflect.TypeOf((*MockNotifyHandler)(nil).CallUpdated), c)
-}
-
-// RecordingFinished mocks base method.
-func (m *MockNotifyHandler) RecordingFinished(r *recording.Recording) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RecordingFinished", r)
-}
-
-// RecordingFinished indicates an expected call of RecordingFinished.
-func (mr *MockNotifyHandlerMockRecorder) RecordingFinished(r interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingFinished", reflect.TypeOf((*MockNotifyHandler)(nil).RecordingFinished), r)
-}
-
-// RecordingStarted mocks base method.
-func (m *MockNotifyHandler) RecordingStarted(r *recording.Recording) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RecordingStarted", r)
-}
-
-// RecordingStarted indicates an expected call of RecordingStarted.
-func (mr *MockNotifyHandlerMockRecorder) RecordingStarted(r interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStarted", reflect.TypeOf((*MockNotifyHandler)(nil).RecordingStarted), r)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyRecording", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyRecording), ctx, t, c)
 }

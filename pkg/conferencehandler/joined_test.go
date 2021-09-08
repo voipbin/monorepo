@@ -83,7 +83,7 @@ func TestJoined(t *testing.T) {
 		mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 		mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.call.ID, tt.bridge.ConferenceID)
 		mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-		mockNotify.EXPECT().CallUpdated(tt.call)
+		mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallUpdated)
 		mockDB.EXPECT().ConferenceAddCallID(gomock.Any(), tt.bridge.ConferenceID, tt.call.ID)
 
 		if err := h.joined(tt.channel, tt.bridge); err != nil {

@@ -42,3 +42,8 @@ const (
 	StatusRecording  Status = "recording"
 	StatusEnd        Status = "ended"
 )
+
+// GetWebhookURI returns webhook uri
+func (h *Recording) GetWebhookURI() string {
+	return h.WebhookURI
+}

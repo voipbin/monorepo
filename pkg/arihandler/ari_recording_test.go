@@ -61,7 +61,7 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 			mockDB.EXPECT().RecordingGetByFilename(gomock.Any(), tt.recording.Filename).Return(tt.recording, nil)
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusRecording, tt.timestamp).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
-			mockNotify.EXPECT().RecordingStarted(tt.recording)
+			mockNotify.EXPECT().NotifyRecording(gomock.Any(), notifyhandler.EventTypeRecordingStarted, tt.recording)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -121,7 +121,7 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
 			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
-			mockNotify.EXPECT().RecordingFinished(tt.recording)
+			mockNotify.EXPECT().NotifyRecording(gomock.Any(), notifyhandler.EventTypeRecordingFinished, tt.recording)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

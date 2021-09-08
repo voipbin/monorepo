@@ -36,6 +36,7 @@ var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-
 var rabbitQueueTTSRequest = flag.String("rabbit_queue_tts", "bin-manager.tts-manager.request", "rabbitmq queue name for tts request")
 var rabbitQueueRegistrarRequest = flag.String("rabbit_queue_registrar", "bin-manager.registrar-manager.request", "rabbitmq queue name for registrar request")
 var rabbitQueueNumberRequest = flag.String("rabbit_queue_number", "bin-manager.number-manager.request", "rabbitmq queue name for number request")
+var rabbitQueueWebhookRequest = flag.String("rabbit_queue_webhook", "bin-manager.webhook-manager.request", "rabbitmq queue name for webhook request")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
 
 var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.call-manager.event", "rabbitmq exchange name for event notify")
@@ -160,9 +161,10 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueTTSRequest,
 		*rabbitQueueRegistrarRequest,
 		*rabbitQueueNumberRequest,
+		*rabbitQueueWebhookRequest,
 	)
 
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, *rabbitExchangeDelay, *rabbitExchangeNotify)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
 	confHandler := conferencehandler.NewConferHandler(reqHandler, notifyHandler, db, cache)
 	eventHandler := arihandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confHandler)
@@ -193,9 +195,10 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueTTSRequest,
 		*rabbitQueueRegistrarRequest,
 		*rabbitQueueNumberRequest,
+		*rabbitQueueWebhookRequest,
 	)
 
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, *rabbitExchangeDelay, *rabbitExchangeNotify)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
 	conferenceHandler := conferencehandler.NewConferHandler(reqHandler, notifyHandler, db, cache)
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler, conferenceHandler)

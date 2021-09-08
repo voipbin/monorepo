@@ -118,9 +118,9 @@ const (
 )
 
 // Matches return true if the given items are the same
-func (a *Call) Matches(x interface{}) bool {
+func (h *Call) Matches(x interface{}) bool {
 	comp := x.(*Call)
-	c := *a
+	c := *h
 
 	if c.ChannelID == TestChannelID {
 		c.ChannelID = comp.ChannelID
@@ -134,8 +134,13 @@ func (a *Call) Matches(x interface{}) bool {
 	return reflect.DeepEqual(c, *comp)
 }
 
-func (a *Call) String() string {
-	return fmt.Sprintf("%v", *a)
+func (h *Call) String() string {
+	return fmt.Sprintf("%v", *h)
+}
+
+// GetWebhookURI return webhook uri
+func (h *Call) GetWebhookURI() string {
+	return h.WebhookURI
 }
 
 // NewCall creates a call struct and return it.

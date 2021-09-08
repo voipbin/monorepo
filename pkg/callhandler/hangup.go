@@ -8,6 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // Hangup Hangup the call
@@ -43,7 +44,7 @@ func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason
 		logrus.Errorf("Could not get hungup call data. call: %s, err: %v", c.ID, err)
 		return nil
 	}
-	h.notifyHandler.CallHungup(tmpCall)
+	h.notifyHandler.NotifyCall(ctx, tmpCall, notifyhandler.EventTypeCallHungup)
 
 	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
 	return nil

@@ -469,3 +469,17 @@ func (mr *MockRequestHandlerMockRecorder) TTSSpeechesPOST(text, gender, language
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSSpeechesPOST", reflect.TypeOf((*MockRequestHandler)(nil).TTSSpeechesPOST), text, gender, language)
 }
+
+// WMWebhookPOST mocks base method.
+func (m *MockRequestHandler) WMWebhookPOST(webhookMethod, webhookURI, dataType string, data []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WMWebhookPOST", webhookMethod, webhookURI, dataType, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WMWebhookPOST indicates an expected call of WMWebhookPOST.
+func (mr *MockRequestHandlerMockRecorder) WMWebhookPOST(webhookMethod, webhookURI, dataType, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMWebhookPOST", reflect.TypeOf((*MockRequestHandler)(nil).WMWebhookPOST), webhookMethod, webhookURI, dataType, data)
+}

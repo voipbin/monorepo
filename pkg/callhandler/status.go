@@ -8,6 +8,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // updateStatusRinging updates the call's status to ringing
@@ -32,7 +33,7 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 	if err != nil {
 		return err
 	}
-	h.notifyHandler.CallUpdated(res)
+	h.notifyHandler.NotifyCall(ctx, res, notifyhandler.EventTypeCallUpdated)
 
 	return nil
 }
@@ -59,7 +60,7 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 	if err != nil {
 		return err
 	}
-	h.notifyHandler.CallUpdated(res)
+	h.notifyHandler.NotifyCall(ctx, res, notifyhandler.EventTypeCallUpdated)
 
 	if c.Direction == call.DirectionIncoming {
 		// nothing to do with incoming call at here.
