@@ -155,6 +155,9 @@ type RequestHandler interface {
 
 	// tts speeches
 	TTSSpeechesPOST(text, gender, language string) (string, error)
+
+	// wm webhooks
+	WMWebhookPOST(webhookMethod, webhookURI, dataType string, data []byte) error
 }
 
 type requestHandler struct {
@@ -167,10 +170,11 @@ type requestHandler struct {
 	queueTTS       string
 	queueRegistrar string
 	queueNumber    string
+	queueWebhook   string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueTTS, queueRegistrar, queueNumber string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueTTS, queueRegistrar, queueNumber, queueWebhook string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
@@ -180,6 +184,7 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, qu
 		queueTTS:       queueTTS,
 		queueRegistrar: queueRegistrar,
 		queueNumber:    queueNumber,
+		queueWebhook:   queueWebhook,
 	}
 
 	return h
@@ -279,6 +284,12 @@ func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.Requ
 func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(r.queueTTS, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestWM send a request to the webhook-manager and return the response
+func (r *requestHandler) sendRequestWM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueWebhook, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestCall send a request to the Asterisk-proxy and return the response

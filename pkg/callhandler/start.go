@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
@@ -77,7 +78,7 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call,
 		return nil, err
 	}
 
-	h.notifyHandler.CallCreated(res)
+	h.notifyHandler.NotifyCall(ctx, res, notifyhandler.EventTypeCallCreated)
 	return res, nil
 }
 

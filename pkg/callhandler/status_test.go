@@ -55,7 +55,7 @@ func TestUpdateStatusRinging(t *testing.T) {
 
 		mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusRinging, tt.channel.TMRinging).Return(nil)
 		mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-		mockNotify.EXPECT().CallUpdated(tt.call)
+		mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallUpdated)
 
 		if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -199,7 +199,7 @@ func TestUpdateStatusProgressing(t *testing.T) {
 
 		mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer).Return(nil)
 		mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-		mockNotify.EXPECT().CallUpdated(tt.call)
+		mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallUpdated)
 
 		if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)

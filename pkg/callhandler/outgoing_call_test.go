@@ -208,7 +208,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
-			mockNotify.EXPECT().CallCreated(tt.expectCall)
+			mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.expectCall, notifyhandler.EventTypeCallCreated)
 			mockReq.EXPECT().FlowActvieFlowPost(tt.id, tt.flowID).Return(tt.af, nil)
 			mockReq.EXPECT().AstChannelCreate(requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", contextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
 

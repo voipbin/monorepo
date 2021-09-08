@@ -15,8 +15,15 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
+
+// WebhookMessage defines
+type WebhookMessage interface {
+	GetWebhookURI() string
+	CreateWebhookEvent(t string) ([]byte, error)
+}
 
 // EventType string
 type EventType string
@@ -85,27 +92,23 @@ func init() {
 
 // NotifyHandler intreface
 type NotifyHandler interface {
-	// call
-	CallCreated(c *call.Call)
-	CallUpdated(c *call.Call)
-	CallHungup(c *call.Call)
-
-	// recording
-	RecordingStarted(r *recording.Recording)
-	RecordingFinished(r *recording.Recording)
+	NotifyCall(ctx context.Context, c *call.Call, t EventType)
+	NotifyRecording(ctx context.Context, t EventType, c *recording.Recording)
 }
 
 type notifyHandler struct {
-	sock rabbitmqhandler.Rabbit
+	sock       rabbitmqhandler.Rabbit
+	reqHandler requesthandler.RequestHandler
 
 	exchangeDelay  string
 	exchangeNotify string
 }
 
 // NewNotifyHandler create NotifyHandler
-func NewNotifyHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, exchangeEvent string) NotifyHandler {
+func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, exchangeDelay, exchangeEvent string) NotifyHandler {
 	h := &notifyHandler{
-		sock: sock,
+		sock:       sock,
+		reqHandler: reqHandler,
 
 		exchangeDelay:  exchangeDelay,
 		exchangeNotify: exchangeEvent,
@@ -128,8 +131,19 @@ func uriUnescape(u string) string {
 	return res
 }
 
+// PublishNotify publishes a notify message.
+func (r *notifyHandler) PublishNotify(eventType string, data json.RawMessage) error {
+
+	log.WithFields(log.Fields{
+		"type": eventType,
+		"data": data,
+	}).Debugf("Publishing the notification. type: %s", eventType)
+
+	return r.publishNotify(eventType, dataTypeText, data, requestTimeoutDefault)
+}
+
 // publishNotify publishes a notify message.
-func (r *notifyHandler) publishNotify(eventType EventType, dataType string, data json.RawMessage, timeout int) error {
+func (r *notifyHandler) publishNotify(eventType string, dataType string, data json.RawMessage, timeout int) error {
 
 	log.WithFields(log.Fields{
 		"type":      eventType,
@@ -139,7 +153,7 @@ func (r *notifyHandler) publishNotify(eventType EventType, dataType string, data
 
 	// creat a request message
 	evt := &rabbitmqhandler.Event{
-		Type:      string(eventType),
+		Type:      eventType,
 		Publisher: EventPublisher,
 		DataType:  dataType,
 		Data:      data,

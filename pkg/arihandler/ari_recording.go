@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // eventHandlerRecordingStarted handles RecordingStarted ARI event
@@ -41,7 +42,7 @@ func (h *eventHandler) eventHandlerRecordingStarted(ctx context.Context, evt int
 		log.Errorf("Could not get the updated recording info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.RecordingStarted(tmpRecording)
+	h.notifyHandler.NotifyRecording(ctx, notifyhandler.EventTypeRecordingStarted, tmpRecording)
 
 	return nil
 }
@@ -82,7 +83,7 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 		log.Errorf("Could not get the updated recording info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.RecordingFinished(tmpRecording)
+	h.notifyHandler.NotifyRecording(ctx, notifyhandler.EventTypeRecordingFinished, tmpRecording)
 
 	// set empty recordID
 	switch r.Type {
