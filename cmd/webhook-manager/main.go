@@ -18,7 +18,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler"
-	subscribehandler "gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/subsribehandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
 )
 
@@ -33,7 +32,6 @@ var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-mana
 
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.webhook-manager.request", "rabbitmq queue name for request listen")
 var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.webhook-manager.event", "rabbitmq queue name for event notify")
-var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.webhook-manager.subscribe", "rabbitmq queue name for message subscribe")
 
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
@@ -130,37 +128,6 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// run listen
 	if err := runListen(db, cache); err != nil {
-		return err
-	}
-
-	// run subscribe
-	if err := runSubscribe(db, cache); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// runSubscribe runs the subscribed event handler
-func runSubscribe(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
-
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
-
-	subHandler := subscribehandler.NewSubscribeHandler(
-		rabbitSock,
-		db,
-		cache,
-		*rabbitQueueSubscribe,
-		*rabbitListenSubscribes,
-	)
-
-	// run
-	if err := subHandler.Run(*rabbitQueueSubscribe, *rabbitListenSubscribes); err != nil {
 		return err
 	}
 

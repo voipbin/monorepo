@@ -21,8 +21,6 @@ Usage of ./webhook-manager:
         rabbitmq queue name for request listen (default "bin-manager.webhook-manager.request")
   -rabbit_queue_notify string
         rabbitmq queue name for event notify (default "bin-manager.webhook-manager.event")
-  -rabbit_queue_susbscribe string
-        rabbitmq queue name for message subscribe (default "bin-manager.webhook-manager.subscribe")
   -redis_addr string
         redis address. (default "127.0.0.1:6379")
   -redis_db int
