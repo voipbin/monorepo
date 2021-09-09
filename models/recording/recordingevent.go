@@ -6,12 +6,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// WebhookEvent defines recording event for webhook
-type WebhookEvent struct {
-	Type string           `json:"type"` // event type
-	Data WebhookEventData `json:"data"`
-}
-
 // WebhookEventData struct represent record information
 type WebhookEventData struct {
 	ID          uuid.UUID `json:"id"`
@@ -31,21 +25,18 @@ type WebhookEventData struct {
 
 // CreateWebhookEvent generates webhook event
 func (h *Recording) CreateWebhookEvent(t string) ([]byte, error) {
-	e := &WebhookEvent{
-		Type: t,
-		Data: WebhookEventData{
-			ID:          h.ID,
-			Type:        string(h.Type),
-			ReferenceID: h.ReferenceID,
-			Status:      string(h.Status),
-			Format:      h.Format,
-			WebhookURI:  h.WebhookURI,
-			TMStart:     h.TMStart,
-			TMEnd:       h.TMEnd,
-			TMCreate:    h.TMCreate,
-			TMUpdate:    h.TMUpdate,
-			TMDelete:    h.TMDelete,
-		},
+	e := &WebhookEventData{
+		ID:          h.ID,
+		Type:        string(h.Type),
+		ReferenceID: h.ReferenceID,
+		Status:      string(h.Status),
+		Format:      h.Format,
+		WebhookURI:  h.WebhookURI,
+		TMStart:     h.TMStart,
+		TMEnd:       h.TMEnd,
+		TMCreate:    h.TMCreate,
+		TMUpdate:    h.TMUpdate,
+		TMDelete:    h.TMDelete,
 	}
 
 	m, err := json.Marshal(e)

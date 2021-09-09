@@ -9,12 +9,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
-// WebhookEvent defines
-type WebhookEvent struct {
-	Type string           `json:"type"`
-	Data WebhookEventData `json:"data"`
-}
-
 // WebhookEventData defines
 type WebhookEventData struct {
 	// identity
@@ -52,34 +46,31 @@ type WebhookEventData struct {
 
 // CreateWebhookEvent generate WebhookEvent
 func (h *Call) CreateWebhookEvent(t string) ([]byte, error) {
-	e := &WebhookEvent{
-		Type: t,
-		Data: WebhookEventData{
-			ID:     h.ID,
-			FlowID: h.FlowID,
-			ConfID: h.ConfID,
-			Type:   string(h.Type),
+	e := &WebhookEventData{
+		ID:     h.ID,
+		FlowID: h.FlowID,
+		ConfID: h.ConfID,
+		Type:   string(h.Type),
 
-			MasterCallID:   h.MasterCallID,
-			ChainedCallIDs: h.ChainedCallIDs,
-			RecordingID:    h.RecordingID,
-			RecordingIDs:   h.RecordingIDs,
+		MasterCallID:   h.MasterCallID,
+		ChainedCallIDs: h.ChainedCallIDs,
+		RecordingID:    h.RecordingID,
+		RecordingIDs:   h.RecordingIDs,
 
-			Source:      h.Source,
-			Destination: h.Destination,
-			Status:      string(h.Status),
-			Action:      h.Action,
-			Direction:   string(h.Direction),
+		Source:      h.Source,
+		Destination: h.Destination,
+		Status:      string(h.Status),
+		Action:      h.Action,
+		Direction:   string(h.Direction),
 
-			HangupBy:      string(h.HangupBy),
-			HangupReason:  string(h.HangupReason),
-			WebhookURI:    h.WebhookURI,
-			TMCreate:      h.TMCreate,
-			TMUpdate:      h.TMUpdate,
-			TMProgressing: h.TMProgressing,
-			TMRinging:     h.TMRinging,
-			TMHangup:      h.TMHangup,
-		},
+		HangupBy:      string(h.HangupBy),
+		HangupReason:  string(h.HangupReason),
+		WebhookURI:    h.WebhookURI,
+		TMCreate:      h.TMCreate,
+		TMUpdate:      h.TMUpdate,
+		TMProgressing: h.TMProgressing,
+		TMRinging:     h.TMRinging,
+		TMHangup:      h.TMHangup,
 	}
 
 	m, err := json.Marshal(e)
