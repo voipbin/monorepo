@@ -157,7 +157,7 @@ type RequestHandler interface {
 	TTSSpeechesPOST(text, gender, language string) (string, error)
 
 	// wm webhooks
-	WMWebhookPOST(webhookMethod, webhookURI, dataType string, data []byte) error
+	WMWebhookPOST(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error
 }
 
 type requestHandler struct {

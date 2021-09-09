@@ -17,7 +17,7 @@ require (
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210323024036-8c44f8dca2de
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210323024756-a7b0838b069d
-	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210410172355-d1894606b9df
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210909052905-558ef2d8332e
 	golang.org/x/net v0.0.0-20210415231046-e915ea6b2b7d // indirect
 	golang.org/x/sys v0.0.0-20210419170143-37df388d1f33 // indirect
 	google.golang.org/genproto v0.0.0-20210416161957-9910b6c460de // indirect

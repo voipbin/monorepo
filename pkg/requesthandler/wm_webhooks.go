@@ -9,23 +9,24 @@ import (
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler/models/request"
 )
 
-func (r *requestHandler) WMWebhookPOST(webhookMethod, webhookURI, dataType string, data []byte) error {
+func (r *requestHandler) WMWebhookPOST(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error {
 
 	uri := fmt.Sprintf("/v1/webhooks")
 
 	m, err := json.Marshal(request.V1DataWebhooksPost{
-		Webhook: webhook.Webhook{
-			Method:     webhook.MethodType(webhookMethod),
-			WebhookURI: webhookURI,
-			DataType:   webhook.DataType(dataType),
-			Data:       data,
+		Method:     webhook.MethodType(webhookMethod),
+		WebhookURI: webhookURI,
+		DataType:   webhook.DataType(dataType),
+		Data: request.WebhookData{
+			Type: messageType,
+			Data: messageData,
 		},
 	})
 	if err != nil {
 		return err
 	}
 
-	res, err := r.sendRequestTTS(uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestWM(uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
