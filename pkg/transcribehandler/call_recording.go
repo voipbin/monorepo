@@ -36,7 +36,7 @@ func (h *transcribeHandler) CallRecording(callID uuid.UUID, language, webhookURI
 
 		// send webhook
 		go func() {
-			if err := h.sendWebhook(s); err != nil {
+			if err := h.sendWebhook(transcribeEventTranscript, s); err != nil {
 				logrus.Errorf("Could not send the webhook correctly. err: %v", err)
 			}
 		}()

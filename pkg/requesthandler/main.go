@@ -96,7 +96,7 @@ type RequestHandler interface {
 
 	SMRecordingGet(id uuid.UUID) (*smbucketrecording.BucketRecording, error)
 
-	WMWebhookPost(reqMethod, reqURI, reqDataType string, reqData []byte) error
+	WMWebhookPost(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error
 }
 
 type requestHandler struct {

@@ -9,8 +9,17 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
 )
 
+type transcribeEvent string
+
+const (
+	transcribeEventStart transcribeEvent = "transcribe_start"
+	transcribeEventStop  transcribeEvent = "transcribe_stop"
+
+	transcribeEventTranscript transcribeEvent = "transcribe_transcript"
+)
+
 // sendWebhook send the transcript result via webhook.
-func (h *transcribeHandler) sendWebhook(s *transcribe.Transcribe) error {
+func (h *transcribeHandler) sendWebhook(e transcribeEvent, s *transcribe.Transcribe) error {
 
 	d, err := json.Marshal(s)
 	if err != nil {
@@ -19,7 +28,7 @@ func (h *transcribeHandler) sendWebhook(s *transcribe.Transcribe) error {
 	}
 
 	go func() {
-		if err := h.reqHandler.WMWebhookPost(s.WebhookMethod, s.WebhookURI, requesthandler.ContentTypeJSON, d); err != nil {
+		if err := h.reqHandler.WMWebhookPost(s.WebhookMethod, s.WebhookURI, requesthandler.ContentTypeJSON, string(e), d); err != nil {
 			logrus.Errorf("Could not send the webhoook. err: %v", err)
 			return
 		}
@@ -50,7 +59,7 @@ func (h *transcribeHandler) sendWebhookTranscript(s *transcribe.Transcribe, t *t
 	}
 
 	go func() {
-		if err := h.reqHandler.WMWebhookPost(s.WebhookMethod, s.WebhookURI, requesthandler.ContentTypeJSON, d); err != nil {
+		if err := h.reqHandler.WMWebhookPost(s.WebhookMethod, s.WebhookURI, requesthandler.ContentTypeJSON, string(transcribeEventTranscript), d); err != nil {
 			log.Errorf("Could not send the webhoook. transcript: %v, err: %v", t, err)
 			return
 		}

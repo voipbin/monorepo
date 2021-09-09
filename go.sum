@@ -568,8 +568,9 @@ gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210409195628-27c9b79
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210413030010-98987a34c81d/go.mod h1:mnibhadVj2MoBohygBaJnt8HJmacVlKmSfW3cV3/OPQ=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210317181219-9039fab1cff3/go.mod h1:Ch6XLOR5rU+yI4Afq7daYwB519TaBtltBP7f1j6O3wA=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210323024756-a7b0838b069d/go.mod h1:Ch6XLOR5rU+yI4Afq7daYwB519TaBtltBP7f1j6O3wA=
-gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210410172355-d1894606b9df h1:VbouG+h96SM3TRiFu0A7Qki3+zjJmbFK+nU2VKIP0n0=
 gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210410172355-d1894606b9df/go.mod h1:EK3tII9+SXxX3o2ekPyDeiNVRHv4JSyxdal0sLmvODM=
+gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210909052905-558ef2d8332e h1:QAZDdd0jKuktYp40bUrYFhhwsTCWHy1R/G+V3J+nxYw=
+gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210909052905-558ef2d8332e/go.mod h1:xHaiZammTUG74b3YrSeQtb6UD70gNuqEXZrgqNU2508=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738/go.mod h1:dnLIgRNXwCJa5e+c6mIZCrds/GIG4ncV9HhK5PX7jPg=
 go.opencensus.io v0.20.1/go.mod h1:6WKK9ahsWS3RSO+PY9ZHZUfv2irvY6gN279GOPZjmmk=
