@@ -99,15 +99,15 @@ func (mr *MockRequestHandlerMockRecorder) SMRecordingGet(id interface{}) *gomock
 }
 
 // WMWebhookPost mocks base method.
-func (m *MockRequestHandler) WMWebhookPost(reqMethod, reqURI, reqDataType string, reqData []byte) error {
+func (m *MockRequestHandler) WMWebhookPost(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WMWebhookPost", reqMethod, reqURI, reqDataType, reqData)
+	ret := m.ctrl.Call(m, "WMWebhookPost", webhookMethod, webhookURI, dataType, messageType, messageData)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WMWebhookPost indicates an expected call of WMWebhookPost.
-func (mr *MockRequestHandlerMockRecorder) WMWebhookPost(reqMethod, reqURI, reqDataType, reqData interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) WMWebhookPost(webhookMethod, webhookURI, dataType, messageType, messageData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMWebhookPost", reflect.TypeOf((*MockRequestHandler)(nil).WMWebhookPost), reqMethod, reqURI, reqDataType, reqData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMWebhookPost", reflect.TypeOf((*MockRequestHandler)(nil).WMWebhookPost), webhookMethod, webhookURI, dataType, messageType, messageData)
 }
