@@ -42,8 +42,6 @@ spec:
             - 'bin-manager.webhook-manager.request'
             - '-rabbit_queue_notify'
             - 'bin-manager.webhook-manager.event'
-            - '-rabbit_queue_susbscribe'
-            - 'bin-manager.webhook-manager.subscribe'
             - '-redis_addr'
             - '10.164.15.220:6379'
             - '-redis_db'
