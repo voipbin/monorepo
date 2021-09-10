@@ -15,9 +15,9 @@ func (h *webhookHandler) SendMessage(uri string, method string, dataType string,
 		logrus.Fields{
 			"uri":    uri,
 			"method": method,
-			"data":   data,
 		},
 	)
+	log.Debugf("Sending a message. data: %v", data)
 
 	// create request
 	req, err := http.NewRequest(method, uri, bytes.NewBuffer(data))
@@ -50,8 +50,8 @@ func (h *webhookHandler) SendMessage(uri string, method string, dataType string,
 
 	log.WithFields(
 		logrus.Fields{
-			"response": resp,
+			"response_status": resp.StatusCode,
 		},
-	).Debugf("Sent the event correctly. response_status: %d", resp.StatusCode)
+	).Debugf("Sent the event correctly. resp: %v", resp)
 	return resp, nil
 }
