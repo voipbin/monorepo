@@ -25,30 +25,35 @@ func TestGetTypeContextIncomingCall(t *testing.T) {
 	type test struct {
 		name       string
 		domain     string
-		expectType call.Type
+		expectType string
 	}
 
 	tests := []test{
 		{
 			"normal conference",
 			"conference.voipbin.net",
-			call.TypeConference,
+			domainTypeConference,
 		},
 		{
 			"normal sip-service",
 			"sip-service.voipbin.net",
-			call.TypeSipService,
+			domainTypeSIPService,
+		},
+		{
+			"pstn",
+			"pstn.voipbin.net",
+			domainTypePSTN,
 		},
 		{
 			"None type",
 			"randome-invalid-domain.voipbin.net",
-			call.TypeNone,
+			domainTypeNone,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := getTypeContextIncomingCall(tt.domain)
+			res := getDomainTypeIncomingCall(tt.domain)
 			if res != tt.expectType {
 				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectType, res)
 			}

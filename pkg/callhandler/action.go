@@ -102,14 +102,25 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 func (h *callHandler) ActionNext(c *call.Call) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"call": c.ID,
-			"flow": c.FlowID,
+			"call_id": c.ID,
+			"flow_id": c.FlowID,
 		})
 	log.WithFields(
 		logrus.Fields{
 			"action": c.Action,
 		},
 	).Debug("Getting a next action for the call.")
+
+	if c.Status == call.StatusHangup {
+		log.WithField("call", c).Debug("The call has hungup already.")
+		return nil
+	}
+
+	if c.FlowID == uuid.Nil {
+		log.WithField("call", c).Info("No flow id found. Hangup the call.")
+		h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		return nil
+	}
 
 	// get next action
 	nextAction, err := h.reqHandler.FlowActvieFlowNextGet(c.ID, c.Action.ID)
