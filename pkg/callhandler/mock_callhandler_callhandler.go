@@ -12,6 +12,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -66,6 +67,20 @@ func (m *MockCallHandler) ARIChannelDtmfReceived(cn *channel.Channel, digit stri
 func (mr *MockCallHandlerMockRecorder) ARIChannelDtmfReceived(cn, digit, duration interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelDtmfReceived", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelDtmfReceived), cn, digit, duration)
+}
+
+// ARIChannelLeftBridge mocks base method.
+func (m *MockCallHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIChannelLeftBridge", cn, br)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIChannelLeftBridge indicates an expected call of ARIChannelLeftBridge.
+func (mr *MockCallHandlerMockRecorder) ARIChannelLeftBridge(cn, br interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockCallHandler)(nil).ARIChannelLeftBridge), cn, br)
 }
 
 // ARIChannelStateChange mocks base method.

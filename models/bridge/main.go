@@ -3,13 +3,11 @@ package bridge
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
 // Bridge struct represent asterisk's bridge information
@@ -30,10 +28,9 @@ type Bridge struct {
 
 	ChannelIDs []string
 
-	// conference info
-	ConferenceID   uuid.UUID
-	ConferenceType conference.Type
-	ConferenceJoin bool
+	// reference
+	ReferenceType ReferenceType
+	ReferenceID   uuid.UUID
 
 	TMCreate string
 	TMUpdate string
@@ -77,42 +74,24 @@ const (
 	TypeVideoSFU   Type = "video_sfu"
 )
 
+// ReferenceType defines
+type ReferenceType string
+
+// List of Reference types
+const (
+	ReferenceTypeUnknown         ReferenceType = "unknown"
+	ReferenceTypeCall            ReferenceType = "call"       // call bridge
+	ReferenceTypeCallSnoop       ReferenceType = "call-snoop" // snoop bridge for the call. usually used by the spy channel to the call
+	ReferenceTypeConference      ReferenceType = "conference"
+	ReferenceTypeConferenceSnoop ReferenceType = "conference-snoop" // snoop bridge for the conference. usually used by the spy channel to the conference bridge
+)
+
 // NewBridgeByBridgeCreated creates Bridge based on ARI BridgeCreated event
 func NewBridgeByBridgeCreated(e *ari.BridgeCreated) *Bridge {
-	b := &Bridge{
-		AsteriskID: e.AsteriskID,
-		ID:         e.Bridge.ID,
-		Name:       e.Bridge.Name,
 
-		// info
-		Type: Type(e.Bridge.BridgeType),
-		Tech: Tech(e.Bridge.Technology),
-
-		Class:   e.Bridge.BridgeClass,
-		Creator: e.Bridge.Creator,
-
-		VideoMode:     e.Bridge.VideoMode,
-		VideoSourceID: e.Bridge.VideoSourceID,
-
-		ChannelIDs: e.Bridge.Channels,
-
-		ConferenceID:   uuid.Nil,
-		ConferenceType: conference.TypeNone,
-		ConferenceJoin: false,
-
-		TMCreate: string(e.Timestamp),
-	}
-
-	mapParse := parseBridgeName(b.Name)
-	if mapParse["conference_id"] != "" {
-		b.ConferenceID = uuid.FromStringOrNil(mapParse["conference_id"])
-	}
-	if mapParse["conference_type"] != "" {
-		b.ConferenceType = conference.Type(mapParse["conference_type"])
-	}
-	if mapParse["join"] != "" {
-		b.ConferenceJoin, _ = strconv.ParseBool(mapParse["join"])
-	}
+	b := NewBridgeByARIBridge(&e.Bridge)
+	b.AsteriskID = e.AsteriskID
+	b.TMCreate = string(e.Timestamp)
 
 	return b
 }
@@ -156,21 +135,17 @@ func NewBridgeByARIBridge(e *ari.Bridge) *Bridge {
 
 		ChannelIDs: e.Channels,
 
-		ConferenceID:   uuid.Nil,
-		ConferenceType: conference.TypeNone,
-		ConferenceJoin: false,
+		ReferenceType: ReferenceTypeUnknown,
+		ReferenceID:   uuid.Nil,
 	}
 
 	mapParse := parseBridgeName(b.Name)
-	if mapParse["conference_id"] != "" {
-		b.ConferenceID = uuid.FromStringOrNil(mapParse["conference_id"])
+
+	// reference info
+	if mapParse["reference_type"] != "" {
+		b.ReferenceType = ReferenceType(mapParse["reference_type"])
 	}
-	if mapParse["conference_type"] != "" {
-		b.ConferenceType = conference.Type(mapParse["conference_type"])
-	}
-	if mapParse["join"] != "" {
-		b.ConferenceJoin, _ = strconv.ParseBool(mapParse["join"])
-	}
+	b.ReferenceID = uuid.FromStringOrNil(mapParse["reference_id"])
 
 	return b
 }

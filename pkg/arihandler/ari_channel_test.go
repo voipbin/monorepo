@@ -209,6 +209,7 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 			&channel.Channel{
 				ID:         "1589020563.4752",
 				AsteriskID: "42:01:0a:a4:00:05",
+				Type:       channel.TypeJoin,
 			},
 			&bridge.Bridge{
 				ID:         "a6abbe41-2a83-447b-8175-e52e5dea000f",
@@ -223,9 +224,6 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.ID, tt.bridge.ID)
 			mockDB.EXPECT().BridgeAddChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
-			mockConf.EXPECT().ARIChannelEnteredBridge(tt.channel, tt.bridge).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -261,7 +259,7 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			"channel left from the conference bridge",
 			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
@@ -272,8 +270,60 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 			},
 			&bridge.Bridge{
-				ID:         "a6abbe41-2a83-447b-8175-e52e5dea000f",
+				ID:            "a6abbe41-2a83-447b-8175-e52e5dea000f",
+				AsteriskID:    "42:01:0a:a4:00:05",
+				ReferenceType: bridge.ReferenceTypeConference,
+			},
+		},
+		{
+			"channel left from the conference snoop bridge",
+			&rabbitmqhandler.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     []byte(`{"type":"ChannelLeftBridge","timestamp":"2020-05-09T10:53:39.181+0000","bridge":{"id":"a6abbe41-2a83-447b-8175-e52e5dea000f","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":["915befe7-7fff-490e-8432-ffe063d5c46d"],"creationtime":"2020-05-09T10:36:04.360+0000","video_mode":"talker"},"channel":{"id":"1589020563.4752","name":"PJSIP/in-voipbin-000008cc","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"999999","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=B0SUsFI1eo,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-09T10:36:03.792+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
+			},
+			&channel.Channel{
+				ID:         "1589020563.4752",
 				AsteriskID: "42:01:0a:a4:00:05",
+			},
+			&bridge.Bridge{
+				ID:            "a6abbe41-2a83-447b-8175-e52e5dea000f",
+				AsteriskID:    "42:01:0a:a4:00:05",
+				ReferenceType: bridge.ReferenceTypeConferenceSnoop,
+			},
+		},
+		{
+			"channel left from the call bridge",
+			&rabbitmqhandler.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     []byte(`{"type":"ChannelLeftBridge","timestamp":"2020-05-09T10:53:39.181+0000","bridge":{"id":"a6abbe41-2a83-447b-8175-e52e5dea000f","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":["915befe7-7fff-490e-8432-ffe063d5c46d"],"creationtime":"2020-05-09T10:36:04.360+0000","video_mode":"talker"},"channel":{"id":"1589020563.4752","name":"PJSIP/in-voipbin-000008cc","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"999999","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=B0SUsFI1eo,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-09T10:36:03.792+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
+			},
+			&channel.Channel{
+				ID:         "1589020563.4752",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
+			&bridge.Bridge{
+				ID:            "a6abbe41-2a83-447b-8175-e52e5dea000f",
+				AsteriskID:    "42:01:0a:a4:00:05",
+				ReferenceType: bridge.ReferenceTypeCall,
+			},
+		},
+		{
+			"channel left from the call snoop bridge",
+			&rabbitmqhandler.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     []byte(`{"type":"ChannelLeftBridge","timestamp":"2020-05-09T10:53:39.181+0000","bridge":{"id":"a6abbe41-2a83-447b-8175-e52e5dea000f","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":["915befe7-7fff-490e-8432-ffe063d5c46d"],"creationtime":"2020-05-09T10:36:04.360+0000","video_mode":"talker"},"channel":{"id":"1589020563.4752","name":"PJSIP/in-voipbin-000008cc","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"999999","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=B0SUsFI1eo,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-09T10:36:03.792+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
+			},
+			&channel.Channel{
+				ID:         "1589020563.4752",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
+			&bridge.Bridge{
+				ID:            "a6abbe41-2a83-447b-8175-e52e5dea000f",
+				AsteriskID:    "42:01:0a:a4:00:05",
+				ReferenceType: bridge.ReferenceTypeCallSnoop,
 			},
 		},
 	}
@@ -286,7 +336,14 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 			mockDB.EXPECT().BridgeRemoveChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
-			mockConf.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
+
+			switch tt.bridge.ReferenceType {
+			case bridge.ReferenceTypeConference, bridge.ReferenceTypeConferenceSnoop:
+				mockConf.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
+
+			case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
+				mockCall.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
+			}
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

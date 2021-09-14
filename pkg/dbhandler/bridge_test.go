@@ -11,7 +11,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 )
 
@@ -43,75 +42,39 @@ func TestBridgeCreate(t *testing.T) {
 			},
 		},
 		{
-			"have Conference id",
+			"reference type call",
 			&bridge.Bridge{
-				AsteriskID:   "3e:50:6b:43:bb:30",
-				ID:           "36d8b0be-9316-11ea-b829-6be92ca1faee",
-				ConferenceID: uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
-				TMCreate:     "2020-04-18T03:22:17.995000",
+				AsteriskID:    "3e:50:6b:43:bb:30",
+				ID:            "36d8b0be-9316-11ea-b829-6be92ca1faee",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
+				TMCreate:      "2020-04-18T03:22:17.995000",
 			},
 			&bridge.Bridge{
-				AsteriskID:   "3e:50:6b:43:bb:30",
-				ID:           "36d8b0be-9316-11ea-b829-6be92ca1faee",
-				ChannelIDs:   []string{},
-				ConferenceID: uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
-				TMCreate:     "2020-04-18T03:22:17.995000",
-			},
-		},
-		{
-			"have Conference id and type",
-			&bridge.Bridge{
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ID:             "5149007a-9316-11ea-9de0-5f9cb2e8c235",
-				ConferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
-				ConferenceType: conference.TypeConference,
-				TMCreate:       "2020-04-18T03:22:17.995000",
-			},
-			&bridge.Bridge{
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ID:             "5149007a-9316-11ea-9de0-5f9cb2e8c235",
-				ChannelIDs:     []string{},
-				ConferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
-				ConferenceType: conference.TypeConference,
-				TMCreate:       "2020-04-18T03:22:17.995000",
+				AsteriskID:    "3e:50:6b:43:bb:30",
+				ID:            "36d8b0be-9316-11ea-b829-6be92ca1faee",
+				ChannelIDs:    []string{},
+				ReferenceType: bridge.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
+				TMCreate:      "2020-04-18T03:22:17.995000",
 			},
 		},
 		{
-			"conference type none",
+			"reference type conference",
 			&bridge.Bridge{
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ID:             "8489f4c6-9316-11ea-9b3d-3b37cb9a2974",
-				ConferenceID:   uuid.FromStringOrNil("8892c1f6-9316-11ea-96ff-8b2d8c1b2642"),
-				ConferenceType: conference.TypeNone,
-				TMCreate:       "2020-04-18T03:22:17.995000",
+				AsteriskID:    "3e:50:6b:43:bb:30",
+				ID:            "5149007a-9316-11ea-9de0-5f9cb2e8c235",
+				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
+				TMCreate:      "2020-04-18T03:22:17.995000",
 			},
 			&bridge.Bridge{
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ID:             "8489f4c6-9316-11ea-9b3d-3b37cb9a2974",
-				ChannelIDs:     []string{},
-				ConferenceID:   uuid.FromStringOrNil("8892c1f6-9316-11ea-96ff-8b2d8c1b2642"),
-				ConferenceType: conference.TypeNone,
-				TMCreate:       "2020-04-18T03:22:17.995000",
-			},
-		},
-		{
-			"conference join true",
-			&bridge.Bridge{
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ID:             "9c1197d8-a24e-11ea-8653-c74c75be39d3",
-				ConferenceID:   uuid.FromStringOrNil("a0ec47a8-a24e-11ea-9868-c3c17aa422cd"),
-				ConferenceType: conference.TypeNone,
-				ConferenceJoin: true,
-				TMCreate:       "2020-04-18T03:22:17.995000",
-			},
-			&bridge.Bridge{
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ID:             "9c1197d8-a24e-11ea-8653-c74c75be39d3",
-				ChannelIDs:     []string{},
-				ConferenceID:   uuid.FromStringOrNil("a0ec47a8-a24e-11ea-9868-c3c17aa422cd"),
-				ConferenceType: conference.TypeNone,
-				ConferenceJoin: true,
-				TMCreate:       "2020-04-18T03:22:17.995000",
+				AsteriskID:    "3e:50:6b:43:bb:30",
+				ID:            "5149007a-9316-11ea-9de0-5f9cb2e8c235",
+				ChannelIDs:    []string{},
+				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
+				TMCreate:      "2020-04-18T03:22:17.995000",
 			},
 		},
 	}

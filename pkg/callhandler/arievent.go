@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -103,6 +104,30 @@ func (h *callHandler) ARIChannelStateChange(cn *channel.Channel) error {
 		return h.updateStatusRinging(ctx, cn, c)
 	} else if status == call.StatusProgressing {
 		return h.updateStatusProgressing(ctx, cn, c)
+	}
+	return nil
+}
+
+func (h *callHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
+	ctx := context.Background()
+	log := logrus.WithFields(logrus.Fields{
+		"asterisk_id": cn.AsteriskID,
+		"channel_id":  cn.ID,
+	})
+
+	switch cn.Type {
+	case channel.TypeCall:
+		return nil
+	case channel.TypeJoin:
+		return h.bridgeLeftJoin(ctx, cn, br)
+	case channel.TypeExternal:
+		return h.bridgeLeftExternal(ctx, cn, br)
+
+	default:
+		log.WithFields(logrus.Fields{
+			"channel": cn,
+			"bridge":  br,
+		}).Errorf("Could not find correct event handler.")
 	}
 	return nil
 }

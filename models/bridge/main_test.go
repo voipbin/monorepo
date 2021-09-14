@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
 func TestNewBridgeByBridgeCreated(t *testing.T) {
@@ -19,79 +18,59 @@ func TestNewBridgeByBridgeCreated(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			`{"type":"BridgeCreated","timestamp":"2020-05-03T21:35:02.809+0000","bridge":{"id":"0e9f0998-8ec2-11ea-970a-df70fd3c4853","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"test","channels":[],"creationtime":"2020-05-03T21:35:02.692+0000","video_mode":"none"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
+			"normal reference call type",
+			`{"type":"BridgeCreated","timestamp":"2020-05-03T21:35:02.809+0000","bridge":{"id":"0e9f0998-8ec2-11ea-970a-df70fd3c4853","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"reference_type=call,reference_id=5cef1dbc-13d8-11ec-9199-f3e0e965a469","channels":[],"creationtime":"2020-05-03T21:35:02.692+0000","video_mode":"none"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
 			&Bridge{
-				AsteriskID:     "42:01:0a:a4:00:03",
-				ID:             "0e9f0998-8ec2-11ea-970a-df70fd3c4853",
-				Name:           "test",
-				Type:           TypeMixing,
-				Tech:           TechSimple,
-				Class:          "stasis",
-				Creator:        "Stasis",
-				VideoMode:      "none",
-				ChannelIDs:     []string{},
-				ConferenceID:   uuid.Nil,
-				ConferenceType: "",
-				TMCreate:       "2020-05-03T21:35:02.809",
+				AsteriskID:    "42:01:0a:a4:00:03",
+				ID:            "0e9f0998-8ec2-11ea-970a-df70fd3c4853",
+				Name:          "reference_type=call,reference_id=5cef1dbc-13d8-11ec-9199-f3e0e965a469",
+				Type:          TypeMixing,
+				Tech:          TechSimple,
+				Class:         "stasis",
+				Creator:       "Stasis",
+				VideoMode:     "none",
+				ChannelIDs:    []string{},
+				ReferenceType: ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("5cef1dbc-13d8-11ec-9199-f3e0e965a469"),
+				TMCreate:      "2020-05-03T21:35:02.809",
 			},
 		},
 		{
-			"have conference ID",
-			`{"type":"BridgeCreated","timestamp":"2020-05-03T21:35:02.809+0000","bridge":{"id":"0e9f0998-8ec2-11ea-970a-df70fd3c4853","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"conference_id=d15ab81a-9313-11ea-9e29-5b9ebfaeb39d","channels":[],"creationtime":"2020-05-03T21:35:02.692+0000","video_mode":"none"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
+			"normal reference conference type",
+			`{"type":"BridgeCreated","timestamp":"2020-05-03T21:35:02.809+0000","bridge":{"id":"0e9f0998-8ec2-11ea-970a-df70fd3c4853","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"reference_type=conference,reference_id=8f537474-13d8-11ec-9193-7b377238c934","channels":[],"creationtime":"2020-05-03T21:35:02.692+0000","video_mode":"none"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
 			&Bridge{
-				AsteriskID:     "42:01:0a:a4:00:03",
-				ID:             "0e9f0998-8ec2-11ea-970a-df70fd3c4853",
-				Name:           "conference_id=d15ab81a-9313-11ea-9e29-5b9ebfaeb39d",
-				Type:           TypeMixing,
-				Tech:           TechSimple,
-				Class:          "stasis",
-				Creator:        "Stasis",
-				VideoMode:      "none",
-				ChannelIDs:     []string{},
-				ConferenceID:   uuid.FromStringOrNil("d15ab81a-9313-11ea-9e29-5b9ebfaeb39d"),
-				ConferenceType: "",
-				TMCreate:       "2020-05-03T21:35:02.809",
+				AsteriskID:    "42:01:0a:a4:00:03",
+				ID:            "0e9f0998-8ec2-11ea-970a-df70fd3c4853",
+				Name:          "reference_type=conference,reference_id=8f537474-13d8-11ec-9193-7b377238c934",
+				Type:          TypeMixing,
+				Tech:          TechSimple,
+				Class:         "stasis",
+				Creator:       "Stasis",
+				VideoMode:     "none",
+				ChannelIDs:    []string{},
+				ReferenceType: ReferenceTypeConference,
+				ReferenceID:   uuid.FromStringOrNil("8f537474-13d8-11ec-9193-7b377238c934"),
+				TMCreate:      "2020-05-03T21:35:02.809",
 			},
 		},
 		{
-			"empty name",
+			"emtpy name",
 			`{"type":"BridgeCreated","timestamp":"2020-05-03T21:35:02.809+0000","bridge":{"id":"0e9f0998-8ec2-11ea-970a-df70fd3c4853","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"","channels":[],"creationtime":"2020-05-03T21:35:02.692+0000","video_mode":"none"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
 			&Bridge{
-				AsteriskID:     "42:01:0a:a4:00:03",
-				ID:             "0e9f0998-8ec2-11ea-970a-df70fd3c4853",
-				Name:           "",
-				Type:           TypeMixing,
-				Tech:           TechSimple,
-				Class:          "stasis",
-				Creator:        "Stasis",
-				VideoMode:      "none",
-				ChannelIDs:     []string{},
-				ConferenceID:   uuid.Nil,
-				ConferenceType: "",
-				TMCreate:       "2020-05-03T21:35:02.809",
+				AsteriskID:    "42:01:0a:a4:00:03",
+				ID:            "0e9f0998-8ec2-11ea-970a-df70fd3c4853",
+				Name:          "",
+				Type:          TypeMixing,
+				Tech:          TechSimple,
+				Class:         "stasis",
+				Creator:       "Stasis",
+				VideoMode:     "none",
+				ChannelIDs:    []string{},
+				ReferenceType: ReferenceTypeUnknown,
+				ReferenceID:   uuid.Nil,
+				TMCreate:      "2020-05-03T21:35:02.809",
 			},
-		},
-		{
-			"joining type",
-			`{"type":"BridgeCreated","timestamp":"2020-05-29T16:06:41.715+0000","bridge":{"id":"00a1dc4b-ad3c-4ceb-93c2-378452e4032c","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"conference_type=conference,conference_id=ef556f3f-ea0b-416f-bae1-91c38865aa3b,join=true","channels":[],"creationtime":"2020-05-29T16:06:41.715+0000","video_mode":"none"},"asterisk_id":"42:01:0a:a4:00:03","application":"test"}`,
-			&Bridge{
-				AsteriskID:     "42:01:0a:a4:00:03",
-				ID:             "00a1dc4b-ad3c-4ceb-93c2-378452e4032c",
-				Name:           "conference_type=conference,conference_id=ef556f3f-ea0b-416f-bae1-91c38865aa3b,join=true",
-				Type:           TypeMixing,
-				Tech:           TechSimple,
-				Class:          "stasis",
-				Creator:        "Stasis",
-				VideoMode:      "none",
-				ChannelIDs:     []string{},
-				ConferenceID:   uuid.FromStringOrNil("ef556f3f-ea0b-416f-bae1-91c38865aa3b"),
-				ConferenceType: conference.TypeConference,
-				ConferenceJoin: true,
-				TMCreate:       "2020-05-29T16:06:41.715",
-			},
-		},
-	}
+		}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -118,20 +97,19 @@ func TestParseBridgeName(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			"type=echo,conference_id=eae05bf2-9311-11ea-bdbf-d393f883e80f",
+			"reference type call",
+			"reference_type=call,reference_id=7444bf66-13d9-11ec-9a1a-ab73ca01d2c6",
 			map[string]string{
-				"type":          "echo",
-				"conference_id": "eae05bf2-9311-11ea-bdbf-d393f883e80f",
+				"reference_type": "call",
+				"reference_id":   "7444bf66-13d9-11ec-9a1a-ab73ca01d2c6",
 			},
 		},
 		{
-			"joining true",
-			"type=conference,conference_id=9d21f58a-a237-11ea-b1f9-e74d37d1177c,joining=true",
+			"reference type conference",
+			"reference_type=conference,reference_id=88cba8aa-13d9-11ec-96f2-23bb37899eb4",
 			map[string]string{
-				"type":          "conference",
-				"conference_id": "9d21f58a-a237-11ea-b1f9-e74d37d1177c",
-				"joining":       "true",
+				"reference_type": "conference",
+				"reference_id":   "88cba8aa-13d9-11ec-96f2-23bb37899eb4",
 			},
 		},
 	}

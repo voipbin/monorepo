@@ -2,224 +2,94 @@ package conferencehandler
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // leaved handles event the channel has left from the bridge
-// when the channel has left from the bridge, we have to check below 3 things in respetively.
-// becuase if we handle these together, the code will be messed up.
-// channel
-// bridge
-// conference
+// when the channel has left from the conference bridge, this func will be fired.
 func (h *conferenceHandler) leaved(cn *channel.Channel, br *bridge.Bridge) error {
-
-	// channel handle
-	if err := h.leavedChannel(cn, br); err != nil {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseInterworking)
-	}
-
-	// bridge handle
-	h.leavedBridge(cn, br)
-
-	// conference handle
-	h.leavedConference(cn, br)
-
-	return nil
-}
-
-func (h *conferenceHandler) leavedChannel(cn *channel.Channel, br *bridge.Bridge) error {
-
-	switch cn.Type {
-	case channel.TypeCall:
-		return h.leavedChannelCall(cn, br)
-
-	case channel.TypeConf, channel.TypeJoin:
-		return h.leavedChannelConf(cn, br)
-
-	case channel.TypeExternal:
-		return h.leavedChannelExternal(cn, br)
-
-	default:
-		logrus.Warnf("Could not find correct event handler. channel: %s, bridge: %s, type: %s", cn.ID, br.ID, cn.Type)
-	}
-
-	return nil
-}
-
-func (h *conferenceHandler) leavedChannelConf(cn *channel.Channel, br *bridge.Bridge) error {
-
-	switch cn.Type {
-	case channel.TypeConf:
-		// nothing todo
-		return nil
-
-	case channel.TypeJoin:
-		h.removeAllChannelsInBridge(br)
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return nil
-
-	default:
-		logrus.Warnf("Could not find correct event handler. channel: %s, bridge: %s, type: %s", cn.ID, br.ID, cn.Type)
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-	}
-
-	return nil
-}
-
-// leavedChannelCall handle
-func (h *conferenceHandler) leavedChannelCall(cn *channel.Channel, br *bridge.Bridge) error {
 	ctx := context.Background()
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"conference":      br.ConferenceID,
-			"conference_type": br.ConferenceType,
-			"conference_join": br.ConferenceJoin,
-			"channel":         cn.ID,
-			"bridge":          br.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"channel_id":      cn.ID,
+		"bridge_id":       br.ID,
+		"conference_type": br.ReferenceType,
+		"conference_id":   br.ReferenceID,
+	})
 
-	// remove all other channel in the same bridge
-	h.removeAllChannelsInBridge(br)
-
-	// get call info
-	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
+	// get conference info
+	cf, err := h.db.ConferenceGet(ctx, br.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
+		log.Errorf("Could not get conference. err: %v", err)
 		return err
 	}
 
-	// add the call id to the log
-	log = log.WithFields(
-		logrus.Fields{
-			"call": c.ID,
-		},
-	)
+	switch cf.Type {
+	case conference.TypeConnect:
+		return h.leavedConferenceTypeConnect(cf, cn, br)
 
-	// set empty conference id
-	if err := h.db.CallSetConferenceID(ctx, c.ID, uuid.Nil); err != nil {
-		log.Errorf("Could not reset the conference for a call. err: %v", err)
-		return err
+	case conference.TypeConference:
+		return h.leavedConferenceTypeConference(cf, cn, br)
+
+	default:
+		log.Errorf("Could not find correct event handler.")
+		return fmt.Errorf("could not find connrect event handler")
 	}
-	log.Debug("The call has been leaved from the conference.")
+}
 
-	// remove the call from the conference
-	if err := h.db.ConferenceRemoveCallID(ctx, br.ConferenceID, c.ID); err != nil {
-		log.Errorf("Could not remove the call id from the conference. err: %v", err)
-		return err
-	}
-	promConferenceLeaveTotal.WithLabelValues(string(br.ConferenceType)).Inc()
+// leavedConferenceTypeConnect
+func (h *conferenceHandler) leavedConferenceTypeConnect(cf *conference.Conference, cn *channel.Channel, br *bridge.Bridge) error {
+	log := logrus.WithFields(logrus.Fields{
+		"conference_id": cf.ID,
+		"channel_id":    cn.ID,
+		"bridge_id":     br.ID,
+	})
 
-	// get call
-	tmpCall, err := h.db.CallGetByChannelID(ctx, cn.ID)
-	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
-		return err
-	}
-	h.notifyHandler.NotifyCall(ctx, tmpCall, notifyhandler.EventTypeCallUpdated)
-
-	// send a call action next
-	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
-		log.Debugf("Could not send the call action next request. err: %v", err)
-		return err
+	if len(br.ChannelIDs) <= 0 {
+		if err := h.Destroy(cf.ID); err != nil {
+			log.Errorf("Could not destroy the connect type conference. err: %v", err)
+			return err
+		}
+	} else {
+		if err := h.Terminate(cf.ID); err != nil {
+			log.Errorf("Could not terminate the connect type conference. err: %v", err)
+			return err
+		}
 	}
 
 	return nil
 }
 
-// leavedChannelExternal handle
-func (h *conferenceHandler) leavedChannelExternal(cn *channel.Channel, br *bridge.Bridge) error {
-	// remove all other channel in the same bridge
-	h.removeAllChannelsInBridge(br)
+// leavedConferenceTypeConference
+func (h *conferenceHandler) leavedConferenceTypeConference(cf *conference.Conference, cn *channel.Channel, br *bridge.Bridge) error {
+	log := logrus.WithFields(logrus.Fields{
+		"conference_id": cf.ID,
+		"channel_id":    cn.ID,
+		"bridge_id":     br.ID,
+	})
 
-	h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-
-	return nil
-}
-
-func (h *conferenceHandler) leavedBridge(cn *channel.Channel, br *bridge.Bridge) {
-	if br.ConferenceJoin != true {
-		return
+	if cf.Status != conference.StatusTerminating {
+		// nothing to do here.
+		return nil
 	}
 
 	if len(br.ChannelIDs) > 0 {
-		return
+		// we need to wait until all the channel gone
+		return nil
 	}
 
-	if err := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); err != nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"conference": br.ConferenceID,
-				"bridge":     br.ID,
-			}).Errorf("could not delete the bridge. err: %v", err)
+	// there's no calls(channels) left in the conference(bridge).
+	// let's destroy the conference now
+	if err := h.Destroy(cf.ID); err != nil {
+		log.Errorf("Could not destroy the conference. err: %v", err)
+		return err
 	}
 
-	return
-}
-
-func (h *conferenceHandler) leavedConference(cn *channel.Channel, br *bridge.Bridge) {
-	ctx := context.Background()
-	log := logrus.WithFields(
-		logrus.Fields{
-			"bridge": br,
-		},
-	)
-
-	if cn.Type != channel.TypeCall {
-		// nothing to do here
-		return
-	}
-
-	t := h.getTerminateType(ctx, br.ConferenceID)
-	switch t {
-	case termTypeTerminatable:
-		log.Debugf("The conference is terminatable. Terminate the conference. conference: %s", br.ConferenceID)
-		h.Terminate(br.ConferenceID)
-
-	case termTypeDestroyable:
-		log.Debugf("The conference is destroyable. Destroy the conference. conference: %s", br.ConferenceID)
-		h.Destroy(br.ConferenceID)
-
-	default:
-		log.Debugf("The conference is not terminatable yet. conference: %s", br.ConferenceID)
-	}
-
-	return
-}
-
-// getTerminateType returns type of termination.
-func (h *conferenceHandler) getTerminateType(ctx context.Context, id uuid.UUID) termType {
-
-	// get conference
-	cf, err := h.db.ConferenceGet(ctx, id)
-	if err != nil {
-		logrus.Errorf("Could not get conference info. conference: %s, err: %v", id, err)
-		return termTypeNone
-	}
-
-	// we don't do anything for the conference type here.
-	// the conference type's conference will be destroyed when the timeout expired.
-	if cf.Type == conference.TypeConference && cf.Status != conference.StatusTerminating {
-		return termTypeNone
-	}
-
-	switch len(cf.CallIDs) {
-	case 0:
-		return termTypeDestroyable
-
-	case 1:
-		return termTypeTerminatable
-
-	default:
-		return termTypeNone
-	}
+	return nil
 }

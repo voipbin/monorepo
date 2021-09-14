@@ -13,7 +13,6 @@ import (
 func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
 
 	mapType := map[interface{}]func(*channel.Channel, map[string]interface{}) error{
-		contextConferenceJoin:     h.ariStasisStartContextJoin,
 		contextConferenceIncoming: h.ariStasisStartContextIncoming,
 	}
 
@@ -28,27 +27,6 @@ func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]
 	}
 
 	return handler(cn, data)
-}
-
-// ariStasisStartContextJoin handles the call which has CONTEXT=conf-join in the StasisStart argument.
-func (h *conferenceHandler) ariStasisStartContextJoin(cn *channel.Channel, data map[string]interface{}) error {
-
-	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeJoin)); err != nil {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
-		return fmt.Errorf("could not set channel var. id: %s, asterisk: %s, bridge: %s, err: %v", cn.ID, cn.AsteriskID, cn.DestinationNumber, err)
-	}
-
-	if err := h.reqHandler.AstBridgeAddChannel(cn.AsteriskID, data["bridge_id"].(string), cn.ID, "", false, false); err != nil {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
-		return fmt.Errorf("could not put the channel to the bridge. id: %s, asterisk: %s, bridge: %s, err: %v", cn.ID, cn.AsteriskID, cn.DestinationNumber, err)
-	}
-
-	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, "", defaultDialTimeout); err != nil {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
-		return fmt.Errorf("could not dial the channel. id: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
-	}
-
-	return nil
 }
 
 // ariStasisStartContextIncoming handles the call which has CONTEXT=conf-in in the StasisStart argument.
@@ -75,18 +53,9 @@ func (h *conferenceHandler) ariStasisStartContextIncoming(cn *channel.Channel, d
 }
 
 func (h *conferenceHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
-	return h.leaved(cn, br)
-}
-
-// ARIChannelEnteredBridge is called when the channel handler received ChannelEnteredBridge.
-func (h *conferenceHandler) ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error {
-
-	// if the call type has joined to the bridge,
-	// we have to call the joined handler for add the call info to the conference.
-	if cn.Type == channel.TypeCall {
-		return h.joined(cn, bridge)
+	if cn.Type != channel.TypeConf {
+		return nil
 	}
 
-	// do nothing for other types
-	return nil
+	return h.leaved(cn, br)
 }

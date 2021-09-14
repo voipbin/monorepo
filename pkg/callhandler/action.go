@@ -578,7 +578,7 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 
 	// set app args
 	appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,recording_name=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
-		contextRecording,
+		ContextRecording,
 		c.ID,
 		recordingID,
 		recordingName,

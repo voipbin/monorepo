@@ -130,53 +130,61 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 	}
 }
 
-// func TestEventHandlerRecordingFinishedConference(t *testing.T) {
-// 	mc := gomock.NewController(t)
-// 	defer mc.Finish()
+func TestEventHandlerRecordingFinishedConference(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-// 	mockDB := dbhandler.NewMockDBHandler(mc)
-// 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-// 	mockReq := requesthandler.NewMockRequestHandler(mc)
-// 	mockSvc := callhandler.NewMockCallHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockSvc := callhandler.NewMockCallHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-// 	h := eventHandler{
-// 		db:          mockDB,
-// 		rabbitSock:  mockSock,
-// 		reqHandler:  mockReq,
-// 		callHandler: mockSvc,
-// 	}
+	h := eventHandler{
+		db:            mockDB,
+		rabbitSock:    mockSock,
+		reqHandler:    mockReq,
+		callHandler:   mockSvc,
+		notifyHandler: mockNotify,
+	}
 
-// 	type test struct {
-// 		name      string
-// 		event     *rabbitmqhandler.Event
-// 		recordID  string
-// 		timestamp string
-// 		bridgeID  string
-// 	}
+	type test struct {
+		name      string
+		event     *rabbitmqhandler.Event
+		recording *recording.Recording
+		timestamp string
+	}
 
-// 	tests := []test{
-// 		{
-// 			"normal",
-// 			&rabbitmqhandler.Event{
-// 				Type:     "ari_event",
-// 				DataType: "application/json",
-// 				Data:     []byte(`{"type": "RecordingFinished","timestamp": "2020-02-10T13:08:40.888","recording": {"name": "bridge_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888","format": "wav","state": "done","target_uri": "channel:test_call","duration": 351},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
-// 			},
-// 			"bridge_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888",
-// 			"2020-02-10T13:08:40.888",
-// 			"3b16cef6-2b99-11eb-87eb-571ab4136611",
-// 		},
-// 	}
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     []byte(`{"type": "RecordingFinished","timestamp": "2020-02-10T13:08:40.888","recording": {"name": "bridge_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888","format": "wav","state": "done","target_uri": "channel:test_call","duration": 351},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
+			},
+			&recording.Recording{
+				ID:          uuid.FromStringOrNil("34585192-1546-11ec-b592-63304ff57c57"),
+				Filename:    "something_filename.wav",
+				Type:        recording.TypeConference,
+				ReferenceID: uuid.FromStringOrNil("037b88fe-1547-11ec-836c-235bd80d876e"),
+			},
+			"2020-02-10T13:08:40.888",
+		},
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().RecordingGetByFilename(gomock.Any(), gomock.Any()).Return(tt.recording, nil)
+			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
+			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
+			mockNotify.EXPECT().NotifyRecording(gomock.Any(), notifyhandler.EventTypeRecordingFinished, tt.recording)
+			mockDB.EXPECT().ConferenceSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 
-// 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recordID, record.StatusEnd, tt.timestamp).Return(nil)
-// 			mockDB.EXPECT().BridgeSetRecordID(gomock.Any(), tt.bridgeID, "").Return(nil)
-
-// 			if err := h.processEvent(tt.event); err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-// 		})
-// 	}
-// }
+			if err := h.processEvent(tt.event); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

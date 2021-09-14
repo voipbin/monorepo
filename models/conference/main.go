@@ -76,22 +76,3 @@ func IsValidConferenceType(confType Type) bool {
 		return false
 	}
 }
-
-// // NewConference creates a new conference with given request conference
-// func NewConference(id uuid.UUID, cType Type, bridgeID string, req *Conference) *Conference {
-// 	cf := &Conference{
-// 		ID:       id,
-// 		Type:     cType,
-// 		BridgeID: bridgeID,
-
-// 		UserID:  req.UserID,
-// 		Name:    req.Name,
-// 		Detail:  req.Detail,
-// 		Data:    req.Data,
-// 		Timeout: req.Timeout,
-
-// 		CallIDs: []uuid.UUID{},
-// 	}
-
-// 	return cf
-// }

@@ -2,6 +2,7 @@ package conferencehandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -54,11 +55,6 @@ func (h *conferenceHandler) Terminate(id uuid.UUID) error {
 		return nil
 	}
 
-	if err := h.Destroy(id); err != nil {
-		log.Errorf("Could not destory the conference correctly. err: %v", err)
-		return err
-	}
-
 	return nil
 }
 
@@ -68,64 +64,48 @@ func (h *conferenceHandler) Destroy(id uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
-			"conference": id,
+			"conference_id": id,
 		},
 	)
-	log.Debugf("Destroying the conference. conference: %s", id)
 
-	// get coference
-	conf, err := h.db.ConferenceGet(ctx, id)
+	cf, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get conference for delete. conference: %s, err: %v", id, err)
+		log.Errorf("Could not get conference info. err: %v", err)
 		return err
 	}
 
-	// if the conference holding the bridge for conference,
-	// we need to delete the bridge here.
-	// but we don't do anything for errors here, because we want to mark the conference as a deleted whatever.
-	if h.isBridgeExist(ctx, conf.BridgeID) == true {
-		// get bridge
-		br, err := h.db.BridgeGet(ctx, conf.BridgeID)
-		if err != nil {
-			log.Errorf("Could not get bridge from the database. conference: %s, err: %v", id, err)
-		} else {
-			// delete bridge
-			log.WithFields(
-				logrus.Fields{
-					"bridge": br,
-				},
-			).Debugf("The conference holding the bridge. Deleting the bridge and hangup the channels in the bridge. conference: %s, bridge: %s", id, br.ID)
+	log.WithField("conference", cf).Debug("Destroying the conference.")
 
-			// hangup the all channels in the conference bridge
-			// we don't expect there are left channels in the conference bridge here
-			// but call this function here to be sure.
-			h.hangupAllChannelsInBridge(br)
+	// get bridge info
+	br, err := h.db.BridgeGet(ctx, cf.BridgeID)
+	if err != nil {
+		log.Errorf("Could not get bridge info. err: %v", br)
+		return err
+	}
 
-			// delete the bridge
-			if err := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); err != nil {
-				log.Errorf("Could not delete the conference bridge correctly. conference: %s, err: %v", id, err)
-			}
-		}
+	if len(br.ChannelIDs) > 0 {
+		log.Errorf("There are channels in the conference bridge. We can't destroy the conference now.")
+		return fmt.Errorf("channels are in the conference bridge")
+	}
+
+	// delete the conference bridge
+	if err := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); err != nil {
+		log.Errorf("Could not delete the conference bridge correctly. conference: %s, err: %v", cf.ID, err)
+		// this is ok. we don't return here
 	}
 
 	// update conference status to terminated
-	if err := h.db.ConferenceEnd(ctx, id); err != nil {
+	if err := h.db.ConferenceEnd(ctx, cf.ID); err != nil {
 		log.WithFields(
 			logrus.Fields{
-				"conference": id.String(),
-			}).Errorf("Could not terminate the conference. conference: %s, err: %v", id, err)
+				"conference_id": cf.ID,
+			}).Errorf("Could not terminate the conference. conference: %s, err: %v", cf.ID, err)
 		return err
 	}
 
-	// get destroyed conference
-	cf, err := h.db.ConferenceGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get destroyed conference info. conference: %s, err: %v", id, err)
-		return err
-	}
 	promConferenceCloseTotal.WithLabelValues(string(cf.Type)).Inc()
 
-	// we need to notify the conference is destroyed here
+	// todo: we need to notify the conference is destroyed here
 
 	return nil
 }

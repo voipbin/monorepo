@@ -4,6 +4,7 @@ create table calls(
   user_id           integer,      -- user id
   asterisk_id       varchar(255), -- Asterisk id
   channel_id        varchar(255), -- channel id
+  bridge_id         varchar(255), -- call bridge id
   flow_id           binary(16),   -- flow id
   conference_id     binary(16),   -- currently joined conference id
   type              varchar(16),  -- type of call

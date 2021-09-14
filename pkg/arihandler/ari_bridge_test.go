@@ -3,6 +3,7 @@ package arihandler
 import (
 	"testing"
 
+	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -46,6 +47,9 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 				VideoMode:  "none",
 
 				ChannelIDs: []string{},
+
+				ReferenceType: bridge.ReferenceTypeUnknown,
+				ReferenceID:   uuid.Nil,
 
 				TMCreate: "2020-05-09T12:41:43.591",
 				TMUpdate: defaultTimeStamp,

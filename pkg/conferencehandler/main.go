@@ -24,7 +24,6 @@ import (
 type ConferenceHandler interface {
 	// ari event handlers
 	ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error
-	ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error
 	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
 
 	Destroy(id uuid.UUID) error
@@ -44,7 +43,6 @@ type conferenceHandler struct {
 
 // Contexts of conference types
 const (
-	contextConferenceJoin     string = "conf-join"
 	contextConferenceIncoming string = "conf-in"
 )
 
@@ -131,9 +129,8 @@ func (h *conferenceHandler) leaveTypeEcho(c *call.Call) error {
 
 // generateBridgeName generates the bridge name for conference
 // all of conference created bridge must use this function for bridge's name.
-// join: true if the bridge is for joining to the other conference
-func generateBridgeName(conferenceType conference.Type, conferenceID uuid.UUID, join bool) string {
-	res := fmt.Sprintf("conference_type=%s,conference_id=%s,join=%t", conferenceType, conferenceID.String(), join)
+func generateBridgeName(referenceType bridge.ReferenceType, conferenceID uuid.UUID) string {
+	res := fmt.Sprintf("reference_type=%s,reference_id=%s", referenceType, conferenceID.String())
 
 	return res
 }
