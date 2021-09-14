@@ -30,11 +30,19 @@ const (
 	ContextExternalSoop    = "call-externalsnoop" // context for the external snoop channel
 )
 
-// domain types
+// domains
 const (
 	domainConference  = "conference.voipbin.net"
 	domainSIPService  = "sip-service.voipbin.net"
 	domainPSTNService = "pstn.voipbin.net"
+)
+
+// list of domain types
+const (
+	domainTypeNone       = "none"
+	domainTypeConference = "conference"
+	domainTypeSIPService = "sip"
+	domainTypePSTN       = "pstn"
 )
 
 // pjsip endpoints
@@ -273,22 +281,23 @@ func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data 
 	}
 
 	// get call type
-	cType := getTypeContextIncomingCall(data["domain"].(string))
+	domainType := getDomainTypeIncomingCall(data["domain"].(string))
 
-	switch cType {
-	case call.TypeConference:
+	switch domainType {
+	case domainTypeConference:
 		return h.typeConferenceStart(cn, data)
 
-	case call.TypeSipService:
+	case domainTypeSIPService:
 		return h.typeSipServiceStart(cn, data)
 
-	case call.TypeFlow:
+	case domainTypePSTN:
 		return h.typeFlowStart(cn, data)
 
 	default:
 		// call.TypeNone will get to here.
 		// no route found
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		log.Errorf("Could not find correct domain type handler. domain_type: %v", domainType)
 		return fmt.Errorf("no route found for stasisstart. asterisk_id: %s, channel_id: %s", cn.AsteriskID, cn.ID)
 	}
 }
@@ -364,22 +373,22 @@ func (h *callHandler) addCallBridge(cn *channel.Channel, referenceType bridge.Re
 	return bridgeID.String(), nil
 }
 
-// getTypeContextIncomingCall returns the service type for incoming call context
-func getTypeContextIncomingCall(domain string) call.Type {
+// getDomainTypeIncomingCall returns the service type for incoming call context
+func getDomainTypeIncomingCall(domain string) string {
 	// all of the incoming calls are hitting the same context.
 	// so we have to distinguish them using the requested domain name.
 	switch domain {
 	case domainConference:
-		return call.TypeConference
+		return domainTypeConference
 
 	case domainSIPService:
-		return call.TypeSipService
+		return domainTypeSIPService
 
 	case domainPSTNService:
-		return call.TypeFlow
+		return domainTypePSTN
 
 	default:
-		return call.TypeNone
+		return domainTypeNone
 	}
 }
 
@@ -411,7 +420,7 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 	}
 
 	// generate call info
-	tmpCall := call.NewCallByChannel(cn, cf.UserID, call.TypeConference, call.DirectionIncoming, data)
+	tmpCall := call.NewCallByChannel(cn, cf.UserID, call.TypeFlow, call.DirectionIncoming, data)
 
 	// create call bridge
 	callBridgeID, err := h.addCallBridge(cn, bridge.ReferenceTypeCall, tmpCall.ID)

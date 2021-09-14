@@ -138,6 +138,7 @@ func TestARIPlaybackFinished(t *testing.T) {
 				Action: action.Action{
 					ID: uuid.FromStringOrNil("77a82874-e7dd-11ea-9647-27054cd71830"),
 				},
+				FlowID: uuid.FromStringOrNil("32c36bf4-156f-11ec-af17-87eb4aca917b"),
 			},
 			"77a82874-e7dd-11ea-9647-27054cd71830",
 		},
