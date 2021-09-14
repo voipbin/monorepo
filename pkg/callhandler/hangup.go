@@ -14,10 +14,22 @@ import (
 // Hangup Hangup the call
 func (h *callHandler) Hangup(cn *channel.Channel) error {
 	ctx := context.Background()
+	log := logrus.WithFields(logrus.Fields{
+		"channel_id": cn.ID,
+	})
+
+	// get call info
 	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
 		// nothing we can do
+		log.Errorf("Could not get the call info from the db. err: %v", err)
 		return nil
+	}
+
+	// remove the call bridge
+	if err := h.reqHandler.AstBridgeDelete(c.AsteriskID, c.BridgeID); err != nil {
+		// we don't care the error here. just write the log.
+		log.Errorf("Could not remove the bridge. err: %v", err)
 	}
 
 	// calculate hangup_reason, hangup_by
@@ -27,6 +39,7 @@ func (h *callHandler) Hangup(cn *channel.Channel) error {
 	// set hangup
 	if err := h.HangupWithReason(ctx, c, reason, hangupBy, cn.TMEnd); err != nil {
 		// we don't channel hangup here, because the channel has already gone.
+		log.Errorf("Could not set the hangup reason. err: %v", err)
 		return err
 	}
 

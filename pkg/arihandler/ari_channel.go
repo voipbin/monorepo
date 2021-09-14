@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
@@ -117,21 +118,7 @@ func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt
 		return err
 	}
 
-	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
-	if err != nil {
-		log.Errorf("Could not get channel. err: %v", err)
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
-		return err
-	}
-
-	bridge, err := h.db.BridgeGet(ctx, e.Bridge.ID)
-	if err != nil {
-		log.Errorf("Could not get bridge. err: %v", err)
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
-		return err
-	}
-
-	return h.confHandler.ARIChannelEnteredBridge(cn, bridge)
+	return nil
 }
 
 // eventHandlerChannelLeftBridge handles ChannelLeftBridge ARI event
@@ -179,14 +166,24 @@ func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt in
 		return err
 	}
 
-	bridge, err := h.db.BridgeGet(ctx, e.Bridge.ID)
+	br, err := h.db.BridgeGet(ctx, e.Bridge.ID)
 	if err != nil {
 		log.Errorf("Could not get bridge. err: %v", err)
 		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
-	return h.confHandler.ARIChannelLeftBridge(cn, bridge)
+	switch br.ReferenceType {
+	case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
+		return h.callHandler.ARIChannelLeftBridge(cn, br)
+
+	case bridge.ReferenceTypeConference, bridge.ReferenceTypeConferenceSnoop:
+		return h.confHandler.ARIChannelLeftBridge(cn, br)
+
+	default:
+		log.WithField("event", e).Error("Could not find correct event handler.")
+		return nil
+	}
 }
 
 // eventHandlerChannelStateChange handels ChannelStateChange ARI event

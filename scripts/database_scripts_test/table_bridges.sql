@@ -17,10 +17,9 @@ create table bridges(
   -- joined channel info
   channel_ids json, -- joined channel ids
 
-  -- conference info
-  conference_id   binary(16),   -- conference's id
-  conference_type varchar(255), -- conference's type
-  conference_join boolean,      -- true it this bridge is joining
+  -- reference info
+  reference_type  varchar(255),   -- reference type
+  reference_id    binary(16),     -- reference id
 
   -- timestamps
   tm_create datetime(6),  --
@@ -31,3 +30,4 @@ create table bridges(
 );
 
 create index idx_bridges_create on bridges(tm_create);
+create index idx_bridges_reference_id on bridges(reference_id);

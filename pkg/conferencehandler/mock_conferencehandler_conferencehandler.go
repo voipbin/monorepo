@@ -37,20 +37,6 @@ func (m *MockConferenceHandler) EXPECT() *MockConferenceHandlerMockRecorder {
 	return m.recorder
 }
 
-// ARIChannelEnteredBridge mocks base method.
-func (m *MockConferenceHandler) ARIChannelEnteredBridge(cn *channel.Channel, bridge *bridge.Bridge) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIChannelEnteredBridge", cn, bridge)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ARIChannelEnteredBridge indicates an expected call of ARIChannelEnteredBridge.
-func (mr *MockConferenceHandlerMockRecorder) ARIChannelEnteredBridge(cn, bridge interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelEnteredBridge", reflect.TypeOf((*MockConferenceHandler)(nil).ARIChannelEnteredBridge), cn, bridge)
-}
-
 // ARIChannelLeftBridge mocks base method.
 func (m *MockConferenceHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
 	m.ctrl.T.Helper()

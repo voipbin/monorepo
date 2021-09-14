@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
@@ -26,6 +27,7 @@ import (
 type CallHandler interface {
 	ARIChannelDestroyed(cn *channel.Channel) error
 	ARIChannelDtmfReceived(cn *channel.Channel, digit string, duration int) error
+	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
 	ARIChannelStateChange(cn *channel.Channel) error
 	ARIPlaybackFinished(cn *channel.Channel, playbackID string) error
 	ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error

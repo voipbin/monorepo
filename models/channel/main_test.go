@@ -190,12 +190,6 @@ func TestNewChannelByARIChannel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// _, evt, err := ari.Parse([]byte(tt.message))
-			// if err != nil {
-			// 	t.Errorf("Wrong match. expect: ok, got: %v", err)
-			// }
-			// e := evt.(*ari.StasisStart)
-
 			channel := NewChannelByARIChannel(tt.ariChannel)
 			if !reflect.DeepEqual(tt.expectChannel, channel) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectChannel, channel)

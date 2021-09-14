@@ -96,7 +96,7 @@ func (h *callHandler) CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uui
 	}
 
 	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s", contextOutgoingCall, c.ID)
+	appArgs := fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, c.ID)
 
 	// set variables
 	variables := map[string]string{

@@ -35,7 +35,7 @@ func (h *callHandler) ExternalMediaStart(id uuid.UUID, externalHost string, enca
 
 	// create a bridge
 	bridgeID := uuid.Must(uuid.NewV4())
-	bridgeName := fmt.Sprintf("")
+	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCallSnoop, c.ID)
 	if errBridge := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID.String(), bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); errBridge != nil {
 		log.Errorf("Could not create a bridge for external media. error: %v", errBridge)
 		return nil, errBridge
@@ -44,7 +44,7 @@ func (h *callHandler) ExternalMediaStart(id uuid.UUID, externalHost string, enca
 	// create a snoop channel
 	// set app args
 	appArgs := fmt.Sprintf("context=%s,call_id=%s,bridge_id=%s",
-		contextExternalSoop,
+		ContextExternalSoop,
 		c.ID,
 		bridgeID,
 	)
@@ -56,7 +56,7 @@ func (h *callHandler) ExternalMediaStart(id uuid.UUID, externalHost string, enca
 
 	// create a external media channel
 	// set data
-	chData := fmt.Sprintf("context=%s,bridge_id=%s,call_id=%s", contextExternalMedia, bridgeID.String(), c.ID.String())
+	chData := fmt.Sprintf("context=%s,bridge_id=%s,call_id=%s", ContextExternalMedia, bridgeID.String(), c.ID.String())
 	extChannelID := uuid.Must(uuid.NewV4())
 	extCh, err := h.reqHandler.AstChannelExternalMedia(c.AsteriskID, extChannelID.String(), externalHost, encapsulation, transport, connectionType, format, direction, chData, nil)
 	if err != nil {

@@ -20,6 +20,7 @@ const (
 		user_id,
 		asterisk_id,
 		channel_id,
+		bridge_id,
 		flow_id,
 		conference_id,
 		type,
@@ -66,6 +67,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.UserID,
 		&res.AsteriskID,
 		&res.ChannelID,
+		&res.BridgeID,
 		&res.FlowID,
 		&res.ConfID,
 		&res.Type,
@@ -133,6 +135,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		user_id,
 		asterisk_id,
 		channel_id,
+		bridge_id,
 		flow_id,
 		conference_id,
 		type,
@@ -162,7 +165,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		tm_ringing,
 		tm_hangup
 	) values(
-		?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?, ?,
@@ -211,6 +214,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.UserID,
 		c.AsteriskID,
 		c.ChannelID,
+		c.BridgeID,
 		c.FlowID.Bytes(),
 		c.ConfID.Bytes(),
 		c.Type,
@@ -316,6 +320,30 @@ func (h *handler) CallGets(ctx context.Context, userID uint64, size uint64, toke
 	}
 
 	return res, nil
+}
+
+// CallSetBridgeID sets the call bridge id
+func (h *handler) CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error {
+	// prepare
+	q := `
+	update
+		calls
+	set
+		bridge_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, bridgeID, getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. callSetBridgeID. err: %v", err)
+	}
+
+	// update the cache
+	h.CallUpdateToCache(ctx, id)
+
+	return nil
 }
 
 // callSetStatusRinging sets the call status to ringing

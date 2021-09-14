@@ -6,6 +6,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
 // Leave outs the call from the conference
@@ -19,28 +22,60 @@ func (h *conferenceHandler) Leave(id, callID uuid.UUID) error {
 		})
 	log.Debugf("Leaving the call from the conference.")
 
-	call, err := h.db.CallGet(ctx, callID)
+	// get call info
+	c, err := h.db.CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get call. err: %v", err)
 		return err
 	}
 
-	// get channel
-	channel, err := h.db.ChannelGet(ctx, call.ChannelID)
+	// get conf info
+	cf, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get channel. err: %v", err)
+		log.Errorf("Could not get conference. err: %v", err)
 		return err
 	}
 
-	// remove the call's channel from the bridge
-	if err := h.reqHandler.AstBridgeRemoveChannel(channel.AsteriskID, channel.BridgeID, channel.ID); err != nil {
+	// get bridge info
+	br, err := h.db.BridgeGet(ctx, c.BridgeID)
+	if err != nil {
+		log.Errorf("Could not get bridge info. err: %v", err)
+		return err
+	}
+
+	// get join channel
+	var joinChannel *channel.Channel = nil
+	for _, tmpID := range br.ChannelIDs {
+		ch, err := h.db.ChannelGet(ctx, tmpID)
+		if err != nil {
+			log.Errorf("Could not get channel info. err: %v", err)
+			return err
+		}
+
+		if ch.Type == channel.TypeJoin {
+			joinChannel = ch
+		}
+	}
+
+	if joinChannel == nil {
+		log.Errorf("Could not find join channel.")
+		return nil
+	}
+
+	// hangup the join channel
+	if err := h.reqHandler.AstChannelHangup(joinChannel.AsteriskID, joinChannel.ID, ari.ChannelCauseNormalClearing); err != nil {
 		log.WithFields(
 			logrus.Fields{
-				"bridge":  channel.BridgeID,
-				"channel": channel.ID,
+				"bridge":  joinChannel.BridgeID,
+				"channel": joinChannel.ID,
 			}).Errorf("Could not kick out the call from the conference. err: %v", err)
 		return err
 	}
+
+	// we don't do any conference info change here.
+	// we going to conference info change work when the join channel has left from the call bridge
+
+	promConferenceLeaveTotal.WithLabelValues(string(cf.Type)).Inc()
 
 	return nil
 }

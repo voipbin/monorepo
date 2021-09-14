@@ -130,10 +130,6 @@ func TestTerminateCallNotExsist(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.conference.ID, conference.StatusTerminating).Return(nil)
 
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-
 			if err := h.Terminate(tt.conference.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
@@ -20,12 +21,13 @@ import (
 
 // StasisStart event's context types
 const (
-	contextIncomingCall    = "call-in"            // context for the incoming channel
-	contextOutgoingCall    = "call-out"           // context for the outgoing channel
-	contextRecording       = "call-record"        // context for the channel which created only for recording
-	contextFromServiceCall = "call-svc"           // context for the channel where it came back to stasis from the other asterisk application
-	contextExternalMedia   = "call-externalmedia" // context for the external media channel. this channel will get the media from the external
-	contextExternalSoop    = "call-externalsnoop" // context for the external snoop channel
+	ContextIncomingCall    = "call-in"            // context for the incoming channel
+	ContextOutgoingCall    = "call-out"           // context for the outgoing channel
+	ContextRecording       = "call-record"        // context for the channel which created only for recording
+	ContextFromServiceCall = "call-svc"           // context for the channel where it came back to stasis from the other asterisk application
+	ContextJoinCall        = "call-join"          // context for the channel for conference joining
+	ContextExternalMedia   = "call-externalmedia" // context for the external media channel. this channel will get the media from the external
+	ContextExternalSoop    = "call-externalsnoop" // context for the external snoop channel
 )
 
 // domain types
@@ -94,23 +96,26 @@ func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]inter
 
 	switch chCtx.(string) {
 
-	case contextFromServiceCall:
+	case ContextFromServiceCall:
 		return h.startHandlerContextFromServiceCall(cn, data)
 
-	case contextIncomingCall:
+	case ContextIncomingCall:
 		return h.startHandlerContextIncomingCall(cn, data)
 
-	case contextOutgoingCall:
+	case ContextOutgoingCall:
 		return h.startHandlerContextOutgoingCall(cn, data)
 
-	case contextRecording:
+	case ContextRecording:
 		return h.startHandlerContextRecording(cn, data)
 
-	case contextExternalSoop:
+	case ContextExternalSoop:
 		return h.startHandlerContextExternalSnoop(cn, data)
 
-	case contextExternalMedia:
+	case ContextExternalMedia:
 		return h.startHandlerContextExternalMedia(cn, data)
+
+	case ContextJoinCall:
+		return h.startHandlerContextJoin(cn, data)
 
 	default:
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
@@ -218,9 +223,48 @@ func (h *callHandler) startHandlerContextExternalMedia(cn *channel.Channel, data
 	return nil
 }
 
+// startHandlerContextJoin handles contextJoinCall context type of StasisStart event.
+func (h *callHandler) startHandlerContextJoin(cn *channel.Channel, data map[string]interface{}) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"channel": cn.ID,
+		},
+	)
+	log.Infof("Executing startHandlerContextJoin. channel: %s", cn.ID)
+
+	// set channel's type call.
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeJoin)); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
+	callID := data["call_id"].(string)
+	bridgeID := data["bridge_id"].(string)
+	log.Debugf("Parsed info. call: %s, bridge: %s", callID, bridgeID)
+
+	// put the channel to the bridge
+	if err := h.reqHandler.AstBridgeAddChannel(cn.AsteriskID, bridgeID, cn.ID, "", false, false); err != nil {
+		log.Errorf("Could not add the external snoop channel to the bridge. err: %v", err)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return err
+	}
+
+	// dial to the destination
+	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, "", defaultDialTimeout); err != nil {
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
+		return fmt.Errorf("could not dial the channel. id: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+	}
+
+	return nil
+}
+
 // startHandlerContextIncomingCall handles contextIncomingCall context type of StasisStart event.
 func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data map[string]interface{}) error {
-	logrus.Infof("Executing startHandlerContextIncomingCall. channel: %s, data: %v", cn.ID, data)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startHandlerContextIncomingCall",
+		"channel_id": cn.ID,
+	})
+	log.Infof("Executing startHandlerContextIncomingCall. data: %v", data)
 
 	// set channel's type call.
 	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeCall)); err != nil {
@@ -270,6 +314,22 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
+	// create call bridge
+	bridgeID, err := h.addCallBridge(cn, bridge.ReferenceTypeCall, callID)
+	if err != nil {
+		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return fmt.Errorf("could not add the channel to the join bridge. err: %v", err)
+	}
+
+	ctx := context.Background()
+	if err := h.db.CallSetBridgeID(ctx, callID, bridgeID); err != nil {
+		log.Errorf("could not set call bridge id. err: %v", err)
+		h.reqHandler.AstBridgeDelete(cn.AsteriskID, bridgeID)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return fmt.Errorf("could not set call bridge id. err: %v", err)
+	}
+
 	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, cn.ID, defaultDialTimeout); err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
@@ -277,6 +337,31 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 
 	// do nothing here
 	return nil
+}
+
+// addCallBridge creates a join bridge and put the channel into the join bridge.
+func (h *callHandler) addCallBridge(cn *channel.Channel, referenceType bridge.ReferenceType, referenceID uuid.UUID) (string, error) {
+	log := logrus.WithFields(log.Fields{
+		"func":    "addJoinBridge",
+		"channel": cn,
+	})
+
+	// create join bridge
+	bridgeID := uuid.Must(uuid.NewV4())
+	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", referenceType, referenceID)
+	if errBridge := h.reqHandler.AstBridgeCreate(cn.AsteriskID, bridgeID.String(), bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); errBridge != nil {
+		log.Errorf("Could not create a bridge for external media. error: %v", errBridge)
+		return "", errBridge
+	}
+
+	// add the channel to the bridge
+	if errAddCh := h.reqHandler.AstBridgeAddChannel(cn.AsteriskID, bridgeID.String(), cn.ID, "", false, false); errAddCh != nil {
+		log.Errorf("Could not add the channel to the join bridge. error: %v", errAddCh)
+		h.reqHandler.AstBridgeDelete(cn.AsteriskID, bridgeID.String())
+		return "", errAddCh
+	}
+
+	return bridgeID.String(), nil
 }
 
 // getTypeContextIncomingCall returns the service type for incoming call context
@@ -325,11 +410,23 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	// create a call
+	// generate call info
 	tmpCall := call.NewCallByChannel(cn, cf.UserID, call.TypeConference, call.DirectionIncoming, data)
+
+	// create call bridge
+	callBridgeID, err := h.addCallBridge(cn, bridge.ReferenceTypeCall, tmpCall.ID)
+	if err != nil {
+		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not add the channel to the join bridge. err: %v", err)
+	}
+	tmpCall.BridgeID = callBridgeID
+
+	// create a call
 	c, err := h.createCall(ctx, tmpCall)
 	if err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		h.reqHandler.AstBridgeDelete(cn.AsteriskID, callBridgeID)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 	log = log.WithFields(
@@ -408,7 +505,16 @@ func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]interfa
 
 	// create a temp call info
 	tmpCall := call.NewCallByChannel(cn, call.UserIDAdmin, call.TypeSipService, call.DirectionIncoming, data)
+
+	// create call bridge
+	callBridgeID, err := h.addCallBridge(cn, bridge.ReferenceTypeCall, tmpCall.ID)
+	if err != nil {
+		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return fmt.Errorf("could not add the channel to the join bridge. err: %v", err)
+	}
 	tmpCall.FlowID = numb.FlowID
+	tmpCall.BridgeID = callBridgeID
 
 	// create active flow
 	af, err := h.reqHandler.FlowActvieFlowPost(tmpCall.ID, numb.FlowID)
@@ -423,6 +529,7 @@ func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]interfa
 	c, err := h.createCall(ctx, tmpCall)
 	if err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		h.reqHandler.AstBridgeDelete(cn.AsteriskID, callBridgeID)
 		return fmt.Errorf("Could not create a call. call: %s, err: %v", c.ID, err)
 	}
 	log = log.WithFields(
@@ -452,11 +559,23 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]i
 		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	// create a call
+	// generate a call info
 	tmpCall := call.NewCallByChannel(cn, call.UserIDAdmin, call.TypeSipService, call.DirectionIncoming, data)
+
+	// create call bridge
+	callBridgeID, err := h.addCallBridge(cn, bridge.ReferenceTypeCall, tmpCall.ID)
+	if err != nil {
+		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return fmt.Errorf("could not add the channel to the join bridge. err: %v", err)
+	}
+	tmpCall.BridgeID = callBridgeID
+
+	// create a call
 	c, err := h.createCall(ctx, tmpCall)
 	if err != nil {
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		h.reqHandler.AstBridgeDelete(cn.AsteriskID, callBridgeID)
 		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 	log = log.WithFields(

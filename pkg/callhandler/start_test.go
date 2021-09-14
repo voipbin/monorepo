@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
@@ -89,7 +90,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 				DestinationNumber: string(action.TypeEcho),
 			},
 			map[string]interface{}{
-				"context": contextIncomingCall,
+				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -111,6 +112,8 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallCreated)
@@ -160,7 +163,7 @@ func TestTypeConferenceStart(t *testing.T) {
 				DestinationNumber: "bad943d8-9b59-11ea-b409-4ba263721f17",
 			},
 			map[string]interface{}{
-				"context": contextIncomingCall,
+				"context": ContextIncomingCall,
 				"domain":  "conference.voipbin.net",
 			},
 			&call.Call{
@@ -183,6 +186,8 @@ func TestTypeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.conference, nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutConference).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallCreated)
@@ -232,7 +237,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 				DestinationNumber: string(action.TypeAnswer),
 			},
 			map[string]interface{}{
-				"context": contextIncomingCall,
+				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -264,6 +269,8 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.All()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallCreated)
@@ -313,7 +320,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 				DestinationNumber: string(action.TypeStreamEcho),
 			},
 			map[string]interface{}{
-				"context": contextIncomingCall,
+				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -338,6 +345,8 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallCreated)
@@ -386,7 +395,7 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 				DestinationNumber: string(action.TypeConferenceJoin),
 			},
 			map[string]interface{}{
-				"context": contextIncomingCall,
+				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -411,6 +420,8 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallCreated)
@@ -458,7 +469,7 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 				DestinationNumber: string(action.TypePlay),
 			},
 			map[string]interface{}{
-				"context": contextIncomingCall,
+				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
 			&call.Call{
@@ -484,6 +495,8 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallCreated)
@@ -532,7 +545,7 @@ func TestTypeFlowStart(t *testing.T) {
 				DestinationNumber: "+123456789",
 			},
 			map[string]interface{}{
-				"context": contextIncomingCall,
+				"context": ContextIncomingCall,
 				"domain":  "pstn.voipbin.net",
 			},
 			&number.Number{
@@ -572,7 +585,7 @@ func TestTypeFlowStart(t *testing.T) {
 				DestinationNumber: "+123456789",
 			},
 			map[string]interface{}{
-				"context": contextIncomingCall,
+				"context": ContextIncomingCall,
 				"domain":  "pstn.voipbin.net",
 			},
 			&number.Number{
@@ -613,6 +626,8 @@ func TestTypeFlowStart(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutFlow).Return(nil)
 			mockReq.EXPECT().NMV1NumbersNumberGet(tt.channel.DestinationNumber).Return(tt.numb, nil)
 			mockReq.EXPECT().FlowActvieFlowPost(gomock.Any(), tt.numb.FlowID).Return(tt.af, nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyCall(gomock.Any(), tt.call, notifyhandler.EventTypeCallCreated)
@@ -659,7 +674,7 @@ func TestStartHandlerContextOutgoingCall(t *testing.T) {
 				DestinationNumber: "+123456789",
 			},
 			map[string]interface{}{
-				"context": contextOutgoingCall,
+				"context": ContextOutgoingCall,
 				"domain":  "pstn.voipbin.net",
 				"call_id": "086c90e2-8b31-11eb-b3a0-4ba972148103",
 			},
@@ -677,6 +692,9 @@ func TestStartHandlerContextOutgoingCall(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAsteriskID(gomock.Any(), tt.call.ID, tt.channel.AsteriskID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
+			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false).Return(nil)
+			mockDB.EXPECT().CallSetBridgeID(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelDial(tt.channel.AsteriskID, tt.channel.ID, tt.channel.ID, defaultDialTimeout).Return(nil)
 
 			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
@@ -718,7 +736,7 @@ func TestStartHandlerContextExternalMedia(t *testing.T) {
 				Name:       "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
 			},
 			map[string]interface{}{
-				"context":   contextExternalMedia,
+				"context":   ContextExternalMedia,
 				"bridge_id": "fab96694-0300-11ec-b4d4-c3bcab7364fd",
 				"call_id":   "0648d6c0-0301-11ec-818e-53865044b15c",
 			},
@@ -769,7 +787,7 @@ func TestStartHandlerContextExternalSnoop(t *testing.T) {
 				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.132-00000000",
 			},
 			map[string]interface{}{
-				"context":   contextExternalSoop,
+				"context":   ContextExternalSoop,
 				"bridge_id": "d6aecd56-0301-11ec-aee0-77d9356147eb",
 				"call_id":   "da646758-0301-11ec-b3eb-f3c05485b756",
 			},

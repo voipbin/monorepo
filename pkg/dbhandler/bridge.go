@@ -27,9 +27,8 @@ const (
 
 		channel_ids,
 
-		conference_id,
-		conference_type,
-		conference_join,
+		reference_type,
+		reference_id,
 
 		tm_create,
 		tm_update,
@@ -57,9 +56,8 @@ func (h *handler) bridgeGetFromRow(row *sql.Rows) (*bridge.Bridge, error) {
 
 		&channelIDs,
 
-		&res.ConferenceID,
-		&res.ConferenceType,
-		&res.ConferenceJoin,
+		&res.ReferenceType,
+		&res.ReferenceID,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -155,9 +153,8 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 
 		channel_ids,
 
-		conference_id,
-		conference_type,
-		conference_join,
+		reference_type,
+		reference_id,
 
 		tm_create,
 		tm_update,
@@ -167,7 +164,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		?, ?, ?, ?,
 		?, ?,
 		?,
-		?, ?, ?,
+		?, ?,
 		?, ?, ?
 		)
 	`
@@ -192,9 +189,8 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 
 		tmpChannelIDs,
 
-		b.ConferenceID.Bytes(),
-		b.ConferenceType,
-		b.ConferenceJoin,
+		b.ReferenceType,
+		b.ReferenceID.Bytes(),
 
 		b.TMCreate,
 		b.TMUpdate,

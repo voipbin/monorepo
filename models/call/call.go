@@ -19,9 +19,10 @@ type Call struct {
 	UserID     uint64    `json:"user_id"`
 	AsteriskID string    `json:"asterisk_id"`
 	ChannelID  string    `json:"channel_id"`
-	FlowID     uuid.UUID `json:"flow_id"` // flow id
-	ConfID     uuid.UUID `json:"conf_id"` // currently joined conference id
-	Type       Type      `json:"type"`    // call type
+	BridgeID   string    `json:"bridge_id"` // call bridge id
+	FlowID     uuid.UUID `json:"flow_id"`   // flow id
+	ConfID     uuid.UUID `json:"conf_id"`   // currently joined conference id
+	Type       Type      `json:"type"`      // call type
 
 	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
