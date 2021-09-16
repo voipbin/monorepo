@@ -5,12 +5,9 @@
 package notifyhandler
 
 import (
-	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
 // MockWebhookMessage is a mock of WebhookMessage interface.
@@ -88,26 +85,14 @@ func (m *MockNotifyHandler) EXPECT() *MockNotifyHandlerMockRecorder {
 	return m.recorder
 }
 
-// NotifyCall mocks base method.
-func (m *MockNotifyHandler) NotifyCall(ctx context.Context, c *call.Call, t EventType) {
+// NotifyEvent mocks base method.
+func (m *MockNotifyHandler) NotifyEvent(t EventType, e WebhookMessage) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "NotifyCall", ctx, c, t)
+	m.ctrl.Call(m, "NotifyEvent", t, e)
 }
 
-// NotifyCall indicates an expected call of NotifyCall.
-func (mr *MockNotifyHandlerMockRecorder) NotifyCall(ctx, c, t interface{}) *gomock.Call {
+// NotifyEvent indicates an expected call of NotifyEvent.
+func (mr *MockNotifyHandlerMockRecorder) NotifyEvent(t, e interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyCall", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyCall), ctx, c, t)
-}
-
-// NotifyRecording mocks base method.
-func (m *MockNotifyHandler) NotifyRecording(ctx context.Context, t EventType, c *recording.Recording) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "NotifyRecording", ctx, t, c)
-}
-
-// NotifyRecording indicates an expected call of NotifyRecording.
-func (mr *MockNotifyHandlerMockRecorder) NotifyRecording(ctx, t, c interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyRecording", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyRecording), ctx, t, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyEvent", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyEvent), t, e)
 }

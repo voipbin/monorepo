@@ -28,11 +28,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 		log.Errorf("Could not get call info. err: %v", err)
 		return err
 	}
-
-	if c.Status != call.StatusProgressing {
-		log.Debugf("The call is being terminating.")
-		return nil
-	}
+	log = log.WithField("call_id", c.ID)
 
 	// remove the call from the conference
 	if err := h.db.ConferenceRemoveCallID(ctx, c.ConfID, c.ID); err != nil {
@@ -44,6 +40,11 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	if err := h.db.CallSetConferenceID(ctx, c.ID, uuid.Nil); err != nil {
 		log.Errorf("Could not reset the conference for a call. err: %v", err)
 		return err
+	}
+
+	if c.Status != call.StatusProgressing && c.Status != call.StatusDialing && c.Status != call.StatusRinging {
+		log.Debugf("The call is being terminating.")
+		return nil
 	}
 
 	// send a call action next

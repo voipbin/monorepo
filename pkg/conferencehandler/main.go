@@ -44,6 +44,7 @@ type conferenceHandler struct {
 // Contexts of conference types
 const (
 	contextConferenceIncoming string = "conf-in"
+	contextConferenceOutgoing string = "conf-out"
 )
 
 // List of default values

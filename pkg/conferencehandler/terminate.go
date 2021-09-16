@@ -52,6 +52,10 @@ func (h *conferenceHandler) Terminate(id uuid.UUID) error {
 
 		h.hangupAllChannelsInBridge(br)
 
+		// we are kicking out the all calls from the conference.
+		// but we don't cleaning the list of the calls in the conference here.
+		// that will be done when the channel left from the call bridge.
+
 		return nil
 	}
 

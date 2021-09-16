@@ -140,7 +140,7 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 		h.reqHandler.AstChannelHangup(c.AsteriskID, channelID.String(), ari.ChannelCauseNormalClearing)
 		return err
 	}
-	h.notifyHandler.NotifyCall(ctx, tmpCall, notifyhandler.EventTypeCallUpdated)
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallUpdated, tmpCall)
 
 	// add the call to conference
 	if err := h.db.ConferenceAddCallID(ctx, cf.ID, c.ID); err != nil {
