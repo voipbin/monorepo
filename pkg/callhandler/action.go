@@ -468,8 +468,7 @@ func (h *callHandler) actionExecuteHangup(c *call.Call, a *action.Action) error 
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
-	// hangup
-	h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+	h.HangingUp(c, ari.ChannelCauseNormalClearing)
 
 	return nil
 }

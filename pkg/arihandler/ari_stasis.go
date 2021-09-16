@@ -47,7 +47,18 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 		return err
 	}
 
-	return h.callHandler.ARIStasisStart(cn, data)
+	contextType := getContextType(data["context"])
+	switch contextType {
+	case contextTypeCall:
+		return h.callHandler.ARIStasisStart(cn, data)
+
+	case contextTypeConference:
+		return h.confHandler.ARIStasisStart(cn, data)
+
+	default:
+		log.Errorf("Could not find context type handler. context_type: %s", contextType)
+		return fmt.Errorf("could not find context type handler. context_type: %s", contextType)
+	}
 }
 
 // eventHandlerStasisEnd handles StasisEnd ARI event

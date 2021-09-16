@@ -10,23 +10,30 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
+// ARIStasisStart handles StasisStart ARI event for conference types.
 func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
 
-	mapType := map[interface{}]func(*channel.Channel, map[string]interface{}) error{
-		contextConferenceIncoming: h.ariStasisStartContextIncoming,
-	}
+	log := logrus.WithFields(logrus.Fields{
+		"channel_id":  cn.ID,
+		"asterisk_id": cn.AsteriskID,
+		"data":        cn.Data,
+	})
 
-	handler := mapType[data["context"].(string)]
-	if handler == nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"channel":     cn.ID,
-				"asterisk_id": cn.AsteriskID,
-				"data":        cn.Data,
-			}).Errorf("Could not find correct event handler.")
-	}
+	confContext := data["context"]
+	switch confContext {
+	case contextConferenceIncoming:
+		return h.ariStasisStartContextIncoming(cn, data)
 
-	return handler(cn, data)
+	case contextConferenceOutgoing:
+		log.Errorf("Currently, we don't support conference outgoing context. Something was wrong. context: %s", confContext)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return fmt.Errorf("unsupported conference context type. context: %s", confContext)
+
+	default:
+		log.Errorf("Unsuppurted context type. context: %s", confContext)
+		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return fmt.Errorf("unsupported conference context type. context: %s", confContext)
+	}
 }
 
 // ariStasisStartContextIncoming handles the call which has CONTEXT=conf-in in the StasisStart argument.
@@ -52,6 +59,7 @@ func (h *conferenceHandler) ariStasisStartContextIncoming(cn *channel.Channel, d
 	return nil
 }
 
+// ARIChannelLeftBridge handles ChannelLeftBridge ARI event for conference types.
 func (h *conferenceHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
 	if cn.Type != channel.TypeConf {
 		return nil

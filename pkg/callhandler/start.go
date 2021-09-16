@@ -87,8 +87,8 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call,
 	if err != nil {
 		return nil, err
 	}
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallCreated, res)
 
-	h.notifyHandler.NotifyCall(ctx, res, notifyhandler.EventTypeCallCreated)
 	return res, nil
 }
 

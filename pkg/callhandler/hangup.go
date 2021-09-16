@@ -25,6 +25,7 @@ func (h *callHandler) Hangup(cn *channel.Channel) error {
 		log.Errorf("Could not get the call info from the db. err: %v", err)
 		return nil
 	}
+	log = log.WithField("call_id", c.ID)
 
 	// remove the call bridge
 	if err := h.reqHandler.AstBridgeDelete(c.AsteriskID, c.BridgeID); err != nil {
@@ -43,6 +44,18 @@ func (h *callHandler) Hangup(cn *channel.Channel) error {
 		return err
 	}
 
+	// hangup the chained call
+	for _, callID := range c.ChainedCallIDs {
+		chainedCall, err := h.db.CallGet(ctx, callID)
+		if err != nil {
+			log.WithField("chained_call_id", chainedCall).Errorf("Could not get chained call info. err: %v", err)
+			continue
+		}
+
+		// hang up the call
+		h.HangingUp(chainedCall, ari.ChannelCauseNormalClearing)
+	}
+
 	return nil
 }
 
@@ -57,7 +70,7 @@ func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason
 		logrus.Errorf("Could not get hungup call data. call: %s, err: %v", c.ID, err)
 		return nil
 	}
-	h.notifyHandler.NotifyCall(ctx, tmpCall, notifyhandler.EventTypeCallHungup)
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallHungup, tmpCall)
 
 	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
 	return nil
@@ -75,6 +88,11 @@ func (h *callHandler) HangingUp(c *call.Call, cause ari.ChannelCause) error {
 		"hangup reason": cause,
 	})
 	log.Debug("Hanging up the call.")
+
+	if c.Status == call.StatusCanceling || c.Status == call.StatusHangup || c.Status == call.StatusTerminating {
+		// already hanging up
+		return nil
+	}
 
 	if c.Direction == call.DirectionOutgoing && call.IsUpdatableStatus(c.Status, call.StatusCanceling) {
 		// canceling

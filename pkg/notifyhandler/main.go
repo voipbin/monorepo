@@ -13,8 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -92,8 +90,9 @@ func init() {
 
 // NotifyHandler intreface
 type NotifyHandler interface {
-	NotifyCall(ctx context.Context, c *call.Call, t EventType)
-	NotifyRecording(ctx context.Context, t EventType, c *recording.Recording)
+	NotifyEvent(t EventType, e WebhookMessage)
+	// NotifyCall(ctx context.Context, c *call.Call, t EventType)
+	// NotifyRecording(ctx context.Context, t EventType, c *recording.Recording)
 }
 
 type notifyHandler struct {

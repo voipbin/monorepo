@@ -42,7 +42,7 @@ func (h *eventHandler) eventHandlerRecordingStarted(ctx context.Context, evt int
 		log.Errorf("Could not get the updated recording info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.NotifyRecording(ctx, notifyhandler.EventTypeRecordingStarted, tmpRecording)
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeRecordingStarted, tmpRecording)
 
 	return nil
 }
@@ -83,7 +83,7 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 		log.Errorf("Could not get the updated recording info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.NotifyRecording(ctx, notifyhandler.EventTypeRecordingFinished, tmpRecording)
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeRecordingFinished, tmpRecording)
 
 	// set empty recordID
 	switch r.Type {
