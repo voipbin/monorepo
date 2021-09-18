@@ -43,6 +43,7 @@ type Type string
 // List of Action types
 const (
 	TypeAnswer              Type = "answer"
+	TypeAMD                 Type = "amd"
 	TypeConferenceJoin      Type = "conference_join"
 	TypeConnect             Type = "connect"
 	TypeDTMFReceive         Type = "dtmf_receive" // receive the dtmfs.
@@ -65,6 +66,7 @@ const (
 // TypeList list of type array
 var TypeList []Type = []Type{
 	TypeAnswer,
+	TypeAMD,
 	TypeConferenceJoin,
 	TypeConnect,
 	TypeDTMFReceive,
@@ -87,6 +89,12 @@ var TypeList []Type = []Type{
 // OptionAnswer defines action answer's option.
 type OptionAnswer struct {
 	// no option
+}
+
+// OptionAMD defines action amd's option.
+type OptionAMD struct {
+	MachineHandle bool `json:"machine_handle"` // hangup,delay,continue if the machine answered a call
+	Sync          bool `json:"sync"`           // the call flow will be stop until amd done.
 }
 
 // OptionConferenceJoin defines action conference_join's option.
