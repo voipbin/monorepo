@@ -34,7 +34,7 @@ func (h *conferenceHandler) createEndpointTarget(ctx context.Context, cf *confer
 	}
 
 	// get bridge asterisk's address
-	address, err := h.cache.AsteriskAddressInternerGet(ctx, bridge.AsteriskID)
+	address, err := h.cache.AsteriskAddressInternalGet(ctx, bridge.AsteriskID)
 	if err != nil {
 		log.Errorf("Could not get conference Asterisk internal address. asterisk: %s", bridge.AsteriskID)
 		return "", err

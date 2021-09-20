@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -42,8 +43,8 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 	return nil
 }
 
-// AsteriskAddressInternerGet returns Asterisk's internal ip address
-func (h *handler) AsteriskAddressInternerGet(ctx context.Context, id string) (string, error) {
+// AsteriskAddressInternalGet returns Asterisk's internal ip address
+func (h *handler) AsteriskAddressInternalGet(ctx context.Context, id string) (string, error) {
 	key := fmt.Sprintf("asterisk.%s.address-internal", id)
 
 	res, err := h.Cache.Get(ctx, key).Result()
@@ -208,6 +209,31 @@ func (h *handler) CallDTMFSet(ctx context.Context, callID uuid.UUID, dtmf string
 	key := fmt.Sprintf("call:%s:dtmf", callID)
 
 	if err := h.setSerialize(ctx, key, dtmf); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CallAppAMDGet gets the given callapplication amd info from the cache.
+func (h *handler) CallAppAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error) {
+
+	key := fmt.Sprintf("callapplication:amd:%s", channelID)
+
+	var res callapplication.AMD
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallAppAMDSet sets the given callapplication amd info into the cache.
+func (h *handler) CallAppAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error {
+
+	key := fmt.Sprintf("callapplication:amd:%s", channelID)
+
+	if err := h.setSerialize(ctx, key, app); err != nil {
 		return err
 	}
 
