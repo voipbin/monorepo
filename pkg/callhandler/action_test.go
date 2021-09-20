@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
@@ -677,11 +678,88 @@ func TestActionExecuteExternalMediaStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
 			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
 			mockReq.EXPECT().AstChannelExternalMedia(tt.call.AsteriskID, gomock.Any(), tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionExecuteAMD(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name   string
+		call   *call.Call
+		action *action.Action
+
+		expectAMD *callapplication.AMD
+	}
+
+	tests := []test{
+		{
+			"sync false",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+			},
+			&action.Action{
+				Type:   action.TypeAMD,
+				ID:     uuid.FromStringOrNil("f681c108-19b6-11ec-bc57-635de4310a4b"),
+				Option: []byte(`{"machine_handle":"hangup"}`),
+			},
+			&callapplication.AMD{
+				CallID:        uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				MachineHandle: "hangup",
+			},
+		},
+		{
+			"sync true",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("7d89362a-19b9-11ec-a1ea-a74ce01d2c9b"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "7da1b4fc-19b9-11ec-948e-7f9ca90957a1",
+			},
+			&action.Action{
+				Type:   action.TypeAMD,
+				ID:     uuid.FromStringOrNil("7dba7df2-19b9-11ec-b426-17e356fbf5e3"),
+				Option: []byte(`{"machine_handle":"hangup","sync":true}`),
+			},
+			&callapplication.AMD{
+				CallID:        uuid.FromStringOrNil("7d89362a-19b9-11ec-a1ea-a74ce01d2c9b"),
+				MachineHandle: "hangup",
+				Sync:          true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
+			mockDB.EXPECT().CallApplicationAMDSet(gomock.Any(), gomock.Any(), tt.expectAMD).Return(nil)
+
+			if tt.expectAMD.Sync == false {
+				mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+			}
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

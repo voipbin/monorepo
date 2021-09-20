@@ -21,13 +21,19 @@ import (
 
 // StasisStart event's context types
 const (
-	ContextIncomingCall    = "call-in"            // context for the incoming channel
-	ContextOutgoingCall    = "call-out"           // context for the outgoing channel
-	ContextRecording       = "call-record"        // context for the channel which created only for recording
-	ContextFromServiceCall = "call-svc"           // context for the channel where it came back to stasis from the other asterisk application
-	ContextJoinCall        = "call-join"          // context for the channel for conference joining
-	ContextExternalMedia   = "call-externalmedia" // context for the external media channel. this channel will get the media from the external
-	ContextExternalSoop    = "call-externalsnoop" // context for the external snoop channel
+	ContextIncomingCall  = "call-in"            // context for the incoming channel
+	ContextOutgoingCall  = "call-out"           // context for the outgoing channel
+	ContextRecording     = "call-record"        // context for the channel which created only for recording
+	ContextServiceCall   = "call-svc"           // context for the channel where it came back to stasis from the other asterisk application
+	ContextJoinCall      = "call-join"          // context for the channel for conference joining
+	ContextExternalMedia = "call-externalmedia" // context for the external media channel. this channel will get the media from the external
+	ContextExternalSoop  = "call-externalsnoop" // context for the external snoop channel
+	ContextApplication   = "call-application"   // context for dialplan application execution
+)
+
+// list of application name
+const (
+	applicationAMD = "amd"
 )
 
 // domains
@@ -104,7 +110,7 @@ func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]inter
 
 	switch chCtx.(string) {
 
-	case ContextFromServiceCall:
+	case ContextServiceCall:
 		return h.startHandlerContextFromServiceCall(cn, data)
 
 	case ContextIncomingCall:
@@ -125,6 +131,9 @@ func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]inter
 	case ContextJoinCall:
 		return h.startHandlerContextJoin(cn, data)
 
+	case ContextApplication:
+		return h.startHandlerContextApplication(cn, data)
+
 	default:
 		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return fmt.Errorf("no route found for stasisstart. asterisk_id: %s, channel_id: %s, data: %v", cn.AsteriskID, cn.ID, data)
@@ -133,16 +142,20 @@ func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]inter
 
 // startHandlerContextFromServiceCall handles contextFromServiceCall context type of StasisStart event.
 func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel, data map[string]interface{}) error {
-	logrus.Infof("Executing startHandlerContextFromServiceCall. channel: %s", cn.ID)
+	log := logrus.WithFields(logrus.Fields{
+		"asterisk_id": cn.AsteriskID,
+		"channel_id":  cn.ID,
+		"func":        "startHandlerContextFromServiceCall",
+	})
+	log.Infof("Executing startHandlerContextFromServiceCall. context: %s", data["context"])
 
-	// get call by the channel id
-	c, err := h.db.CallGetByChannelID(context.Background(), cn.ID)
-	if err != nil {
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
-		return err
+	fromContext := data["context_from"]
+	switch fromContext {
+	case serviceContextAMD:
+		return h.startServiceFromAMD(cn, data)
+	default:
+		return h.startServiceFromDefault(cn, data)
 	}
-
-	return h.ActionNext(c)
 }
 
 // startHandlerContextRecording handles contextFromServiceCall context type of StasisStart event.
@@ -345,6 +358,27 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 	}
 
 	// do nothing here
+	return nil
+}
+
+// startHandlerContextApplication handles contextApplication context type of StasisStart event.
+func (h *callHandler) startHandlerContextApplication(cn *channel.Channel, data map[string]interface{}) error {
+	log := logrus.WithFields(logrus.Fields{
+		"channel_id": cn.ID,
+		"func":       "startHandlerContextApplication",
+	})
+
+	appName := data["application_name"]
+	log.Debugf("Parsed application info. application: %s", appName)
+
+	switch appName {
+	case applicationAMD:
+		return h.applicationHandleAMD(cn, data)
+
+	default:
+		log.Errorf("Could not find correct event handler. app_name: %s", appName)
+	}
+
 	return nil
 }
 

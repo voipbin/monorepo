@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -39,6 +40,8 @@ type DBHandler interface {
 	// calls
 	CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
 	CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	CallApplicationAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error)
+	CallApplicationAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error
 	CallCreate(ctx context.Context, call *call.Call) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)

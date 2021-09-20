@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -28,10 +29,13 @@ type handler struct {
 type CacheHandler interface {
 	Connect() error
 
-	AsteriskAddressInternerGet(ctx context.Context, id string) (string, error)
+	AsteriskAddressInternalGet(ctx context.Context, id string) (string, error)
 
 	BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeSet(ctx context.Context, bridge *bridge.Bridge) error
+
+	CallAppAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error)
+	CallAppAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error
 
 	CallDTMFGet(ctx context.Context, callID uuid.UUID) (string, error)
 	CallDTMFSet(ctx context.Context, callID uuid.UUID, dtmf string) error

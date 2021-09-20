@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -45,7 +46,14 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 	start := time.Now()
 	var err error
+
+	// set current time
+	a.TMExecute = getCurTime()
+
 	switch a.Type {
+	case action.TypeAMD:
+		err = h.actionExecuteAMD(c, a)
+
 	case action.TypeAnswer:
 		err = h.actionExecuteAnswer(c, a)
 
@@ -104,6 +112,7 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 		logrus.Fields{
 			"call_id": c.ID,
 			"flow_id": c.FlowID,
+			"func":    "ActionNext",
 		})
 	log.WithFields(
 		logrus.Fields{
@@ -144,11 +153,13 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 func (h *callHandler) ActionTimeout(callID uuid.UUID, a *action.Action) error {
 	ctx := context.Background()
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":   callID,
-			"action": a.ID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     callID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "ActionTimeout",
+	})
+
 	log.Infof("The call's action has timed out.")
 
 	c, err := h.db.CallGet(ctx, callID)
@@ -188,15 +199,12 @@ func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error 
 	// copy the action
 	act := *a
 
-	// set current time
-	act.TMExecute = getCurTime()
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteAnswer",
+	})
 
 	var option action.OptionAnswer
 	if act.Option != nil {
@@ -235,15 +243,12 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
-	// set current time
-	act.TMExecute = getCurTime()
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteEcho",
+	})
 
 	var option action.OptionEcho
 	if err := json.Unmarshal(act.Option, &option); err != nil {
@@ -287,15 +292,12 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 	// copy the action
 	act := *a
 
-	// set current time
-	act.TMExecute = getCurTime()
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteConferenceJoin",
+	})
 
 	var option action.OptionConferenceJoin
 	if err := json.Unmarshal(act.Option, &option); err != nil {
@@ -329,15 +331,12 @@ func (h *callHandler) actionExecutePlay(c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
-	// set current time
-	act.TMExecute = getCurTime()
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecutePlay",
+	})
 
 	var option action.OptionPlay
 	if err := json.Unmarshal(act.Option, &option); err != nil {
@@ -385,15 +384,12 @@ func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) er
 	// copy the action
 	act := *a
 
-	// set current time
-	act.TMExecute = getCurTime()
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteStreamEcho",
+	})
 	log.Debug("Executing action.")
 
 	var option action.OptionStreamEcho
@@ -438,15 +434,12 @@ func (h *callHandler) actionExecuteHangup(c *call.Call, a *action.Action) error 
 	// copy the action
 	act := *a
 
-	// set current time
-	act.TMExecute = getCurTime()
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteHangup",
+	})
 
 	var option action.OptionHangup
 	if act.Option != nil {
@@ -479,12 +472,12 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteTalk",
+	})
 
 	var option action.OptionTalk
 	if act.Option != nil {
@@ -529,12 +522,12 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 	// copy the action
 	act := *a
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteRecordingStart",
+	})
 
 	var option action.OptionRecordingStart
 	if act.Option != nil {
@@ -627,15 +620,15 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 func (h *callHandler) actionExecuteRecordingStop(c *call.Call, a *action.Action) error {
 	ctx := context.Background()
 
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteRecordingStop",
+	})
+
 	// copy the action
 	act := *a
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
 
 	var option action.OptionRecordingStop
 	if act.Option != nil {
@@ -678,12 +671,12 @@ func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) e
 	// copy the action
 	act := *a
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteDTMFReceive",
+	})
 
 	var option action.OptionDTMFReceive
 	if act.Option != nil {
@@ -722,17 +715,15 @@ func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) e
 // actionExecuteDTMFSend executes the action type dtmf_send.
 // It sends the DTMFs to the call.
 func (h *callHandler) actionExecuteDTMFSend(c *call.Call, a *action.Action) error {
-	// ctx := context.Background()
-
 	// copy the action
 	act := *a
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteDTMFSend",
+	})
 
 	var option action.OptionDTMFSend
 	if act.Option != nil {
@@ -769,17 +760,20 @@ func (h *callHandler) actionExecuteDTMFSend(c *call.Call, a *action.Action) erro
 
 // actionExecuteExternalMediaStart executes the action type external_media_start.
 func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Action) error {
-	// ctx := context.Background()
-
 	// copy the action
 	act := *a
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call":        c.ID,
-			"action":      act.ID,
-			"action_type": act.Type,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteExternalMediaStart",
+	})
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
 
 	var option action.OptionExternalMediaStart
 	if act.Option != nil {
@@ -797,7 +791,65 @@ func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Ac
 	log.Debugf("Created external media channel. channel: %v", extCh)
 
 	// send next action request
-	h.reqHandler.CallCallActionNext(c.ID)
+	return h.reqHandler.CallCallActionNext(c.ID)
+}
+
+// actionExecuteAMD executes the action type external_media_start.
+func (h *callHandler) actionExecuteAMD(c *call.Call, a *action.Action) error {
+	// copy the action
+	act := *a
+
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":   c.ID,
+		"action_id": a.ID,
+		"func":      "actionExecuteAMD",
+	})
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	var option action.OptionAMD
+	if act.Option != nil {
+		if err := json.Unmarshal(act.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
+	}
+	log.Debugf("Parsed option. option: %v", option)
+
+	// create a snoop channel
+	// set app args
+	appArgs := fmt.Sprintf("context=%s,call_id=%s,application_name=%s",
+		ContextApplication,
+		c.ID,
+		applicationAMD,
+	)
+
+	snoopID := uuid.Must(uuid.NewV4())
+	if errSnoop := h.reqHandler.AstChannelCreateSnoop(c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionBoth); errSnoop != nil {
+		log.Errorf("Could not create a snoop channel for the AMD. error: %v", errSnoop)
+		return errSnoop
+	}
+
+	// create callapplication info
+	app := &callapplication.AMD{
+		CallID:        c.ID,
+		MachineHandle: option.MachineHandle,
+		Sync:          option.Sync,
+	}
+
+	// add the amd info to the cache
+	if errAMD := h.db.CallApplicationAMDSet(context.Background(), snoopID.String(), app); errAMD != nil {
+		log.Errorf("Could not set the callapplication amd option. err: %v", errAMD)
+		h.reqHandler.AstChannelHangup(c.AsteriskID, snoopID.String(), ari.ChannelCauseNormalClearing)
+	}
+
+	if app.Sync == false {
+		// send next action request
+		return h.reqHandler.CallCallActionNext(c.ID)
+	}
 
 	return nil
 }

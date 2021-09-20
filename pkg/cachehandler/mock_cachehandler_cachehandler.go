@@ -12,6 +12,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -41,19 +42,19 @@ func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
 }
 
-// AsteriskAddressInternerGet mocks base method.
-func (m *MockCacheHandler) AsteriskAddressInternerGet(ctx context.Context, id string) (string, error) {
+// AsteriskAddressInternalGet mocks base method.
+func (m *MockCacheHandler) AsteriskAddressInternalGet(ctx context.Context, id string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AsteriskAddressInternerGet", ctx, id)
+	ret := m.ctrl.Call(m, "AsteriskAddressInternalGet", ctx, id)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AsteriskAddressInternerGet indicates an expected call of AsteriskAddressInternerGet.
-func (mr *MockCacheHandlerMockRecorder) AsteriskAddressInternerGet(ctx, id interface{}) *gomock.Call {
+// AsteriskAddressInternalGet indicates an expected call of AsteriskAddressInternalGet.
+func (mr *MockCacheHandlerMockRecorder) AsteriskAddressInternalGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AsteriskAddressInternerGet", reflect.TypeOf((*MockCacheHandler)(nil).AsteriskAddressInternerGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AsteriskAddressInternalGet", reflect.TypeOf((*MockCacheHandler)(nil).AsteriskAddressInternalGet), ctx, id)
 }
 
 // BridgeGet mocks base method.
@@ -83,6 +84,35 @@ func (m *MockCacheHandler) BridgeSet(ctx context.Context, bridge *bridge.Bridge)
 func (mr *MockCacheHandlerMockRecorder) BridgeSet(ctx, bridge interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeSet", reflect.TypeOf((*MockCacheHandler)(nil).BridgeSet), ctx, bridge)
+}
+
+// CallAppAMDGet mocks base method.
+func (m *MockCacheHandler) CallAppAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallAppAMDGet", ctx, channelID)
+	ret0, _ := ret[0].(*callapplication.AMD)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallAppAMDGet indicates an expected call of CallAppAMDGet.
+func (mr *MockCacheHandlerMockRecorder) CallAppAMDGet(ctx, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallAppAMDGet", reflect.TypeOf((*MockCacheHandler)(nil).CallAppAMDGet), ctx, channelID)
+}
+
+// CallAppAMDSet mocks base method.
+func (m *MockCacheHandler) CallAppAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallAppAMDSet", ctx, channelID, app)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallAppAMDSet indicates an expected call of CallAppAMDSet.
+func (mr *MockCacheHandlerMockRecorder) CallAppAMDSet(ctx, channelID, app interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallAppAMDSet", reflect.TypeOf((*MockCacheHandler)(nil).CallAppAMDSet), ctx, channelID, app)
 }
 
 // CallDTMFGet mocks base method.

@@ -15,6 +15,7 @@ import (
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -228,6 +229,35 @@ func (m *MockDBHandler) CallAddRecordIDs(ctx context.Context, id, recordID uuid.
 func (mr *MockDBHandlerMockRecorder) CallAddRecordIDs(ctx, id, recordID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallAddRecordIDs", reflect.TypeOf((*MockDBHandler)(nil).CallAddRecordIDs), ctx, id, recordID)
+}
+
+// CallApplicationAMDGet mocks base method.
+func (m *MockDBHandler) CallApplicationAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallApplicationAMDGet", ctx, channelID)
+	ret0, _ := ret[0].(*callapplication.AMD)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallApplicationAMDGet indicates an expected call of CallApplicationAMDGet.
+func (mr *MockDBHandlerMockRecorder) CallApplicationAMDGet(ctx, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallApplicationAMDGet", reflect.TypeOf((*MockDBHandler)(nil).CallApplicationAMDGet), ctx, channelID)
+}
+
+// CallApplicationAMDSet mocks base method.
+func (m *MockDBHandler) CallApplicationAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallApplicationAMDSet", ctx, channelID, app)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallApplicationAMDSet indicates an expected call of CallApplicationAMDSet.
+func (mr *MockDBHandlerMockRecorder) CallApplicationAMDSet(ctx, channelID, app interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallApplicationAMDSet", reflect.TypeOf((*MockDBHandler)(nil).CallApplicationAMDSet), ctx, channelID, app)
 }
 
 // CallCreate mocks base method.
