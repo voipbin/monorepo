@@ -15,9 +15,10 @@ import (
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
@@ -1113,6 +1114,49 @@ func (m *MockDBHandler) ConferenceUpdateToCache(ctx context.Context, id uuid.UUI
 func (mr *MockDBHandlerMockRecorder) ConferenceUpdateToCache(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).ConferenceUpdateToCache), ctx, id)
+}
+
+// ExternalMediaDelete mocks base method.
+func (m *MockDBHandler) ExternalMediaDelete(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExternalMediaDelete", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExternalMediaDelete indicates an expected call of ExternalMediaDelete.
+func (mr *MockDBHandlerMockRecorder) ExternalMediaDelete(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaDelete", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaDelete), ctx, callID)
+}
+
+// ExternalMediaGet mocks base method.
+func (m *MockDBHandler) ExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExternalMediaGet", ctx, callID)
+	ret0, _ := ret[0].(*externalmedia.ExternalMedia)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExternalMediaGet indicates an expected call of ExternalMediaGet.
+func (mr *MockDBHandlerMockRecorder) ExternalMediaGet(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaGet", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaGet), ctx, callID)
+}
+
+// ExternalMediaSet mocks base method.
+func (m *MockDBHandler) ExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExternalMediaSet", ctx, callID, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExternalMediaSet indicates an expected call of ExternalMediaSet.
+func (mr *MockDBHandlerMockRecorder) ExternalMediaSet(ctx, callID, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaSet", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaSet), ctx, callID, data)
 }
 
 // RecordingCreate mocks base method.
