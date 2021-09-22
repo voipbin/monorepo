@@ -3,7 +3,7 @@ package dbhandler
 import (
 	"context"
 
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 )
 
 // CallApplicationAMDGet returns callapplication amd.

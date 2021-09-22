@@ -9,8 +9,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -679,10 +680,75 @@ func TestActionExecuteExternalMediaStart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(gomock.Any(), tt.call.ID).Return(nil, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
 			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
 			mockReq.EXPECT().AstChannelExternalMedia(tt.call.AsteriskID, gomock.Any(), tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			mockDB.EXPECT().ExternalMediaSet(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionExecuteExternalMediaStop(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &callHandler{
+		reqHandler:  mockReq,
+		db:          mockDB,
+		confHandler: mockConf,
+	}
+
+	type test struct {
+		name     string
+		call     *call.Call
+		action   *action.Action
+		extMedia *externalmedia.ExternalMedia
+	}
+
+	tests := []test{
+		{
+			"default",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("50b8cb46-1aa5-11ec-9b1e-7b766955c7d1"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "4455e2f4-02f8-11ec-acf9-43a391fce607",
+			},
+			&action.Action{
+				Type: action.TypeExternalMediaStop,
+				ID:   uuid.FromStringOrNil("50ff55d4-1aa5-11ec-8d4e-7fc834754547"),
+			},
+			&externalmedia.ExternalMedia{
+				CallID:         uuid.FromStringOrNil("50b8cb46-1aa5-11ec-9b1e-7b766955c7d1"),
+				AsteriskID:     "42:01:0a:a4:00:05",
+				ChannelID:      "4455e2f4-02f8-11ec-acf9-43a391fce607",
+				LocalIP:        "",
+				LocalPort:      0,
+				ExternalHost:   "",
+				Encapsulation:  "",
+				Transport:      "",
+				ConnectionType: "",
+				Format:         "",
+				Direction:      "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(gomock.Any(), tt.call.ID).Return(tt.extMedia, nil)
+			mockReq.EXPECT().AstChannelHangup(tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing)
+			mockDB.EXPECT().ExternalMediaDelete(gomock.Any(), tt.extMedia.CallID).Return(nil)
 			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

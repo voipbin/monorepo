@@ -12,7 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -71,6 +71,9 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 	case action.TypeExternalMediaStart:
 		err = h.actionExecuteExternalMediaStart(c, a)
+
+	case action.TypeExternalMediaStop:
+		err = h.actionExecuteExternalMediaStop(c, a)
 
 	case action.TypeHangup:
 		err = h.actionExecuteHangup(c, a)
@@ -775,6 +778,14 @@ func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Ac
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
+	// check already external media is going on
+	ctx := context.Background()
+	extMedia, _ := h.db.ExternalMediaGet(ctx, c.ID)
+	if extMedia != nil {
+		log.Infof("The external media is already going on. external_media: %v", extMedia)
+		return h.reqHandler.CallCallActionNext(c.ID)
+	}
+
 	var option action.OptionExternalMediaStart
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
@@ -783,12 +794,40 @@ func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Ac
 		}
 	}
 
-	extCh, err := h.ExternalMediaStart(c.ID, option.ExternalHost, option.Encapsulation, option.Transport, option.ConnectionType, option.Format, option.Direction)
+	extCh, err := h.ExternalMediaStart(c.ID, true, option.ExternalHost, option.Encapsulation, option.Transport, option.ConnectionType, option.Format, option.Direction)
 	if err != nil {
 		log.Errorf("Could not start external media. err: %v", err)
 		return err
 	}
 	log.Debugf("Created external media channel. channel: %v", extCh)
+
+	// send next action request
+	return h.reqHandler.CallCallActionNext(c.ID)
+}
+
+// actionExecuteExternalMediaStop executes the action type external_media_stop.
+func (h *callHandler) actionExecuteExternalMediaStop(c *call.Call, a *action.Action) error {
+	// copy the action
+	act := *a
+
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteExternalMediaStop",
+	})
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		return fmt.Errorf("could not set the action for call. err: %v", err)
+	}
+
+	// stop the external media
+	if err := h.ExternalMediaStop(c.ID); err != nil {
+		log.Errorf("Could not stop the external media. err: %v", err)
+		return err
+	}
+	log.Debugf("Stopped external media channel. call_id: %v", c.ID)
 
 	// send next action request
 	return h.reqHandler.CallCallActionNext(c.ID)

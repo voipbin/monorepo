@@ -10,9 +10,10 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
@@ -39,6 +40,10 @@ type CacheHandler interface {
 
 	CallDTMFGet(ctx context.Context, callID uuid.UUID) (string, error)
 	CallDTMFSet(ctx context.Context, callID uuid.UUID, dtmf string) error
+
+	CallExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error)
+	CallExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error
+	CallExternalMediaDelete(ctx context.Context, callID uuid.UUID) error
 
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallSet(ctx context.Context, call *call.Call) error

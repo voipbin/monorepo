@@ -12,9 +12,10 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
@@ -142,6 +143,49 @@ func (m *MockCacheHandler) CallDTMFSet(ctx context.Context, callID uuid.UUID, dt
 func (mr *MockCacheHandlerMockRecorder) CallDTMFSet(ctx, callID, dtmf interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallDTMFSet", reflect.TypeOf((*MockCacheHandler)(nil).CallDTMFSet), ctx, callID, dtmf)
+}
+
+// CallExternalMediaDelete mocks base method.
+func (m *MockCacheHandler) CallExternalMediaDelete(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallExternalMediaDelete", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallExternalMediaDelete indicates an expected call of CallExternalMediaDelete.
+func (mr *MockCacheHandlerMockRecorder) CallExternalMediaDelete(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallExternalMediaDelete", reflect.TypeOf((*MockCacheHandler)(nil).CallExternalMediaDelete), ctx, callID)
+}
+
+// CallExternalMediaGet mocks base method.
+func (m *MockCacheHandler) CallExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallExternalMediaGet", ctx, callID)
+	ret0, _ := ret[0].(*externalmedia.ExternalMedia)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallExternalMediaGet indicates an expected call of CallExternalMediaGet.
+func (mr *MockCacheHandlerMockRecorder) CallExternalMediaGet(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallExternalMediaGet", reflect.TypeOf((*MockCacheHandler)(nil).CallExternalMediaGet), ctx, callID)
+}
+
+// CallExternalMediaSet mocks base method.
+func (m *MockCacheHandler) CallExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallExternalMediaSet", ctx, callID, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallExternalMediaSet indicates an expected call of CallExternalMediaSet.
+func (mr *MockCacheHandlerMockRecorder) CallExternalMediaSet(ctx, callID, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallExternalMediaSet", reflect.TypeOf((*MockCacheHandler)(nil).CallExternalMediaSet), ctx, callID, data)
 }
 
 // CallGet mocks base method.

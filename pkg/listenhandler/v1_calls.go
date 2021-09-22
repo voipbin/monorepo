@@ -456,7 +456,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(m *rabbitmqhandler.Req
 		"external_media": data,
 	}).Debugf("Parsed request data.")
 
-	extCh, err := h.callHandler.ExternalMediaStart(id, data.ExternalHost, data.Encapsulation, data.Transport, data.ConnectionType, data.Format, data.Direction)
+	extCh, err := h.callHandler.ExternalMediaStart(id, false, data.ExternalHost, data.Encapsulation, data.Transport, data.ConnectionType, data.Format, data.Direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. call: %s, err: %v", id, err)
 		return nil, err

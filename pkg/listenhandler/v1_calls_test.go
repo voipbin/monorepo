@@ -835,6 +835,7 @@ func TestProcessV1CallsIDExternalMediaPost(t *testing.T) {
 
 			mockCall.EXPECT().ExternalMediaStart(
 				tt.call.ID,
+				false,
 				tt.expectExternalHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,

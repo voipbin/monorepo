@@ -14,9 +14,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -108,6 +109,11 @@ type DBHandler interface {
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
 	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
 	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error
+
+	// external media
+	ExternalMediaDelete(ctx context.Context, callID uuid.UUID) error
+	ExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error)
+	ExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error
 
 	// recordings
 	RecordingCreate(ctx context.Context, c *recording.Recording) error

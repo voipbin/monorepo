@@ -10,9 +10,10 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callApplication"
+	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
@@ -234,6 +235,40 @@ func (h *handler) CallAppAMDSet(ctx context.Context, channelID string, app *call
 	key := fmt.Sprintf("callapplication:amd:%s", channelID)
 
 	if err := h.setSerialize(ctx, key, app); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CallExternalMediaGet returns the given call's external media info from the cache
+func (h *handler) CallExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error) {
+	key := fmt.Sprintf("call:%s:external_media", callID)
+
+	var res externalmedia.ExternalMedia
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallExternalMediaSet sets the given call's external media info into the cache.
+func (h *handler) CallExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error {
+	key := fmt.Sprintf("call:%s:external_media", callID)
+
+	if err := h.setSerialize(ctx, key, data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CallExternalMediaDelete deletes the given call's external media info from the cache.
+func (h *handler) CallExternalMediaDelete(ctx context.Context, callID uuid.UUID) error {
+	key := fmt.Sprintf("call:%s:external_media", callID)
+
+	if _, err := h.Cache.Del(ctx, key).Result(); err != nil {
 		return err
 	}
 
