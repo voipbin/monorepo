@@ -3,6 +3,37 @@
 Action
 ======
 
+AMD
+---
+Answering machine detection.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "amd",
+        "option": {
+            "machine_handle": "<string>",
+            "async": <boolean>
+        }
+    }
+
+* *machine_handle*: hangup,delay,continue if the machine answered a call.
+* *async*: if it's false, the call flow will be stop until amd done.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "amd",
+        "option": {
+            "machine_handle": "hangup",
+            "sync": true
+        }
+    },
+
 .. _call-action-answer: call-action-answer
 
 Answer
@@ -370,4 +401,58 @@ Example
             "gender": "female",
             "language": "en-US"
         }
+    }
+
+Transcribe_start
+----------------
+Start the transcribe talk in realtime.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "transcribe_start",
+        "option": {
+            "language": "<string>",
+            "webhook_uri": "<string>",
+            "webhook_method": "<string>"
+        }
+    }
+
+* *language*: Specifies the language. BCP47 format. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).
+* *webhook_uri*: Target webhook uri.
+* *webhook_method*: Target webhook method.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "transcribe_start",
+        "option": {
+            "language": "en-US",
+            "webhook_uri": "https://test.com",
+            "webhook_method": "POST"
+        }
+    }
+
+Transcribe_stop
+---------------
+Stop the transcribe talk in realtime.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "transcribe_stop"
+    }
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "transcribe_stop"
     }

@@ -47,7 +47,17 @@ func (h *serviceHandler) TranscribeCreate(u *user.User, recordingID uuid.UUID, l
 		Language:      tmp.Language,
 		WebhookURI:    tmp.WebhookURI,
 		WebhookMethod: tmp.WebhookMethod,
-		Transcription: tmp.Transcription,
+	}
+
+	// transcripts
+	for _, t := range tmp.Transcripts {
+		tmp := transcribe.Transcript{
+			Direction: transcribe.TranscriptDirection(t.Direction),
+			Message:   t.Message,
+			TMCreate:  t.TMCreate,
+		}
+
+		res.Transcripts = append(res.Transcripts, tmp)
 	}
 
 	return res, nil
