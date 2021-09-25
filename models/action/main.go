@@ -94,7 +94,7 @@ type OptionAnswer struct {
 // OptionAMD defines action amd's option.
 type OptionAMD struct {
 	MachineHandle string `json:"machine_handle"` // hangup,delay,continue if the machine answered a call
-	Sync          bool   `json:"sync"`           // the call flow will be stop until amd done.
+	Async         bool   `json:"async"`          // if it's false, the call flow will be stop until amd done.
 }
 
 // OptionConferenceJoin defines action conference_join's option.
