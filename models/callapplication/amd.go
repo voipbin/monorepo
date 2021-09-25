@@ -12,5 +12,5 @@ const (
 type AMD struct {
 	CallID        uuid.UUID `json:"call_id"`
 	MachineHandle string    `json:"machine_handle"`
-	Sync          bool      `json:"sync"`
+	Async         bool      `json:"async"`
 }

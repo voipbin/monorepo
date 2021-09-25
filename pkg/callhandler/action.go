@@ -876,7 +876,7 @@ func (h *callHandler) actionExecuteAMD(c *call.Call, a *action.Action) error {
 	app := &callapplication.AMD{
 		CallID:        c.ID,
 		MachineHandle: option.MachineHandle,
-		Sync:          option.Sync,
+		Async:         option.Async,
 	}
 
 	// add the amd info to the cache
@@ -885,7 +885,7 @@ func (h *callHandler) actionExecuteAMD(c *call.Call, a *action.Action) error {
 		h.reqHandler.AstChannelHangup(c.AsteriskID, snoopID.String(), ari.ChannelCauseNormalClearing)
 	}
 
-	if app.Sync == false {
+	if app.Async == true {
 		// send next action request
 		return h.reqHandler.CallCallActionNext(c.ID)
 	}
