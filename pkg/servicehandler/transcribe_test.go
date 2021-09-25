@@ -60,7 +60,12 @@ func TestTranscribeCreate(t *testing.T) {
 				Language:      "en-US",
 				WebhookURI:    "",
 				WebhookMethod: "",
-				Transcription: "Hello, this is voipbin.",
+				Transcripts: []tmtranscribe.Transcript{
+					{
+						Direction: tmtranscribe.TranscriptDirectionIn,
+						Message:   "Hello, this is voipbin.",
+					},
+				},
 			},
 
 			&transcribe.Transcribe{
@@ -70,7 +75,12 @@ func TestTranscribeCreate(t *testing.T) {
 				Language:      "en-US",
 				WebhookURI:    "",
 				WebhookMethod: "",
-				Transcription: "Hello, this is voipbin.",
+				Transcripts: []transcribe.Transcript{
+					{
+						Direction: transcribe.TranscriptDirectionIn,
+						Message:   "Hello, this is voipbin.",
+					},
+				},
 			},
 		},
 	}

@@ -52,7 +52,7 @@ func TestTMRecordingPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"10e438e2-a3eb-11eb-889c-975ac37d96fe","type":"recording","reference_id":"138cbdc2-a3ea-11eb-9a91-3b876395af6e","language":"en-US","webhook_uri":"","webhook_method":"","transcription":"Hello, this is voipbin. Thank you."}`),
+				Data:       []byte(`{"id":"10e438e2-a3eb-11eb-889c-975ac37d96fe","type":"recording","reference_id":"138cbdc2-a3ea-11eb-9a91-3b876395af6e","language":"en-US","webhook_uri":"","webhook_method":"","transcripts":[{"direction":"both","message":"Hello, this is voipbin. Thank you."}]}`),
 			},
 			&tmtranscribe.Transcribe{
 				ID:            uuid.FromStringOrNil("10e438e2-a3eb-11eb-889c-975ac37d96fe"),
@@ -61,7 +61,12 @@ func TestTMRecordingPost(t *testing.T) {
 				Language:      "en-US",
 				WebhookURI:    "",
 				WebhookMethod: "",
-				Transcription: "Hello, this is voipbin. Thank you.",
+				Transcripts: []tmtranscribe.Transcript{
+					{
+						Direction: tmtranscribe.TranscriptDirectionBoth,
+						Message:   "Hello, this is voipbin. Thank you.",
+					},
+				},
 			},
 		},
 	}
