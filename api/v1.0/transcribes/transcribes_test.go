@@ -60,7 +60,12 @@ func TestTranscribesPOST(t *testing.T) {
 				Language:      "en-US",
 				WebhookURI:    "",
 				WebhookMethod: "",
-				Transcription: "Hello, world.",
+				Transcripts: []transcribe.Transcript{
+					{
+						Direction: transcribe.TranscriptDirectionBoth,
+						Message:   "Hello, world.",
+					},
+				},
 			},
 			&recording.Recording{
 				ID:     uuid.FromStringOrNil("1c71e72e-a3f8-11eb-a402-7b13f5ec585d"),
