@@ -812,7 +812,7 @@ func TestActionExecuteAMD(t *testing.T) {
 			&callapplication.AMD{
 				CallID:        uuid.FromStringOrNil("7d89362a-19b9-11ec-a1ea-a74ce01d2c9b"),
 				MachineHandle: "hangup",
-				Sync:          true,
+				Async:         false,
 			},
 		},
 	}
@@ -823,7 +823,7 @@ func TestActionExecuteAMD(t *testing.T) {
 			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
 			mockDB.EXPECT().CallApplicationAMDSet(gomock.Any(), gomock.Any(), tt.expectAMD).Return(nil)
 
-			if tt.expectAMD.Sync == false {
+			if tt.expectAMD.Async == true {
 				mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
 			}
 			if err := h.ActionExecute(tt.call, tt.action); err != nil {

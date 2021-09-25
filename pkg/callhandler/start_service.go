@@ -64,7 +64,7 @@ func (h *callHandler) startServiceFromAMD(cn *channel.Channel, data map[string]i
 		h.HangingUp(c, ari.ChannelCauseNormalClearing)
 	}
 
-	if amd.Sync == true {
+	if amd.Async == false {
 		return h.reqHandler.CallCallActionNext(c.ID)
 	}
 
