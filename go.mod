@@ -1,6 +1,6 @@
 module gitlab.com/voipbin/bin-manager/transcribe-manager.git
 
-go 1.14
+go 1.17
 
 require (
 	cloud.google.com/go v0.94.0 // indirect
@@ -20,7 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210905153006-e26b10b17032
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210314173554-61bfbbbd5633
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210409195628-27c9b796b068
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210909052905-558ef2d8332e
 	golang.org/x/net v0.0.0-20210825183410-e898025ed96a // indirect
@@ -29,4 +29,22 @@ require (
 	golang.org/x/text v0.3.7
 	google.golang.org/api v0.56.0
 	google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2
+)
+
+require (
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/googleapis/gax-go/v2 v2.1.0 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/pion/randutil v0.1.0 // indirect
+	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/streadway/amqp v1.0.0 // indirect
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210821180258-3162580740d1 // indirect
+	go.opencensus.io v0.23.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/grpc v1.40.0 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 )
