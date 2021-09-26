@@ -14,7 +14,6 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.6.0
-	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
@@ -27,7 +26,7 @@ require (
 	github.com/swaggo/gin-swagger v1.3.0
 	github.com/swaggo/swag v1.7.0
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210925161321-24cd32808722
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210314173554-61bfbbbd5633
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210925161656-00ec6d5606ad
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210323024036-8c44f8dca2de
