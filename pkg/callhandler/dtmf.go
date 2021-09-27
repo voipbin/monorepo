@@ -12,12 +12,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
+// DTMFReceived handles DTMF Recevied event
 func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration int) error {
 	ctx := context.Background()
 
 	log := logrus.WithFields(
 		logrus.Fields{
 			"channel": cn,
+			"func":    "DTMFReceived",
 		},
 	)
 
@@ -26,15 +28,18 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 		log.Infof("The channel is not call type.")
 		return nil
 	}
+	log.WithField("call", c).Debug("Found call info.")
 	log = log.WithFields(
 		logrus.Fields{
-			"call": c,
+			"call_id": c.ID,
 		},
 	)
 
 	if c.Action.Type != action.TypeDTMFReceive {
 		// overwrite dtmf receive cache.
-		log.Debugf("The current action is not dtmf receive.")
+		log.WithField("action_type", c.Action.Type).Debug("The current action is not dtmf receive.")
+
+		// check the condition
 
 		// we are setting the dtmf here even it is not dtmf receive action.
 		// this is needed, because if the user press the dtmf in the prior of dtmf receive(i.e play action),
@@ -45,7 +50,7 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 
 	var option action.OptionDTMFReceive
 	if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-		log.Errorf("could not parse the option. err: %v", err)
+		log.WithField("action", c.Action).Errorf("could not parse the option. err: %v", err)
 		return fmt.Errorf("could not parse option. action: %v, err: %v", c.Action, err)
 	}
 
@@ -62,11 +67,10 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 	// check finish condition
 	if strings.Contains(option.FinishOnKey, digit) == false && len(dtmfs) < option.MaxNumKey {
 		// the dtmf receive is not finish yet
-		logrus.Debugf("The dtmf receive does not finish yet. Wating next dtmf. call: %v", c.ID)
+		log.Debug("The dtmf receive does not finish yet. Wating next dtmf.")
 		return nil
 	}
-
-	logrus.Infof("Finished dtmf receiving. call: %s, dtmfs: %s", c.ID, dtmfs)
+	log.Infof("Finished dtmf receiving. call: %s, dtmfs: %s", c.ID, dtmfs)
 
 	// send next action request
 	h.reqHandler.CallCallActionNext(c.ID)

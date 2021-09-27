@@ -136,7 +136,7 @@ func TestNotifyEventCall(t *testing.T) {
 			if tt.call.WebhookURI != "" {
 				mockReq.EXPECT().WMWebhookPOST("POST", tt.call.WebhookURI, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
-			h.NotifyEvent(tt.eventType, tt.call)
+			h.NotifyEvent(tt.eventType, tt.call.WebhookURI, tt.call)
 
 			time.Sleep(time.Millisecond * 1000)
 		})
@@ -211,7 +211,7 @@ func TestNotifyEventRecordingStarted(t *testing.T) {
 			if tt.r.WebhookURI != "" {
 				mockReq.EXPECT().WMWebhookPOST("POST", tt.r.WebhookURI, dataTypeJSON, string(EventTypeRecordingStarted), tt.expectWebhook)
 			}
-			h.NotifyEvent(EventTypeRecordingStarted, tt.r)
+			h.NotifyEvent(EventTypeRecordingStarted, tt.r.WebhookURI, tt.r)
 
 			time.Sleep(time.Millisecond * 100)
 		})
@@ -286,7 +286,7 @@ func TestNotifyEventRecordingFinished(t *testing.T) {
 			if tt.r.WebhookURI != "" {
 				mockReq.EXPECT().WMWebhookPOST("POST", tt.r.WebhookURI, dataTypeJSON, string(EventTypeRecordingFinished), tt.expectWebhook)
 			}
-			h.NotifyEvent(EventTypeRecordingFinished, tt.r)
+			h.NotifyEvent(EventTypeRecordingFinished, tt.r.WebhookURI, tt.r)
 
 			time.Sleep(time.Millisecond * 100)
 		})

@@ -139,11 +139,6 @@ func (h *Call) String() string {
 	return fmt.Sprintf("%v", *h)
 }
 
-// GetWebhookURI return webhook uri
-func (h *Call) GetWebhookURI() string {
-	return h.WebhookURI
-}
-
 // NewCall creates a call struct and return it.
 func NewCall(
 	id uuid.UUID,
