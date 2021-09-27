@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (h *notifyHandler) publishWebhook(t EventType, c WebhookMessage) {
+func (h *notifyHandler) publishWebhook(t EventType, webhookURI string, c WebhookMessage) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call":       c,
@@ -16,7 +16,6 @@ func (h *notifyHandler) publishWebhook(t EventType, c WebhookMessage) {
 	)
 	log.Debugf("Sending webhook event. event_type: %s, message: %s", t, c)
 
-	webhookURI := c.GetWebhookURI()
 	if webhookURI == "" {
 		// no webhook uri
 		return

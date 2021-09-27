@@ -42,7 +42,15 @@ func (h *eventHandler) eventHandlerRecordingStarted(ctx context.Context, evt int
 		log.Errorf("Could not get the updated recording info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeRecordingStarted, tmpRecording)
+
+	// get call info
+	c, err := h.db.CallGet(ctx, tmpRecording.ReferenceID)
+	if err != nil {
+		log.Errorf("Could not get the call info. err: %v", err)
+		return err
+	}
+
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeRecordingStarted, c.WebhookURI, tmpRecording)
 
 	return nil
 }
@@ -56,6 +64,7 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 			"asterisk": e.AsteriskID,
 			"stasis":   e.Application,
 			"record":   e.Recording.Name,
+			"func":     "eventHandlerRecordingFinished",
 		})
 
 	filename := fmt.Sprintf("%s.%s", e.Recording.Name, e.Recording.Format)
@@ -83,7 +92,14 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 		log.Errorf("Could not get the updated recording info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeRecordingFinished, tmpRecording)
+
+	c, err := h.db.CallGet(ctx, r.ReferenceID)
+	if err != nil {
+		log.Errorf("Could not get the call info. err: %v", err)
+		return err
+	}
+
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeRecordingFinished, c.WebhookURI, tmpRecording)
 
 	// set empty recordID
 	switch r.Type {

@@ -19,7 +19,6 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage interface {
-	GetWebhookURI() string
 	CreateWebhookEvent(t string) ([]byte, error)
 }
 
@@ -90,9 +89,7 @@ func init() {
 
 // NotifyHandler intreface
 type NotifyHandler interface {
-	NotifyEvent(t EventType, e WebhookMessage)
-	// NotifyCall(ctx context.Context, c *call.Call, t EventType)
-	// NotifyRecording(ctx context.Context, t EventType, c *recording.Recording)
+	NotifyEvent(t EventType, webhookURI string, e WebhookMessage)
 }
 
 type notifyHandler struct {

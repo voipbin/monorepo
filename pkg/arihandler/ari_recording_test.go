@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -32,14 +33,13 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 		callHandler:   mockSvc,
 	}
 
-	type test struct {
+	tests := []struct {
 		name      string
 		event     *rabbitmqhandler.Event
+		call      *call.Call
 		recording *recording.Recording
 		timestamp string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&rabbitmqhandler.Event{
@@ -47,9 +47,15 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"type": "RecordingStarted","timestamp": "2020-02-10T13:08:18.888","recording": {"name": "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z","format": "wav","state": "recording","target_uri": "channel:test_call"},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
 			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("e31efb5e-1f3c-11ec-beea-af98446e3b8e"),
+				WebhookURI: "test.com/webhook",
+			},
 			&recording.Recording{
-				ID:       uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
-				Filename: "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z.wav",
+				ID:          uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
+				Type:        recording.TypeCall,
+				ReferenceID: uuid.FromStringOrNil("e31efb5e-1f3c-11ec-beea-af98446e3b8e"),
+				Filename:    "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z.wav",
 			},
 			"2020-02-10T13:08:18.888",
 		},
@@ -61,7 +67,8 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 			mockDB.EXPECT().RecordingGetByFilename(gomock.Any(), tt.recording.Filename).Return(tt.recording, nil)
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusRecording, tt.timestamp).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingStarted, tt.recording)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingStarted, tt.call.WebhookURI, tt.recording)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -88,20 +95,23 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 		callHandler:   mockSvc,
 	}
 
-	type test struct {
+	tests := []struct {
 		name      string
 		event     *rabbitmqhandler.Event
+		call      *call.Call
 		recording *recording.Recording
 		timestamp string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type": "RecordingFinished","timestamp": "2020-02-10T13:08:40.888","recording": {"name": "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888","format": "wav","state": "done","target_uri": "channel:test_call","duration": 351},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
+			},
+			&call.Call{
+				ID:         uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
+				WebhookURI: "test.com/webhook",
 			},
 			&recording.Recording{
 				ID:          uuid.FromStringOrNil("4f367e2c-612c-11eb-b063-676ca5ee546a"),
@@ -121,7 +131,8 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
 			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingFinished, tt.recording)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingFinished, tt.call.WebhookURI, tt.recording)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -155,13 +166,22 @@ func TestEventHandlerRecordingFinishedConference(t *testing.T) {
 		timestamp string
 	}
 
-	tests := []test{
+	tests := []struct {
+		name      string
+		event     *rabbitmqhandler.Event
+		call      *call.Call
+		recording *recording.Recording
+		timestamp string
+	}{
 		{
 			"normal",
 			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
 				Data:     []byte(`{"type": "RecordingFinished","timestamp": "2020-02-10T13:08:40.888","recording": {"name": "bridge_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888","format": "wav","state": "done","target_uri": "channel:test_call","duration": 351},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
+			},
+			&call.Call{
+				ID: uuid.FromStringOrNil("037b88fe-1547-11ec-836c-235bd80d876e"),
 			},
 			&recording.Recording{
 				ID:          uuid.FromStringOrNil("34585192-1546-11ec-b592-63304ff57c57"),
@@ -179,7 +199,8 @@ func TestEventHandlerRecordingFinishedConference(t *testing.T) {
 			mockDB.EXPECT().RecordingGetByFilename(gomock.Any(), gomock.Any()).Return(tt.recording, nil)
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingFinished, tt.recording)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingFinished, tt.call.WebhookURI, tt.recording)
 			mockDB.EXPECT().ConferenceSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
