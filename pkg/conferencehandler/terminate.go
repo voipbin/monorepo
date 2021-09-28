@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // Terminate is terminating the conference
@@ -69,6 +70,7 @@ func (h *conferenceHandler) Destroy(id uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"conference_id": id,
+			"func":          "Destroy",
 		},
 	)
 
@@ -77,7 +79,6 @@ func (h *conferenceHandler) Destroy(id uuid.UUID) error {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return err
 	}
-
 	log.WithField("conference", cf).Debug("Destroying the conference.")
 
 	// get bridge info
@@ -86,6 +87,7 @@ func (h *conferenceHandler) Destroy(id uuid.UUID) error {
 		log.Errorf("Could not get bridge info. err: %v", br)
 		return err
 	}
+	log.WithField("bridge", br).Debug("Found conference bridge info.")
 
 	if len(br.ChannelIDs) > 0 {
 		log.Errorf("There are channels in the conference bridge. We can't destroy the conference now.")
@@ -94,22 +96,25 @@ func (h *conferenceHandler) Destroy(id uuid.UUID) error {
 
 	// delete the conference bridge
 	if err := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); err != nil {
-		log.Errorf("Could not delete the conference bridge correctly. conference: %s, err: %v", cf.ID, err)
-		// this is ok. we don't return here
+		log.Errorf("Could not delete the conference bridge correctly. err: %v", err)
+		// this is ok. we don't return the error here
 	}
 
 	// update conference status to terminated
 	if err := h.db.ConferenceEnd(ctx, cf.ID); err != nil {
-		log.WithFields(
-			logrus.Fields{
-				"conference_id": cf.ID,
-			}).Errorf("Could not terminate the conference. conference: %s, err: %v", cf.ID, err)
+		log.Errorf("Could not terminate the conference. err: %v", err)
 		return err
 	}
 
 	promConferenceCloseTotal.WithLabelValues(string(cf.Type)).Inc()
 
-	// todo: we need to notify the conference is destroyed here
+	// notify conference deleted event
+	tmpConf, err := h.db.ConferenceGet(ctx, cf.ID)
+	if err != nil {
+		log.Errorf("Could not get updated conference info. err: %v", err)
+		return nil
+	}
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceDeleted, tmpConf.WebhookURI, tmpConf)
 
 	return nil
 }

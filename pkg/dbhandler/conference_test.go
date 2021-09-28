@@ -106,6 +106,28 @@ func TestConferenceCreate(t *testing.T) {
 				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("515f79ce-6122-11eb-b3ca-db50409503c4")},
 			},
 		},
+		{
+			"set webhook uri",
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("6cbf3216-1ff6-11ec-874c-9fdc6af9a2e1"),
+				UserID:       1,
+				Type:         conference.TypeConference,
+				Name:         "test type conference",
+				Detail:       "test type conference detail",
+				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("71aac0ec-1ff6-11ec-bfd0-af46a0a99821")},
+				WebhookURI:   "test.com/webhook",
+			},
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("6cbf3216-1ff6-11ec-874c-9fdc6af9a2e1"),
+				UserID:       1,
+				Type:         conference.TypeConference,
+				Name:         "test type conference",
+				Detail:       "test type conference detail",
+				CallIDs:      []uuid.UUID{},
+				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("71aac0ec-1ff6-11ec-bfd0-af46a0a99821")},
+				WebhookURI:   "test.com/webhook",
+			},
+		},
 	}
 
 	for _, tt := range tests {

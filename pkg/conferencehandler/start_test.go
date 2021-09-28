@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
@@ -18,10 +19,12 @@ func TestStartTypeConference(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := conferenceHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
 	}
 
 	type test struct {
@@ -63,6 +66,7 @@ func TestStartTypeConference(t *testing.T) {
 			if tt.reqConf.Timeout > 0 {
 				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), tt.reqConf.Timeout*1000).Return(nil)
 			}
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceCreated, tt.conference.WebhookURI, gomock.Any())
 
 			h.Start(tt.reqConf)
 		})
@@ -75,10 +79,12 @@ func TestStartTypeConnect(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := conferenceHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
 	}
 
 	type test struct {
@@ -118,6 +124,7 @@ func TestStartTypeConnect(t *testing.T) {
 			if tt.reqConf.Timeout > 0 {
 				mockReq.EXPECT().CallConferenceTerminate(gomock.Any(), tt.reqConf.Timeout*1000).Return(nil)
 			}
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceCreated, tt.conference.WebhookURI, gomock.Any())
 
 			h.Start(tt.reqConf)
 		})

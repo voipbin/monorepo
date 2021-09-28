@@ -29,6 +29,8 @@ const (
 		recording_id,
 		recording_ids,
 
+		webhook_uri,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -61,6 +63,8 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 
 		&res.RecordingID,
 		&RecordingIDs,
+
+		&res.WebhookURI,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -168,6 +172,8 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		recording_id,
 		recording_ids,
 
+		webhook_uri,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -176,6 +182,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		?, ?, ?, ?,
 		?,
 		?, ?,
+		?,
 		?, ?, ?
 		)
 	`
@@ -210,6 +217,8 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 		cf.RecordingID.Bytes(),
 		recordingIDs,
+
+		cf.WebhookURI,
 
 		cf.TMCreate,
 		cf.TMUpdate,

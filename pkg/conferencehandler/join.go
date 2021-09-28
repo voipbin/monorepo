@@ -150,6 +150,13 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	}
 	promConferenceJoinTotal.WithLabelValues(string(cf.Type)).Inc()
 
+	// send conference notification
+	tmpCf, err := h.db.ConferenceGet(ctx, cf.ID)
+	if err != nil {
+		log.Errorf("Could not get updated conference info. err: %v", err)
+	}
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceJoined, tmpCf.WebhookURI, tmpCf)
+
 	return nil
 }
 
