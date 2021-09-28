@@ -184,6 +184,8 @@ func TestARIChannelLeftBridgeConference(t *testing.T) {
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
 			mockReq.EXPECT().AstBridgeDelete(tt.bridge.AsteriskID, tt.bridge.ID).Return(nil)
 			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceDeleted, tt.conference.WebhookURI, tt.conference)
 
 			err := h.ARIChannelLeftBridge(tt.channel, tt.bridge)
 			if err != nil {
@@ -297,6 +299,8 @@ func TestARIChannelLeftBridgeConnect(t *testing.T) {
 				mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridge, nil)
 				mockReq.EXPECT().AstBridgeDelete(tt.bridge.AsteriskID, tt.bridge.ID).Return(nil)
 				mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
+				mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
+				mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceDeleted, tt.conference.WebhookURI, tt.conference)
 			}
 
 			err := h.ARIChannelLeftBridge(tt.channel, tt.bridge)

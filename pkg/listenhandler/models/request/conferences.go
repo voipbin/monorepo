@@ -6,10 +6,11 @@ import "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 // v1 data type request struct for
 // /v1/conferences/<id>" POST
 type V1DataConferencesIDPost struct {
-	Type    conference.Type        `json:"type"`
-	UserID  uint64                 `json:"user_id"`
-	Name    string                 `json:"name"`
-	Detail  string                 `json:"detail"`
-	Timeout int                    `json:"timeout"` // timeout. second
-	Data    map[string]interface{} `json:"data"`
+	Type       conference.Type        `json:"type"`
+	UserID     uint64                 `json:"user_id"`
+	Name       string                 `json:"name"`
+	Detail     string                 `json:"detail"`
+	Timeout    int                    `json:"timeout"`     // timeout. second
+	WebhookURI string                 `json:"webhook_uri"` // webhook uri
+	Data       map[string]interface{} `json:"data"`
 }

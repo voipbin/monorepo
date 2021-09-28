@@ -91,15 +91,6 @@ var (
 		},
 		[]string{"type"},
 	)
-
-	promConferenceLeaveTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
-			Name:      "conference_leave_total",
-			Help:      "Total number of leaved calls from the conference with type.",
-		},
-		[]string{"type"},
-	)
 )
 
 func init() {
@@ -107,7 +98,6 @@ func init() {
 		promConferenceCreateTotal,
 		promConferenceCloseTotal,
 		promConferenceJoinTotal,
-		promConferenceLeaveTotal,
 	)
 }
 

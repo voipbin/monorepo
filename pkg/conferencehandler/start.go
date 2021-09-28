@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // createConference is handy function for creating a conference.
@@ -68,6 +69,8 @@ func (h *conferenceHandler) startConference(req *conference.Conference) (*confer
 		Data:    req.Data,
 		Timeout: req.Timeout,
 
+		WebhookURI: req.WebhookURI,
+
 		CallIDs:      []uuid.UUID{},
 		RecordingIDs: []uuid.UUID{},
 	}
@@ -91,6 +94,9 @@ func (h *conferenceHandler) startConference(req *conference.Conference) (*confer
 			log.Errorf("Could not start conference timeout. err: %v", err)
 		}
 	}
+
+	// send webhook event
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceCreated, cf.WebhookURI, cf)
 
 	return res, nil
 }

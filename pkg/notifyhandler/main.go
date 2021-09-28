@@ -32,6 +32,13 @@ const (
 	EventTypeCallUpdated EventType = "call_updated"
 	EventTypeCallHungup  EventType = "call_hungup"
 
+	// conference
+	EventTypeConferenceCreated EventType = "conference_created"
+	EventTypeConferenceDeleted EventType = "conference_deleted"
+	EventTypeConferenceJoined  EventType = "conference_joined"
+	EventTypeConferenceLeaved  EventType = "conference_leaved"
+
+	// recording
 	EventTypeRecordingStarted  EventType = "recording_started"
 	EventTypeRecordingFinished EventType = "recording_finished"
 )

@@ -77,12 +77,13 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmqhandler.Request) (*r
 
 	// create a request conference
 	reqConf := &conference.Conference{
-		UserID:  data.UserID,
-		Type:    data.Type,
-		Name:    data.Name,
-		Detail:  data.Detail,
-		Timeout: data.Timeout,
-		Data:    data.Data,
+		UserID:     data.UserID,
+		Type:       data.Type,
+		Name:       data.Name,
+		Detail:     data.Detail,
+		Timeout:    data.Timeout,
+		WebhookURI: data.WebhookURI,
+		Data:       data.Data,
 	}
 
 	// create a conference

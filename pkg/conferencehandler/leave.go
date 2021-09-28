@@ -29,13 +29,6 @@ func (h *conferenceHandler) Leave(id, callID uuid.UUID) error {
 		return err
 	}
 
-	// get conf info
-	cf, err := h.db.ConferenceGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get conference. err: %v", err)
-		return err
-	}
-
 	// get bridge info
 	br, err := h.db.BridgeGet(ctx, c.BridgeID)
 	if err != nil {
@@ -71,11 +64,6 @@ func (h *conferenceHandler) Leave(id, callID uuid.UUID) error {
 			}).Errorf("Could not kick out the call from the conference. err: %v", err)
 		return err
 	}
-
-	// we don't do any conference info change here.
-	// we going to conference info change work when the join channel has left from the call bridge
-
-	promConferenceLeaveTotal.WithLabelValues(string(cf.Type)).Inc()
 
 	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // bridgeLeftJoin handles the case which join channel left from the call bridge
@@ -17,6 +18,8 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	log := logrus.WithFields(logrus.Fields{
 		"asterisk_id": cn.AsteriskID,
 		"channel_id":  cn.ID,
+		"bridge_id":   br.ID,
+		"func":        "bridgeLeftJoin",
 	})
 
 	log.Debug("Hangup join channel.")
@@ -36,12 +39,37 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 		return err
 	}
 
+	// get updated conference info
+	tmpConf, err := h.db.ConferenceGet(ctx, c.ConfID)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		return err
+	}
+
+	// send conference notification
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceLeaved, tmpConf.WebhookURI, tmpConf)
+
+	// we don't do any conference info change here.
+	// we going to conference info change work when the join channel has left from the call bridge
+	promConferenceLeaveTotal.WithLabelValues(string(tmpConf.Type)).Inc()
+
 	// set empty conference id
 	if err := h.db.CallSetConferenceID(ctx, c.ID, uuid.Nil); err != nil {
 		log.Errorf("Could not reset the conference for a call. err: %v", err)
 		return err
 	}
 
+	// get updated call info
+	c, err = h.db.CallGet(ctx, c.ID)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send call notification
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallUpdated, c.WebhookURI, c)
+
+	// check the call status
 	if c.Status != call.StatusProgressing && c.Status != call.StatusDialing && c.Status != call.StatusRinging {
 		log.Debugf("The call is being terminating.")
 		return nil
