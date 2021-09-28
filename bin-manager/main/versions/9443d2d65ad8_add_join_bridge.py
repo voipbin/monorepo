@@ -17,16 +17,19 @@ depends_on = None
 
 
 def upgrade():
-    #bridges
-    op.execute("""alter table bridges drop column conference_id;""")
-    op.execute("""alter table bridges drop column conference_type;""")
-    op.execute("""alter table bridges drop column conference_join;""")
-    op.execute("""alter table bridges add column reference_type varchar(255) after channel_ids;""")
-    op.execute("""alter table bridges add column reference_id binary(16) after reference_type;""")
-    op.execute("""create index idx_bridges_reference_id on bridges(reference_id);""")
+    try:
+        #bridges
+        op.execute("""alter table bridges drop column conference_id;""")
+        op.execute("""alter table bridges drop column conference_type;""")
+        op.execute("""alter table bridges drop column conference_join;""")
+        op.execute("""alter table bridges add column reference_type varchar(255) after channel_ids;""")
+        op.execute("""alter table bridges add column reference_id binary(16) after reference_type;""")
+        op.execute("""create index idx_bridges_reference_id on bridges(reference_id);""")
 
-    #calls
-    op.execute("""alter table calls add column bridge_id varchar(255) after channel_id;;""")
+        #calls
+        op.execute("""alter table calls add column bridge_id varchar(255) after channel_id;;""")
+    except:
+        pass
 
 
 def downgrade():
