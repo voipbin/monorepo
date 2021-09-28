@@ -110,17 +110,21 @@ func TestTerminateCallNotExsist(t *testing.T) {
 		cache:         mockCache,
 	}
 
-	type test struct {
+	tests := []struct {
 		name       string
 		conference *conference.Conference
-	}
-
-	tests := []test{
+		bridge     *bridge.Bridge
+	}{
 		{
 			"normal",
 			&conference.Conference{
-				ID:   uuid.FromStringOrNil("9f5001a6-9482-11eb-956e-f7ead445bb7a"),
-				Type: conference.TypeConference,
+				ID:       uuid.FromStringOrNil("9f5001a6-9482-11eb-956e-f7ead445bb7a"),
+				Type:     conference.TypeConference,
+				BridgeID: "4649cc0a-2086-11ec-8439-af4c561e87eb",
+			},
+			&bridge.Bridge{
+				ID:         "4649cc0a-2086-11ec-8439-af4c561e87eb",
+				AsteriskID: "80:fa:5b:5e:da:81",
 			},
 		},
 	}
@@ -129,6 +133,12 @@ func TestTerminateCallNotExsist(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.conference.ID, conference.StatusTerminating).Return(nil)
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridge, nil)
+			mockReq.EXPECT().AstBridgeDelete(tt.bridge.AsteriskID, tt.bridge.ID).Return(nil)
+			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceDeleted, tt.conference.WebhookURI, tt.conference)
 
 			if err := h.Terminate(tt.conference.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
