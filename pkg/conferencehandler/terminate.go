@@ -60,7 +60,8 @@ func (h *conferenceHandler) Terminate(id uuid.UUID) error {
 		return nil
 	}
 
-	return nil
+	// no calls left. destroy the conference
+	return h.Destroy(id)
 }
 
 // Destroy is terminate the conference without any condition check.
@@ -83,21 +84,19 @@ func (h *conferenceHandler) Destroy(id uuid.UUID) error {
 
 	// get bridge info
 	br, err := h.db.BridgeGet(ctx, cf.BridgeID)
-	if err != nil {
-		log.Errorf("Could not get bridge info. err: %v", br)
-		return err
-	}
-	log.WithField("bridge", br).Debug("Found conference bridge info.")
+	if err == nil && br != nil {
+		log.WithField("bridge", br).Debug("Found conference bridge info.")
 
-	if len(br.ChannelIDs) > 0 {
-		log.Errorf("There are channels in the conference bridge. We can't destroy the conference now.")
-		return fmt.Errorf("channels are in the conference bridge")
-	}
+		if len(br.ChannelIDs) > 0 {
+			log.Errorf("There are channels in the conference bridge. We can't destroy the conference now.")
+			return fmt.Errorf("channels are in the conference bridge")
+		}
 
-	// delete the conference bridge
-	if err := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); err != nil {
-		log.Errorf("Could not delete the conference bridge correctly. err: %v", err)
-		// this is ok. we don't return the error here
+		// delete the conference bridge
+		if err := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); err != nil {
+			log.Errorf("Could not delete the conference bridge correctly. err: %v", err)
+			// this is ok. we don't return the error here
+		}
 	}
 
 	// update conference status to terminated
