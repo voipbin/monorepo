@@ -2,6 +2,7 @@ package conference
 
 import (
 	uuid "github.com/gofrs/uuid"
+
 	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
@@ -19,6 +20,8 @@ type Conference struct {
 
 	RecordingID  uuid.UUID   `json:"recording_id"`  // Currently recording ID.
 	RecordingIDs []uuid.UUID `json:"recording_ids"` // Recorded recording IDs.
+
+	WebhookURI string `json:"webhook_uri"` // webhook uri
 
 	TMCreate string `json:"tm_create"` // Created timestamp.
 	TMUpdate string `json:"tm_update"` // Updated timestamp.
@@ -60,6 +63,8 @@ func Convert(h *cmconference.Conference) *Conference {
 
 		RecordingID:  h.RecordingID,
 		RecordingIDs: h.RecordingIDs,
+
+		WebhookURI: h.WebhookURI,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

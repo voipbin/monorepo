@@ -9,7 +9,8 @@ type ParamConferencesGET struct {
 
 // BodyConferencesPOST is rquest body define for POST /conferences
 type BodyConferencesPOST struct {
-	Type   conference.Type `json:"type" binding:"required"`
-	Name   string                    `json:"name"`
-	Detail string                    `json:"detail"`
+	Type       conference.Type `json:"type" binding:"required"`
+	Name       string          `json:"name"`
+	Detail     string          `json:"detail"`
+	WebhookURI string          `json:"webhook_uri"`
 }
