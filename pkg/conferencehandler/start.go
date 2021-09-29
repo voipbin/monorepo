@@ -63,6 +63,8 @@ func (h *conferenceHandler) startConference(req *conference.Conference) (*confer
 		Type:     req.Type,
 		BridgeID: "",
 
+		Status: conference.StatusProgressing,
+
 		UserID:  req.UserID,
 		Name:    req.Name,
 		Detail:  req.Detail,
