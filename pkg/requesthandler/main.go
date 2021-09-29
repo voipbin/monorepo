@@ -99,7 +99,7 @@ type RequestHandler interface {
 	CMCallGets(userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error)
 
 	// call: conference
-	CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string) (*cmconference.Conference, error)
+	CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string, webhookURI string) (*cmconference.Conference, error)
 	CMConferenceDelete(conferenceID uuid.UUID) error
 	CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error)
 	CMConferenceGets(userID uint64, pageToken string, pageSize uint64) ([]cmconference.Conference, error)

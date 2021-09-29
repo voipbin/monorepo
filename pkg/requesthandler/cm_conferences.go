@@ -85,15 +85,16 @@ func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 // CMConferenceCreate sends a request to call-manager
 // to creating a conference.
 // it returns created conference if it succeed.
-func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string) (*cmconference.Conference, error) {
+func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string, webhookURI string) (*cmconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences")
 
 	data := &cmrequest.V1DataConferencesIDPost{
-		Type:    conferenceType,
-		UserID:  userID,
-		Name:    name,
-		Detail:  detail,
-		Timeout: 86400, // 24 hour
+		Type:       conferenceType,
+		UserID:     userID,
+		Name:       name,
+		Detail:     detail,
+		Timeout:    86400, // 24 hour
+		WebhookURI: webhookURI,
 	}
 
 	m, err := json.Marshal(data)

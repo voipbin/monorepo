@@ -86,10 +86,8 @@ func TestConferencesPOST(t *testing.T) {
 	type test struct {
 		name       string
 		user       user.User
-		confType   conference.Type
-		confName   string
-		confDetail string
 		conference *conference.Conference
+		request    []byte
 	}
 
 	tests := []test{
@@ -98,13 +96,27 @@ func TestConferencesPOST(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			conference.TypeConference,
-			"conference name",
-			"conference detail",
 			&conference.Conference{
-				ID:   uuid.FromStringOrNil("ee1e90cc-ac7a-11ea-8474-e740530b4266"),
-				Type: conference.TypeConference,
+				ID:     uuid.FromStringOrNil("ee1e90cc-ac7a-11ea-8474-e740530b4266"),
+				Type:   conference.TypeConference,
+				Name:   "conference name",
+				Detail: "conference detail",
 			},
+			[]byte(`{"type": "conference", "name": "conference name", "detail": "conference detail"}`),
+		},
+		{
+			"webhook uri",
+			user.User{
+				ID: 1,
+			},
+			&conference.Conference{
+				ID:         uuid.FromStringOrNil("b85ee002-2089-11ec-a49b-531b1931ddbd"),
+				Type:       conference.TypeConference,
+				Name:       "conference name",
+				Detail:     "conference detail",
+				WebhookURI: "test.com/webhook",
+			},
+			[]byte(`{"type": "conference", "name": "conference name", "detail": "conference detail", "webhook_uri": "test.com/webhook"}`),
 		},
 	}
 
@@ -120,11 +132,8 @@ func TestConferencesPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			// create body
-			body := []byte(fmt.Sprintf(`{"type": "%s", "name": "%s", "detail": "%s"}`, tt.confType, tt.confName, tt.confDetail))
-
-			mockSvc.EXPECT().ConferenceCreate(&tt.user, tt.confType, tt.confName, tt.confDetail).Return(tt.conference, nil)
-			req, _ := http.NewRequest("POST", "/v1.0/conferences", bytes.NewBuffer(body))
+			mockSvc.EXPECT().ConferenceCreate(&tt.user, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.WebhookURI).Return(tt.conference, nil)
+			req, _ := http.NewRequest("POST", "/v1.0/conferences", bytes.NewBuffer(tt.request))
 
 			req.Header.Set("Content-Type", "application/json")
 
