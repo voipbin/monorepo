@@ -37,7 +37,7 @@ type ServiceHandler interface {
 	CallDelete(u *user.User, callID uuid.UUID) error
 
 	// conference handlers
-	ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error)
+	ConferenceCreate(u *user.User, confType conference.Type, name, detail, webhookURI string) (*conference.Conference, error)
 	ConferenceDelete(u *user.User, confID uuid.UUID) error
 	ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error)
