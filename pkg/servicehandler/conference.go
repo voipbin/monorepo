@@ -70,18 +70,19 @@ func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string)
 }
 
 // ConferenceCreate is a service handler for conference creating.
-func (h *serviceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail string) (*conference.Conference, error) {
+func (h *serviceHandler) ConferenceCreate(u *user.User, confType conference.Type, name string, detail string, webhookURI string) (*conference.Conference, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user":     u.ID,
-			"username": u.Username,
-			"type":     confType,
-			"name":     name,
-			"detail":   detail,
+			"user":        u.ID,
+			"username":    u.Username,
+			"type":        confType,
+			"name":        name,
+			"detail":      detail,
+			"webhook_uri": webhookURI,
 		},
 	)
 
-	conf, err := h.reqHandler.CMConferenceCreate(u.ID, cmconference.Type(confType), name, detail)
+	conf, err := h.reqHandler.CMConferenceCreate(u.ID, cmconference.Type(confType), name, detail, webhookURI)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
@@ -97,7 +98,10 @@ func (h *serviceHandler) ConferenceCreate(u *user.User, confType conference.Type
 		Name:   conf.Name,
 		Detail: conf.Detail,
 
-		CallIDs: conf.CallIDs,
+		CallIDs:      conf.CallIDs,
+		RecordingIDs: conf.RecordingIDs,
+
+		WebhookURI: conf.WebhookURI,
 
 		TMCreate: conf.TMCreate,
 		TMUpdate: conf.TMUpdate,

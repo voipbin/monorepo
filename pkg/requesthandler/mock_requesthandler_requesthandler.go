@@ -105,18 +105,18 @@ func (mr *MockRequestHandlerMockRecorder) CMCallGets(userID, pageToken, pageSize
 }
 
 // CMConferenceCreate mocks base method.
-func (m *MockRequestHandler) CMConferenceCreate(userID uint64, conferenceType conference.Type, name, detail string) (*conference.Conference, error) {
+func (m *MockRequestHandler) CMConferenceCreate(userID uint64, conferenceType conference.Type, name, detail, webhookURI string) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMConferenceCreate", userID, conferenceType, name, detail)
+	ret := m.ctrl.Call(m, "CMConferenceCreate", userID, conferenceType, name, detail, webhookURI)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CMConferenceCreate indicates an expected call of CMConferenceCreate.
-func (mr *MockRequestHandlerMockRecorder) CMConferenceCreate(userID, conferenceType, name, detail interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CMConferenceCreate(userID, conferenceType, name, detail, webhookURI interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceCreate), userID, conferenceType, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceCreate), userID, conferenceType, name, detail, webhookURI)
 }
 
 // CMConferenceDelete mocks base method.

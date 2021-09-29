@@ -25,7 +25,7 @@ require (
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.3.0
 	github.com/swaggo/swag v1.7.0
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210925161321-24cd32808722
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210928072145-73bc07c95e7d
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210925161656-00ec6d5606ad
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2
