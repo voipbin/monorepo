@@ -413,7 +413,6 @@ func TestAstChannelGet(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 
-		expectURI     string
 		expectChannel *channel.Channel
 	}
 
@@ -435,7 +434,6 @@ func TestAstChannelGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     nil,
 			},
-			"/ari/channels/1589711094.100",
 			&channel.Channel{
 				ID:         "1589711094.100",
 				AsteriskID: "",

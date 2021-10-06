@@ -104,10 +104,14 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 	// set empty recordID
 	switch r.Type {
 	case recording.TypeCall:
-		h.db.CallSetRecordID(ctx, r.ReferenceID, uuid.Nil)
+		if err := h.db.CallSetRecordID(ctx, r.ReferenceID, uuid.Nil); err != nil {
+			log.Errorf("Could not set call record id. err: %v", err)
+		}
 
 	case recording.TypeConference:
-		h.db.ConferenceSetRecordID(ctx, r.ReferenceID, uuid.Nil)
+		if err := h.db.ConferenceSetRecordID(ctx, r.ReferenceID, uuid.Nil); err != nil {
+			log.Errorf("Could not get conference record id. err: %v", err)
+		}
 
 	default:
 		log.Errorf("Could not find correct tech type for recording. parse: %v", r.Type)

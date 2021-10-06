@@ -33,7 +33,6 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 	type test struct {
 		name    string
 		channel *channel.Channel
-		call    *call.Call
 	}
 
 	tests := []test{
@@ -44,9 +43,6 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 				Data:        map[string]interface{}{},
 				HangupCause: ari.ChannelCauseNormalClearing,
 				Type:        channel.TypeCall,
-			},
-			&call.Call{
-				ChannelID: "31384bbc-dd97-11ea-9e42-433e5113c783",
 			},
 		},
 	}

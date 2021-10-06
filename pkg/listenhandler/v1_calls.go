@@ -362,7 +362,6 @@ func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmqhandler.Reques
 		if err := h.callHandler.ActionNext(c); err != nil {
 			log.Errorf("Could not execute the action next. err: %v", err)
 		}
-		return
 	}()
 
 	res := &rabbitmqhandler.Response{

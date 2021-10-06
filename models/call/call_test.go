@@ -184,6 +184,7 @@ func TestNewCallByChannel(t *testing.T) {
 			c := NewCallByChannel(channel, tt.userID, tt.channelType, tt.direction, tt.data)
 			if c == nil {
 				t.Errorf("Wrong match. expect: not nil, got: nil")
+				return
 			}
 
 			c.ID = uuid.Nil

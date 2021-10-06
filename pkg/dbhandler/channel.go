@@ -141,7 +141,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, c.ID)
+	_=h.ChannelUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -160,7 +160,7 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 	}
 
 	// set to the cache
-	h.ChannelSetToCache(ctx, res)
+	_=h.ChannelSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -221,10 +221,8 @@ func (h *handler) ChannelIsExist(id string, timeout time.Duration) bool {
 	defer cancel()
 
 	_, err := h.ChannelGetUntilTimeout(ctx, id)
-	if err != nil {
-		return false
-	}
-	return true
+
+	return err == nil
 }
 
 // ChannelGetUntilTimeoutWithStasis gets the stasis channel until the ctx is timed out.
@@ -318,7 +316,7 @@ func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -334,7 +332,7 @@ func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string,
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -356,7 +354,7 @@ func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -393,7 +391,7 @@ func (h *handler) ChannelSetState(ctx context.Context, id, timestamp string, sta
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -415,7 +413,7 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) e
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -437,7 +435,7 @@ func (h *handler) ChannelSetDirection(ctx context.Context, id string, direction 
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -459,7 +457,7 @@ func (h *handler) ChannelSetType(ctx context.Context, id string, cType channel.T
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -481,7 +479,7 @@ func (h *handler) ChannelSetSIPTransport(ctx context.Context, id string, transpo
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -503,7 +501,7 @@ func (h *handler) ChannelSetSIPCallID(ctx context.Context, id string, sipID stri
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -526,7 +524,7 @@ func (h *handler) ChannelEnd(ctx context.Context, id, timestamp string, hangup a
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -554,7 +552,7 @@ func (h *handler) ChannelSetDataAndStasis(ctx context.Context, id string, data m
 	}
 
 	// update the cache
-	h.ChannelUpdateToCache(ctx, id)
+	_ = h.ChannelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -580,7 +578,7 @@ func (h *handler) ChannelGetFromDB(ctx context.Context, id string) (*channel.Cha
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 

@@ -346,7 +346,7 @@ func TestConferenceGets(t *testing.T) {
 
 	// creates calls for test
 	mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
-	h.ConferenceCreate(context.Background(), &conference.Conference{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), UserID: 1})
+	_ = h.ConferenceCreate(context.Background(), &conference.Conference{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), UserID: 1})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -361,7 +361,7 @@ func TestConferenceGets(t *testing.T) {
 				}
 
 				mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
-				h.ConferenceCreate(ctx, cf)
+				_ = h.ConferenceCreate(ctx, cf)
 			}
 
 			res, err := h.ConferenceGets(ctx, tt.userID, 10, getCurTime())

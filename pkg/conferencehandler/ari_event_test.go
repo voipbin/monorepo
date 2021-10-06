@@ -8,7 +8,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
@@ -144,7 +143,6 @@ func TestARIChannelLeftBridgeConference(t *testing.T) {
 		channel    *channel.Channel
 		bridge     *bridge.Bridge
 		conference *conference.Conference
-		call       *call.Call
 	}
 
 	tests := []test{
@@ -166,12 +164,6 @@ func TestARIChannelLeftBridgeConference(t *testing.T) {
 				Type:     conference.TypeConference,
 				Status:   conference.StatusTerminating,
 				BridgeID: "e41948fe-9566-11ea-a4fe-db788b6b6d7b",
-			},
-			&call.Call{
-				ID:         uuid.FromStringOrNil("ec4371b2-9566-11ea-bfd3-13a7a033d235"),
-				ConfID:     uuid.FromStringOrNil("454cb52a-9567-11ea-91be-3b3c3d7249b6"),
-				ChannelID:  "e03dc034-9566-11ea-ad83-1f7a1993587b",
-				AsteriskID: "80:fa:5b:5e:da:81",
 			},
 		},
 	}
@@ -216,7 +208,6 @@ func TestARIChannelLeftBridgeConnect(t *testing.T) {
 		channel    *channel.Channel
 		bridge     *bridge.Bridge
 		conference *conference.Conference
-		call       *call.Call
 	}
 
 	tests := []test{
@@ -245,12 +236,6 @@ func TestARIChannelLeftBridgeConnect(t *testing.T) {
 					uuid.FromStringOrNil("ea6e8010-16a8-11ec-83eb-c32797acd5dc"),
 				},
 			},
-			&call.Call{
-				ID:         uuid.FromStringOrNil("ec4371b2-9566-11ea-bfd3-13a7a033d235"),
-				ConfID:     uuid.FromStringOrNil("454cb52a-9567-11ea-91be-3b3c3d7249b6"),
-				ChannelID:  "e03dc034-9566-11ea-ad83-1f7a1993587b",
-				AsteriskID: "80:fa:5b:5e:da:81",
-			},
 		},
 		{
 			"no channel left in the bridge",
@@ -272,12 +257,6 @@ func TestARIChannelLeftBridgeConnect(t *testing.T) {
 				Status:   conference.StatusProgressing,
 				BridgeID: "cdcba946-16a9-11ec-9db6-fb23e2577d80",
 				CallIDs:  []uuid.UUID{},
-			},
-			&call.Call{
-				ID:         uuid.FromStringOrNil("ec4371b2-9566-11ea-bfd3-13a7a033d235"),
-				ConfID:     uuid.FromStringOrNil("cdaba236-16a9-11ec-87ef-87cdd6c6b868"),
-				ChannelID:  "cd898f0c-16a9-11ec-8a3c-07a02c763fc3",
-				AsteriskID: "80:fa:5b:5e:da:81",
 			},
 		},
 	}

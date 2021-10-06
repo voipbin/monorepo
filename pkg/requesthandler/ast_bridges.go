@@ -12,7 +12,7 @@ import (
 
 // AstBridgeCreate sends the bridge create request
 func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeTypes []bridge.Type) error {
-	url := fmt.Sprint("/ari/bridges")
+	url := "/ari/bridges"
 
 	type Data struct {
 		Type     string `json:"type"`

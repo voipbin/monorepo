@@ -53,7 +53,7 @@ func (h *callHandler) Hangup(cn *channel.Channel) error {
 		}
 
 		// hang up the call
-		h.HangingUp(chainedCall, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(chainedCall, ari.ChannelCauseNormalClearing)
 	}
 
 	return nil

@@ -11,7 +11,7 @@ import (
 
 func (r *requestHandler) TTSSpeechesPOST(text, gender, language string) (string, error) {
 
-	uri := fmt.Sprintf("/v1/speeches")
+	uri := "/v1/speeches"
 
 	m, err := json.Marshal(request.V1DataSpeechesPost{
 		Text:     text,

@@ -181,7 +181,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// asterisks
 	////////////
 	// POST /asterisks/<asterisk-id>channels/<channel-id>/health-check
-	case regV1AsterisksIDChannelsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1AsterisksIDChannelsIDHealth.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1AsterisksIDChannelsIDHealthPost(m)
 		requestType = "/v1/asterisks/channels/health-check"
 
@@ -189,57 +189,57 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// calls
 	////////
 	// POST /calls/<id>/health-check
-	case regV1CallsIDHealth.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1CallsIDHealth.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDHealthPost(m)
 		requestType = "/v1/calls/health-check"
 
 	// POST /calls/<id>/action-next
-	case regV1CallsIDActionNext.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1CallsIDActionNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDActionNextPost(m)
 		requestType = "/v1/calls/action-next"
 
 	// POST /calls/<id>/action-timeout
-	case regV1CallsIDActionTimeout.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1CallsIDActionTimeout.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDActionTimeoutPost(m)
 		requestType = "/v1/calls/action-timeout"
 
 	// POST /calls/<id>/chained-call-ids
-	case regV1CallsIDChainedCallIDs.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1CallsIDChainedCallIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDChainedCallIDsPost(m)
 		requestType = "/v1/calls/chained-call-ids"
 
 	// DELETE /calls/<id>/chained-call-ids
-	case regV1CallsIDChainedCallIDs.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1CallsIDChainedCallIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1CallsIDChainedCallIDsDelete(m)
 		requestType = "/v1/calls/chained-call-ids"
 
 	// POST /calls/<id>/external-media
-	case regV1CallsIDExternalMedia.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1CallsIDExternalMedia.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDExternalMediaPost(m)
 		requestType = "/v1/calls/external-media"
 
 	// GET /calls/<id>
-	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1CallsIDGet(m)
 		requestType = "/v1/calls"
 
 	// POST /calls/<id>
-	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDPost(m)
 		requestType = "/v1/calls"
 
 	// DELETE /calls/<id>
-	case regV1CallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1CallsIDDelete(m)
 		requestType = "/v1/calls"
 
 	// GET /calls
-	case regV1Calls.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1Calls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1CallsGet(m)
 		requestType = "/v1/calls"
 
 	// POST /calls
-	case regV1Calls.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Calls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsPost(m)
 		requestType = "/v1/calls"
 
@@ -247,27 +247,27 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// conferences
 	//////////////
 	// DELETE /conferences/<conference-id>/calls/<call-id>
-	case regV1ConferencesIDCallsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ConferencesIDCallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDCallsIDDelete(m)
 		requestType = "/v1/conferences/calls"
 
 	// DELETE /conferences/<conference-id>
-	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDDelete(m)
 		requestType = "/v1/conferences"
 
 	// GET /conferences/<conference-id>
-	case regV1ConferencesID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ConferencesIDGet(m)
 		requestType = "/v1/conferences"
 
 	// POST /conferences
-	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Conferences.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConferencesPost(m)
 		requestType = "/v1/conferences"
 
 	// GET /conferences
-	case regV1Conferences.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1Conferences.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ConferencesGet(m)
 		requestType = "/v1/conferences"
 
@@ -275,12 +275,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// recordings
 	//////////////
 	// GET /recordings/<recording-id>
-	case regV1RecordingsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1RecordingsIDGet(m)
 		requestType = "/v1/recordings"
 
 	// GET /recordings
-	case regV1Recordings.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1Recordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1RecordingsGet(m)
 		requestType = "/v1/recordings"
 
@@ -300,7 +300,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, uri)
 		response = simpleResponse(400)
 		err = nil
-		requestType = "notfound"
 	} else {
 		log.WithFields(
 			logrus.Fields{

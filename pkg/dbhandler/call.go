@@ -249,7 +249,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, c.ID)
+	_=h.CallUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -268,7 +268,7 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	}
 
 	// set to the cache
-	h.CallSetToCache(ctx, res)
+	_ = h.CallSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -285,7 +285,7 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -341,7 +341,7 @@ func (h *handler) CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID st
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -366,7 +366,7 @@ func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStat
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -391,7 +391,7 @@ func (h *handler) callSetStatusProgressing(ctx context.Context, id uuid.UUID, tm
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -415,7 +415,7 @@ func (h *handler) callSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -430,7 +430,7 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	}
 
 	// validate changable status
-	if call.IsUpdatableStatus(c.Status, status) == false {
+	if !call.IsUpdatableStatus(c.Status, status) {
 		return fmt.Errorf("The given status is not updatable. old: %s, new: %s", c.Status, status)
 	}
 
@@ -464,7 +464,7 @@ func (h *handler) CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskI
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -492,7 +492,7 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -517,7 +517,7 @@ func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -542,7 +542,7 @@ func (h *handler) CallSetConferenceID(ctx context.Context, id, conferenceID uuid
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -572,7 +572,7 @@ func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *actio
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -601,7 +601,7 @@ func (h *handler) CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, 
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -658,7 +658,7 @@ func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uu
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -690,7 +690,7 @@ func (h *handler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -715,7 +715,7 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -737,7 +737,7 @@ func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uu
 	}
 
 	// update the cache
-	h.CallUpdateToCache(context.Background(), id)
+	_ = h.CallUpdateToCache(context.Background(), id)
 
 	return nil
 }
@@ -763,7 +763,7 @@ func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID u
 	}
 
 	// update the cache
-	h.CallUpdateToCache(ctx, id)
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -780,19 +780,19 @@ func (h *handler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
 
 	row, err := tx.Query(q, id.Bytes())
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return nil, nil, fmt.Errorf("could not query. CallTXStart. err: %v", err)
 	}
 	defer row.Close()
 
-	if row.Next() == false {
-		tx.Rollback()
+	if !row.Next() {
+		_ = tx.Rollback()
 		return nil, nil, ErrNotFound
 	}
 
 	res, err := h.callGetFromRow(row)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return nil, nil, fmt.Errorf("could not get call. CallTXStart, err: %v", err)
 	}
 
@@ -800,10 +800,10 @@ func (h *handler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
 }
 
 func (h *handler) CallTXFinish(tx *sql.Tx, commit bool) {
-	if commit == true {
-		tx.Commit()
+	if commit {
+		_ = tx.Commit()
 	} else {
-		tx.Rollback()
+		_ = tx.Rollback()
 	}
 }
 
@@ -828,7 +828,7 @@ func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID
 	}
 
 	// update the cache
-	h.CallUpdateToCache(context.Background(), id)
+	_ = h.CallUpdateToCache(context.Background(), id)
 
 	return nil
 }
@@ -860,7 +860,7 @@ func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.U
 	}
 
 	// update the cache
-	h.CallUpdateToCache(context.Background(), id)
+	_ = h.CallUpdateToCache(context.Background(), id)
 
 	return nil
 }

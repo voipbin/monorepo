@@ -71,7 +71,9 @@ func TestLeavedConferenceTypeConferenceEmptyChannels(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceDeleted, tt.conference.WebhookURI, tt.conference)
 
-			h.leaved(tt.channel, tt.bridge)
+			if err := h.leaved(tt.channel, tt.bridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }

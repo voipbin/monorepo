@@ -88,7 +88,7 @@ func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -201,7 +201,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 	}
 
 	// update the cache
-	h.BridgeUpdateToCache(ctx, b.ID)
+	_ = h.BridgeUpdateToCache(ctx, b.ID)
 
 	return nil
 }
@@ -220,7 +220,7 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 	}
 
 	// set to the cache
-	h.BridgeSetToCache(ctx, res)
+	_ = h.BridgeSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -242,7 +242,7 @@ func (h *handler) BridgeEnd(ctx context.Context, id, timestamp string) error {
 	}
 
 	// update the cache
-	h.BridgeUpdateToCache(ctx, id)
+	_ = h.BridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -268,7 +268,7 @@ func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) 
 	}
 
 	// update the cache
-	h.BridgeUpdateToCache(ctx, id)
+	_ = h.BridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -300,7 +300,7 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 	}
 
 	// update the cache
-	h.BridgeUpdateToCache(ctx, id)
+	_ = h.BridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -345,8 +345,6 @@ func (h *handler) BridgeIsExist(id string, timeout time.Duration) bool {
 	defer cancel()
 
 	_, err := h.BridgeGetUntilTimeout(ctx, id)
-	if err != nil {
-		return false
-	}
-	return true
+
+	return err == nil
 }

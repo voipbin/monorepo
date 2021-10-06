@@ -71,7 +71,9 @@ func TestLeave(t *testing.T) {
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
 			mockReq.EXPECT().AstChannelHangup(tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
 
-			h.Leave(tt.conference.ID, tt.call.ID)
+			if err := h.Leave(tt.conference.ID, tt.call.ID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }

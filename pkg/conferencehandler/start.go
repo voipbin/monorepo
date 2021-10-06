@@ -37,7 +37,7 @@ func (h *conferenceHandler) Start(reqConf *conference.Conference) (*conference.C
 	log.Info("Start conference.")
 
 	// check valid conference type
-	if ret := conference.IsValidConferenceType(reqConf.Type); ret != true {
+	if ret := conference.IsValidConferenceType(reqConf.Type); !ret {
 		return nil, fmt.Errorf("wrong conference type. type: %s", reqConf.Type)
 	}
 

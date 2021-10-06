@@ -11,7 +11,7 @@ import (
 
 func (r *requestHandler) WMWebhookPOST(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error {
 
-	uri := fmt.Sprintf("/v1/webhooks")
+	uri := "/v1/webhooks"
 
 	m, err := json.Marshal(request.V1DataWebhooksPost{
 		Method:     webhook.MethodType(webhookMethod),

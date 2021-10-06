@@ -8,6 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
@@ -44,7 +45,9 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 		// we are setting the dtmf here even it is not dtmf receive action.
 		// this is needed, because if the user press the dtmf in the prior of dtmf receive(i.e play action),
 		// the user exepects pressed dtmf could be collected in the dtmf received action in next.
-		h.db.CallDTMFSet(ctx, c.ID, digit)
+		if err := h.db.CallDTMFSet(ctx, c.ID, digit); err != nil {
+			log.Errorf("Could not set DTMF. err: %v", err)
+		}
 		return nil
 	}
 
@@ -62,10 +65,13 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 	dtmfs = fmt.Sprintf("%s%s", dtmfs, digit)
 
 	// update the dtmfs
-	h.db.CallDTMFSet(ctx, c.ID, dtmfs)
+	if errDTMFSet := h.db.CallDTMFSet(ctx, c.ID, dtmfs); errDTMFSet != nil {
+		log.Errorf("Could not set dtmf. err: %v", errDTMFSet)
+		return nil
+	}
 
 	// check finish condition
-	if strings.Contains(option.FinishOnKey, digit) == false && len(dtmfs) < option.MaxNumKey {
+	if !strings.Contains(option.FinishOnKey, digit) && len(dtmfs) < option.MaxNumKey {
 		// the dtmf receive is not finish yet
 		log.Debug("The dtmf receive does not finish yet. Wating next dtmf.")
 		return nil
@@ -73,7 +79,10 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 	log.Infof("Finished dtmf receiving. call: %s, dtmfs: %s", c.ID, dtmfs)
 
 	// send next action request
-	h.reqHandler.CallCallActionNext(c.ID)
+	if errNext := h.reqHandler.CallCallActionNext(c.ID); errNext != nil {
+		log.Errorf("Could not get next action. err: %v", errNext)
+		_ = h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+	}
 
 	return nil
 }

@@ -104,7 +104,6 @@ func TestBridgeLeftExternal(t *testing.T) {
 	type test struct {
 		name    string
 		channel *channel.Channel
-		call    *call.Call
 		bridge  *bridge.Bridge
 	}
 
@@ -117,11 +116,6 @@ func TestBridgeLeftExternal(t *testing.T) {
 				Data:        map[string]interface{}{},
 				HangupCause: ari.ChannelCauseNormalClearing,
 				Type:        channel.TypeCall,
-			},
-			&call.Call{
-				ID:        uuid.FromStringOrNil("3e01f064-151d-11ec-bbba-0b568fed9a16"),
-				ChannelID: "3e20f43c-151d-11ec-be7f-6b10f15c44b3",
-				Status:    call.StatusProgressing,
 			},
 			&bridge.Bridge{
 				ReferenceID: uuid.FromStringOrNil("3e01f064-151d-11ec-bbba-0b568fed9a16"),
@@ -138,11 +132,6 @@ func TestBridgeLeftExternal(t *testing.T) {
 				Data:        map[string]interface{}{},
 				HangupCause: ari.ChannelCauseNormalClearing,
 				Type:        channel.TypeCall,
-			},
-			&call.Call{
-				ID:        uuid.FromStringOrNil("be0399d4-151d-11ec-bb2e-774604f45fa3"),
-				ChannelID: "be2ad3b4-151d-11ec-bf66-0fbf215234b3",
-				Status:    call.StatusProgressing,
 			},
 			&bridge.Bridge{
 				AsteriskID:  "42:01:0a:a4:00:03",

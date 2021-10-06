@@ -91,7 +91,7 @@ func (h *handler) RecordingGetFromDB(ctx context.Context, id uuid.UUID) (*record
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -181,7 +181,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 	}
 
 	// update the cache
-	h.RecordingUpdateToCache(ctx, c.ID)
+	_ = h.RecordingUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -200,7 +200,7 @@ func (h *handler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Re
 	}
 
 	// set to the cache
-	h.RecordingSetToCache(ctx, res)
+	_ = h.RecordingSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -217,7 +217,7 @@ func (h *handler) RecordingGetByFilename(ctx context.Context, filename string) (
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -293,7 +293,7 @@ func (h *handler) recordingSetStatusInitiating(ctx context.Context, id uuid.UUID
 	}
 
 	// update the cache
-	h.RecordingUpdateToCache(ctx, id)
+	_ = h.RecordingUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -319,7 +319,7 @@ func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID,
 	}
 
 	// update the cache
-	h.RecordingUpdateToCache(ctx, id)
+	_ = h.RecordingUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -345,7 +345,7 @@ func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID, times
 	}
 
 	// update the cache
-	h.RecordingUpdateToCache(ctx, id)
+	_ = h.RecordingUpdateToCache(ctx, id)
 
 	return nil
 }

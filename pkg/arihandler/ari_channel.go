@@ -92,29 +92,29 @@ func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt
 			"stasis":   e.Application,
 		})
 
-	if h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) == false {
+	if !h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) {
 		log.Error("The given channel is not in our database.")
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no channel found")
 	}
 
-	if h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) == false {
+	if !h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) {
 		log.Error("The given bridge is not in our database.")
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no bridge found")
 	}
 
 	// set channel's bridge id
 	if err := h.db.ChannelSetBridgeID(ctx, e.Channel.ID, e.Bridge.ID); err != nil {
 		log.Errorf("Could not set the bridge id to the channel. err: %v", err)
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
 	// add bridge's channel id
 	if err := h.db.BridgeAddChannelID(ctx, e.Bridge.ID, e.Channel.ID); err != nil {
 		log.Errorf("Could not add the channel from the bridge. err: %v", err)
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
@@ -133,43 +133,43 @@ func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt in
 			"stasis":   e.Application,
 		})
 
-	if h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) == false {
+	if !h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) {
 		log.Error("The given channel is not in our database.")
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no channel found")
 	}
 
-	if h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) == false {
+	if !h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) {
 		log.Error("The given bridge is not in our database.")
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no bridge found")
 	}
 
 	// set channel's bridge id to empty
 	if err := h.db.ChannelSetBridgeID(ctx, e.Channel.ID, ""); err != nil {
 		log.Errorf("Could not reset the channel's bridge id. err: %v", err)
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
 	// remove channel from the bridge
 	if err := h.db.BridgeRemoveChannelID(ctx, e.Bridge.ID, e.Channel.ID); err != nil {
 		log.Errorf("Could not remove the channel from the bridge. err: %v", err)
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
 	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
 	br, err := h.db.BridgeGet(ctx, e.Bridge.ID)
 	if err != nil {
 		log.Errorf("Could not get bridge. err: %v", err)
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 

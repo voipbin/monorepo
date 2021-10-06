@@ -68,7 +68,10 @@ func TestStartTypeConference(t *testing.T) {
 			}
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceCreated, tt.conference.WebhookURI, gomock.Any())
 
-			h.Start(tt.reqConf)
+			_, err := h.Start(tt.reqConf)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -126,7 +129,12 @@ func TestStartTypeConnect(t *testing.T) {
 			}
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceCreated, tt.conference.WebhookURI, gomock.Any())
 
-			h.Start(tt.reqConf)
+			_, err := h.Start(tt.reqConf)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+				return
+			}
+
 		})
 	}
 }

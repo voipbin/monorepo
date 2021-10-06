@@ -55,13 +55,15 @@ var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 func main() {
+	log := logrus.WithField("func", "main")
+
 	// connect to database
 	sqlDB, err := sql.Open("mysql", *dbDSN)
 	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
+		log.Errorf("Could not access to database. err: %v", err)
 		return
 	} else if err := sqlDB.Ping(); err != nil {
-		logrus.Errorf("Could not set the connection correctly. err: %v", err)
+		log.Errorf("Could not set the connection correctly. err: %v", err)
 		return
 	}
 
@@ -70,14 +72,14 @@ func main() {
 	// connect to cache
 	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
 	if err := cache.Connect(); err != nil {
-		logrus.Errorf("Could not connect to cache server. err: %v", err)
+		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
 	}
 
-	run(sqlDB, cache)
+	if err := run(sqlDB, cache); err != nil {
+		log.Errorf("Run func has finished. err: %v", err)
+	}
 	<-chDone
-
-	return
 }
 
 // proces init
@@ -111,7 +113,7 @@ func initLog() {
 
 // initSignal inits sinal settings.
 func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 }
 

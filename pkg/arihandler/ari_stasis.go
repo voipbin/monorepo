@@ -20,9 +20,9 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 			"stasis":   e.Application,
 		})
 
-	if h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) == false {
+	if !h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) {
 		log.Error("The given channel is not in our database.")
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no channel found")
 	}
 
@@ -37,13 +37,13 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 	log.Debug("Updating channel stasis.")
 	if err := h.db.ChannelSetStasis(ctx, e.Channel.ID, stasis); err != nil {
 		// something went wrong. Hangup at here.
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
 	}
 
 	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
-		h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
 	}
 

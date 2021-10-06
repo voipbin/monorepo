@@ -51,15 +51,17 @@ func TestUpdateStatusRinging(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := context.Background()
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
-		mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusRinging, tt.channel.TMRinging).Return(nil)
-		mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-		mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusRinging, tt.channel.TMRinging).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
 
-		if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err != nil {
-			t.Errorf("Wrong match. expect: ok, got: %v", err)
-		}
+			if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
 	}
 }
 
@@ -139,11 +141,13 @@ func TestUpdateStatusRingingFail(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := context.Background()
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
-		if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err == nil {
-			t.Errorf("Wrong match. expect: err, got: ok")
-		}
+			if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err == nil {
+				t.Errorf("Wrong match. expect: err, got: ok")
+			}
+		})
 	}
 }
 
@@ -195,15 +199,17 @@ func TestUpdateStatusProgressing(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := context.Background()
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
-		mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer).Return(nil)
-		mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-		mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
 
-		if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
-			t.Errorf("Wrong match. expect: ok, got: %v", err)
-		}
+			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
 	}
 }
 
@@ -275,10 +281,13 @@ func TestUpdateStatusProgressingFail(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := context.Background()
+		t.Run(tt.name, func(t *testing.T) {
 
-		if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err == nil {
-			t.Errorf("Wrong match. expect: err, got: ok")
-		}
+			ctx := context.Background()
+
+			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err == nil {
+				t.Errorf("Wrong match. expect: err, got: ok")
+			}
+		})
 	}
 }

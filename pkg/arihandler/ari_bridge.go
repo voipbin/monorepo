@@ -34,7 +34,7 @@ func (h *eventHandler) eventHandlerBridgeDestroyed(ctx context.Context, evt inte
 			"stasis":   e.Application,
 		})
 
-	if h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) == false {
+	if !h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) {
 		log.Error("The given bridge is not in our database.")
 		return fmt.Errorf("no bridge found")
 	}

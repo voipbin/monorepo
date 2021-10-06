@@ -7,6 +7,7 @@ variables:
 
 stages:
   - ensure
+  - lint
   - test
   - build
   - release
@@ -31,9 +32,16 @@ ensure:
     - go mod vendor
 
 lint:
-  stage: test
+  stage: lint
   script:
     - golint -set_exit_status $(go list ./...)
+
+golangci-lint:
+  image: golangci/golangci-lint:latest
+  stage: lint
+  script:
+    - golangci-lint version
+    - golangci-lint run -v --timeout 5m
 
 vet:
   stage: test
@@ -50,7 +58,7 @@ test:
   script:
     - go test -coverprofile cp.out -v $(go list ./...)
     - go tool cover -html=cp.out -o cp.html
-  
+
 build:
   stage: build
   image: gitlab/dind:latest
@@ -76,4 +84,4 @@ release:
     LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
     LOCAL_PROJECTID: voipbin-production
     LOCAL_CLUSTER_NAME: k8s-cluster-production
-    LOCAL_ZONE: europe-west4-a 
+    LOCAL_ZONE: europe-west4-a
