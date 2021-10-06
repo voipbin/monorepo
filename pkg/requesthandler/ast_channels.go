@@ -333,7 +333,7 @@ func (r *requestHandler) AstChannelRecord(asteriskID string, channelID string, f
 // AstChannelExternalMedia creates a external media.
 func (r *requestHandler) AstChannelExternalMedia(asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error) {
 
-	url := fmt.Sprintf("/ari/channels/externalMedia")
+	url := "/ari/channels/externalMedia"
 
 	type Data struct {
 		ChannelID      string            `json:"channel_id"`

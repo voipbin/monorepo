@@ -113,7 +113,9 @@ func (e *ArgsMap) UnmarshalJSON(m []byte) error {
 func (e *Timestamp) UnmarshalJSON(m []byte) error {
 	var tmp string
 
-	json.Unmarshal(m, &tmp)
+	if err := json.Unmarshal(m, &tmp); err != nil {
+		return err
+	}
 	res := strings.TrimSuffix(tmp, "+0000")
 	*e = Timestamp(res)
 

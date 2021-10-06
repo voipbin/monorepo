@@ -22,7 +22,7 @@ func (h *callHandler) startServiceFromDefault(cn *channel.Channel, data map[stri
 	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
-		h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return err
 	}
 
@@ -38,7 +38,9 @@ func (h *callHandler) startServiceFromAMD(cn *channel.Channel, data map[string]i
 		"func":       "startServiceFromAMD",
 		"channel_id": cn.ID,
 	})
-	defer h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	defer func() {
+		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	}()
 
 	status := data["amd_status"]
 	cause := data["amd_cause"]
@@ -61,10 +63,10 @@ func (h *callHandler) startServiceFromAMD(cn *channel.Channel, data map[string]i
 	if status == "MACHINE" && amd.MachineHandle == callapplication.AMDMachineHandleHangup {
 		// hangup the call
 		log.Infof("The amd option is machine hangup. machine_handle: %s", amd.MachineHandle)
-		h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
 	}
 
-	if amd.Async == false {
+	if !amd.Async {
 		return h.reqHandler.CallCallActionNext(c.ID)
 	}
 

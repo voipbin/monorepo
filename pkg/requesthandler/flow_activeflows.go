@@ -13,7 +13,7 @@ import (
 
 func (r *requestHandler) FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
 
-	uri := fmt.Sprint("/v1/active-flows")
+	uri := "/v1/active-flows"
 
 	type Data struct {
 		CallID uuid.UUID `json:"call_id"`

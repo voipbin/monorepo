@@ -21,7 +21,7 @@ func (h *eventHandler) eventHandlerPlaybackFinished(ctx context.Context, evt int
 			"target":   e.Playback.TargetURI,
 		})
 
-	if strings.HasPrefix(e.Playback.TargetURI, "channel:") != true {
+	if !strings.HasPrefix(e.Playback.TargetURI, "channel:") {
 		// no channel info
 		return nil
 	}

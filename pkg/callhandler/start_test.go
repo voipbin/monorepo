@@ -129,7 +129,9 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-			h.StartCallHandle(tt.channel, tt.data)
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -204,7 +206,9 @@ func TestTypeConferenceStart(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockConf.EXPECT().Join(gomock.Any(), gomock.Any()).Return(nil)
 
-			h.StartCallHandle(tt.channel, tt.data)
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -286,7 +290,9 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 			mockReq.EXPECT().CallCallActionNext(tt.call.ID)
 
-			h.StartCallHandle(tt.channel, tt.data)
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -361,7 +367,9 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-			h.StartCallHandle(tt.channel, tt.data)
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -435,7 +443,9 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockConf.EXPECT().Join(uuid.FromStringOrNil("037a20b9-d11d-4b63-a135-ae230cafd495"), tt.call.ID)
 
-			h.StartCallHandle(tt.channel, tt.data)
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -510,7 +520,9 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelPlay(tt.call.AsteriskID, tt.call.ChannelID, tt.expectAction.ID, gomock.Any(), "").Return(nil)
 
-			h.StartCallHandle(tt.channel, tt.data)
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -642,7 +654,9 @@ func TestTypeFlowStart(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-			h.StartCallHandle(tt.channel, tt.data)
+			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }

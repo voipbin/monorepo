@@ -18,10 +18,10 @@ const (
 	constVoIPBINDomainSuffix = ".sip.voipbin.net"
 
 	constTransportUDP = "udp"
-	constTransportTCP = "tcp"
-	constTransportTLS = "tls"
-	constTransportWS  = "ws"
-	constTransportWSS = "wss"
+	constTransportTCP = "tcp" //nolint:deadcode,varcheck
+	constTransportTLS = "tls" //nolint:deadcode,varcheck
+	constTransportWS  = "ws"  //nolint:deadcode,varcheck
+	constTransportWSS = "wss" //nolint:deadcode,varcheck
 )
 
 // CreateCallOutgoing creates a call for outgoing
@@ -131,9 +131,9 @@ func (h *callHandler) getEndpointDestination(destination address.Address) (strin
 
 	// destination is normal sip address.
 	tmp := strings.Split(destination.Target, ";")
-	if strings.HasSuffix(tmp[0], constVoIPBINDomainSuffix) == false {
+	if !strings.HasSuffix(tmp[0], constVoIPBINDomainSuffix) {
 		endpoint := destination.Target
-		if strings.HasPrefix(endpoint, "sip") == false && strings.HasPrefix(endpoint, "sips:") == false {
+		if !strings.HasPrefix(endpoint, "sip") && !strings.HasPrefix(endpoint, "sips:") {
 			endpoint = "sip:" + endpoint
 		}
 

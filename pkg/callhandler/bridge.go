@@ -23,7 +23,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	})
 
 	log.Debug("Hangup join channel.")
-	h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 
 	// get call
 	c, err := h.db.CallGet(ctx, br.ReferenceID)
@@ -89,16 +89,19 @@ func (h *callHandler) bridgeLeftExternal(ctx context.Context, cn *channel.Channe
 	log := logrus.WithFields(logrus.Fields{
 		"asterisk_id": cn.AsteriskID,
 		"channel_id":  cn.ID,
+		"bridge_id":   br.ID,
 	})
 
 	// hang up the channel
 	log.Debug("Hangup external media channel.")
-	h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 
 	// remove all other channels
 	if len(br.ChannelIDs) == 0 {
-		h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID)
+		log.Debug("No channel left in the bridge. Deleting the bridge.")
+		_ = h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID)
 	} else {
+		log.Debugf("Channels are still remain in the bridge. channels: %d", len(br.ChannelIDs))
 		h.removeAllChannelsInBridge(br)
 	}
 

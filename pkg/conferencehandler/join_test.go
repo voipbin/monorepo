@@ -56,17 +56,20 @@ func TestCreateEndpointTarget(t *testing.T) {
 
 	for _, tt := range tests {
 
-		mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridge, nil)
-		mockCache.EXPECT().AsteriskAddressInternalGet(gomock.Any(), tt.bridge.AsteriskID).Return(tt.asteriskAddress, nil)
+		t.Run(tt.name, func(t *testing.T) {
 
-		res, err := h.createEndpointTarget(context.Background(), tt.conference)
-		if err != nil {
-			t.Errorf("Wrong match. expect: ok, got: %v", err)
-		}
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridge, nil)
+			mockCache.EXPECT().AsteriskAddressInternalGet(gomock.Any(), tt.bridge.AsteriskID).Return(tt.asteriskAddress, nil)
 
-		if res != tt.expectEndpoint {
-			t.Errorf("Wrong match. expect: %s\ngot:%s\n", tt.expectEndpoint, res)
-		}
+			res, err := h.createEndpointTarget(context.Background(), tt.conference)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectEndpoint {
+				t.Errorf("Wrong match. expect: %s\ngot:%s\n", tt.expectEndpoint, res)
+			}
+		})
 	}
 }
 
@@ -121,24 +124,26 @@ func TestJoin(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-		mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-		mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
-		mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridgeConference.ID).Return(tt.bridgeConference, nil)
-		mockReq.EXPECT().AstBridgeGet(tt.bridgeConference.AsteriskID, tt.bridgeConference.ID).Return(nil, nil)
-		mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridgeConference, nil)
-		mockCache.EXPECT().AsteriskAddressInternalGet(gomock.Any(), tt.bridgeConference.AsteriskID).Return("", nil)
-		mockReq.EXPECT().AstChannelCreate(tt.bridgeJoining.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", gomock.Any(), nil).Return(nil)
-		mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.call.ID, tt.conference.ID).Return(nil)
-		mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-		mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
-		mockDB.EXPECT().ConferenceAddCallID(gomock.Any(), tt.conference.ID, tt.call.ID)
-		mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-		mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceJoined, tt.conference.WebhookURI, tt.conference)
-		// mockCache.EXPECT().AsteriskAddressInternerGet(gomock.Any(), gomock.Any()).Return("", nil)
+		t.Run(tt.name, func(t *testing.T) {
 
-		if err := h.Join(tt.conference.ID, tt.call.ID); err != nil {
-			t.Errorf("Wrong match. expect: ok, got: %v", err)
-		}
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridgeConference.ID).Return(tt.bridgeConference, nil)
+			mockReq.EXPECT().AstBridgeGet(tt.bridgeConference.AsteriskID, tt.bridgeConference.ID).Return(nil, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridgeConference, nil)
+			mockCache.EXPECT().AsteriskAddressInternalGet(gomock.Any(), tt.bridgeConference.AsteriskID).Return("", nil)
+			mockReq.EXPECT().AstChannelCreate(tt.bridgeJoining.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", gomock.Any(), nil).Return(nil)
+			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.call.ID, tt.conference.ID).Return(nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
+			mockDB.EXPECT().ConferenceAddCallID(gomock.Any(), tt.conference.ID, tt.call.ID)
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceJoined, tt.conference.WebhookURI, tt.conference)
+
+			if err := h.Join(tt.conference.ID, tt.call.ID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
 	}
 }

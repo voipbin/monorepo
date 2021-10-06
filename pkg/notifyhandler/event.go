@@ -32,8 +32,6 @@ func (h *notifyHandler) publishWebhook(t EventType, webhookURI string, c Webhook
 		log.Errorf("Could not publish the webhook. err: %v", err)
 		return
 	}
-
-	return
 }
 
 func (h *notifyHandler) publishEvent(t EventType, c interface{}) {
@@ -48,5 +46,4 @@ func (h *notifyHandler) publishEvent(t EventType, c interface{}) {
 		log.Errorf("Could not publish the call event. err: %v", err)
 		return
 	}
-	return
 }

@@ -86,7 +86,6 @@ const (
 	resourceAstChannelsSnoop         resource = "ast/channels/snoop"
 	resourceAstChannelsVar           resource = "ast/channels/var"
 
-	resourceCallCalls              resource = "call/calls"
 	resourceCallCallsActionNext    resource = "call/calls/action-next"
 	resourceCallCallsActionTimeout resource = "call/calls/action-timeout"
 	resourceCallCallsHealth        resource = "call/calls/health"
@@ -190,6 +189,7 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, qu
 	return h
 }
 
+//nolint:deadcode,unused // this is ok
 func uriUnescape(u string) string {
 	res, err := url.QueryUnescape(u)
 	if err != nil {

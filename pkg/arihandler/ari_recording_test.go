@@ -159,13 +159,6 @@ func TestEventHandlerRecordingFinishedConference(t *testing.T) {
 		notifyHandler: mockNotify,
 	}
 
-	type test struct {
-		name      string
-		event     *rabbitmqhandler.Event
-		recording *recording.Recording
-		timestamp string
-	}
-
 	tests := []struct {
 		name      string
 		event     *rabbitmqhandler.Event

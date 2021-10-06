@@ -118,7 +118,7 @@ func (h *handler) ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*confe
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -229,7 +229,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 	}
 
 	// update the cache
-	h.ConferenceUpdateToCache(ctx, cf.ID)
+	_ = h.ConferenceUpdateToCache(ctx, cf.ID)
 
 	return nil
 }
@@ -248,7 +248,7 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 	}
 
 	// set to the cache
-	h.ConferenceSetToCache(ctx, res)
+	_ = h.ConferenceSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -308,7 +308,7 @@ func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID)
 	}
 
 	// update the cache
-	h.ConferenceUpdateToCache(ctx, id)
+	_ = h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -340,7 +340,7 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 	}
 
 	// update the cache
-	h.ConferenceUpdateToCache(ctx, id)
+	_ = h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -362,7 +362,7 @@ func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status 
 	}
 
 	// update the cache
-	h.ConferenceUpdateToCache(ctx, id)
+	_ = h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -384,7 +384,7 @@ func (h *handler) ConferenceSetBridgeID(ctx context.Context, id uuid.UUID, bridg
 	}
 
 	// update the cache
-	h.ConferenceUpdateToCache(ctx, id)
+	_ = h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -411,7 +411,7 @@ func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[
 	}
 
 	// update the cache
-	h.ConferenceUpdateToCache(ctx, id)
+	_ = h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -433,7 +433,7 @@ func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 	}
 
 	// update the cache
-	h.ConferenceUpdateToCache(ctx, id)
+	_ = h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -455,7 +455,7 @@ func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recor
 	}
 
 	// update the cache
-	h.ConferenceUpdateToCache(ctx, id)
+	_ = h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -481,7 +481,7 @@ func (h *handler) ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 	}
 
 	// update the cache
-	h.ConferenceUpdateToCache(ctx, id)
+	_ = h.ConferenceUpdateToCache(ctx, id)
 
 	return nil
 }

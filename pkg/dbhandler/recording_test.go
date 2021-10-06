@@ -164,7 +164,7 @@ func TestRecordingGets(t *testing.T) {
 
 			for _, recording := range tt.recordings {
 				mockCache.EXPECT().RecordingSet(gomock.Any(), gomock.Any()).Return(nil)
-				h.RecordingCreate(ctx, recording)
+				_ = h.RecordingCreate(ctx, recording)
 			}
 
 			res, err := h.RecordingGets(context.Background(), tt.userID, 10, getCurTime())

@@ -130,7 +130,7 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 
 	if c.FlowID == uuid.Nil {
 		log.WithField("call", c).Info("No flow id found. Hangup the call.")
-		h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
@@ -138,14 +138,14 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 	nextAction, err := h.reqHandler.FlowActvieFlowNextGet(c.ID, c.Action.ID)
 	if err != nil {
 		log.Errorf("Could not get the next action from the flow-manager. Hanging up the call. err: %v", err)
-		h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 	log.Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
 
 	if err := h.ActionExecute(c, nextAction); err != nil {
 		log.Errorf("Could not execute the next action correctly. Hanging up the call. err: %v", err)
-		h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
@@ -464,7 +464,7 @@ func (h *callHandler) actionExecuteHangup(c *call.Call, a *action.Action) error 
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
-	h.HangingUp(c, ari.ChannelCauseNormalClearing)
+	_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
 
 	return nil
 }
@@ -613,7 +613,10 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 	}
 
 	// send next action request
-	h.reqHandler.CallCallActionNext(c.ID)
+	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
+		log.Errorf("Could not execute next call action. err: %v", err)
+		return err
+	}
 
 	return nil
 }
@@ -661,7 +664,10 @@ func (h *callHandler) actionExecuteRecordingStop(c *call.Call, a *action.Action)
 	}
 
 	// send next action request
-	h.reqHandler.CallCallActionNext(c.ID)
+	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
+		log.Errorf("Could not execute next action call. err: %v", err)
+		return err
+	}
 
 	return nil
 }
@@ -698,7 +704,7 @@ func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) e
 	dtmfs, err := h.db.CallDTMFGet(ctx, c.ID)
 
 	// check the dtmf finish condition
-	if err == nil && len(dtmfs) > 0 && (strings.Contains(option.FinishOnKey, dtmfs) == true || len(dtmfs) >= option.MaxNumKey) {
+	if err == nil && len(dtmfs) > 0 && (strings.Contains(option.FinishOnKey, dtmfs) || len(dtmfs) >= option.MaxNumKey) {
 		// the stored dtmf has already qualified finish condition.
 		log.Debugf("The stored dtmfs are already qualified the finish condition. dtmfs: %s", dtmfs)
 		if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
@@ -882,10 +888,10 @@ func (h *callHandler) actionExecuteAMD(c *call.Call, a *action.Action) error {
 	// add the amd info to the cache
 	if errAMD := h.db.CallApplicationAMDSet(context.Background(), snoopID.String(), app); errAMD != nil {
 		log.Errorf("Could not set the callapplication amd option. err: %v", errAMD)
-		h.reqHandler.AstChannelHangup(c.AsteriskID, snoopID.String(), ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(c.AsteriskID, snoopID.String(), ari.ChannelCauseNormalClearing)
 	}
 
-	if app.Async == true {
+	if app.Async {
 		// send next action request
 		return h.reqHandler.CallCallActionNext(c.ID)
 	}

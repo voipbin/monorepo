@@ -85,11 +85,10 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 	}
 
 	type test struct {
-		name          string
-		call          *call.Call
-		action        *action.Action
-		expectAction  *action.Action
-		expectTimeout int
+		name         string
+		call         *call.Call
+		action       *action.Action
+		expectAction *action.Action
 	}
 
 	tests := []test{
@@ -105,7 +104,6 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 				ID:     uuid.Nil,
 				Option: []byte(`{"duration":180000}`),
 			},
-			180 * 1000,
 		},
 	}
 
@@ -137,11 +135,10 @@ func TestActionExecuteAnswer(t *testing.T) {
 	}
 
 	type test struct {
-		name          string
-		call          *call.Call
-		action        *action.Action
-		expectAction  *action.Action
-		expectTimeout int
+		name         string
+		call         *call.Call
+		action       *action.Action
+		expectAction *action.Action
 	}
 
 	tests := []test{
@@ -161,7 +158,6 @@ func TestActionExecuteAnswer(t *testing.T) {
 				ID:     uuid.Nil,
 				Option: []byte(`{}`),
 			},
-			180 * 1000,
 		},
 	}
 
@@ -422,11 +418,10 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 	}
 
 	type test struct {
-		name        string
-		call        *call.Call
-		storedDTMFs string
-		duration    int
-		action      *action.Action
+		name     string
+		call     *call.Call
+		duration int
+		action   *action.Action
 	}
 
 	tests := []test{
@@ -437,7 +432,6 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
-			"",
 			1000,
 			&action.Action{
 				Type:   action.TypeDTMFReceive,
@@ -452,7 +446,6 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
-			"*",
 			1000,
 			&action.Action{
 				Type:   action.TypeDTMFReceive,

@@ -20,7 +20,9 @@ func (h *callHandler) applicationHandleAMD(cn *channel.Channel, data map[string]
 	})
 	log.Debug("Executing the applciationHandleAMD.")
 
-	h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeApplication))
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeApplication)); err != nil {
+		log.Errorf("Could not set channel variable. err: %v", err)
+	}
 
 	// put the cahnnel to the amd
 	if errContinue := h.reqHandler.AstChannelContinue(cn.AsteriskID, cn.ID, serviceContextAMD, "", 0, ""); errContinue != nil {

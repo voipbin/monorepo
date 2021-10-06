@@ -125,6 +125,7 @@ func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.Req
 	return h
 }
 
+//nolint:deadcode,unused // this is ok.
 func uriUnescape(u string) string {
 	res, err := url.QueryUnescape(u)
 	if err != nil {
@@ -203,6 +204,7 @@ func (r *notifyHandler) publishDirectEvnt(ctx context.Context, evt *rabbitmqhand
 
 // sendDelayedEvent sends the delayed event
 // delay unit is millisecond.
+//nolint:unused // this is ok
 func (r *notifyHandler) sendDelayedEvent(ctx context.Context, delay int, evt *rabbitmqhandler.Event) error {
 
 	start := time.Now()

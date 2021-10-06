@@ -15,7 +15,7 @@ import (
 func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Channel, c *call.Call) error {
 
 	// check status is updatable
-	if call.IsUpdatableStatus(c.Status, call.StatusRinging) == false {
+	if !call.IsUpdatableStatus(c.Status, call.StatusRinging) {
 		log.WithFields(log.Fields{
 			"call_id":    c.ID,
 			"old_status": c.Status,
@@ -42,7 +42,7 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.Channel, c *call.Call) error {
 
 	// check status is updatable
-	if call.IsUpdatableStatus(c.Status, call.StatusProgressing) == false {
+	if !call.IsUpdatableStatus(c.Status, call.StatusProgressing) {
 		log.WithFields(log.Fields{
 			"call_id":    c.ID,
 			"old_status": c.Status,

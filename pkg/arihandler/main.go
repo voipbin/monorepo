@@ -21,15 +21,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// ARIEvent is the structure for ARI event parse.
-type ARIEvent struct {
-	eventType   string
-	application string
-	asteriskID  string
-	timestamp   time.Time
-	event       interface{}
-}
-
 // EventHandler intreface for ARI request handler
 type EventHandler interface {
 	Run(queue, receiver string) error
@@ -133,7 +124,9 @@ func (h *eventHandler) Run(queue, receiver string) error {
 	// receive ARI event
 	go func() {
 		for {
-			h.rabbitSock.ConsumeMessageOpt(queue, receiver, false, false, false, h.processEventRun)
+			if err := h.rabbitSock.ConsumeMessageOpt(queue, receiver, false, false, false, h.processEventRun); err != nil {
+				log.Errorf("Could not consume the message. err: %v", err)
+			}
 		}
 	}()
 	return nil

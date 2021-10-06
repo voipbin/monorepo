@@ -79,7 +79,7 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	}
 
 	// check the conference bridge exists
-	if cf.BridgeID == "" || h.isBridgeExist(ctx, cf.BridgeID) != true {
+	if cf.BridgeID == "" || !h.isBridgeExist(ctx, cf.BridgeID) {
 		// the conference's bridge has gone somehow.
 		// we need to create a new bridge for this conference.
 		log.Infof("Could not find valid conference bridge. Creating a new bridge for the conference. bridge: %s", cf.BridgeID)
@@ -129,7 +129,7 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	if err := h.db.CallSetConferenceID(ctx, c.ID, cf.ID); err != nil {
 		log.Errorf("Could not set the conference for a call. err: %v", err)
 
-		h.reqHandler.AstChannelHangup(c.AsteriskID, channelID.String(), ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(c.AsteriskID, channelID.String(), ari.ChannelCauseNormalClearing)
 		return err
 	}
 
@@ -137,7 +137,7 @@ func (h *conferenceHandler) Join(conferenceID, callID uuid.UUID) error {
 	tmpCall, err := h.db.CallGet(ctx, c.ID)
 	if err != nil {
 		log.Errorf("Could not get updated call info. err: %v", err)
-		h.reqHandler.AstChannelHangup(c.AsteriskID, channelID.String(), ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(c.AsteriskID, channelID.String(), ari.ChannelCauseNormalClearing)
 		return err
 	}
 	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallUpdated, tmpCall.WebhookURI, tmpCall)

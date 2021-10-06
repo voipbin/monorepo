@@ -11,7 +11,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
@@ -49,17 +48,8 @@ const (
 
 // List of default values
 const (
-	defaultDialTimeout = 60                           // default outgoing dial timeout
+	defaultDialTimeout = 60                           //nolint:deadcode,varcheck // default outgoing dial timeout
 	defaultTimeStamp   = "9999-01-01 00:00:00.000000" // default timestamp
-)
-
-// conference termination type
-type termType string
-
-const (
-	termTypeNone         termType = "none"
-	termTypeTerminatable termType = "terminatable" // the conference is terminatable
-	termTypeDestroyable  termType = "destroyable"  // the conference is destroyable
 )
 
 var (
@@ -114,10 +104,6 @@ func NewConferHandler(req requesthandler.RequestHandler, notify notifyhandler.No
 	return h
 }
 
-func (h *conferenceHandler) leaveTypeEcho(c *call.Call) error {
-	return nil
-}
-
 // generateBridgeName generates the bridge name for conference
 // all of conference created bridge must use this function for bridge's name.
 func generateBridgeName(referenceType bridge.ReferenceType, conferenceID uuid.UUID) string {
@@ -127,13 +113,11 @@ func generateBridgeName(referenceType bridge.ReferenceType, conferenceID uuid.UU
 }
 
 // isContextConf returns true if
+//nolint:unused,deadcode // this is ok
 func isContextConf(contextType string) bool {
 	tmp := strings.Split(contextType, "-")[0]
-	if tmp == "conf" {
-		return true
-	}
 
-	return false
+	return tmp == "conf"
 }
 
 // getCurTime return current utc time string

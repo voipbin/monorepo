@@ -67,7 +67,7 @@ func (h *callHandler) ExternalMediaStart(callID uuid.UUID, isCallMedia bool, ext
 		return nil, err
 	}
 
-	if isCallMedia == false {
+	if !isCallMedia {
 		return extCh, nil
 	}
 
@@ -78,7 +78,7 @@ func (h *callHandler) ExternalMediaStart(callID uuid.UUID, isCallMedia bool, ext
 		ip = tmp.(string)
 	}
 	if tmp := extCh.Data[ChannelValiableExternalMediaLocalPort]; tmp != nil {
-		port, err = strconv.Atoi(tmp.(string))
+		port, _ = strconv.Atoi(tmp.(string))
 	}
 
 	extMedia := &externalmedia.ExternalMedia{

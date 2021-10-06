@@ -479,7 +479,7 @@ func TestCallGets(t *testing.T) {
 	// creates calls for test
 	h := NewHandler(dbTest, mockCache)
 	mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-	h.CallCreate(context.Background(), &call.Call{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), UserID: 1})
+	_ = h.CallCreate(context.Background(), &call.Call{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), UserID: 1})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
