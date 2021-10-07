@@ -145,7 +145,6 @@ func TestFlowGetsByUserID(t *testing.T) {
 		name       string
 		userID     uint64
 		limit      uint64
-		token      string
 		flows      []flow.Flow
 		expectFlow []*flow.Flow
 	}
@@ -155,7 +154,6 @@ func TestFlowGetsByUserID(t *testing.T) {
 			"have no actions",
 			1,
 			10,
-			"2020-04-18T03:30:17.000000",
 			[]flow.Flow{
 				{
 					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),

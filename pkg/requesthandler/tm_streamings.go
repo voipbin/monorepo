@@ -14,7 +14,7 @@ import (
 // TMStreamingsPost sends a request to transcribe-manager
 // to start the streaming transcribe
 func (r *requestHandler) TMStreamingsPost(callID uuid.UUID, language, webhookURI, webhookMethod string) (*transcribe.Transcribe, error) {
-	uri := fmt.Sprintf("/v1/streamings")
+	uri := "/v1/streamings"
 
 	data := &tmrequest.V1DataStreamingsPost{
 		ReferenceID:   callID,

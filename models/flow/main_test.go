@@ -14,7 +14,6 @@ func TestUnmarshalActionEcho(t *testing.T) {
 	type test struct {
 		name         string
 		message      string
-		expectAction *action.Action
 		expectOption *action.OptionEcho
 	}
 
@@ -22,20 +21,11 @@ func TestUnmarshalActionEcho(t *testing.T) {
 		{
 			"have no option",
 			`{"id": "58bd9a56-8974-11ea-9271-0be0134dbfbd", "type":"echo"}`,
-			&action.Action{
-				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
-				Type: action.TypeEcho,
-			},
 			nil,
 		},
 		{
 			"have option duration",
 			`{"id": "58bd9a56-8974-11ea-9271-0be0134dbfbd", "type":"echo", "option":{"duration": 180}}`,
-			&action.Action{
-				ID:     uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
-				Type:   action.TypeEcho,
-				Option: []byte(`{"duration": 180}`),
-			},
 			&action.OptionEcho{
 				Duration: 180,
 			},
@@ -56,7 +46,9 @@ func TestUnmarshalActionEcho(t *testing.T) {
 
 			if act.Option != nil {
 				option := &action.OptionEcho{}
-				json.Unmarshal(act.Option, &option)
+				if err := json.Unmarshal(act.Option, &option); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
 
 				if reflect.DeepEqual(option, tt.expectOption) != true {
 					t.Errorf("Wrong match. expect: %v, got: %v", tt.expectOption, option)

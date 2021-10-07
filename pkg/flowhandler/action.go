@@ -116,7 +116,7 @@ func (h *flowHandler) ValidateActions(actions []action.Action) error {
 			}
 		}
 
-		if found == false {
+		if !found {
 			return fmt.Errorf("no support action type. type: %s", a.Type)
 		}
 	}

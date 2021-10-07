@@ -16,7 +16,7 @@ import (
 // to creating a call.
 // it returns created call if it succeed.
 func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination address.Address) (*call.Call, error) {
-	uri := fmt.Sprintf("/v1/calls")
+	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsIDPost{
 		UserID:      userID,

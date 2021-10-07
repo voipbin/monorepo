@@ -62,7 +62,7 @@ func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 // timeout(sec)
 // it the timeout set to 0 means no timeout.
 func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType conference.Type, name string, detail string, timeout int) (*conference.Conference, error) {
-	uri := fmt.Sprintf("/v1/conferences")
+	uri := "/v1/conferences"
 
 	data := &cmrequest.V1DataConferencesIDPost{
 		Type:    conferenceType,

@@ -146,35 +146,35 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	switch {
 
 	// v1
-	case regV1ActiveFlows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ActiveFlows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/active-flows"
 		response, err = h.v1ActiveFlowsPost(m)
 
-	case regV1ActiveFlowsIDNext.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ActiveFlowsIDNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/active-flows"
 		response, err = h.v1ActiveFlowsIDNextGet(m)
 
-	case regV1FlowsIDActionsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1FlowsIDActionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows/actions"
 		response, err = h.v1FlowsIDActionsIDGet(m)
 
-	case regV1FlowsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1FlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows"
 		response, err = h.v1FlowsIDGet(m)
 
-	case regV1FlowsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1FlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		requestType = "/flows"
 		response, err = h.v1FlowsIDPut(m)
 
-	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Flows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/flows"
 		response, err = h.v1FlowsPost(m)
 
-	case regV1FlowsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1FlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		requestType = "/flows"
 		response, err = h.v1FlowsIDDelete(m)
 
-	case regV1Flows.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1Flows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows"
 		response, err = h.v1FlowsGet(m)
 
@@ -201,7 +201,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 			}).Errorf("Could not process the request correctly. data: %s", m.Data)
 		response = simpleResponse(400)
 		err = nil
-		requestType = "notfound"
 	}
 
 	logrus.WithFields(
@@ -214,6 +213,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 }
 
 // getCurTime return current utc time string
+//nolint:deadcode,unused // reserved
 func getCurTime() string {
 	now := time.Now().UTC().String()
 	res := strings.TrimSuffix(now, " +0000 UTC")

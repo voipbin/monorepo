@@ -14,7 +14,7 @@ import (
 // to creating a flow.
 // it returns created flow if it succeed.
 func (r *requestHandler) FMFlowCreate(userID uint64, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
-	uri := fmt.Sprintf("/v1/flows")
+	uri := "/v1/flows"
 
 	data := &fmrequest.V1DataFlowPost{
 		UserID:  userID,
