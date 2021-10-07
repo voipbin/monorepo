@@ -8,8 +8,6 @@ $ ./flow-manager -h
 Usage of ./flow-manager:
   -dbDSN string
         database dsn for flow-manager. (default "testid:testpassword@tcp(127.0.0.1:3306)/test")
-  -log_level int
-        log level (default 5)
   -prom_endpoint string
         endpoint for prometheus metric collecting. (default "/metrics")
   -prom_listen_addr string

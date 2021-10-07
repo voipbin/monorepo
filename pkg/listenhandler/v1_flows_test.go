@@ -116,7 +116,9 @@ func TestFlowsPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.expectFlow).Return(&flow.Flow{}, nil)
 
-			h.processRequest(tt.request)
+			if _, err := h.processRequest(tt.request); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }

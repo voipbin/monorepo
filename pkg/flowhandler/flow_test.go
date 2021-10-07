@@ -49,7 +49,10 @@ func TestFlowCreate(t *testing.T) {
 
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
-			h.FlowCreate(ctx, tt.flow)
+			_, err := h.FlowCreate(ctx, tt.flow)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -81,7 +84,10 @@ func TestFlowGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
 
-			h.FlowGet(context.Background(), tt.flow.ID)
+			_, err := h.FlowGet(context.Background(), tt.flow.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -114,7 +120,9 @@ func TestFlowDelete(t *testing.T) {
 			mockDB.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(nil)
 			mockReq.EXPECT().NMNumberFlowDelete(tt.flowID).Return(nil)
 
-			h.FlowDelete(context.Background(), tt.flowID)
+			if err := h.FlowDelete(context.Background(), tt.flowID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -151,7 +159,10 @@ func TestFlowCreatePersistTrue(t *testing.T) {
 			mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.flow, nil)
 
-			h.FlowCreate(ctx, tt.flow)
+			_, err := h.FlowCreate(ctx, tt.flow)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -187,7 +198,10 @@ func TestFlowCreatePersistFalse(t *testing.T) {
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.flow, nil)
 
-			h.FlowCreate(ctx, tt.flow)
+			_, err := h.FlowCreate(ctx, tt.flow)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }
@@ -222,7 +236,10 @@ func TestFlowGetByUserID(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit).Return(nil, nil)
 
-			h.FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit)
+			_, err := h.FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }

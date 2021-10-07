@@ -211,7 +211,7 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 
 	// get nextAction
 	var nextAction action.Action
-	if found == false || idx >= (len(af.Actions)-1) {
+	if !found || idx >= (len(af.Actions)-1) {
 		// check if the no more actions left, return finishID here.
 		log.Infof("No more action left. found: %v, idx: %v", found, idx)
 
@@ -355,10 +355,13 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 		}
 
 		// add the chained call id if the unchained option is false
-		if optConnect.Unchained == false {
+		if !optConnect.Unchained {
 			if err := h.reqHandler.CMCallAddChainedCall(callID, resCall.ID); err != nil {
 				log.Warnf("Could not add the chained call id. Hangup the call. chained_call_id: %s", resCall.ID)
-				h.reqHandler.CMCallHangup(resCall.ID)
+				_, errHangup := h.reqHandler.CMCallHangup(resCall.ID)
+				if errHangup != nil {
+					log.Errorf("Could not hangup the call. chained_call_id: %s, err: %v", resCall.ID, errHangup)
+				}
 				continue
 			}
 		}

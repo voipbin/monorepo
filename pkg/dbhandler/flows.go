@@ -162,7 +162,7 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 		return fmt.Errorf("could not execute query. FlowCreate. err: %v", err)
 	}
 
-	h.FlowUpdateToCache(ctx, f.ID)
+	_ = h.FlowUpdateToCache(ctx, f.ID)
 
 	return nil
 }
@@ -186,7 +186,7 @@ func (h *handler) FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, 
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -213,7 +213,7 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 
 	if res.TMDelete == "" {
 		// set to the cache
-		h.FlowSetToCache(ctx, res)
+		_ = h.FlowSetToCache(ctx, res)
 	}
 
 	return res, nil
@@ -256,7 +256,7 @@ func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token str
 // FlowUpdate updates the most of flow information.
 // except permenant info(i.e. id, timestamp, etc)
 func (h *handler) FlowUpdate(ctx context.Context, f *flow.Flow) error {
-	q := fmt.Sprintf(`
+	q := `
 	update flows set
 		name = ?,
 		detail = ?,
@@ -265,7 +265,7 @@ func (h *handler) FlowUpdate(ctx context.Context, f *flow.Flow) error {
 		tm_update = ?
 	where
 		id = ?
-	`)
+	`
 
 	tmpActions, err := json.Marshal(f.Actions)
 	if err != nil {
@@ -277,27 +277,27 @@ func (h *handler) FlowUpdate(ctx context.Context, f *flow.Flow) error {
 	}
 
 	// set to the cache
-	h.FlowUpdateToCache(ctx, f.ID)
+	_ = h.FlowUpdateToCache(ctx, f.ID)
 
 	return nil
 }
 
 // FlowDelete deletes the given flow
 func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
-	q := fmt.Sprintf(`
+	q := `
 	update flows set
 		tm_delete = ?,
 		tm_update = ?
 	where
 		id = ?
-	`)
+	`
 
 	if _, err := h.db.Exec(q, getCurTime(), getCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. FlowDelete. err: %v", err)
 	}
 
 	// delete cache
-	h.FlowDeleteCache(ctx, id)
+	_ = h.FlowDeleteCache(ctx, id)
 
 	return nil
 }

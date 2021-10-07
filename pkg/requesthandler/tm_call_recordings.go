@@ -13,7 +13,7 @@ import (
 // SMCallRecordingPost sends a request to number-manager
 // to delete a flow from the number.
 func (r *requestHandler) TMCallRecordingPost(callID uuid.UUID, language, webhookURI, webhookMethod string, timeout, delay int) error {
-	uri := fmt.Sprintf("/v1/call_recordings")
+	uri := "/v1/call_recordings"
 
 	data := &tmrequest.V1DataCallRecordingsPost{
 		ReferenceID:   callID,

@@ -27,13 +27,10 @@ import (
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-// log level
-var logLevel = flag.Int("log_level", int(logrus.DebugLevel), "log level")
-
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.flow-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueEvent = flag.String("rabbit_queue_event", "bin-manager.flow-manager.event", "rabbitmq queue name for event notify")
+var rabbitQueueEvent = flag.String("rabbit_queue_event", "bin-manager.flow-manager.event", "rabbitmq queue name for event notify") //nolint:deadcode,unused,varcheck // reserved
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for the request heading to the flow request")
@@ -66,8 +63,6 @@ func main() {
 	// run the service
 	run(dbHandler)
 	<-chDone
-
-	return
 }
 
 func init() {
@@ -93,7 +88,7 @@ func initLog() {
 
 // initSignal inits sinal settings.
 func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 }
 
@@ -146,12 +141,14 @@ func run(dbHandler dbhandler.DBHandler) {
 
 	// run the listen service
 	go func() {
-		runListen(dbHandler)
+		_ = runListen(dbHandler)
 	}()
 }
 
 // runListen runs the listen service
 func runListen(dbHandler dbhandler.DBHandler) error {
+	log := logrus.WithField("func", "runListen")
+
 	// create flowhandler
 	sockRequest := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	sockRequest.Connect()
@@ -169,7 +166,9 @@ func runListen(dbHandler dbhandler.DBHandler) error {
 	)
 
 	// run the service
-	listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay)
+	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+		log.Errorf("Error occurred in listen handler. err: %v", err)
+	}
 
 	return nil
 }

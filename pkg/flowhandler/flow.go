@@ -39,7 +39,7 @@ func (h *flowHandler) FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow,
 	}
 
 	switch {
-	case f.Persist == true:
+	case f.Persist:
 		if err := h.db.FlowCreate(ctx, f); err != nil {
 			return nil, err
 		}
