@@ -7,7 +7,6 @@ variables:
 
 stages:
   - ensure
-  - lint
   - test
   - build
   - release
@@ -32,13 +31,13 @@ ensure:
     - go mod vendor
 
 lint:
-  stage: lint
+  stage: test
   script:
     - golint -set_exit_status $(go list ./...)
 
 golangci-lint:
   image: golangci/golangci-lint:latest
-  stage: lint
+  stage: test
   script:
     - golangci-lint version
     - golangci-lint run -v --timeout 5m
