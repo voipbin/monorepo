@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 )
 
-// DBHandler interface for call_manager database handle
+// DBHandler interface for database handle
 type DBHandler interface {
 
 	// number
