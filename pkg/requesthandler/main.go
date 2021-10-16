@@ -52,7 +52,7 @@ const (
 const defaultAstStasisApp = "voipbin"
 
 var (
-	metricsNamespace = "call_manager"
+	metricsNamespace = "number_manager"
 
 	promRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{

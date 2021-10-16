@@ -1,3 +1,2 @@
 # number-manager
-
-Number-manager for telephone numbers
+Number-manager for telephone numbers management.
