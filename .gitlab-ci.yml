@@ -35,6 +35,13 @@ lint:
   script:
     - golint -set_exit_status $(go list ./...)
 
+golangci-lint:
+  image: golangci/golangci-lint:latest
+  stage: test
+  script:
+    - golangci-lint version
+    - golangci-lint run -v --timeout 5m
+
 vet:
   stage: test
   script:

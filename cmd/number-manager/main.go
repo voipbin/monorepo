@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -30,7 +29,6 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.number-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.number-manager.event", "rabbitmq queue name for event notify")
 
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
@@ -47,11 +45,13 @@ var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 func main() {
-	fmt.Printf("Starting number-manager.\n")
+	log := logrus.WithField("func", "main")
+	log.Debugf("Starting number-manager.")
+
 	// connect to database
 	sqlDB, err := sql.Open("mysql", *dbDSN)
 	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
+		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
 	defer sqlDB.Close()
@@ -59,14 +59,14 @@ func main() {
 	// connect to cache
 	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
 	if err := cache.Connect(); err != nil {
-		logrus.Errorf("Could not connect to cache server. err: %v", err)
+		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
 	}
 
-	run(sqlDB, cache)
+	if errRun := run(sqlDB, cache); errRun != nil {
+		log.Errorf("The run returned error. err: %v", errRun)
+	}
 	<-chDone
-
-	return
 }
 
 // proces init
@@ -100,7 +100,7 @@ func initLog() {
 
 // initSignal inits sinal settings.
 func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 }
 
