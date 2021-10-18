@@ -99,6 +99,7 @@ func (h *numberHandler) GetNumbers(ctx context.Context, userID uint64, pageSize 
 		log.Errorf("Could not get numbers. user_id: %d, err:%v", userID, err)
 		return nil, err
 	}
+	log.WithField("numbers", numbers).Debugf("Found numbers info. count: %d", len(numbers))
 
 	return numbers, nil
 }

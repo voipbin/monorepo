@@ -3,6 +3,7 @@ package requesthandler
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 
@@ -54,6 +55,7 @@ func TestTelnyxAvailableNumberGets(t *testing.T) {
 				t.Errorf("Wrong match. expect: %d, got: %d", tt.limit, len(res))
 			}
 
+			time.Sleep(time.Second * 1)
 		})
 	}
 }
@@ -74,18 +76,18 @@ func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal us number",
-			"1580568175064384684",
+			"1748688147379652251",
 			&telnyx.PhoneNumber{
-				ID:                    "1580568175064384684",
+				ID:                    "1748688147379652251",
 				RecordType:            "phone_number",
-				PhoneNumber:           "+12704940136",
+				PhoneNumber:           "+14703298699",
 				Status:                "active",
-				Tags:                  []string{"test"},
-				ConnectionID:          "1526401767787464160",
+				Tags:                  []string{},
+				ConnectionID:          "1749650875783055057",
 				CustomerReference:     "",
 				ExternalPin:           "",
 				T38FaxGatewayEnabled:  true,
-				PurchasedAt:           "2021-02-26T18:26:49Z",
+				PurchasedAt:           "2021-10-16T17:31:11Z",
 				BillingGroupID:        "",
 				EmergencyEnabled:      false,
 				EmergencyAddressID:    "",
@@ -95,7 +97,7 @@ func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
 				MessagingProfileID:    "",
 				MessagingProfileName:  "",
 				NumberBlockID:         "",
-				CreatedAt:             "2021-02-26T18:26:49.277Z",
+				CreatedAt:             "2021-10-16T17:31:11.737Z",
 			},
 		},
 	}
