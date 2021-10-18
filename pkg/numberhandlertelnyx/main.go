@@ -32,7 +32,7 @@ type numberHandler struct {
 
 // telnyx const variables
 const (
-	ConnectionID string = "1526401767787464160" // telnyx's voipbin connection id
+	ConnectionID string = "1749650875783055057" // telnyx's voipbin connection id
 )
 
 // List of default values

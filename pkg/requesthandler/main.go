@@ -37,7 +37,7 @@ const (
 
 // telnyx
 const (
-	TelnyxToken string = "KEY0175E49B6D3EF9059E3E76D8D840FF18_JdvPeb23UedPbDdNg0TMTj"
+	TelnyxToken string = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
 )
 
 // twilio
