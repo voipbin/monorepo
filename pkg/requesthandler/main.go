@@ -42,11 +42,6 @@ const (
 	DelayHour   int = DelayMinute * 60
 )
 
-// default stasis application name.
-// normally, we don't need to use this, because proxy will set this automatically.
-// but, some of Asterisk ARI required application name. this is for that.
-const defaultAstStasisApp = "voipbin"
-
 var (
 	metricsNamespace = "api_manager"
 
@@ -71,8 +66,7 @@ const (
 	resourceCallConference resource = "call/conferences"
 	resourceCallRecordings resource = "call/recordings"
 
-	resourceFlowActions resource = "flow/flows/actions"
-	resourceFlowFlows   resource = "flow/flows"
+	resourceFlowFlows resource = "flow/flows"
 
 	resourceNumberAvailableNumbers resource = "number/available_numbers"
 	resourceNumberNumbers          resource = "number/numbers"

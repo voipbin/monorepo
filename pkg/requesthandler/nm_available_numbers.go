@@ -13,7 +13,7 @@ import (
 func (r *requestHandler) NMAvailableNumbersGet(userID uint64, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error) {
 	uri := fmt.Sprintf("/v1/available_numbers?page_size=%d&user_id=%d&country_code=%s", pageSize, userID, countryCode)
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceStorageRecording, 15, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberAvailableNumbers, 15, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

@@ -58,10 +58,12 @@ var redisDB = flag.Int("redis_db", 1, "redis database.")
 // @BasePath
 func main() {
 
+	log := logrus.WithField("func", "main")
+
 	// connect to database
 	sqlDB, err := sql.Open("mysql", *dsn)
 	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
+		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
 	defer sqlDB.Close()
@@ -69,7 +71,7 @@ func main() {
 	// connect to cache
 	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
 	if err := cache.Connect(); err != nil {
-		logrus.Errorf("Could not connect to cache server. err: %v", err)
+		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
 	}
 
@@ -120,7 +122,9 @@ func main() {
 	api.ApplyRoutes(app)
 
 	logrus.Debug("Starting the api service.")
-	app.RunTLS(":443", *sslCert, *sslKey)
+	if errAppRun := app.RunTLS(":443", *sslCert, *sslKey); errAppRun != nil {
+		log.Errorf("The api service ended with error. err: %v", errAppRun)
+	}
 }
 
 func init() {
