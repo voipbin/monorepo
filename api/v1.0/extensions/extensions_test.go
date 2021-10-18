@@ -108,7 +108,6 @@ func TestExtensionsGET(t *testing.T) {
 		name     string
 		user     user.User
 		DomainID uuid.UUID
-		ext      []*rmextension.Extension
 
 		expectExt []*extension.Extension
 	}
@@ -120,17 +119,6 @@ func TestExtensionsGET(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("f92c19b2-6fb6-11eb-859c-0378f27fc22f"),
-			[]*rmextension.Extension{
-				{
-					ID:        uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
-					UserID:    1,
-					DomainID:  uuid.FromStringOrNil("f92c19b2-6fb6-11eb-859c-0378f27fc22f"),
-					Name:      "test name",
-					Detail:    "test detail",
-					Extension: "test",
-					Password:  "password",
-				},
-			},
 			[]*extension.Extension{
 				{
 					ID:        uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),

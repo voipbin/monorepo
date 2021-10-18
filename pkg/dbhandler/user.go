@@ -116,7 +116,7 @@ func (h *handler) UserGet(ctx context.Context, id uint64) (*user.User, error) {
 	}
 
 	// set to the cache
-	h.UserSetToCache(ctx, res)
+	_ = h.UserSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -189,7 +189,7 @@ func (h *handler) UserCreate(ctx context.Context, b *user.User) error {
 	}
 
 	// update the cache
-	h.UserUpdateToCache(ctx, b.ID)
+	_ = h.UserUpdateToCache(ctx, b.ID)
 
 	return nil
 }

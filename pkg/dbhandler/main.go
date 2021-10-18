@@ -6,8 +6,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
-	"time"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
@@ -35,8 +33,6 @@ var (
 	ErrNotFound = errors.New("Record not found")
 )
 
-const defaultDelayTimeout = time.Millisecond * 30
-
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
@@ -44,12 +40,4 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 		cache: cache,
 	}
 	return h
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

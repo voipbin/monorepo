@@ -6,10 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 )
 
@@ -116,7 +115,7 @@ func TestUserGets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			// clean test database users
-			cleanTestDBUsers()
+			_ = cleanTestDBUsers()
 
 			h := NewHandler(dbTest, mockCache)
 

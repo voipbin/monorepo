@@ -5,8 +5,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
@@ -87,8 +87,8 @@ func (h *serviceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, 
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	if res.TMDelete != "" {
-		log.Debugf("Deleted item.")
+	if res.TMDelete != defaultTimestamp {
+		log.WithField("number", res).Debugf("Deleted number.")
 		return nil, fmt.Errorf("not found")
 	}
 
@@ -120,8 +120,8 @@ func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Numbe
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	if tmp.TMDelete != "" {
-		log.Debugf("Deleted item.")
+	if tmp.TMDelete != defaultTimestamp {
+		log.WithField("number", tmp).Debugf("Deleted number.")
 		return nil, fmt.Errorf("not found")
 	}
 
@@ -159,8 +159,8 @@ func (h *serviceHandler) NumberUpdate(u *user.User, numb *number.Number) (*numbe
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	if tmpNumb.TMDelete != "" {
-		log.Debugf("Deleted item.")
+	if tmpNumb.TMDelete != defaultTimestamp {
+		log.WithField("number", tmpNumb).Debugf("Deleted number.")
 		return nil, fmt.Errorf("not found")
 	}
 
