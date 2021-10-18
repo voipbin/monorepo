@@ -177,7 +177,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// available_numbers
 	////////////////////
 	// GET /available_numbers
-	case regV1AvailableNumbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1AvailableNumbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1AvailableNumbersGet(m)
 		requestType = "/v1/available_numbers"
 
@@ -186,32 +186,32 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 
 	// DELETE /numbers/<id>
-	case regV1NumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1NumbersIDDelete(m)
 		requestType = "/v1/numbers"
 
 	// GET /numbers/<id>
-	case regV1NumbersID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1NumbersIDGet(m)
 		requestType = "/v1/numbers"
 
 	// PUT /numbers/<id>
-	case regV1NumbersNumber.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1NumbersNumber.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1NumbersIDPut(m)
 		requestType = "/v1/numbers"
 
 	// GET /numbers/<number>
-	case regV1NumbersNumber.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1NumbersNumber.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1NumbersNumberGet(m)
 		requestType = "/v1/numbers"
 
 	// POST /numbers
-	case regV1Numbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Numbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1NumbersPost(m)
 		requestType = "/v1/numbers"
 
 	// GET /numbers
-	case regV1Numbers.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1Numbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1NumbersGet(m)
 		requestType = "/v1/numbers"
 
@@ -220,7 +220,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 
 	// DELETE /number_flows/<flow_id>
-	case regV1NumberFlowsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1NumberFlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1NumberFlowsDelete(m)
 		requestType = "/v1/numbers_flows"
 
@@ -250,7 +250,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 			}).Errorf("Could not process the request correctly. data: %s", m.Data)
 		response = simpleResponse(400)
 		err = nil
-		requestType = "notfound"
 	}
 
 	logrus.WithFields(

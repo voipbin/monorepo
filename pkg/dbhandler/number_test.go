@@ -127,8 +127,7 @@ func TestNumberGets(t *testing.T) {
 			for i := 0; i < len(tt.numbers); i++ {
 				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 				mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
-				h.NumberCreate(context.Background(), tt.numbers[i])
-
+				_ = h.NumberCreate(context.Background(), tt.numbers[i])
 			}
 
 			res, err := h.NumberGets(context.Background(), tt.userID, 10, getCurTime())
@@ -220,7 +219,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 			for _, n := range tt.numbers {
 				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 				mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
-				h.NumberCreate(ctx, n)
+				_ = h.NumberCreate(ctx, n)
 			}
 
 			res, err := h.NumberGetsByFlowID(ctx, tt.flowID, 100, getCurTime())

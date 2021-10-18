@@ -137,7 +137,7 @@ func (h *handler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Nu
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -165,7 +165,7 @@ func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*nu
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -191,7 +191,7 @@ func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, 
 	}
 
 	// set to the cache
-	h.NumberSetToCache(ctx, res)
+	_ = h.NumberSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -210,7 +210,7 @@ func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*number.N
 	}
 
 	// set to the cache
-	h.NumberSetToCacheByNumber(ctx, res)
+	_ = h.NumberSetToCacheByNumber(ctx, res)
 
 	return res, nil
 }
@@ -334,7 +334,7 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 	}
 
 	// update the cache
-	h.NumberUpdateToCache(ctx, n.ID)
+	_ = h.NumberUpdateToCache(ctx, n.ID)
 
 	return nil
 }
@@ -360,7 +360,7 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	// update the cache
-	h.NumberUpdateToCache(ctx, id)
+	_ = h.NumberUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -385,7 +385,7 @@ func (h *handler) NumberUpdate(ctx context.Context, numb *number.Number) error {
 	}
 
 	// update the cache
-	h.NumberUpdateToCache(ctx, numb.ID)
+	_ = h.NumberUpdateToCache(ctx, numb.ID)
 
 	return nil
 }

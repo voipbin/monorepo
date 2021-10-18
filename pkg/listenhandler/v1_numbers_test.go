@@ -383,7 +383,6 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 
 	type test struct {
 		name       string
-		id         uuid.UUID
 		updateInfo *number.Number
 		resultData *number.Number
 
@@ -394,7 +393,6 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
 			&number.Number{
 				ID:     uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
 				FlowID: uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
