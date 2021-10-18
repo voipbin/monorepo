@@ -1,9 +1,6 @@
 package calls
 
 import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -11,6 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -33,7 +32,7 @@ func callsPOST(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -84,7 +83,7 @@ func callsIDDelete(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
