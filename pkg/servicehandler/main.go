@@ -22,6 +22,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 )
 
+const (
+	defaultTimestamp string = "9999-01-01 00:00:00.000000" // default timestamp
+)
+
 // ServiceHandler is interface for service handle
 type ServiceHandler interface {
 	// auth handlers

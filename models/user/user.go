@@ -33,11 +33,7 @@ func (u *User) Read(m map[string]interface{}) {
 
 // HasPermission returns true if the user has the given permission
 func (u *User) HasPermission(perm Permission) bool {
-
-	if u.Permission&perm == 0 {
-		return false
-	}
-	return true
+	return u.Permission&perm != 0
 }
 
 // Permission type

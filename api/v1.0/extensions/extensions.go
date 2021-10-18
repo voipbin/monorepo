@@ -1,9 +1,6 @@
 package extensions
 
 import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -11,6 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -62,7 +61,6 @@ func extensionsPOST(c *gin.Context) {
 	}
 
 	c.JSON(200, ext)
-	return
 }
 
 // extensionsGET handles GET /extensions request.
@@ -134,7 +132,6 @@ func extensionsGET(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // extensionsIDGET handles GET /extensions/{id} request.
@@ -224,7 +221,6 @@ func extensionsIDPUT(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // extensionsIDDELETE handles DELETE /extensions/{id} request.
