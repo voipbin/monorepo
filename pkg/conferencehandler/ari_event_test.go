@@ -35,7 +35,7 @@ func TestARIStasisStart(t *testing.T) {
 	tests := []struct {
 		name    string
 		channel *channel.Channel
-		data    map[string]interface{}
+		data    map[string]string
 	}{
 		{
 			"conference incoming",
@@ -45,7 +45,7 @@ func TestARIStasisStart(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: "4961579e-169c-11ec-ad78-c36f42ca4c10",
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": contextConferenceIncoming,
 			},
 		},
@@ -84,7 +84,7 @@ func TestARIStasisStartError(t *testing.T) {
 	tests := []struct {
 		name    string
 		channel *channel.Channel
-		data    map[string]interface{}
+		data    map[string]string
 	}{
 		{
 			"conference outgoing",
@@ -94,7 +94,7 @@ func TestARIStasisStartError(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: "4961579e-169c-11ec-ad78-c36f42ca4c10",
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": contextConferenceOutgoing,
 			},
 		},
@@ -106,7 +106,7 @@ func TestARIStasisStartError(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: "4961579e-169c-11ec-ad78-c36f42ca4c10",
 			},
-			map[string]interface{}{},
+			map[string]string{},
 		},
 	}
 

@@ -25,10 +25,11 @@ type Channel struct {
 	DestinationName   string
 	DestinationNumber string
 
-	State    ari.ChannelState
-	Data     map[string]interface{}
-	Stasis   string
-	BridgeID string
+	State      ari.ChannelState
+	Data       map[string]interface{}
+	StasisName string            // stasis name
+	StasisData map[string]string // stasis data
+	BridgeID   string
 
 	DialResult  string
 	HangupCause ari.ChannelCause
@@ -127,6 +128,14 @@ func NewChannelByStasisStart(e *ari.StasisStart) *Channel {
 	c.AsteriskID = e.AsteriskID
 	c.TMCreate = string(e.Timestamp)
 
+	// get stasis name and stasis data
+	stasisData := map[string]string{}
+	for k, v := range e.Args {
+		stasisData[k] = v
+	}
+	c.StasisName = e.Application
+	c.StasisData = stasisData
+
 	return c
 }
 
@@ -142,8 +151,9 @@ func NewChannelByARIChannel(e *ari.Channel) *Channel {
 		SourceNumber:      e.Caller.Number,
 		DestinationNumber: e.Dialplan.Exten,
 
-		State: e.State,
-		Data:  make(map[string]interface{}, 1),
+		State:      e.State,
+		Data:       map[string]interface{}{},
+		StasisData: map[string]string{},
 	}
 
 	for k, i := range e.ChannelVars {

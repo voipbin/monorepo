@@ -12,7 +12,7 @@ const (
 )
 
 // startHandlerContextApplication handles contextApplication context type of StasisStart event.
-func (h *callHandler) applicationHandleAMD(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) applicationHandleAMD(cn *channel.Channel, data map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "applicationHandleAMD",
 		"channel_id": cn.ID,

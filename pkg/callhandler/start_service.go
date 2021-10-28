@@ -10,7 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
-func (h *callHandler) startServiceFromDefault(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) startServiceFromDefault(cn *channel.Channel, data map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startServiceFromDefault",
 		"channel_id": cn.ID,
@@ -30,7 +30,7 @@ func (h *callHandler) startServiceFromDefault(cn *channel.Channel, data map[stri
 }
 
 // startServiceFromAMD handles context-from amd service call.
-func (h *callHandler) startServiceFromAMD(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) startServiceFromAMD(cn *channel.Channel, data map[string]string) error {
 
 	ctx := context.Background()
 

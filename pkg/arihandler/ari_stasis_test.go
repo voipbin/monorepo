@@ -25,9 +25,9 @@ func TestEventHandlerStasisStart(t *testing.T) {
 		name  string
 		event *rabbitmqhandler.Event
 
-		expectChannelID string
-		expactData      map[string]interface{}
-		expectStasis    string
+		expectChannelID  string
+		expactStasisData map[string]string
+		expectStasisname string
 	}
 
 	tests := []test{
@@ -40,7 +40,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 			},
 
 			"1587774438.2390",
-			map[string]interface{}{
+			map[string]string{
 				"context": "call-in",
 				"domain":  "sip-service.voipbin.net",
 				"source":  "213.127.79.161",
@@ -62,9 +62,9 @@ func TestEventHandlerStasisStart(t *testing.T) {
 				Data: map[string]interface{}{},
 			}
 			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, gomock.Any()).Return(true)
-			mockDB.EXPECT().ChannelSetStasis(gomock.Any(), tt.expectChannelID, tt.expectStasis).Return(nil)
+			mockDB.EXPECT().ChannelSetStasisNameAndStasisData(gomock.Any(), tt.expectChannelID, tt.expectStasisname, tt.expactStasisData).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(channel, nil)
-			mockCall.EXPECT().ARIStasisStart(channel, tt.expactData).Return(nil)
+			mockCall.EXPECT().ARIStasisStart(channel, tt.expactStasisData).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

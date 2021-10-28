@@ -22,7 +22,7 @@ import (
 // ConferenceHandler is interface for conference handle
 type ConferenceHandler interface {
 	// ari event handlers
-	ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error
+	ARIStasisStart(cn *channel.Channel, data map[string]string) error
 	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
 
 	Destroy(id uuid.UUID) error

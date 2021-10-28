@@ -30,10 +30,10 @@ type CallHandler interface {
 	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
 	ARIChannelStateChange(cn *channel.Channel) error
 	ARIPlaybackFinished(cn *channel.Channel, playbackID string) error
-	ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error
+	ARIStasisStart(cn *channel.Channel, data map[string]string) error
 
 	CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error)
-	StartCallHandle(cn *channel.Channel, data map[string]interface{}) error
+	StartCallHandle(cn *channel.Channel, data map[string]string) error
 	Hangup(cn *channel.Channel) error
 	HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error
 	HangingUp(c *call.Call, cause ari.ChannelCause) error

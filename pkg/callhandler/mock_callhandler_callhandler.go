@@ -112,7 +112,7 @@ func (mr *MockCallHandlerMockRecorder) ARIPlaybackFinished(cn, playbackID interf
 }
 
 // ARIStasisStart mocks base method.
-func (m *MockCallHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
+func (m *MockCallHandler) ARIStasisStart(cn *channel.Channel, data map[string]string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ARIStasisStart", cn, data)
 	ret0, _ := ret[0].(error)
@@ -268,7 +268,7 @@ func (mr *MockCallHandlerMockRecorder) HangupWithReason(ctx, c, reason, hangupBy
 }
 
 // StartCallHandle mocks base method.
-func (m *MockCallHandler) StartCallHandle(cn *channel.Channel, data map[string]interface{}) error {
+func (m *MockCallHandler) StartCallHandle(cn *channel.Channel, data map[string]string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StartCallHandle", cn, data)
 	ret0, _ := ret[0].(error)

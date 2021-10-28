@@ -446,7 +446,8 @@ func TestAstChannelGet(t *testing.T) {
 				DestinationNumber: "8872616",
 				State:             ari.ChannelStateUp,
 
-				Data: map[string]interface{}{},
+				Data:       map[string]interface{}{},
+				StasisData: map[string]string{},
 			},
 		},
 	}
@@ -921,6 +922,7 @@ func TestAstChannelExternalMedia(t *testing.T) {
 					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
 					"UNICASTRTP_LOCAL_PORT":    "10492",
 				},
+				StasisData: map[string]string{},
 			},
 		},
 	}

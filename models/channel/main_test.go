@@ -73,8 +73,9 @@ func TestNewChannelByChannelCreated(t *testing.T) {
 				SourceNumber:      "1017",
 				DestinationNumber: "0208442037691478",
 
-				State: "Ring",
-				Data:  make(map[string]interface{}, 1),
+				State:      "Ring",
+				Data:       map[string]interface{}{},
+				StasisData: map[string]string{},
 
 				TMCreate: "2020-04-25T00:08:32.346",
 			},
@@ -118,8 +119,17 @@ func TestNewChannelByStasisStart(t *testing.T) {
 				SourceNumber:      "2000000",
 				DestinationNumber: "9103011442037694942",
 
-				State: "Ring",
-				Data:  make(map[string]interface{}, 1),
+				State:      "Ring",
+				Data:       make(map[string]interface{}, 1),
+				StasisName: "voipbin",
+				StasisData: map[string]string{
+					"CONTEXT":     "in-voipbin",
+					"SIP_CALLID":  "1578514523-1170819966-743482919",
+					"SIP_PAI":     "",
+					"SIP_PRIVACY": "",
+					"DOMAIN":      "sip-service.voipbin.net",
+					"SOURCE":      "45.249.91.194",
+				},
 
 				TMCreate: "2020-05-10T07:11:05.479",
 			},
@@ -136,7 +146,7 @@ func TestNewChannelByStasisStart(t *testing.T) {
 
 			channel := NewChannelByStasisStart(e)
 			if !reflect.DeepEqual(tt.expectChannel, channel) {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectChannel, channel)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectChannel, channel)
 			}
 		})
 	}
@@ -184,6 +194,7 @@ func TestNewChannelByARIChannel(t *testing.T) {
 					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
 					"UNICASTRTP_LOCAL_PORT":    "10492",
 				},
+				StasisData: map[string]string{},
 			},
 		},
 	}

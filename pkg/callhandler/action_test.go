@@ -218,7 +218,7 @@ func TestActionTimeoutNext(t *testing.T) {
 				Data: map[string]interface{}{
 					"CONTEXT": "conf-in",
 				},
-				Stasis: "call-in",
+				StasisName: "call-in",
 			},
 		},
 	}

@@ -13,7 +13,7 @@ import (
 )
 
 // ARIStasisStart is called when the channel handler received StasisStart.
-func (h *callHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) ARIStasisStart(cn *channel.Channel, data map[string]string) error {
 	logrus.WithField("func", "ARIStasisStart").Debugf("Execute the stasis start event handler for call.")
 
 	return h.StartCallHandle(cn, data)
