@@ -762,20 +762,6 @@ func (mr *MockDBHandlerMockRecorder) ChannelSetData(ctx, id, data interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetData), ctx, id, data)
 }
 
-// ChannelSetDataAndStasis mocks base method.
-func (m *MockDBHandler) ChannelSetDataAndStasis(ctx context.Context, id string, data map[string]interface{}, stasis string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSetDataAndStasis", ctx, id, data, stasis)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ChannelSetDataAndStasis indicates an expected call of ChannelSetDataAndStasis.
-func (mr *MockDBHandlerMockRecorder) ChannelSetDataAndStasis(ctx, id, data, stasis interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDataAndStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDataAndStasis), ctx, id, data, stasis)
-}
-
 // ChannelSetDataItem mocks base method.
 func (m *MockDBHandler) ChannelSetDataItem(ctx context.Context, id, key string, value interface{}) error {
 	m.ctrl.T.Helper()
@@ -844,6 +830,20 @@ func (m *MockDBHandler) ChannelSetStasis(ctx context.Context, id, stasis string)
 func (mr *MockDBHandlerMockRecorder) ChannelSetStasis(ctx, id, stasis interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetStasis), ctx, id, stasis)
+}
+
+// ChannelSetStasisNameAndStasisData mocks base method.
+func (m *MockDBHandler) ChannelSetStasisNameAndStasisData(ctx context.Context, id, stasisName string, stasisData map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetStasisNameAndStasisData", ctx, id, stasisName, stasisData)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetStasisNameAndStasisData indicates an expected call of ChannelSetStasisNameAndStasisData.
+func (mr *MockDBHandlerMockRecorder) ChannelSetStasisNameAndStasisData(ctx, id, stasisName, stasisData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetStasisNameAndStasisData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetStasisNameAndStasisData), ctx, id, stasisName, stasisData)
 }
 
 // ChannelSetState mocks base method.

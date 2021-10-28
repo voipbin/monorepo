@@ -31,7 +31,8 @@ const (
 
 		state,
 		data,
-		stasis,
+		stasis_name,
+		stasis_data,
 		bridge_id,
 
 		dial_result,
@@ -72,7 +73,8 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 
 		state,
 		data,
-		stasis,
+		stasis_name,
+		stasis_data,
 		bridge_id,
 
 		dial_result,
@@ -91,7 +93,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		?, ?, ?, ?, ?,
 		?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?,
 		?, ?,
 		?,
 		?, ?,
@@ -99,9 +101,13 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		)
 	`
 
-	tmpData, err := json.Marshal(c.Data)
+	data, err := json.Marshal(c.Data)
 	if err != nil {
-		return fmt.Errorf("ChannelCreate: Could not marshal. err: %v", err)
+		return fmt.Errorf("ChannelCreate: Could not marshal the data. err: %v", err)
+	}
+	stasisData, err := json.Marshal(c.StasisData)
+	if err != nil {
+		return fmt.Errorf("ChannelCreate: Could not marshal the stasis data. err: %v", err)
 	}
 
 	_, err = h.db.Exec(q,
@@ -120,8 +126,9 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		c.DestinationNumber,
 
 		c.State,
-		tmpData,
-		c.Stasis,
+		data,
+		c.StasisName,
+		stasisData,
 		c.BridgeID,
 
 		c.DialResult,
@@ -141,7 +148,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 	}
 
 	// update the cache
-	_=h.ChannelUpdateToCache(ctx, c.ID)
+	_ = h.ChannelUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -160,7 +167,7 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 	}
 
 	// set to the cache
-	_=h.ChannelSetToCache(ctx, res)
+	_ = h.ChannelSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -168,6 +175,7 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 // channelGetFromRow gets the channel from the row.
 func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 	var data string
+	var stasisData string
 	res := &channel.Channel{}
 	if err := row.Scan(
 		&res.AsteriskID,
@@ -186,7 +194,8 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 
 		&res.State,
 		&data,
-		&res.Stasis,
+		&res.StasisName,
+		&stasisData,
 		&res.BridgeID,
 
 		&res.DialResult,
@@ -201,14 +210,21 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 		&res.TMRinging,
 		&res.TMEnd,
 	); err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. err: %v", err)
+		return nil, fmt.Errorf("channelGetFromRow: Could not scan the row. err: %v", err)
 	}
 
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not unmarshal the result. err: %v", err)
+		return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the data. err: %v", err)
 	}
 	if res.Data == nil {
 		res.Data = make(map[string]interface{})
+	}
+
+	if err := json.Unmarshal([]byte(stasisData), &res.StasisData); err != nil {
+		return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the stasis data. err: %v", err)
+	}
+	if res.StasisData == nil {
+		res.StasisData = map[string]string{}
 	}
 
 	return res, nil
@@ -239,7 +255,7 @@ func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id strin
 
 			default:
 				tmp, err := h.ChannelGet(ctx, id)
-				if err != nil || tmp.Stasis == "" {
+				if err != nil || tmp.StasisName == "" {
 					time.Sleep(defaultDelayTimeout)
 					continue
 				}
@@ -342,7 +358,7 @@ func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error
 	//prepare
 	q := `
 	update channels set
-		stasis = ?,
+		stasis_name = ?,
 		tm_update = ?
 	where
 		id = ?
@@ -529,26 +545,26 @@ func (h *handler) ChannelEnd(ctx context.Context, id, timestamp string, hangup a
 	return nil
 }
 
-// ChannelSetDataAndStasis sets the data and stasis
-func (h *handler) ChannelSetDataAndStasis(ctx context.Context, id string, data map[string]interface{}, stasis string) error {
+// ChannelSetStasisNameAndStasisData sets the data and stasis
+func (h *handler) ChannelSetStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) error {
 	//prepare
 	q := `
 	update channels set
-		data = ?,
-		stasis = ?,
+		stasis_name = ?,
+		stasis_data = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	tmpData, err := json.Marshal(data)
+	tmpData, err := json.Marshal(stasisData)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetDataAndStasis. err: %v", err)
+		return fmt.Errorf("ChannelSetStasisNameAndStasisData: Could not marshal the stasis_data. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, tmpData, stasis, getCurTime(), id)
+	_, err = h.db.Exec(q, stasisName, tmpData, getCurTime(), id)
 	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetDataAndStasis. err: %v", err)
+		return fmt.Errorf("could not execute. ChannelSetStasisNameAndStasisData. err: %v", err)
 	}
 
 	// update the cache

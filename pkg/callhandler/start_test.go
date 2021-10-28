@@ -80,7 +80,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 	type test struct {
 		name         string
 		channel      *channel.Channel
-		data         map[string]interface{}
+		data         map[string]string
 		call         *call.Call
 		expectAction *action.Action
 	}
@@ -94,7 +94,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: string(action.TypeEcho),
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
@@ -155,7 +155,7 @@ func TestTypeConferenceStart(t *testing.T) {
 	type test struct {
 		name       string
 		channel    *channel.Channel
-		data       map[string]interface{}
+		data       map[string]string
 		call       *call.Call
 		conference *conference.Conference
 	}
@@ -169,7 +169,7 @@ func TestTypeConferenceStart(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000999",
 				DestinationNumber: "bad943d8-9b59-11ea-b409-4ba263721f17",
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": ContextIncomingCall,
 				"domain":  "conference.voipbin.net",
 			},
@@ -232,7 +232,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 	type test struct {
 		name    string
 		channel *channel.Channel
-		data    map[string]interface{}
+		data    map[string]string
 		call    *call.Call
 	}
 
@@ -245,7 +245,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000950",
 				DestinationNumber: string(action.TypeAnswer),
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
@@ -316,7 +316,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 	type test struct {
 		name         string
 		channel      *channel.Channel
-		data         map[string]interface{}
+		data         map[string]string
 		call         *call.Call
 		expectAction *action.Action
 	}
@@ -330,7 +330,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: string(action.TypeStreamEcho),
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
@@ -393,7 +393,7 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 	type test struct {
 		name         string
 		channel      *channel.Channel
-		data         map[string]interface{}
+		data         map[string]string
 		call         *call.Call
 		expectAction *action.Action
 	}
@@ -407,7 +407,7 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000949",
 				DestinationNumber: string(action.TypeConferenceJoin),
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
@@ -469,7 +469,7 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 	type test struct {
 		name         string
 		channel      *channel.Channel
-		data         map[string]interface{}
+		data         map[string]string
 		call         *call.Call
 		expectAction *action.Action
 	}
@@ -483,7 +483,7 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000949",
 				DestinationNumber: string(action.TypePlay),
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": ContextIncomingCall,
 				"domain":  "sip-service.voipbin.net",
 			},
@@ -546,7 +546,7 @@ func TestTypeFlowStart(t *testing.T) {
 	type test struct {
 		name    string
 		channel *channel.Channel
-		data    map[string]interface{}
+		data    map[string]string
 		numb    *number.Number
 		af      *activeflow.ActiveFlow
 		call    *call.Call
@@ -561,7 +561,7 @@ func TestTypeFlowStart(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000949",
 				DestinationNumber: "+123456789",
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": ContextIncomingCall,
 				"domain":  "pstn.voipbin.net",
 			},
@@ -601,7 +601,7 @@ func TestTypeFlowStart(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000949",
 				DestinationNumber: "+123456789",
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": ContextIncomingCall,
 				"domain":  "pstn.voipbin.net",
 			},
@@ -680,7 +680,7 @@ func TestStartHandlerContextOutgoingCall(t *testing.T) {
 	type test struct {
 		name    string
 		channel *channel.Channel
-		data    map[string]interface{}
+		data    map[string]string
 		call    *call.Call
 	}
 
@@ -693,7 +693,7 @@ func TestStartHandlerContextOutgoingCall(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000949",
 				DestinationNumber: "+123456789",
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context": ContextOutgoingCall,
 				"domain":  "pstn.voipbin.net",
 				"call_id": "086c90e2-8b31-11eb-b3a0-4ba972148103",
@@ -743,7 +743,7 @@ func TestStartHandlerContextExternalMedia(t *testing.T) {
 	type test struct {
 		name     string
 		channel  *channel.Channel
-		data     map[string]interface{}
+		data     map[string]string
 		bridgeID string
 	}
 
@@ -755,7 +755,7 @@ func TestStartHandlerContextExternalMedia(t *testing.T) {
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context":   ContextExternalMedia,
 				"bridge_id": "fab96694-0300-11ec-b4d4-c3bcab7364fd",
 				"call_id":   "0648d6c0-0301-11ec-818e-53865044b15c",
@@ -794,7 +794,7 @@ func TestStartHandlerContextExternalSnoop(t *testing.T) {
 	type test struct {
 		name     string
 		channel  *channel.Channel
-		data     map[string]interface{}
+		data     map[string]string
 		bridgeID string
 	}
 
@@ -806,7 +806,7 @@ func TestStartHandlerContextExternalSnoop(t *testing.T) {
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.132-00000000",
 			},
-			map[string]interface{}{
+			map[string]string{
 				"context":   ContextExternalSoop,
 				"bridge_id": "d6aecd56-0301-11ec-aee0-77d9356147eb",
 				"call_id":   "da646758-0301-11ec-b3eb-f3c05485b756",

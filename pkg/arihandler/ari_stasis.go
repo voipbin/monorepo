@@ -15,9 +15,9 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 
 	log := log.WithFields(
 		log.Fields{
-			"channel":  e.Channel.ID,
-			"asterisk": e.AsteriskID,
-			"stasis":   e.Application,
+			"channel_id":  e.Channel.ID,
+			"asterisk_id": e.AsteriskID,
+			"stasis_name": e.Application,
 		})
 
 	if !h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) {
@@ -26,16 +26,16 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 		return fmt.Errorf("no channel found")
 	}
 
-	// set data and stasis
-	data := make(map[string]interface{}, 1)
+	// get stasis name and stasis data
+	stasisName := e.Application
+	stasisData := make(map[string]string, 1)
 	for k, v := range e.Args {
-		data[k] = v
+		stasisData[k] = v
 	}
-	stasis := e.Application
 
 	// update data and stasis
-	log.Debug("Updating channel stasis.")
-	if err := h.db.ChannelSetStasis(ctx, e.Channel.ID, stasis); err != nil {
+	log.Debug("Updating channel stasis name and stasis data.")
+	if err := h.db.ChannelSetStasisNameAndStasisData(ctx, e.Channel.ID, stasisName, stasisData); err != nil {
 		// something went wrong. Hangup at here.
 		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
@@ -47,13 +47,13 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 		return err
 	}
 
-	contextType := getContextType(data["context"])
+	contextType := getContextType(stasisData["context"])
 	switch contextType {
 	case contextTypeCall:
-		return h.callHandler.ARIStasisStart(cn, data)
+		return h.callHandler.ARIStasisStart(cn, stasisData)
 
 	case contextTypeConference:
-		return h.confHandler.ARIStasisStart(cn, data)
+		return h.confHandler.ARIStasisStart(cn, stasisData)
 
 	default:
 		log.Errorf("Could not find context type handler. context_type: %s", contextType)

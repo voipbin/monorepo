@@ -82,7 +82,7 @@ type DBHandler interface {
 	ChannelIsExist(id string, timeout time.Duration) bool
 	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error
 	ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error
-	ChannelSetDataAndStasis(ctx context.Context, id string, data map[string]interface{}, stasis string) error
+	ChannelSetStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) error
 	ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error
 	ChannelSetSIPCallID(ctx context.Context, id string, sipID string) error

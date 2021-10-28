@@ -35,13 +35,13 @@ type Call struct {
 	Destination address.Address `json:"destination"`
 
 	// info
-	Status       Status                 `json:"status"`
-	Data         map[string]interface{} `json:"data"`
-	Action       action.Action          `json:"action"`
-	Direction    Direction              `json:"direction"`
-	HangupBy     HangupBy               `json:"hangup_by"`
-	HangupReason HangupReason           `json:"hangup_reason"`
-	WebhookURI   string                 `json:"webhook_uri"`
+	Status       Status            `json:"status"`
+	Data         map[string]string `json:"data"`
+	Action       action.Action     `json:"action"`
+	Direction    Direction         `json:"direction"`
+	HangupBy     HangupBy          `json:"hangup_by"`
+	HangupReason HangupReason      `json:"hangup_reason"`
+	WebhookURI   string            `json:"webhook_uri"`
 
 	// timestamp
 	TMCreate string `json:"tm_create"`
@@ -152,7 +152,7 @@ func NewCall(
 	destination *address.Address,
 
 	status Status,
-	data map[string]interface{},
+	data map[string]string,
 	direction Direction,
 
 	tmCreate string,
@@ -183,7 +183,7 @@ func NewCall(
 }
 
 // NewCallByChannel creates a Call and return it.
-func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction Direction, data map[string]interface{}) *Call {
+func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction Direction, data map[string]string) *Call {
 	// create a call
 	source := address.CreateAddressByChannelSource(cn)
 	destination := address.CreateAddressByChannelDestination(cn)

@@ -183,7 +183,7 @@ func (h *callHandler) ActionTimeout(callID uuid.UUID, a *action.Action) error {
 
 	// check the channel is in the stasis.
 	// if the channel is not in the stasis, send the AMI redirect request.
-	switch cn.Stasis {
+	switch cn.StasisName {
 
 	// not in the stasis
 	// need to be redirected to the redirectTimeoutContext.

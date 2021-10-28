@@ -52,7 +52,7 @@ func (mr *MockConferenceHandlerMockRecorder) ARIChannelLeftBridge(cn, br interfa
 }
 
 // ARIStasisStart mocks base method.
-func (m *MockConferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
+func (m *MockConferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ARIStasisStart", cn, data)
 	ret0, _ := ret[0].(error)

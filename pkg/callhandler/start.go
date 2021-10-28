@@ -99,7 +99,7 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call,
 }
 
 // StartCallHandle starts the call handle service
-func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]string) error {
 
 	// check the stasis's context
 	chCtx, ok := data["context"]
@@ -108,7 +108,7 @@ func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]inter
 		return fmt.Errorf("no context found")
 	}
 
-	switch chCtx.(string) {
+	switch chCtx {
 
 	case ContextServiceCall:
 		return h.startHandlerContextFromServiceCall(cn, data)
@@ -141,7 +141,7 @@ func (h *callHandler) StartCallHandle(cn *channel.Channel, data map[string]inter
 }
 
 // startHandlerContextFromServiceCall handles contextFromServiceCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel, data map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"asterisk_id": cn.AsteriskID,
 		"channel_id":  cn.ID,
@@ -159,7 +159,7 @@ func (h *callHandler) startHandlerContextFromServiceCall(cn *channel.Channel, da
 }
 
 // startHandlerContextRecording handles contextFromServiceCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextRecording(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) startHandlerContextRecording(cn *channel.Channel, data map[string]string) error {
 	logrus.Infof("Executing startHandlerContextRecording. channel: %s", cn.ID)
 
 	// set channel's type call.
@@ -168,13 +168,13 @@ func (h *callHandler) startHandlerContextRecording(cn *channel.Channel, data map
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	id := data["recording_id"].(string)
-	name := data["recording_name"].(string)
-	format := data["format"].(string)
-	duration, _ := strconv.Atoi(data["duration"].(string))
-	silence, _ := strconv.Atoi(data["end_of_silence"].(string))
-	endKey := data["end_of_key"].(string)
-	callID := data["call_id"].(string)
+	id := data["recording_id"]
+	name := data["recording_name"]
+	format := data["format"]
+	duration, _ := strconv.Atoi(data["duration"])
+	silence, _ := strconv.Atoi(data["end_of_silence"])
+	endKey := data["end_of_key"]
+	callID := data["call_id"]
 
 	if err := h.reqHandler.AstChannelRecord(cn.AsteriskID, cn.ID, name, format, duration, silence, false, endKey, "fail"); err != nil {
 		logrus.Errorf("Could not start the recording. Destorying the chanel. err: %v", err)
@@ -187,7 +187,7 @@ func (h *callHandler) startHandlerContextRecording(cn *channel.Channel, data map
 }
 
 // startHandlerContextExternalSnoop handles contextExternalSnoop context type of StasisStart event.
-func (h *callHandler) startHandlerContextExternalSnoop(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) startHandlerContextExternalSnoop(cn *channel.Channel, data map[string]string) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"channel": cn.ID,
@@ -201,8 +201,8 @@ func (h *callHandler) startHandlerContextExternalSnoop(cn *channel.Channel, data
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	callID := data["call_id"].(string)
-	bridgeID := data["bridge_id"].(string)
+	callID := data["call_id"]
+	bridgeID := data["bridge_id"]
 	log.Debugf("Parsed info. call: %s, bridge: %s", callID, bridgeID)
 
 	// put the channel to the bridge
@@ -216,7 +216,7 @@ func (h *callHandler) startHandlerContextExternalSnoop(cn *channel.Channel, data
 }
 
 // startHandlerContextExternalMedia handles contextExternalMedia context type of StasisStart event.
-func (h *callHandler) startHandlerContextExternalMedia(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) startHandlerContextExternalMedia(cn *channel.Channel, data map[string]string) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"channel": cn.ID,
@@ -230,8 +230,8 @@ func (h *callHandler) startHandlerContextExternalMedia(cn *channel.Channel, data
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	callID := data["call_id"].(string)
-	bridgeID := data["bridge_id"].(string)
+	callID := data["call_id"]
+	bridgeID := data["bridge_id"]
 	log.Debugf("Parsed info. call: %s, bridge: %s", callID, bridgeID)
 
 	// put the channel to the bridge
@@ -245,7 +245,7 @@ func (h *callHandler) startHandlerContextExternalMedia(cn *channel.Channel, data
 }
 
 // startHandlerContextJoin handles contextJoinCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextJoin(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) startHandlerContextJoin(cn *channel.Channel, data map[string]string) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"channel": cn.ID,
@@ -259,8 +259,8 @@ func (h *callHandler) startHandlerContextJoin(cn *channel.Channel, data map[stri
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
-	callID := data["call_id"].(string)
-	bridgeID := data["bridge_id"].(string)
+	callID := data["call_id"]
+	bridgeID := data["bridge_id"]
 	log.Debugf("Parsed info. call: %s, bridge: %s", callID, bridgeID)
 
 	// put the channel to the bridge
@@ -280,7 +280,7 @@ func (h *callHandler) startHandlerContextJoin(cn *channel.Channel, data map[stri
 }
 
 // startHandlerContextIncomingCall handles contextIncomingCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startHandlerContextIncomingCall",
 		"channel_id": cn.ID,
@@ -294,7 +294,7 @@ func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data 
 	}
 
 	// get call type
-	domainType := getDomainTypeIncomingCall(data["domain"].(string))
+	domainType := getDomainTypeIncomingCall(data["domain"])
 
 	switch domainType {
 	case domainTypeConference:
@@ -316,22 +316,32 @@ func (h *callHandler) startHandlerContextIncomingCall(cn *channel.Channel, data 
 }
 
 // startHandlerContextOutgoingCall handles contextOutgoingCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data map[string]interface{}) error {
-	logrus.Infof("Executing startHandlerContextOutgoingCall. channel: %s, data: %v", cn.ID, data)
+func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data map[string]string) error {
+	ctx := context.Background()
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startHandlerContextOutgoingCall",
+		"channel_id": cn.ID,
+	})
+	log.Infof("Executing startHandlerContextOutgoingCall. channel: %s, data: %v", cn.ID, data)
 
 	// get
-	callID := uuid.FromStringOrNil(data["call_id"].(string))
+	callID := uuid.FromStringOrNil(data["call_id"])
 	if callID == uuid.Nil {
+		log.Errorf("Could not get call_id info.")
 		return fmt.Errorf("could not get correct call_id. channel: %s, asterisk: %s", cn.ID, cn.AsteriskID)
 	}
+	log = log.WithField("call_id", callID.String())
 
 	// update call's asterisk id
 	if err := h.db.CallSetAsteriskID(context.Background(), callID, cn.AsteriskID, getCurTime()); err != nil {
+		log.Errorf("Could not set call id to the channel. err: %v", err)
 		return fmt.Errorf("could not set asterisk id to call. channel: %s, asterisk: %s", cn.ID, cn.AsteriskID)
 	}
 
 	// set channel's type call.
 	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeCall)); err != nil {
+		log.Errorf("Could not set channel's type. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
@@ -344,7 +354,6 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 		return fmt.Errorf("could not add the channel to the join bridge. err: %v", err)
 	}
 
-	ctx := context.Background()
 	if err := h.db.CallSetBridgeID(ctx, callID, bridgeID); err != nil {
 		log.Errorf("could not set call bridge id. err: %v", err)
 		_ = h.reqHandler.AstBridgeDelete(cn.AsteriskID, bridgeID)
@@ -352,9 +361,10 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 		return fmt.Errorf("could not set call bridge id. err: %v", err)
 	}
 
-	if err := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, cn.ID, defaultDialTimeout); err != nil {
+	if errDial := h.reqHandler.AstChannelDial(cn.AsteriskID, cn.ID, cn.ID, defaultDialTimeout); errDial != nil {
+		log.Errorf("Could not dial the channel. err: %v", errDial)
 		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, errDial)
 	}
 
 	// do nothing here
@@ -362,7 +372,7 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 }
 
 // startHandlerContextApplication handles contextApplication context type of StasisStart event.
-func (h *callHandler) startHandlerContextApplication(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) startHandlerContextApplication(cn *channel.Channel, data map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"channel_id": cn.ID,
 		"func":       "startHandlerContextApplication",
@@ -427,7 +437,7 @@ func getDomainTypeIncomingCall(domain string) string {
 }
 
 // serviceConferenceStart handles conference calltype start.
-func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]string) error {
 	ctx := context.Background()
 	cfID := uuid.FromStringOrNil(cn.DestinationNumber)
 
@@ -522,7 +532,7 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]i
 }
 
 // typeFlowStart handles flow calltype start.
-func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]string) error {
 	ctx := context.Background()
 
 	log := log.WithFields(
@@ -587,7 +597,7 @@ func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]interfa
 }
 
 // typeSipServiceStart handles sip-service calltype request.
-func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]interface{}) error {
+func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]string) error {
 	ctx := context.Background()
 
 	log := log.WithFields(

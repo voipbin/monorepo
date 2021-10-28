@@ -17,10 +17,11 @@ create table channels(
   dst_number  varchar(255), -- destination number
 
   -- info
-  state     varchar(255), -- current state.
-  data      json,         -- additional data. sip headers, and so on...
-  stasis    varchar(255), -- stasis application name.
-  bridge_id varchar(255), -- bridge id
+  state         varchar(255), -- current state.
+  data          json,         -- additional data. sip headers, and so on...
+  stasis_name   varchar(255), -- stasis application name.
+  stasis_data   json,         -- stasis application data.
+  bridge_id     varchar(255), -- bridge id
 
   dial_result       varchar(255), -- dial result. answer, busy, cancel, ...
   hangup_cause      int,          -- hangup cause code.

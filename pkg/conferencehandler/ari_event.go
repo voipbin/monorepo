@@ -11,7 +11,7 @@ import (
 )
 
 // ARIStasisStart handles StasisStart ARI event for conference types.
-func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]interface{}) error {
+func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]string) error {
 
 	log := logrus.WithFields(logrus.Fields{
 		"channel_id":  cn.ID,
@@ -37,7 +37,7 @@ func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]
 }
 
 // ariStasisStartContextIncoming handles the call which has CONTEXT=conf-in in the StasisStart argument.
-func (h *conferenceHandler) ariStasisStartContextIncoming(cn *channel.Channel, data map[string]interface{}) error {
+func (h *conferenceHandler) ariStasisStartContextIncoming(cn *channel.Channel, data map[string]string) error {
 
 	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeConf)); err != nil {
 		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
