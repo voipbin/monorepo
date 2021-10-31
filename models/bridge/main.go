@@ -82,8 +82,8 @@ const (
 	ReferenceTypeUnknown         ReferenceType = "unknown"
 	ReferenceTypeCall            ReferenceType = "call"       // call bridge
 	ReferenceTypeCallSnoop       ReferenceType = "call-snoop" // snoop bridge for the call. usually used by the spy channel to the call
-	ReferenceTypeConference      ReferenceType = "conference"
-	ReferenceTypeConferenceSnoop ReferenceType = "conference-snoop" // snoop bridge for the conference. usually used by the spy channel to the conference bridge
+	ReferenceTypeConfbridge      ReferenceType = "confbridge"
+	ReferenceTypeConfbridgeSnoop ReferenceType = "confbridge-snoop" // snoop bridge for the confbridge. usually used by the spy channel to the confbridge bridge
 )
 
 // NewBridgeByBridgeCreated creates Bridge based on ARI BridgeCreated event

@@ -84,7 +84,7 @@ func TestARIChannelDestroyedContextTypeConference(t *testing.T) {
 			&channel.Channel{
 				ID:          "78ff0ed4-dd7b-11ea-9add-dbca62f7e8b9",
 				Data:        map[string]interface{}{},
-				Type:        channel.TypeConf,
+				Type:        channel.TypeConfbridge,
 				HangupCause: ari.ChannelCauseNormalClearing,
 			},
 		},
@@ -126,7 +126,7 @@ func TestARIPlaybackFinished(t *testing.T) {
 			&channel.Channel{
 				ID:   "1b8da938-e7dd-11ea-8e4a-1f2bd2b9f5b4",
 				Data: map[string]interface{}{},
-				Type: channel.TypeConf,
+				Type: channel.TypeConfbridge,
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),

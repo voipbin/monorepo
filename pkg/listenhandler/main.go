@@ -1,5 +1,7 @@
 package listenhandler
 
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_listenhandler_listenhandler.go -source main.go -build_flags=-mod=mod
+
 import (
 	"fmt"
 	"net/url"
@@ -11,6 +13,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
@@ -36,6 +39,7 @@ type listenHandler struct {
 	reqHandler        requesthandler.RequestHandler
 	callHandler       callhandler.CallHandler
 	conferenceHandler conferencehandler.ConferenceHandler
+	confbridgeHandler confbridgehandler.ConfbridgeHandler
 }
 
 var (
@@ -54,6 +58,11 @@ var (
 	regV1CallsIDActionTimeout  = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
 	regV1CallsIDChainedCallIDs = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids")
 	regV1CallsIDExternalMedia  = regexp.MustCompile("/v1/calls/" + regUUID + "/external-media")
+
+	// confbridges
+	regV1Confbridges          = regexp.MustCompile("/v1/confbridges")
+	regV1ConfbridgesID        = regexp.MustCompile("/v1/confbridges/" + regUUID)
+	regV1ConfbridgesIDCallsID = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID)
 
 	// conferences
 	regV1ConferencesIDCallsID = regexp.MustCompile("/v1/conferences/" + regUUID + "/calls/" + regUUID)
@@ -102,6 +111,7 @@ func NewListenHandler(
 	reqHandler requesthandler.RequestHandler,
 	callHandler callhandler.CallHandler,
 	conferenceHandler conferencehandler.ConferenceHandler,
+	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:        rabbitSock,
@@ -110,6 +120,7 @@ func NewListenHandler(
 		reqHandler:        reqHandler,
 		callHandler:       callHandler,
 		conferenceHandler: conferenceHandler,
+		confbridgeHandler: confbridgeHandler,
 	}
 
 	return h
@@ -242,6 +253,30 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Calls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsPost(m)
 		requestType = "/v1/calls"
+
+	//////////////
+	// confbridges
+	//////////////
+
+	// DELETE /confbridges/<confbridge-id>/calls/<call-id>
+	case regV1ConfbridgesIDCallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1ConfbridgesIDCallsIDDelete(m)
+		requestType = "/v1/confbridges"
+
+	// GET /confbridges/<confbridge-id>
+	case regV1ConfbridgesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ConfbridgesIDGet(m)
+		requestType = "/v1/confbridges"
+
+	// DELETE /confbridges/<confbridge-id>
+	case regV1ConfbridgesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1ConfbridgesIDDelete(m)
+		requestType = "/v1/confbridges"
+
+	// POST /confbridges
+	case regV1Confbridges.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConfbridgesPost(m)
+		requestType = "/v1/confbridges"
 
 	//////////////
 	// conferences

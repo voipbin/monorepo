@@ -7,15 +7,16 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // getSerialize returns cached serialized info.
@@ -141,6 +142,29 @@ func (h *handler) ConferenceSet(ctx context.Context, conference *conference.Conf
 	key := fmt.Sprintf("conference:%s", conference.ID)
 
 	if err := h.setSerialize(ctx, key, conference); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ConfbridgeGet returns confbridge info
+func (h *handler) ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+	key := fmt.Sprintf("confbridge:%s", id)
+
+	var res confbridge.Confbridge
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// ConfbridgeSet sets the confbridge info into the cache.
+func (h *handler) ConfbridgeSet(ctx context.Context, data *confbridge.Confbridge) error {
+	key := fmt.Sprintf("confbridge:%s", data.ID)
+
+	if err := h.setSerialize(ctx, key, data); err != nil {
 		return err
 	}
 

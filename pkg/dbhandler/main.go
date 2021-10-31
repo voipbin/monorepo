@@ -16,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -92,6 +93,21 @@ type DBHandler interface {
 	ChannelSetType(ctx context.Context, id string, cType channel.Type) error
 	ChannelSetToCache(ctx context.Context, channel *channel.Channel) error
 	ChannelUpdateToCache(ctx context.Context, id string) error
+
+	// confbridges
+	ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) error
+	ConfbridgeAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridge) error
+	ConfbridgeDelete(ctx context.Context, id uuid.UUID) error
+	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
+	ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) (*confbridge.Confbridge, error)
+	ConfbridgeGetFromCache(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
+	ConfbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
+	ConfbridgeUpdateToCache(ctx context.Context, id uuid.UUID) error
+	ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error
+	ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
+	ConfbridgeSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	ConfbridgeSetToCache(ctx context.Context, data *confbridge.Confbridge) error
 
 	// conferences
 	ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error

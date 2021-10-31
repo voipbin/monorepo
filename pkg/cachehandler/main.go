@@ -7,15 +7,16 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 type handler struct {
@@ -50,6 +51,9 @@ type CacheHandler interface {
 
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelSet(ctx context.Context, channel *channel.Channel) error
+
+	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
+	ConfbridgeSet(ctx context.Context, data *confbridge.Confbridge) error
 
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceSet(ctx context.Context, conference *conference.Conference) error

@@ -14,6 +14,7 @@ import (
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -244,6 +245,35 @@ func (m *MockCacheHandler) ChannelSet(ctx context.Context, channel *channel.Chan
 func (mr *MockCacheHandlerMockRecorder) ChannelSet(ctx, channel interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSet", reflect.TypeOf((*MockCacheHandler)(nil).ChannelSet), ctx, channel)
+}
+
+// ConfbridgeGet mocks base method.
+func (m *MockCacheHandler) ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfbridgeGet", ctx, id)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfbridgeGet indicates an expected call of ConfbridgeGet.
+func (mr *MockCacheHandlerMockRecorder) ConfbridgeGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeGet", reflect.TypeOf((*MockCacheHandler)(nil).ConfbridgeGet), ctx, id)
+}
+
+// ConfbridgeSet mocks base method.
+func (m *MockCacheHandler) ConfbridgeSet(ctx context.Context, data *confbridge.Confbridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfbridgeSet", ctx, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConfbridgeSet indicates an expected call of ConfbridgeSet.
+func (mr *MockCacheHandlerMockRecorder) ConfbridgeSet(ctx, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSet", reflect.TypeOf((*MockCacheHandler)(nil).ConfbridgeSet), ctx, data)
 }
 
 // ConferenceGet mocks base method.

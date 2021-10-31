@@ -64,7 +64,7 @@ type Type string
 const (
 	TypeNone        Type = ""            // the type has not defined yet.
 	TypeCall        Type = "call"        // call channel
-	TypeConf        Type = "conf"        // conference channel
+	TypeConfbridge  Type = "confbridge"  // confbridge channel
 	TypeJoin        Type = "join"        // joining channel
 	TypeExternal    Type = "external"    // channel for the external channel(snoop/media)
 	TypeRecording   Type = "recording"   // channel for the recording

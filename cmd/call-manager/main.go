@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arihandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler"
@@ -169,7 +170,8 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
 	confHandler := conferencehandler.NewConferHandler(reqHandler, notifyHandler, db, cache)
-	eventHandler := arihandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confHandler)
+	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
+	eventHandler := arihandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confHandler, confbridgeHandler)
 
 	// run
 	if err := eventHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
@@ -203,7 +205,8 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
 	conferenceHandler := conferencehandler.NewConferHandler(reqHandler, notifyHandler, db, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler, conferenceHandler)
+	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler, conferenceHandler, confbridgeHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

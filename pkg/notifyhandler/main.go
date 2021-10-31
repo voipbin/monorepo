@@ -12,9 +12,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // WebhookMessage defines
@@ -31,6 +31,12 @@ const (
 	EventTypeCallCreated EventType = "call_created"
 	EventTypeCallUpdated EventType = "call_updated"
 	EventTypeCallHungup  EventType = "call_hungup"
+
+	// confbridge
+	EventTypeConfbridgeCreated EventType = "confbridge_created"
+	EventTypeConfbridgeDeleted EventType = "confbridge_deleted"
+	EventTypeConfbridgeJoined  EventType = "confbridge_joined"
+	EventTypeConfbridgeLeaved  EventType = "confbridge_leaved"
 
 	// conference
 	EventTypeConferenceCreated EventType = "conference_created"
@@ -96,7 +102,7 @@ func init() {
 
 // NotifyHandler intreface
 type NotifyHandler interface {
-	NotifyEvent(t EventType, webhookURI string, e WebhookMessage)
+	NotifyEvent(eventType EventType, webhookURI string, message WebhookMessage)
 }
 
 type notifyHandler struct {

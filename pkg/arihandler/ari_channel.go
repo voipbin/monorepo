@@ -118,6 +118,22 @@ func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt
 		return err
 	}
 
+	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
+	if err != nil {
+		log.Errorf("Could not get channel info. err: %v", err)
+		return err
+	}
+
+	br, err := h.db.BridgeGet(ctx, e.Bridge.ID)
+	if err != nil {
+		log.Errorf("Could not get bridge. err: %v", err)
+		return err
+	}
+
+	if cn.Type == channel.TypeConfbridge {
+		return h.confbridgeHandler.ARIChannelEnteredBridge(ctx, cn, br)
+	}
+
 	return nil
 }
 
@@ -177,7 +193,11 @@ func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt in
 	case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
 		return h.callHandler.ARIChannelLeftBridge(cn, br)
 
-	case bridge.ReferenceTypeConference, bridge.ReferenceTypeConferenceSnoop:
+	case bridge.ReferenceTypeConfbridge:
+		_ = h.confbridgeHandler.Leaved(ctx, cn, br)
+		return h.confHandler.ARIChannelLeftBridge(cn, br)
+
+	case bridge.ReferenceTypeConfbridgeSnoop:
 		return h.confHandler.ARIChannelLeftBridge(cn, br)
 
 	default:

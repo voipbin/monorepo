@@ -42,11 +42,11 @@ func TestLeavedConferenceTypeConferenceEmptyChannels(t *testing.T) {
 				ID:         "9cad54d0-a2c5-11ea-8936-47d2d40af59c",
 				AsteriskID: "00:11:22:33:44:55",
 				Data:       map[string]interface{}{},
-				Type:       channel.TypeConf,
+				Type:       channel.TypeConfbridge,
 			},
 			&bridge.Bridge{
 				ID:            "9cfb2fac-a2c5-11ea-9f48-f742f07a1551",
-				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("9d1df140-a2c5-11ea-a4e2-87034be20188"),
 			},
 			&conference.Conference{
@@ -104,11 +104,11 @@ func TestLeavedConferenceTypeConferenceWithChannels(t *testing.T) {
 				ID:         "21a00a76-1542-11ec-ba3c-5726fdf2d299",
 				AsteriskID: "00:11:22:33:44:55",
 				Data:       map[string]interface{}{},
-				Type:       channel.TypeConf,
+				Type:       channel.TypeConfbridge,
 			},
 			&bridge.Bridge{
 				ID:            "21df6194-1542-11ec-a6a6-9bd398ba1f89",
-				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("220c0f0a-1542-11ec-af93-9fe3b014b556"),
 				ChannelIDs: []string{
 					"22354d3e-1542-11ec-8b80-379f316d459b",
