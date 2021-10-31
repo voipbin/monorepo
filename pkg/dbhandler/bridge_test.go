@@ -64,7 +64,7 @@ func TestBridgeCreate(t *testing.T) {
 			&bridge.Bridge{
 				AsteriskID:    "3e:50:6b:43:bb:30",
 				ID:            "5149007a-9316-11ea-9de0-5f9cb2e8c235",
-				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
 				TMCreate:      "2020-04-18T03:22:17.995000",
 			},
@@ -72,7 +72,7 @@ func TestBridgeCreate(t *testing.T) {
 				AsteriskID:    "3e:50:6b:43:bb:30",
 				ID:            "5149007a-9316-11ea-9de0-5f9cb2e8c235",
 				ChannelIDs:    []string{},
-				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
 				TMCreate:      "2020-04-18T03:22:17.995000",
 			},

@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
@@ -180,13 +181,15 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-		confHandler: mockConf,
+		db:                mockDB,
+		rabbitSock:        mockSock,
+		reqHandler:        mockRequest,
+		callHandler:       mockCall,
+		confHandler:       mockConf,
+		confbridgeHandler: mockConfbridge,
 	}
 
 	type test struct {
@@ -198,7 +201,7 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			"channel type is join type",
 			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
@@ -214,6 +217,40 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 			},
 		},
+		{
+			"channel type is call type",
+			&rabbitmqhandler.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     []byte(`{"type":"ChannelEnteredBridge","timestamp":"2020-05-09T10:36:04.595+0000","bridge":{"id":"aedc915a-3920-11ec-b800-8bda16e1ef0c","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":["1589020563.4752","915befe7-7fff-490e-8432-ffe063d5c46d"],"creationtime":"2020-05-09T10:36:04.360+0000","video_mode":"talker"},"channel":{"id":"1589020563.4752","name":"PJSIP/in-voipbin-000008cc","state":"Ring","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"999999","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=B0SUsFI1eo,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-09T10:36:03.792+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
+			},
+			&channel.Channel{
+				ID:         "1589020563.4752",
+				AsteriskID: "42:01:0a:a4:00:05",
+				Type:       channel.TypeCall,
+			},
+			&bridge.Bridge{
+				ID:         "aedc915a-3920-11ec-b800-8bda16e1ef0c",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
+		},
+		{
+			"channel type is confbridge type",
+			&rabbitmqhandler.Event{
+				Type:     "ari_event",
+				DataType: "application/json",
+				Data:     []byte(`{"type":"ChannelEnteredBridge","timestamp":"2020-05-09T10:36:04.595+0000","bridge":{"id":"eb7c0136-3920-11ec-b99e-e3e6a65976f5","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":["1589020563.4752","915befe7-7fff-490e-8432-ffe063d5c46d"],"creationtime":"2020-05-09T10:36:04.360+0000","video_mode":"talker"},"channel":{"id":"1589020563.4752","name":"PJSIP/in-voipbin-000008cc","state":"Ring","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"999999","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=in-voipbin,SIP_CALLID=B0SUsFI1eo,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-09T10:36:03.792+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
+			},
+			&channel.Channel{
+				ID:         "1589020563.4752",
+				AsteriskID: "42:01:0a:a4:00:05",
+				Type:       channel.TypeConfbridge,
+			},
+			&bridge.Bridge{
+				ID:         "eb7c0136-3920-11ec-b99e-e3e6a65976f5",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -222,6 +259,12 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.ID, tt.bridge.ID)
 			mockDB.EXPECT().BridgeAddChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
+
+			if tt.channel.Type == channel.TypeConfbridge {
+				mockConfbridge.EXPECT().ARIChannelEnteredBridge(gomock.Any(), tt.channel, tt.bridge).Return(nil)
+			}
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -239,23 +282,23 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-		confHandler: mockConf,
+		db:                mockDB,
+		rabbitSock:        mockSock,
+		reqHandler:        mockRequest,
+		callHandler:       mockCall,
+		confHandler:       mockConf,
+		confbridgeHandler: mockConfbridge,
 	}
 
-	type test struct {
+	tests := []struct {
 		name    string
 		event   *rabbitmqhandler.Event
 		channel *channel.Channel
 		bridge  *bridge.Bridge
-	}
-
-	tests := []test{
+	}{
 		{
 			"channel left from the conference bridge",
 			&rabbitmqhandler.Event{
@@ -270,7 +313,7 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 			&bridge.Bridge{
 				ID:            "a6abbe41-2a83-447b-8175-e52e5dea000f",
 				AsteriskID:    "42:01:0a:a4:00:05",
-				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceType: bridge.ReferenceTypeConfbridge,
 			},
 		},
 		{
@@ -287,7 +330,7 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 			&bridge.Bridge{
 				ID:            "a6abbe41-2a83-447b-8175-e52e5dea000f",
 				AsteriskID:    "42:01:0a:a4:00:05",
-				ReferenceType: bridge.ReferenceTypeConferenceSnoop,
+				ReferenceType: bridge.ReferenceTypeConfbridgeSnoop,
 			},
 		},
 		{
@@ -336,7 +379,11 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
 
 			switch tt.bridge.ReferenceType {
-			case bridge.ReferenceTypeConference, bridge.ReferenceTypeConferenceSnoop:
+			case bridge.ReferenceTypeConfbridge:
+				mockConfbridge.EXPECT().Leaved(gomock.Any(), tt.channel, tt.bridge).Return(nil)
+				mockConf.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
+
+			case bridge.ReferenceTypeConfbridgeSnoop:
 				mockConf.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
 
 			case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
@@ -733,14 +780,14 @@ func TestEventHandlerChannelVarsetVBTYPE(t *testing.T) {
 			&rabbitmqhandler.Event{
 				Type:     "ari_event",
 				DataType: "application/json",
-				Data:     []byte(`{"variable":"VB-TYPE","value":"conf","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-cf436148-e549-11ea-813a-036e5febe4ac","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
+				Data:     []byte(`{"variable":"VB-TYPE","value":"confbridge","type":"ChannelVarset","timestamp":"2020-08-16T00:52:39.218+0000","channel":{"id":"instance-asterisk-production-europe-west4-a-1-cf436148-e549-11ea-813a-036e5febe4ac","name":"PJSIP/call-in-00004fb4","state":"Ring","caller":{"name":"","number":"7trunk"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"34967970028","priority":3,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77"},"creationtime":"2020-08-16T00:52:39.214+0000","language":"en"},"asterisk_id":"42:01:0a:a4:0f:ce","application":"voipbin"}`),
 			},
 			&channel.Channel{
 				ID:         "instance-asterisk-production-europe-west4-a-1-cf436148-e549-11ea-813a-036e5febe4ac",
 				AsteriskID: "42:01:0a:a4:0f:ce",
-				Type:       channel.TypeConf,
+				Type:       channel.TypeConfbridge,
 			},
-			channel.TypeConf,
+			channel.TypeConfbridge,
 		},
 		{
 			"join",

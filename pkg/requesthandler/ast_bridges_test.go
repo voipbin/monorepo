@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestAstBridgeGet(t *testing.T) {
@@ -44,7 +44,7 @@ func TestAstBridgeGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"3e6eec96-fabe-4041-870d-e1daee11aafb","technology":"softmix","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"reference_type=conference,reference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7","channels":[],"creationtime":"2020-08-10T22:50:28.085+0000","video_mode":"sfu"}`),
+				Data:       []byte(`{"id":"3e6eec96-fabe-4041-870d-e1daee11aafb","technology":"softmix","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"reference_type=confbridge,reference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7","channels":[],"creationtime":"2020-08-10T22:50:28.085+0000","video_mode":"sfu"}`),
 			},
 
 			"asterisk.00:11:22:33:44:55.request",
@@ -56,7 +56,7 @@ func TestAstBridgeGet(t *testing.T) {
 			},
 			&bridge.Bridge{
 				ID:   "3e6eec96-fabe-4041-870d-e1daee11aafb",
-				Name: "reference_type=conference,reference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7",
+				Name: "reference_type=confbridge,reference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7",
 
 				// info
 				Type:    bridge.TypeMixing,
@@ -70,7 +70,7 @@ func TestAstBridgeGet(t *testing.T) {
 				ChannelIDs: []string{},
 
 				// conference info
-				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("60d7ee79-78f5-4c86-9d34-4c699e8d5ee7"),
 
 				TMCreate: "",

@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	db "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
@@ -31,10 +32,11 @@ type eventHandler struct {
 	cache      cachehandler.CacheHandler
 	rabbitSock rabbitmqhandler.Rabbit
 
-	reqHandler    requesthandler.RequestHandler
-	notifyHandler notifyhandler.NotifyHandler
-	callHandler   callhandler.CallHandler
-	confHandler   conferencehandler.ConferenceHandler
+	reqHandler        requesthandler.RequestHandler
+	notifyHandler     notifyhandler.NotifyHandler
+	callHandler       callhandler.CallHandler
+	confHandler       conferencehandler.ConferenceHandler
+	confbridgeHandler confbridgehandler.ConfbridgeHandler
 }
 
 // List of default values
@@ -86,7 +88,16 @@ func init() {
 }
 
 // NewEventHandler create EventHandler
-func NewEventHandler(sock rabbitmqhandler.Rabbit, db db.DBHandler, cache cachehandler.CacheHandler, reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, callHandler callhandler.CallHandler, confHandler conferencehandler.ConferenceHandler) EventHandler {
+func NewEventHandler(
+	sock rabbitmqhandler.Rabbit,
+	db db.DBHandler,
+	cache cachehandler.CacheHandler,
+	reqHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	callHandler callhandler.CallHandler,
+	confHandler conferencehandler.ConferenceHandler,
+	confbridgeHandler confbridgehandler.ConfbridgeHandler,
+) EventHandler {
 	h := &eventHandler{
 		rabbitSock: sock,
 		db:         db,

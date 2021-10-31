@@ -54,7 +54,7 @@ func TestARIStasisStart(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeConf)).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
 			mockReq.EXPECT().AstChannelAnswer(tt.channel.AsteriskID, tt.channel.ID).Return(nil)
 			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, tt.channel.DestinationNumber, tt.channel.ID, "", false, false).Return(nil)
 
@@ -152,12 +152,12 @@ func TestARIChannelLeftBridgeConference(t *testing.T) {
 				ID:         "e03dc034-9566-11ea-ad83-1f7a1993587b",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Data:       map[string]interface{}{},
-				Type:       channel.TypeConf,
+				Type:       channel.TypeConfbridge,
 			},
 			&bridge.Bridge{
 				ID:            "e41948fe-9566-11ea-a4fe-db788b6b6d7b",
 				ReferenceID:   uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
-				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceType: bridge.ReferenceTypeConfbridge,
 			},
 			&conference.Conference{
 				ID:       uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
@@ -217,12 +217,12 @@ func TestARIChannelLeftBridgeConnect(t *testing.T) {
 				ID:         "e03dc034-9566-11ea-ad83-1f7a1993587b",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Data:       map[string]interface{}{},
-				Type:       channel.TypeConf,
+				Type:       channel.TypeConfbridge,
 			},
 			&bridge.Bridge{
 				ID:            "e41948fe-9566-11ea-a4fe-db788b6b6d7b",
 				ReferenceID:   uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
-				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ChannelIDs: []string{
 					"423d2ffa-16a7-11ec-9214-e39d509d8fa3",
 				},
@@ -243,12 +243,12 @@ func TestARIChannelLeftBridgeConnect(t *testing.T) {
 				ID:         "cd898f0c-16a9-11ec-8a3c-07a02c763fc3",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Data:       map[string]interface{}{},
-				Type:       channel.TypeConf,
+				Type:       channel.TypeConfbridge,
 			},
 			&bridge.Bridge{
 				ID:            "cdcba946-16a9-11ec-9db6-fb23e2577d80",
 				ReferenceID:   uuid.FromStringOrNil("cdaba236-16a9-11ec-87ef-87cdd6c6b868"),
-				ReferenceType: bridge.ReferenceTypeConference,
+				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ChannelIDs:    []string{},
 			},
 			&conference.Conference{

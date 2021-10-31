@@ -4,16 +4,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *notifyHandler) NotifyEvent(t EventType, webhookURI string, e WebhookMessage) {
+func (h *notifyHandler) NotifyEvent(eventType EventType, webhookURI string, message WebhookMessage) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"evnet_type":  t,
-			"event":       e,
+			"evnet_type":  eventType,
+			"event":       message,
 			"webhook_uri": webhookURI,
 		},
 	)
-	log.Debugf("Sending a notify event. event_type: %s", t)
+	log.Debugf("Sending a notify event. event_type: %s", eventType)
 
-	go h.publishEvent(t, e)
-	go h.publishWebhook(t, webhookURI, e)
+	go h.publishEvent(eventType, message)
+	go h.publishWebhook(eventType, webhookURI, message)
 }

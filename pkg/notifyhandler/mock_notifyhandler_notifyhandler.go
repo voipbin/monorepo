@@ -72,13 +72,13 @@ func (m *MockNotifyHandler) EXPECT() *MockNotifyHandlerMockRecorder {
 }
 
 // NotifyEvent mocks base method.
-func (m *MockNotifyHandler) NotifyEvent(t EventType, webhookURI string, e WebhookMessage) {
+func (m *MockNotifyHandler) NotifyEvent(eventType EventType, webhookURI string, message WebhookMessage) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "NotifyEvent", t, webhookURI, e)
+	m.ctrl.Call(m, "NotifyEvent", eventType, webhookURI, message)
 }
 
 // NotifyEvent indicates an expected call of NotifyEvent.
-func (mr *MockNotifyHandlerMockRecorder) NotifyEvent(t, webhookURI, e interface{}) *gomock.Call {
+func (mr *MockNotifyHandlerMockRecorder) NotifyEvent(eventType, webhookURI, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyEvent", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyEvent), t, webhookURI, e)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyEvent", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyEvent), eventType, webhookURI, message)
 }

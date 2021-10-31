@@ -39,7 +39,7 @@ func (h *conferenceHandler) ARIStasisStart(cn *channel.Channel, data map[string]
 // ariStasisStartContextIncoming handles the call which has CONTEXT=conf-in in the StasisStart argument.
 func (h *conferenceHandler) ariStasisStartContextIncoming(cn *channel.Channel, data map[string]string) error {
 
-	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeConf)); err != nil {
+	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeConfbridge)); err != nil {
 		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
 		return fmt.Errorf("could not set channel var. id: %s, asterisk: %s, bridge: %s, err: %v", cn.ID, cn.AsteriskID, cn.DestinationNumber, err)
 	}
@@ -61,7 +61,7 @@ func (h *conferenceHandler) ariStasisStartContextIncoming(cn *channel.Channel, d
 
 // ARIChannelLeftBridge handles ChannelLeftBridge ARI event for conference types.
 func (h *conferenceHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
-	if cn.Type != channel.TypeConf {
+	if cn.Type != channel.TypeConfbridge {
 		return nil
 	}
 

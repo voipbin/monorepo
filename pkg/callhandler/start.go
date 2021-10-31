@@ -259,6 +259,7 @@ func (h *callHandler) startHandlerContextJoin(cn *channel.Channel, data map[stri
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
+	confbridgeID := data["confbridge_id"]
 	callID := data["call_id"]
 	bridgeID := data["bridge_id"]
 	log.Debugf("Parsed info. call: %s, bridge: %s", callID, bridgeID)
@@ -268,6 +269,16 @@ func (h *callHandler) startHandlerContextJoin(cn *channel.Channel, data map[stri
 		log.Errorf("Could not add the external snoop channel to the bridge. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return err
+	}
+
+	// set sip header
+	if errSet := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "PJSIP_HEADER(add,VB-CALL-ID)", callID); errSet != nil {
+		log.Errorf("Could not set sip header. err: %v", errSet)
+		return errSet
+	}
+	if errSet := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "PJSIP_HEADER(add,VB-CONFBRIDGE-ID)", confbridgeID); errSet != nil {
+		log.Errorf("Could not set sip header. err: %v", errSet)
+		return errSet
 	}
 
 	// dial to the destination
