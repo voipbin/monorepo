@@ -153,7 +153,7 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		err = fmt.Errorf("could not find an event handler")
+		log.Debugf("Could not find correct event handler.")
 	}
 	elapsed := time.Since(start)
 	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))
