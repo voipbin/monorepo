@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -75,6 +75,17 @@ func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.U
 		// handle the patch
 		// add the patched actions to the active-flow
 		if err := h.activeFlowHandleActionPatch(ctx, callID, nextAction); err != nil {
+			log.Errorf("Could not handle the patch action correctly. err: %v", err)
+			return nil, err
+		}
+
+		// do activeflow next action get again.
+		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+
+	case action.TypePatchFlow:
+		// handle the patch
+		// add the patched actions to the active-flow
+		if err := h.activeFlowHandleActionPatchFlow(ctx, callID, nextAction); err != nil {
 			log.Errorf("Could not handle the patch action correctly. err: %v", err)
 			return nil, err
 		}
@@ -255,6 +266,49 @@ func (h *flowHandler) activeFlowHandleActionPatch(ctx context.Context, callID uu
 	if err != nil {
 		log.Errorf("Could not get active flow. err: %v", err)
 		return err
+	}
+
+	// append the patched actions to the active flow
+	if err := appendActionsAfterID(af, act.ID, patchedActions); err != nil {
+		log.Errorf("Could not append new action. err: %v", err)
+		return fmt.Errorf("could not append new action. err: %v", err)
+	}
+	af.TMUpdate = getCurTime()
+
+	// set active flow
+	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// activeFlowHandleActionPatchFlow handles action patch_flow with active flow.
+// it downloads the actions from the given action(patch) and append it to the active flow.
+func (h *flowHandler) activeFlowHandleActionPatchFlow(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":   callID,
+		"action_id": act.ID,
+	})
+
+	// get active flow
+	af, err := h.db.ActiveFlowGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get active flow. err: %v", err)
+		return err
+	}
+
+	// patch the actions from the remote
+	patchedActions, err := h.actionPatchFlowGet(act, af.UserID)
+	if err != nil {
+		log.Errorf("Could not patch the actions from the remote. err: %v", err)
+		return err
+	}
+
+	// generate action id
+	for _, act := range patchedActions {
+		act.ID = uuid.Must(uuid.NewV4())
 	}
 
 	// append the patched actions to the active flow
