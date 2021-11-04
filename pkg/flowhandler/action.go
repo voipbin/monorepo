@@ -69,6 +69,38 @@ func (h *flowHandler) actionPatchGet(act *action.Action, callID uuid.UUID) ([]ac
 	return res, nil
 }
 
+// actionPatchFlowGet gets the actions from the flow.
+func (h *flowHandler) actionPatchFlowGet(act *action.Action, userID uint64) ([]action.Action, error) {
+	ctx := context.Background()
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "actionPatchFlowGet",
+		},
+	)
+
+	var option action.OptionPatchFlow
+	if err := json.Unmarshal(act.Option, &option); err != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", err)
+		return nil, err
+	}
+
+	// get flow
+	flowID := uuid.FromStringOrNil(option.FlowID)
+	f, err := h.db.FlowGet(ctx, flowID)
+	if err != nil {
+		log.Errorf("Could not get flow info. err: %v", err)
+		return nil, err
+	}
+
+	if f.UserID != userID {
+		log.Errorf("The user has no permission. user_id: %d", userID)
+		return nil, fmt.Errorf("no flow found")
+	}
+
+	return f.Actions, nil
+}
+
 // ActionGet returns corresponded action.
 func (h *flowHandler) ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error) {
 	flow, err := h.FlowGet(ctx, flowID)

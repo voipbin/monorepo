@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
@@ -54,6 +53,7 @@ const (
 	TypeExternalMediaStop   Type = "external_media_stop"
 	TypeHangup              Type = "hangup"
 	TypePatch               Type = "patch"
+	TypePatchFlow           Type = "patch_flow"
 	TypePlay                Type = "play"
 	TypeRecordingStart      Type = "recording_start" // startr the record of the given call.
 	TypeRecordingStop       Type = "recording_stop"  // stop the record of the given call.
@@ -78,6 +78,7 @@ var TypeList []Type = []Type{
 	TypeExternalMediaStop,
 	TypeHangup,
 	TypePatch,
+	TypePatchFlow,
 	TypePlay,
 	TypeRecordingStart,
 	TypeRecordingStop,
@@ -160,6 +161,11 @@ type OptionHangup struct {
 type OptionPatch struct {
 	EventURL    string `json:"event_url"`
 	EventMethod string `json:"event_method"`
+}
+
+// OptionPatchFlow defines action patch_flow's option.
+type OptionPatchFlow struct {
+	FlowID string `json:"flow_id"`
 }
 
 // OptionPlay defines action play's option.

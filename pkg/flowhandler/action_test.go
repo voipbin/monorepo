@@ -105,3 +105,50 @@ func TestActionPatchGet(t *testing.T) {
 		})
 	}
 }
+
+func TestActionPatchFlowGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	tests := []struct {
+		name   string
+		act    *action.Action
+		flow   *flow.Flow
+		callID uuid.UUID
+		flowID uuid.UUID
+	}{
+		{
+			"normal",
+			&action.Action{
+				ID:     uuid.FromStringOrNil("6e2a0cee-fba2-11ea-a469-a350f2dad844"),
+				Option: []byte(`{"flow_id": "9091d6aa-3cbe-11ec-9a9e-7f0d954e1f7a"}`),
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("9091d6aa-3cbe-11ec-9a9e-7f0d954e1f7a"),
+				UserID: 1,
+			},
+			uuid.FromStringOrNil("549d358a-fbfc-11ea-a625-43073fda56b9"),
+			uuid.FromStringOrNil("9091d6aa-3cbe-11ec-9a9e-7f0d954e1f7a"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flowID).Return(&flow.Flow{
+				UserID: uint64(tt.flow.UserID),
+			}, nil)
+
+			_, err := h.actionPatchFlowGet(tt.act, uint64(tt.flow.UserID))
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

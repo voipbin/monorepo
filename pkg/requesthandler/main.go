@@ -11,14 +11,15 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // contents type
@@ -87,6 +88,12 @@ type RequestHandler interface {
 	CMConferenceDelete(conferenceID uuid.UUID) error
 	CMConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error)
 
+	//// conference-manager
+	// conferences
+	CFConferenceCreate(userID uint64, conferenceType cfconference.Type, name string, detail string, timeout int) (*cfconference.Conference, error)
+	CFConferenceDelete(conferenceID uuid.UUID) error
+	CFConferenceGet(conferenceID uuid.UUID) (*cfconference.Conference, error)
+
 	////// flow-manager
 	// FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
 	FMFlowCreate(userID uint64, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error)
@@ -110,6 +117,7 @@ type requestHandler struct {
 	queueFlow       string
 	queueNumber     string
 	queueTranscribe string
+	queueConference string
 }
 
 // NewRequestHandler create RequesterHandler
@@ -120,6 +128,7 @@ func NewRequestHandler(
 	queueFlow string,
 	queueNumber string,
 	queueTranscribe string,
+	queueConference string,
 ) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
@@ -129,6 +138,7 @@ func NewRequestHandler(
 		queueFlow:       queueFlow,
 		queueNumber:     queueNumber,
 		queueTranscribe: queueTranscribe,
+		queueConference: queueConference,
 	}
 
 	return h
@@ -233,4 +243,12 @@ func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.Re
 func (r *requestHandler) sendRequestTranscribe(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(r.queueTranscribe, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestConference send a request to the conference-manager and return the response
+// timeout second
+// delayed millisecond
+func (r *requestHandler) sendRequestConference(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueConference, uri, method, resource, timeout, delayed, dataType, data)
 }
