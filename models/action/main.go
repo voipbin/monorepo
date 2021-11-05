@@ -43,7 +43,7 @@ type Type string
 const (
 	TypeAMD                 Type = "amd"
 	TypeAnswer              Type = "answer"
-	TypeConferenceEnter     Type = "conference_enter"
+	TypeConfbridgeJoin      Type = "confbridge_join"
 	TypeConferenceJoin      Type = "conference_join"
 	TypeConnect             Type = "connect"
 	TypeDTMFReceive         Type = "dtmf_receive" // receive the dtmfs.
@@ -68,7 +68,7 @@ const (
 var TypeList []Type = []Type{
 	TypeAMD,
 	TypeAnswer,
-	TypeConferenceEnter,
+	TypeConfbridgeJoin,
 	TypeConferenceJoin,
 	TypeConnect,
 	TypeDTMFReceive,
@@ -100,9 +100,9 @@ type OptionAnswer struct {
 	// no option
 }
 
-// OptionConferenceEnter defines action conference_enter's option.
-type OptionConferenceEnter struct {
-	ConferenceID string `json:"conference_id"`
+// OptionConfbridgeJoin defines action confbridge_join's option.
+type OptionConfbridgeJoin struct {
+	ConfbridgeID string `json:"confbridge_id"`
 }
 
 // OptionConferenceJoin defines action conference_join's option.
