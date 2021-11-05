@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -20,10 +19,10 @@ func TestFMFlowCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -140,10 +139,10 @@ func TestFMFlowUpdate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -216,10 +215,10 @@ func TestFMFlowGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -228,7 +227,6 @@ func TestFMFlowGet(t *testing.T) {
 	type test struct {
 		name string
 
-		userID uint64
 		flowID uuid.UUID
 
 		response *rabbitmqhandler.Response
@@ -242,7 +240,6 @@ func TestFMFlowGet(t *testing.T) {
 		{
 			"normal",
 
-			1,
 			uuid.FromStringOrNil("be66d9a6-6ed6-11eb-8152-0bb66bad7293"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -291,10 +288,10 @@ func TestFMFlowDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -346,10 +343,10 @@ func TestFMFlowGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",

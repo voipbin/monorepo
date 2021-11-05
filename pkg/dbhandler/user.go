@@ -71,7 +71,7 @@ func (h *handler) UserGetFromDB(ctx context.Context, id uint64) (*user.User, err
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -220,7 +220,7 @@ func (h *handler) UserGetByUsername(ctx context.Context, username string) (*user
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 

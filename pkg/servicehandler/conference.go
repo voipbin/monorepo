@@ -5,10 +5,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
 // ConferenceGet gets the conference.
@@ -22,7 +22,7 @@ func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.
 	log.Debugf("Get conference. conference: %s", id)
 
 	// get conference
-	res, err := h.reqHandler.CMConferenceGet(id)
+	res, err := h.reqHandler.CFConferenceGet(id)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
@@ -53,7 +53,7 @@ func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string)
 	}
 
 	// get conferences
-	tmps, err := h.reqHandler.CMConferenceGets(u.ID, token, size)
+	tmps, err := h.reqHandler.CFConferenceGets(u.ID, token, size, "conference")
 	if err != nil {
 		log.Infof("Could not get conferences info. err: %v", err)
 		return nil, err
@@ -82,7 +82,7 @@ func (h *serviceHandler) ConferenceCreate(u *user.User, confType conference.Type
 		},
 	)
 
-	conf, err := h.reqHandler.CMConferenceCreate(u.ID, cmconference.Type(confType), name, detail, webhookURI)
+	conf, err := h.reqHandler.CFConferenceCreate(u.ID, cfconference.Type(confType), name, detail, webhookURI)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
@@ -122,7 +122,7 @@ func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error 
 	)
 
 	// get conference
-	cf, err := h.reqHandler.CMConferenceGet(confID)
+	cf, err := h.reqHandler.CFConferenceGet(confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return err
@@ -136,7 +136,7 @@ func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error 
 
 	// destroy
 	log.Debug("Destroying conference.")
-	if err := h.reqHandler.CMConferenceDelete(confID); err != nil {
+	if err := h.reqHandler.CFConferenceDelete(confID); err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
 		return err
 	}

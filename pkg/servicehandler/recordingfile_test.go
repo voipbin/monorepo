@@ -6,13 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 )
 
 func TestRecordingfileGet(t *testing.T) {
@@ -28,9 +27,8 @@ func TestRecordingfileGet(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		user      *user.User
-		recording *recording.Recording
+		name string
+		user *user.User
 
 		id uuid.UUID
 
@@ -44,11 +42,6 @@ func TestRecordingfileGet(t *testing.T) {
 			"normal",
 			&user.User{
 				ID: 1,
-			},
-			&recording.Recording{
-				ID:       uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
-				Filename: "call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
-				UserID:   1,
 			},
 			uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
 

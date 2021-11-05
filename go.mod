@@ -25,9 +25,9 @@ require (
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.3.0
 	github.com/swaggo/swag v1.7.0
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210928072145-73bc07c95e7d
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20211031180517-9686c5eec395
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210925161656-00ec6d5606ad
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211101014634-e587072000b7
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210323024036-8c44f8dca2de
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210409195628-27c9b796b068
@@ -39,6 +39,8 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.6 // indirect
 )
+
+require gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211104094136-4a463bacdb25
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
@@ -66,6 +68,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.5 // indirect
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210909052905-558ef2d8332e // indirect
 	google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

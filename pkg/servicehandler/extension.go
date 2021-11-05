@@ -49,7 +49,7 @@ func (h *serviceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && ext.UserID != u.ID {
+	if !u.HasPermission(user.PermissionAdmin) && ext.UserID != u.ID {
 		log.Errorf("The user has no permission for this extension. user: %d, domain_user: %d", u.ID, ext.UserID)
 		return fmt.Errorf("user has no permission")
 	}
@@ -79,7 +79,7 @@ func (h *serviceHandler) ExtensionGet(u *user.User, id uuid.UUID) (*extension.Ex
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && d.UserID != u.ID {
+	if !u.HasPermission(user.PermissionAdmin) && d.UserID != u.ID {
 		log.Errorf("The user has no permission for this extension. user: %d, extension_user: %d", u.ID, d.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}

@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	fmrequest "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
@@ -16,7 +15,7 @@ import (
 // to creating a flow.
 // it returns created flow if it succeed.
 func (r *requestHandler) FMFlowCreate(f *fmflow.Flow) (*fmflow.Flow, error) {
-	uri := fmt.Sprintf("/v1/flows")
+	uri := "/v1/flows"
 
 	data := &fmrequest.V1DataFlowPost{
 		UserID:     f.UserID,

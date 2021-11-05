@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
-	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 )
 
 func TestConferenceCreate(t *testing.T) {
@@ -28,7 +28,7 @@ func TestConferenceCreate(t *testing.T) {
 		confName         string
 		confDetail       string
 		webhookURI       string
-		cmConference     *cmconference.Conference
+		cfConference     *cfconference.Conference
 		expectConference *conference.Conference
 	}
 
@@ -42,12 +42,11 @@ func TestConferenceCreate(t *testing.T) {
 			"test name",
 			"test detail",
 			"",
-			&cmconference.Conference{
-				ID:       uuid.FromStringOrNil("cea799a4-efce-11ea-9115-03d321ec6ff8"),
-				Type:     cmconference.TypeConference,
-				BridgeID: "e7a43ad4-efce-11ea-956e-e7473d66f18f",
+			&cfconference.Conference{
+				ID:   uuid.FromStringOrNil("cea799a4-efce-11ea-9115-03d321ec6ff8"),
+				Type: cfconference.TypeConference,
 
-				Status: cmconference.StatusProgressing,
+				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
 				Data:   map[string]interface{}{},
@@ -74,12 +73,11 @@ func TestConferenceCreate(t *testing.T) {
 			"test name",
 			"test detail",
 			"test.com/webhook",
-			&cmconference.Conference{
-				ID:       uuid.FromStringOrNil("57916d8a-2089-11ec-98bb-9fcde2f6e0ff"),
-				Type:     cmconference.TypeConference,
-				BridgeID: "57ea39d8-2089-11ec-8c10-1ffbbf9317a4",
+			&cfconference.Conference{
+				ID:   uuid.FromStringOrNil("57916d8a-2089-11ec-98bb-9fcde2f6e0ff"),
+				Type: cfconference.TypeConference,
 
-				Status: cmconference.StatusProgressing,
+				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
 				Data:   map[string]interface{}{},
@@ -109,7 +107,7 @@ func TestConferenceCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CMConferenceCreate(tt.user.ID, cmconference.Type(tt.confType), tt.confName, tt.confDetail, tt.webhookURI).Return(tt.cmConference, nil)
+			mockReq.EXPECT().CFConferenceCreate(tt.user.ID, cfconference.Type(tt.confType), tt.confName, tt.confDetail, tt.webhookURI).Return(tt.cfConference, nil)
 
 			res, err := h.ConferenceCreate(tt.user, tt.confType, tt.confName, tt.confDetail, tt.webhookURI)
 			if err != nil {
@@ -134,7 +132,7 @@ func TestConferenceDelete(t *testing.T) {
 		name         string
 		user         *user.User
 		confID       uuid.UUID
-		cmConference *cmconference.Conference
+		cfConference *cfconference.Conference
 	}
 
 	tests := []test{
@@ -144,13 +142,12 @@ func TestConferenceDelete(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
-			&cmconference.Conference{
-				ID:       uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
-				UserID:   1,
-				Type:     cmconference.TypeConference,
-				BridgeID: "e7a43ad4-efce-11ea-956e-e7473d66f18f",
+			&cfconference.Conference{
+				ID:     uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
+				UserID: 1,
+				Type:   cfconference.TypeConference,
 
-				Status: cmconference.StatusProgressing,
+				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
 				Data:   map[string]interface{}{},
@@ -167,8 +164,8 @@ func TestConferenceDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CMConferenceGet(tt.confID).Return(tt.cmConference, nil)
-			mockReq.EXPECT().CMConferenceDelete(tt.confID).Return(nil)
+			mockReq.EXPECT().CFConferenceGet(tt.confID).Return(tt.cfConference, nil)
+			mockReq.EXPECT().CFConferenceDelete(tt.confID).Return(nil)
 
 			err := h.ConferenceDelete(tt.user, tt.confID)
 			if err != nil {
@@ -194,7 +191,7 @@ func TestConferenceGets(t *testing.T) {
 		user      *user.User
 		token     string
 		limit     uint64
-		response  []cmconference.Conference
+		response  []cfconference.Conference
 		expectRes []*conference.Conference
 	}
 
@@ -206,7 +203,7 @@ func TestConferenceGets(t *testing.T) {
 			},
 			"2020-09-20T03:23:20.995000",
 			10,
-			[]cmconference.Conference{
+			[]cfconference.Conference{
 				{
 					ID:     uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
 					UserID: 1,
@@ -223,7 +220,7 @@ func TestConferenceGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().CMConferenceGets(tt.user.ID, tt.token, tt.limit).Return(tt.response, nil)
+			mockReq.EXPECT().CFConferenceGets(tt.user.ID, tt.token, tt.limit, "conference").Return(tt.response, nil)
 			res, err := h.ConferenceGets(tt.user, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -251,7 +248,7 @@ func TestConferenceGet(t *testing.T) {
 		name      string
 		user      *user.User
 		id        uuid.UUID
-		response  *cmconference.Conference
+		response  *cfconference.Conference
 		expectRes *conference.Conference
 	}
 
@@ -262,7 +259,7 @@ func TestConferenceGet(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
-			&cmconference.Conference{
+			&cfconference.Conference{
 				ID:     uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 				UserID: 1,
 			},
@@ -277,7 +274,7 @@ func TestConferenceGet(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
-			&cmconference.Conference{
+			&cfconference.Conference{
 				ID:         uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
 				UserID:     1,
 				WebhookURI: "test.com/webhook",
@@ -294,10 +291,9 @@ func TestConferenceGet(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("b8e3118a-202d-11ec-b9e8-03c7f800eaf8"),
-			&cmconference.Conference{
+			&cfconference.Conference{
 				ID:         uuid.FromStringOrNil("b8e3118a-202d-11ec-b9e8-03c7f800eaf8"),
 				UserID:     1,
-				BridgeID:   "c565dde8-202d-11ec-870d-9b697a133315",
 				WebhookURI: "test.com/webhook",
 			},
 			&conference.Conference{
@@ -309,7 +305,7 @@ func TestConferenceGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().CMConferenceGet(tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().CFConferenceGet(tt.id).Return(tt.response, nil)
 			res, err := h.ConferenceGet(tt.user, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -1,9 +1,6 @@
 package flows
 
 import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -11,6 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -30,7 +29,7 @@ func flowsPOST(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -59,7 +58,6 @@ func flowsPOST(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // flowsGET handles GET /flows request.
@@ -85,7 +83,7 @@ func flowsGET(c *gin.Context) {
 	log.Debugf("flowsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -128,7 +126,6 @@ func flowsGET(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // flowsIDGET handles GET /flows/{id} request.
@@ -145,7 +142,7 @@ func flowsIDGET(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -189,7 +186,7 @@ func flowsIDPUT(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -218,7 +215,6 @@ func flowsIDPUT(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // flowsIDDELETE handles DELETE /flows/{id} request.
@@ -234,7 +230,7 @@ func flowsIDDELETE(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -255,5 +251,4 @@ func flowsIDDELETE(c *gin.Context) {
 	}
 
 	c.AbortWithStatus(200)
-	return
 }
