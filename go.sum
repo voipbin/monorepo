@@ -542,12 +542,14 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210206131226-ca5d2cbb
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210314173554-61bfbbbd5633/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918 h1:BJSOFOGvg1rt/ooqozST+sRKeRvjFtbLgHTKIUwQRVA=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918/go.mod h1:AMuev+MrDnH+Rq8zIrzMBsTOqiAc8nkfZznJ9pUI6yw=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211103140851-6e5b25e282b5/go.mod h1:JoSYK5/sNamsxLpoggy9m8xlY1ME7ItWv7jEClHZklI=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210322032029-24e9a68b7a4c/go.mod h1:MAZMdi9WQYkFqNc5m+BEXSKz8BhBErg6y1natW3Oszk=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210401061929-70b309d80bfe/go.mod h1:d3T7hi9kB7TxXi6BSN54+AXWVh6l6rNIi7uY32yR83A=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210821180258-3162580740d1/go.mod h1:t3v2nkAVdakrfm8Cdj18DnDzUys6Qc8/EaU6T4/qxa0=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20210925155534-4eb6f4abd24f/go.mod h1:vysfQdnCdpHzbKa3tgxzQcB1LblTlcF2uYF4g1wFwn4=
-gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211101014634-e587072000b7 h1:BPQccgukiXlKywZuLHbO5eDopSbmPhP3FL44TbRPcrE=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211101014634-e587072000b7/go.mod h1:va5BPmc8C5oxzKPA43UMpe6DJ8BVGgPSbFNWhpTTryg=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211105183444-18bb7099aff1 h1:zM3Woju4KQULplH26tOKXYpWukfNW40N446PnwJCbhc=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211105183444-18bb7099aff1/go.mod h1:iN1YxS41MNZ/Z6a/EesmkKj1xrUOCfuI4MZIcxtBG40=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210321130210-a1303884d876/go.mod h1:moKBA06hhNrhRq4KOyurZ7Jnz55Ej0PilS3ON3im6r4=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210323024014-e746d8159826/go.mod h1:moKBA06hhNrhRq4KOyurZ7Jnz55Ej0PilS3ON3im6r4=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2 h1:Lt17Knvg0UvWtbrrhNE7W3Cxe+Sjp1CUoy4G9xO0SVQ=

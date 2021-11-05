@@ -1,133 +1,63 @@
 package conferencehandler
 
-// func TestCreateEndpointTarget(t *testing.T) {
-// 	mc := gomock.NewController(t)
-// 	defer mc.Finish()
+import (
+	"context"
+	"testing"
 
-// 	mockReq := requesthandler.NewMockRequestHandler(mc)
-// 	mockDB := dbhandler.NewMockDBHandler(mc)
-// 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 
-// 	h := conferenceHandler{
-// 		reqHandler: mockReq,
-// 		db:         mockDB,
-// 		cache:      mockCache,
-// 	}
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/requesthandler"
+)
 
-// 	type test struct {
-// 		name            string
-// 		asteriskAddress string
-// 		conference      *conference.Conference
-// 		bridge          *bridge.Bridge
-// 		expectEndpoint  string
-// 	}
+func TestJoin(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-// 	tests := []test{
-// 		{
-// 			"normal",
-// 			"10.10.10.10",
-// 			&conference.Conference{
-// 				ID:       uuid.FromStringOrNil("b8e31aaa-9f18-11ea-b686-8f8d34dbf7ba"),
-// 				BridgeID: "cd62c3f4-9f18-11ea-bf06-036362c26ce3",
-// 			},
-// 			&bridge.Bridge{
-// 				ID:         "cd62c3f4-9f18-11ea-bf06-036362c26ce3",
-// 				AsteriskID: "00:11:22:33:44:55",
-// 			},
-// 			"PJSIP/conf-join/sip:cd62c3f4-9f18-11ea-bf06-036362c26ce3@10.10.10.10:5060",
-// 		},
-// 	}
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-// 	for _, tt := range tests {
+	h := conferenceHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		cache:         mockCache,
+		notifyHandler: mockNotify,
+	}
 
-// 		t.Run(tt.name, func(t *testing.T) {
+	type test struct {
+		name       string
+		conference *conference.Conference
+		callID     uuid.UUID
+	}
 
-// 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridge, nil)
-// 			mockCache.EXPECT().AsteriskAddressInternalGet(gomock.Any(), tt.bridge.AsteriskID).Return(tt.asteriskAddress, nil)
+	tests := []test{
+		{
+			"normal",
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("89856980-9f1c-11ea-a2e8-272863862e18"),
+				Type:         conference.TypeConference,
+				ConfbridgeID: uuid.FromStringOrNil("7d0bb11c-3e69-11ec-a38a-7b47fb83fb56"),
+			},
+			uuid.FromStringOrNil("2f553862-3e69-11ec-84d8-f39902bb6f1e"),
+		},
+	}
 
-// 			res, err := h.createEndpointTarget(context.Background(), tt.conference)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 
-// 			if res != tt.expectEndpoint {
-// 				t.Errorf("Wrong match. expect: %s\ngot:%s\n", tt.expectEndpoint, res)
-// 			}
-// 		})
-// 	}
-// }
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
+			mockReq.EXPECT().CMConfbridgesIDCallsIDPost(tt.conference.ConfbridgeID, tt.callID).Return(nil)
 
-// func TestJoin(t *testing.T) {
-// 	mc := gomock.NewController(t)
-// 	defer mc.Finish()
-
-// 	mockReq := requesthandler.NewMockRequestHandler(mc)
-// 	mockDB := dbhandler.NewMockDBHandler(mc)
-// 	mockCache := cachehandler.NewMockCacheHandler(mc)
-// 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-// 	h := conferenceHandler{
-// 		reqHandler:    mockReq,
-// 		db:            mockDB,
-// 		cache:         mockCache,
-// 		notifyHandler: mockNotify,
-// 	}
-
-// 	type test struct {
-// 		name             string
-// 		conference       *conference.Conference
-// 		call             *call.Call
-// 		bridgeJoining    *bridge.Bridge
-// 		bridgeConference *bridge.Bridge
-// 	}
-
-// 	tests := []test{
-// 		{
-// 			"normal",
-// 			&conference.Conference{
-// 				ID:       uuid.FromStringOrNil("89856980-9f1c-11ea-a2e8-272863862e18"),
-// 				Type:     conference.TypeConference,
-// 				BridgeID: "a5c525ec-dca0-11ea-b139-17780451d9da",
-// 			},
-// 			&call.Call{
-// 				ID:         uuid.FromStringOrNil("00b8301e-9f1d-11ea-a08e-038ccf4318cd"),
-// 				AsteriskID: "00:11:22:33:44:55",
-// 				ChannelID:  "15feb3f8-9f1d-11ea-a707-7f644f1ae186",
-// 				Type:       call.TypeConference,
-// 			},
-// 			&bridge.Bridge{
-// 				AsteriskID: "00:11:22:33:44:55",
-// 				ID:         "838fddba-9f1e-11ea-9bbd-13f88f4d5d25",
-// 			},
-// 			&bridge.Bridge{
-// 				AsteriskID: "00:11:22:33:44:66",
-// 				ID:         "a5c525ec-dca0-11ea-b139-17780451d9da",
-// 				TMDelete:   defaultTimeStamp,
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-
-// 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-// 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-// 			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
-// 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridgeConference.ID).Return(tt.bridgeConference, nil)
-// 			mockReq.EXPECT().AstBridgeGet(tt.bridgeConference.AsteriskID, tt.bridgeConference.ID).Return(nil, nil)
-// 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.conference.BridgeID).Return(tt.bridgeConference, nil)
-// 			mockCache.EXPECT().AsteriskAddressInternalGet(gomock.Any(), tt.bridgeConference.AsteriskID).Return("", nil)
-// 			mockReq.EXPECT().AstChannelCreate(tt.bridgeJoining.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", gomock.Any(), nil).Return(nil)
-// 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.call.ID, tt.conference.ID).Return(nil)
-// 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-// 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
-// 			mockDB.EXPECT().ConferenceAddCallID(gomock.Any(), tt.conference.ID, tt.call.ID)
-// 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-// 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceJoined, tt.conference.WebhookURI, tt.conference)
-
-// 			if err := h.Join(tt.conference.ID, tt.call.ID); err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-// 		})
-// 	}
-// }
+			ctx := context.Background()
+			if err := h.Join(ctx, tt.conference.ID, tt.callID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

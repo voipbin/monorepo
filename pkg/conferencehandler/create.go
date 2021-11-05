@@ -43,7 +43,7 @@ func (h *conferenceHandler) Create(
 	log.Debugf("Created confbridge. confbridge_id: %s", cb.ID)
 
 	// create flow
-	f, err := h.createConferenceFlow(userID, id, preActions, postActions)
+	f, err := h.createConferenceFlow(userID, id, cb.ID, preActions, postActions)
 	if err != nil {
 		log.Errorf("Could not create conference flow. err: %v", err)
 		return nil, err
@@ -106,17 +106,17 @@ func (h *conferenceHandler) Create(
 	return newCf, nil
 }
 
-// createConferenceFlowActions creates the actions for conference.
-func (h *conferenceHandler) createConferenceFlowActions(conferenceID uuid.UUID, preActions []action.Action, postActions []action.Action) ([]action.Action, error) {
+// createConferenceFlowActions creates the actions for conference join.
+func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, preActions []action.Action, postActions []action.Action) ([]action.Action, error) {
 	log := logrus.New().WithField("func", "createConferenceFlow")
 	actions := []action.Action{}
 
 	// append the pre actions
 	actions = append(actions, preActions...)
 
-	// append the conference enter
-	option := action.OptionConferenceEnter{
-		ConferenceID: conferenceID.String(),
+	// append the confbridge join
+	option := action.OptionConfbridgeJoin{
+		ConfbridgeID: confbridgeID.String(),
 	}
 	opt, err := json.Marshal(option)
 	if err != nil {
@@ -124,11 +124,11 @@ func (h *conferenceHandler) createConferenceFlowActions(conferenceID uuid.UUID, 
 		return nil, err
 	}
 
-	conferenceEnter := action.Action{
-		Type:   action.TypeConferenceEnter,
+	confbridgeJoin := action.Action{
+		Type:   action.TypeConfbridgeJoin,
 		Option: opt,
 	}
-	actions = append(actions, conferenceEnter)
+	actions = append(actions, confbridgeJoin)
 
 	// append the post actions
 	actions = append(actions, postActions...)
@@ -137,11 +137,11 @@ func (h *conferenceHandler) createConferenceFlowActions(conferenceID uuid.UUID, 
 }
 
 // createConferenceFlow creates a conference flow and returns created flow.
-func (h *conferenceHandler) createConferenceFlow(userID uint64, conferenceID uuid.UUID, preActions []action.Action, postActions []action.Action) (*flow.Flow, error) {
+func (h *conferenceHandler) createConferenceFlow(userID uint64, conferenceID uuid.UUID, confbridgeID uuid.UUID, preActions []action.Action, postActions []action.Action) (*flow.Flow, error) {
 	log := logrus.WithField("func", "createConferenceFlow")
 
 	// create flow actions
-	actions, err := h.createConferenceFlowActions(conferenceID, preActions, postActions)
+	actions, err := h.createConferenceFlowActions(confbridgeID, preActions, postActions)
 	if err != nil {
 		log.Errorf("Could not create actions. err: %v", err)
 		return nil, err
