@@ -11,8 +11,8 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -43,6 +43,65 @@ func NewMockRequestHandler(ctrl *gomock.Controller) *MockRequestHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
+}
+
+// CFConferenceCreate mocks base method.
+func (m *MockRequestHandler) CFConferenceCreate(userID uint64, conferenceType conference.Type, name, detail, webhookURI string) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CFConferenceCreate", userID, conferenceType, name, detail, webhookURI)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CFConferenceCreate indicates an expected call of CFConferenceCreate.
+func (mr *MockRequestHandlerMockRecorder) CFConferenceCreate(userID, conferenceType, name, detail, webhookURI interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceCreate), userID, conferenceType, name, detail, webhookURI)
+}
+
+// CFConferenceDelete mocks base method.
+func (m *MockRequestHandler) CFConferenceDelete(conferenceID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CFConferenceDelete", conferenceID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CFConferenceDelete indicates an expected call of CFConferenceDelete.
+func (mr *MockRequestHandlerMockRecorder) CFConferenceDelete(conferenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceDelete", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceDelete), conferenceID)
+}
+
+// CFConferenceGet mocks base method.
+func (m *MockRequestHandler) CFConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CFConferenceGet", conferenceID)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CFConferenceGet indicates an expected call of CFConferenceGet.
+func (mr *MockRequestHandlerMockRecorder) CFConferenceGet(conferenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceGet), conferenceID)
+}
+
+// CFConferenceGets mocks base method.
+func (m *MockRequestHandler) CFConferenceGets(userID uint64, pageToken string, pageSize uint64, conferenceType string) ([]conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CFConferenceGets", userID, pageToken, pageSize, conferenceType)
+	ret0, _ := ret[0].([]conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CFConferenceGets indicates an expected call of CFConferenceGets.
+func (mr *MockRequestHandlerMockRecorder) CFConferenceGets(userID, pageToken, pageSize, conferenceType interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceGets", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceGets), userID, pageToken, pageSize, conferenceType)
 }
 
 // CMCallCreate mocks base method.
@@ -102,65 +161,6 @@ func (m *MockRequestHandler) CMCallGets(userID uint64, pageToken string, pageSiz
 func (mr *MockRequestHandlerMockRecorder) CMCallGets(userID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallGets", reflect.TypeOf((*MockRequestHandler)(nil).CMCallGets), userID, pageToken, pageSize)
-}
-
-// CMConferenceCreate mocks base method.
-func (m *MockRequestHandler) CMConferenceCreate(userID uint64, conferenceType conference.Type, name, detail, webhookURI string) (*conference.Conference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMConferenceCreate", userID, conferenceType, name, detail, webhookURI)
-	ret0, _ := ret[0].(*conference.Conference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CMConferenceCreate indicates an expected call of CMConferenceCreate.
-func (mr *MockRequestHandlerMockRecorder) CMConferenceCreate(userID, conferenceType, name, detail, webhookURI interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceCreate), userID, conferenceType, name, detail, webhookURI)
-}
-
-// CMConferenceDelete mocks base method.
-func (m *MockRequestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMConferenceDelete", conferenceID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CMConferenceDelete indicates an expected call of CMConferenceDelete.
-func (mr *MockRequestHandlerMockRecorder) CMConferenceDelete(conferenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceDelete", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceDelete), conferenceID)
-}
-
-// CMConferenceGet mocks base method.
-func (m *MockRequestHandler) CMConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMConferenceGet", conferenceID)
-	ret0, _ := ret[0].(*conference.Conference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CMConferenceGet indicates an expected call of CMConferenceGet.
-func (mr *MockRequestHandlerMockRecorder) CMConferenceGet(conferenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceGet), conferenceID)
-}
-
-// CMConferenceGets mocks base method.
-func (m *MockRequestHandler) CMConferenceGets(userID uint64, pageToken string, pageSize uint64) ([]conference.Conference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMConferenceGets", userID, pageToken, pageSize)
-	ret0, _ := ret[0].([]conference.Conference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CMConferenceGets indicates an expected call of CMConferenceGets.
-func (mr *MockRequestHandlerMockRecorder) CMConferenceGets(userID, pageToken, pageSize interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMConferenceGets", reflect.TypeOf((*MockRequestHandler)(nil).CMConferenceGets), userID, pageToken, pageSize)
 }
 
 // CMRecordingGet mocks base method.

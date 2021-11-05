@@ -19,7 +19,7 @@ func usersPOST(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -33,7 +33,7 @@ func usersPOST(c *gin.Context) {
 
 	// check permission
 	// only admin permssion can create a new user.
-	if u.HasPermission(user.PermissionAdmin) != true {
+	if !u.HasPermission(user.PermissionAdmin) {
 		log.Info("The user has no permission")
 		c.AbortWithStatus(403)
 		return
@@ -54,7 +54,7 @@ func usersPOST(c *gin.Context) {
 func usersGET(c *gin.Context) {
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -68,7 +68,7 @@ func usersGET(c *gin.Context) {
 
 	// check permission
 	// only admin permssion users are allowed.
-	if u.HasPermission(user.PermissionAdmin) != true {
+	if !u.HasPermission(user.PermissionAdmin) {
 		log.Info("The user has no permission")
 		c.AbortWithStatus(403)
 		return

@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	nmrequest "gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
@@ -16,7 +15,7 @@ import (
 // to create an number.
 // Returns created number
 func (r *requestHandler) NMNumberCreate(userID uint64, numb string) (*nmnumber.Number, error) {
-	uri := fmt.Sprintf("/v1/numbers")
+	uri := "/v1/numbers"
 
 	data := &nmrequest.V1DataNumbersPost{
 		UserID: userID,

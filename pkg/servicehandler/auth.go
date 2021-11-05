@@ -20,7 +20,7 @@ func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
 		return "", err
 	}
 
-	if checkHash(password, u.PasswordHash) == false {
+	if !checkHash(password, u.PasswordHash) {
 		logrus.Warningf("The password does not match. username: %s", username)
 		return "", fmt.Errorf("password does not match")
 	}

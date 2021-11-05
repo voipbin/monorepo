@@ -82,7 +82,7 @@ func (h *serviceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, 
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && res.UserID != u.ID {
+	if !u.HasPermission(user.PermissionAdmin) && res.UserID != u.ID {
 		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, res.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -115,7 +115,7 @@ func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Numbe
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && tmp.UserID != u.ID {
+	if !u.HasPermission(user.PermissionAdmin) && tmp.UserID != u.ID {
 		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, tmp.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -154,7 +154,7 @@ func (h *serviceHandler) NumberUpdate(u *user.User, numb *number.Number) (*numbe
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && tmpNumb.UserID != u.ID {
+	if !u.HasPermission(user.PermissionAdmin) && tmpNumb.UserID != u.ID {
 		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, tmpNumb.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}

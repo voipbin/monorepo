@@ -33,7 +33,7 @@ func transcribesPOST(c *gin.Context) {
 	log.Debugf("transcribesPOST. Received request detail. recording_id: %s, language: %s", requestParam.RecordingID, requestParam.Language)
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return

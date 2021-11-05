@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 func TestOrderNumberGets(t *testing.T) {
@@ -61,7 +61,7 @@ func TestOrderNumberGets(t *testing.T) {
 				{
 					ID:               uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 					Number:           "+821021656521",
-					UserID:           0,
+					UserID:           1,
 					Status:           "active",
 					T38Enabled:       false,
 					EmergencyEnabled: false,
@@ -78,9 +78,19 @@ func TestOrderNumberGets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().NMNumberGets(tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			_, err := h.NumberGets(tt.user, tt.pageSize, tt.pageToken)
+			res, err := h.NumberGets(tt.user, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			for _, num := range res {
+				num.TMCreate = ""
+				num.TMUpdate = ""
+				num.TMDelete = ""
+			}
+
+			if !reflect.DeepEqual(res[0], tt.expectRes[0]) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
 			}
 		})
 	}
@@ -485,8 +495,7 @@ func TestNumberUpdateError(t *testing.T) {
 		user         *user.User
 		updateNumber *number.Number
 
-		updateNMNumber *nmnumber.Number
-		responseGet    *nmnumber.Number
+		responseGet *nmnumber.Number
 	}
 
 	tests := []test{
@@ -500,10 +509,6 @@ func TestNumberUpdateError(t *testing.T) {
 				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
 			},
 
-			&nmnumber.Number{
-				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
-			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 				Number:              "+821021656521",

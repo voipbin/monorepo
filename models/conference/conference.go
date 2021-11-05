@@ -2,8 +2,7 @@ package conference
 
 import (
 	uuid "github.com/gofrs/uuid"
-
-	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 )
 
 // Conference type for client show
@@ -48,8 +47,8 @@ const (
 	StatusTerminated  Status = "terminated"
 )
 
-// Convert returns conference.Conference from cmconference.Conference
-func Convert(h *cmconference.Conference) *Conference {
+// Convert returns conference.Conference from cfconference.Conference
+func Convert(h *cfconference.Conference) *Conference {
 	c := &Conference{
 		ID:     h.ID,
 		UserID: h.UserID,

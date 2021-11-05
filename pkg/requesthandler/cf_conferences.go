@@ -6,19 +6,18 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-
-	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
-	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cfrequest "gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/listenhandler/models/request"
 )
 
 // CMConferenceGets sends a request to call-manager
 // to getting a list of conference info.
 // it returns detail list of conference info if it succeed.
-func (r *requestHandler) CMConferenceGets(userID uint64, pageToken string, pageSize uint64) ([]cmconference.Conference, error) {
-	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+func (r *requestHandler) CFConferenceGets(userID uint64, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&user_id=%d&type=%s", url.QueryEscape(pageToken), pageSize, userID, conferenceType)
 
-	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallCall, 30, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConference, 30, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -29,7 +28,7 @@ func (r *requestHandler) CMConferenceGets(userID uint64, pageToken string, pageS
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var confs []cmconference.Conference
+	var confs []cfconference.Conference
 	if err := json.Unmarshal([]byte(res.Data), &confs); err != nil {
 		return nil, err
 	}
@@ -40,10 +39,10 @@ func (r *requestHandler) CMConferenceGets(userID uint64, pageToken string, pageS
 // CMConferenceGet sends a request to call-manager
 // to getting a conference information.
 // it returns created conference if it succeed.
-func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error) {
+func (r *requestHandler) CFConferenceGet(conferenceID uuid.UUID) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConference, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -54,7 +53,7 @@ func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var conference cmconference.Conference
+	var conference cfconference.Conference
 	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
 		return nil, err
 	}
@@ -65,10 +64,10 @@ func (r *requestHandler) CMConferenceGet(conferenceID uuid.UUID) (*cmconference.
 // CMConferenceDelete sends a request to call-manager
 // to deleting a conference.
 // it returns deleted conference if it succeed.
-func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
+func (r *requestHandler) CFConferenceDelete(conferenceID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConference, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -85,10 +84,10 @@ func (r *requestHandler) CMConferenceDelete(conferenceID uuid.UUID) error {
 // CMConferenceCreate sends a request to call-manager
 // to creating a conference.
 // it returns created conference if it succeed.
-func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string, webhookURI string) (*cmconference.Conference, error) {
-	uri := fmt.Sprintf("/v1/conferences")
+func (r *requestHandler) CFConferenceCreate(userID uint64, conferenceType cfconference.Type, name string, detail string, webhookURI string) (*cfconference.Conference, error) {
+	uri := "/v1/conferences"
 
-	data := &cmrequest.V1DataConferencesIDPost{
+	data := &cfrequest.V1DataConferencesPost{
 		Type:       conferenceType,
 		UserID:     userID,
 		Name:       name,
@@ -102,7 +101,7 @@ func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconf
 		return nil, err
 	}
 
-	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallConference, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConference, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -113,7 +112,7 @@ func (r *requestHandler) CMConferenceCreate(userID uint64, conferenceType cmconf
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var conference cmconference.Conference
+	var conference cfconference.Conference
 	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
 		return nil, err
 	}

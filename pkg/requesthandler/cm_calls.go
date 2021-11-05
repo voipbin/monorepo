@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
@@ -17,7 +16,7 @@ import (
 // to creating a call.
 // it returns created call if it succeed.
 func (r *requestHandler) CMCallCreate(userID uint64, flowID uuid.UUID, source, destination cmaddress.Address) (*cmcall.Call, error) {
-	uri := fmt.Sprintf("/v1/calls")
+	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsIDPost{
 		UserID:      userID,

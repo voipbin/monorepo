@@ -55,7 +55,7 @@ func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && flow.UserID != u.ID {
+	if !u.HasPermission(user.PermissionAdmin) && flow.UserID != u.ID {
 		log.Errorf("The user has no permission for this flow. user: %d, flow_user: %d", u.ID, flow.UserID)
 		return fmt.Errorf("user has no permission")
 	}
@@ -85,7 +85,7 @@ func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && f.UserID != u.ID {
+	if !u.HasPermission(user.PermissionAdmin) && f.UserID != u.ID {
 		log.Errorf("The user has no permission for this flow. user: %d, flow_user: %d", u.ID, f.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}

@@ -11,12 +11,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -63,8 +62,9 @@ type resource string
 // list of resources
 const (
 	resourceCallCall       resource = "call/calls"
-	resourceCallConference resource = "call/conferences"
 	resourceCallRecordings resource = "call/recordings"
+
+	resourceConferenceConference resource = "conference/conferences"
 
 	resourceFlowFlows resource = "flow/flows"
 
@@ -92,15 +92,15 @@ type RequestHandler interface {
 	CMCallGet(callID uuid.UUID) (*cmcall.Call, error)
 	CMCallGets(userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error)
 
-	// call: conference
-	CMConferenceCreate(userID uint64, conferenceType cmconference.Type, name string, detail string, webhookURI string) (*cmconference.Conference, error)
-	CMConferenceDelete(conferenceID uuid.UUID) error
-	CMConferenceGet(conferenceID uuid.UUID) (*cmconference.Conference, error)
-	CMConferenceGets(userID uint64, pageToken string, pageSize uint64) ([]cmconference.Conference, error)
-
 	// call: recordings
 	CMRecordingGet(id uuid.UUID) (*cmrecording.Recording, error)
 	CMRecordingGets(userID uint64, size uint64, token string) ([]cmrecording.Recording, error)
+
+	// conference: conferences
+	CFConferenceCreate(userID uint64, conferenceType cfconference.Type, name string, detail string, webhookURI string) (*cfconference.Conference, error)
+	CFConferenceDelete(conferenceID uuid.UUID) error
+	CFConferenceGet(conferenceID uuid.UUID) (*cfconference.Conference, error)
+	CFConferenceGets(userID uint64, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error)
 
 	// flow: flow
 	FMFlowCreate(f *fmflow.Flow) (*fmflow.Flow, error)
@@ -151,10 +151,21 @@ type requestHandler struct {
 	queueRequestRegistrar  string
 	queueRequestNumber     string
 	queueRequestTranscribe string
+	queueRequestConference string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueStorage, queueRegistrar, queueNumber, queueTranscode string) RequestHandler {
+func NewRequestHandler(
+	sock rabbitmqhandler.Rabbit,
+	exchangeDelay string,
+	queueCall string,
+	queueFlow string,
+	queueStorage string,
+	queueRegistrar string,
+	queueNumber string,
+	queueTranscode string,
+	queueConference string,
+) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
@@ -165,6 +176,7 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, qu
 		queueRequestRegistrar:  queueRegistrar,
 		queueRequestNumber:     queueNumber,
 		queueRequestTranscribe: queueTranscode,
+		queueRequestConference: queueConference,
 	}
 
 	return h
@@ -278,4 +290,10 @@ func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.Re
 func (r *requestHandler) sendRequestTranscribe(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(r.queueRequestTranscribe, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestConference send a request to the conference-manager and return the response
+func (r *requestHandler) sendRequestConference(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueRequestConference, uri, method, resource, timeout, delayed, dataType, data)
 }

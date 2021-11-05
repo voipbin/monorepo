@@ -29,7 +29,7 @@ func extensionsPOST(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -88,7 +88,7 @@ func extensionsGET(c *gin.Context) {
 	log.Debugf("extensionsGET. Received request detail. domain_id: %s, page_size: %d, page_token: %s", requestParam.DomainID, requestParam.PageSize, requestParam.PageToken)
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -148,7 +148,7 @@ func extensionsIDGET(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -192,7 +192,7 @@ func extensionsIDPUT(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -236,7 +236,7 @@ func extensionsIDDELETE(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -257,5 +257,4 @@ func extensionsIDDELETE(c *gin.Context) {
 	}
 
 	c.AbortWithStatus(200)
-	return
 }

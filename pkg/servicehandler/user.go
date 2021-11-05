@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
@@ -16,7 +17,7 @@ func (h *serviceHandler) UserCreate(username, password string, permission uint64
 	log.Debug("Creating a new user.")
 
 	ctx := context.Background()
-	tmp, err := h.dbHandler.UserGetByUsername(ctx, username)
+	tmp, _ := h.dbHandler.UserGetByUsername(ctx, username)
 	if tmp != nil {
 		log.Info("User is already existing.")
 		return nil, fmt.Errorf("user already exist")
