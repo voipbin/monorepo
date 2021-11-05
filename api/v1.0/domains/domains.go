@@ -1,9 +1,6 @@
 package domains
 
 import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -11,6 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -30,7 +29,7 @@ func domainsPOST(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -52,7 +51,6 @@ func domainsPOST(c *gin.Context) {
 	}
 
 	c.JSON(200, domain)
-	return
 }
 
 // domainsPOST handles GET /domains request.
@@ -78,7 +76,7 @@ func domainsGET(c *gin.Context) {
 	log.Debugf("flowsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -121,7 +119,6 @@ func domainsGET(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // domainsIDGET handles GET /domains/{id} request.
@@ -138,7 +135,7 @@ func domainsIDGET(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -182,7 +179,7 @@ func domainsIDPUT(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -210,7 +207,6 @@ func domainsIDPUT(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // domainsIDDELETE handles DELETE /domains/{id} request.
@@ -226,7 +222,7 @@ func domainsIDDELETE(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -247,5 +243,4 @@ func domainsIDDELETE(c *gin.Context) {
 	}
 
 	c.AbortWithStatus(200)
-	return
 }

@@ -4,16 +4,15 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 )
 
 func TestCallCreate(t *testing.T) {
@@ -67,7 +66,7 @@ func TestCallCreate(t *testing.T) {
 				},
 
 				Status:       cmcall.StatusDialing,
-				Data:         map[string]interface{}{},
+				Data:         map[string]string{},
 				Direction:    cmcall.DirectionIncoming,
 				HangupBy:     "",
 				HangupReason: "",

@@ -1,9 +1,6 @@
 package numbers
 
 import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -11,6 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -39,7 +38,7 @@ func numbersGET(c *gin.Context) {
 	log.Debugf("numbersGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -82,7 +81,6 @@ func numbersGET(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // numbersIDGET handles GET /numbers/<id> request.
@@ -100,7 +98,7 @@ func numbersIDGET(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -128,7 +126,6 @@ func numbersIDGET(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // numbersPOST handles POST /numbers request.
@@ -147,7 +144,7 @@ func numbersPOST(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -169,7 +166,6 @@ func numbersPOST(c *gin.Context) {
 	}
 
 	c.JSON(200, numb)
-	return
 }
 
 // numbersIDDELETE handles DELETE /numbers/<id> request.
@@ -187,7 +183,7 @@ func numbersIDDELETE(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -215,7 +211,6 @@ func numbersIDDELETE(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
-	return
 }
 
 // numbersIDPUT handles PUT /numbers request.
@@ -237,7 +232,7 @@ func numbersIDPUT(c *gin.Context) {
 	}
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -264,5 +259,4 @@ func numbersIDPUT(c *gin.Context) {
 	}
 
 	c.JSON(200, numb)
-	return
 }

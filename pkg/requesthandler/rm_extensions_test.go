@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
@@ -19,10 +18,10 @@ func TestRMExtensionCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -100,10 +99,10 @@ func TestRMExtensionUpdate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -173,10 +172,10 @@ func TestRMExtensionGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -185,7 +184,6 @@ func TestRMExtensionGet(t *testing.T) {
 	type test struct {
 		name string
 
-		userID      uint64
 		extensionID uuid.UUID
 
 		response *rabbitmqhandler.Response
@@ -199,7 +197,6 @@ func TestRMExtensionGet(t *testing.T) {
 		{
 			"normal",
 
-			1,
 			uuid.FromStringOrNil("342f9734-6fa1-11eb-a937-17d537105d6a"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -250,10 +247,10 @@ func TestRMExtensionDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -305,10 +302,10 @@ func TestRMExtensionsGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",

@@ -9,7 +9,6 @@ func TestGenerateHash(t *testing.T) {
 
 	type test struct {
 		name     string
-		username string
 		password string
 	}
 
@@ -17,11 +16,9 @@ func TestGenerateHash(t *testing.T) {
 		{
 			"normal1",
 			"test",
-			"test",
 		},
 		{
 			"normal2",
-			"admin",
 			"admin",
 		},
 	}

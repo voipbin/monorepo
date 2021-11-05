@@ -28,7 +28,7 @@ func (h *serviceHandler) TranscribeCreate(u *user.User, recordingID uuid.UUID, l
 	}
 
 	// check the recording ownership
-	if u.HasPermission(user.PermissionAdmin) != true && u.ID != rec.UserID {
+	if !u.HasPermission(user.PermissionAdmin) && u.ID != rec.UserID {
 		log.Error("The user has no permission for this recording.")
 		return nil, fmt.Errorf("user has no permission")
 	}

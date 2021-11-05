@@ -29,7 +29,7 @@ func (h *serviceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Re
 	}
 
 	// check the recording ownership
-	if u.HasPermission(user.PermissionAdmin) != true && u.ID != rec.UserID {
+	if !u.HasPermission(user.PermissionAdmin) && u.ID != rec.UserID {
 		log.Error("The user has no permission for this recording.")
 		return nil, fmt.Errorf("user has no permission")
 	}

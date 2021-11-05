@@ -6,15 +6,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -67,7 +66,7 @@ func TestRecordingfilesIDGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/recordingfiles/%s", tt.recording.ID), nil)
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusTemporaryRedirect || w.HeaderMap["Location"][0] != tt.downloadURL {
+			if w.Code != http.StatusTemporaryRedirect || w.Result().Header["Location"][0] != tt.downloadURL {
 				t.Errorf("Wrong match. expect: %d, got: %d, response: %v", http.StatusTemporaryRedirect, w.Code, w)
 			}
 		})

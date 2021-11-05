@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -21,7 +22,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
@@ -40,6 +40,7 @@ var rabbitQueueRequestStorage = flag.String("rabbit_queue_request_storage", "bin
 var rabbitQueueRequestRegistrar = flag.String("rabbit_queue_request_registrar", "bin-manager.registrar-manager.request", "rabbitmq queue name for registrar request")
 var rabbitQueueRequestNumber = flag.String("rabbit_queue_request_number", "bin-manager.number-manager.request", "rabbitmq queue name for number request")
 var rabbitQueueRequestTranscribe = flag.String("rabbit_queue_request_transcribe", "bin-manager.transcribe-manager.request", "rabbitmq queue name for transcribe request")
+var rabbitQueueRequestConference = flag.String("rabbit_queue_request_conference", "bin-manager.conference-manager.request", "rabbitmq queue name for conference request")
 
 // args for redis
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
@@ -83,7 +84,17 @@ func main() {
 	sock.Connect()
 
 	// create servicehandler
-	requestHandler := requesthandler.NewRequestHandler(sock, *rabbitExchangeDelay, *rabbitQueueRequestCall, *rabbitQueueRequestFlow, *rabbitQueueRequestStorage, *rabbitQueueRequestRegistrar, *rabbitQueueRequestNumber, *rabbitQueueRequestTranscribe)
+	requestHandler := requesthandler.NewRequestHandler(
+		sock,
+		*rabbitExchangeDelay,
+		*rabbitQueueRequestCall,
+		*rabbitQueueRequestFlow,
+		*rabbitQueueRequestStorage,
+		*rabbitQueueRequestRegistrar,
+		*rabbitQueueRequestNumber,
+		*rabbitQueueRequestTranscribe,
+		*rabbitQueueRequestConference,
+	)
 	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db)
 
 	app := gin.Default()

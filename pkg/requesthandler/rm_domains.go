@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmrequest "gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
@@ -16,7 +15,7 @@ import (
 // to creating a domain.
 // it returns created domain if it succeed.
 func (r *requestHandler) RMDomainCreate(userID uint64, domainName, name, detail string) (*rmdomain.Domain, error) {
-	uri := fmt.Sprintf("/v1/domains")
+	uri := "/v1/domains"
 
 	data := &rmrequest.V1DataDomainsPost{
 		UserID:     userID,

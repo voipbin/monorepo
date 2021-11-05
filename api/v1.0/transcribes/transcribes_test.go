@@ -14,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
@@ -39,8 +38,6 @@ func TestTranscribesPOST(t *testing.T) {
 
 		requestBody request.BodyTranscribesPOST
 		trans       *transcribe.Transcribe
-
-		recording *recording.Recording
 	}
 
 	tests := []test{
@@ -66,10 +63,6 @@ func TestTranscribesPOST(t *testing.T) {
 						Message:   "Hello, world.",
 					},
 				},
-			},
-			&recording.Recording{
-				ID:     uuid.FromStringOrNil("1c71e72e-a3f8-11eb-a402-7b13f5ec585d"),
-				UserID: 1,
 			},
 		},
 	}

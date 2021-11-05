@@ -9,9 +9,6 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -19,6 +16,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -300,10 +299,9 @@ func TestNumbersIDPUT(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name     string
-		user     user.User
-		numberID uuid.UUID
-		uri      string
+		name string
+		user user.User
+		uri  string
 
 		requestBody   request.BodyNumbersIDPUT
 		requestNumber *number.Number
@@ -316,7 +314,6 @@ func TestNumbersIDPUT(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
 			"/v1.0/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
 			request.BodyNumbersIDPUT{
 				FlowID: uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
