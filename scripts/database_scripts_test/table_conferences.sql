@@ -35,3 +35,5 @@ create table conferences(
 
 create index idx_conferences_create on conferences(tm_create);
 create index idx_conferences_user_id on conferences(user_id);
+create index idx_conferences_flow_id on conferences(flow_id);
+create index idx_conferences_confbridge_id on conferences(confbridge_id);

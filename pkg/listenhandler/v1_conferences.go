@@ -27,6 +27,7 @@ func (h *listenHandler) processV1ConferencesGet(req *rabbitmqhandler.Request) (*
 	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
+	conferenceType := u.Query().Get("type")
 
 	// get user_id
 	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
@@ -38,9 +39,11 @@ func (h *listenHandler) processV1ConferencesGet(req *rabbitmqhandler.Request) (*
 		"token": pageToken,
 	})
 
-	confs, err := h.db.ConferenceGets(context.Background(), userID, pageSize, pageToken)
+	log.Debug("Getting conference info.")
+	ctx := context.Background()
+	confs, err := h.conferenceHandler.Gets(ctx, userID, conference.Type(conferenceType), pageSize, pageToken)
 	if err != nil {
-		log.Debugf("Could not get recordings. err: %v", err)
+		log.Debugf("Could not get conferences. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -139,7 +142,7 @@ func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmqhandler.Request) (*
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	cf, err := h.db.ConferenceGet(context.Background(), id)
+	cf, err := h.conferenceHandler.Get(context.Background(), id)
 	if err != nil {
 		log.Errorf("Could not get conference info. conference: %s, err: %v", id, err)
 		return simpleResponse(400), nil

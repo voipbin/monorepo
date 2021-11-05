@@ -11,7 +11,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
 func TestProcessV1ConferencesGets(t *testing.T) {
@@ -19,24 +18,23 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock: mockSock,
-		db:         mockDB,
+		rabbitSock:        mockSock,
+		conferenceHandler: mockConf,
 	}
 
-	type test struct {
-		name      string
-		request   *rabbitmqhandler.Request
-		userID    uint64
-		pageSize  uint64
-		pageToken string
-		confs     []*conference.Conference
-		expectRes *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	tests := []struct {
+		name           string
+		request        *rabbitmqhandler.Request
+		userID         uint64
+		pageSize       uint64
+		pageToken      string
+		conferenceType string
+		confs          []*conference.Conference
+		expectRes      *rabbitmqhandler.Response
+	}{
 		{
 			"basic",
 			&rabbitmqhandler.Request{
@@ -46,6 +44,7 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 			1,
 			10,
 			"2020-05-03 21:35:02.809",
+			"",
 			[]*conference.Conference{
 				{
 					ID:     uuid.FromStringOrNil("0addf332-9312-11eb-95e8-9b90e44428a0"),
@@ -67,6 +66,7 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 			1,
 			10,
 			"2020-05-03 21:35:02.809",
+			"",
 			[]*conference.Conference{
 				{
 					ID:           uuid.FromStringOrNil("33b1138a-3bef-11ec-a187-f77a455f3ced"),
@@ -88,12 +88,44 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 				Data:       []byte(`[{"id":"33b1138a-3bef-11ec-a187-f77a455f3ced","user_id":1,"confbridge_id":"343ae074-3bef-11ec-b657-db12d3135e42","flow_id":"49da6378-3bef-11ec-88b6-f31f8c97b61b","type":"","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"webhook_uri":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
+		{
+			"have confbridge and with conference type",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1&type=conference",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			1,
+			10,
+			"2020-05-03 21:35:02.809",
+			"conference",
+			[]*conference.Conference{
+				{
+					ID:           uuid.FromStringOrNil("c1e0a078-3de6-11ec-ae88-13052faf6ad7"),
+					UserID:       1,
+					Type:         conference.TypeConference,
+					ConfbridgeID: uuid.FromStringOrNil("c21b98ea-3de6-11ec-ab1e-4bcde9e784af"),
+					FlowID:       uuid.FromStringOrNil("c234ce0a-3de6-11ec-8807-0b3f00d6e280"),
+					Data:         map[string]interface{}{},
+					Timeout:      86400,
+					PreActions:   []action.Action{},
+					PostActions:  []action.Action{},
+					CallIDs:      []uuid.UUID{},
+					RecordingID:  [16]byte{},
+					RecordingIDs: []uuid.UUID{},
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"c1e0a078-3de6-11ec-ae88-13052faf6ad7","user_id":1,"confbridge_id":"c21b98ea-3de6-11ec-ab1e-4bcde9e784af","flow_id":"c234ce0a-3de6-11ec-8807-0b3f00d6e280","type":"conference","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"webhook_uri":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().ConferenceGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.confs, nil)
+			mockConf.EXPECT().Gets(gomock.Any(), tt.userID, conference.Type(tt.conferenceType), tt.pageSize, tt.pageToken).Return(tt.confs, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -112,12 +144,10 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:        mockSock,
-		db:                mockDB,
 		conferenceHandler: mockConf,
 	}
 
@@ -183,12 +213,10 @@ func TestProcessV1ConferencesIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:        mockSock,
-		db:                mockDB,
 		conferenceHandler: mockConf,
 	}
 
@@ -233,12 +261,10 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:        mockSock,
-		db:                mockDB,
 		conferenceHandler: mockConf,
 	}
 
@@ -284,7 +310,7 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.expectConference.ID).Return(tt.expectConference, nil)
+			mockConf.EXPECT().Get(gomock.Any(), tt.expectConference.ID).Return(tt.expectConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -303,12 +329,10 @@ func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:        mockSock,
-		db:                mockDB,
 		conferenceHandler: mockConf,
 	}
 
@@ -376,12 +400,10 @@ func TestProcessV1ConferencesIDCallsIDPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:        mockSock,
-		db:                mockDB,
 		conferenceHandler: mockConf,
 	}
 

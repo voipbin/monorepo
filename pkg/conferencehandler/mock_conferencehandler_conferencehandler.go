@@ -52,6 +52,36 @@ func (mr *MockConferenceHandlerMockRecorder) Create(ctx, conferenceType, userID,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferenceHandler)(nil).Create), ctx, conferenceType, userID, name, detail, timeout, webhookURI, preActions, postActions)
 }
 
+// Get mocks base method.
+func (m *MockConferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockConferenceHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConferenceHandler)(nil).Get), ctx, id)
+}
+
+// Gets mocks base method.
+func (m *MockConferenceHandler) Gets(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, userID, confType, size, token)
+	ret0, _ := ret[0].([]*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockConferenceHandlerMockRecorder) Gets(ctx, userID, confType, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConferenceHandler)(nil).Gets), ctx, userID, confType, size, token)
+}
+
 // Join mocks base method.
 func (m *MockConferenceHandler) Join(ctx context.Context, conferenceID, callID uuid.UUID) error {
 	m.ctrl.T.Helper()

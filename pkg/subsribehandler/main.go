@@ -21,7 +21,7 @@ import (
 
 // list of publishers
 const (
-	publisherCallManager = "call-manager"
+	publisherCallManager = "conference-manager"
 )
 
 // SubscribeHandler interface
