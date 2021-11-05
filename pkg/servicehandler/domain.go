@@ -46,7 +46,7 @@ func (h *serviceHandler) DomainDelete(u *user.User, id uuid.UUID) error {
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && domain.UserID != u.ID {
+	if !u.HasPermission(user.PermissionAdmin) && domain.UserID != u.ID {
 		log.Errorf("The user has no permission for this flow. user: %d, domain_user: %d", u.ID, domain.UserID)
 		return fmt.Errorf("user has no permission")
 	}
@@ -76,7 +76,7 @@ func (h *serviceHandler) DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, 
 	}
 
 	// permission check
-	if u.HasPermission(user.PermissionAdmin) != true && d.UserID != u.ID {
+	if !u.HasPermission(user.PermissionAdmin) && d.UserID != u.ID {
 		log.Errorf("The user has no permission for this flow. user: %d, domain_user: %d", u.ID, d.UserID)
 		return nil, fmt.Errorf("user has no permission")
 	}

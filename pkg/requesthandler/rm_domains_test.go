@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 )
@@ -19,10 +18,10 @@ func TestRMDomainCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -97,10 +96,10 @@ func TestRMDomainUpdate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -172,10 +171,10 @@ func TestRMDomainGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -184,7 +183,6 @@ func TestRMDomainGet(t *testing.T) {
 	type test struct {
 		name string
 
-		userID   uint64
 		domainID uuid.UUID
 
 		response *rabbitmqhandler.Response
@@ -198,7 +196,6 @@ func TestRMDomainGet(t *testing.T) {
 		{
 			"normal",
 
-			1,
 			uuid.FromStringOrNil("eb0e485e-6ed6-11eb-81bd-9365803e5d9f"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -247,10 +244,10 @@ func TestRMDomainDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",
@@ -302,10 +299,10 @@ func TestRMDomainsGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
+		sock:                  mockSock,
+		exchangeDelay:         "bin-manager.delay",
 		queueRequestCall:      "bin-manager.call-manager.request",
-		queueRequesstFlow:      "bin-manager.flow-manager.request",
+		queueRequesstFlow:     "bin-manager.flow-manager.request",
 		queueRequestStorage:   "bin-manager.storage-manager.request",
 		queueRequestRegistrar: "bin-manager.registrar-manager.request",
 		queueRequestNumber:    "bin-manager.number-manager.request",

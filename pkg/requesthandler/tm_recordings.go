@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmrequest "gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
@@ -15,7 +14,7 @@ import (
 // to transcode the exist recording.
 // it returns transcoded text if it succeed.
 func (r *requestHandler) TMRecordingPost(id uuid.UUID, language string) (*tmtranscribe.Transcribe, error) {
-	uri := fmt.Sprintf("/v1/recordings")
+	uri := "/v1/recordings"
 
 	req := &tmrequest.V1DataRecordingsPost{
 		ReferenceID: id,

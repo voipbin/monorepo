@@ -1,14 +1,13 @@
 package availablenumbers
 
 import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -38,7 +37,7 @@ func availableNumbersGET(c *gin.Context) {
 
 	// get user
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return

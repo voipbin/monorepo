@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	rmrequest "gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
@@ -16,7 +15,7 @@ import (
 // to creating a extension.
 // it returns created extension if it succeed.
 func (r *requestHandler) RMExtensionCreate(e *rmextension.Extension) (*rmextension.Extension, error) {
-	uri := fmt.Sprintf("/v1/extensions")
+	uri := "/v1/extensions"
 
 	data := &rmrequest.V1DataExtensionsPost{
 		UserID:    e.UserID,

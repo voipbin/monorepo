@@ -130,7 +130,7 @@ func callsGET(c *gin.Context) {
 	log.Debugf("callsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
@@ -184,7 +184,7 @@ func callsIDGET(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	tmp, exists := c.Get("user")
-	if exists != true {
+	if !exists {
 		logrus.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
