@@ -26,6 +26,7 @@ type DBHandler interface {
 	ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGets(ctx context.Context, userID uint64, size uint64, token string) ([]*conference.Conference, error)
+	ConferenceGetsWithType(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error)
 	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
 	ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error

@@ -173,3 +173,36 @@ func (h *conferenceHandler) createConferenceFlow(userID uint64, conferenceID uui
 
 	return resFlow, nil
 }
+
+// Gets returns list of conferences.
+func (h *conferenceHandler) Gets(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
+	log := logrus.WithField("func", "Gets")
+
+	var res []*conference.Conference
+	var err error
+	if confType == "" {
+		res, err = h.db.ConferenceGets(ctx, userID, size, token)
+	} else {
+		res, err = h.db.ConferenceGetsWithType(ctx, userID, confType, size, token)
+	}
+
+	if err != nil {
+		log.Errorf("Could not get conferences. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// Get returns conference.
+func (h *conferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	log := logrus.WithField("func", "Get")
+
+	res, err := h.db.ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get conferences. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}

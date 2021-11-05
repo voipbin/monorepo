@@ -191,7 +191,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify)
 
 	cfHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, cfHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cfHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

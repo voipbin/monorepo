@@ -31,7 +31,6 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	rabbitSock        rabbitmqhandler.Rabbit
-	db                dbhandler.DBHandler
 	conferenceHandler conferencehandler.ConferenceHandler
 }
 
@@ -78,6 +77,7 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
+	db dbhandler.DBHandler,
 	cfHandler conferencehandler.ConferenceHandler,
 ) ListenHandler {
 	h := &listenHandler{

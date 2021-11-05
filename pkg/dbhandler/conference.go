@@ -335,6 +335,41 @@ func (h *handler) ConferenceGets(ctx context.Context, userID uint64, size uint64
 	return res, nil
 }
 
+// ConferenceGetsWithType returns a list of calls.
+func (h *handler) ConferenceGetsWithType(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete >= ?
+			and user_id = ?
+			and type = ?
+			and tm_create < ?
+		order by
+			tm_create desc
+		limit ?
+	`, conferenceSelect)
+
+	rows, err := h.db.Query(q, defaultTimeStamp, userID, confType, token, size)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ConferenceGets. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*conference.Conference{}
+	for rows.Next() {
+		u, err := h.conferenceGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. ConferenceGets, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // ConferenceAddCallID adds the call id to the conference.
 func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error {
 	// prepare

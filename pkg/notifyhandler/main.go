@@ -43,7 +43,7 @@ const (
 )
 
 // EventPublisher type
-const EventPublisher = "call-manager"
+const EventPublisher = "conference-manager"
 
 // Data types
 var (

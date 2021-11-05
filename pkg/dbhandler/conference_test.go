@@ -416,7 +416,7 @@ func TestConferenceSetData(t *testing.T) {
 	}
 }
 
-func TestConferenceGets(t *testing.T) {
+func TestConferenceGetsWithType(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -426,14 +426,12 @@ func TestConferenceGets(t *testing.T) {
 		cache: mockCache,
 	}
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		userID uint64
 		count  int
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			99,
@@ -446,9 +444,62 @@ func TestConferenceGets(t *testing.T) {
 		},
 	}
 
-	// creates calls for test
-	mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
-	_ = h.ConferenceCreate(context.Background(), &conference.Conference{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), UserID: 1})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			ctx := context.Background()
+
+			for i := 0; i < tt.count; i++ {
+				cf := &conference.Conference{
+					ID:       uuid.Must(uuid.NewV4()),
+					UserID:   tt.userID,
+					Type:     conference.TypeConference,
+					TMDelete: defaultTimeStamp,
+				}
+
+				mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
+				_ = h.ConferenceCreate(ctx, cf)
+			}
+
+			res, err := h.ConferenceGetsWithType(ctx, tt.userID, conference.TypeConference, 10, getCurTime())
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if len(res) != tt.count {
+				t.Errorf("Wrong match. expect: %d, got: %v", tt.count, len(res))
+			}
+		})
+	}
+}
+
+func TestConferenceGets(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		db:    dbTest,
+		cache: mockCache,
+	}
+
+	tests := []struct {
+		name string
+
+		userID uint64
+		count  int
+	}{
+		{
+			"normal",
+			97,
+			10,
+		},
+		{
+			"empty",
+			96,
+			0,
+		},
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
