@@ -8,11 +8,13 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler/models/event"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
@@ -149,24 +151,39 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 	}
 
 	type test struct {
-		name    string
-		channel *channel.Channel
-		bridge  *bridge.Bridge
+		name         string
+		confbridgeID uuid.UUID
+		callID       uuid.UUID
+		channel      *channel.Channel
+		bridge       *bridge.Bridge
+		event        *event.ConfbridgeJoinedLeaved
 	}
 
 	tests := []test{
 		{
 			"confbridge left",
+			uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
+			uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
 			&channel.Channel{
 				ID:         "e03dc034-9566-11ea-ad83-1f7a1993587b",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Data:       map[string]interface{}{},
-				Type:       channel.TypeConfbridge,
+				StasisData: map[string]string{
+					"confbridge_id": "e9051ac8-9566-11ea-bde6-331b8236a4c2",
+					"conference_id": "ef2a078e-3bf9-11ec-a6a4-93f5f5d2fede",
+					"call_id":       "ef83edb2-3bf9-11ec-bc7d-1f524326656b",
+				},
+				Type: channel.TypeConfbridge,
 			},
 			&bridge.Bridge{
 				ID:            "e41948fe-9566-11ea-a4fe-db788b6b6d7b",
 				ReferenceID:   uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
 				ReferenceType: bridge.ReferenceTypeConfbridge,
+			},
+			&event.ConfbridgeJoinedLeaved{
+				ID:           uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
+				ConferenceID: uuid.FromStringOrNil("ef2a078e-3bf9-11ec-a6a4-93f5f5d2fede"),
+				CallID:       uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
 			},
 		},
 	}
@@ -174,9 +191,11 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(gomock.Any(), tt.bridge.ReferenceID, tt.channel.ID)
-			mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.bridge.ReferenceID).Return(&confbridge.Confbridge{}, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConfbridgeLeaved, "", gomock.Any())
+			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID)
+			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.callID, uuid.Nil)
+			mockNotify.EXPECT().PublishEvent(notifyhandler.EventTypeConfbridgeLeaved, tt.event)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, "", gomock.Any())
 
 			err := h.ARIChannelLeftBridge(tt.channel, tt.bridge)
 			if err != nil {

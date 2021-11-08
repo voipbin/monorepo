@@ -46,9 +46,7 @@ func (h *confbridgeHandler) createEndpointTarget(ctx context.Context, cb *confbr
 // Join handles call's join request.
 // 1. Creates a bridge(confbridge joining type) and put the call's channel into the bridge
 // 2. Creates a new channel for joining to the confbridge.
-func (h *confbridgeHandler) Join(confbridgeID, callID uuid.UUID) error {
-	ctx := context.Background()
-
+func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "Join",

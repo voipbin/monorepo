@@ -96,17 +96,17 @@ func (mr *MockConfbridgeHandlerMockRecorder) Create(ctx, confID interface{}) *go
 }
 
 // Join mocks base method.
-func (m *MockConfbridgeHandler) Join(confbridgeID, callID uuid.UUID) error {
+func (m *MockConfbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Join", confbridgeID, callID)
+	ret := m.ctrl.Call(m, "Join", ctx, confbridgeID, callID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Join indicates an expected call of Join.
-func (mr *MockConfbridgeHandlerMockRecorder) Join(confbridgeID, callID interface{}) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) Join(ctx, confbridgeID, callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockConfbridgeHandler)(nil).Join), confbridgeID, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockConfbridgeHandler)(nil).Join), ctx, confbridgeID, callID)
 }
 
 // Joined mocks base method.

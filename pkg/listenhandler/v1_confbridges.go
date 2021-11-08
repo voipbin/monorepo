@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1ConfbridgesPost handles /v1/confbriges request
@@ -133,6 +133,32 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(m *rabbitmqhandler.R
 
 	if err := h.confbridgeHandler.Kick(ctx, id, callID); err != nil {
 		log.Errorf("Could not kick out the call from the confbridge. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	return simpleResponse(200), nil
+}
+
+// processV1ConfbridgesIDCallsIDPost handles /v1/confbridges/<confbridge-id>/calls/<call-id> DELETE request
+func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+	log := logrus.WithFields(
+		logrus.Fields{
+			"handler": "processV1ConfbridgesIDCallsIDDelete",
+			"uri":     m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 6 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+	callID := uuid.FromStringOrNil(uriItems[5])
+
+	if err := h.confbridgeHandler.Join(ctx, id, callID); err != nil {
+		log.Errorf("Could not join the call to the confbridge. err: %v", err)
 		return simpleResponse(400), nil
 	}
 

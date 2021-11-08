@@ -22,8 +22,39 @@ func (h *confbridgeHandler) Terminate(id uuid.UUID) error {
 		return err
 	}
 
+	if errHangup := h.destroyBridge(ctx, cb.BridgeID); errHangup != nil {
+		log.Errorf("Could not hangup the channels from the bridge. err: %v", errHangup)
+		return errHangup
+	}
+
+	// update conference status to terminated
+	if err := h.db.ConfbridgeDelete(ctx, id); err != nil {
+		log.Errorf("Could not terminate the confbridge. err: %v", err)
+		return err
+	}
+	promConfbridgeCloseTotal.Inc()
+
+	// notify conference deleted event
+	tmpCB, err := h.db.ConfbridgeGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated confbridge info. err: %v", err)
+		return nil
+	}
+	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConfbridgeDeleted, "", tmpCB)
+
+	return nil
+}
+
+// destroyBridge hangs up all the channels from the bridge and destroy it.
+func (h *confbridgeHandler) destroyBridge(ctx context.Context, bridgeID string) error {
+	log := logrus.WithField("func", "hangupAllChannels")
+
+	if !h.isBridgeExist(ctx, bridgeID) {
+		return nil
+	}
+
 	// hang up all the channels in the bridge
-	br, err := h.db.BridgeGet(ctx, cb.BridgeID)
+	br, err := h.db.BridgeGet(ctx, bridgeID)
 	if err != nil {
 		log.Errorf("Could not get bridge info. err: %v", err)
 		return err
@@ -44,21 +75,6 @@ func (h *confbridgeHandler) Terminate(id uuid.UUID) error {
 	if errBridgeDel := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); errBridgeDel != nil {
 		log.Errorf("Could not delete confbridge bridge. err: %v", errBridgeDel)
 	}
-
-	// update conference status to terminated
-	if err := h.db.ConfbridgeDelete(ctx, id); err != nil {
-		log.Errorf("Could not terminate the confbridge. err: %v", err)
-		return err
-	}
-	promConfbridgeCloseTotal.Inc()
-
-	// notify conference deleted event
-	tmpCB, err := h.db.ConfbridgeGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated confbridge info. err: %v", err)
-		return nil
-	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceDeleted, "", tmpCB)
 
 	return nil
 }

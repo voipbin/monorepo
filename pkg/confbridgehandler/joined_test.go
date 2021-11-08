@@ -78,8 +78,7 @@ func TestJoined(t *testing.T) {
 			mockDB.EXPECT().ConfbridgeAddChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID, tt.callID).Return(nil)
 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.callID, tt.conferenceID).Return(nil)
 
-			mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridgeID).Return(&confbridge.Confbridge{}, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConfbridgeJoined, "", gomock.Any())
+			mockNotify.EXPECT().PublishEvent(notifyhandler.EventTypeConfbridgeJoined, gomock.Any())
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, "", gomock.Any())
 

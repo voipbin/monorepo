@@ -34,7 +34,7 @@ func (h *notifyHandler) publishWebhook(t EventType, webhookURI string, c Webhook
 	}
 }
 
-func (h *notifyHandler) publishEvent(t EventType, c interface{}) {
+func (h *notifyHandler) PublishEvent(t EventType, c interface{}) {
 	// create event
 	m, err := json.Marshal(c)
 	if err != nil {

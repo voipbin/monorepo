@@ -9,13 +9,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // Redirect options for timeout action
@@ -56,6 +56,9 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 	case action.TypeAnswer:
 		err = h.actionExecuteAnswer(c, a)
+
+	case action.TypeConfbridgeJoin:
+		err = h.actionExecuteConfbridgeJoin(c, a)
 
 	case action.TypeConferenceJoin:
 		err = h.actionExecuteConferenceJoin(c, a)
@@ -324,6 +327,50 @@ func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action
 	if err := h.confHandler.Join(cfID, c.ID); err != nil {
 		log.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
 		return fmt.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
+	}
+
+	return nil
+}
+
+// actionExecuteConfbridgeJoin executes the action type ConferenceEnter
+func (h *callHandler) actionExecuteConfbridgeJoin(c *call.Call, a *action.Action) error {
+	ctx := context.Background()
+
+	// copy the action
+	act := *a
+
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteConfbridgeJoin",
+	})
+
+	var option action.OptionConfbridgeJoin
+	if err := json.Unmarshal(act.Option, &option); err != nil {
+		log.Errorf("could not parse the option. err: %v", err)
+		return err
+	}
+	cbID := uuid.FromStringOrNil(option.ConfbridgeID)
+
+	// set option
+	rawOption, err := json.Marshal(option)
+	if err != nil {
+		log.Errorf("Could not marshal the action option. err: %v", err)
+		return err
+	}
+	act.Option = rawOption
+
+	// set action
+	if err := h.setAction(c, &act); err != nil {
+		log.Errorf("Could not set the action for call. err: %v", err)
+		return err
+	}
+
+	// join to the confbridge
+	if err := h.confbridgeHandler.Join(ctx, cbID, c.ID); err != nil {
+		log.Errorf("Could not join to the confbridge. call: %s, err: %v", c.ID, err)
+		return err
 	}
 
 	return nil
