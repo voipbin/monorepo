@@ -16,6 +16,7 @@ import (
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -97,10 +98,11 @@ type RequestHandler interface {
 	CMRecordingGets(userID uint64, size uint64, token string) ([]cmrecording.Recording, error)
 
 	// conference: conferences
-	CFConferenceCreate(userID uint64, conferenceType cfconference.Type, name string, detail string, webhookURI string) (*cfconference.Conference, error)
+	CFConferenceCreate(userID uint64, conferenceType cfconference.Type, name, detail, webhookURI string, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
 	CFConferenceDelete(conferenceID uuid.UUID) error
 	CFConferenceGet(conferenceID uuid.UUID) (*cfconference.Conference, error)
 	CFConferenceGets(userID uint64, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error)
+	CFConferenceUpdate(id uuid.UUID, name string, detail string, timeout int, webhookURI string, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
 
 	// flow: flow
 	FMFlowCreate(f *fmflow.Flow) (*fmflow.Flow, error)
