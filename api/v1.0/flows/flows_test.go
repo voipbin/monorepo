@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -19,8 +21,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 func setupServer(app *gin.Engine) {
@@ -56,7 +56,7 @@ func TestFlowsPOST(t *testing.T) {
 				Detail: "test detail",
 				Actions: []action.Action{
 					{
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -66,7 +66,7 @@ func TestFlowsPOST(t *testing.T) {
 				Persist: true,
 				Actions: []action.Action{
 					{
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -77,7 +77,7 @@ func TestFlowsPOST(t *testing.T) {
 				Persist: true,
 				Actions: []action.Action{
 					{
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -94,7 +94,7 @@ func TestFlowsPOST(t *testing.T) {
 				WebhookURI: "https://test.com/webhook",
 				Actions: []action.Action{
 					{
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -105,7 +105,7 @@ func TestFlowsPOST(t *testing.T) {
 				WebhookURI: "https://test.com/webhook",
 				Actions: []action.Action{
 					{
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -117,7 +117,7 @@ func TestFlowsPOST(t *testing.T) {
 				WebhookURI: "https://test.com/webhook",
 				Actions: []action.Action{
 					{
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -195,8 +195,7 @@ func TestFlowsIDGET(t *testing.T) {
 				UserID: 1,
 				Actions: []action.Action{
 					{
-						ID:   uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -255,7 +254,7 @@ func TestFlowsIDPUT(t *testing.T) {
 				Detail: "test detail",
 				Actions: []action.Action{
 					{
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -265,7 +264,7 @@ func TestFlowsIDPUT(t *testing.T) {
 				Detail: "test detail",
 				Actions: []action.Action{
 					{
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
@@ -41,7 +42,7 @@ type ServiceHandler interface {
 	CallDelete(u *user.User, callID uuid.UUID) error
 
 	// conference handlers
-	ConferenceCreate(u *user.User, confType conference.Type, name, detail, webhookURI string) (*conference.Conference, error)
+	ConferenceCreate(u *user.User, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error)
 	ConferenceDelete(u *user.User, confID uuid.UUID) error
 	ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error)
