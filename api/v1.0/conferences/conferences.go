@@ -115,7 +115,7 @@ func conferencesPOST(c *gin.Context) {
 	u := tmp.(user.User)
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceCreate(&u, requestBody.Type, requestBody.Name, requestBody.Detail, requestBody.WebhookURI)
+	res, err := servicehandler.ConferenceCreate(&u, requestBody.Type, requestBody.Name, requestBody.Detail, requestBody.WebhookURI, requestBody.PreActions, requestBody.PostActions)
 	if err != nil || res == nil {
 		c.AbortWithStatus(400)
 		return

@@ -4,17 +4,16 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
-	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 func TestFlowCreate(t *testing.T) {
@@ -318,7 +317,7 @@ func TestFlowGet(t *testing.T) {
 				Actions: []fmaction.Action{
 					{
 						ID:   uuid.FromStringOrNil("61f86f60-66af-11eb-917f-838fd6836e1f"),
-						Type: "answer",
+						Type: fmaction.TypeAnswer,
 					},
 				},
 			},
@@ -329,8 +328,7 @@ func TestFlowGet(t *testing.T) {
 				Detail: "test detail",
 				Actions: []action.Action{
 					{
-						ID:   uuid.FromStringOrNil("61f86f60-66af-11eb-917f-838fd6836e1f"),
-						Type: action.TypeAnswer,
+						Type: "answer",
 					},
 				},
 			},
@@ -434,7 +432,7 @@ func TestFlowGets(t *testing.T) {
 					Actions: []fmaction.Action{
 						{
 							ID:   uuid.FromStringOrNil("775f5cde-66ae-11eb-9626-0f488d332e1e"),
-							Type: "answer",
+							Type: fmaction.TypeAnswer,
 						},
 					},
 				},
@@ -447,8 +445,7 @@ func TestFlowGets(t *testing.T) {
 					Detail: "test detail1",
 					Actions: []action.Action{
 						{
-							ID:   uuid.FromStringOrNil("775f5cde-66ae-11eb-9626-0f488d332e1e"),
-							Type: action.TypeAnswer,
+							Type: "answer",
 						},
 					},
 				},

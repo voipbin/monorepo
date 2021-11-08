@@ -13,6 +13,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
@@ -118,6 +119,30 @@ func TestConferencesPOST(t *testing.T) {
 			},
 			[]byte(`{"type": "conference", "name": "conference name", "detail": "conference detail", "webhook_uri": "test.com/webhook"}`),
 		},
+		{
+			"pre/post actions",
+			user.User{
+				ID: 1,
+			},
+			&conference.Conference{
+				ID:         uuid.FromStringOrNil("62fc88ba-3fe9-11ec-8ebb-8f1ee591edec"),
+				Type:       conference.TypeConference,
+				Name:       "conference name",
+				Detail:     "conference detail",
+				WebhookURI: "test.com/webhook",
+				PreActions: []action.Action{
+					{
+						Type: "answer",
+					},
+				},
+				PostActions: []action.Action{
+					{
+						Type: "hangup",
+					},
+				},
+			},
+			[]byte(`{"type": "conference", "name": "conference name", "detail": "conference detail", "webhook_uri": "test.com/webhook", "pre_actions": [{"type": "answer"}], "post_actions":[{"type": "hangup"}]}`),
+		},
 	}
 
 	for _, tt := range tests {
@@ -132,7 +157,7 @@ func TestConferencesPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceCreate(&tt.user, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.WebhookURI).Return(tt.conference, nil)
+			mockSvc.EXPECT().ConferenceCreate(&tt.user, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.WebhookURI, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/conferences", bytes.NewBuffer(tt.request))
 
 			req.Header.Set("Content-Type", "application/json")
