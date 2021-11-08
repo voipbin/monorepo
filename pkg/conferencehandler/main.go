@@ -33,6 +33,16 @@ type ConferenceHandler interface {
 	) (*conference.Conference, error)
 	Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	Gets(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error)
+	Update(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		timeout int,
+		webhookURI string,
+		preActions []action.Action,
+		postActions []action.Action,
+	) (*conference.Conference, error)
 
 	Join(ctx context.Context, conferenceID, callID uuid.UUID) error
 	Joined(ctx context.Context, conferenceID, callID uuid.UUID) error

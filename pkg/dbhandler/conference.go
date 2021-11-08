@@ -428,6 +428,43 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 	return nil
 }
 
+// ConferenceSet sets the status
+func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) error {
+	//prepare
+	q := `
+	update conferences set
+		name = ?,
+		detail = ?,
+		timeout = ?,
+		webhook_uri = ?,
+		pre_actions = ?,
+		post_actions = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	tmpPreActions, err := json.Marshal(preActions)
+	if err != nil {
+		return fmt.Errorf("could not marshal the preActions. ConferenceSet. err: %v", err)
+	}
+
+	tmpPostActions, err := json.Marshal(postActions)
+	if err != nil {
+		return fmt.Errorf("could not marshal the postActions. ConferenceSet. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q, name, detail, timeout, webhookURI, tmpPreActions, tmpPostActions, getCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConferenceSet. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.ConferenceUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // ConferenceSetStatus sets the status
 func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error {
 	//prepare

@@ -13,7 +13,7 @@ import (
 func (r *requestHandler) CFConferencesIDDelete(conferenceID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s", conferenceID)
 
-	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCFConferences, requestTimeoutDefault, delay, ContentTypeJSON, nil)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodDelete, resourceCFConferences, requestTimeoutDefault, delay, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

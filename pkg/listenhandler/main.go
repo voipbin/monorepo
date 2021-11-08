@@ -172,6 +172,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ConferencesIDGet(m)
 		requestType = "/v1/conferences"
 
+	// PUT /conferences/<conference-id>
+	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1ConferencesIDPut(m)
+		requestType = "/v1/conferences"
+
 	// DELETE /conferences/<conference-id>
 	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDDelete(m)
