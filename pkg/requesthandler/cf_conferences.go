@@ -18,7 +18,7 @@ func (r *requestHandler) CFConferencesIDDelete(conferenceID uuid.UUID, delay int
 	case err != nil:
 		return err
 	case res == nil:
-		return fmt.Errorf("no response found")
+		return nil
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}

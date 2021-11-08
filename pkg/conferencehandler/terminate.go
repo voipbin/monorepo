@@ -38,11 +38,11 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	// terminate confbridge
-	// this will kick out all the calls in the conference(confbridge).
-	if err := h.reqHandler.CMConfbridgesIDDelete(cf.ConfbridgeID); err != nil {
-		log.Errorf("Could not delete the confbridge. err: %v", err)
-		return err
+	if len(cf.CallIDs) == 0 {
+		if err := h.Destroy(ctx, cf); err != nil {
+			log.Errorf("Could not destroy the conference. err: %v", err)
+			return err
+		}
 	}
 
 	return nil
