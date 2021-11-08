@@ -126,6 +126,50 @@ func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmqhandler.Request)
 	return simpleResponse(200), nil
 }
 
+// processV1ConferencesIDPut handles /v1/conferences/<id> PUT request
+func (h *listenHandler) processV1ConferencesIDPut(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+	log := logrus.WithFields(
+		logrus.Fields{
+			"handler": "processV1ConferencesIDPut",
+			"uri":     m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var data request.V1DataConferencesIDPut
+	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return nil, err
+	}
+
+	cf, err := h.conferenceHandler.Update(ctx, id, data.Name, data.Detail, data.Timeout, data.WebhookURI, data.PreActions, data.PostActions)
+	if err != nil {
+		log.Errorf("Could not update the conference. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := json.Marshal(cf)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       tmp,
+	}
+
+	return res, nil
+}
+
 // processV1ConferencesIDGet handles /v1/conferences/<id> GET request
 func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(

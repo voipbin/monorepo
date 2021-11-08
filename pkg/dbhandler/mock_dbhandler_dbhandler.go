@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // MockDBHandler is a mock of DBHandler interface.
@@ -179,6 +180,20 @@ func (m *MockDBHandler) ConferenceRemoveCallID(ctx context.Context, id, callID u
 func (mr *MockDBHandlerMockRecorder) ConferenceRemoveCallID(ctx, id, callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRemoveCallID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceRemoveCallID), ctx, id, callID)
+}
+
+// ConferenceSet mocks base method.
+func (m *MockDBHandler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceSet", ctx, id, name, detail, timeout, webhookURI, preActions, postActions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceSet indicates an expected call of ConferenceSet.
+func (mr *MockDBHandlerMockRecorder) ConferenceSet(ctx, id, name, detail, timeout, webhookURI, preActions, postActions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSet), ctx, id, name, detail, timeout, webhookURI, preActions, postActions)
 }
 
 // ConferenceSetData mocks base method.

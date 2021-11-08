@@ -90,6 +90,10 @@ type RequestHandler interface {
 
 	// fm flows
 	FMFlowCreate(f *fmflow.Flow) (*fmflow.Flow, error)
+	FMFlowDelete(flowID uuid.UUID) error
+	FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error)
+	FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
+	FMFlowUpdate(f *fmflow.Flow) (*fmflow.Flow, error)
 
 	// fm actions
 	FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
@@ -105,20 +109,23 @@ type requestHandler struct {
 
 	exchangeDelay string
 
-	queueCall    string
-	queueFlow    string
-	queueWebhook string
+	queueConference string
+	queueCall       string
+	queueFlow       string
+	queueWebhook    string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueWebhook string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueConference, queueCall, queueFlow, queueWebhook string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
 		exchangeDelay: exchangeDelay,
-		queueCall:     queueCall,
-		queueFlow:     queueFlow,
-		queueWebhook:  queueWebhook,
+
+		queueConference: queueConference,
+		queueCall:       queueCall,
+		queueFlow:       queueFlow,
+		queueWebhook:    queueWebhook,
 	}
 
 	return h
@@ -212,10 +219,18 @@ func (r *requestHandler) sendRequestWM(uri string, method rabbitmqhandler.Reques
 	return r.sendRequest(r.queueWebhook, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestCall send a request to the Asterisk-proxy and return the response
+// sendRequestCall send a request to the call-manager and return the response
 // timeout second
 // delayed millisecond
 func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(r.queueCall, uri, method, resource, timeout, delayed, dataType, data)
+}
+
+// sendRequestConference send a request to the conference-manager and return the response
+// timeout second
+// delayed millisecond
+func (r *requestHandler) sendRequestConference(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueConference, uri, method, resource, timeout, delayed, dataType, data)
 }

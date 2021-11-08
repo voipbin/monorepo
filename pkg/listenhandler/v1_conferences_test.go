@@ -166,6 +166,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Data:     []byte(`{"type": "conference", "user_id": 1, "name": "test", "detail": "test detail", "webhook_uri": "test.com", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"answer"}], "timeout": 86400}`),
 			},
 			&conference.Conference{
+				ID:      uuid.FromStringOrNil("5e0d6cb0-4003-11ec-a7f9-f72079d71f10"),
 				UserID:  1,
 				Type:    conference.TypeConference,
 				Name:    "test",
@@ -186,7 +187,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","user_id":1,"confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"webhook_uri":"test.com","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","user_id":1,"confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"webhook_uri":"test.com","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -243,6 +244,82 @@ func TestProcessV1ConferencesIDDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockConf.EXPECT().Terminate(gomock.Any(), tt.id).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func TestProcessV1ConferencesIDPut(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:        mockSock,
+		conferenceHandler: mockConf,
+	}
+
+	tests := []struct {
+		name       string
+		request    *rabbitmqhandler.Request
+		conference *conference.Conference
+		expectRes  *rabbitmqhandler.Response
+	}{
+		{
+			"type conference",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences/a07e574a-4002-11ec-9c73-a31093777cf0",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name": "test update", "detail": "test detail update", "webhook_uri": "test.com", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"hangup"}], "timeout": 86400}`),
+			},
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("a07e574a-4002-11ec-9c73-a31093777cf0"),
+				UserID:       1,
+				ConfbridgeID: uuid.FromStringOrNil("590b7a70-4005-11ec-882c-cff85956bfd4"),
+				FlowID:       uuid.FromStringOrNil("5937a834-4005-11ec-98ca-2770f4d8351a"),
+				Type:         conference.TypeConference,
+				Status:       conference.StatusProgressing,
+				Name:         "test update",
+				Detail:       "test detail update",
+				Data:         map[string]interface{}{},
+				Timeout:      86400,
+				PreActions: []action.Action{
+					{
+						Type: "answer",
+					},
+				},
+				PostActions: []action.Action{
+					{
+						Type: "hangup",
+					},
+				},
+				CallIDs:      []uuid.UUID{},
+				RecordingIDs: []uuid.UUID{},
+				WebhookURI:   "test.com",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","user_id":1,"confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"webhook_uri":"test.com","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockConf.EXPECT().Update(gomock.Any(), tt.conference.ID, tt.conference.Name, tt.conference.Detail, tt.conference.Timeout, tt.conference.WebhookURI, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -124,6 +124,65 @@ func (mr *MockRequestHandlerMockRecorder) FMFlowCreate(f interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowCreate), f)
 }
 
+// FMFlowDelete mocks base method.
+func (m *MockRequestHandler) FMFlowDelete(flowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowDelete", flowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FMFlowDelete indicates an expected call of FMFlowDelete.
+func (mr *MockRequestHandlerMockRecorder) FMFlowDelete(flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowDelete", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowDelete), flowID)
+}
+
+// FMFlowGet mocks base method.
+func (m *MockRequestHandler) FMFlowGet(flowID uuid.UUID) (*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowGet", flowID)
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMFlowGet indicates an expected call of FMFlowGet.
+func (mr *MockRequestHandlerMockRecorder) FMFlowGet(flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowGet", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowGet), flowID)
+}
+
+// FMFlowGets mocks base method.
+func (m *MockRequestHandler) FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowGets", userID, pageToken, pageSize)
+	ret0, _ := ret[0].([]flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMFlowGets indicates an expected call of FMFlowGets.
+func (mr *MockRequestHandlerMockRecorder) FMFlowGets(userID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowGets", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowGets), userID, pageToken, pageSize)
+}
+
+// FMFlowUpdate mocks base method.
+func (m *MockRequestHandler) FMFlowUpdate(f *flow.Flow) (*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowUpdate", f)
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMFlowUpdate indicates an expected call of FMFlowUpdate.
+func (mr *MockRequestHandlerMockRecorder) FMFlowUpdate(f interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowUpdate", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowUpdate), f)
+}
+
 // FlowActionGet mocks base method.
 func (m *MockRequestHandler) FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()

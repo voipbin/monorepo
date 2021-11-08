@@ -157,7 +157,7 @@ func runSubscribe(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
-	requestHandler := requesthandler.NewRequestHandler(rabbitSock, *rabbitExchangeDelay, *rabbitQueueCall, *rabbitQueueFlow, *rabbitQueueWebhook)
+	requestHandler := requesthandler.NewRequestHandler(rabbitSock, *rabbitExchangeDelay, *rabbitQueueListen, *rabbitQueueCall, *rabbitQueueFlow, *rabbitQueueWebhook)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify)
 
 	subHandler := subscribehandler.NewSubscribeHandler(
@@ -187,7 +187,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
-	requestHandler := requesthandler.NewRequestHandler(rabbitSock, *rabbitExchangeDelay, *rabbitQueueCall, *rabbitQueueFlow, *rabbitQueueWebhook)
+	requestHandler := requesthandler.NewRequestHandler(rabbitSock, *rabbitExchangeDelay, *rabbitQueueListen, *rabbitQueueCall, *rabbitQueueFlow, *rabbitQueueWebhook)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify)
 
 	cfHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db, cache)

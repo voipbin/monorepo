@@ -50,7 +50,7 @@ func (h *conferenceHandler) Create(
 	}
 	log.Debugf("Created flow. flow_id: %s", f.ID)
 
-	if timeout == 0 {
+	if timeout > 0 && timeout < 60 {
 		timeout = defaultConferenceTimeout
 	}
 
@@ -66,6 +66,9 @@ func (h *conferenceHandler) Create(
 		Detail:       detail,
 		Data:         map[string]interface{}{},
 		Timeout:      timeout,
+
+		PreActions:  preActions,
+		PostActions: postActions,
 
 		CallIDs:      []uuid.UUID{},
 		RecordingIDs: []uuid.UUID{},
@@ -103,7 +106,7 @@ func (h *conferenceHandler) Create(
 		}
 	}
 
-	return newCf, nil
+	return cf, nil
 }
 
 // createConferenceFlowActions creates the actions for conference join.

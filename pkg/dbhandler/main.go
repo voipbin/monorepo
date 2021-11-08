@@ -10,6 +10,7 @@ import (
 	"time"
 
 	uuid "github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
@@ -28,6 +29,7 @@ type DBHandler interface {
 	ConferenceGets(ctx context.Context, userID uint64, size uint64, token string) ([]*conference.Conference, error)
 	ConferenceGetsWithType(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error)
 	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
+	ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) error
 	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
 	ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
