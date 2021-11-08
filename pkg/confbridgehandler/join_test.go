@@ -139,6 +139,7 @@ func TestJoin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridge.ID).Return(tt.confbridge, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
@@ -159,7 +160,7 @@ func TestJoin(t *testing.T) {
 
 			mockReq.EXPECT().AstChannelCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", "", nil).Return(nil)
 
-			if err := h.Join(tt.confbridge.ID, tt.call.ID); err != nil {
+			if err := h.Join(ctx, tt.confbridge.ID, tt.call.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

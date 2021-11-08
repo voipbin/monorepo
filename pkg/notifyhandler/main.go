@@ -103,6 +103,7 @@ func init() {
 // NotifyHandler intreface
 type NotifyHandler interface {
 	NotifyEvent(eventType EventType, webhookURI string, message WebhookMessage)
+	PublishEvent(t EventType, c interface{})
 }
 
 type notifyHandler struct {

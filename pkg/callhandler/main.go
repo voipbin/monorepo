@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -16,11 +17,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // CallHandler is interface for service handle
@@ -50,11 +51,12 @@ type CallHandler interface {
 
 // callHandler structure for service handle
 type callHandler struct {
-	reqHandler    requesthandler.RequestHandler
-	db            dbhandler.DBHandler
-	cache         cachehandler.CacheHandler
-	confHandler   conferencehandler.ConferenceHandler
-	notifyHandler notifyhandler.NotifyHandler
+	reqHandler        requesthandler.RequestHandler
+	db                dbhandler.DBHandler
+	cache             cachehandler.CacheHandler
+	confHandler       conferencehandler.ConferenceHandler
+	confbridgeHandler confbridgehandler.ConfbridgeHandler
+	notifyHandler     notifyhandler.NotifyHandler
 }
 
 // contextType
@@ -138,11 +140,12 @@ func init() {
 func NewCallHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) CallHandler {
 
 	h := &callHandler{
-		reqHandler:    r,
-		notifyHandler: n,
-		db:            db,
-		cache:         cache,
-		confHandler:   conferencehandler.NewConferHandler(r, n, db, cache),
+		reqHandler:        r,
+		notifyHandler:     n,
+		db:                db,
+		cache:             cache,
+		confHandler:       conferencehandler.NewConferHandler(r, n, db, cache),
+		confbridgeHandler: confbridgehandler.NewConfbridgeHandler(r, n, db, cache),
 	}
 
 	return h

@@ -14,6 +14,6 @@ func (h *notifyHandler) NotifyEvent(eventType EventType, webhookURI string, mess
 	)
 	log.Debugf("Sending a notify event. event_type: %s", eventType)
 
-	go h.publishEvent(eventType, message)
+	go h.PublishEvent(eventType, message)
 	go h.publishWebhook(eventType, webhookURI, message)
 }

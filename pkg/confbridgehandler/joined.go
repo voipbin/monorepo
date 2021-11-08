@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler/models/event"
 )
 
 // Joined handles joined call
@@ -46,12 +47,13 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 		return err
 	}
 
-	// get updated confbridge info and notify
-	cb, err := h.db.ConfbridgeGet(ctx, confbridgeID)
-	if err != nil {
-		log.Errorf("Could not get confbridge info. err: %v", err)
+	// Publish the event
+	evt := &event.ConfbridgeJoinedLeaved{
+		ID:           confbridgeID,
+		ConferenceID: conferenceID,
+		CallID:       callID,
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConfbridgeJoined, "", cb)
+	h.notifyHandler.PublishEvent(notifyhandler.EventTypeConfbridgeJoined, evt)
 
 	// get updated call info and notify
 	call, err := h.db.CallGet(ctx, callID)

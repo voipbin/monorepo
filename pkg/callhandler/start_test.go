@@ -6,19 +6,19 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 func TestGetTypeContextIncomingCall(t *testing.T) {
@@ -152,15 +152,14 @@ func TestTypeConferenceStart(t *testing.T) {
 		confHandler:   mockConf,
 	}
 
-	type test struct {
+	tests := []struct {
 		name       string
 		channel    *channel.Channel
 		data       map[string]string
 		call       *call.Call
-		conference *conference.Conference
-	}
-
-	tests := []test{
+		conference *cfconference.Conference
+		activeFlow *activeflow.ActiveFlow
+	}{
 		{
 			"normal",
 			&channel.Channel{
@@ -179,10 +178,22 @@ func TestTypeConferenceStart(t *testing.T) {
 				ChannelID:  "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
 				Type:       call.TypeConference,
 				Direction:  call.DirectionIncoming,
+				FlowID:     uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
+				Action: action.Action{
+					ID: action.IDStart,
+				},
 			},
-			&conference.Conference{
-				ID:   uuid.FromStringOrNil("bad943d8-9b59-11ea-b409-4ba263721f17"),
-				Type: conference.TypeConference,
+			&cfconference.Conference{
+				ID:     uuid.FromStringOrNil("bad943d8-9b59-11ea-b409-4ba263721f17"),
+				Type:   cfconference.TypeConference,
+				FlowID: uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
+			},
+			&activeflow.ActiveFlow{
+				CallID: uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
+				FlowID: uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
+				CurrentAction: action.Action{
+					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				},
 			},
 		},
 	}
@@ -191,20 +202,22 @@ func TestTypeConferenceStart(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.conference, nil)
 			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutConference).Return(nil)
+			mockReq.EXPECT().CFConferenceGet(uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.conference, nil)
 			mockReq.EXPECT().AstBridgeCreate(tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockReq.EXPECT().FlowActvieFlowPost(gomock.Any(), tt.conference.FlowID).Return(tt.activeFlow, nil)
+
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
-			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 
-			// actionExecuteConferenceJoin part.
-			// just pass it.
+			// action next part.
+			mockReq.EXPECT().FlowActvieFlowNextGet(gomock.Any(), action.IDStart).Return(&action.Action{Type: action.TypeHangup}, nil)
+
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-			mockConf.EXPECT().Join(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

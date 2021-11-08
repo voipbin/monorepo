@@ -9,14 +9,14 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
 
 // StasisStart event's context types
@@ -460,24 +460,30 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]s
 		})
 	log.Debugf("Starting the conference to joining. source: %s", cn.SourceNumber)
 
-	// get conference info
-	cf, err := h.db.ConferenceGet(ctx, cfID)
-	if err != nil {
-		log.Debug("The conference has not created.")
-		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
-		return err
-	}
-
 	// Set absolute timeout for conference
 	if err := h.reqHandler.AstChannelVariableSet(cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutConference); err != nil {
 		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
+	// get conference info
+	cf, err := h.reqHandler.CFConferenceGet(cfID)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return err
+	}
+
 	// generate call info
 	tmpCall := call.NewCallByChannel(cn, cf.UserID, call.TypeFlow, call.DirectionIncoming, data)
+	tmpCall.FlowID = cf.FlowID
+	log = log.WithFields(
+		logrus.Fields{
+			"call_id": tmpCall.ID,
+			"flow_id": tmpCall.FlowID,
+		},
+	)
 
-	// create call bridge
 	callBridgeID, err := h.addCallBridge(cn, bridge.ReferenceTypeCall, tmpCall.ID)
 	if err != nil {
 		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
@@ -485,6 +491,17 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]s
 		return fmt.Errorf("could not add the channel to the join bridge. err: %v", err)
 	}
 	tmpCall.BridgeID = callBridgeID
+
+	// create active flow
+	af, err := h.reqHandler.FlowActvieFlowPost(tmpCall.ID, tmpCall.FlowID)
+	if err != nil {
+		af = &activeflow.ActiveFlow{}
+		log.Errorf("Could not create active flow. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)
+		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	}
+	log.Debugf("Created an active flow. active-flow: %v", af)
+	tmpCall.WebhookURI = af.WebhookURI
+	tmpCall.Action = af.CurrentAction
 
 	// create a call
 	c, err := h.createCall(ctx, tmpCall)
@@ -496,50 +513,13 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]s
 	}
 	log = log.WithFields(
 		logrus.Fields{
-			"call":      c.ID,
-			"type":      c.Type,
-			"direction": c.Direction,
+			"call_id":        c.ID,
+			"call_type":      c.Type,
+			"call_direction": c.Direction,
 		})
-	log.Debug("The call has created.")
+	log.WithField("call", c).Debug("Created a call.")
 
-	// set flowid
-	if err := h.db.CallSetFlowID(ctx, c.ID, uuid.Nil); err != nil {
-		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
-	}
-
-	// create an option for action echo
-	// create default option for echo
-	option := action.OptionConferenceJoin{
-		ConferenceID: cf.ID.String(),
-	}
-	opt, err := json.Marshal(option)
-	if err != nil {
-		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not marshal the option. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
-	}
-
-	// create an action
-	action := &action.Action{
-		ID:     action.IDStart,
-		Type:   action.TypeConferenceJoin,
-		Option: opt,
-	}
-
-	c, err = h.db.CallGet(ctx, c.ID)
-	if err != nil {
-		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not get created call info. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
-	}
-
-	// execute action
-	if err := h.ActionExecute(c, action); err != nil {
-		log.Errorf("Could not execte the action. Hanging up the call. action: %s", action.Type)
-		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not get execute the action. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
-	}
-
-	return nil
+	return h.ActionNext(c)
 }
 
 // typeFlowStart handles flow calltype start.
@@ -570,6 +550,13 @@ func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]string)
 
 	// create a temp call info
 	tmpCall := call.NewCallByChannel(cn, call.UserIDAdmin, call.TypeSipService, call.DirectionIncoming, data)
+	tmpCall.FlowID = numb.FlowID
+	log = log.WithFields(
+		logrus.Fields{
+			"call_id": tmpCall.ID,
+			"flow_id": tmpCall.FlowID,
+		},
+	)
 
 	// create call bridge
 	callBridgeID, err := h.addCallBridge(cn, bridge.ReferenceTypeCall, tmpCall.ID)
@@ -578,7 +565,6 @@ func (h *callHandler) typeFlowStart(cn *channel.Channel, data map[string]string)
 		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return fmt.Errorf("could not add the channel to the join bridge. err: %v", err)
 	}
-	tmpCall.FlowID = numb.FlowID
 	tmpCall.BridgeID = callBridgeID
 
 	// create active flow

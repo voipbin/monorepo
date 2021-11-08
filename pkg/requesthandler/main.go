@@ -12,15 +12,17 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 )
 
 // contents type
@@ -131,31 +133,35 @@ type RequestHandler interface {
 	AstChannelRecord(asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelVariableSet(asteriskID, channelID, variable, value string) error
 
-	// cm call
+	// call-manager call
 	CallCallHealth(id uuid.UUID, delay, retryCount int) error
 	CallCallActionNext(id uuid.UUID) error
 	CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
 	CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
-	// cm conference
+	// call-manager conference
 	CallConferenceTerminate(conferenceID uuid.UUID, delay int) error
 
-	// fm actions
+	// conference-manager conference
+	CFConferenceGet(conferenceID uuid.UUID) (*cfconference.Conference, error)
+
+	// flow-manager actions
 	FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
 	FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
 	FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error)
+	FMFlowsPost(userID uint64, name string, detail string, webhookURI string, actions []action.Action, persist bool) (*fmflow.Flow, error)
 
-	// nm numbers
+	// number-manager numbers
 	NMV1NumbersNumberGet(num string) (*number.Number, error)
 
-	// rm contacts
+	// recording-manager contacts
 	RMV1ContactsGet(endpoint string) ([]*astcontact.AstContact, error)
 	RMV1ContactsPut(endpoint string) error
 
-	// tts speeches
+	// tts-manager speeches
 	TTSSpeechesPOST(text, gender, language string) (string, error)
 
-	// wm webhooks
+	// webhook-manager webhooks
 	WMWebhookPOST(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error
 }
 

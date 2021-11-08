@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
@@ -35,6 +36,7 @@ func TestLeaved(t *testing.T) {
 	tests := []struct {
 		name       string
 		confbridge *confbridge.Confbridge
+		callID     uuid.UUID
 		channel    *channel.Channel
 		bridge     *bridge.Bridge
 	}{
@@ -48,15 +50,19 @@ func TestLeaved(t *testing.T) {
 					"372b84b4-38e8-11ec-b135-638987bdf59b": uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 				},
 			},
+			uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 			&channel.Channel{
 				AsteriskID: "00:11:22:33:44:55",
 				ID:         "372b84b4-38e8-11ec-b135-638987bdf59b",
+				StasisData: map[string]string{
+					"confbridge_id": "eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2",
+					"call_id":       "eaa09918-38e7-11ec-b386-bb681c4ba744",
+					"conference_id": "eb93c4ac-38cf-11ec-bcc5-031b06ff96b3",
+				},
 			},
 			&bridge.Bridge{
-				AsteriskID:    "00:11:22:33:44:55",
-				ID:            "1f940122-38e9-11ec-a25c-cb08db10a7c1",
-				ReferenceType: bridge.ReferenceTypeConfbridge,
-				ReferenceID:   uuid.FromStringOrNil("63fd27ee-38e9-11ec-902a-5be8c21c25a7"),
+				AsteriskID: "00:11:22:33:44:55",
+				ID:         "1f940122-38e9-11ec-a25c-cb08db10a7c1",
 			},
 		},
 	}
@@ -65,9 +71,11 @@ func TestLeaved(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(gomock.Any(), tt.bridge.ReferenceID, tt.channel.ID).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.confbridge, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConfbridgeLeaved, "", tt.confbridge)
+			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(gomock.Any(), tt.confbridge.ID, tt.channel.ID).Return(nil)
+			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.callID, uuid.Nil).Return(nil)
+			mockNotify.EXPECT().PublishEvent(notifyhandler.EventTypeConfbridgeLeaved, gomock.Any())
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
+			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, "", gomock.Any())
 
 			if err := h.Leaved(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

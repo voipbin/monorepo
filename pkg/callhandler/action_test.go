@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -13,11 +14,58 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
+
+func TestActionExecuteConfbridgeJoin(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+	h := &callHandler{
+		reqHandler:        mockReq,
+		db:                mockDB,
+		confHandler:       mockConf,
+		confbridgeHandler: mockConfbridge,
+	}
+
+	tests := []struct {
+		name               string
+		call               *call.Call
+		action             *action.Action
+		expectConfbridgeID uuid.UUID
+	}{
+		{
+			"normal",
+			&call.Call{
+				ID: uuid.FromStringOrNil("ed1620aa-3e6e-11ec-902b-170b2849173a"),
+			},
+			&action.Action{
+				Type:   action.TypeConfbridgeJoin,
+				Option: []byte(`{"confbridge_id":"3f5ff42c-3e6e-11ec-8c17-039eb294368c"}`),
+			},
+			uuid.FromStringOrNil("3f5ff42c-3e6e-11ec-8c17-039eb294368c"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
+			mockConfbridge.EXPECT().Join(gomock.Any(), tt.expectConfbridgeID, tt.call.ID)
+			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
 
 func TestActionExecuteConferenceJoin(t *testing.T) {
 	mc := gomock.NewController(t)

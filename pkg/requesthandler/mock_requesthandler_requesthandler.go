@@ -12,8 +12,10 @@ import (
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 )
@@ -296,6 +298,21 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelVariableSet(asteriskID, chan
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelVariableSet", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelVariableSet), asteriskID, channelID, variable, value)
 }
 
+// CFConferenceGet mocks base method.
+func (m *MockRequestHandler) CFConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CFConferenceGet", conferenceID)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CFConferenceGet indicates an expected call of CFConferenceGet.
+func (mr *MockRequestHandlerMockRecorder) CFConferenceGet(conferenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceGet), conferenceID)
+}
+
 // CallCallActionNext mocks base method.
 func (m *MockRequestHandler) CallCallActionNext(id uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -364,6 +381,21 @@ func (m *MockRequestHandler) CallConferenceTerminate(conferenceID uuid.UUID, del
 func (mr *MockRequestHandlerMockRecorder) CallConferenceTerminate(conferenceID, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceTerminate", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceTerminate), conferenceID, delay)
+}
+
+// FMFlowsPost mocks base method.
+func (m *MockRequestHandler) FMFlowsPost(userID uint64, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMFlowsPost", userID, name, detail, webhookURI, actions, persist)
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMFlowsPost indicates an expected call of FMFlowsPost.
+func (mr *MockRequestHandlerMockRecorder) FMFlowsPost(userID, name, detail, webhookURI, actions, persist interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowsPost", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowsPost), userID, name, detail, webhookURI, actions, persist)
 }
 
 // FlowActionGet mocks base method.
