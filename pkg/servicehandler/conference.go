@@ -6,7 +6,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
@@ -70,44 +72,46 @@ func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string)
 }
 
 // ConferenceCreate is a service handler for conference creating.
-func (h *serviceHandler) ConferenceCreate(u *user.User, confType conference.Type, name string, detail string, webhookURI string) (*conference.Conference, error) {
+func (h *serviceHandler) ConferenceCreate(
+	u *user.User,
+	confType conference.Type,
+	name string,
+	detail string,
+	webhookURI string,
+	preActions []action.Action,
+	postActions []action.Action,
+) (*conference.Conference, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user":        u.ID,
-			"username":    u.Username,
-			"type":        confType,
-			"name":        name,
-			"detail":      detail,
-			"webhook_uri": webhookURI,
+			"user":         u.ID,
+			"username":     u.Username,
+			"type":         confType,
+			"name":         name,
+			"detail":       detail,
+			"webhook_uri":  webhookURI,
+			"pre_actions":  preActions,
+			"post_actions": postActions,
 		},
 	)
+	log.Debugf("Creating a conference.")
 
-	conf, err := h.reqHandler.CFConferenceCreate(u.ID, cfconference.Type(confType), name, detail, webhookURI)
+	fmPreActions := []fmaction.Action{}
+	for _, a := range preActions {
+		fmPreActions = append(fmPreActions, *action.CreateAction(&a))
+	}
+
+	fmPostActions := []fmaction.Action{}
+	for _, a := range postActions {
+		fmPostActions = append(fmPostActions, *action.CreateAction(&a))
+	}
+
+	conf, err := h.reqHandler.CFConferenceCreate(u.ID, cfconference.Type(confType), name, detail, webhookURI, fmPreActions, fmPostActions)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
 	}
 
-	// create conference
-	res := &conference.Conference{
-		ID:     conf.ID,
-		Type:   conference.Type(conf.Type),
-		UserID: conf.UserID,
-
-		Status: conference.Status(conf.Status),
-		Name:   conf.Name,
-		Detail: conf.Detail,
-
-		CallIDs:      conf.CallIDs,
-		RecordingIDs: conf.RecordingIDs,
-
-		WebhookURI: conf.WebhookURI,
-
-		TMCreate: conf.TMCreate,
-		TMUpdate: conf.TMUpdate,
-		TMDelete: conf.TMDelete,
-	}
-
+	res := conference.Convert(conf)
 	return res, nil
 }
 

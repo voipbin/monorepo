@@ -3,6 +3,8 @@ package conference
 import (
 	uuid "github.com/gofrs/uuid"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 )
 
 // Conference type for client show
@@ -14,6 +16,9 @@ type Conference struct {
 	Status Status `json:"status"` // Status.
 	Name   string `json:"name"`   // Name.
 	Detail string `json:"detail"` // Detail.
+
+	PreActions  []action.Action // actions before joining to the conference.
+	PostActions []action.Action // actions after leaving from the conference.
 
 	CallIDs []uuid.UUID `json:"call_ids"` // Currently joined call IDs.
 
@@ -48,27 +53,41 @@ const (
 )
 
 // Convert returns conference.Conference from cfconference.Conference
-func Convert(h *cfconference.Conference) *Conference {
-	c := &Conference{
-		ID:     h.ID,
-		UserID: h.UserID,
-		Type:   Type(h.Type),
+func Convert(conf *cfconference.Conference) *Conference {
 
-		Status: Status(h.Status),
-		Name:   h.Name,
-		Detail: h.Detail,
-
-		CallIDs: h.CallIDs,
-
-		RecordingID:  h.RecordingID,
-		RecordingIDs: h.RecordingIDs,
-
-		WebhookURI: h.WebhookURI,
-
-		TMCreate: h.TMCreate,
-		TMUpdate: h.TMUpdate,
-		TMDelete: h.TMDelete,
+	preActions := []action.Action{}
+	for _, a := range conf.PreActions {
+		preActions = append(preActions, *action.ConvertAction(&a))
 	}
 
-	return c
+	postActions := []action.Action{}
+	for _, a := range conf.PostActions {
+		postActions = append(postActions, *action.ConvertAction(&a))
+	}
+
+	res := &Conference{
+		ID:     conf.ID,
+		UserID: conf.UserID,
+		Type:   Type(conf.Type),
+
+		Status: Status(conf.Status),
+		Name:   conf.Name,
+		Detail: conf.Detail,
+
+		PreActions:  preActions,
+		PostActions: postActions,
+
+		CallIDs: conf.CallIDs,
+
+		RecordingID:  conf.RecordingID,
+		RecordingIDs: conf.RecordingIDs,
+
+		WebhookURI: conf.WebhookURI,
+
+		TMCreate: conf.TMCreate,
+		TMUpdate: conf.TMUpdate,
+		TMDelete: conf.TMDelete,
+	}
+
+	return res
 }

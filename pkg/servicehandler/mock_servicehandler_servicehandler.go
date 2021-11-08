@@ -9,6 +9,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	action "gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	availablenumber "gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
@@ -134,18 +135,18 @@ func (mr *MockServiceHandlerMockRecorder) CallGets(u, size, token interface{}) *
 }
 
 // ConferenceCreate mocks base method.
-func (m *MockServiceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail, webhookURI string) (*conference.Conference, error) {
+func (m *MockServiceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceCreate", u, confType, name, detail, webhookURI)
+	ret := m.ctrl.Call(m, "ConferenceCreate", u, confType, name, detail, webhookURI, preActions, postActions)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConferenceCreate indicates an expected call of ConferenceCreate.
-func (mr *MockServiceHandlerMockRecorder) ConferenceCreate(u, confType, name, detail, webhookURI interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ConferenceCreate(u, confType, name, detail, webhookURI, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceCreate), u, confType, name, detail, webhookURI)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceCreate), u, confType, name, detail, webhookURI, preActions, postActions)
 }
 
 // ConferenceDelete mocks base method.
