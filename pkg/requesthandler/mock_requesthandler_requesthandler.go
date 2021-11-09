@@ -42,18 +42,18 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // CFConferenceCreate mocks base method.
-func (m *MockRequestHandler) CFConferenceCreate(userID uint64, conferenceType conference0.Type, name, detail string, timeout int) (*conference0.Conference, error) {
+func (m *MockRequestHandler) CFConferenceCreate(userID uint64, conferenceType conference0.Type, name, detail string, timeout int, webhookURI string, data map[string]interface{}, preActions, postActions []action.Action) (*conference0.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CFConferenceCreate", userID, conferenceType, name, detail, timeout)
+	ret := m.ctrl.Call(m, "CFConferenceCreate", userID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions)
 	ret0, _ := ret[0].(*conference0.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CFConferenceCreate indicates an expected call of CFConferenceCreate.
-func (mr *MockRequestHandlerMockRecorder) CFConferenceCreate(userID, conferenceType, name, detail, timeout interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CFConferenceCreate(userID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceCreate), userID, conferenceType, name, detail, timeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceCreate), userID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions)
 }
 
 // CFConferenceDelete mocks base method.

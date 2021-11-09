@@ -8,6 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfrequest "gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // CMConferenceGet sends a request to call-manager
@@ -60,18 +62,32 @@ func (r *requestHandler) CFConferenceDelete(conferenceID uuid.UUID) error {
 // it returns created conference if it succeed.
 // timeout(sec)
 // it the timeout set to 0 means no timeout.
-func (r *requestHandler) CFConferenceCreate(userID uint64, conferenceType cfconference.Type, name string, detail string, timeout int) (*cfconference.Conference, error) {
+func (r *requestHandler) CFConferenceCreate(
+	userID uint64,
+	conferenceType cfconference.Type,
+	name string,
+	detail string,
+	timeout int,
+	webhookURI string,
+	data map[string]interface{},
+	preActions []action.Action,
+	postActions []action.Action,
+) (*cfconference.Conference, error) {
 	uri := "/v1/conferences"
 
-	data := &cfrequest.V1DataConferencesPost{
-		Type:    conferenceType,
-		UserID:  userID,
-		Name:    name,
-		Detail:  detail,
-		Timeout: timeout,
+	d := &cfrequest.V1DataConferencesPost{
+		Type:        conferenceType,
+		UserID:      userID,
+		Name:        name,
+		Detail:      detail,
+		Timeout:     timeout,
+		WebhookURI:  webhookURI,
+		Data:        data,
+		PreActions:  preActions,
+		PostActions: postActions,
 	}
 
-	m, err := json.Marshal(data)
+	m, err := json.Marshal(d)
 	if err != nil {
 		return nil, err
 	}

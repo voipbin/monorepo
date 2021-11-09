@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -86,7 +86,16 @@ func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.U
 		// handle the patch
 		// add the patched actions to the active-flow
 		if err := h.activeFlowHandleActionPatchFlow(ctx, callID, nextAction); err != nil {
-			log.Errorf("Could not handle the patch action correctly. err: %v", err)
+			log.Errorf("Could not handle the patch_flow action correctly. err: %v", err)
+			return nil, err
+		}
+
+		// do activeflow next action get again.
+		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+
+	case action.TypeConferenceJoin:
+		if err := h.activeFlowHandleActionConferenceJoin(ctx, callID, nextAction); err != nil {
+			log.Errorf("Could not handle the conference_join action correctly. err: %v", err)
 			return nil, err
 		}
 
@@ -327,6 +336,59 @@ func (h *flowHandler) activeFlowHandleActionPatchFlow(ctx context.Context, callI
 	return nil
 }
 
+// activeFlowHandleActionPatchFlow handles action patch_flow with active flow.
+// it downloads the actions from the given action(patch) and append it to the active flow.
+func (h *flowHandler) activeFlowHandleActionConferenceJoin(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":   callID,
+		"action_id": act.ID,
+	})
+	log.Debugf("Action detail. action: %v", act)
+
+	var opt action.OptionConferenceJoin
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		return err
+	}
+	conferenceID := uuid.FromStringOrNil(opt.ConferenceID)
+
+	// get conference
+	conf, err := h.reqHandler.CFConferenceGet(conferenceID)
+	if err != nil {
+		log.Errorf("Could not get conference. err: %v", err)
+		return err
+	}
+
+	// get flow
+	f, err := h.FlowGet(ctx, conf.FlowID)
+	if err != nil {
+		log.Errorf("Could not get flow. err: %v", err)
+		return err
+	}
+
+	// get active flow
+	af, err := h.db.ActiveFlowGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get active flow. err: %v", err)
+		return err
+	}
+
+	// append the patched actions to the active flow
+	if err := appendActionsAfterID(af, act.ID, f.Actions); err != nil {
+		log.Errorf("Could not append new action. err: %v", err)
+		return fmt.Errorf("could not append new action. err: %v", err)
+	}
+	af.TMUpdate = getCurTime()
+
+	// set active flow
+	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 // activeFlowHandleActionConnect handles action connect with active flow.
 func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID uuid.UUID, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
@@ -342,7 +404,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	}
 
 	// create conference room for connect
-	cf, err := h.reqHandler.CMConferenceCreate(af.UserID, conference.TypeConnect, "", "", 86400)
+	cf, err := h.reqHandler.CFConferenceCreate(af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create conference for connect. err: %v", err)
 		return fmt.Errorf("could not create conference for connect. err: %v", err)

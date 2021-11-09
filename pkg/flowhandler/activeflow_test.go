@@ -8,11 +8,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -378,7 +378,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 		callID       uuid.UUID
 		act          *action.Action
 		af           activeflow.ActiveFlow
-		cf           *conference.Conference
+		cf           *cfconference.Conference
 		connectFlow  *flow.Flow
 		source       address.Address
 		destinations []address.Address
@@ -409,7 +409,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					},
 				},
 			},
-			&conference.Conference{
+			&cfconference.Conference{
 				ID:     uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
 				UserID: 1,
 			},
@@ -453,7 +453,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					},
 				},
 			},
-			&conference.Conference{
+			&cfconference.Conference{
 				ID:     uuid.FromStringOrNil("cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"),
 				UserID: 1,
 			},
@@ -501,7 +501,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 					},
 				},
 			},
-			&conference.Conference{
+			&cfconference.Conference{
 				ID:     uuid.FromStringOrNil("2266e688-2712-11eb-aab4-eb00b0a3efbe"),
 				UserID: 1,
 			},
@@ -531,7 +531,7 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
-			mockReq.EXPECT().CMConferenceCreate(tt.af.UserID, conference.TypeConnect, "", "", 86400).Return(tt.cf, nil)
+			mockReq.EXPECT().CFConferenceCreate(tt.af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil).Return(tt.cf, nil)
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
 			for i := range tt.destinations {
@@ -794,6 +794,83 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
 			if err := h.activeFlowHandleActionPatchFlow(ctx, tt.callID, tt.act); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &flowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	tests := []struct {
+		name string
+
+		callID         uuid.UUID
+		act            *action.Action
+		activeFlow     *activeflow.ActiveFlow
+		conference     *cfconference.Conference
+		conferenceFlow *flow.Flow
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+			&action.Action{
+				ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+				Type:   action.TypeConferenceJoin,
+				Option: []byte(`{"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
+			},
+			&activeflow.ActiveFlow{
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+						Type: action.TypeConfbridgeJoin,
+					},
+				},
+			},
+			&cfconference.Conference{
+				ID:     uuid.FromStringOrNil("b7c84d66-410b-11ec-ab21-23726c7dc3b9"),
+				FlowID: uuid.FromStringOrNil("b7eb3420-410b-11ec-ad87-cf5b4e34b7ed"),
+			},
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("b7eb3420-410b-11ec-ad87-cf5b4e34b7ed"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("c76c25d4-410c-11ec-9e97-e34e56d4cc4e"),
+						Type: action.TypeConfbridgeJoin,
+					},
+					{
+						ID:   uuid.FromStringOrNil("c785c6b0-410c-11ec-bd9f-5f698d905eef"),
+						Type: action.TypeHangup,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockReq.EXPECT().CFConferenceGet(tt.conference.ID).Return(tt.conference, nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.conference.FlowID).Return(tt.conferenceFlow, nil)
+			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
+			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+
+			if err := h.activeFlowHandleActionConferenceJoin(ctx, tt.callID, tt.act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
