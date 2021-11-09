@@ -90,7 +90,17 @@ type RequestHandler interface {
 
 	//// conference-manager
 	// conferences
-	CFConferenceCreate(userID uint64, conferenceType cfconference.Type, name string, detail string, timeout int) (*cfconference.Conference, error)
+	CFConferenceCreate(
+		userID uint64,
+		conferenceType cfconference.Type,
+		name string,
+		detail string,
+		timeout int,
+		webhookURI string,
+		data map[string]interface{},
+		preActions []action.Action,
+		postActions []action.Action,
+	) (*cfconference.Conference, error)
 	CFConferenceDelete(conferenceID uuid.UUID) error
 	CFConferenceGet(conferenceID uuid.UUID) (*cfconference.Conference, error)
 
