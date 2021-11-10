@@ -11,8 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
@@ -24,25 +22,20 @@ func TestBridgeLeftJoin(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		db:            mockDB,
-		confHandler:   mockConf,
 		notifyHandler: mockNotify,
 	}
 
-	type test struct {
-		name       string
-		channel    *channel.Channel
-		call       *call.Call
-		bridge     *bridge.Bridge
-		conference *conference.Conference
-	}
-
-	tests := []test{
+	tests := []struct {
+		name    string
+		channel *channel.Channel
+		call    *call.Call
+		bridge  *bridge.Bridge
+	}{
 		{
 			"call normal destroy",
 			&channel.Channel{
@@ -61,9 +54,6 @@ func TestBridgeLeftJoin(t *testing.T) {
 			&bridge.Bridge{
 				ReferenceID: uuid.FromStringOrNil("095658d8-151c-11ec-8aa9-1fca7824a72f"),
 			},
-			&conference.Conference{
-				ID: uuid.FromStringOrNil("3d093cca-2022-11ec-9358-c7e3a147380e"),
-			},
 		},
 	}
 
@@ -71,12 +61,12 @@ func TestBridgeLeftJoin(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().AstChannelHangup(tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
+			// mockDB.EXPECT().CallGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.call, nil)
+			// mockDB.EXPECT().ConferenceRemoveCallID(gomock.Any(), tt.call.ConfID, tt.call.ID).Return(nil)
+			// mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.call.ConfID).Return(tt.conference, nil)
+			// mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceLeaved, tt.conference.WebhookURI, tt.conference)
+			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.bridge.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.call, nil)
-			mockDB.EXPECT().ConferenceRemoveCallID(gomock.Any(), tt.call.ConfID, tt.call.ID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.call.ConfID).Return(tt.conference, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceLeaved, tt.conference.WebhookURI, tt.conference)
-			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.call.ID, uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
 			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
 
@@ -93,12 +83,10 @@ func TestBridgeLeftExternal(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -168,12 +156,10 @@ func TestRemoveAllChannelsInBridge(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {

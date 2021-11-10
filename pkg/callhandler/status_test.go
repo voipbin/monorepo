@@ -9,7 +9,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
@@ -22,13 +21,11 @@ func TestUpdateStatusRinging(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -72,13 +69,11 @@ func TestUpdateStatusRingingFail(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -158,13 +153,11 @@ func TestUpdateStatusProgressing(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -219,12 +212,10 @@ func TestUpdateStatusProgressingFail(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {

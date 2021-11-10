@@ -193,12 +193,8 @@ func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt in
 	case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
 		return h.callHandler.ARIChannelLeftBridge(cn, br)
 
-	case bridge.ReferenceTypeConfbridge:
-		_ = h.confbridgeHandler.Leaved(ctx, cn, br)
-		return h.confHandler.ARIChannelLeftBridge(cn, br)
-
-	case bridge.ReferenceTypeConfbridgeSnoop:
-		return h.confHandler.ARIChannelLeftBridge(cn, br)
+	case bridge.ReferenceTypeConfbridge, bridge.ReferenceTypeConfbridgeSnoop:
+		return h.confbridgeHandler.ARIChannelLeftBridge(cn, br)
 
 	default:
 		log.WithField("event", e).Error("Could not find correct event handler.")

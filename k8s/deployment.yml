@@ -40,6 +40,8 @@ spec:
             - 'bin-manager.call-manager.event'
             - '-rabbit_queue_arievent'
             - 'asterisk.all.event'
+            - '-rabbit_queue_conference'
+            - 'bin-manager.conference-manager.request'
             - '-rabbit_queue_flow'
             - 'bin-manager.flow-manager.request'
             - '-rabbit_queue_listen'

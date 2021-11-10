@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	uuid "github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -72,7 +73,7 @@ const (
 
 // default sip service option variables
 const (
-	DefaultSipServiceOptionConferenceID = "037a20b9-d11d-4b63-a135-ae230cafd495" // default conference ID for conference@sip-service
+	DefaultSipServiceOptionConfbridgeID = "037a20b9-d11d-4b63-a135-ae230cafd495" // default conference ID for conference@sip-service
 )
 
 // createCall create a call record. All of call creation process need to use this.
@@ -495,9 +496,9 @@ func (h *callHandler) typeConferenceStart(cn *channel.Channel, data map[string]s
 	// create active flow
 	af, err := h.reqHandler.FlowActvieFlowPost(tmpCall.ID, tmpCall.FlowID)
 	if err != nil {
-		af = &activeflow.ActiveFlow{}
 		log.Errorf("Could not create active flow. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)
 		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		return errors.Wrap(err, "could not create an active flow")
 	}
 	log.Debugf("Created an active flow. active-flow: %v", af)
 	tmpCall.WebhookURI = af.WebhookURI
@@ -613,6 +614,7 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]s
 
 	// generate a call info
 	tmpCall := call.NewCallByChannel(cn, call.UserIDAdmin, call.TypeSipService, call.DirectionIncoming, data)
+	tmpCall.FlowID = uuid.Nil
 
 	// create call bridge
 	callBridgeID, err := h.addCallBridge(cn, bridge.ReferenceTypeCall, tmpCall.ID)
@@ -639,25 +641,11 @@ func (h *callHandler) typeSipServiceStart(cn *channel.Channel, data map[string]s
 		})
 	log.Debug("Created a call.")
 
-	// set flowid
-	// because this call type support only 1 action, we don't set any valid call-flow id here
-	if err := h.db.CallSetFlowID(ctx, c.ID, uuid.Nil); err != nil {
-		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("could not set a flow id for call. call: %s, err: %v", c.ID, err)
-	}
-
 	// get action for sip-service
 	act, err := h.getSipServiceAction(ctx, c, cn)
 	if err != nil {
 		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not get action handle for sip-service. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
-	}
-
-	// get updated call info
-	c, err = h.db.CallGet(ctx, c.ID)
-	if err != nil {
-		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not get created call info. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
 	}
 
 	// execute action
@@ -693,10 +681,10 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 			Option: opt,
 		}
 
-	// conference_join
-	case string(action.TypeConferenceJoin):
-		option := action.OptionConferenceJoin{
-			ConferenceID: DefaultSipServiceOptionConferenceID,
+	// confbridge_join
+	case string(action.TypeConfbridgeJoin):
+		option := action.OptionConfbridgeJoin{
+			ConfbridgeID: DefaultSipServiceOptionConfbridgeID,
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
@@ -706,7 +694,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		// create an action
 		resAct = &action.Action{
 			ID:     action.IDStart,
-			Type:   action.TypeConferenceJoin,
+			Type:   action.TypeConfbridgeJoin,
 			Option: opt,
 		}
 

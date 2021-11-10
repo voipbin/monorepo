@@ -6,15 +6,14 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 func TestHangup(t *testing.T) {
@@ -23,13 +22,11 @@ func TestHangup(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		db:            mockDB,
-		confHandler:   mockConf,
 		notifyHandler: mockNotfiy,
 	}
 
@@ -113,13 +110,11 @@ func TestHangupWithReason(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		db:            mockDB,
-		confHandler:   mockConf,
 		notifyHandler: mockNotfiy,
 	}
 
@@ -166,13 +161,11 @@ func TestHanginUp(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		db:            mockDB,
-		confHandler:   mockConf,
 		notifyHandler: mockNotfiy,
 	}
 

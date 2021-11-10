@@ -49,7 +49,6 @@ func (h *eventHandler) eventHandlerRecordingStarted(ctx context.Context, evt int
 		log.Errorf("Could not get the call info. err: %v", err)
 		return err
 	}
-
 	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeRecordingStarted, c.WebhookURI, tmpRecording)
 
 	return nil
@@ -109,7 +108,7 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 		}
 
 	case recording.TypeConference:
-		if err := h.db.ConferenceSetRecordID(ctx, r.ReferenceID, uuid.Nil); err != nil {
+		if err := h.db.ConfbridgeSetRecordID(ctx, r.ReferenceID, uuid.Nil); err != nil {
 			log.Errorf("Could not get conference record id. err: %v", err)
 		}
 

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	uuid "github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -17,11 +18,9 @@ import (
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // DBHandler interface for call_manager database handle
@@ -109,23 +108,6 @@ type DBHandler interface {
 	ConfbridgeSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	ConfbridgeSetToCache(ctx context.Context, data *confbridge.Confbridge) error
 
-	// conferences
-	ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error
-	ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
-	ConferenceCreate(ctx context.Context, cf *conference.Conference) error
-	ConferenceEnd(ctx context.Context, id uuid.UUID) error
-	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
-	ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
-	ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
-	ConferenceGets(ctx context.Context, userID uint64, size uint64, token string) ([]*conference.Conference, error)
-	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
-	ConferenceSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
-	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
-	ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
-	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
-	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
-	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error
-
 	// external media
 	ExternalMediaDelete(ctx context.Context, callID uuid.UUID) error
 	ExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error)
@@ -157,7 +139,7 @@ var (
 // list of default values
 const (
 	defaultDelayTimeout = time.Millisecond * 150
-	defaultTimeStamp    = "9999-01-01 00:00:00.000000"
+	defaultTimeStamp    = "9999-01-01 00:00:00.000000" //nolint:varcheck,deadcode // this is fine
 )
 
 // NewHandler creates DBHandler

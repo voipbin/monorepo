@@ -15,7 +15,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
@@ -38,7 +37,6 @@ type listenHandler struct {
 
 	reqHandler        requesthandler.RequestHandler
 	callHandler       callhandler.CallHandler
-	conferenceHandler conferencehandler.ConferenceHandler
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
 }
 
@@ -63,11 +61,6 @@ var (
 	regV1Confbridges          = regexp.MustCompile("/v1/confbridges")
 	regV1ConfbridgesID        = regexp.MustCompile("/v1/confbridges/" + regUUID)
 	regV1ConfbridgesIDCallsID = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID)
-
-	// conferences
-	regV1ConferencesIDCallsID = regexp.MustCompile("/v1/conferences/" + regUUID + "/calls/" + regUUID)
-	regV1ConferencesID        = regexp.MustCompile("/v1/conferences/" + regUUID)
-	regV1Conferences          = regexp.MustCompile("/v1/conferences")
 
 	// recordings
 	regV1RecordingsID = regexp.MustCompile("/v1/recordings/" + regAny)
@@ -110,7 +103,6 @@ func NewListenHandler(
 	cache cachehandler.CacheHandler,
 	reqHandler requesthandler.RequestHandler,
 	callHandler callhandler.CallHandler,
-	conferenceHandler conferencehandler.ConferenceHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 ) ListenHandler {
 	h := &listenHandler{
@@ -119,7 +111,6 @@ func NewListenHandler(
 		cache:             cache,
 		reqHandler:        reqHandler,
 		callHandler:       callHandler,
-		conferenceHandler: conferenceHandler,
 		confbridgeHandler: confbridgeHandler,
 	}
 
@@ -282,34 +273,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Confbridges.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConfbridgesPost(m)
 		requestType = "/v1/confbridges"
-
-	//////////////
-	// conferences
-	//////////////
-	// DELETE /conferences/<conference-id>/calls/<call-id>
-	case regV1ConferencesIDCallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1ConferencesIDCallsIDDelete(m)
-		requestType = "/v1/conferences/calls"
-
-	// DELETE /conferences/<conference-id>
-	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1ConferencesIDDelete(m)
-		requestType = "/v1/conferences"
-
-	// GET /conferences/<conference-id>
-	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ConferencesIDGet(m)
-		requestType = "/v1/conferences"
-
-	// POST /conferences
-	case regV1Conferences.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ConferencesPost(m)
-		requestType = "/v1/conferences"
-
-	// GET /conferences
-	case regV1Conferences.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ConferencesGet(m)
-		requestType = "/v1/conferences"
 
 	//////////////
 	// recordings

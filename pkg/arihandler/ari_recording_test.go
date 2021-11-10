@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -12,7 +13,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestEventHandlerRecordingStarted(t *testing.T) {
@@ -194,7 +194,7 @@ func TestEventHandlerRecordingFinishedConference(t *testing.T) {
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingFinished, tt.call.WebhookURI, tt.recording)
-			mockDB.EXPECT().ConferenceSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().ConfbridgeSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

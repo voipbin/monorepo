@@ -170,26 +170,28 @@ type requestHandler struct {
 
 	exchangeDelay string
 
-	queueCall      string
-	queueFlow      string
-	queueTTS       string
-	queueRegistrar string
-	queueNumber    string
-	queueWebhook   string
+	queueCall       string
+	queueFlow       string
+	queueTTS        string
+	queueRegistrar  string
+	queueNumber     string
+	queueWebhook    string
+	queueConference string
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueTTS, queueRegistrar, queueNumber, queueWebhook string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay, queueCall, queueFlow, queueTTS, queueRegistrar, queueNumber, queueWebhook, queueConference string) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
-		exchangeDelay:  exchangeDelay,
-		queueCall:      queueCall,
-		queueFlow:      queueFlow,
-		queueTTS:       queueTTS,
-		queueRegistrar: queueRegistrar,
-		queueNumber:    queueNumber,
-		queueWebhook:   queueWebhook,
+		exchangeDelay:   exchangeDelay,
+		queueCall:       queueCall,
+		queueFlow:       queueFlow,
+		queueTTS:        queueTTS,
+		queueRegistrar:  queueRegistrar,
+		queueNumber:     queueNumber,
+		queueWebhook:    queueWebhook,
+		queueConference: queueConference,
 	}
 
 	return h
@@ -316,5 +318,12 @@ func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler
 func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(r.queueNumber, uri, method, resource, timeout, delayed, dataType, data)
+
+}
+
+// sendRequestConference send a request to the conference-manager and return the response
+func (r *requestHandler) sendRequestConference(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(r.queueConference, uri, method, resource, timeout, delayed, dataType, data)
 
 }

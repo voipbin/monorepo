@@ -6,13 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestProcessV1RecordingsGet(t *testing.T) {
@@ -23,14 +22,12 @@ func TestProcessV1RecordingsGet(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:        mockSock,
-		db:                mockDB,
-		reqHandler:        mockReq,
-		callHandler:       mockCall,
-		conferenceHandler: mockConf,
+		rabbitSock:  mockSock,
+		db:          mockDB,
+		reqHandler:  mockReq,
+		callHandler: mockCall,
 	}
 
 	type test struct {
@@ -96,14 +93,12 @@ func TestProcessV1RecordingsIDGet(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:        mockSock,
-		db:                mockDB,
-		reqHandler:        mockReq,
-		callHandler:       mockCall,
-		conferenceHandler: mockConf,
+		rabbitSock:  mockSock,
+		db:          mockDB,
+		reqHandler:  mockReq,
+		callHandler: mockCall,
 	}
 
 	type test struct {

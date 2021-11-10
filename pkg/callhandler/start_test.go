@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
@@ -68,13 +68,11 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -122,8 +120,6 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
-			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -143,13 +139,11 @@ func TestTypeConferenceStart(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	tests := []struct {
@@ -233,13 +227,11 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -296,8 +288,6 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.All()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
-			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
@@ -317,13 +307,11 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -374,8 +362,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
-			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
+
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -387,38 +374,37 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 	}
 }
 
-func TestTypeSipServiceStartSvcConference(t *testing.T) {
+func TestTypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-		confHandler:   mockConf,
+		reqHandler:        mockReq,
+		notifyHandler:     mockNotify,
+		db:                mockDB,
+		confbridgeHandler: mockConfbridge,
 	}
 
-	type test struct {
+	tests := []struct {
 		name         string
 		channel      *channel.Channel
 		data         map[string]string
 		call         *call.Call
+		activeFlow   *activeflow.ActiveFlow
 		expectAction *action.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&channel.Channel{
 				ID:                "3098c01e-dcee-11ea-b8a3-4be6fd851ab3",
 				AsteriskID:        "80:fa:5b:5e:da:81",
 				Name:              "PJSIP/in-voipbin-00000949",
-				DestinationNumber: string(action.TypeConferenceJoin),
+				DestinationNumber: string(action.TypeConfbridgeJoin),
 			},
 			map[string]string{
 				"context": ContextIncomingCall,
@@ -428,16 +414,23 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 				ID:         uuid.FromStringOrNil("38431800-dcee-11ea-b172-eb53386a16d4"),
 				AsteriskID: "80:fa:5b:5e:da:81",
 				ChannelID:  "3098c01e-dcee-11ea-b8a3-4be6fd851ab3",
+				FlowID:     uuid.FromStringOrNil("20a32e9c-4129-11ec-b2b4-9735b724208a"),
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
 				Destination: address.Address{
-					Target: string(action.TypeConferenceJoin),
+					Target: string(action.TypeConfbridgeJoin),
+				},
+			},
+			&activeflow.ActiveFlow{
+				Actions: []action.Action{
+					{
+						Type: "confbridge_join",
+					},
 				},
 			},
 			&action.Action{
-				ID:     action.IDStart,
-				Type:   action.TypeConferenceJoin,
-				Option: []byte(`{"conference_id":"037a20b9-d11d-4b63-a135-ae230cafd495"}`),
+				ID:   action.IDStart,
+				Type: action.TypeConfbridgeJoin,
 			},
 		},
 	}
@@ -451,10 +444,9 @@ func TestTypeSipServiceStartSvcConference(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
-			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
-			mockConf.EXPECT().Join(uuid.FromStringOrNil("037a20b9-d11d-4b63-a135-ae230cafd495"), tt.call.ID)
+
+			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockConfbridge.EXPECT().Join(gomock.Any(), gomock.Any(), tt.call.ID).Return(nil)
 
 			if err := h.StartCallHandle(tt.channel, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -470,13 +462,11 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -528,8 +518,6 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
-			mockDB.EXPECT().CallSetFlowID(gomock.Any(), gomock.Any(), uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelPlay(tt.call.AsteriskID, tt.call.ChannelID, tt.expectAction.ID, gomock.Any(), "").Return(nil)
 
@@ -547,13 +535,11 @@ func TestTypeFlowStart(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -681,13 +667,11 @@ func TestStartHandlerContextOutgoingCall(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -744,13 +728,11 @@ func TestStartHandlerContextExternalMedia(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -795,13 +777,11 @@ func TestStartHandlerContextExternalSnoop(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {

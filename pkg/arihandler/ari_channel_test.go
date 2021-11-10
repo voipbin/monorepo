@@ -4,16 +4,15 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestEventHandlerChannelCreated(t *testing.T) {
@@ -180,7 +179,6 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := eventHandler{
@@ -188,7 +186,6 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 		rabbitSock:        mockSock,
 		reqHandler:        mockRequest,
 		callHandler:       mockCall,
-		confHandler:       mockConf,
 		confbridgeHandler: mockConfbridge,
 	}
 
@@ -281,7 +278,6 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := eventHandler{
@@ -289,7 +285,6 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 		rabbitSock:        mockSock,
 		reqHandler:        mockRequest,
 		callHandler:       mockCall,
-		confHandler:       mockConf,
 		confbridgeHandler: mockConfbridge,
 	}
 
@@ -379,12 +374,8 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
 
 			switch tt.bridge.ReferenceType {
-			case bridge.ReferenceTypeConfbridge:
-				mockConfbridge.EXPECT().Leaved(gomock.Any(), tt.channel, tt.bridge).Return(nil)
-				mockConf.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
-
-			case bridge.ReferenceTypeConfbridgeSnoop:
-				mockConf.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
+			case bridge.ReferenceTypeConfbridge, bridge.ReferenceTypeConfbridgeSnoop:
+				mockConfbridge.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
 
 			case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
 				mockCall.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)

@@ -15,7 +15,6 @@ import (
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	conference "gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -274,35 +273,6 @@ func (m *MockCacheHandler) ConfbridgeSet(ctx context.Context, data *confbridge.C
 func (mr *MockCacheHandlerMockRecorder) ConfbridgeSet(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSet", reflect.TypeOf((*MockCacheHandler)(nil).ConfbridgeSet), ctx, data)
-}
-
-// ConferenceGet mocks base method.
-func (m *MockCacheHandler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceGet", ctx, id)
-	ret0, _ := ret[0].(*conference.Conference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferenceGet indicates an expected call of ConferenceGet.
-func (mr *MockCacheHandlerMockRecorder) ConferenceGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGet", reflect.TypeOf((*MockCacheHandler)(nil).ConferenceGet), ctx, id)
-}
-
-// ConferenceSet mocks base method.
-func (m *MockCacheHandler) ConferenceSet(ctx context.Context, conference *conference.Conference) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceSet", ctx, conference)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ConferenceSet indicates an expected call of ConferenceSet.
-func (mr *MockCacheHandlerMockRecorder) ConferenceSet(ctx, conference interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSet", reflect.TypeOf((*MockCacheHandler)(nil).ConferenceSet), ctx, conference)
 }
 
 // Connect mocks base method.

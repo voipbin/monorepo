@@ -326,12 +326,11 @@ func (h *handler) ConfbridgeAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 
 // ConfbridgeAddChannelCallID adds the call/channel id info
 func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) error {
-	// prepare
+	key := fmt.Sprintf("$.\"%s\"", channelID)
 	q := `
 	update confbridges set
-		channel_call_ids = json_set(
+		channel_call_ids = json_insert(
 			channel_call_ids,
-			'$',
 			?,
 			?
 		),
@@ -340,7 +339,7 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, channelID, callID.Bytes(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, callID.Bytes(), getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %v", err)
 	}
@@ -353,12 +352,11 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 
 // ConfbridgeRemoveChannelCallID removes the channel/call id info
 func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error {
-	// prepare
+	key := fmt.Sprintf("$.\"%s\"", channelID)
 	q := `
 	update confbridges set
 		channel_call_ids = json_remove(
 			channel_call_ids,
-			'$',
 			?
 		),
 		tm_update = ?
@@ -366,7 +364,7 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, channelID, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %v", err)
 	}

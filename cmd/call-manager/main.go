@@ -13,17 +13,16 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arihandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // channels
@@ -33,11 +32,12 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueARIEvent = flag.String("rabbit_queue_arievent", "asterisk.all.event", "rabbitmq asterisk ari event queue name.")
-var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
-var rabbitQueueTTSRequest = flag.String("rabbit_queue_tts", "bin-manager.tts-manager.request", "rabbitmq queue name for tts request")
-var rabbitQueueRegistrarRequest = flag.String("rabbit_queue_registrar", "bin-manager.registrar-manager.request", "rabbitmq queue name for registrar request")
-var rabbitQueueNumberRequest = flag.String("rabbit_queue_number", "bin-manager.number-manager.request", "rabbitmq queue name for number request")
-var rabbitQueueWebhookRequest = flag.String("rabbit_queue_webhook", "bin-manager.webhook-manager.request", "rabbitmq queue name for webhook request")
+var rabbitQueueConference = flag.String("rabbit_queue_conference", "bin-manager.conference-manager", "rabbitmq queue name to the conference-manager request.")
+var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name to the flow-manager request")
+var rabbitQueueTTSRequest = flag.String("rabbit_queue_tts", "bin-manager.tts-manager.request", "rabbitmq queue name to the tts-manager request")
+var rabbitQueueRegistrarRequest = flag.String("rabbit_queue_registrar", "bin-manager.registrar-manager.request", "rabbitmq queue name to the registrar-manager request")
+var rabbitQueueNumberRequest = flag.String("rabbit_queue_number", "bin-manager.number-manager.request", "rabbitmq queue name to the number-manager request")
+var rabbitQueueWebhookRequest = flag.String("rabbit_queue_webhook", "bin-manager.webhook-manager.request", "rabbitmq queue name to the webhook-manager request")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
 
 var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.call-manager.event", "rabbitmq exchange name for event notify")
@@ -165,13 +165,13 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueRegistrarRequest,
 		*rabbitQueueNumberRequest,
 		*rabbitQueueWebhookRequest,
+		*rabbitQueueConference,
 	)
 
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
-	confHandler := conferencehandler.NewConferHandler(reqHandler, notifyHandler, db, cache)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
-	eventHandler := arihandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confHandler, confbridgeHandler)
+	eventHandler := arihandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler)
 
 	// run
 	if err := eventHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
@@ -200,13 +200,13 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		*rabbitQueueRegistrarRequest,
 		*rabbitQueueNumberRequest,
 		*rabbitQueueWebhookRequest,
+		*rabbitQueueConference,
 	)
 
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
-	conferenceHandler := conferencehandler.NewConferHandler(reqHandler, notifyHandler, db, cache)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler, conferenceHandler, confbridgeHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler, confbridgeHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

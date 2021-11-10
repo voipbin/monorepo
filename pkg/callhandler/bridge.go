@@ -19,48 +19,21 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 		"asterisk_id": cn.AsteriskID,
 		"channel_id":  cn.ID,
 		"bridge_id":   br.ID,
+		"call_id":     br.ReferenceID,
 		"func":        "bridgeLeftJoin",
 	})
 
 	log.Debug("Hangup join channel.")
 	_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 
-	// get call
-	c, err := h.db.CallGet(ctx, br.ReferenceID)
-	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
-		return err
-	}
-	log = log.WithField("call_id", c.ID)
-
-	// remove the call from the conference
-	if err := h.db.ConferenceRemoveCallID(ctx, c.ConfID, c.ID); err != nil {
-		log.Errorf("Could not remove the call id from the conference. err: %v", err)
-		return err
-	}
-
-	// get updated conference info
-	tmpConf, err := h.db.ConferenceGet(ctx, c.ConfID)
-	if err != nil {
-		log.Errorf("Could not get conference info. err: %v", err)
-		return err
-	}
-
-	// send conference notification
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceLeaved, tmpConf.WebhookURI, tmpConf)
-
-	// we don't do any conference info change here.
-	// we going to conference info change work when the join channel has left from the call bridge
-	promConferenceLeaveTotal.WithLabelValues(string(tmpConf.Type)).Inc()
-
 	// set empty conference id
-	if err := h.db.CallSetConferenceID(ctx, c.ID, uuid.Nil); err != nil {
+	if err := h.db.CallSetConferenceID(ctx, br.ReferenceID, uuid.Nil); err != nil {
 		log.Errorf("Could not reset the conference for a call. err: %v", err)
 		return err
 	}
 
 	// get updated call info
-	c, err = h.db.CallGet(ctx, c.ID)
+	c, err := h.db.CallGet(ctx, br.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
 		return err
