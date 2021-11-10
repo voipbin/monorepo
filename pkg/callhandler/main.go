@@ -18,7 +18,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
@@ -54,7 +53,6 @@ type callHandler struct {
 	reqHandler        requesthandler.RequestHandler
 	db                dbhandler.DBHandler
 	cache             cachehandler.CacheHandler
-	confHandler       conferencehandler.ConferenceHandler
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
 	notifyHandler     notifyhandler.NotifyHandler
 }
@@ -144,7 +142,6 @@ func NewCallHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandl
 		notifyHandler:     n,
 		db:                db,
 		cache:             cache,
-		confHandler:       conferencehandler.NewConferHandler(r, n, db, cache),
 		confbridgeHandler: confbridgehandler.NewConfbridgeHandler(r, n, db, cache),
 	}
 

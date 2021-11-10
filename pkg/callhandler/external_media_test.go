@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
@@ -22,12 +21,10 @@ func TestExternalMediaStart(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	tests := []struct {
@@ -91,12 +88,10 @@ func TestExternalMediaStop(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	tests := []struct {

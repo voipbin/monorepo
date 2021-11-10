@@ -15,7 +15,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
@@ -26,13 +25,11 @@ func TestActionExecuteConfbridgeJoin(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &callHandler{
 		reqHandler:        mockReq,
 		db:                mockDB,
-		confHandler:       mockConf,
 		confbridgeHandler: mockConfbridge,
 	}
 
@@ -67,69 +64,16 @@ func TestActionExecuteConfbridgeJoin(t *testing.T) {
 	}
 }
 
-func TestActionExecuteConferenceJoin(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
-
-	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
-	}
-
-	type test struct {
-		name              string
-		call              *call.Call
-		action            *action.Action
-		expectAction      *action.Action
-		expectConfereneID uuid.UUID
-	}
-
-	tests := []test{
-		{
-			"empty option",
-			&call.Call{},
-			&action.Action{
-				Type:   action.TypeConferenceJoin,
-				Option: []byte(`{}`),
-			},
-			&action.Action{
-				Type:   action.TypeConferenceJoin,
-				ID:     uuid.Nil,
-				Option: []byte(`{"conference_id":""}`),
-			},
-			uuid.Nil,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
-			mockConf.EXPECT().Join(tt.expectConfereneID, tt.call.ID)
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
 func TestActionExecuteStreamEcho(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -174,12 +118,10 @@ func TestActionExecuteAnswer(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -228,12 +170,10 @@ func TestActionTimeoutNext(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -291,12 +231,10 @@ func TestActionExecuteTalk(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -351,12 +289,10 @@ func TestActionExecuteRecordingStart(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -401,12 +337,10 @@ func TestActionExecuteRecordingStop(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -457,12 +391,10 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -522,12 +454,10 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -601,12 +531,10 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -675,12 +603,10 @@ func TestActionExecuteExternalMediaStart(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -741,12 +667,10 @@ func TestActionExecuteExternalMediaStop(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -804,12 +728,10 @@ func TestActionExecuteAMD(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {

@@ -14,7 +14,6 @@ import (
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
@@ -54,9 +53,6 @@ type CacheHandler interface {
 
 	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	ConfbridgeSet(ctx context.Context, data *confbridge.Confbridge) error
-
-	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
-	ConferenceSet(ctx context.Context, conference *conference.Conference) error
 
 	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
 	NumberSetByNumber(ctx context.Context, numb *number.Number) error

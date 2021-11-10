@@ -13,7 +13,7 @@ func (r *requestHandler) CFConferenceGet(conferenceID uuid.UUID) (*cfconference.
 
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID.String())
 
-	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -60,9 +60,6 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	case action.TypeConfbridgeJoin:
 		err = h.actionExecuteConfbridgeJoin(c, a)
 
-	case action.TypeConferenceJoin:
-		err = h.actionExecuteConferenceJoin(c, a)
-
 	case action.TypeDTMFReceive:
 		err = h.actionExecuteDTMFReceive(c, a)
 
@@ -288,45 +285,6 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	// send delayed message for next action execution after 10 ms.
 	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
-	}
-
-	return nil
-}
-
-// actionExecuteConferenceJoin executes the action type ConferenceJoin
-func (h *callHandler) actionExecuteConferenceJoin(c *call.Call, a *action.Action) error {
-	// copy the action
-	act := *a
-
-	log := logrus.WithFields(logrus.Fields{
-		"call_id":     c.ID,
-		"action_id":   a.ID,
-		"action_type": a.Type,
-		"func":        "actionExecuteConferenceJoin",
-	})
-
-	var option action.OptionConferenceJoin
-	if err := json.Unmarshal(act.Option, &option); err != nil {
-		log.Errorf("could not parse the option. err: %v", err)
-		return fmt.Errorf("could not parse option. action: %v, err: %v", a, err)
-	}
-	cfID := uuid.FromStringOrNil(option.ConferenceID)
-
-	// set option
-	rawOption, err := json.Marshal(option)
-	if err != nil {
-		return fmt.Errorf("could not marshal the action option. err: %v", err)
-	}
-	act.Option = rawOption
-
-	// set action
-	if err := h.setAction(c, &act); err != nil {
-		return fmt.Errorf("could not set the action for call. err: %v", err)
-	}
-
-	if err := h.confHandler.Join(cfID, c.ID); err != nil {
-		log.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
-		return fmt.Errorf("Could not join to the conference. Executing the next action. call: %s, err: %v", c.ID, err)
 	}
 
 	return nil

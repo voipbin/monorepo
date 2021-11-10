@@ -7,16 +7,15 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 func TestCreateCallOutgoing(t *testing.T) {
@@ -26,13 +25,11 @@ func TestCreateCallOutgoing(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
 		reqHandler:    mockReq,
 		notifyHandler: mockNotify,
 		db:            mockDB,
-		confHandler:   mockConf,
 	}
 
 	type test struct {
@@ -231,12 +228,10 @@ func TestGetEndpointDestinationTypeTel(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -278,12 +273,10 @@ func TestGetEndpointDestinationTypeSIP(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -325,12 +318,10 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -492,12 +483,10 @@ func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {

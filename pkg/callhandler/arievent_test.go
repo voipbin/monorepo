@@ -6,14 +6,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
@@ -22,12 +21,10 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -65,12 +62,10 @@ func TestARIChannelDestroyedContextTypeConference(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {
@@ -105,12 +100,10 @@ func TestARIPlaybackFinished(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 	h := &callHandler{
-		reqHandler:  mockReq,
-		db:          mockDB,
-		confHandler: mockConf,
+		reqHandler: mockReq,
+		db:         mockDB,
 	}
 
 	type test struct {

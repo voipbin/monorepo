@@ -53,8 +53,7 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 		return h.callHandler.ARIStasisStart(cn, stasisData)
 
 	case contextTypeConference:
-		_ = h.confbridgeHandler.ARIStasisStart(cn, stasisData)
-		return h.confHandler.ARIStasisStart(cn, stasisData)
+		return h.confbridgeHandler.ARIStasisStart(cn, stasisData)
 
 	default:
 		log.Errorf("Could not find context type handler. context_type: %s", contextType)
