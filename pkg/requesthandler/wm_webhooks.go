@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -9,7 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler/models/request"
 )
 
-func (r *requestHandler) WMWebhookPOST(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error {
+func (r *requestHandler) WMWebhookPOST(ctx context.Context, webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error {
 
 	uri := "/v1/webhooks"
 

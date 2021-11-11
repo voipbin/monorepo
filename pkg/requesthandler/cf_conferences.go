@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -9,7 +10,7 @@ import (
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 )
 
-func (r *requestHandler) CFConferenceGet(conferenceID uuid.UUID) (*cfconference.Conference, error) {
+func (r *requestHandler) CFConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
 
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID.String())
 

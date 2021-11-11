@@ -12,7 +12,7 @@ import (
 )
 
 // ARIStasisStart handles StasisStart ARI event for conference types.
-func (h *confbridgeHandler) ARIStasisStart(cn *channel.Channel, data map[string]string) error {
+func (h *confbridgeHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
 
 	log := logrus.WithFields(logrus.Fields{
 		"channel_id":  cn.ID,
@@ -23,24 +23,22 @@ func (h *confbridgeHandler) ARIStasisStart(cn *channel.Channel, data map[string]
 	confContext := data["context"]
 	switch confContext {
 	case contextConfbridgeIncoming:
-		return h.StartContextIncoming(cn, data)
+		return h.StartContextIncoming(ctx, cn, data)
 
 	case contextConfbridgeOutgoing:
 		log.Errorf("Currently, we don't support conference outgoing context. Something was wrong. context: %s", confContext)
-		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return fmt.Errorf("unsupported conference context type. context: %s", confContext)
 
 	default:
 		log.Errorf("Unsuppurted context type. context: %s", confContext)
-		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return fmt.Errorf("unsupported conference context type. context: %s", confContext)
 	}
 }
 
 // ARIChannelLeftBridge handles ChannelLeftBridge ARI event for conference types.
-func (h *confbridgeHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
-	ctx := context.Background()
-
+func (h *confbridgeHandler) ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
 	if cn.Type != channel.TypeConfbridge {
 		return nil
 	}

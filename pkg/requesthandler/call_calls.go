@@ -1,18 +1,19 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 )
 
 // CallCallsHealth sends the request for call health-check
-func (r *requestHandler) CallCallHealth(id uuid.UUID, delay, retryCount int) error {
+func (r *requestHandler) CallCallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
 	uri := fmt.Sprintf("/v1/calls/%s/health-check", id)
 
 	type Data struct {
@@ -43,7 +44,7 @@ func (r *requestHandler) CallCallHealth(id uuid.UUID, delay, retryCount int) err
 // CallCallActionTimeout sends the request for call's action timeout.
 //
 // delay: millisecond
-func (r *requestHandler) CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error {
+func (r *requestHandler) CallCallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *action.Action) error {
 	uri := fmt.Sprintf("/v1/calls/%s/action-timeout", id)
 
 	m, err := json.Marshal(request.V1DataCallsIDActionTimeoutPost{
@@ -70,7 +71,7 @@ func (r *requestHandler) CallCallActionTimeout(id uuid.UUID, delay int, a *actio
 // CallCallActionNext sends the request for call's action next.
 //
 // delay: millisecond
-func (r *requestHandler) CallCallActionNext(id uuid.UUID) error {
+func (r *requestHandler) CallCallActionNext(ctx context.Context, id uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/calls/%s/action-next", id)
 
 	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsActionNext, requestTimeoutDefault, 0, ContentTypeJSON, nil)

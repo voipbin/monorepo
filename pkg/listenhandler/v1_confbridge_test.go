@@ -132,7 +132,7 @@ func TestProcessV1ConfbridgesIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConfbridge.EXPECT().Terminate(tt.id).Return(nil)
+			mockConfbridge.EXPECT().Terminate(gomock.Any(), tt.id).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

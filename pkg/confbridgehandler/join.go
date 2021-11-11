@@ -70,7 +70,7 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 	}
 
 	// answer the call. it is safe to call this for answered call.
-	if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
+	if err := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); err != nil {
 		log.Errorf("Could not answer the call. err: %v", err)
 		return err
 	}
@@ -116,7 +116,7 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 
 	// create a another channel with joining context
 	channelID := uuid.Must(uuid.NewV4())
-	if err := h.reqHandler.AstChannelCreate(c.AsteriskID, channelID.String(), args, dialDestination, "", "vp8", "", nil); err != nil {
+	if err := h.reqHandler.AstChannelCreate(ctx, c.AsteriskID, channelID.String(), args, dialDestination, "", "vp8", "", nil); err != nil {
 		log.Errorf("Could not create a channel for joining. err: %v", err)
 		return err
 	}
@@ -148,7 +148,7 @@ func (h *confbridgeHandler) isBridgeExist(ctx context.Context, id string) bool {
 	}
 
 	// get bridge from the asterisk
-	_, err = h.reqHandler.AstBridgeGet(br.AsteriskID, br.ID)
+	_, err = h.reqHandler.AstBridgeGet(ctx, br.AsteriskID, br.ID)
 	if err != nil {
 		logrus.Debugf("Could not get bridge info from the asterisk. Consider this bridge does not exist. bridge: %s, err: %v", id, err)
 		return false
@@ -170,7 +170,7 @@ func (h *confbridgeHandler) createConfbridgeBridgeWithTimeout(ctx context.Contex
 	)
 
 	// create a bridge
-	if err := h.reqHandler.AstBridgeCreate(requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing}); err != nil {
+	if err := h.reqHandler.AstBridgeCreate(ctx, requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing}); err != nil {
 		log.Errorf("Could not create a bridge for a confbridge. err: %v", err)
 		return err
 	}

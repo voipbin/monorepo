@@ -1,10 +1,12 @@
 package notifyhandler
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 )
 
-func (h *notifyHandler) NotifyEvent(eventType EventType, webhookURI string, message WebhookMessage) {
+func (h *notifyHandler) NotifyEvent(ctx context.Context, eventType EventType, webhookURI string, message WebhookMessage) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"evnet_type":  eventType,
@@ -14,6 +16,6 @@ func (h *notifyHandler) NotifyEvent(eventType EventType, webhookURI string, mess
 	)
 	log.Debugf("Sending a notify event. event_type: %s", eventType)
 
-	go h.PublishEvent(eventType, message)
-	go h.publishWebhook(eventType, webhookURI, message)
+	go h.PublishEvent(ctx, eventType, message)
+	go h.publishWebhook(ctx, eventType, webhookURI, message)
 }

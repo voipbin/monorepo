@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -9,7 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler/models/response"
 )
 
-func (r *requestHandler) TTSSpeechesPOST(text, gender, language string) (string, error) {
+func (r *requestHandler) TTSSpeechesPOST(ctx context.Context, text, gender, language string) (string, error) {
 
 	uri := "/v1/speeches"
 

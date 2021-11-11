@@ -11,9 +11,7 @@ import (
 )
 
 // ChainedCallIDAdd adds the chained call id to the call and set the added chained call's master call id.
-func (h *callHandler) ChainedCallIDAdd(id, chainedCallID uuid.UUID) error {
-	ctx := context.Background()
-
+func (h *callHandler) ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call":            id,
@@ -58,10 +56,7 @@ func (h *callHandler) ChainedCallIDAdd(id, chainedCallID uuid.UUID) error {
 }
 
 // ChainedCallIDRemove removes the chained call id and set the master call id to nil
-func (h *callHandler) ChainedCallIDRemove(id, chainedCallID uuid.UUID) error {
-
-	ctx := context.Background()
-
+func (h *callHandler) ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call":            id,

@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestEventHandlerPlaybackFinished(t *testing.T) {
@@ -55,9 +55,9 @@ func TestEventHandlerPlaybackFinished(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AstChannelGet(tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
+			mockReq.EXPECT().AstChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
-			mockSvc.EXPECT().ARIPlaybackFinished(tt.channel, tt.playbackID).Return(nil)
+			mockSvc.EXPECT().ARIPlaybackFinished(gomock.Any(), tt.channel, tt.playbackID).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -107,7 +107,7 @@ func TestEventHandlerPlaybackFinishedChannelGone(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AstChannelGet(tt.channel.AsteriskID, tt.channel.ID).Return(nil, fmt.Errorf("channel does not exist"))
+			mockReq.EXPECT().AstChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(nil, fmt.Errorf("channel does not exist"))
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

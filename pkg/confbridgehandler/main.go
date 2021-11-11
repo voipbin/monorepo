@@ -34,15 +34,15 @@ const (
 // ConfbridgeHandler is interface for conference handle
 type ConfbridgeHandler interface {
 	ARIChannelEnteredBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
-	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
-	ARIStasisStart(cn *channel.Channel, data map[string]string) error
+	ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
+	ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error
 
 	Create(ctx context.Context, confID uuid.UUID) (*confbridge.Confbridge, error)
 	Join(ctx context.Context, confbridgeID, callID uuid.UUID) error
 	Joined(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	Kick(ctx context.Context, id, callID uuid.UUID) error
 	Leaved(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
-	Terminate(id uuid.UUID) error
+	Terminate(ctx context.Context, id uuid.UUID) error
 }
 
 // confbridgeHandler structure for service handle

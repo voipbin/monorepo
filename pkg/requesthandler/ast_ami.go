@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -34,7 +35,7 @@ func (r *requestHandler) parseAMIResponseData(data []byte) error {
 // ExtraExten: <value>
 // ExtraContext: <value>
 // ExtraPriority: <value>
-func (r *requestHandler) AstAMIRedirect(asteriskID, channelID, context, exten, priority string) error {
+func (r *requestHandler) AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error {
 	url := "/ami"
 
 	data := map[string]string{

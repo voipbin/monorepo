@@ -34,7 +34,7 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 	// add the call/channel info to the confbridge
 	if errChannelCallID := h.db.ConfbridgeAddChannelCallID(ctx, confbridgeID, cn.ID, callID); errChannelCallID != nil {
 		log.Errorf("Could not add the channel/call info to the confbridge. err: %v", errChannelCallID)
-		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
 		return errors.Wrap(errChannelCallID, "could not set the confbridge's channel/call info")
 	}
 
@@ -43,7 +43,7 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 	// we don't set the confbridge id to the call.
 	if err := h.db.CallSetConferenceID(ctx, callID, conferenceID); err != nil {
 		log.Errorf("Could not set the conference id for a call. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return err
 	}
 
@@ -53,14 +53,14 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 		ConferenceID: conferenceID,
 		CallID:       callID,
 	}
-	h.notifyHandler.PublishEvent(notifyhandler.EventTypeConfbridgeJoined, evt)
+	h.notifyHandler.PublishEvent(ctx, notifyhandler.EventTypeConfbridgeJoined, evt)
 
 	// get updated call info and notify
 	call, err := h.db.CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get updated call info. But we are keep moving. err: %v", err)
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallUpdated, call.WebhookURI, call)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallUpdated, call.WebhookURI, call)
 
 	return nil
 }

@@ -1,15 +1,16 @@
 package requesthandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestAstChannelAnswer(t *testing.T) {
@@ -62,7 +63,7 @@ func TestAstChannelAnswer(t *testing.T) {
 				},
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
 
-			err := reqHandler.AstChannelAnswer(tt.asteriskID, tt.channelID)
+			err := reqHandler.AstChannelAnswer(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -145,7 +146,7 @@ func TestAstChannelContinue(t *testing.T) {
 				},
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
 
-			err := reqHandler.AstChannelContinue(tt.asteriskID, tt.channelID, tt.context, tt.extension, tt.priority, tt.label)
+			err := reqHandler.AstChannelContinue(context.Background(), tt.asteriskID, tt.channelID, tt.context, tt.extension, tt.priority, tt.label)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -223,7 +224,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 				},
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
 
-			err := reqHandler.AstChannelVariableSet(tt.asteriskID, tt.channelID, tt.variable, tt.value)
+			err := reqHandler.AstChannelVariableSet(context.Background(), tt.asteriskID, tt.channelID, tt.variable, tt.value)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -286,7 +287,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 				},
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
 
-			err := reqHandler.AstChannelHangup(tt.asteriskID, tt.channelID, tt.hangupCause)
+			err := reqHandler.AstChannelHangup(context.Background(), tt.asteriskID, tt.channelID, tt.hangupCause)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -382,7 +383,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 				},
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
 
-			err := reqHandler.AstChannelCreateSnoop(tt.asteriskID, tt.channelID, tt.snoopID, tt.appArgs, tt.spy, tt.whisper)
+			err := reqHandler.AstChannelCreateSnoop(context.Background(), tt.asteriskID, tt.channelID, tt.snoopID, tt.appArgs, tt.spy, tt.whisper)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -456,7 +457,7 @@ func TestAstChannelGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AstChannelGet(tt.asterisk, tt.id)
+			res, err := reqHandler.AstChannelGet(context.Background(), tt.asterisk, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -547,7 +548,7 @@ func TestAstChannelDTMF(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelDTMF(tt.asterisk, tt.id, tt.digit, tt.duration, tt.before, tt.between, tt.after)
+			err := reqHandler.AstChannelDTMF(context.Background(), tt.asterisk, tt.id, tt.digit, tt.duration, tt.before, tt.between, tt.after)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -635,7 +636,7 @@ func TestAstChannelCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelCreate(tt.asterisk, tt.channelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
+			err := reqHandler.AstChannelCreate(context.Background(), tt.asterisk, tt.channelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -694,7 +695,7 @@ func TestAstChannelDial(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelDial(tt.asterisk, tt.channelID, tt.caller, tt.timeout)
+			err := reqHandler.AstChannelDial(context.Background(), tt.asterisk, tt.channelID, tt.caller, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -771,7 +772,7 @@ func TestAstChannelPlay(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelPlay(tt.asterisk, tt.channelID, tt.actionID, tt.medias, "")
+			err := reqHandler.AstChannelPlay(context.Background(), tt.asterisk, tt.channelID, tt.actionID, tt.medias, "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -842,7 +843,7 @@ func TestAstChannelRecord(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelRecord(tt.asterisk, tt.channelID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExist)
+			err := reqHandler.AstChannelRecord(context.Background(), tt.asterisk, tt.channelID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -932,7 +933,7 @@ func TestAstChannelExternalMedia(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AstChannelExternalMedia(tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
+			res, err := reqHandler.AstChannelExternalMedia(context.Background(), tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

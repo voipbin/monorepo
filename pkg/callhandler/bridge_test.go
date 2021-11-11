@@ -60,15 +60,11 @@ func TestBridgeLeftJoin(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelHangup(tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
-			// mockDB.EXPECT().CallGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.call, nil)
-			// mockDB.EXPECT().ConferenceRemoveCallID(gomock.Any(), tt.call.ConfID, tt.call.ID).Return(nil)
-			// mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.call.ConfID).Return(tt.conference, nil)
-			// mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceLeaved, tt.conference.WebhookURI, tt.conference)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.bridge.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
-			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
+			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
 
 			if err := h.bridgeLeftJoin(context.Background(), tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -133,13 +129,13 @@ func TestBridgeLeftExternal(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelHangup(tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
 
 			if len(tt.bridge.ChannelIDs) == 0 {
-				mockReq.EXPECT().AstBridgeDelete(tt.bridge.AsteriskID, tt.bridge.ID)
+				mockReq.EXPECT().AstBridgeDelete(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID)
 			} else {
 				for _, channelID := range tt.bridge.ChannelIDs {
-					mockReq.EXPECT().AstBridgeRemoveChannel(tt.bridge.AsteriskID, tt.bridge.ID, channelID).Return(nil)
+					mockReq.EXPECT().AstBridgeRemoveChannel(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID, channelID).Return(nil)
 				}
 			}
 
@@ -184,9 +180,9 @@ func TestRemoveAllChannelsInBridge(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			for _, channelID := range tt.bridge.ChannelIDs {
-				mockReq.EXPECT().AstBridgeRemoveChannel(tt.bridge.AsteriskID, tt.bridge.ID, channelID)
+				mockReq.EXPECT().AstBridgeRemoveChannel(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID, channelID)
 			}
-			h.removeAllChannelsInBridge(tt.bridge)
+			h.removeAllChannelsInBridge(context.Background(), tt.bridge)
 		})
 	}
 }

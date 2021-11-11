@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -57,7 +58,7 @@ func TestActionExecuteConfbridgeJoin(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockConfbridge.EXPECT().Join(gomock.Any(), tt.expectConfbridgeID, tt.call.ID)
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -103,9 +104,9 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
-			mockReq.EXPECT().AstChannelContinue(tt.call.AsteriskID, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
-			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, gomock.Any(), tt.expectAction).Return(nil)
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			mockReq.EXPECT().AstChannelContinue(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
+			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), tt.call.ID, gomock.Any(), tt.expectAction).Return(nil)
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -155,9 +156,9 @@ func TestActionExecuteAnswer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
-			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
-			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -216,9 +217,9 @@ func TestActionTimeoutNext(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
-			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
 
-			if err := h.ActionTimeout(tt.call.ID, tt.action); err != nil {
+			if err := h.ActionTimeout(context.Background(), tt.call.ID, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -273,10 +274,10 @@ func TestActionExecuteTalk(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().TTSSpeechesPOST(tt.expectSSML, tt.expectGender, tt.expectLanguage).Return(tt.filename, nil)
-			mockReq.EXPECT().AstChannelPlay(tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, tt.expectURI, "").Return(nil)
+			mockReq.EXPECT().TTSSpeechesPOST(gomock.Any(), tt.expectSSML, tt.expectGender, tt.expectLanguage).Return(tt.filename, nil)
+			mockReq.EXPECT().AstChannelPlay(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, tt.expectURI, "").Return(nil)
 
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -320,11 +321,11 @@ func TestActionExecuteRecordingStart(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().RecordingCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(nil)
 			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallAddRecordIDs(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
-			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -375,10 +376,10 @@ func TestActionExecuteRecordingStop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.call.RecordingID).Return(tt.record, nil)
-			mockReq.EXPECT().AstChannelHangup(tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
-			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
 
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -439,9 +440,9 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return("", nil)
-			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, tt.duration, tt.action).Return(nil)
+			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), tt.call.ID, tt.duration, tt.action).Return(nil)
 
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -516,9 +517,9 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return(tt.storedDTMFs, nil)
-			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
 
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -587,10 +588,10 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().AstChannelDTMF(tt.call.AsteriskID, tt.call.ChannelID, tt.expectDtmfs, tt.expectDuration, 0, tt.expectInterval, 0)
-			mockReq.EXPECT().CallCallActionTimeout(tt.call.ID, tt.expectTimeout, tt.action)
+			mockReq.EXPECT().AstChannelDTMF(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.expectDtmfs, tt.expectDuration, 0, tt.expectInterval, 0)
+			mockReq.EXPECT().CallCallActionTimeout(gomock.Any(), tt.call.ID, tt.expectTimeout, tt.action)
 
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -649,12 +650,12 @@ func TestActionExecuteExternalMediaStart(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().ExternalMediaGet(gomock.Any(), tt.call.ID).Return(nil, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstBridgeCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
-			mockReq.EXPECT().AstChannelExternalMedia(tt.call.AsteriskID, gomock.Any(), tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
+			mockReq.EXPECT().AstChannelExternalMedia(gomock.Any(), tt.call.AsteriskID, gomock.Any(), tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().ExternalMediaSet(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
-			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -712,10 +713,10 @@ func TestActionExecuteExternalMediaStop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().ExternalMediaGet(gomock.Any(), tt.call.ID).Return(tt.extMedia, nil)
-			mockReq.EXPECT().AstChannelHangup(tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing)
 			mockDB.EXPECT().ExternalMediaDelete(gomock.Any(), tt.extMedia.CallID).Return(nil)
-			mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -783,13 +784,13 @@ func TestActionExecuteAMD(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
 			mockDB.EXPECT().CallApplicationAMDSet(gomock.Any(), gomock.Any(), tt.expectAMD).Return(nil)
 
 			if tt.expectAMD.Async == true {
-				mockReq.EXPECT().CallCallActionNext(tt.call.ID).Return(nil)
+				mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
 			}
-			if err := h.ActionExecute(tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

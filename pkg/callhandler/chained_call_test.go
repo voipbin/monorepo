@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -66,7 +67,7 @@ func TestChainedCallIDAdd(t *testing.T) {
 			mockDB.EXPECT().CallSetMasterCallID(gomock.Any(), tt.chaindCallID, tt.call.ID).Return(nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-			if err := h.ChainedCallIDAdd(tt.call.ID, tt.chaindCallID); err != nil {
+			if err := h.ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chaindCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -127,7 +128,7 @@ func TestChainedCallIDAddFailStatus(t *testing.T) {
 			mockDB.EXPECT().CallTXStart(tt.call.ID).Return(nil, tt.call, nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), false)
 
-			if err := h.ChainedCallIDAdd(tt.call.ID, tt.chaindCallID); err == nil {
+			if err := h.ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chaindCallID); err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
 		})
@@ -170,7 +171,7 @@ func TestChainedCallIDRemove(t *testing.T) {
 			mockDB.EXPECT().CallSetMasterCallID(gomock.Any(), tt.chaindCallID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-			if err := h.ChainedCallIDRemove(tt.call.ID, tt.chaindCallID); err != nil {
+			if err := h.ChainedCallIDRemove(context.Background(), tt.call.ID, tt.chaindCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

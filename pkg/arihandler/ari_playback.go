@@ -33,7 +33,7 @@ func (h *eventHandler) eventHandlerPlaybackFinished(ctx context.Context, evt int
 	// event sequentially.
 	// this makes  hard to know the channel was hungup or not using the playbackfinished event.
 	// so we have to send the channelget request to check the channel still does exist.
-	_, err := h.reqHandler.AstChannelGet(e.AsteriskID, tmpChannelID)
+	_, err := h.reqHandler.AstChannelGet(ctx, e.AsteriskID, tmpChannelID)
 	if err != nil {
 		log.Infof("Could not get the channel info from the Asterisk. Consider the channel already hungup. err: %v", err)
 		return nil
@@ -45,5 +45,5 @@ func (h *eventHandler) eventHandlerPlaybackFinished(ctx context.Context, evt int
 		return err
 	}
 
-	return h.callHandler.ARIPlaybackFinished(cn, e.Playback.ID)
+	return h.callHandler.ARIPlaybackFinished(ctx, cn, e.Playback.ID)
 }

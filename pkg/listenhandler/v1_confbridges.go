@@ -13,7 +13,7 @@ import (
 )
 
 // processV1ConfbridgesPost handles /v1/confbriges request
-func (h *listenHandler) processV1ConfbridgesPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"handler": "processV1ConfbridgesPost",
@@ -27,8 +27,6 @@ func (h *listenHandler) processV1ConfbridgesPost(m *rabbitmqhandler.Request) (*r
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
 		return nil, err
 	}
-
-	ctx := context.Background()
 
 	// create confbridge
 	cb, err := h.confbridgeHandler.Create(ctx, data.ConferenceID)
@@ -53,7 +51,7 @@ func (h *listenHandler) processV1ConfbridgesPost(m *rabbitmqhandler.Request) (*r
 }
 
 // processV1ConfbridgesIDGet handles /v1/confbriges/<id> Get request
-func (h *listenHandler) processV1ConfbridgesIDGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -65,8 +63,6 @@ func (h *listenHandler) processV1ConfbridgesIDGet(m *rabbitmqhandler.Request) (*
 			"id": id,
 		})
 	log.WithField("request", m).Debug("Executing processV1ConfbridgesIDGet.")
-
-	ctx := context.Background()
 
 	// create confbridge
 	cb, err := h.db.ConfbridgeGet(ctx, id)
@@ -90,7 +86,7 @@ func (h *listenHandler) processV1ConfbridgesIDGet(m *rabbitmqhandler.Request) (*
 }
 
 // processV1ConfbridgesIDDelete handles /v1/confbridges/<id> DELETE request
-func (h *listenHandler) processV1ConfbridgesIDDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"handler": "processV1ConfbridgesIDDelete",
@@ -105,7 +101,7 @@ func (h *listenHandler) processV1ConfbridgesIDDelete(m *rabbitmqhandler.Request)
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	if err := h.confbridgeHandler.Terminate(id); err != nil {
+	if err := h.confbridgeHandler.Terminate(ctx, id); err != nil {
 		log.Errorf("Could not terminate the confbridge. err: %v", err)
 		return simpleResponse(400), nil
 	}
@@ -114,8 +110,7 @@ func (h *listenHandler) processV1ConfbridgesIDDelete(m *rabbitmqhandler.Request)
 }
 
 // processV1ConfbridgesIDCallsIDDelete handles /v1/confbridges/<confbridge-id>/calls/<call-id> DELETE request
-func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"handler": "processV1ConfbridgesIDCallsIDDelete",
@@ -140,8 +135,7 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(m *rabbitmqhandler.R
 }
 
 // processV1ConfbridgesIDCallsIDPost handles /v1/confbridges/<confbridge-id>/calls/<call-id> DELETE request
-func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"handler": "processV1ConfbridgesIDCallsIDDelete",

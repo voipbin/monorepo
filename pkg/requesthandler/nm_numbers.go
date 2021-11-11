@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -10,7 +11,7 @@ import (
 )
 
 // NMV1NumbersNumberGet sends the /v1/numbers/<number> GET request to number-manager
-func (r *requestHandler) NMV1NumbersNumberGet(num string) (*number.Number, error) {
+func (r *requestHandler) NMV1NumbersNumberGet(ctx context.Context, num string) (*number.Number, error) {
 
 	uri := fmt.Sprintf("/v1/numbers/%s", url.QueryEscape(num))
 

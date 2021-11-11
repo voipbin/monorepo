@@ -144,13 +144,13 @@ func TestJoin(t *testing.T) {
 			mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridge.ID).Return(tt.confbridge, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 
-			mockReq.EXPECT().AstChannelAnswer(tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 			if tt.confbridge.BridgeID != "" {
 				mockDB.EXPECT().BridgeGet(gomock.Any(), tt.confbridge.BridgeID).Return(tt.bridge, nil)
-				mockReq.EXPECT().AstBridgeGet(tt.bridge.AsteriskID, tt.bridge.ID).Return(tt.bridge, nil)
+				mockReq.EXPECT().AstBridgeGet(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID).Return(tt.bridge, nil)
 			} else {
 				// todo: check bridge creation
-				mockReq.EXPECT().AstBridgeCreate(requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing}).Return(nil)
+				mockReq.EXPECT().AstBridgeCreate(gomock.Any(), requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing}).Return(nil)
 				mockDB.EXPECT().BridgeGetUntilTimeout(gomock.Any(), gomock.Any()).Return(tt.bridge, nil)
 				mockDB.EXPECT().ConfbridgeSetBridgeID(gomock.Any(), gomock.Any(), tt.bridge.ID).Return(nil)
 				mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridge.ID).Return(tt.confbridge, nil)
@@ -158,7 +158,7 @@ func TestJoin(t *testing.T) {
 			mockDB.EXPECT().BridgeGet(gomock.Any(), gomock.Any()).Return(tt.bridge, nil)
 			mockCache.EXPECT().AsteriskAddressInternalGet(gomock.Any(), tt.bridge.AsteriskID).Return("test.com", nil)
 
-			mockReq.EXPECT().AstChannelCreate(tt.call.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", "", nil).Return(nil)
+			mockReq.EXPECT().AstChannelCreate(gomock.Any(), tt.call.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", "", nil).Return(nil)
 
 			if err := h.Join(ctx, tt.confbridge.ID, tt.call.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

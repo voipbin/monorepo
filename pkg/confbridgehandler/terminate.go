@@ -11,9 +11,11 @@ import (
 )
 
 // Terminate is terminating the conference
-func (h *confbridgeHandler) Terminate(id uuid.UUID) error {
-	ctx := context.Background()
-	log := logrus.WithField("confbridge_id", id)
+func (h *confbridgeHandler) Terminate(ctx context.Context, id uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Terminate",
+		"confbridge_id": id,
+	})
 
 	// get confbridge
 	cb, err := h.db.ConfbridgeGet(ctx, id)
@@ -40,7 +42,7 @@ func (h *confbridgeHandler) Terminate(id uuid.UUID) error {
 		log.Errorf("Could not get updated confbridge info. err: %v", err)
 		return nil
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConfbridgeDeleted, "", tmpCB)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeConfbridgeDeleted, "", tmpCB)
 
 	return nil
 }
@@ -61,7 +63,7 @@ func (h *confbridgeHandler) destroyBridge(ctx context.Context, bridgeID string) 
 	}
 
 	for _, channelID := range br.ChannelIDs {
-		if err := h.reqHandler.AstChannelHangup(br.AsteriskID, channelID, ari.ChannelCauseNormalClearing); err != nil {
+		if err := h.reqHandler.AstChannelHangup(ctx, br.AsteriskID, channelID, ari.ChannelCauseNormalClearing); err != nil {
 			log.WithFields(
 				logrus.Fields{
 					"asterisk": br.AsteriskID,
@@ -72,7 +74,7 @@ func (h *confbridgeHandler) destroyBridge(ctx context.Context, bridgeID string) 
 	}
 
 	// destroy the confbridge bridge
-	if errBridgeDel := h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID); errBridgeDel != nil {
+	if errBridgeDel := h.reqHandler.AstBridgeDelete(ctx, br.AsteriskID, br.ID); errBridgeDel != nil {
 		log.Errorf("Could not delete confbridge bridge. err: %v", errBridgeDel)
 	}
 

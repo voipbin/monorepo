@@ -5,6 +5,7 @@
 package requesthandler
 
 import (
+	context "context"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -44,474 +45,474 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // AstAMIRedirect mocks base method.
-func (m *MockRequestHandler) AstAMIRedirect(asteriskID, channelID, context, exten, priority string) error {
+func (m *MockRequestHandler) AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstAMIRedirect", asteriskID, channelID, context, exten, priority)
+	ret := m.ctrl.Call(m, "AstAMIRedirect", ctx, asteriskID, channelID, context, exten, priority)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstAMIRedirect indicates an expected call of AstAMIRedirect.
-func (mr *MockRequestHandlerMockRecorder) AstAMIRedirect(asteriskID, channelID, context, exten, priority interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstAMIRedirect(ctx, asteriskID, channelID, context, exten, priority interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAMIRedirect", reflect.TypeOf((*MockRequestHandler)(nil).AstAMIRedirect), asteriskID, channelID, context, exten, priority)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAMIRedirect", reflect.TypeOf((*MockRequestHandler)(nil).AstAMIRedirect), ctx, asteriskID, channelID, context, exten, priority)
 }
 
 // AstBridgeAddChannel mocks base method.
-func (m *MockRequestHandler) AstBridgeAddChannel(asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error {
+func (m *MockRequestHandler) AstBridgeAddChannel(ctx context.Context, asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstBridgeAddChannel", asteriskID, bridgeID, channelID, role, absorbDTMF, mute)
+	ret := m.ctrl.Call(m, "AstBridgeAddChannel", ctx, asteriskID, bridgeID, channelID, role, absorbDTMF, mute)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstBridgeAddChannel indicates an expected call of AstBridgeAddChannel.
-func (mr *MockRequestHandlerMockRecorder) AstBridgeAddChannel(asteriskID, bridgeID, channelID, role, absorbDTMF, mute interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstBridgeAddChannel(ctx, asteriskID, bridgeID, channelID, role, absorbDTMF, mute interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeAddChannel", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeAddChannel), asteriskID, bridgeID, channelID, role, absorbDTMF, mute)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeAddChannel", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeAddChannel), ctx, asteriskID, bridgeID, channelID, role, absorbDTMF, mute)
 }
 
 // AstBridgeCreate mocks base method.
-func (m *MockRequestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType []bridge.Type) error {
+func (m *MockRequestHandler) AstBridgeCreate(ctx context.Context, asteriskID, bridgeID, bridgeName string, bridgeType []bridge.Type) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstBridgeCreate", asteriskID, bridgeID, bridgeName, bridgeType)
+	ret := m.ctrl.Call(m, "AstBridgeCreate", ctx, asteriskID, bridgeID, bridgeName, bridgeType)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstBridgeCreate indicates an expected call of AstBridgeCreate.
-func (mr *MockRequestHandlerMockRecorder) AstBridgeCreate(asteriskID, bridgeID, bridgeName, bridgeType interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstBridgeCreate(ctx, asteriskID, bridgeID, bridgeName, bridgeType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeCreate", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeCreate), asteriskID, bridgeID, bridgeName, bridgeType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeCreate", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeCreate), ctx, asteriskID, bridgeID, bridgeName, bridgeType)
 }
 
 // AstBridgeDelete mocks base method.
-func (m *MockRequestHandler) AstBridgeDelete(asteriskID, bridgeID string) error {
+func (m *MockRequestHandler) AstBridgeDelete(ctx context.Context, asteriskID, bridgeID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstBridgeDelete", asteriskID, bridgeID)
+	ret := m.ctrl.Call(m, "AstBridgeDelete", ctx, asteriskID, bridgeID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstBridgeDelete indicates an expected call of AstBridgeDelete.
-func (mr *MockRequestHandlerMockRecorder) AstBridgeDelete(asteriskID, bridgeID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstBridgeDelete(ctx, asteriskID, bridgeID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeDelete", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeDelete), asteriskID, bridgeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeDelete", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeDelete), ctx, asteriskID, bridgeID)
 }
 
 // AstBridgeGet mocks base method.
-func (m *MockRequestHandler) AstBridgeGet(asteriskID, bridgeID string) (*bridge.Bridge, error) {
+func (m *MockRequestHandler) AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*bridge.Bridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstBridgeGet", asteriskID, bridgeID)
+	ret := m.ctrl.Call(m, "AstBridgeGet", ctx, asteriskID, bridgeID)
 	ret0, _ := ret[0].(*bridge.Bridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AstBridgeGet indicates an expected call of AstBridgeGet.
-func (mr *MockRequestHandlerMockRecorder) AstBridgeGet(asteriskID, bridgeID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstBridgeGet(ctx, asteriskID, bridgeID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeGet", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeGet), asteriskID, bridgeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeGet", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeGet), ctx, asteriskID, bridgeID)
 }
 
 // AstBridgeRemoveChannel mocks base method.
-func (m *MockRequestHandler) AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error {
+func (m *MockRequestHandler) AstBridgeRemoveChannel(ctx context.Context, asteriskID, bridgeID, channelID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstBridgeRemoveChannel", asteriskID, bridgeID, channelID)
+	ret := m.ctrl.Call(m, "AstBridgeRemoveChannel", ctx, asteriskID, bridgeID, channelID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstBridgeRemoveChannel indicates an expected call of AstBridgeRemoveChannel.
-func (mr *MockRequestHandlerMockRecorder) AstBridgeRemoveChannel(asteriskID, bridgeID, channelID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstBridgeRemoveChannel(ctx, asteriskID, bridgeID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeRemoveChannel", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeRemoveChannel), asteriskID, bridgeID, channelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeRemoveChannel", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeRemoveChannel), ctx, asteriskID, bridgeID, channelID)
 }
 
 // AstChannelAnswer mocks base method.
-func (m *MockRequestHandler) AstChannelAnswer(asteriskID, channelID string) error {
+func (m *MockRequestHandler) AstChannelAnswer(ctx context.Context, asteriskID, channelID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelAnswer", asteriskID, channelID)
+	ret := m.ctrl.Call(m, "AstChannelAnswer", ctx, asteriskID, channelID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelAnswer indicates an expected call of AstChannelAnswer.
-func (mr *MockRequestHandlerMockRecorder) AstChannelAnswer(asteriskID, channelID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelAnswer(ctx, asteriskID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelAnswer", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelAnswer), asteriskID, channelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelAnswer", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelAnswer), ctx, asteriskID, channelID)
 }
 
 // AstChannelContinue mocks base method.
-func (m *MockRequestHandler) AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error {
+func (m *MockRequestHandler) AstChannelContinue(ctx context.Context, asteriskID, channelID, context, ext string, pri int, label string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelContinue", asteriskID, channelID, context, ext, pri, label)
+	ret := m.ctrl.Call(m, "AstChannelContinue", ctx, asteriskID, channelID, context, ext, pri, label)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelContinue indicates an expected call of AstChannelContinue.
-func (mr *MockRequestHandlerMockRecorder) AstChannelContinue(asteriskID, channelID, context, ext, pri, label interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelContinue(ctx, asteriskID, channelID, context, ext, pri, label interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelContinue", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelContinue), asteriskID, channelID, context, ext, pri, label)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelContinue", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelContinue), ctx, asteriskID, channelID, context, ext, pri, label)
 }
 
 // AstChannelCreate mocks base method.
-func (m *MockRequestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error {
+func (m *MockRequestHandler) AstChannelCreate(ctx context.Context, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelCreate", asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables)
+	ret := m.ctrl.Call(m, "AstChannelCreate", ctx, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelCreate indicates an expected call of AstChannelCreate.
-func (mr *MockRequestHandlerMockRecorder) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelCreate(ctx, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelCreate", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelCreate), asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelCreate", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelCreate), ctx, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables)
 }
 
 // AstChannelCreateSnoop mocks base method.
-func (m *MockRequestHandler) AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error {
+func (m *MockRequestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelCreateSnoop", asteriskID, channelID, snoopID, appArgs, spy, whisper)
+	ret := m.ctrl.Call(m, "AstChannelCreateSnoop", ctx, asteriskID, channelID, snoopID, appArgs, spy, whisper)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelCreateSnoop indicates an expected call of AstChannelCreateSnoop.
-func (mr *MockRequestHandlerMockRecorder) AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs, spy, whisper interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelCreateSnoop(ctx, asteriskID, channelID, snoopID, appArgs, spy, whisper interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelCreateSnoop", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelCreateSnoop), asteriskID, channelID, snoopID, appArgs, spy, whisper)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelCreateSnoop", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelCreateSnoop), ctx, asteriskID, channelID, snoopID, appArgs, spy, whisper)
 }
 
 // AstChannelDTMF mocks base method.
-func (m *MockRequestHandler) AstChannelDTMF(asteriskID, channelID, digit string, duration, before, between, after int) error {
+func (m *MockRequestHandler) AstChannelDTMF(ctx context.Context, asteriskID, channelID, digit string, duration, before, between, after int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelDTMF", asteriskID, channelID, digit, duration, before, between, after)
+	ret := m.ctrl.Call(m, "AstChannelDTMF", ctx, asteriskID, channelID, digit, duration, before, between, after)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelDTMF indicates an expected call of AstChannelDTMF.
-func (mr *MockRequestHandlerMockRecorder) AstChannelDTMF(asteriskID, channelID, digit, duration, before, between, after interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelDTMF(ctx, asteriskID, channelID, digit, duration, before, between, after interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelDTMF", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelDTMF), asteriskID, channelID, digit, duration, before, between, after)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelDTMF", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelDTMF), ctx, asteriskID, channelID, digit, duration, before, between, after)
 }
 
 // AstChannelDial mocks base method.
-func (m *MockRequestHandler) AstChannelDial(asteriskID, channelID, caller string, timeout int) error {
+func (m *MockRequestHandler) AstChannelDial(ctx context.Context, asteriskID, channelID, caller string, timeout int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelDial", asteriskID, channelID, caller, timeout)
+	ret := m.ctrl.Call(m, "AstChannelDial", ctx, asteriskID, channelID, caller, timeout)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelDial indicates an expected call of AstChannelDial.
-func (mr *MockRequestHandlerMockRecorder) AstChannelDial(asteriskID, channelID, caller, timeout interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelDial(ctx, asteriskID, channelID, caller, timeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelDial", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelDial), asteriskID, channelID, caller, timeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelDial", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelDial), ctx, asteriskID, channelID, caller, timeout)
 }
 
 // AstChannelExternalMedia mocks base method.
-func (m *MockRequestHandler) AstChannelExternalMedia(asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data string, variables map[string]string) (*channel.Channel, error) {
+func (m *MockRequestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data string, variables map[string]string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelExternalMedia", asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
+	ret := m.ctrl.Call(m, "AstChannelExternalMedia", ctx, asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
 	ret0, _ := ret[0].(*channel.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AstChannelExternalMedia indicates an expected call of AstChannelExternalMedia.
-func (mr *MockRequestHandlerMockRecorder) AstChannelExternalMedia(asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelExternalMedia(ctx, asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelExternalMedia", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelExternalMedia), asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelExternalMedia", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelExternalMedia), ctx, asteriskID, channelID, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
 }
 
 // AstChannelGet mocks base method.
-func (m *MockRequestHandler) AstChannelGet(asteriskID, channelID string) (*channel.Channel, error) {
+func (m *MockRequestHandler) AstChannelGet(ctx context.Context, asteriskID, channelID string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelGet", asteriskID, channelID)
+	ret := m.ctrl.Call(m, "AstChannelGet", ctx, asteriskID, channelID)
 	ret0, _ := ret[0].(*channel.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AstChannelGet indicates an expected call of AstChannelGet.
-func (mr *MockRequestHandlerMockRecorder) AstChannelGet(asteriskID, channelID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelGet(ctx, asteriskID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelGet", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelGet), asteriskID, channelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelGet", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelGet), ctx, asteriskID, channelID)
 }
 
 // AstChannelHangup mocks base method.
-func (m *MockRequestHandler) AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error {
+func (m *MockRequestHandler) AstChannelHangup(ctx context.Context, asteriskID, channelID string, code ari.ChannelCause) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelHangup", asteriskID, channelID, code)
+	ret := m.ctrl.Call(m, "AstChannelHangup", ctx, asteriskID, channelID, code)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelHangup indicates an expected call of AstChannelHangup.
-func (mr *MockRequestHandlerMockRecorder) AstChannelHangup(asteriskID, channelID, code interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelHangup(ctx, asteriskID, channelID, code interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHangup", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHangup), asteriskID, channelID, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHangup", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHangup), ctx, asteriskID, channelID, code)
 }
 
 // AstChannelPlay mocks base method.
-func (m *MockRequestHandler) AstChannelPlay(asteriskID, channelID string, actionID uuid.UUID, medias []string, lang string) error {
+func (m *MockRequestHandler) AstChannelPlay(ctx context.Context, asteriskID, channelID string, actionID uuid.UUID, medias []string, lang string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelPlay", asteriskID, channelID, actionID, medias, lang)
+	ret := m.ctrl.Call(m, "AstChannelPlay", ctx, asteriskID, channelID, actionID, medias, lang)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelPlay indicates an expected call of AstChannelPlay.
-func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(asteriskID, channelID, actionID, medias, lang interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(ctx, asteriskID, channelID, actionID, medias, lang interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelPlay", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelPlay), asteriskID, channelID, actionID, medias, lang)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelPlay", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelPlay), ctx, asteriskID, channelID, actionID, medias, lang)
 }
 
 // AstChannelRecord mocks base method.
-func (m *MockRequestHandler) AstChannelRecord(asteriskID, channelID, filename, format string, duration, silence int, beep bool, endKey, ifExists string) error {
+func (m *MockRequestHandler) AstChannelRecord(ctx context.Context, asteriskID, channelID, filename, format string, duration, silence int, beep bool, endKey, ifExists string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelRecord", asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists)
+	ret := m.ctrl.Call(m, "AstChannelRecord", ctx, asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelRecord indicates an expected call of AstChannelRecord.
-func (mr *MockRequestHandlerMockRecorder) AstChannelRecord(asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelRecord(ctx, asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelRecord", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelRecord), asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelRecord", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelRecord), ctx, asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists)
 }
 
 // AstChannelVariableSet mocks base method.
-func (m *MockRequestHandler) AstChannelVariableSet(asteriskID, channelID, variable, value string) error {
+func (m *MockRequestHandler) AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelVariableSet", asteriskID, channelID, variable, value)
+	ret := m.ctrl.Call(m, "AstChannelVariableSet", ctx, asteriskID, channelID, variable, value)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelVariableSet indicates an expected call of AstChannelVariableSet.
-func (mr *MockRequestHandlerMockRecorder) AstChannelVariableSet(asteriskID, channelID, variable, value interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelVariableSet(ctx, asteriskID, channelID, variable, value interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelVariableSet", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelVariableSet), asteriskID, channelID, variable, value)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelVariableSet", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelVariableSet), ctx, asteriskID, channelID, variable, value)
 }
 
 // CFConferenceGet mocks base method.
-func (m *MockRequestHandler) CFConferenceGet(conferenceID uuid.UUID) (*conference.Conference, error) {
+func (m *MockRequestHandler) CFConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CFConferenceGet", conferenceID)
+	ret := m.ctrl.Call(m, "CFConferenceGet", ctx, conferenceID)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CFConferenceGet indicates an expected call of CFConferenceGet.
-func (mr *MockRequestHandlerMockRecorder) CFConferenceGet(conferenceID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CFConferenceGet(ctx, conferenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceGet), conferenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceGet), ctx, conferenceID)
 }
 
 // CallCallActionNext mocks base method.
-func (m *MockRequestHandler) CallCallActionNext(id uuid.UUID) error {
+func (m *MockRequestHandler) CallCallActionNext(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallCallActionNext", id)
+	ret := m.ctrl.Call(m, "CallCallActionNext", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallCallActionNext indicates an expected call of CallCallActionNext.
-func (mr *MockRequestHandlerMockRecorder) CallCallActionNext(id interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallCallActionNext(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCallActionNext", reflect.TypeOf((*MockRequestHandler)(nil).CallCallActionNext), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCallActionNext", reflect.TypeOf((*MockRequestHandler)(nil).CallCallActionNext), ctx, id)
 }
 
 // CallCallActionTimeout mocks base method.
-func (m *MockRequestHandler) CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error {
+func (m *MockRequestHandler) CallCallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *action.Action) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallCallActionTimeout", id, delay, a)
+	ret := m.ctrl.Call(m, "CallCallActionTimeout", ctx, id, delay, a)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallCallActionTimeout indicates an expected call of CallCallActionTimeout.
-func (mr *MockRequestHandlerMockRecorder) CallCallActionTimeout(id, delay, a interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallCallActionTimeout(ctx, id, delay, a interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCallActionTimeout", reflect.TypeOf((*MockRequestHandler)(nil).CallCallActionTimeout), id, delay, a)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCallActionTimeout", reflect.TypeOf((*MockRequestHandler)(nil).CallCallActionTimeout), ctx, id, delay, a)
 }
 
 // CallCallHealth mocks base method.
-func (m *MockRequestHandler) CallCallHealth(id uuid.UUID, delay, retryCount int) error {
+func (m *MockRequestHandler) CallCallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallCallHealth", id, delay, retryCount)
+	ret := m.ctrl.Call(m, "CallCallHealth", ctx, id, delay, retryCount)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallCallHealth indicates an expected call of CallCallHealth.
-func (mr *MockRequestHandlerMockRecorder) CallCallHealth(id, delay, retryCount interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallCallHealth(ctx, id, delay, retryCount interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCallHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallCallHealth), id, delay, retryCount)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCallHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallCallHealth), ctx, id, delay, retryCount)
 }
 
 // CallChannelHealth mocks base method.
-func (m *MockRequestHandler) CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error {
+func (m *MockRequestHandler) CallChannelHealth(ctx context.Context, asteriskID, channelID string, delay, retryCount, retryCountMax int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallChannelHealth", asteriskID, channelID, delay, retryCount, retryCountMax)
+	ret := m.ctrl.Call(m, "CallChannelHealth", ctx, asteriskID, channelID, delay, retryCount, retryCountMax)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallChannelHealth indicates an expected call of CallChannelHealth.
-func (mr *MockRequestHandlerMockRecorder) CallChannelHealth(asteriskID, channelID, delay, retryCount, retryCountMax interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallChannelHealth(ctx, asteriskID, channelID, delay, retryCount, retryCountMax interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallChannelHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallChannelHealth), asteriskID, channelID, delay, retryCount, retryCountMax)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallChannelHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallChannelHealth), ctx, asteriskID, channelID, delay, retryCount, retryCountMax)
 }
 
 // CallConferenceTerminate mocks base method.
-func (m *MockRequestHandler) CallConferenceTerminate(conferenceID uuid.UUID, delay int) error {
+func (m *MockRequestHandler) CallConferenceTerminate(ctx context.Context, conferenceID uuid.UUID, delay int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallConferenceTerminate", conferenceID, delay)
+	ret := m.ctrl.Call(m, "CallConferenceTerminate", ctx, conferenceID, delay)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallConferenceTerminate indicates an expected call of CallConferenceTerminate.
-func (mr *MockRequestHandlerMockRecorder) CallConferenceTerminate(conferenceID, delay interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallConferenceTerminate(ctx, conferenceID, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceTerminate", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceTerminate), conferenceID, delay)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallConferenceTerminate", reflect.TypeOf((*MockRequestHandler)(nil).CallConferenceTerminate), ctx, conferenceID, delay)
 }
 
 // FMFlowsPost mocks base method.
-func (m *MockRequestHandler) FMFlowsPost(userID uint64, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (m *MockRequestHandler) FMFlowsPost(ctx context.Context, userID uint64, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMFlowsPost", userID, name, detail, webhookURI, actions, persist)
+	ret := m.ctrl.Call(m, "FMFlowsPost", ctx, userID, name, detail, webhookURI, actions, persist)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FMFlowsPost indicates an expected call of FMFlowsPost.
-func (mr *MockRequestHandlerMockRecorder) FMFlowsPost(userID, name, detail, webhookURI, actions, persist interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FMFlowsPost(ctx, userID, name, detail, webhookURI, actions, persist interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowsPost", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowsPost), userID, name, detail, webhookURI, actions, persist)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMFlowsPost", reflect.TypeOf((*MockRequestHandler)(nil).FMFlowsPost), ctx, userID, name, detail, webhookURI, actions, persist)
 }
 
 // FlowActionGet mocks base method.
-func (m *MockRequestHandler) FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error) {
+func (m *MockRequestHandler) FlowActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowActionGet", flowID, actionID)
+	ret := m.ctrl.Call(m, "FlowActionGet", ctx, flowID, actionID)
 	ret0, _ := ret[0].(*action.Action)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowActionGet indicates an expected call of FlowActionGet.
-func (mr *MockRequestHandlerMockRecorder) FlowActionGet(flowID, actionID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FlowActionGet(ctx, flowID, actionID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActionGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowActionGet), flowID, actionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActionGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowActionGet), ctx, flowID, actionID)
 }
 
 // FlowActvieFlowNextGet mocks base method.
-func (m *MockRequestHandler) FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error) {
+func (m *MockRequestHandler) FlowActvieFlowNextGet(ctx context.Context, callID, actionID uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowActvieFlowNextGet", callID, actionID)
+	ret := m.ctrl.Call(m, "FlowActvieFlowNextGet", ctx, callID, actionID)
 	ret0, _ := ret[0].(*action.Action)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowActvieFlowNextGet indicates an expected call of FlowActvieFlowNextGet.
-func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowNextGet(callID, actionID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowNextGet(ctx, callID, actionID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActvieFlowNextGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowActvieFlowNextGet), callID, actionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActvieFlowNextGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowActvieFlowNextGet), ctx, callID, actionID)
 }
 
 // FlowActvieFlowPost mocks base method.
-func (m *MockRequestHandler) FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
+func (m *MockRequestHandler) FlowActvieFlowPost(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowActvieFlowPost", callID, flowID)
+	ret := m.ctrl.Call(m, "FlowActvieFlowPost", ctx, callID, flowID)
 	ret0, _ := ret[0].(*activeflow.ActiveFlow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowActvieFlowPost indicates an expected call of FlowActvieFlowPost.
-func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowPost(callID, flowID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FlowActvieFlowPost(ctx, callID, flowID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActvieFlowPost", reflect.TypeOf((*MockRequestHandler)(nil).FlowActvieFlowPost), callID, flowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowActvieFlowPost", reflect.TypeOf((*MockRequestHandler)(nil).FlowActvieFlowPost), ctx, callID, flowID)
 }
 
 // NMV1NumbersNumberGet mocks base method.
-func (m *MockRequestHandler) NMV1NumbersNumberGet(num string) (*number.Number, error) {
+func (m *MockRequestHandler) NMV1NumbersNumberGet(ctx context.Context, num string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMV1NumbersNumberGet", num)
+	ret := m.ctrl.Call(m, "NMV1NumbersNumberGet", ctx, num)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NMV1NumbersNumberGet indicates an expected call of NMV1NumbersNumberGet.
-func (mr *MockRequestHandlerMockRecorder) NMV1NumbersNumberGet(num interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) NMV1NumbersNumberGet(ctx, num interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumbersNumberGet", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumbersNumberGet), num)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumbersNumberGet", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumbersNumberGet), ctx, num)
 }
 
 // RMV1ContactsGet mocks base method.
-func (m *MockRequestHandler) RMV1ContactsGet(endpoint string) ([]*astcontact.AstContact, error) {
+func (m *MockRequestHandler) RMV1ContactsGet(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RMV1ContactsGet", endpoint)
+	ret := m.ctrl.Call(m, "RMV1ContactsGet", ctx, endpoint)
 	ret0, _ := ret[0].([]*astcontact.AstContact)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RMV1ContactsGet indicates an expected call of RMV1ContactsGet.
-func (mr *MockRequestHandlerMockRecorder) RMV1ContactsGet(endpoint interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RMV1ContactsGet(ctx, endpoint interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ContactsGet", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ContactsGet), endpoint)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ContactsGet", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ContactsGet), ctx, endpoint)
 }
 
 // RMV1ContactsPut mocks base method.
-func (m *MockRequestHandler) RMV1ContactsPut(endpoint string) error {
+func (m *MockRequestHandler) RMV1ContactsPut(ctx context.Context, endpoint string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RMV1ContactsPut", endpoint)
+	ret := m.ctrl.Call(m, "RMV1ContactsPut", ctx, endpoint)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RMV1ContactsPut indicates an expected call of RMV1ContactsPut.
-func (mr *MockRequestHandlerMockRecorder) RMV1ContactsPut(endpoint interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RMV1ContactsPut(ctx, endpoint interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ContactsPut", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ContactsPut), endpoint)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ContactsPut", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ContactsPut), ctx, endpoint)
 }
 
 // TTSSpeechesPOST mocks base method.
-func (m *MockRequestHandler) TTSSpeechesPOST(text, gender, language string) (string, error) {
+func (m *MockRequestHandler) TTSSpeechesPOST(ctx context.Context, text, gender, language string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TTSSpeechesPOST", text, gender, language)
+	ret := m.ctrl.Call(m, "TTSSpeechesPOST", ctx, text, gender, language)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TTSSpeechesPOST indicates an expected call of TTSSpeechesPOST.
-func (mr *MockRequestHandlerMockRecorder) TTSSpeechesPOST(text, gender, language interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TTSSpeechesPOST(ctx, text, gender, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSSpeechesPOST", reflect.TypeOf((*MockRequestHandler)(nil).TTSSpeechesPOST), text, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSSpeechesPOST", reflect.TypeOf((*MockRequestHandler)(nil).TTSSpeechesPOST), ctx, text, gender, language)
 }
 
 // WMWebhookPOST mocks base method.
-func (m *MockRequestHandler) WMWebhookPOST(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error {
+func (m *MockRequestHandler) WMWebhookPOST(ctx context.Context, webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WMWebhookPOST", webhookMethod, webhookURI, dataType, messageType, messageData)
+	ret := m.ctrl.Call(m, "WMWebhookPOST", ctx, webhookMethod, webhookURI, dataType, messageType, messageData)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WMWebhookPOST indicates an expected call of WMWebhookPOST.
-func (mr *MockRequestHandlerMockRecorder) WMWebhookPOST(webhookMethod, webhookURI, dataType, messageType, messageData interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) WMWebhookPOST(ctx, webhookMethod, webhookURI, dataType, messageType, messageData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMWebhookPOST", reflect.TypeOf((*MockRequestHandler)(nil).WMWebhookPOST), webhookMethod, webhookURI, dataType, messageType, messageData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMWebhookPOST", reflect.TypeOf((*MockRequestHandler)(nil).WMWebhookPOST), ctx, webhookMethod, webhookURI, dataType, messageType, messageData)
 }

@@ -1,10 +1,10 @@
 package requesthandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -68,7 +68,7 @@ func TestAstAMIRedirect(t *testing.T) {
 				},
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: []byte(`{"Response":"Success","Message":"Redirect successful"}`)}, nil)
 
-			err := reqHandler.AstAMIRedirect(tt.asteriskID, tt.channelID, tt.context, tt.exten, tt.priority)
+			err := reqHandler.AstAMIRedirect(context.Background(), tt.asteriskID, tt.channelID, tt.context, tt.exten, tt.priority)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

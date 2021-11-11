@@ -37,7 +37,7 @@ func (h *callHandler) setAction(c *call.Call, a *action.Action) error {
 }
 
 // ActionExecute execute the action withe the call
-func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
+func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call":   c.ID,
 		"action": a,
@@ -52,10 +52,10 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 
 	switch a.Type {
 	case action.TypeAMD:
-		err = h.actionExecuteAMD(c, a)
+		err = h.actionExecuteAMD(ctx, c, a)
 
 	case action.TypeAnswer:
-		err = h.actionExecuteAnswer(c, a)
+		err = h.actionExecuteAnswer(ctx, c, a)
 
 	case action.TypeConfbridgeJoin:
 		err = h.actionExecuteConfbridgeJoin(c, a)
@@ -64,22 +64,22 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 		err = h.actionExecuteDTMFReceive(c, a)
 
 	case action.TypeDTMFSend:
-		err = h.actionExecuteDTMFSend(c, a)
+		err = h.actionExecuteDTMFSend(ctx, c, a)
 
 	case action.TypeEcho:
-		err = h.actionExecuteEcho(c, a)
+		err = h.actionExecuteEcho(ctx, c, a)
 
 	case action.TypeExternalMediaStart:
 		err = h.actionExecuteExternalMediaStart(c, a)
 
 	case action.TypeExternalMediaStop:
-		err = h.actionExecuteExternalMediaStop(c, a)
+		err = h.actionExecuteExternalMediaStop(ctx, c, a)
 
 	case action.TypeHangup:
 		err = h.actionExecuteHangup(c, a)
 
 	case action.TypePlay:
-		err = h.actionExecutePlay(c, a)
+		err = h.actionExecutePlay(ctx, c, a)
 
 	case action.TypeRecordingStart:
 		err = h.actionExecuteRecordingStart(c, a)
@@ -88,10 +88,10 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 		err = h.actionExecuteRecordingStop(c, a)
 
 	case action.TypeStreamEcho:
-		err = h.actionExecuteStreamEcho(c, a)
+		err = h.actionExecuteStreamEcho(ctx, c, a)
 
 	case action.TypeTalk:
-		err = h.actionExecuteTalk(c, a)
+		err = h.actionExecuteTalk(ctx, c, a)
 
 	default:
 		log.Errorf("Could not find action handle found. call: %s, action: %s, type: %s", c.ID, a.ID, a.Type)
@@ -103,14 +103,14 @@ func (h *callHandler) ActionExecute(c *call.Call, a *action.Action) error {
 	//  if the action execution has failed move to the next action
 	if err != nil {
 		log.Errorf("Could not execute the action correctly. Move to next action. err: %v", err)
-		return h.reqHandler.CallCallActionNext(c.ID)
+		return h.reqHandler.CallCallActionNext(ctx, c.ID)
 	}
 
 	return nil
 }
 
 // ActionNext Execute next action
-func (h *callHandler) ActionNext(c *call.Call) error {
+func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call_id": c.ID,
@@ -130,22 +130,22 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 
 	if c.FlowID == uuid.Nil {
 		log.WithField("call", c).Info("No flow id found. Hangup the call.")
-		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
 	// get next action
-	nextAction, err := h.reqHandler.FlowActvieFlowNextGet(c.ID, c.Action.ID)
+	nextAction, err := h.reqHandler.FlowActvieFlowNextGet(ctx, c.ID, c.Action.ID)
 	if err != nil {
 		log.Errorf("Could not get the next action from the flow-manager. Hanging up the call. err: %v", err)
-		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 	log.Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
 
-	if err := h.ActionExecute(c, nextAction); err != nil {
+	if err := h.ActionExecute(ctx, c, nextAction); err != nil {
 		log.Errorf("Could not execute the next action correctly. Hanging up the call. err: %v", err)
-		_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
@@ -153,9 +153,7 @@ func (h *callHandler) ActionNext(c *call.Call) error {
 }
 
 // ActionTimeout handles action's timeout
-func (h *callHandler) ActionTimeout(callID uuid.UUID, a *action.Action) error {
-	ctx := context.Background()
-
+func (h *callHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     callID,
 		"action_id":   a.ID,
@@ -188,17 +186,17 @@ func (h *callHandler) ActionTimeout(callID uuid.UUID, a *action.Action) error {
 	// not in the stasis
 	// need to be redirected to the redirectTimeoutContext.
 	case "":
-		return h.reqHandler.AstAMIRedirect(cn.AsteriskID, cn.ID, redirectTimeoutContext, redirectTimeoutExten, redirectTimeoutPriority)
+		return h.reqHandler.AstAMIRedirect(ctx, cn.AsteriskID, cn.ID, redirectTimeoutContext, redirectTimeoutExten, redirectTimeoutPriority)
 
 	// in the stasis
 	// send a request for the execute next call action
 	default:
-		return h.reqHandler.CallCallActionNext(c.ID)
+		return h.reqHandler.CallCallActionNext(ctx, c.ID)
 	}
 }
 
 // actionExecuteAnswer executes the action type answer
-func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
@@ -229,12 +227,12 @@ func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error 
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
-	if err := h.reqHandler.AstChannelAnswer(c.AsteriskID, c.ChannelID); err != nil {
+	if err := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); err != nil {
 		return fmt.Errorf("could not answer the call. err: %v", err)
 	}
 
 	// send next action request
-	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
+	if err := h.reqHandler.CallCallActionNext(ctx, c.ID); err != nil {
 		return fmt.Errorf("Could not send the next action request. err: %v", err)
 	}
 
@@ -242,7 +240,7 @@ func (h *callHandler) actionExecuteAnswer(c *call.Call, a *action.Action) error 
 }
 
 // actionExecuteEcho executes the action type echo
-func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
@@ -277,13 +275,13 @@ func (h *callHandler) actionExecuteEcho(c *call.Call, a *action.Action) error {
 	}
 
 	// continue the extension
-	if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-echo", "s", 1, ""); err != nil {
+	if err := h.reqHandler.AstChannelContinue(ctx, c.AsteriskID, c.ChannelID, "svc-echo", "s", 1, ""); err != nil {
 		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
 	// set timeout
 	// send delayed message for next action execution after 10 ms.
-	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
+	if err := h.reqHandler.CallCallActionTimeout(ctx, c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -335,7 +333,7 @@ func (h *callHandler) actionExecuteConfbridgeJoin(c *call.Call, a *action.Action
 }
 
 // actionExecutePlay executes the action type play
-func (h *callHandler) actionExecutePlay(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecutePlay(ctx context.Context, c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
@@ -377,7 +375,7 @@ func (h *callHandler) actionExecutePlay(c *call.Call, a *action.Action) error {
 	).Debugf("Sending a request to the asterisk for media playing.")
 
 	// play
-	if err := h.reqHandler.AstChannelPlay(c.AsteriskID, c.ChannelID, act.ID, medias, ""); err != nil {
+	if err := h.reqHandler.AstChannelPlay(ctx, c.AsteriskID, c.ChannelID, act.ID, medias, ""); err != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, err)
 		return fmt.Errorf("could not play the media. err: %v", err)
 	}
@@ -388,7 +386,7 @@ func (h *callHandler) actionExecutePlay(c *call.Call, a *action.Action) error {
 // actionExecuteStreamEcho executes the action type stream_echo
 // stream_echo does not support timeout and it's blocking action.
 // need to set the channel timeout before call this action.
-func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
@@ -424,13 +422,13 @@ func (h *callHandler) actionExecuteStreamEcho(c *call.Call, a *action.Action) er
 	}
 
 	// continue the extension
-	if err := h.reqHandler.AstChannelContinue(c.AsteriskID, c.ChannelID, "svc-stream_echo", "s", 1, ""); err != nil {
+	if err := h.reqHandler.AstChannelContinue(ctx, c.AsteriskID, c.ChannelID, "svc-stream_echo", "s", 1, ""); err != nil {
 		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
 	// set timeout
 	// send delayed message for next action execution after 10 ms.
-	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
+	if err := h.reqHandler.CallCallActionTimeout(ctx, c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -469,13 +467,13 @@ func (h *callHandler) actionExecuteHangup(c *call.Call, a *action.Action) error 
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
-	_ = h.HangingUp(c, ari.ChannelCauseNormalClearing)
+	_ = h.HangingUp(context.Background(), c, ari.ChannelCauseNormalClearing)
 
 	return nil
 }
 
 // actionExecuteTalk executes the action type talk
-func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, a *action.Action) error {
 
 	// copy the action
 	act := *a
@@ -501,7 +499,7 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 	}
 
 	// send request for create wav file
-	filename, err := h.reqHandler.TTSSpeechesPOST(option.Text, option.Gender, option.Language)
+	filename, err := h.reqHandler.TTSSpeechesPOST(ctx, option.Text, option.Gender, option.Language)
 	if err != nil {
 		return fmt.Errorf("could not create tts wav. err: %v", err)
 	}
@@ -513,7 +511,7 @@ func (h *callHandler) actionExecuteTalk(c *call.Call, a *action.Action) error {
 	medias = append(medias, media)
 
 	// play
-	if err := h.reqHandler.AstChannelPlay(c.AsteriskID, c.ChannelID, act.ID, medias, ""); err != nil {
+	if err := h.reqHandler.AstChannelPlay(ctx, c.AsteriskID, c.ChannelID, act.ID, medias, ""); err != nil {
 		log.Errorf("Could not play the media for tts. media: %v, err: %v", medias, err)
 		return fmt.Errorf("could not play the media for tts. err: %v", err)
 	}
@@ -600,7 +598,7 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 	)
 
 	// create a snoop channel
-	if err := h.reqHandler.AstChannelCreateSnoop(rec.AsteriskID, c.ChannelID, rec.ChannelID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionNone); err != nil {
+	if err := h.reqHandler.AstChannelCreateSnoop(ctx, rec.AsteriskID, c.ChannelID, rec.ChannelID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionNone); err != nil {
 		log.Errorf("Could not create a snoop channel for recroding. err: %v", err)
 		return fmt.Errorf("could not create snoop chanel for recrod. err: %v", err)
 	}
@@ -618,7 +616,7 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 	}
 
 	// send next action request
-	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
+	if err := h.reqHandler.CallCallActionNext(ctx, c.ID); err != nil {
 		log.Errorf("Could not execute next call action. err: %v", err)
 		return err
 	}
@@ -663,13 +661,13 @@ func (h *callHandler) actionExecuteRecordingStop(c *call.Call, a *action.Action)
 		log.Errorf("Could not get record info. But keep continue to next. err: %v", err)
 	} else {
 		// hangup the channel
-		if err := h.reqHandler.AstChannelHangup(record.AsteriskID, record.ChannelID, ari.ChannelCauseNormalClearing); err != nil {
+		if err := h.reqHandler.AstChannelHangup(ctx, record.AsteriskID, record.ChannelID, ari.ChannelCauseNormalClearing); err != nil {
 			log.Errorf("Could not hangup the recording channel. err: %v", err)
 		}
 	}
 
 	// send next action request
-	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
+	if err := h.reqHandler.CallCallActionNext(ctx, c.ID); err != nil {
 		log.Errorf("Could not execute next action call. err: %v", err)
 		return err
 	}
@@ -712,14 +710,14 @@ func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) e
 	if err == nil && len(dtmfs) > 0 && (strings.Contains(option.FinishOnKey, dtmfs) || len(dtmfs) >= option.MaxNumKey) {
 		// the stored dtmf has already qualified finish condition.
 		log.Debugf("The stored dtmfs are already qualified the finish condition. dtmfs: %s", dtmfs)
-		if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
+		if err := h.reqHandler.CallCallActionNext(ctx, c.ID); err != nil {
 			return fmt.Errorf("Could not send the next action request. err: %v", err)
 		}
 		return nil
 	}
 
 	// set timeout
-	if err := h.reqHandler.CallCallActionTimeout(c.ID, option.Duration, &act); err != nil {
+	if err := h.reqHandler.CallCallActionTimeout(ctx, c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -728,7 +726,7 @@ func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) e
 
 // actionExecuteDTMFSend executes the action type dtmf_send.
 // It sends the DTMFs to the call.
-func (h *callHandler) actionExecuteDTMFSend(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteDTMFSend(ctx context.Context, c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
@@ -753,7 +751,7 @@ func (h *callHandler) actionExecuteDTMFSend(c *call.Call, a *action.Action) erro
 	}
 
 	// send dtmfs
-	if err := h.reqHandler.AstChannelDTMF(c.AsteriskID, c.ChannelID, option.DTMFs, option.Duration, 0, option.Interval, 0); err != nil {
+	if err := h.reqHandler.AstChannelDTMF(ctx, c.AsteriskID, c.ChannelID, option.DTMFs, option.Duration, 0, option.Interval, 0); err != nil {
 		return fmt.Errorf("Could not send the dtmfs. err: %v", err)
 	}
 
@@ -765,7 +763,7 @@ func (h *callHandler) actionExecuteDTMFSend(c *call.Call, a *action.Action) erro
 	}
 
 	// set timeout
-	if err := h.reqHandler.CallCallActionTimeout(c.ID, maxTimeout, &act); err != nil {
+	if err := h.reqHandler.CallCallActionTimeout(ctx, c.ID, maxTimeout, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -794,7 +792,7 @@ func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Ac
 	extMedia, _ := h.db.ExternalMediaGet(ctx, c.ID)
 	if extMedia != nil {
 		log.Infof("The external media is already going on. external_media: %v", extMedia)
-		return h.reqHandler.CallCallActionNext(c.ID)
+		return h.reqHandler.CallCallActionNext(ctx, c.ID)
 	}
 
 	var option action.OptionExternalMediaStart
@@ -805,7 +803,7 @@ func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Ac
 		}
 	}
 
-	extCh, err := h.ExternalMediaStart(c.ID, true, option.ExternalHost, option.Encapsulation, option.Transport, option.ConnectionType, option.Format, option.Direction)
+	extCh, err := h.ExternalMediaStart(ctx, c.ID, true, option.ExternalHost, option.Encapsulation, option.Transport, option.ConnectionType, option.Format, option.Direction)
 	if err != nil {
 		log.Errorf("Could not start external media. err: %v", err)
 		return err
@@ -813,11 +811,11 @@ func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Ac
 	log.Debugf("Created external media channel. channel: %v", extCh)
 
 	// send next action request
-	return h.reqHandler.CallCallActionNext(c.ID)
+	return h.reqHandler.CallCallActionNext(ctx, c.ID)
 }
 
 // actionExecuteExternalMediaStop executes the action type external_media_stop.
-func (h *callHandler) actionExecuteExternalMediaStop(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteExternalMediaStop(ctx context.Context, c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
@@ -834,18 +832,18 @@ func (h *callHandler) actionExecuteExternalMediaStop(c *call.Call, a *action.Act
 	}
 
 	// stop the external media
-	if err := h.ExternalMediaStop(c.ID); err != nil {
+	if err := h.ExternalMediaStop(context.Background(), c.ID); err != nil {
 		log.Errorf("Could not stop the external media. err: %v", err)
 		return err
 	}
 	log.Debugf("Stopped external media channel. call_id: %v", c.ID)
 
 	// send next action request
-	return h.reqHandler.CallCallActionNext(c.ID)
+	return h.reqHandler.CallCallActionNext(ctx, c.ID)
 }
 
 // actionExecuteAMD executes the action type external_media_start.
-func (h *callHandler) actionExecuteAMD(c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call, a *action.Action) error {
 	// copy the action
 	act := *a
 
@@ -878,7 +876,7 @@ func (h *callHandler) actionExecuteAMD(c *call.Call, a *action.Action) error {
 	)
 
 	snoopID := uuid.Must(uuid.NewV4())
-	if errSnoop := h.reqHandler.AstChannelCreateSnoop(c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionBoth); errSnoop != nil {
+	if errSnoop := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionBoth); errSnoop != nil {
 		log.Errorf("Could not create a snoop channel for the AMD. error: %v", errSnoop)
 		return errSnoop
 	}
@@ -893,12 +891,12 @@ func (h *callHandler) actionExecuteAMD(c *call.Call, a *action.Action) error {
 	// add the amd info to the cache
 	if errAMD := h.db.CallApplicationAMDSet(context.Background(), snoopID.String(), app); errAMD != nil {
 		log.Errorf("Could not set the callapplication amd option. err: %v", errAMD)
-		_ = h.reqHandler.AstChannelHangup(c.AsteriskID, snoopID.String(), ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, snoopID.String(), ari.ChannelCauseNormalClearing)
 	}
 
 	if app.Async {
 		// send next action request
-		return h.reqHandler.CallCallActionNext(c.ID)
+		return h.reqHandler.CallCallActionNext(ctx, c.ID)
 	}
 
 	return nil

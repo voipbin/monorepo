@@ -1,10 +1,10 @@
 package requesthandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -61,7 +61,7 @@ func TestTTSSpeechesPOST(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.tts-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TTSSpeechesPOST(tt.text, tt.gender, tt.language)
+			res, err := reqHandler.TTSSpeechesPOST(context.Background(), tt.text, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

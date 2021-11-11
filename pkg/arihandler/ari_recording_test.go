@@ -68,7 +68,7 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusRecording, tt.timestamp).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingStarted, tt.call.WebhookURI, tt.recording)
+			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeRecordingStarted, tt.call.WebhookURI, tt.recording)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -132,7 +132,7 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingFinished, tt.call.WebhookURI, tt.recording)
+			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeRecordingFinished, tt.call.WebhookURI, tt.recording)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -193,7 +193,7 @@ func TestEventHandlerRecordingFinishedConference(t *testing.T) {
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeRecordingFinished, tt.call.WebhookURI, tt.recording)
+			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeRecordingFinished, tt.call.WebhookURI, tt.recording)
 			mockDB.EXPECT().ConfbridgeSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {

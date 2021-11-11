@@ -80,10 +80,10 @@ func TestHangup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstBridgeDelete(tt.call.AsteriskID, tt.call.BridgeID).Return(nil)
+			mockReq.EXPECT().AstBridgeDelete(gomock.Any(), tt.call.AsteriskID, tt.call.BridgeID).Return(nil)
 			mockDB.EXPECT().CallSetHangup(gomock.Any(), tt.call.ID, call.HangupReasonNormal, call.HangupByRemote, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockNotfiy.EXPECT().NotifyEvent(notifyhandler.EventTypeCallHungup, tt.call.WebhookURI, gomock.Any())
+			mockNotfiy.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallHungup, tt.call.WebhookURI, gomock.Any())
 
 			for _, chainedCallID := range tt.call.ChainedCallIDs {
 				tmpCall := &call.Call{
@@ -95,9 +95,9 @@ func TestHangup(t *testing.T) {
 
 				mockDB.EXPECT().CallGet(gomock.Any(), chainedCallID).Return(tmpCall, nil)
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), tmpCall.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-				mockReq.EXPECT().AstChannelHangup(tmpCall.AsteriskID, tmpCall.ChannelID, ari.ChannelCauseNormalClearing)
+				mockReq.EXPECT().AstChannelHangup(gomock.Any(), tmpCall.AsteriskID, tmpCall.ChannelID, ari.ChannelCauseNormalClearing)
 			}
-			if err := h.Hangup(tt.channel); err != nil {
+			if err := h.Hangup(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -146,7 +146,7 @@ func TestHangupWithReason(t *testing.T) {
 
 			mockDB.EXPECT().CallSetHangup(gomock.Any(), tt.call.ID, tt.reason, tt.hangupBy, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockNotfiy.EXPECT().NotifyEvent(notifyhandler.EventTypeCallHungup, tt.call.WebhookURI, tt.call)
+			mockNotfiy.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallHungup, tt.call.WebhookURI, tt.call)
 
 			if err := h.HangupWithReason(context.Background(), tt.call, tt.reason, tt.hangupBy, getCurTime()); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -194,9 +194,9 @@ func TestHanginUp(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelHangup(tt.call.AsteriskID, tt.call.ChannelID, tt.cause).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.cause).Return(nil)
 
-			if err := h.HangingUp(tt.call, tt.cause); err != nil {
+			if err := h.HangingUp(context.Background(), tt.call, tt.cause); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

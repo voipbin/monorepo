@@ -20,7 +20,7 @@ func (h *eventHandler) eventHandlerContactStatusChange(ctx context.Context, evt 
 		})
 
 	// send update
-	if err := h.reqHandler.RMV1ContactsPut(e.Endpoint.Resource); err != nil {
+	if err := h.reqHandler.RMV1ContactsPut(ctx, e.Endpoint.Resource); err != nil {
 		log.Errorf("Could not handle the ContactStatusChange message. err: %v", err)
 		return err
 	}

@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
@@ -50,8 +50,8 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
-			mockReq.EXPECT().AstChannelGet(tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
-			mockReq.EXPECT().CallChannelHealth(tt.channel.AsteriskID, tt.channel.ID, 10000, 0, 2).Return(nil)
+			mockReq.EXPECT().AstChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
+			mockReq.EXPECT().CallChannelHealth(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, 10000, 0, 2).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

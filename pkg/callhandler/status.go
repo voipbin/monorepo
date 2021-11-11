@@ -33,7 +33,7 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 	if err != nil {
 		return err
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallUpdated, res.WebhookURI, res)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallUpdated, res.WebhookURI, res)
 
 	return nil
 }
@@ -60,7 +60,7 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 	if err != nil {
 		return err
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallUpdated, res.WebhookURI, res)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallUpdated, res.WebhookURI, res)
 
 	if c.Direction == call.DirectionIncoming {
 		// nothing to do with incoming call at here.
@@ -68,5 +68,5 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 	}
 
 	// todo: if the direciton is outgoing, we need to do some flow actions at here.
-	return h.ActionNext(res)
+	return h.ActionNext(ctx, res)
 }

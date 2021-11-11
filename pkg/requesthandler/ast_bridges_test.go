@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -84,7 +85,7 @@ func TestAstBridgeGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-			res, err := reqHandler.AstBridgeGet(tt.asteriskID, tt.bridgeID)
+			res, err := reqHandler.AstBridgeGet(context.Background(), tt.asteriskID, tt.bridgeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

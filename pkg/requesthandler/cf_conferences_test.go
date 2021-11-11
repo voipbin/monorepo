@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -65,7 +66,7 @@ func TestCFConferenceGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CFConferenceGet(tt.conferenceID)
+			res, err := reqHandler.CFConferenceGet(context.Background(), tt.conferenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

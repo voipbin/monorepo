@@ -21,7 +21,7 @@ const (
 )
 
 // ExternalMediaStart starts the external media processing
-func (h *callHandler) ExternalMediaStart(callID uuid.UUID, isCallMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error) {
+func (h *callHandler) ExternalMediaStart(ctx context.Context, callID uuid.UUID, isCallMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call_id": callID,
@@ -29,7 +29,6 @@ func (h *callHandler) ExternalMediaStart(callID uuid.UUID, isCallMedia bool, ext
 	)
 	log.Debug("Creating the external media.")
 
-	ctx := context.Background()
 	c, err := h.db.CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get a call info. err: %v", err)
@@ -39,7 +38,7 @@ func (h *callHandler) ExternalMediaStart(callID uuid.UUID, isCallMedia bool, ext
 	// create a bridge
 	bridgeID := uuid.Must(uuid.NewV4())
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCallSnoop, c.ID)
-	if errBridge := h.reqHandler.AstBridgeCreate(c.AsteriskID, bridgeID.String(), bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); errBridge != nil {
+	if errBridge := h.reqHandler.AstBridgeCreate(ctx, c.AsteriskID, bridgeID.String(), bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); errBridge != nil {
 		log.Errorf("Could not create a bridge for external media. error: %v", errBridge)
 		return nil, errBridge
 	}
@@ -52,7 +51,7 @@ func (h *callHandler) ExternalMediaStart(callID uuid.UUID, isCallMedia bool, ext
 		bridgeID,
 	)
 	snoopID := uuid.Must(uuid.NewV4())
-	if errSnoop := h.reqHandler.AstChannelCreateSnoop(c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth); errSnoop != nil {
+	if errSnoop := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth); errSnoop != nil {
 		log.Errorf("Could not create a snoop channel for the external media. error: %v", errSnoop)
 		return nil, errSnoop
 	}
@@ -61,7 +60,7 @@ func (h *callHandler) ExternalMediaStart(callID uuid.UUID, isCallMedia bool, ext
 	// set data
 	chData := fmt.Sprintf("context=%s,bridge_id=%s,call_id=%s", ContextExternalMedia, bridgeID.String(), c.ID.String())
 	extChannelID := uuid.Must(uuid.NewV4())
-	extCh, err := h.reqHandler.AstChannelExternalMedia(c.AsteriskID, extChannelID.String(), externalHost, encapsulation, transport, connectionType, format, direction, chData, nil)
+	extCh, err := h.reqHandler.AstChannelExternalMedia(ctx, c.AsteriskID, extChannelID.String(), externalHost, encapsulation, transport, connectionType, format, direction, chData, nil)
 	if err != nil {
 		log.Errorf("Could not create a external media channel. err: %v", err)
 		return nil, err
@@ -103,15 +102,13 @@ func (h *callHandler) ExternalMediaStart(callID uuid.UUID, isCallMedia bool, ext
 }
 
 // ExternalMediaStop stops the external media processing
-func (h *callHandler) ExternalMediaStop(callID uuid.UUID) error {
+func (h *callHandler) ExternalMediaStop(ctx context.Context, callID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call_id": callID,
 		},
 	)
 	log.Debug("Stopping the external media.")
-
-	ctx := context.Background()
 
 	// get external media
 	extMedia, err := h.db.ExternalMediaGet(ctx, callID)
@@ -121,7 +118,7 @@ func (h *callHandler) ExternalMediaStop(callID uuid.UUID) error {
 	}
 
 	// hangup the external media channel
-	if errHangup := h.reqHandler.AstChannelHangup(extMedia.AsteriskID, extMedia.ChannelID, ari.ChannelCauseNormalClearing); errHangup != nil {
+	if errHangup := h.reqHandler.AstChannelHangup(ctx, extMedia.AsteriskID, extMedia.ChannelID, ari.ChannelCauseNormalClearing); errHangup != nil {
 		log.Errorf("Could not hangup the external media. err: %v", errHangup)
 		return nil
 	}

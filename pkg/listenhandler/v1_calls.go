@@ -10,17 +10,17 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // processV1CallsGet handles GET /v1/calls request
-func (h *listenHandler) processV1CallsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -42,7 +42,7 @@ func (h *listenHandler) processV1CallsGet(req *rabbitmqhandler.Request) (*rabbit
 		"token": pageToken,
 	})
 
-	calls, err := h.db.CallGets(context.Background(), userID, pageSize, pageToken)
+	calls, err := h.db.CallGets(ctx, userID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil
@@ -64,9 +64,7 @@ func (h *listenHandler) processV1CallsGet(req *rabbitmqhandler.Request) (*rabbit
 }
 
 // processV1CallsIDGet handles GET /v1/calls/<id> request
-func (h *listenHandler) processV1CallsIDGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-
+func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -101,7 +99,7 @@ func (h *listenHandler) processV1CallsIDGet(m *rabbitmqhandler.Request) (*rabbit
 
 // processV1CallsPost handles POST /v1/calls request
 // It creates a new call.
-func (h *listenHandler) processV1CallsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 3 {
 		return simpleResponse(400), nil
@@ -129,7 +127,7 @@ func (h *listenHandler) processV1CallsPost(m *rabbitmqhandler.Request) (*rabbitm
 	})
 
 	log.Debug("Creating outgoing call.")
-	c, err := h.callHandler.CreateCallOutgoing(id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil
@@ -153,7 +151,7 @@ func (h *listenHandler) processV1CallsPost(m *rabbitmqhandler.Request) (*rabbitm
 
 // processV1CallsIDPost handles POST /v1/calls/<id> request
 // It creates a new call.
-func (h *listenHandler) processV1CallsIDPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -180,7 +178,7 @@ func (h *listenHandler) processV1CallsIDPost(m *rabbitmqhandler.Request) (*rabbi
 	})
 
 	log.Debug("Creating outgoing call.")
-	c, err := h.callHandler.CreateCallOutgoing(id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", reqData.FlowID, reqData.Source, reqData.Destination, err)
 		return simpleResponse(500), nil
@@ -204,7 +202,7 @@ func (h *listenHandler) processV1CallsIDPost(m *rabbitmqhandler.Request) (*rabbi
 
 // processV1CallsIDDelete handles Delete /v1/calls/<id> request
 // It hangs up the exsited call.
-func (h *listenHandler) processV1CallsIDDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -218,7 +216,6 @@ func (h *listenHandler) processV1CallsIDDelete(m *rabbitmqhandler.Request) (*rab
 	log.Debug("Executing processV1CallsIDDelete.")
 
 	// get call
-	ctx := context.Background()
 	c, err := h.db.CallGet(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get call info. err: %v", err)
@@ -226,7 +223,7 @@ func (h *listenHandler) processV1CallsIDDelete(m *rabbitmqhandler.Request) (*rab
 	}
 
 	// hanging up the call
-	if err := h.callHandler.HangingUp(c, ari.ChannelCauseNormalClearing); err != nil {
+	if err := h.callHandler.HangingUp(ctx, c, ari.ChannelCauseNormalClearing); err != nil {
 		log.Debugf("Could not hanging up the call. err: %v", err)
 		return simpleResponse(500), nil
 	}
@@ -254,9 +251,7 @@ func (h *listenHandler) processV1CallsIDDelete(m *rabbitmqhandler.Request) (*rab
 }
 
 // processV1CallsIDGet handles /v1/calls/<id>/health-check request
-func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-
+func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -279,7 +274,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmqhandler.Request) (
 	}
 
 	// send a channel heaclth check
-	_, err = h.reqHandler.AstChannelGet(c.AsteriskID, c.ChannelID)
+	_, err = h.reqHandler.AstChannelGet(ctx, c.AsteriskID, c.ChannelID)
 	if err != nil {
 		data.RetryCount++
 	} else {
@@ -287,7 +282,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmqhandler.Request) (
 	}
 
 	// send another health check.
-	if err := h.reqHandler.CallCallHealth(id, data.Delay, data.RetryCount); err != nil {
+	if err := h.reqHandler.CallCallHealth(ctx, id, data.Delay, data.RetryCount); err != nil {
 		return nil, err
 	}
 
@@ -295,7 +290,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(m *rabbitmqhandler.Request) (
 }
 
 // processV1CallsIDGet handles /v1/calls/<id>/action-timeout request
-func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 
 	if len(uriItems) < 4 {
@@ -325,7 +320,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmqhandler.Req
 	}
 
 	log.Debug("Executing the action timeout.")
-	if err := h.callHandler.ActionTimeout(id, action); err != nil {
+	if err := h.callHandler.ActionTimeout(ctx, id, action); err != nil {
 		return simpleResponse(404), nil
 	}
 
@@ -337,7 +332,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(m *rabbitmqhandler.Req
 }
 
 // processV1CallsIDGet handles /v1/calls/<id>/action-next request
-func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -350,7 +345,7 @@ func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmqhandler.Reques
 		})
 	log.Debug("Executing processV1CallsIDActionNextPost.")
 
-	c, err := h.db.CallGet(context.Background(), id)
+	c, err := h.db.CallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get call info from the database. err: %v", err)
 		return simpleResponse(404), nil
@@ -359,7 +354,7 @@ func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmqhandler.Reques
 	// we run the go runc() here.
 	// because we don't want to action's running time caused the request timeout.
 	go func() {
-		if err := h.callHandler.ActionNext(c); err != nil {
+		if err := h.callHandler.ActionNext(ctx, c); err != nil {
 			log.Errorf("Could not execute the action next. err: %v", err)
 		}
 	}()
@@ -372,7 +367,7 @@ func (h *listenHandler) processV1CallsIDActionNextPost(m *rabbitmqhandler.Reques
 }
 
 // processV1CallsIDChainedCallIDsPost handles /v1/calls/<id>/chained-call-ids POST request
-func (h *listenHandler) processV1CallsIDChainedCallIDsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -393,7 +388,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(m *rabbitmqhandler.Re
 		"chained_call_ids": data,
 	}).Debugf("Parsed request data.")
 
-	if err := h.callHandler.ChainedCallIDAdd(id, data.ChainedCallID); err != nil {
+	if err := h.callHandler.ChainedCallIDAdd(ctx, id, data.ChainedCallID); err != nil {
 		log.Errorf("Could not add the chained call id. call: %s, chained_call: %s, err: %v", id, data.ChainedCallID, err)
 		return nil, err
 	}
@@ -406,7 +401,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(m *rabbitmqhandler.Re
 }
 
 // processV1CallsIDChainedCallIDsDelete handles /v1/calls/<id>/chained-call-ids/<chained-call-id> DELETE request
-func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -421,7 +416,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(m *rabbitmqhandler.
 		})
 	log.Debug("Executing processV1CallsIDChainedCallIDsDelete.")
 
-	if err := h.callHandler.ChainedCallIDRemove(id, chainedCallID); err != nil {
+	if err := h.callHandler.ChainedCallIDRemove(ctx, id, chainedCallID); err != nil {
 		log.Errorf("Could not add the chained call id. err: %v", err)
 		return nil, err
 	}
@@ -434,7 +429,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(m *rabbitmqhandler.
 }
 
 // processV1CallsIDExternalMediaPost handles /v1/calls/<id>/external-media POST request
-func (h *listenHandler) processV1CallsIDExternalMediaPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -455,7 +450,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(m *rabbitmqhandler.Req
 		"external_media": data,
 	}).Debugf("Parsed request data.")
 
-	extCh, err := h.callHandler.ExternalMediaStart(id, false, data.ExternalHost, data.Encapsulation, data.Transport, data.ConnectionType, data.Format, data.Direction)
+	extCh, err := h.callHandler.ExternalMediaStart(ctx, id, false, data.ExternalHost, data.Encapsulation, data.Transport, data.ConnectionType, data.Format, data.Direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. call: %s, err: %v", id, err)
 		return nil, err

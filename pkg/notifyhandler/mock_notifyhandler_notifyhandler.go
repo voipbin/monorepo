@@ -5,6 +5,7 @@
 package notifyhandler
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -72,25 +73,25 @@ func (m *MockNotifyHandler) EXPECT() *MockNotifyHandlerMockRecorder {
 }
 
 // NotifyEvent mocks base method.
-func (m *MockNotifyHandler) NotifyEvent(eventType EventType, webhookURI string, message WebhookMessage) {
+func (m *MockNotifyHandler) NotifyEvent(ctx context.Context, eventType EventType, webhookURI string, message WebhookMessage) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "NotifyEvent", eventType, webhookURI, message)
+	m.ctrl.Call(m, "NotifyEvent", ctx, eventType, webhookURI, message)
 }
 
 // NotifyEvent indicates an expected call of NotifyEvent.
-func (mr *MockNotifyHandlerMockRecorder) NotifyEvent(eventType, webhookURI, message interface{}) *gomock.Call {
+func (mr *MockNotifyHandlerMockRecorder) NotifyEvent(ctx, eventType, webhookURI, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyEvent", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyEvent), eventType, webhookURI, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyEvent", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyEvent), ctx, eventType, webhookURI, message)
 }
 
 // PublishEvent mocks base method.
-func (m *MockNotifyHandler) PublishEvent(t EventType, c interface{}) {
+func (m *MockNotifyHandler) PublishEvent(ctx context.Context, t EventType, c interface{}) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "PublishEvent", t, c)
+	m.ctrl.Call(m, "PublishEvent", ctx, t, c)
 }
 
 // PublishEvent indicates an expected call of PublishEvent.
-func (mr *MockNotifyHandlerMockRecorder) PublishEvent(t, c interface{}) *gomock.Call {
+func (mr *MockNotifyHandlerMockRecorder) PublishEvent(ctx, t, c interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEvent", reflect.TypeOf((*MockNotifyHandler)(nil).PublishEvent), t, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEvent", reflect.TypeOf((*MockNotifyHandler)(nil).PublishEvent), ctx, t, c)
 }
