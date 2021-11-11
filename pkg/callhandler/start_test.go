@@ -819,3 +819,61 @@ func TestStartHandlerContextExternalSnoop(t *testing.T) {
 		})
 	}
 }
+
+func TestStartHandlerContextJoin(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &callHandler{
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	type test struct {
+		name     string
+		channel  *channel.Channel
+		data     map[string]string
+		bridgeID string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&channel.Channel{
+				ID:         "asterisk-call-06627464-431a-11ec-bda3-2f0d6128b98f",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.139-00000000",
+			},
+			map[string]string{
+				"context":       ContextJoinCall,
+				"bridge_id":     "ed08cbf8-4319-11ec-a768-23af5da287d4",
+				"call_id":       "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
+				"confbridge_id": "ed70a890-4319-11ec-a8dc-8baa3bdb6a39",
+				"conference_id": "ed8d82d0-4319-11ec-9847-4bd48a0b2fb1",
+			},
+			"ed08cbf8-4319-11ec-a768-23af5da287d4",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeJoin)).Return(nil)
+			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.bridgeID, tt.channel.ID, "", false, false).Return(nil)
+
+			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "PJSIP_HEADER(add,VB-CALL-ID)", tt.data["call_id"]).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "PJSIP_HEADER(add,VB-CONFBRIDGE-ID)", tt.data["confbridge_id"]).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "PJSIP_HEADER(add,VB-CONFERENCE-ID)", tt.data["conference_id"]).Return(nil)
+
+			mockReq.EXPECT().AstChannelDial(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "", defaultDialTimeout).Return(nil)
+
+			if err := h.StartCallHandle(context.Background(), tt.channel, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
