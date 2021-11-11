@@ -110,59 +110,59 @@ func init() {
 type RequestHandler interface {
 
 	// asterisk AMI
-	AstAMIRedirect(asteriskID, channelID, context, exten, priority string) error
+	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error
 
 	// asterisk bridges
-	AstBridgeAddChannel(asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error
-	AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeType []bridge.Type) error
-	AstBridgeDelete(asteriskID, bridgeID string) error
-	AstBridgeGet(asteriskID, bridgeID string) (*bridge.Bridge, error)
-	AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error
+	AstBridgeAddChannel(ctx context.Context, asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error
+	AstBridgeCreate(ctx context.Context, asteriskID, bridgeID, bridgeName string, bridgeType []bridge.Type) error
+	AstBridgeDelete(ctx context.Context, asteriskID, bridgeID string) error
+	AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*bridge.Bridge, error)
+	AstBridgeRemoveChannel(ctx context.Context, asteriskID, bridgeID, channelID string) error
 
 	// asterisk channels
-	AstChannelAnswer(asteriskID, channelID string) error
-	AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error
-	AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error
-	AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
-	AstChannelDial(asteriskID, channelID, caller string, timeout int) error
-	AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error
-	AstChannelExternalMedia(asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error)
-	AstChannelGet(asteriskID, channelID string) (*channel.Channel, error)
-	AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error
-	AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
-	AstChannelRecord(asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
-	AstChannelVariableSet(asteriskID, channelID, variable, value string) error
+	AstChannelAnswer(ctx context.Context, asteriskID, channelID string) error
+	AstChannelContinue(ctx context.Context, asteriskID, channelID, context, ext string, pri int, label string) error
+	AstChannelCreate(ctx context.Context, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error
+	AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error
+	AstChannelDial(ctx context.Context, asteriskID, channelID, caller string, timeout int) error
+	AstChannelDTMF(ctx context.Context, asteriskID, channelID string, digit string, duration, before, between, after int) error
+	AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error)
+	AstChannelGet(ctx context.Context, asteriskID, channelID string) (*channel.Channel, error)
+	AstChannelHangup(ctx context.Context, asteriskID, channelID string, code ari.ChannelCause) error
+	AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
+	AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
+	AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error
 
 	// call-manager call
-	CallCallHealth(id uuid.UUID, delay, retryCount int) error
-	CallCallActionNext(id uuid.UUID) error
-	CallCallActionTimeout(id uuid.UUID, delay int, a *action.Action) error
-	CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error
+	CallCallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
+	CallCallActionNext(ctx context.Context, id uuid.UUID) error
+	CallCallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *action.Action) error
+	CallChannelHealth(ctx context.Context, asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
 	// call-manager conference
-	CallConferenceTerminate(conferenceID uuid.UUID, delay int) error
+	CallConferenceTerminate(ctx context.Context, conferenceID uuid.UUID, delay int) error
 
 	// conference-manager conference
-	CFConferenceGet(conferenceID uuid.UUID) (*cfconference.Conference, error)
+	CFConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 
 	// flow-manager actions
-	FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
-	FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
-	FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error)
-	FMFlowsPost(userID uint64, name string, detail string, webhookURI string, actions []action.Action, persist bool) (*fmflow.Flow, error)
+	FlowActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*action.Action, error)
+	FlowActvieFlowPost(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
+	FlowActvieFlowNextGet(ctx context.Context, callID, actionID uuid.UUID) (*action.Action, error)
+	FMFlowsPost(ctx context.Context, userID uint64, name string, detail string, webhookURI string, actions []action.Action, persist bool) (*fmflow.Flow, error)
 
 	// number-manager numbers
-	NMV1NumbersNumberGet(num string) (*number.Number, error)
+	NMV1NumbersNumberGet(ctx context.Context, num string) (*number.Number, error)
 
 	// recording-manager contacts
-	RMV1ContactsGet(endpoint string) ([]*astcontact.AstContact, error)
-	RMV1ContactsPut(endpoint string) error
+	RMV1ContactsGet(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error)
+	RMV1ContactsPut(ctx context.Context, endpoint string) error
 
 	// tts-manager speeches
-	TTSSpeechesPOST(text, gender, language string) (string, error)
+	TTSSpeechesPOST(ctx context.Context, text, gender, language string) (string, error)
 
 	// webhook-manager webhooks
-	WMWebhookPOST(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error
+	WMWebhookPOST(ctx context.Context, webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error
 }
 
 type requestHandler struct {

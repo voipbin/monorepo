@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -46,10 +47,11 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf("no call"))
 
-			if err := h.ARIChannelDestroyed(tt.channel); err != nil {
+			if err := h.ARIChannelDestroyed(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -87,7 +89,8 @@ func TestARIChannelDestroyedContextTypeConference(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := h.ARIChannelDestroyed(tt.channel); err != nil {
+			ctx := context.Background()
+			if err := h.ARIChannelDestroyed(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -135,18 +138,19 @@ func TestARIPlaybackFinished(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			returnAction := action.Action{
 				Type:   action.TypeHangup,
 				Option: []byte(`{}`),
 			}
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().FlowActvieFlowNextGet(tt.call.ID, tt.call.Action.ID).Return(&returnAction, nil)
+			mockReq.EXPECT().FlowActvieFlowNextGet(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(&returnAction, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelHangup(tt.call.AsteriskID, tt.call.ChannelID, ari.ChannelCauseNormalClearing)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, ari.ChannelCauseNormalClearing)
 
-			if err := h.ARIPlaybackFinished(tt.channel, tt.playbackID); err != nil {
+			if err := h.ARIPlaybackFinished(ctx, tt.channel, tt.playbackID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

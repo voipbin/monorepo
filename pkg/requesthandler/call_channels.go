@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -9,7 +10,7 @@ import (
 )
 
 // CallChannelHealth sends the request for channel health-check
-func (r *requestHandler) CallChannelHealth(asteriskID, channelID string, delay, retryCount, retryCountMax int) error {
+func (r *requestHandler) CallChannelHealth(ctx context.Context, asteriskID, channelID string, delay, retryCount, retryCountMax int) error {
 	encodeAsteriskID := url.QueryEscape(asteriskID)
 	uri := fmt.Sprintf("/v1/asterisks/%s/channels/%s/health-check", encodeAsteriskID, channelID)
 

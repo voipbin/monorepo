@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"context"
 	"fmt"
 	reflect "reflect"
 	"testing"
@@ -205,11 +206,11 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallCreated, tt.expectCall.WebhookURI, tt.expectCall)
-			mockReq.EXPECT().FlowActvieFlowPost(tt.id, tt.flowID).Return(tt.af, nil)
-			mockReq.EXPECT().AstChannelCreate(requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
+			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallCreated, tt.expectCall.WebhookURI, tt.expectCall)
+			mockReq.EXPECT().FlowActvieFlowPost(gomock.Any(), tt.id, tt.flowID).Return(tt.af, nil)
+			mockReq.EXPECT().AstChannelCreate(gomock.Any(), requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
 
-			res, err := h.CreateCallOutgoing(tt.id, tt.userID, tt.flowID, tt.source, tt.destination)
+			res, err := h.CreateCallOutgoing(context.Background(), tt.id, tt.userID, tt.flowID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -254,7 +255,7 @@ func TestGetEndpointDestinationTypeTel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.getEndpointDestination(*tt.destination)
+			res, err := h.getEndpointDestination(context.Background(), *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -299,7 +300,7 @@ func TestGetEndpointDestinationTypeSIP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.getEndpointDestination(*tt.destination)
+			res, err := h.getEndpointDestination(context.Background(), *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -462,9 +463,9 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().RMV1ContactsGet(tt.destination.Target).Return(tt.contacts, nil)
+			mockReq.EXPECT().RMV1ContactsGet(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
 
-			res, err := h.getEndpointDestination(*tt.destination)
+			res, err := h.getEndpointDestination(context.Background(), *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -509,9 +510,9 @@ func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().RMV1ContactsGet(tt.destination.Target).Return(tt.contacts, nil)
+			mockReq.EXPECT().RMV1ContactsGet(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
 
-			_, err := h.getEndpointDestination(*tt.destination)
+			_, err := h.getEndpointDestination(context.Background(), *tt.destination)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}

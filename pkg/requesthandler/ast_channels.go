@@ -1,19 +1,20 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // AstChannelAnswer sends the channel answer request
-func (r *requestHandler) AstChannelAnswer(asteriskID, channelID string) error {
+func (r *requestHandler) AstChannelAnswer(ctx context.Context, asteriskID, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/answer", channelID)
 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsAnswer, requestTimeoutDefault, 0, "", nil)
@@ -27,7 +28,7 @@ func (r *requestHandler) AstChannelAnswer(asteriskID, channelID string) error {
 }
 
 // AstChannelContinue sends the continue request
-func (r *requestHandler) AstChannelContinue(asteriskID, channelID, context, ext string, pri int, label string) error {
+func (r *requestHandler) AstChannelContinue(ctx context.Context, asteriskID, channelID, context, ext string, pri int, label string) error {
 	url := fmt.Sprintf("/ari/channels/%s/continue", channelID)
 
 	type Data struct {
@@ -58,7 +59,7 @@ func (r *requestHandler) AstChannelContinue(asteriskID, channelID, context, ext 
 }
 
 // AstChannelContinue sends the continue request
-func (r *requestHandler) AstChannelHangup(asteriskID, channelID string, code ari.ChannelCause) error {
+func (r *requestHandler) AstChannelHangup(ctx context.Context, asteriskID, channelID string, code ari.ChannelCause) error {
 	url := fmt.Sprintf("/ari/channels/%s", channelID)
 
 	type Data struct {
@@ -83,7 +84,7 @@ func (r *requestHandler) AstChannelHangup(asteriskID, channelID string, code ari
 }
 
 // AstChannelVariableSet sends the variable set request
-func (r *requestHandler) AstChannelVariableSet(asteriskID, channelID, variable, value string) error {
+func (r *requestHandler) AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error {
 	url := fmt.Sprintf("/ari/channels/%s/variable", channelID)
 
 	type Data struct {
@@ -110,7 +111,7 @@ func (r *requestHandler) AstChannelVariableSet(asteriskID, channelID, variable, 
 }
 
 // AstChannelCreate sends the request for create a channel
-func (r *requestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error {
+func (r *requestHandler) AstChannelCreate(ctx context.Context, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error {
 	uri := "/ari/channels/create"
 
 	type Data struct {
@@ -149,7 +150,7 @@ func (r *requestHandler) AstChannelCreate(asteriskID, channelID, appArgs, endpoi
 }
 
 // AstChannelCreateSnoop sends the request for create a snoop channel
-func (r *requestHandler) AstChannelCreateSnoop(asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error {
+func (r *requestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error {
 	url := fmt.Sprintf("/ari/channels/%s/snoop", channelID)
 
 	type Data struct {
@@ -182,7 +183,7 @@ func (r *requestHandler) AstChannelCreateSnoop(asteriskID, channelID, snoopID, a
 }
 
 // AstChannelGet gets the Asterisk's channel defail
-func (r *requestHandler) AstChannelGet(asteriskID, channelID string) (*channel.Channel, error) {
+func (r *requestHandler) AstChannelGet(ctx context.Context, asteriskID, channelID string) (*channel.Channel, error) {
 	url := fmt.Sprintf("/ari/channels/%s", channelID)
 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodGet, resourceAstChannels, requestTimeoutDefault, 0, ContentTypeJSON, nil)
@@ -203,7 +204,7 @@ func (r *requestHandler) AstChannelGet(asteriskID, channelID string) (*channel.C
 }
 
 // AstChannelDTMF sends the dtmf request
-func (r *requestHandler) AstChannelDTMF(asteriskID, channelID string, digit string, duration, before, between, after int) error {
+func (r *requestHandler) AstChannelDTMF(ctx context.Context, asteriskID, channelID string, digit string, duration, before, between, after int) error {
 	url := fmt.Sprintf("/ari/channels/%s/dtmf", channelID)
 
 	type Data struct {
@@ -236,7 +237,7 @@ func (r *requestHandler) AstChannelDTMF(asteriskID, channelID string, digit stri
 }
 
 // AstChannelDial dials the channel to the endpoint
-func (r *requestHandler) AstChannelDial(asteriskID, channelID, caller string, timeout int) error {
+func (r *requestHandler) AstChannelDial(ctx context.Context, asteriskID, channelID, caller string, timeout int) error {
 	url := fmt.Sprintf("/ari/channels/%s/dial", channelID)
 
 	type Data struct {
@@ -265,7 +266,7 @@ func (r *requestHandler) AstChannelDial(asteriskID, channelID, caller string, ti
 // AstChannelPlay plays the music file on the channel
 // The channelID will be used for playbackId as well.
 // medias string must be stared with sound:, recording:, number:, digits:, characters:, tone:.
-func (r *requestHandler) AstChannelPlay(asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error {
+func (r *requestHandler) AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error {
 	url := fmt.Sprintf("/ari/channels/%s/play", channelID)
 
 	type Data struct {
@@ -294,7 +295,7 @@ func (r *requestHandler) AstChannelPlay(asteriskID string, channelID string, act
 }
 
 // AstChannelRecord records the given the channel
-func (r *requestHandler) AstChannelRecord(asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error {
+func (r *requestHandler) AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error {
 	url := fmt.Sprintf("/ari/channels/%s/record", channelID)
 
 	type Data struct {
@@ -331,7 +332,7 @@ func (r *requestHandler) AstChannelRecord(asteriskID string, channelID string, f
 }
 
 // AstChannelExternalMedia creates a external media.
-func (r *requestHandler) AstChannelExternalMedia(asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error) {
+func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error) {
 
 	url := "/ari/channels/externalMedia"
 

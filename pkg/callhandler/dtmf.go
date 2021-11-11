@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // DTMFReceived handles DTMF Recevied event
@@ -79,9 +79,9 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 	log.Infof("Finished dtmf receiving. call: %s, dtmfs: %s", c.ID, dtmfs)
 
 	// send next action request
-	if errNext := h.reqHandler.CallCallActionNext(c.ID); errNext != nil {
+	if errNext := h.reqHandler.CallCallActionNext(ctx, c.ID); errNext != nil {
 		log.Errorf("Could not get next action. err: %v", errNext)
-		_ = h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
 	}
 
 	return nil

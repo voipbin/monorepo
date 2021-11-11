@@ -1,18 +1,19 @@
 package notifyhandler
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 func TestNotifyEventCall(t *testing.T) {
@@ -134,9 +135,9 @@ func TestNotifyEventCall(t *testing.T) {
 
 			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
 			if tt.call.WebhookURI != "" {
-				mockReq.EXPECT().WMWebhookPOST("POST", tt.call.WebhookURI, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
+				mockReq.EXPECT().WMWebhookPOST(gomock.Any(), "POST", tt.call.WebhookURI, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
-			h.NotifyEvent(tt.eventType, tt.call.WebhookURI, tt.call)
+			h.NotifyEvent(context.Background(), tt.eventType, tt.call.WebhookURI, tt.call)
 
 			time.Sleep(time.Millisecond * 1000)
 		})
@@ -209,9 +210,9 @@ func TestNotifyEventRecordingStarted(t *testing.T) {
 
 			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
 			if tt.r.WebhookURI != "" {
-				mockReq.EXPECT().WMWebhookPOST("POST", tt.r.WebhookURI, dataTypeJSON, string(EventTypeRecordingStarted), tt.expectWebhook)
+				mockReq.EXPECT().WMWebhookPOST(gomock.Any(), "POST", tt.r.WebhookURI, dataTypeJSON, string(EventTypeRecordingStarted), tt.expectWebhook)
 			}
-			h.NotifyEvent(EventTypeRecordingStarted, tt.r.WebhookURI, tt.r)
+			h.NotifyEvent(context.Background(), EventTypeRecordingStarted, tt.r.WebhookURI, tt.r)
 
 			time.Sleep(time.Millisecond * 100)
 		})
@@ -284,9 +285,9 @@ func TestNotifyEventRecordingFinished(t *testing.T) {
 
 			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
 			if tt.r.WebhookURI != "" {
-				mockReq.EXPECT().WMWebhookPOST("POST", tt.r.WebhookURI, dataTypeJSON, string(EventTypeRecordingFinished), tt.expectWebhook)
+				mockReq.EXPECT().WMWebhookPOST(gomock.Any(), "POST", tt.r.WebhookURI, dataTypeJSON, string(EventTypeRecordingFinished), tt.expectWebhook)
 			}
-			h.NotifyEvent(EventTypeRecordingFinished, tt.r.WebhookURI, tt.r)
+			h.NotifyEvent(context.Background(), EventTypeRecordingFinished, tt.r.WebhookURI, tt.r)
 
 			time.Sleep(time.Millisecond * 100)
 		})

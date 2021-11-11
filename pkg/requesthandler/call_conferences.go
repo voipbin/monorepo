@@ -1,17 +1,17 @@
 package requesthandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // ConferenceConferenceTerminate sends the request for conference terminating
 // conferenceID: conference id
 // delay: millisecond
-func (r *requestHandler) CallConferenceTerminate(conferenceID uuid.UUID, delay int) error {
+func (r *requestHandler) CallConferenceTerminate(ctx context.Context, conferenceID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
 	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallChannelsHealth, requestTimeoutDefault, delay, ContentTypeJSON, nil)

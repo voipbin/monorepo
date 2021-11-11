@@ -24,7 +24,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	})
 
 	log.Debug("Hangup join channel.")
-	_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 
 	// set empty conference id
 	if err := h.db.CallSetConferenceID(ctx, br.ReferenceID, uuid.Nil); err != nil {
@@ -40,7 +40,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	}
 
 	// send call notification
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallUpdated, c.WebhookURI, c)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallUpdated, c.WebhookURI, c)
 
 	// check the call status
 	if c.Status != call.StatusProgressing && c.Status != call.StatusDialing && c.Status != call.StatusRinging {
@@ -49,7 +49,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	}
 
 	// send a call action next
-	if err := h.reqHandler.CallCallActionNext(c.ID); err != nil {
+	if err := h.reqHandler.CallCallActionNext(ctx, c.ID); err != nil {
 		log.Debugf("Could not send the call action next request. err: %v", err)
 		return err
 	}
@@ -67,15 +67,15 @@ func (h *callHandler) bridgeLeftExternal(ctx context.Context, cn *channel.Channe
 
 	// hang up the channel
 	log.Debug("Hangup external media channel.")
-	_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 
 	// remove all other channels
 	if len(br.ChannelIDs) == 0 {
 		log.Debug("No channel left in the bridge. Deleting the bridge.")
-		_ = h.reqHandler.AstBridgeDelete(br.AsteriskID, br.ID)
+		_ = h.reqHandler.AstBridgeDelete(ctx, br.AsteriskID, br.ID)
 	} else {
 		log.Debugf("Channels are still remain in the bridge. channels: %d", len(br.ChannelIDs))
-		h.removeAllChannelsInBridge(br)
+		h.removeAllChannelsInBridge(ctx, br)
 	}
 
 	// we don't do anything here
@@ -85,7 +85,7 @@ func (h *callHandler) bridgeLeftExternal(ctx context.Context, cn *channel.Channe
 }
 
 // removeAllChannelsInBridge remove the all channels in the bridge
-func (h *callHandler) removeAllChannelsInBridge(bridge *bridge.Bridge) {
+func (h *callHandler) removeAllChannelsInBridge(ctx context.Context, bridge *bridge.Bridge) {
 	logrus.WithFields(
 		logrus.Fields{
 			"asterisk": bridge.AsteriskID,
@@ -95,7 +95,7 @@ func (h *callHandler) removeAllChannelsInBridge(bridge *bridge.Bridge) {
 
 	// destroy all the channels in the bridge
 	for _, channelID := range bridge.ChannelIDs {
-		if err := h.reqHandler.AstBridgeRemoveChannel(bridge.AsteriskID, bridge.ID, channelID); err != nil {
+		if err := h.reqHandler.AstBridgeRemoveChannel(ctx, bridge.AsteriskID, bridge.ID, channelID); err != nil {
 			logrus.WithFields(
 				logrus.Fields{
 					"asterisk": bridge.AsteriskID,

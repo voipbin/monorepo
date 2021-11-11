@@ -1,17 +1,19 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // AstBridgeCreate sends the bridge create request
-func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string, bridgeTypes []bridge.Type) error {
+func (r *requestHandler) AstBridgeCreate(ctx context.Context, asteriskID, bridgeID, bridgeName string, bridgeTypes []bridge.Type) error {
 	url := "/ari/bridges"
 
 	type Data struct {
@@ -45,7 +47,7 @@ func (r *requestHandler) AstBridgeCreate(asteriskID, bridgeID, bridgeName string
 }
 
 // AstBridgeDelete sends the bridge delete request
-func (r *requestHandler) AstBridgeDelete(asteriskID, bridgeID string) error {
+func (r *requestHandler) AstBridgeDelete(ctx context.Context, asteriskID, bridgeID string) error {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstBridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
@@ -59,7 +61,7 @@ func (r *requestHandler) AstBridgeDelete(asteriskID, bridgeID string) error {
 }
 
 // AstBridgeGet sends the bridge get request
-func (r *requestHandler) AstBridgeGet(asteriskID, bridgeID string) (*bridge.Bridge, error) {
+func (r *requestHandler) AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*bridge.Bridge, error) {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodGet, resourceAstBridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
@@ -80,7 +82,7 @@ func (r *requestHandler) AstBridgeGet(asteriskID, bridgeID string) (*bridge.Brid
 }
 
 // AstBridgeAddChannel sends the request for adding the channel to the bridge
-func (r *requestHandler) AstBridgeAddChannel(asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error {
+func (r *requestHandler) AstBridgeAddChannel(ctx context.Context, asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error {
 	url := fmt.Sprintf("/ari/bridges/%s/addChannel", bridgeID)
 
 	type Data struct {
@@ -111,7 +113,7 @@ func (r *requestHandler) AstBridgeAddChannel(asteriskID, bridgeID, channelID, ro
 }
 
 // AstBridgeRemoveChannel sends the request for removing the channel from the bridge
-func (r *requestHandler) AstBridgeRemoveChannel(asteriskID, bridgeID, channelID string) error {
+func (r *requestHandler) AstBridgeRemoveChannel(ctx context.Context, asteriskID, bridgeID, channelID string) error {
 	url := fmt.Sprintf("/ari/bridges/%s/removeChannel", bridgeID)
 
 	type Data struct {

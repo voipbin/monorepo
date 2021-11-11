@@ -13,19 +13,19 @@ import (
 )
 
 // ARIStasisStart is called when the channel handler received StasisStart.
-func (h *callHandler) ARIStasisStart(cn *channel.Channel, data map[string]string) error {
+func (h *callHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
 	logrus.WithField("func", "ARIStasisStart").Debugf("Execute the stasis start event handler for call.")
 
-	return h.StartCallHandle(cn, data)
+	return h.StartCallHandle(ctx, cn, data)
 }
 
 // ARIChannelDestroyed handles ChannelDestroyed ARI event
-func (h *callHandler) ARIChannelDestroyed(cn *channel.Channel) error {
+func (h *callHandler) ARIChannelDestroyed(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithField("func", "ARIChannelDestroyed")
 
 	switch cn.Type {
 	case channel.TypeCall:
-		return h.Hangup(cn)
+		return h.Hangup(ctx, cn)
 
 	case channel.TypeConfbridge, channel.TypeJoin, channel.TypeExternal, channel.TypeRecording, channel.TypeApplication:
 		// we don't do anything at here.
@@ -38,7 +38,7 @@ func (h *callHandler) ARIChannelDestroyed(cn *channel.Channel) error {
 }
 
 // ARIChannelDtmfReceived handles ChannelDtmfReceived ARI event
-func (h *callHandler) ARIChannelDtmfReceived(cn *channel.Channel, digit string, duration int) error {
+func (h *callHandler) ARIChannelDtmfReceived(ctx context.Context, cn *channel.Channel, digit string, duration int) error {
 
 	// support pjsip type only for now.
 	if cn.Tech != channel.TechPJSIP {
@@ -54,9 +54,7 @@ func (h *callHandler) ARIChannelDtmfReceived(cn *channel.Channel, digit string, 
 
 // ARIPlaybackFinished handles PlaybackFinished ARI event
 // parsed playbackID to the action id, and execute the next action if its correct.
-func (h *callHandler) ARIPlaybackFinished(cn *channel.Channel, playbackID string) error {
-	ctx := context.Background()
-
+func (h *callHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error {
 	actionID := uuid.FromStringOrNil(playbackID)
 
 	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
@@ -72,12 +70,10 @@ func (h *callHandler) ARIPlaybackFinished(cn *channel.Channel, playbackID string
 	}
 
 	// go to next action
-	return h.ActionNext(c)
+	return h.ActionNext(ctx, c)
 }
 
-func (h *callHandler) ARIChannelStateChange(cn *channel.Channel) error {
-	ctx := context.Background()
-
+func (h *callHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Channel) error {
 	status := call.GetStatusByChannelState(cn.State)
 	if status != call.StatusRinging && status != call.StatusProgressing {
 		// the call cares only riniging/progressing at here.
@@ -102,8 +98,7 @@ func (h *callHandler) ARIChannelStateChange(cn *channel.Channel) error {
 	return nil
 }
 
-func (h *callHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
-	ctx := context.Background()
+func (h *callHandler) ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ARIChannelLeftBridge",
 		"asterisk_id": cn.AsteriskID,

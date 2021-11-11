@@ -4,12 +4,12 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestEventHandlerStasisStart(t *testing.T) {
@@ -64,7 +64,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, gomock.Any()).Return(true)
 			mockDB.EXPECT().ChannelSetStasisNameAndStasisData(gomock.Any(), tt.expectChannelID, tt.expectStasisname, tt.expactStasisData).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(channel, nil)
-			mockCall.EXPECT().ARIStasisStart(channel, tt.expactStasisData).Return(nil)
+			mockCall.EXPECT().ARIStasisStart(gomock.Any(), channel, tt.expactStasisData).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

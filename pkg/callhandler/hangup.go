@@ -12,8 +12,7 @@ import (
 )
 
 // Hangup Hangup the call
-func (h *callHandler) Hangup(cn *channel.Channel) error {
-	ctx := context.Background()
+func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
 		"channel_id": cn.ID,
 	})
@@ -28,7 +27,7 @@ func (h *callHandler) Hangup(cn *channel.Channel) error {
 	log = log.WithField("call_id", c.ID)
 
 	// remove the call bridge
-	if err := h.reqHandler.AstBridgeDelete(c.AsteriskID, c.BridgeID); err != nil {
+	if err := h.reqHandler.AstBridgeDelete(ctx, c.AsteriskID, c.BridgeID); err != nil {
 		// we don't care the error here. just write the log.
 		log.Errorf("Could not remove the bridge. err: %v", err)
 	}
@@ -53,7 +52,7 @@ func (h *callHandler) Hangup(cn *channel.Channel) error {
 		}
 
 		// hang up the call
-		_ = h.HangingUp(chainedCall, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, chainedCall, ari.ChannelCauseNormalClearing)
 	}
 
 	return nil
@@ -70,7 +69,7 @@ func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason
 		logrus.Errorf("Could not get hungup call data. call: %s, err: %v", c.ID, err)
 		return nil
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallHungup, tmpCall.WebhookURI, tmpCall)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallHungup, tmpCall.WebhookURI, tmpCall)
 
 	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
 	return nil
@@ -78,9 +77,7 @@ func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason
 
 // HangingUp starts hangup process.
 // It sets the call status to the terminating and sends the hangup request to the Asterisk.
-func (h *callHandler) HangingUp(c *call.Call, cause ari.ChannelCause) error {
-	ctx := context.Background()
-
+func (h *callHandler) HangingUp(ctx context.Context, c *call.Call, cause ari.ChannelCause) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call":          c.ID,
 		"asterisk":      c.AsteriskID,
@@ -114,7 +111,7 @@ func (h *callHandler) HangingUp(c *call.Call, cause ari.ChannelCause) error {
 	}
 
 	// send hangup request
-	if err := h.reqHandler.AstChannelHangup(c.AsteriskID, c.ChannelID, cause); err != nil {
+	if err := h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, c.ChannelID, cause); err != nil {
 		// Send hangup request has failed. Something really wrong.
 		log.Errorf("Could not send the hangup request for call hangup. err: %v", err)
 		return err

@@ -27,7 +27,7 @@ func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt inter
 	}
 
 	// start channel watcher
-	if err := h.reqHandler.CallChannelHealth(cn.AsteriskID, cn.ID, requesthandler.DelaySecond*10, 0, 2); err != nil {
+	if err := h.reqHandler.CallChannelHealth(ctx, cn.AsteriskID, cn.ID, requesthandler.DelaySecond*10, 0, 2); err != nil {
 		log.WithFields(
 			log.Fields{
 				"asterisk": cn.AsteriskID,
@@ -57,7 +57,7 @@ func (h *eventHandler) eventHandlerChannelDestroyed(ctx context.Context, evt int
 		return err
 	}
 
-	if err := h.callHandler.ARIChannelDestroyed(cn); err != nil {
+	if err := h.callHandler.ARIChannelDestroyed(ctx, cn); err != nil {
 		return err
 	}
 
@@ -73,7 +73,7 @@ func (h *eventHandler) eventHandlerChannelDtmfReceived(ctx context.Context, evt 
 		return err
 	}
 
-	if err := h.callHandler.ARIChannelDtmfReceived(cn, e.Digit, e.Duration); err != nil {
+	if err := h.callHandler.ARIChannelDtmfReceived(ctx, cn, e.Digit, e.Duration); err != nil {
 		return err
 	}
 
@@ -94,27 +94,27 @@ func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt
 
 	if !h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) {
 		log.Error("The given channel is not in our database.")
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no channel found")
 	}
 
 	if !h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) {
 		log.Error("The given bridge is not in our database.")
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no bridge found")
 	}
 
 	// set channel's bridge id
 	if err := h.db.ChannelSetBridgeID(ctx, e.Channel.ID, e.Bridge.ID); err != nil {
 		log.Errorf("Could not set the bridge id to the channel. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
 	// add bridge's channel id
 	if err := h.db.BridgeAddChannelID(ctx, e.Bridge.ID, e.Channel.ID); err != nil {
 		log.Errorf("Could not add the channel from the bridge. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
@@ -151,50 +151,50 @@ func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt in
 
 	if !h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) {
 		log.Error("The given channel is not in our database.")
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no channel found")
 	}
 
 	if !h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) {
 		log.Error("The given bridge is not in our database.")
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return fmt.Errorf("no bridge found")
 	}
 
 	// set channel's bridge id to empty
 	if err := h.db.ChannelSetBridgeID(ctx, e.Channel.ID, ""); err != nil {
 		log.Errorf("Could not reset the channel's bridge id. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
 	// remove channel from the bridge
 	if err := h.db.BridgeRemoveChannelID(ctx, e.Bridge.ID, e.Channel.ID); err != nil {
 		log.Errorf("Could not remove the channel from the bridge. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
 	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
 	br, err := h.db.BridgeGet(ctx, e.Bridge.ID)
 	if err != nil {
 		log.Errorf("Could not get bridge. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
 		return err
 	}
 
 	switch br.ReferenceType {
 	case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
-		return h.callHandler.ARIChannelLeftBridge(cn, br)
+		return h.callHandler.ARIChannelLeftBridge(ctx, cn, br)
 
 	case bridge.ReferenceTypeConfbridge, bridge.ReferenceTypeConfbridgeSnoop:
-		return h.confbridgeHandler.ARIChannelLeftBridge(cn, br)
+		return h.confbridgeHandler.ARIChannelLeftBridge(ctx, cn, br)
 
 	default:
 		log.WithField("event", e).Error("Could not find correct event handler.")
@@ -215,7 +215,7 @@ func (h *eventHandler) eventHandlerChannelStateChange(ctx context.Context, evt i
 		return err
 	}
 
-	if err := h.callHandler.ARIChannelStateChange(cn); err != nil {
+	if err := h.callHandler.ARIChannelStateChange(ctx, cn); err != nil {
 		return err
 	}
 

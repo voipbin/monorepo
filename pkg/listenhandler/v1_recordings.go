@@ -9,12 +9,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1RecordingGet handles GET /v1/recordings request
-func (h *listenHandler) processV1RecordingsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -60,9 +59,7 @@ func (h *listenHandler) processV1RecordingsGet(req *rabbitmqhandler.Request) (*r
 }
 
 // processV1RecordingsIDGet handles GET /v1/recordings/<id> request
-func (h *listenHandler) processV1RecordingsIDGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-
+func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil

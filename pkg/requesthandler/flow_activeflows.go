@@ -1,17 +1,17 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
 
-func (r *requestHandler) FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
+func (r *requestHandler) FlowActvieFlowPost(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
 
 	uri := "/v1/active-flows"
 
@@ -45,7 +45,7 @@ func (r *requestHandler) FlowActvieFlowPost(callID, flowID uuid.UUID) (*activefl
 	return &af, nil
 }
 
-func (r *requestHandler) FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error) {
+func (r *requestHandler) FlowActvieFlowNextGet(ctx context.Context, callID, actionID uuid.UUID) (*action.Action, error) {
 
 	uri := fmt.Sprintf("/v1/active-flows/%s/next", callID)
 

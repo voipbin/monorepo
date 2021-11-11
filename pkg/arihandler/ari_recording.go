@@ -49,7 +49,7 @@ func (h *eventHandler) eventHandlerRecordingStarted(ctx context.Context, evt int
 		log.Errorf("Could not get the call info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeRecordingStarted, c.WebhookURI, tmpRecording)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeRecordingStarted, c.WebhookURI, tmpRecording)
 
 	return nil
 }
@@ -98,7 +98,7 @@ func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt in
 		return err
 	}
 
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeRecordingFinished, c.WebhookURI, tmpRecording)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeRecordingFinished, c.WebhookURI, tmpRecording)
 
 	// set empty recordID
 	switch r.Type {

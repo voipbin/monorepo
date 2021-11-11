@@ -102,8 +102,8 @@ func init() {
 
 // NotifyHandler intreface
 type NotifyHandler interface {
-	NotifyEvent(eventType EventType, webhookURI string, message WebhookMessage)
-	PublishEvent(t EventType, c interface{})
+	NotifyEvent(ctx context.Context, eventType EventType, webhookURI string, message WebhookMessage)
+	PublishEvent(ctx context.Context, t EventType, c interface{})
 }
 
 type notifyHandler struct {

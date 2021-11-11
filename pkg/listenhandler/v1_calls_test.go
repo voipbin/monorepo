@@ -1,12 +1,15 @@
 package listenhandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -15,8 +18,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 func TestProcessV1CallsIDGet(t *testing.T) {
@@ -198,8 +199,8 @@ func TestProcessV1CallsIDHealthPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstChannelGet(tt.call.AsteriskID, tt.call.ChannelID).Return(&channel.Channel{}, nil)
-			mockReq.EXPECT().CallCallHealth(tt.call.ID, 10, 0).Return(nil)
+			mockReq.EXPECT().AstChannelGet(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(&channel.Channel{}, nil)
+			mockReq.EXPECT().CallCallHealth(gomock.Any(), tt.call.ID, 10, 0).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -260,7 +261,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().ActionTimeout(tt.id, tt.action).Return(nil)
+			mockCall.EXPECT().ActionTimeout(gomock.Any(), tt.id, tt.action).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -381,7 +382,7 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().CreateCallOutgoing(tt.call.ID, tt.call.UserID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.call.ID, tt.call.UserID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -498,7 +499,7 @@ func TestProcessV1CallsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.call.UserID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), gomock.Any(), tt.call.UserID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -561,7 +562,7 @@ func TestProcessV1CallsIDDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockCall.EXPECT().HangingUp(tt.call, ari.ChannelCauseNormalClearing)
+			mockCall.EXPECT().HangingUp(context.Background(), tt.call, ari.ChannelCauseNormalClearing)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -624,7 +625,7 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockCall.EXPECT().ActionNext(tt.call)
+			mockCall.EXPECT().ActionNext(context.Background(), tt.call)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -686,7 +687,7 @@ func TestProcessV1CallsIDChainedCallIDsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().ChainedCallIDAdd(tt.call.ID, tt.chainedCallID).Return(nil)
+			mockCall.EXPECT().ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chainedCallID).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -745,7 +746,7 @@ func TestProcessV1CallsIDChainedCallIDsDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().ChainedCallIDRemove(tt.call.ID, tt.chainedCallID).Return(nil)
+			mockCall.EXPECT().ChainedCallIDRemove(context.Background(), tt.call.ID, tt.chainedCallID).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -834,6 +835,7 @@ func TestProcessV1CallsIDExternalMediaPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockCall.EXPECT().ExternalMediaStart(
+				context.Background(),
 				tt.call.ID,
 				false,
 				tt.expectExternalHost,

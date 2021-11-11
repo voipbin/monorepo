@@ -65,7 +65,7 @@ func TestKick(t *testing.T) {
 
 			mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridgeID).Return(tt.confbridge, nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
-			mockReq.EXPECT().AstChannelHangup(tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
 
 			if err := h.Kick(ctx, tt.confbridgeID, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

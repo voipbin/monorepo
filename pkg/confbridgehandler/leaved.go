@@ -38,7 +38,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 	// we don't set the confbridge id to the call.
 	if err := h.db.CallSetConferenceID(ctx, callID, uuid.Nil); err != nil {
 		log.Errorf("Could not set the conference id for a call. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return err
 	}
 
@@ -48,14 +48,14 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		ConferenceID: conferenceID,
 		CallID:       callID,
 	}
-	h.notifyHandler.PublishEvent(notifyhandler.EventTypeConfbridgeLeaved, evt)
+	h.notifyHandler.PublishEvent(ctx, notifyhandler.EventTypeConfbridgeLeaved, evt)
 
 	// get updated call info and notify
 	call, err := h.db.CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get updated call info. But we are keep moving. err: %v", err)
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeCallUpdated, call.WebhookURI, call)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallUpdated, call.WebhookURI, call)
 
 	return nil
 }

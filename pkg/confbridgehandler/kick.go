@@ -39,7 +39,7 @@ func (h *confbridgeHandler) Kick(ctx context.Context, id, callID uuid.UUID) erro
 			}
 
 			// hang up the call
-			if errHangup := h.reqHandler.AstChannelHangup(ch.AsteriskID, ch.ID, ari.ChannelCauseNormalClearing); errHangup != nil {
+			if errHangup := h.reqHandler.AstChannelHangup(ctx, ch.AsteriskID, ch.ID, ari.ChannelCauseNormalClearing); errHangup != nil {
 				log.Errorf("Could not hang up the joined call. err: %v", errHangup)
 				return errHangup
 			}

@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -10,7 +11,7 @@ import (
 	fmrequest "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
 )
 
-func (r *requestHandler) FMFlowsPost(userID uint64, name string, detail string, webhookURI string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
+func (r *requestHandler) FMFlowsPost(ctx context.Context, userID uint64, name string, detail string, webhookURI string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
 
 	uri := "/v1/flows"
 

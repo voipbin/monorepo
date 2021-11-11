@@ -25,27 +25,27 @@ import (
 
 // CallHandler is interface for service handle
 type CallHandler interface {
-	ARIChannelDestroyed(cn *channel.Channel) error
-	ARIChannelDtmfReceived(cn *channel.Channel, digit string, duration int) error
-	ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error
-	ARIChannelStateChange(cn *channel.Channel) error
-	ARIPlaybackFinished(cn *channel.Channel, playbackID string) error
-	ARIStasisStart(cn *channel.Channel, data map[string]string) error
+	ARIChannelDestroyed(ctx context.Context, cn *channel.Channel) error
+	ARIChannelDtmfReceived(ctx context.Context, cn *channel.Channel, digit string, duration int) error
+	ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
+	ARIChannelStateChange(ctx context.Context, cn *channel.Channel) error
+	ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error
+	ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error
 
-	CreateCallOutgoing(id uuid.UUID, userID uint64, flowID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error)
-	StartCallHandle(cn *channel.Channel, data map[string]string) error
-	Hangup(cn *channel.Channel) error
+	CreateCallOutgoing(ctx context.Context, id uuid.UUID, userID uint64, flowID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error)
+	StartCallHandle(ctx context.Context, cn *channel.Channel, data map[string]string) error
+	Hangup(ctx context.Context, cn *channel.Channel) error
 	HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error
-	HangingUp(c *call.Call, cause ari.ChannelCause) error
+	HangingUp(ctx context.Context, c *call.Call, cause ari.ChannelCause) error
 
-	ActionNext(c *call.Call) error
-	ActionTimeout(callID uuid.UUID, a *action.Action) error
+	ActionNext(ctx context.Context, c *call.Call) error
+	ActionTimeout(ctx context.Context, callID uuid.UUID, a *action.Action) error
 
-	ChainedCallIDAdd(id, chainedCallID uuid.UUID) error
-	ChainedCallIDRemove(id, chainedCallID uuid.UUID) error
+	ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) error
+	ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) error
 
-	ExternalMediaStart(callID uuid.UUID, isCallMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error)
-	ExternalMediaStop(callID uuid.UUID) error
+	ExternalMediaStart(ctx context.Context, callID uuid.UUID, isCallMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error)
+	ExternalMediaStop(ctx context.Context, callID uuid.UUID) error
 }
 
 // callHandler structure for service handle

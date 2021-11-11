@@ -53,31 +53,31 @@ func (mr *MockConfbridgeHandlerMockRecorder) ARIChannelEnteredBridge(ctx, cn, br
 }
 
 // ARIChannelLeftBridge mocks base method.
-func (m *MockConfbridgeHandler) ARIChannelLeftBridge(cn *channel.Channel, br *bridge.Bridge) error {
+func (m *MockConfbridgeHandler) ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIChannelLeftBridge", cn, br)
+	ret := m.ctrl.Call(m, "ARIChannelLeftBridge", ctx, cn, br)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ARIChannelLeftBridge indicates an expected call of ARIChannelLeftBridge.
-func (mr *MockConfbridgeHandlerMockRecorder) ARIChannelLeftBridge(cn, br interface{}) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) ARIChannelLeftBridge(ctx, cn, br interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIChannelLeftBridge), cn, br)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIChannelLeftBridge), ctx, cn, br)
 }
 
 // ARIStasisStart mocks base method.
-func (m *MockConfbridgeHandler) ARIStasisStart(cn *channel.Channel, data map[string]string) error {
+func (m *MockConfbridgeHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIStasisStart", cn, data)
+	ret := m.ctrl.Call(m, "ARIStasisStart", ctx, cn, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ARIStasisStart indicates an expected call of ARIStasisStart.
-func (mr *MockConfbridgeHandlerMockRecorder) ARIStasisStart(cn, data interface{}) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) ARIStasisStart(ctx, cn, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIStasisStart), cn, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIStasisStart), ctx, cn, data)
 }
 
 // Create mocks base method.
@@ -152,15 +152,15 @@ func (mr *MockConfbridgeHandlerMockRecorder) Leaved(ctx, cn, br interface{}) *go
 }
 
 // Terminate mocks base method.
-func (m *MockConfbridgeHandler) Terminate(id uuid.UUID) error {
+func (m *MockConfbridgeHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Terminate", id)
+	ret := m.ctrl.Call(m, "Terminate", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Terminate indicates an expected call of Terminate.
-func (mr *MockConfbridgeHandlerMockRecorder) Terminate(id interface{}) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) Terminate(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockConfbridgeHandler)(nil).Terminate), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockConfbridgeHandler)(nil).Terminate), ctx, id)
 }

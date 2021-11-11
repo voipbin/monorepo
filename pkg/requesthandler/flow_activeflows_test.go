@@ -1,12 +1,12 @@
 package requesthandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -103,7 +103,7 @@ func TestFlowActvieFlowPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FlowActvieFlowPost(tt.callID, tt.flowID)
+			res, err := reqHandler.FlowActvieFlowPost(context.Background(), tt.callID, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

@@ -1,13 +1,14 @@
 package notifyhandler
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
-func (h *notifyHandler) publishWebhook(t EventType, webhookURI string, c WebhookMessage) {
+func (h *notifyHandler) publishWebhook(ctx context.Context, t EventType, webhookURI string, c WebhookMessage) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call":       c,
@@ -28,13 +29,13 @@ func (h *notifyHandler) publishWebhook(t EventType, webhookURI string, c Webhook
 		return
 	}
 
-	if err := h.reqHandler.WMWebhookPOST("POST", webhookURI, dataTypeJSON, string(t), m); err != nil {
+	if err := h.reqHandler.WMWebhookPOST(ctx, "POST", webhookURI, dataTypeJSON, string(t), m); err != nil {
 		log.Errorf("Could not publish the webhook. err: %v", err)
 		return
 	}
 }
 
-func (h *notifyHandler) PublishEvent(t EventType, c interface{}) {
+func (h *notifyHandler) PublishEvent(ctx context.Context, t EventType, c interface{}) {
 	// create event
 	m, err := json.Marshal(c)
 	if err != nil {

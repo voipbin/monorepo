@@ -1,6 +1,7 @@
 package requesthandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -10,7 +11,7 @@ import (
 )
 
 // RMV1ContactsGet sends the /v1/contacts GET request to registrar-manager
-func (r *requestHandler) RMV1ContactsGet(endpoint string) ([]*astcontact.AstContact, error) {
+func (r *requestHandler) RMV1ContactsGet(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
@@ -37,7 +38,7 @@ func (r *requestHandler) RMV1ContactsGet(endpoint string) ([]*astcontact.AstCont
 }
 
 // RMV1ContactsPut sends the /v1/contacts PUT request to registrar-manager
-func (r *requestHandler) RMV1ContactsPut(endpoint string) error {
+func (r *requestHandler) RMV1ContactsPut(ctx context.Context, endpoint string) error {
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 

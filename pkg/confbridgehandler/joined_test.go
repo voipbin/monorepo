@@ -78,9 +78,9 @@ func TestJoined(t *testing.T) {
 			mockDB.EXPECT().ConfbridgeAddChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID, tt.callID).Return(nil)
 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.callID, tt.conferenceID).Return(nil)
 
-			mockNotify.EXPECT().PublishEvent(notifyhandler.EventTypeConfbridgeJoined, gomock.Any())
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), notifyhandler.EventTypeConfbridgeJoined, gomock.Any())
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, "", gomock.Any())
+			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, "", gomock.Any())
 
 			if err := h.Joined(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

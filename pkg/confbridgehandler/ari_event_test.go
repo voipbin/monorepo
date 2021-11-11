@@ -1,6 +1,7 @@
 package confbridgehandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -66,11 +67,11 @@ func TestARIStasisStart(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelVariableSet(tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
-			mockReq.EXPECT().AstChannelAnswer(tt.channel.AsteriskID, tt.channel.ID).Return(nil)
-			mockReq.EXPECT().AstBridgeAddChannel(tt.channel.AsteriskID, tt.channel.DestinationNumber, tt.channel.ID, "", false, false).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
+			mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(nil)
+			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.channel.DestinationNumber, tt.channel.ID, "", false, false).Return(nil)
 
-			err := h.ARIStasisStart(tt.channel, tt.data)
+			err := h.ARIStasisStart(context.Background(), tt.channel, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -125,9 +126,9 @@ func TestARIStasisStartError(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelHangup(tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(nil)
 
-			if err := h.ARIStasisStart(tt.channel, tt.data); err == nil {
+			if err := h.ARIStasisStart(context.Background(), tt.channel, tt.data); err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
 		})
@@ -193,11 +194,11 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID)
 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.callID, uuid.Nil)
-			mockNotify.EXPECT().PublishEvent(notifyhandler.EventTypeConfbridgeLeaved, tt.event)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), notifyhandler.EventTypeConfbridgeLeaved, tt.event)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeCallUpdated, "", gomock.Any())
+			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, "", gomock.Any())
 
-			err := h.ARIChannelLeftBridge(tt.channel, tt.bridge)
+			err := h.ARIChannelLeftBridge(context.Background(), tt.channel, tt.bridge)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -57,7 +57,7 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 
 			cn := &channel.Channel{}
 			mockDB.EXPECT().ChannelCreate(gomock.Any(), gomock.AssignableToTypeOf(cn)).Return(nil)
-			mockRequest.EXPECT().CallChannelHealth(tt.channel.AsteriskID, tt.channel.ID, gomock.Any(), gomock.Any(), gomock.Any())
+			mockRequest.EXPECT().CallChannelHealth(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, gomock.Any(), gomock.Any(), gomock.Any())
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -109,7 +109,7 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 			cn := &channel.Channel{}
 			mockDB.EXPECT().ChannelEnd(gomock.Any(), tt.expectChannelID, tt.expectTimestamp, tt.expectHangup).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(cn, nil)
-			mockCall.EXPECT().ARIChannelDestroyed(cn).Return(nil)
+			mockCall.EXPECT().ARIChannelDestroyed(gomock.Any(), cn).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -162,7 +162,7 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 
 			mockDB.EXPECT().ChannelSetState(gomock.Any(), tt.expectChannelID, tt.expectTmUpdate, tt.expactState).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(nil, nil)
-			mockSvc.EXPECT().ARIChannelStateChange(nil).Return(nil)
+			mockSvc.EXPECT().ARIChannelStateChange(gomock.Any(), nil).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -375,10 +375,10 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 
 			switch tt.bridge.ReferenceType {
 			case bridge.ReferenceTypeConfbridge, bridge.ReferenceTypeConfbridgeSnoop:
-				mockConfbridge.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
+				mockConfbridge.EXPECT().ARIChannelLeftBridge(gomock.Any(), tt.channel, tt.bridge).Return(nil)
 
 			case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
-				mockCall.EXPECT().ARIChannelLeftBridge(tt.channel, tt.bridge).Return(nil)
+				mockCall.EXPECT().ARIChannelLeftBridge(gomock.Any(), tt.channel, tt.bridge).Return(nil)
 			}
 
 			if err := h.processEvent(tt.event); err != nil {
@@ -432,7 +432,7 @@ func TestEventHandlerChannelDtmfReceived(t *testing.T) {
 			}
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
-			mockCall.EXPECT().ARIChannelDtmfReceived(tt.channel, tt.digit, tt.duration).Return(nil)
+			mockCall.EXPECT().ARIChannelDtmfReceived(gomock.Any(), tt.channel, tt.digit, tt.duration).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

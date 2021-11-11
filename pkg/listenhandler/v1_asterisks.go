@@ -8,15 +8,13 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1AsterisksIDChannelsIDHealthPost handles /v1/asterisks/<id>/channels/<id>/health-check request
-func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-
+func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 7 {
 		return simpleResponse(400), fmt.Errorf("wrong uri")
@@ -59,7 +57,7 @@ func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmqhand
 	}
 
 	// send a channel heaclth check
-	_, err = h.reqHandler.AstChannelGet(asteriskID, channelID)
+	_, err = h.reqHandler.AstChannelGet(ctx, asteriskID, channelID)
 	if err != nil {
 		data.RetryCount++
 	} else {
@@ -79,7 +77,7 @@ func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(m *rabbitmqhand
 
 	// send another health check.
 	log.Debugf("Sending health-check request. retry: %d, retry_max: %d, delay: %d", data.RetryCount, data.RetryCountMax, data.Delay)
-	if err := h.reqHandler.CallChannelHealth(asteriskID, channelID, data.Delay, data.RetryCount, data.RetryCountMax); err != nil {
+	if err := h.reqHandler.CallChannelHealth(ctx, asteriskID, channelID, data.Delay, data.RetryCount, data.RetryCountMax); err != nil {
 		return nil, err
 	}
 
