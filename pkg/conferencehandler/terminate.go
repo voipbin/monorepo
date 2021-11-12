@@ -23,7 +23,7 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("Founc conference info. conference: %v", cf)
+	log.WithField("conference", cf).Debug("Found conference info.")
 
 	// if the conference is already terminated or stopping, just return at here
 	if cf.Status == conference.StatusTerminated || cf.Status == conference.StatusTerminating {
@@ -36,6 +36,14 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 	if err := h.db.ConferenceSetStatus(ctx, id, conference.StatusTerminating); err != nil {
 		log.Errorf("Could not update the status for conference stopping. err: %v", err)
 		return err
+	}
+
+	// hang up the all calls in the conference.
+	for _, callID := range cf.CallIDs {
+		log.Debugf("Hanging up the call. call_id: %v", callID.String())
+		if errHangup := h.reqHandler.CMCallsIDDelete(callID); errHangup != nil {
+			log.WithField("call_id", callID).Errorf("Could not hangup the call. err: %v", errHangup)
+		}
 	}
 
 	if len(cf.CallIDs) == 0 {

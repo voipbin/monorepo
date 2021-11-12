@@ -52,6 +52,20 @@ func (mr *MockRequestHandlerMockRecorder) CFConferencesIDDelete(conferenceID, de
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferencesIDDelete", reflect.TypeOf((*MockRequestHandler)(nil).CFConferencesIDDelete), conferenceID, delay)
 }
 
+// CMCallsIDDelete mocks base method.
+func (m *MockRequestHandler) CMCallsIDDelete(callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMCallsIDDelete", callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CMCallsIDDelete indicates an expected call of CMCallsIDDelete.
+func (mr *MockRequestHandlerMockRecorder) CMCallsIDDelete(callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMCallsIDDelete", reflect.TypeOf((*MockRequestHandler)(nil).CMCallsIDDelete), callID)
+}
+
 // CMConfbridgesIDCallsIDDelete mocks base method.
 func (m *MockRequestHandler) CMConfbridgesIDCallsIDDelete(conferenceID, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
