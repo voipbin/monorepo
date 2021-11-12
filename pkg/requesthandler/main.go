@@ -62,6 +62,7 @@ type resource string
 const (
 	resourceCFConferences resource = "cf/conferences"
 
+	resourceCMCalls       resource = "cm/calls"
 	resourceCMConfbridges resource = "cm/confbridges"
 
 	resourceWMWebhooks resource = "wm/webhooks"
@@ -79,28 +80,31 @@ func init() {
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
 
-	// conference manager conferences
+	// conference-manager conferences
 	CFConferencesIDDelete(conferenceID uuid.UUID, delay int) error
 
-	// cm confbridges
+	// call-manager calls
+	CMCallsIDDelete(callID uuid.UUID) error
+
+	// call-manager confbridges
 	CMConfbridgesPost(conferenceID uuid.UUID) (*confbridge.Confbridge, error)
 	CMConfbridgesIDDelete(conferenceID uuid.UUID) error
 	CMConfbridgesIDCallsIDDelete(conferenceID uuid.UUID, callID uuid.UUID) error
 	CMConfbridgesIDCallsIDPost(conferenceID uuid.UUID, callID uuid.UUID) error
 
-	// fm flows
+	// flow-manager flows
 	FMFlowCreate(f *fmflow.Flow) (*fmflow.Flow, error)
 	FMFlowDelete(flowID uuid.UUID) error
 	FMFlowGet(flowID uuid.UUID) (*fmflow.Flow, error)
 	FMFlowGets(userID uint64, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMFlowUpdate(f *fmflow.Flow) (*fmflow.Flow, error)
 
-	// fm actions
+	// cflowall-manager actions
 	FlowActionGet(flowID, actionID uuid.UUID) (*action.Action, error)
 	FlowActvieFlowPost(callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
 	FlowActvieFlowNextGet(callID, actionID uuid.UUID) (*action.Action, error)
 
-	// wm webhooks
+	// webhook-manager webhooks
 	WMWebhookPOST(webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error
 }
 
