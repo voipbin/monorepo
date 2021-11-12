@@ -351,12 +351,17 @@ func (h *flowHandler) activeFlowHandleActionConferenceJoin(ctx context.Context, 
 		return err
 	}
 	conferenceID := uuid.FromStringOrNil(opt.ConferenceID)
+	log = log.WithField("conference_id", conferenceID)
 
 	// get conference
 	conf, err := h.reqHandler.CFConferenceGet(conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference. err: %v", err)
 		return err
+	}
+	if conf.Status != cfconference.StatusProgressing {
+		log.Errorf("The conference is not ready. status: %s", conf.Status)
+		return fmt.Errorf("conference is not ready")
 	}
 
 	// get flow
