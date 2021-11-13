@@ -25,6 +25,7 @@ func (h *confbridgeHandler) Kick(ctx context.Context, id, callID uuid.UUID) erro
 		log.Errorf("Could not get confbridge info. err: %v", err)
 		return err
 	}
+	log.WithField("confbridge", cb).Debug("Found confbridge info.")
 
 	// hangup the join call info
 	for joinedChannelID, joinedCallID := range cb.ChannelCallIDs {

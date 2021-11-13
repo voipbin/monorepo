@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 )
@@ -114,10 +115,12 @@ func (h *handler) ConfbridgeUpdateToCache(ctx context.Context, id uuid.UUID) err
 
 	res, err := h.ConfbridgeGetFromDB(ctx, id)
 	if err != nil {
+		logrus.Errorf("Could not get confbridge from the DB. err: %v", err)
 		return err
 	}
 
 	if err := h.ConfbridgeSetToCache(ctx, res); err != nil {
+		logrus.Errorf("Could not set confbridge to the cache. err: %v", err)
 		return err
 	}
 
@@ -339,7 +342,7 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, key, callID.Bytes(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, callID.String(), getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %v", err)
 	}
