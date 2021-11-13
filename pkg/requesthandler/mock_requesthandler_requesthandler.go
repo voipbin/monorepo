@@ -105,6 +105,20 @@ func (mr *MockRequestHandlerMockRecorder) CFConferenceGets(userID, pageToken, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceGets", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceGets), userID, pageToken, pageSize, conferenceType)
 }
 
+// CFConferenceKick mocks base method.
+func (m *MockRequestHandler) CFConferenceKick(conferenceID, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CFConferenceKick", conferenceID, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CFConferenceKick indicates an expected call of CFConferenceKick.
+func (mr *MockRequestHandlerMockRecorder) CFConferenceKick(conferenceID, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFConferenceKick", reflect.TypeOf((*MockRequestHandler)(nil).CFConferenceKick), conferenceID, callID)
+}
+
 // CFConferenceUpdate mocks base method.
 func (m *MockRequestHandler) CFConferenceUpdate(id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()

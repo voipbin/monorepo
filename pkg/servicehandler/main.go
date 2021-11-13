@@ -46,6 +46,7 @@ type ServiceHandler interface {
 	ConferenceDelete(u *user.User, confID uuid.UUID) error
 	ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error)
+	ConferenceKick(u *user.User, confID uuid.UUID, callID uuid.UUID) error
 
 	// domain handlers
 	DomainCreate(u *user.User, domainName, name, detail string) (*domain.Domain, error)

@@ -193,6 +193,20 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceGets(u, size, token interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGets), u, size, token)
 }
 
+// ConferenceKick mocks base method.
+func (m *MockServiceHandler) ConferenceKick(u *user.User, confID, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceKick", u, confID, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceKick indicates an expected call of ConferenceKick.
+func (mr *MockServiceHandlerMockRecorder) ConferenceKick(u, confID, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceKick", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceKick), u, confID, callID)
+}
+
 // DomainCreate mocks base method.
 func (m *MockServiceHandler) DomainCreate(u *user.User, domainName, name, detail string) (*domain.Domain, error) {
 	m.ctrl.T.Helper()

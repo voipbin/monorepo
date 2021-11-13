@@ -161,3 +161,20 @@ func (r *requestHandler) CFConferenceUpdate(id uuid.UUID, name string, detail st
 
 	return &conference, nil
 }
+
+// CFConferenceKick sends a request to conference-manager
+// to kick the call from the conference
+// it returns deleted conference if it succeed.
+func (r *requestHandler) CFConferenceKick(conferenceID, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/conferences/%s/calls/%s", conferenceID, callID)
+
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConference, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
+}
