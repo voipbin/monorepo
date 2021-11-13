@@ -93,6 +93,7 @@ func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *rab
 			"uri":     m.URI,
 		},
 	)
+	log.Debugf("Deleting confbridge. request: %v", m)
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {

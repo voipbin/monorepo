@@ -26,6 +26,7 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 			"bridge_id":     br.ID,
 		},
 	)
+	log.Debug("Joined channel to the confbridge.")
 
 	confbridgeID := uuid.FromStringOrNil(cn.StasisData["confbridge_id"])
 	conferenceID := uuid.FromStringOrNil(cn.StasisData["conference_id"])
@@ -35,7 +36,7 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 	if errChannelCallID := h.db.ConfbridgeAddChannelCallID(ctx, confbridgeID, cn.ID, callID); errChannelCallID != nil {
 		log.Errorf("Could not add the channel/call info to the confbridge. err: %v", errChannelCallID)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
-		return errors.Wrap(errChannelCallID, "could not set the confbridge's channel/call info")
+		return errors.Wrap(errChannelCallID, "could not add the confbridge's channel/call info")
 	}
 
 	// set conference id to the call

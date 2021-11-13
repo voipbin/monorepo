@@ -16,6 +16,7 @@ func (h *confbridgeHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 		"func":          "Terminate",
 		"confbridge_id": id,
 	})
+	log.Debug("Terminating the confbridge.")
 
 	// get confbridge
 	cb, err := h.db.ConfbridgeGet(ctx, id)
@@ -49,7 +50,11 @@ func (h *confbridgeHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 
 // destroyBridge hangs up all the channels from the bridge and destroy it.
 func (h *confbridgeHandler) destroyBridge(ctx context.Context, bridgeID string) error {
-	log := logrus.WithField("func", "hangupAllChannels")
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":      "destroyBridge",
+			"bridge_id": bridgeID,
+		})
 
 	if !h.isBridgeExist(ctx, bridgeID) {
 		return nil
