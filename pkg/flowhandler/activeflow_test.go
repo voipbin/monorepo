@@ -840,6 +840,7 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 			&cfconference.Conference{
 				ID:     uuid.FromStringOrNil("b7c84d66-410b-11ec-ab21-23726c7dc3b9"),
 				FlowID: uuid.FromStringOrNil("b7eb3420-410b-11ec-ad87-cf5b4e34b7ed"),
+				Status: cfconference.StatusProgressing,
 			},
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("b7eb3420-410b-11ec-ad87-cf5b4e34b7ed"),
