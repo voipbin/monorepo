@@ -222,3 +222,59 @@ func TestConferencesIDDELETE(t *testing.T) {
 		})
 	}
 }
+
+func TestConferencesIDCallsIDDELETE(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name       string
+		user       user.User
+		requestURI string
+		conference *conference.Conference
+		callID     uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"simple test",
+			user.User{
+				ID:         1,
+				Permission: user.PermissionAdmin,
+			},
+			"/v1.0/conferences/88f410a4-44aa-11ec-a648-ef1c8a8d5b49/calls/a5f77e0c-44aa-11ec-860c-0718d81c0e6b",
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("88f410a4-44aa-11ec-a648-ef1c8a8d5b49"),
+			},
+			uuid.FromStringOrNil("a5f77e0c-44aa-11ec-860c-0718d81c0e6b"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().ConferenceKick(&tt.user, tt.conference.ID, tt.callID).Return(nil)
+
+			req, _ := http.NewRequest("DELETE", tt.requestURI, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+		})
+	}
+}

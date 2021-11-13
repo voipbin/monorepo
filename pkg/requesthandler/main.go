@@ -103,6 +103,7 @@ type RequestHandler interface {
 	CFConferenceGet(conferenceID uuid.UUID) (*cfconference.Conference, error)
 	CFConferenceGets(userID uint64, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error)
 	CFConferenceUpdate(id uuid.UUID, name string, detail string, timeout int, webhookURI string, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
+	CFConferenceKick(conferenceID, callID uuid.UUID) error
 
 	// flow: flow
 	FMFlowCreate(f *fmflow.Flow) (*fmflow.Flow, error)

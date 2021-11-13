@@ -20,6 +20,8 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	conferences.GET("", conferencesGET)
 	conferences.GET("/:id", conferencesIDGET)
 	conferences.DELETE("/:id", conferencesIDDELETE)
+
+	conferences.DELETE("/:id/calls/:call_id", conferencesIDCallsIDDELETE)
 }
 
 // conferencesGET handles GET /conferences request.
@@ -157,7 +159,7 @@ func conferencesIDGET(c *gin.Context) {
 
 // conferencesIDDELETE handles DELETE /conferences/{id} request.
 // It deletes the conference.
-// @Summary Delete the confernce.
+// @Summary Delete the conference.
 // @Description Delete the conference. All the participants in the conference will be kicked out.
 // @Produce json
 // @Param id path string true "The ID of the conference"
@@ -180,6 +182,39 @@ func conferencesIDDELETE(c *gin.Context) {
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	err := servicehandler.ConferenceDelete(&u, id)
 	if err != nil {
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// conferencesIDCallsIDDELETE handles DELETE /conferences/{id}/calls/{call-id} request.
+// It kicks the call from the conference.
+// @Summary Kick the call from the conference.
+// @Description Kick the call from the conference.
+// @Produce json
+// @Param id path string true "The ID of the conference"
+// @Param call_id
+// @Param token query string true "JWT token"
+// @Success 200
+// @Router /v1.0/conferences/{id}/calls/{call_id} [delete]
+func conferencesIDCallsIDDELETE(c *gin.Context) {
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	callID := uuid.FromStringOrNil(c.Params.ByName("call_id"))
+
+	tmp, exists := c.Get("user")
+	if !exists {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+
+	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := servicehandler.ConferenceKick(&u, id, callID); err != nil {
 		c.AbortWithStatus(400)
 		return
 	}
