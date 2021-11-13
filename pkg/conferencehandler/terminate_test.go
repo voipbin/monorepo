@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/requesthandler"
 )
 
-func TestTerminateCallNotExsist(t *testing.T) {
+func TestTerminateConference(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -46,9 +46,10 @@ func TestTerminateCallNotExsist(t *testing.T) {
 		{
 			"have 1 call",
 			&conference.Conference{
-				ID:     uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
-				Type:   conference.TypeConference,
-				Status: conference.StatusProgressing,
+				ID:           uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
+				Type:         conference.TypeConference,
+				Status:       conference.StatusProgressing,
+				ConfbridgeID: uuid.FromStringOrNil("3b5c6712-4368-11ec-a76b-0fcdde373728"),
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("2c4eaf4a-9482-11eb-9c2a-57de7ce9aed1"),
 				},
@@ -57,9 +58,10 @@ func TestTerminateCallNotExsist(t *testing.T) {
 		{
 			"2 calls in the conference",
 			&conference.Conference{
-				ID:     uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
-				Type:   conference.TypeConference,
-				Status: conference.StatusProgressing,
+				ID:           uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
+				Type:         conference.TypeConference,
+				Status:       conference.StatusProgressing,
+				ConfbridgeID: uuid.FromStringOrNil("3b8d65f6-4368-11ec-95eb-9751947b5cae"),
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("33a1af9a-9482-11eb-90d1-d7f2cf2288cb"),
 					uuid.FromStringOrNil("6dfae364-9482-11eb-b11c-0f47944e2c54"),
@@ -73,9 +75,10 @@ func TestTerminateCallNotExsist(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.conference.ID, conference.StatusTerminating).Return(nil)
+			mockReq.EXPECT().FMFlowDelete(tt.conference.FlowID).Return(nil)
 
 			for _, callID := range tt.conference.CallIDs {
-				mockReq.EXPECT().CMCallsIDDelete(callID).Return(nil)
+				mockReq.EXPECT().CMConfbridgesIDCallsIDDelete(tt.conference.ConfbridgeID, callID).Return(nil).AnyTimes()
 			}
 
 			if len(tt.conference.CallIDs) == 0 {
