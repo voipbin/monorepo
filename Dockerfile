@@ -1,6 +1,6 @@
 FROM debian:stable-slim
 
-ARG ASTERISK_VERSION=479cc17f45e8a310d4d6039bbf501469e86828f3
+ARG ASTERISK_VERSION=19.0.0
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 
 RUN apt-get update
@@ -72,6 +72,6 @@ RUN for i in /tmp/patches/*; do patch -p0 < $i; echo "patch applied: " $i > /var
 RUN ./contrib/scripts/get_mp3_source.sh
 RUN ./configure --with-jansson-bundled
 RUN make menuselect.makeopts
-RUN ./menuselect/menuselect --enable FORMAT_MP3 --enable DONT_OPTIMIZE --enable BETTER_BACKTRACES --enable CODEC_OPUS --enable RES_CONFIG_MYSQL --enable CDR_MYSQL --enable APP_MYSQL --disable COMPILE_DOUBLE --disable CHAN_SIP menuselect.makeopts
+RUN ./menuselect/menuselect --enable FORMAT_MP3 --enable DONT_OPTIMIZE --enable BETTER_BACKTRACES --enable CODEC_OPUS --enable RES_CONFIG_MYSQL --disable COMPILE_DOUBLE --disable CHAN_SIP menuselect.makeopts
 RUN make
 RUN make install
