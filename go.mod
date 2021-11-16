@@ -18,7 +18,7 @@ require (
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211105183444-18bb7099aff1
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210323024036-8c44f8dca2de
-	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211115190034-7a4111fc57ce
+	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211116040504-277fbe24407a
 )
 
 require (
@@ -31,6 +31,7 @@ require (
 	github.com/prometheus/common v0.30.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210902151352-becc13387646 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210323024756-a7b0838b069d // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210909052905-558ef2d8332e // indirect
 	golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e // indirect

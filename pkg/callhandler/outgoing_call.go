@@ -36,7 +36,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, user
 	log.Debug("Creating a call for outgoing.")
 
 	// create active-flow
-	af, err := h.reqHandler.FMV1ActvieFlowPost(ctx, id, flowID)
+	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, id, flowID)
 	if err != nil {
 		af = &activeflow.ActiveFlow{}
 		log.Errorf("Could not get an active flow for outgoing call. Created dummy active flow. This call will be hungup. call: %s, flow: %s, err: %v", id, flowID, err)
