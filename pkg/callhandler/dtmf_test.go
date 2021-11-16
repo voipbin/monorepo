@@ -6,11 +6,11 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 func TestDTMFReceivedNotActionDTMFReceived(t *testing.T) {
@@ -229,7 +229,7 @@ func TestDTMFReceivedStop(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return(tt.savedDTMFs, nil)
 			mockDB.EXPECT().CallDTMFSet(gomock.Any(), tt.call.ID, tt.savedDTMFs+tt.digit).Return(nil)
-			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID)
+			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID)
 
 			if err := h.DTMFReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -282,7 +282,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *rabbi
 	}
 
 	// send another health check.
-	if err := h.reqHandler.CallCallHealth(ctx, id, data.Delay, data.RetryCount); err != nil {
+	if err := h.reqHandler.CMV1CallHealth(ctx, id, data.Delay, data.RetryCount); err != nil {
 		return nil, err
 	}
 

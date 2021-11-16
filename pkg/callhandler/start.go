@@ -472,7 +472,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 	}
 
 	// get conference info
-	cf, err := h.reqHandler.CFConferenceGet(ctx, cfID)
+	cf, err := h.reqHandler.CFV1ConferenceGet(ctx, cfID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
@@ -498,7 +498,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 	tmpCall.BridgeID = callBridgeID
 
 	// create active flow
-	af, err := h.reqHandler.FlowActvieFlowPost(ctx, tmpCall.ID, tmpCall.FlowID)
+	af, err := h.reqHandler.FMV1ActvieFlowPost(ctx, tmpCall.ID, tmpCall.FlowID)
 	if err != nil {
 		log.Errorf("Could not create active flow. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
@@ -571,7 +571,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	tmpCall.BridgeID = callBridgeID
 
 	// create active flow
-	af, err := h.reqHandler.FlowActvieFlowPost(ctx, tmpCall.ID, numb.FlowID)
+	af, err := h.reqHandler.FMV1ActvieFlowPost(ctx, tmpCall.ID, numb.FlowID)
 	if err != nil {
 		af = &activeflow.ActiveFlow{}
 		log.Errorf("Could not get an active flow info. Created dummy active flow. This call will be hungup. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -13,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 func TestBridgeLeftJoin(t *testing.T) {
@@ -64,7 +64,7 @@ func TestBridgeLeftJoin(t *testing.T) {
 			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.bridge.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
-			mockReq.EXPECT().CallCallActionNext(gomock.Any(), tt.call.ID).Return(nil)
+			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID).Return(nil)
 
 			if err := h.bridgeLeftJoin(context.Background(), tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
