@@ -103,7 +103,7 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *action
 	//  if the action execution has failed move to the next action
 	if err != nil {
 		log.Errorf("Could not execute the action correctly. Move to next action. err: %v", err)
-		return h.reqHandler.CallCallActionNext(ctx, c.ID)
+		return h.reqHandler.CMV1CallActionNext(ctx, c.ID)
 	}
 
 	return nil
@@ -135,7 +135,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	}
 
 	// get next action
-	nextAction, err := h.reqHandler.FlowActvieFlowNextGet(ctx, c.ID, c.Action.ID)
+	nextAction, err := h.reqHandler.FMV1ActvieFlowNextGet(ctx, c.ID, c.Action.ID)
 	if err != nil {
 		log.Errorf("Could not get the next action from the flow-manager. Hanging up the call. err: %v", err)
 		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
@@ -191,7 +191,7 @@ func (h *callHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *ac
 	// in the stasis
 	// send a request for the execute next call action
 	default:
-		return h.reqHandler.CallCallActionNext(ctx, c.ID)
+		return h.reqHandler.CMV1CallActionNext(ctx, c.ID)
 	}
 }
 
@@ -232,7 +232,7 @@ func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call, a *
 	}
 
 	// send next action request
-	if err := h.reqHandler.CallCallActionNext(ctx, c.ID); err != nil {
+	if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID); err != nil {
 		return fmt.Errorf("Could not send the next action request. err: %v", err)
 	}
 
@@ -281,7 +281,7 @@ func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call, a *ac
 
 	// set timeout
 	// send delayed message for next action execution after 10 ms.
-	if err := h.reqHandler.CallCallActionTimeout(ctx, c.ID, option.Duration, &act); err != nil {
+	if err := h.reqHandler.CMV1CallActionTimeout(ctx, c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -428,7 +428,7 @@ func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call,
 
 	// set timeout
 	// send delayed message for next action execution after 10 ms.
-	if err := h.reqHandler.CallCallActionTimeout(ctx, c.ID, option.Duration, &act); err != nil {
+	if err := h.reqHandler.CMV1CallActionTimeout(ctx, c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -499,7 +499,7 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, a *ac
 	}
 
 	// send request for create wav file
-	filename, err := h.reqHandler.TTSSpeechesPOST(ctx, option.Text, option.Gender, option.Language)
+	filename, err := h.reqHandler.TMV1SpeechesPOST(ctx, option.Text, option.Gender, option.Language)
 	if err != nil {
 		return fmt.Errorf("could not create tts wav. err: %v", err)
 	}
@@ -616,7 +616,7 @@ func (h *callHandler) actionExecuteRecordingStart(c *call.Call, a *action.Action
 	}
 
 	// send next action request
-	if err := h.reqHandler.CallCallActionNext(ctx, c.ID); err != nil {
+	if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID); err != nil {
 		log.Errorf("Could not execute next call action. err: %v", err)
 		return err
 	}
@@ -667,7 +667,7 @@ func (h *callHandler) actionExecuteRecordingStop(c *call.Call, a *action.Action)
 	}
 
 	// send next action request
-	if err := h.reqHandler.CallCallActionNext(ctx, c.ID); err != nil {
+	if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID); err != nil {
 		log.Errorf("Could not execute next action call. err: %v", err)
 		return err
 	}
@@ -710,14 +710,14 @@ func (h *callHandler) actionExecuteDTMFReceive(c *call.Call, a *action.Action) e
 	if err == nil && len(dtmfs) > 0 && (strings.Contains(option.FinishOnKey, dtmfs) || len(dtmfs) >= option.MaxNumKey) {
 		// the stored dtmf has already qualified finish condition.
 		log.Debugf("The stored dtmfs are already qualified the finish condition. dtmfs: %s", dtmfs)
-		if err := h.reqHandler.CallCallActionNext(ctx, c.ID); err != nil {
+		if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID); err != nil {
 			return fmt.Errorf("Could not send the next action request. err: %v", err)
 		}
 		return nil
 	}
 
 	// set timeout
-	if err := h.reqHandler.CallCallActionTimeout(ctx, c.ID, option.Duration, &act); err != nil {
+	if err := h.reqHandler.CMV1CallActionTimeout(ctx, c.ID, option.Duration, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -763,7 +763,7 @@ func (h *callHandler) actionExecuteDTMFSend(ctx context.Context, c *call.Call, a
 	}
 
 	// set timeout
-	if err := h.reqHandler.CallCallActionTimeout(ctx, c.ID, maxTimeout, &act); err != nil {
+	if err := h.reqHandler.CMV1CallActionTimeout(ctx, c.ID, maxTimeout, &act); err != nil {
 		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, act.ID, err)
 	}
 
@@ -792,7 +792,7 @@ func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Ac
 	extMedia, _ := h.db.ExternalMediaGet(ctx, c.ID)
 	if extMedia != nil {
 		log.Infof("The external media is already going on. external_media: %v", extMedia)
-		return h.reqHandler.CallCallActionNext(ctx, c.ID)
+		return h.reqHandler.CMV1CallActionNext(ctx, c.ID)
 	}
 
 	var option action.OptionExternalMediaStart
@@ -811,7 +811,7 @@ func (h *callHandler) actionExecuteExternalMediaStart(c *call.Call, a *action.Ac
 	log.Debugf("Created external media channel. channel: %v", extCh)
 
 	// send next action request
-	return h.reqHandler.CallCallActionNext(ctx, c.ID)
+	return h.reqHandler.CMV1CallActionNext(ctx, c.ID)
 }
 
 // actionExecuteExternalMediaStop executes the action type external_media_stop.
@@ -839,7 +839,7 @@ func (h *callHandler) actionExecuteExternalMediaStop(ctx context.Context, c *cal
 	log.Debugf("Stopped external media channel. call_id: %v", c.ID)
 
 	// send next action request
-	return h.reqHandler.CallCallActionNext(ctx, c.ID)
+	return h.reqHandler.CMV1CallActionNext(ctx, c.ID)
 }
 
 // actionExecuteAMD executes the action type external_media_start.
@@ -896,7 +896,7 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call, a *act
 
 	if app.Async {
 		// send next action request
-		return h.reqHandler.CallCallActionNext(ctx, c.ID)
+		return h.reqHandler.CMV1CallActionNext(ctx, c.ID)
 	}
 
 	return nil

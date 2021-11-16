@@ -77,7 +77,7 @@ func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(ctx context.Con
 
 	// send another health check.
 	log.Debugf("Sending health-check request. retry: %d, retry_max: %d, delay: %d", data.RetryCount, data.RetryCountMax, data.Delay)
-	if err := h.reqHandler.CallChannelHealth(ctx, asteriskID, channelID, data.Delay, data.RetryCount, data.RetryCountMax); err != nil {
+	if err := h.reqHandler.CMV1ChannelHealth(ctx, asteriskID, channelID, data.Delay, data.RetryCount, data.RetryCountMax); err != nil {
 		return nil, err
 	}
 

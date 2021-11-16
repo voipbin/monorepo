@@ -6,11 +6,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 // eventHandlerChannelCreated handels ChannelCreated ARI event
@@ -27,7 +27,7 @@ func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt inter
 	}
 
 	// start channel watcher
-	if err := h.reqHandler.CallChannelHealth(ctx, cn.AsteriskID, cn.ID, requesthandler.DelaySecond*10, 0, 2); err != nil {
+	if err := h.reqHandler.CMV1ChannelHealth(ctx, cn.AsteriskID, cn.ID, requesthandler.DelaySecond*10, 0, 2); err != nil {
 		log.WithFields(
 			log.Fields{
 				"asterisk": cn.AsteriskID,

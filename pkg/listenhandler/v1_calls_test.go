@@ -10,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -17,7 +18,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/requesthandler"
 )
 
 func TestProcessV1CallsIDGet(t *testing.T) {
@@ -200,7 +200,7 @@ func TestProcessV1CallsIDHealthPost(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockReq.EXPECT().AstChannelGet(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(&channel.Channel{}, nil)
-			mockReq.EXPECT().CallCallHealth(gomock.Any(), tt.call.ID, 10, 0).Return(nil)
+			mockReq.EXPECT().CMV1CallHealth(gomock.Any(), tt.call.ID, 10, 0).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
