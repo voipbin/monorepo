@@ -354,7 +354,7 @@ func (h *flowHandler) activeFlowHandleActionConferenceJoin(ctx context.Context, 
 	log = log.WithField("conference_id", conferenceID)
 
 	// get conference
-	conf, err := h.reqHandler.CFConferenceGet(conferenceID)
+	conf, err := h.reqHandler.CFV1ConferenceGet(ctx, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference. err: %v", err)
 		return err
@@ -409,7 +409,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	}
 
 	// create conference room for connect
-	cf, err := h.reqHandler.CFConferenceCreate(af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
+	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create conference for connect. err: %v", err)
 		return fmt.Errorf("could not create conference for connect. err: %v", err)
@@ -469,7 +469,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 		}
 
 		// create a call
-		resCall, err := h.reqHandler.CMCallCreate(connectCF.UserID, connectCF.ID, source, destination)
+		resCall, err := h.reqHandler.CMV1CallCreate(ctx, connectCF.UserID, connectCF.ID, source, destination)
 		if err != nil {
 			log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 			continue
@@ -477,9 +477,9 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 
 		// add the chained call id if the unchained option is false
 		if !optConnect.Unchained {
-			if err := h.reqHandler.CMCallAddChainedCall(callID, resCall.ID); err != nil {
+			if err := h.reqHandler.CMV1CallAddChainedCall(ctx, callID, resCall.ID); err != nil {
 				log.Warnf("Could not add the chained call id. Hangup the call. chained_call_id: %s", resCall.ID)
-				_, errHangup := h.reqHandler.CMCallHangup(resCall.ID)
+				_, errHangup := h.reqHandler.CMV1CallHangup(ctx, resCall.ID)
 				if errHangup != nil {
 					log.Errorf("Could not hangup the call. chained_call_id: %s, err: %v", resCall.ID, errHangup)
 				}
@@ -534,7 +534,7 @@ func (h *flowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Cont
 	}
 
 	// transcribe-recording
-	if err := h.reqHandler.TMCallRecordingPost(callID, optRecordingToText.Language, optRecordingToText.WebhookURI, optRecordingToText.WebhookMethod, 120, 30); err != nil {
+	if err := h.reqHandler.TSV1CallRecordingCreate(ctx, callID, optRecordingToText.Language, optRecordingToText.WebhookURI, optRecordingToText.WebhookMethod, 120, 30); err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
 	}
@@ -557,7 +557,7 @@ func (h *flowHandler) activeFlowHandleActionTranscribeStart(ctx context.Context,
 	}
 
 	// transcribe-recording
-	trans, err := h.reqHandler.TMStreamingsPost(callID, opt.Language, opt.WebhookURI, opt.WebhookMethod)
+	trans, err := h.reqHandler.TSV1StreamingsCreate(ctx, callID, opt.Language, opt.WebhookURI, opt.WebhookMethod)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err

@@ -11,13 +11,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler"
 )
 
 func TestActiveFlowCreate(t *testing.T) {
@@ -531,13 +531,13 @@ func TestActiveFlowNextActionGetTypeConnect(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
-			mockReq.EXPECT().CFConferenceCreate(tt.af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil).Return(tt.cf, nil)
+			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil).Return(tt.cf, nil)
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
 			for i := range tt.destinations {
-				mockReq.EXPECT().CMCallCreate(tt.connectFlow.UserID, tt.connectFlow.ID, tt.source, tt.destinations[i]).Return(&call.Call{ID: uuid.Nil}, nil)
+				mockReq.EXPECT().CMV1CallCreate(ctx, tt.connectFlow.UserID, tt.connectFlow.ID, tt.source, tt.destinations[i]).Return(&call.Call{ID: uuid.Nil}, nil)
 				if tt.unchained == false {
-					mockReq.EXPECT().CMCallAddChainedCall(tt.callID, uuid.Nil).Return(nil)
+					mockReq.EXPECT().CMV1CallAddChainedCall(ctx, tt.callID, uuid.Nil).Return(nil)
 				}
 			}
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
@@ -671,7 +671,7 @@ func TestActiveFlowNextActionGetTypeTranscribeRecording(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockReq.EXPECT().TMCallRecordingPost(tt.callID, tt.language, tt.webhookURI, tt.WebhookMethod, 120, 30).Return(nil)
+			mockReq.EXPECT().TSV1CallRecordingCreate(ctx, tt.callID, tt.language, tt.webhookURI, tt.WebhookMethod, 120, 30).Return(nil)
 			if err := h.activeFlowHandleActionTranscribeRecording(ctx, tt.callID, tt.act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -731,7 +731,7 @@ func TestActiveFlowNextActionGetTypeTranscribeStart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockReq.EXPECT().TMStreamingsPost(tt.callID, tt.language, tt.webhookURI, tt.WebhookMethod).Return(tt.response, nil)
+			mockReq.EXPECT().TSV1StreamingsCreate(ctx, tt.callID, tt.language, tt.webhookURI, tt.WebhookMethod).Return(tt.response, nil)
 			if err := h.activeFlowHandleActionTranscribeStart(ctx, tt.callID, tt.act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -866,7 +866,7 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().CFConferenceGet(tt.conference.ID).Return(tt.conference, nil)
+			mockReq.EXPECT().CFV1ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.conference.FlowID).Return(tt.conferenceFlow, nil)
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
