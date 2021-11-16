@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/requesthandler"
 )
 
 func TestFlowCreate(t *testing.T) {
@@ -117,8 +117,9 @@ func TestFlowDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			mockDB.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(nil)
-			mockReq.EXPECT().NMNumberFlowDelete(tt.flowID).Return(nil)
+			mockReq.EXPECT().NMV1NumberFlowDelete(ctx, tt.flowID).Return(nil)
 
 			if err := h.FlowDelete(context.Background(), tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
