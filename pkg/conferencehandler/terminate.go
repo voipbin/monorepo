@@ -40,7 +40,7 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 
 	// remove flow
 	log.WithField("flow_id", cf.FlowID).Debug("Deleting the flow.")
-	if err := h.reqHandler.FMFlowDelete(cf.FlowID); err != nil {
+	if err := h.reqHandler.FMV1FlowDelete(ctx, cf.FlowID); err != nil {
 		log.WithField("flow_id", cf.FlowID).Errorf("Could not delete the conference. But keep moving on. err: %v", err)
 	}
 
@@ -48,7 +48,7 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 	log.Debugf("Kicking out all calls from the conference. call_count: %d", len(cf.CallIDs))
 	for _, callID := range cf.CallIDs {
 		log.Debugf("Kicking out the call. call_id: %v", callID.String())
-		if errHangup := h.reqHandler.CMConfbridgesIDCallsIDDelete(cf.ConfbridgeID, callID); errHangup != nil {
+		if errHangup := h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, callID); errHangup != nil {
 			log.WithField("call_id", callID).Errorf("Could not kicking out the call. err: %v", errHangup)
 		}
 	}
@@ -75,7 +75,7 @@ func (h *conferenceHandler) Destroy(ctx context.Context, cf *conference.Conferen
 	log.WithField("conference", cf).Debug("Destroying the conference.")
 
 	// delete confbridge
-	if err := h.reqHandler.CMConfbridgesIDDelete(cf.ConfbridgeID); err != nil {
+	if err := h.reqHandler.CMV1ConfbridgeDelete(ctx, cf.ConfbridgeID); err != nil {
 		log.WithField("confbridge_id", cf.ConfbridgeID).Errorf("Could not delete the confbridge. But keep moving on. err: %v", err)
 	}
 

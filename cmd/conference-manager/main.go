@@ -14,13 +14,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/requesthandler"
 	subscribehandler "gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/subsribehandler"
 )
 
@@ -38,10 +38,6 @@ var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.conferen
 var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.conference-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
 
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
-
-var rabbitQueueCall = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for call-manager request")
-var rabbitQueueFlow = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow-manager request")
-var rabbitQueueWebhook = flag.String("rabbit_queue_webhook", "bin-manager.webhook-manager.request", "rabbitmq queue name for webhook-manager request")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -157,7 +153,7 @@ func runSubscribe(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
-	requestHandler := requesthandler.NewRequestHandler(rabbitSock, *rabbitExchangeDelay, *rabbitQueueListen, *rabbitQueueCall, *rabbitQueueFlow, *rabbitQueueWebhook)
+	requestHandler := requesthandler.NewRequestHandler(rabbitSock, "conference_manager_subscribe")
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify)
 
 	subHandler := subscribehandler.NewSubscribeHandler(
@@ -187,7 +183,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
-	requestHandler := requesthandler.NewRequestHandler(rabbitSock, *rabbitExchangeDelay, *rabbitQueueListen, *rabbitQueueCall, *rabbitQueueFlow, *rabbitQueueWebhook)
+	requestHandler := requesthandler.NewRequestHandler(rabbitSock, "conference_manager")
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify)
 
 	cfHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db, cache)

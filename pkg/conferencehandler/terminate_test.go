@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/requesthandler"
 )
 
 func TestTerminateConference(t *testing.T) {
@@ -75,14 +75,14 @@ func TestTerminateConference(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.conference.ID, conference.StatusTerminating).Return(nil)
-			mockReq.EXPECT().FMFlowDelete(tt.conference.FlowID).Return(nil)
+			mockReq.EXPECT().FMV1FlowDelete(gomock.Any(), tt.conference.FlowID).Return(nil)
 
 			for _, callID := range tt.conference.CallIDs {
-				mockReq.EXPECT().CMConfbridgesIDCallsIDDelete(tt.conference.ConfbridgeID, callID).Return(nil).AnyTimes()
+				mockReq.EXPECT().CMV1ConfbridgeCallKick(gomock.Any(), tt.conference.ConfbridgeID, callID).Return(nil).AnyTimes()
 			}
 
 			if len(tt.conference.CallIDs) == 0 {
-				mockReq.EXPECT().CMConfbridgesIDDelete(tt.conference.ConfbridgeID).Return(nil)
+				mockReq.EXPECT().CMV1ConfbridgeDelete(gomock.Any(), tt.conference.ConfbridgeID).Return(nil)
 				mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
 				mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 				mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceDeleted, tt.conference.WebhookURI, tt.conference)

@@ -1,6 +1,7 @@
 package notifyhandler
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
@@ -28,7 +29,7 @@ func (h *notifyHandler) publishWebhook(t EventType, webhookURI string, c Webhook
 		return
 	}
 
-	if err := h.reqHandler.WMWebhookPOST("POST", webhookURI, dataTypeJSON, string(t), m); err != nil {
+	if err := h.reqHandler.WMV1WebhookSend(context.Background(), "POST", webhookURI, dataTypeJSON, string(t), m); err != nil {
 		log.Errorf("Could not publish the webhook. err: %v", err)
 		return
 	}

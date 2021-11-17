@@ -25,7 +25,7 @@ func (h *conferenceHandler) Join(ctx context.Context, conferenceID, callID uuid.
 	}
 
 	// put the call into the confbridge
-	if err := h.reqHandler.CMConfbridgesIDCallsIDPost(cf.ConfbridgeID, callID); err != nil {
+	if err := h.reqHandler.CMV1ConfbridgeCallAdd(ctx, cf.ConfbridgeID, callID); err != nil {
 		log.Errorf("Could not put the call into the confbridge. err: %v", err)
 		return err
 	}

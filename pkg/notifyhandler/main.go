@@ -14,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 // WebhookMessage defines

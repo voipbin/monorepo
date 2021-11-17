@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/requesthandler"
 )
 
 func TestJoin(t *testing.T) {
@@ -52,7 +52,8 @@ func TestJoin(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-			mockReq.EXPECT().CMConfbridgesIDCallsIDPost(tt.conference.ConfbridgeID, tt.callID).Return(nil)
+			// mockReq.EXPECT().CMConfbridgesIDCallsIDPost(tt.conference.ConfbridgeID, tt.callID).Return(nil)
+			mockReq.EXPECT().CMV1ConfbridgeCallAdd(gomock.Any(), tt.conference.ConfbridgeID, tt.callID).Return(nil)
 
 			ctx := context.Background()
 			if err := h.Join(ctx, tt.conference.ID, tt.callID); err != nil {
