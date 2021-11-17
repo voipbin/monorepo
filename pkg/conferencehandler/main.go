@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 // ConferenceHandler is interface for conference handle

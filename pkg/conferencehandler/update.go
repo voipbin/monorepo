@@ -48,7 +48,7 @@ func (h *conferenceHandler) Update(
 	log.Debugf("Created flow actions. actions: %v", actions)
 
 	// get flow
-	f, err := h.reqHandler.FMFlowGet(cf.FlowID)
+	f, err := h.reqHandler.FMV1FlowGet(ctx, cf.FlowID)
 	if err != nil {
 		log.Errorf("Could not get flow. err: %v", err)
 		return nil, err
@@ -56,7 +56,7 @@ func (h *conferenceHandler) Update(
 	f.Actions = actions
 
 	// update flow
-	newFlow, err := h.reqHandler.FMFlowUpdate(f)
+	newFlow, err := h.reqHandler.FMV1FlowUpdate(ctx, f)
 	if err != nil {
 		log.Errorf("Could not update the flow. err: %v", err)
 		return nil, err
@@ -83,7 +83,7 @@ func (h *conferenceHandler) Update(
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {
-		if err := h.reqHandler.CFConferencesIDDelete(id, cf.Timeout*1000); err != nil {
+		if err := h.reqHandler.CFV1ConferenceDeleteDelay(ctx, id, cf.Timeout*1000); err != nil {
 			log.Errorf("Could not start conference timeout. err: %v", err)
 		}
 	}

@@ -28,7 +28,7 @@ func (h *conferenceHandler) Joined(ctx context.Context, conferenceID, callID uui
 	// add the call to the conference.
 	if errAdd := h.db.ConferenceAddCallID(ctx, conferenceID, callID); errAdd != nil {
 		log.Errorf("Could not add the call to the conference. Kicking out the call from the conference. err: %v", errAdd)
-		_ = h.reqHandler.CMConfbridgesIDCallsIDDelete(conferenceID, callID)
+		_ = h.reqHandler.CMV1ConfbridgeCallKick(ctx, conferenceID, callID)
 		return errAdd
 	}
 

@@ -30,7 +30,7 @@ func (h *conferenceHandler) Leave(ctx context.Context, id, callID uuid.UUID) err
 	}
 
 	// send the kick request
-	if err := h.reqHandler.CMConfbridgesIDCallsIDDelete(cf.ConfbridgeID, callID); err != nil {
+	if err := h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, callID); err != nil {
 		log.Errorf("Could not kick the call from the conference. err: %v", err)
 		return err
 	}

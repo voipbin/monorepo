@@ -35,7 +35,7 @@ func (h *conferenceHandler) Create(
 	log = log.WithField("confbridge_id", id.String())
 
 	// send confbridge create request
-	cb, err := h.reqHandler.CMConfbridgesPost(id)
+	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx, id)
 	if err != nil {
 		log.Errorf("Could not crate confbridge. err: %v", err)
 		return nil, err
@@ -101,7 +101,7 @@ func (h *conferenceHandler) Create(
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {
-		if err := h.reqHandler.CFConferencesIDDelete(id, cf.Timeout*1000); err != nil {
+		if err := h.reqHandler.CFV1ConferenceDeleteDelay(ctx, id, cf.Timeout*1000); err != nil {
 			log.Errorf("Could not start conference timeout. err: %v", err)
 		}
 	}
@@ -141,6 +141,7 @@ func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, 
 
 // createConferenceFlow creates a conference flow and returns created flow.
 func (h *conferenceHandler) createConferenceFlow(userID uint64, conferenceID uuid.UUID, confbridgeID uuid.UUID, preActions []action.Action, postActions []action.Action) (*flow.Flow, error) {
+	ctx := context.Background()
 	log := logrus.WithField("func", "createConferenceFlow")
 
 	// create flow actions
@@ -154,20 +155,8 @@ func (h *conferenceHandler) createConferenceFlow(userID uint64, conferenceID uui
 	// create flow name
 	flowName := fmt.Sprintf("conference-%s", conferenceID.String())
 
-	// create conference flow
-	f := &flow.Flow{
-		UserID:   userID,
-		Name:     flowName,
-		Detail:   "generated for conference by conference-manager.",
-		Persist:  true,
-		Actions:  actions,
-		TMCreate: getCurTime(),
-		TMUpdate: defaultTimeStamp,
-		TMDelete: defaultTimeStamp,
-	}
-
 	// create flow
-	resFlow, err := h.reqHandler.FMFlowCreate(f)
+	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, flowName, "generated for conference by conference-manager.", "", actions, true)
 	if err != nil {
 		log.Errorf("Could not create a conference flow. err: %v", err)
 		return nil, err

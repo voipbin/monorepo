@@ -15,6 +15,7 @@ require (
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20211031180517-9686c5eec395
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211105183444-18bb7099aff1
+	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211117040524-803b1190aa22
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210909052905-558ef2d8332e
 )
 
@@ -30,10 +31,9 @@ require (
 	github.com/streadway/amqp v1.0.0 // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2 // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210323024036-8c44f8dca2de // indirect
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210902151352-becc13387646 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210323024756-a7b0838b069d // indirect
-	golang.org/x/net v0.0.0-20210825183410-e898025ed96a // indirect
 	golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e // indirect
-	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
