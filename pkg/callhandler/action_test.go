@@ -274,7 +274,7 @@ func TestActionExecuteTalk(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().TMV1SpeechesPOST(gomock.Any(), tt.expectSSML, tt.expectGender, tt.expectLanguage).Return(tt.filename, nil)
+			mockReq.EXPECT().TMV1SpeecheCreate(gomock.Any(), tt.expectSSML, tt.expectGender, tt.expectLanguage).Return(tt.filename, nil)
 			mockReq.EXPECT().AstChannelPlay(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, tt.expectURI, "").Return(nil)
 
 			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {

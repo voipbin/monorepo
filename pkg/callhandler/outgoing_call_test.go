@@ -463,7 +463,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().RMV1ContactsGet(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
+			mockReq.EXPECT().RMV1ContactGets(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
 
 			res, err := h.getEndpointDestination(context.Background(), *tt.destination)
 			if err != nil {
@@ -510,7 +510,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().RMV1ContactsGet(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
+			mockReq.EXPECT().RMV1ContactGets(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
 
 			_, err := h.getEndpointDestination(context.Background(), *tt.destination)
 			if err == nil {
