@@ -43,14 +43,7 @@ func flowsPOST(c *gin.Context) {
 
 	// create a flow
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	f := &flow.Flow{
-		Name:       body.Name,
-		Detail:     body.Detail,
-		Actions:    body.Actions,
-		Persist:    true,
-		WebhookURI: body.WebhookURI,
-	}
-	res, err := serviceHandler.FlowCreate(&u, f)
+	res, err := serviceHandler.FlowCreate(&u, body.Name, body.Detail, body.WebhookURI, body.Actions, true)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
 		c.AbortWithStatus(400)

@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestConferenceCreate(t *testing.T) {
@@ -196,7 +196,7 @@ func TestConferenceCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CFConferenceCreate(tt.user.ID, cfconference.Type(tt.confType), tt.confName, tt.confDetail, tt.webhookURI, tt.cfConference.PreActions, tt.cfConference.PostActions).Return(tt.cfConference, nil)
+			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.user.ID, cfconference.Type(tt.confType), tt.confName, tt.confDetail, 0, tt.webhookURI, map[string]interface{}{}, tt.cfConference.PreActions, tt.cfConference.PostActions).Return(tt.cfConference, nil)
 
 			res, err := h.ConferenceCreate(tt.user, tt.confType, tt.confName, tt.confDetail, tt.webhookURI, tt.preActions, tt.postActions)
 			if err != nil {
@@ -253,8 +253,8 @@ func TestConferenceDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CFConferenceGet(tt.confID).Return(tt.cfConference, nil)
-			mockReq.EXPECT().CFConferenceDelete(tt.confID).Return(nil)
+			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), tt.confID).Return(tt.cfConference, nil)
+			mockReq.EXPECT().CFV1ConferenceDelete(gomock.Any(), tt.confID).Return(nil)
 
 			err := h.ConferenceDelete(tt.user, tt.confID)
 			if err != nil {
@@ -315,7 +315,7 @@ func TestConferenceGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().CFConferenceGets(tt.user.ID, tt.token, tt.limit, "conference").Return(tt.response, nil)
+			mockReq.EXPECT().CFV1ConferenceGets(gomock.Any(), tt.user.ID, tt.token, tt.limit, "conference").Return(tt.response, nil)
 			res, err := h.ConferenceGets(tt.user, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -398,7 +398,7 @@ func TestConferenceGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().CFConferenceGet(tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), tt.id).Return(tt.response, nil)
 			res, err := h.ConferenceGet(tt.user, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestCallCreate(t *testing.T) {
@@ -102,7 +102,7 @@ func TestCallCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CMCallCreate(tt.user.ID, tt.flowID, tt.cmCall.Source, tt.cmCall.Destination).Return(tt.cmCall, nil)
+			mockReq.EXPECT().CMV1CallCreate(gomock.Any(), tt.user.ID, tt.flowID, tt.cmCall.Source, tt.cmCall.Destination).Return(tt.cmCall, nil)
 
 			res, err := h.CallCreate(tt.user, tt.flowID, tt.source, tt.destination)
 			if err != nil {
@@ -152,8 +152,8 @@ func TestCallDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().CMCallGet(tt.callID).Return(tt.call, nil)
-			mockReq.EXPECT().CMCallDelete(tt.callID).Return(nil)
+			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.callID).Return(tt.call, nil)
+			mockReq.EXPECT().CMV1CallHangup(gomock.Any(), tt.callID).Return(nil, nil)
 
 			if err := h.CallDelete(tt.user, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

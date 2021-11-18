@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -15,6 +16,7 @@ import (
 // to creating a call.
 // it returns created call info if it succeed.
 func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":        u.ID,
 		"username":    u.Username,
@@ -37,7 +39,7 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 
 	// send request
 	log.Debug("Creating a new call.")
-	res, err := h.reqHandler.CMCallCreate(u.ID, flowID, addrSrc, addrDest)
+	res, err := h.reqHandler.CMV1CallCreate(ctx, u.ID, flowID, addrSrc, addrDest)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -53,6 +55,7 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 // to getting a call.
 // it returns call if it succeed.
 func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -60,7 +63,7 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, er
 	})
 
 	// send request
-	c, err := h.reqHandler.CMCallGet(callID)
+	c, err := h.reqHandler.CMV1CallGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -82,6 +85,7 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, er
 // to getting a list of calls.
 // it returns list of calls if it succeed.
 func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Call, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -94,7 +98,7 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 	}
 
 	// get calls
-	tmps, err := h.reqHandler.CMCallGets(u.ID, token, size)
+	tmps, err := h.reqHandler.CMV1CallGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
@@ -114,6 +118,7 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 // to hangup the call.
 // it returns call if it succeed.
 func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -121,7 +126,7 @@ func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
 	})
 
 	// todo need to check the call's ownership
-	c, err := h.reqHandler.CMCallGet(callID)
+	c, err := h.reqHandler.CMV1CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
 		return err
@@ -134,7 +139,7 @@ func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
 	}
 
 	// send request
-	if err := h.reqHandler.CMCallDelete(callID); err != nil {
+	if _, err := h.reqHandler.CMV1CallHangup(ctx, callID); err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err

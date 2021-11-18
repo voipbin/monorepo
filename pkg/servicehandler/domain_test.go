@@ -11,8 +11,8 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestDomainCreate(t *testing.T) {
@@ -67,7 +67,7 @@ func TestDomainCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMDomainCreate(tt.user.ID, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1DomainCreate(gomock.Any(), tt.user.ID, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail).Return(tt.response, nil)
 
 			res, err := h.DomainCreate(tt.user, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail)
 			if err != nil {
@@ -140,8 +140,8 @@ func TestDomainUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMDomainGet(tt.domain.ID).Return(&rmdomain.Domain{UserID: 1}, nil)
-			mockReq.EXPECT().RMDomainUpdate(tt.requestDomain).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.domain.ID).Return(&rmdomain.Domain{UserID: 1}, nil)
+			mockReq.EXPECT().RMV1DomainUpdate(gomock.Any(), tt.requestDomain).Return(tt.response, nil)
 			res, err := h.DomainUpdate(tt.user, tt.domain)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -194,8 +194,8 @@ func TestDomainDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMDomainGet(tt.domainID).Return(tt.response, nil)
-			mockReq.EXPECT().RMDomainDelete(tt.domainID).Return(nil)
+			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.domainID).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1DomainDelete(gomock.Any(), tt.domainID).Return(nil)
 
 			if err := h.DomainDelete(tt.user, tt.domainID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -252,7 +252,7 @@ func TestDomainGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMDomainGet(tt.DomainID).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.DomainID).Return(tt.response, nil)
 
 			res, err := h.DomainGet(tt.user, tt.DomainID)
 			if err != nil {
@@ -334,7 +334,7 @@ func TestDomainGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMDomainGets(tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1DomainGets(gomock.Any(), tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.DomainGets(tt.user, tt.pageSize, tt.pageToken)
 			if err != nil {

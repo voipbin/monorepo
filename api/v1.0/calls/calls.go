@@ -8,7 +8,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -43,14 +42,7 @@ func callsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create flow
-	f := &flow.Flow{
-		Name:       "temp",
-		Detail:     "tmp outbound flow",
-		Actions:    requestBody.Actions,
-		Persist:    false,
-		WebhookURI: requestBody.WebhookURI,
-	}
-	flow, err := serviceHandler.FlowCreate(&u, f)
+	flow, err := serviceHandler.FlowCreate(&u, "tmp", "tmp outbound flow", requestBody.WebhookURI, requestBody.Actions, false)
 	if err != nil {
 		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)

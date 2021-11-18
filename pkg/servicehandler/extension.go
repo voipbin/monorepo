@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -12,6 +13,7 @@ import (
 
 // ExtensionCreate is a service handler for flow creation.
 func (h *serviceHandler) ExtensionCreate(u *user.User, e *extension.Extension) (*extension.Extension, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":      u.ID,
 		"domain_id": e.DomainID,
@@ -22,7 +24,7 @@ func (h *serviceHandler) ExtensionCreate(u *user.User, e *extension.Extension) (
 
 	ext := extension.CreateDomain(e)
 	ext.UserID = u.ID
-	tmp, err := h.reqHandler.RMExtensionCreate(ext)
+	tmp, err := h.reqHandler.RMV1ExtensionCreate(ctx, ext)
 	if err != nil {
 		log.Errorf("Could not create a new domain. err: %v", err)
 		return nil, err
@@ -34,6 +36,7 @@ func (h *serviceHandler) ExtensionCreate(u *user.User, e *extension.Extension) (
 
 // ExtensionDelete deletes the extension of the given id.
 func (h *serviceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":         u.ID,
 		"username":     u.Username,
@@ -42,7 +45,7 @@ func (h *serviceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
 	log.Debug("Deleting a extension.")
 
 	// get extension
-	ext, err := h.reqHandler.RMExtensionGet(id)
+	ext, err := h.reqHandler.RMV1ExtensionGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
 		return fmt.Errorf("could not find extension info. err: %v", err)
@@ -54,7 +57,7 @@ func (h *serviceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
 		return fmt.Errorf("user has no permission")
 	}
 
-	if err := h.reqHandler.RMExtensionDelete(id); err != nil {
+	if err := h.reqHandler.RMV1ExtensionDelete(ctx, id); err != nil {
 		return err
 	}
 
@@ -64,6 +67,7 @@ func (h *serviceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
 // ExtensionGet gets the extension of the given id.
 // It returns extension if it succeed.
 func (h *serviceHandler) ExtensionGet(u *user.User, id uuid.UUID) (*extension.Extension, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":         u.ID,
 		"username":     u.Username,
@@ -72,7 +76,7 @@ func (h *serviceHandler) ExtensionGet(u *user.User, id uuid.UUID) (*extension.Ex
 	log.Debug("Getting a extension.")
 
 	// get extension
-	d, err := h.reqHandler.RMExtensionGet(id)
+	d, err := h.reqHandler.RMV1ExtensionGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
@@ -91,6 +95,7 @@ func (h *serviceHandler) ExtensionGet(u *user.User, id uuid.UUID) (*extension.Ex
 // ExtensionGets gets the list of extensions of the given user id.
 // It returns list of extensions if it succeed.
 func (h *serviceHandler) ExtensionGets(u *user.User, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -104,7 +109,7 @@ func (h *serviceHandler) ExtensionGets(u *user.User, domainID uuid.UUID, size ui
 	}
 
 	// get extensions
-	exts, err := h.reqHandler.RMExtensionGets(domainID, token, size)
+	exts, err := h.reqHandler.RMV1ExtensionGets(ctx, domainID, token, size)
 	if err != nil {
 		log.Errorf("Could not get extensions info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extensions info. err: %v", err)
@@ -123,6 +128,7 @@ func (h *serviceHandler) ExtensionGets(u *user.User, domainID uuid.UUID, size ui
 // ExtesnionUpdate updates the extension info.
 // It returns updated extension if it succeed.
 func (h *serviceHandler) ExtensionUpdate(u *user.User, d *extension.Extension) (*extension.Extension, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":      u.ID,
 		"username":  u.Username,
@@ -131,7 +137,7 @@ func (h *serviceHandler) ExtensionUpdate(u *user.User, d *extension.Extension) (
 	log.Debug("Updating an extension.")
 
 	// get extension
-	tmpExtension, err := h.reqHandler.RMExtensionGet(d.ID)
+	tmpExtension, err := h.reqHandler.RMV1ExtensionGet(ctx, d.ID)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
@@ -144,7 +150,7 @@ func (h *serviceHandler) ExtensionUpdate(u *user.User, d *extension.Extension) (
 	}
 
 	reqExtension := extension.CreateDomain(d)
-	res, err := h.reqHandler.RMExtensionUpdate(reqExtension)
+	res, err := h.reqHandler.RMV1ExtensionUpdate(ctx, reqExtension)
 	if err != nil {
 		logrus.Errorf("Could not update the domain. err: %v", err)
 		return nil, err
