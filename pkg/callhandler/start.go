@@ -544,7 +544,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	}
 
 	// get number info
-	numb, err := h.reqHandler.NMV1NumbersNumberGet(ctx, cn.DestinationNumber)
+	numb, err := h.reqHandler.NMV1NumberGetByNumber(ctx, cn.DestinationNumber)
 	if err != nil {
 		log.Debugf("Could not find number info. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)

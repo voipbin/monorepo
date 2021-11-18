@@ -499,7 +499,7 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, a *ac
 	}
 
 	// send request for create wav file
-	filename, err := h.reqHandler.TMV1SpeechesPOST(ctx, option.Text, option.Gender, option.Language)
+	filename, err := h.reqHandler.TMV1SpeecheCreate(ctx, option.Text, option.Gender, option.Language)
 	if err != nil {
 		return fmt.Errorf("could not create tts wav. err: %v", err)
 	}

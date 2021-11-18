@@ -147,7 +147,7 @@ func (h *callHandler) getEndpointDestination(ctx context.Context, destination ad
 	endpoint = strings.TrimPrefix(endpoint, "sips:")
 
 	// get contacts
-	contacts, err := h.reqHandler.RMV1ContactsGet(ctx, endpoint)
+	contacts, err := h.reqHandler.RMV1ContactGets(ctx, endpoint)
 	if err != nil {
 		return "", fmt.Errorf("could not get contacts info. target: err: %v", err)
 	}

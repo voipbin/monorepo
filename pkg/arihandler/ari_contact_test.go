@@ -48,7 +48,7 @@ func TestEventHandlerContactStatusChange(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().RMV1ContactsUpdate(gomock.Any(), tt.endpoint).Return(nil)
+			mockReq.EXPECT().RMV1ContactUpdate(gomock.Any(), tt.endpoint).Return(nil)
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
