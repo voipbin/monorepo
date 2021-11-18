@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -14,6 +15,7 @@ import (
 // to generate a recording-transcribe
 // it returns transcribe if it succeed.
 func (h *serviceHandler) TranscribeCreate(u *user.User, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":         u,
 		"reference_id": recordingID,
@@ -21,7 +23,7 @@ func (h *serviceHandler) TranscribeCreate(u *user.User, recordingID uuid.UUID, l
 	})
 
 	// get recording
-	rec, err := h.reqHandler.CMRecordingGet(recordingID)
+	rec, err := h.reqHandler.CMV1RecordingGet(ctx, recordingID)
 	if err != nil {
 		log.Errorf("Could not")
 		return nil, err
@@ -34,7 +36,7 @@ func (h *serviceHandler) TranscribeCreate(u *user.User, recordingID uuid.UUID, l
 	}
 
 	// create tanscribe
-	tmp, err := h.reqHandler.TMRecordingPost(recordingID, language)
+	tmp, err := h.reqHandler.TSV1RecordingCreate(ctx, recordingID, language)
 	if err != nil {
 		log.Errorf("Could not get recordings from the call manager. err: %v", err)
 		return nil, err

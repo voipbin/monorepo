@@ -1,33 +1,35 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // FlowCreate is a service handler for flow creation.
-func (h *serviceHandler) FlowCreate(u *user.User, f *flow.Flow) (*flow.Flow, error) {
+func (h *serviceHandler) FlowCreate(u *user.User, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":    u.ID,
-		"name":    f.Name,
-		"persist": f.Persist,
-		"webhook": f.WebhookURI,
+		"name":    name,
+		"persist": persist,
+		"webhook": webhookURI,
 	})
 
-	fmFlow := flow.CreateFlow(f)
-	fmFlow.UserID = u.ID
-	log.WithFields(
-		logrus.Fields{
-			"flow": fmFlow,
-		},
-	).Debugf("Creating a new flow. flow: %s", fmFlow.ID)
+	flowActions := []fmaction.Action{}
+	for _, a := range actions {
+		flowActions = append(flowActions, *action.CreateAction(&a))
+	}
 
-	tmp, err := h.reqHandler.FMFlowCreate(fmFlow)
+	log.WithField("flow_actions", flowActions).Debug("Creating a new flow.")
+	tmp, err := h.reqHandler.FMV1FlowCreate(ctx, u.ID, name, detail, webhookURI, flowActions, persist)
 	if err != nil {
 		log.Errorf("Could not create a new flow. err: %v", err)
 		return nil, err
@@ -40,6 +42,7 @@ func (h *serviceHandler) FlowCreate(u *user.User, f *flow.Flow) (*flow.Flow, err
 
 // FlowDelete deletes the flow of the given id.
 func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -48,7 +51,7 @@ func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
 	log.Debug("Deleting a flow.")
 
 	// get flow
-	flow, err := h.reqHandler.FMFlowGet(id)
+	flow, err := h.reqHandler.FMV1FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
 		return fmt.Errorf("could not find flow info. err: %v", err)
@@ -60,7 +63,7 @@ func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
 		return fmt.Errorf("user has no permission")
 	}
 
-	if err := h.reqHandler.FMFlowDelete(id); err != nil {
+	if err := h.reqHandler.FMV1FlowDelete(ctx, id); err != nil {
 		return err
 	}
 
@@ -70,6 +73,7 @@ func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
 // FlowGet gets the flow of the given id.
 // It returns flow if it succeed.
 func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -78,7 +82,7 @@ func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 	log.Debug("Getting a flow.")
 
 	// get flow
-	f, err := h.reqHandler.FMFlowGet(id)
+	f, err := h.reqHandler.FMV1FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flow info. err: %v", err)
@@ -97,6 +101,7 @@ func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 // FlowGets gets the list of flow of the given user id.
 // It returns list of flows if it succeed.
 func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*flow.Flow, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -110,7 +115,7 @@ func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*f
 	}
 
 	// get flows
-	flows, err := h.reqHandler.FMFlowGets(u.ID, token, size)
+	flows, err := h.reqHandler.FMV1FlowGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flows info. err: %v", err)
@@ -129,6 +134,7 @@ func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*f
 // FlowUpdate updates the flow info.
 // It returns updated flow if it succeed.
 func (h *serviceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -137,7 +143,7 @@ func (h *serviceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, err
 	log.Debug("Updating a flow.")
 
 	// get flows
-	tmpFlow, err := h.reqHandler.FMFlowGet(f.ID)
+	tmpFlow, err := h.reqHandler.FMV1FlowGet(ctx, f.ID)
 	if err != nil {
 		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flows info. err: %v", err)
@@ -150,7 +156,7 @@ func (h *serviceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, err
 	}
 
 	reqFlow := flow.CreateFlow(f)
-	res, err := h.reqHandler.FMFlowUpdate(reqFlow)
+	res, err := h.reqHandler.FMV1FlowUpdate(ctx, reqFlow)
 	if err != nil {
 		logrus.Errorf("Could not update the flow. err: %v", err)
 		return nil, err

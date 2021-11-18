@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -14,6 +15,7 @@ import (
 // It sends a request to the number-manager to getting a list of numbers.
 // it returns list of numbers if it succeed.
 func (h *serviceHandler) NumberGets(u *user.User, size uint64, token string) ([]*number.Number, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -22,7 +24,7 @@ func (h *serviceHandler) NumberGets(u *user.User, size uint64, token string) ([]
 	})
 
 	// get available numbers
-	tmps, err := h.reqHandler.NMNumberGets(u.ID, token, size)
+	tmps, err := h.reqHandler.NMV1NumberGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Infof("Could not get numbers info. err: %v", err)
 		return nil, err
@@ -42,6 +44,7 @@ func (h *serviceHandler) NumberGets(u *user.User, size uint64, token string) ([]
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
 func (h *serviceHandler) NumberCreate(u *user.User, num string) (*number.Number, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -54,7 +57,7 @@ func (h *serviceHandler) NumberCreate(u *user.User, num string) (*number.Number,
 	}
 
 	// create numbers
-	tmp, err := h.reqHandler.NMNumberCreate(u.ID, num)
+	tmp, err := h.reqHandler.NMV1NumberCreate(ctx, u.ID, num)
 	if err != nil {
 		log.Infof("Could not get available numbers info. err: %v", err)
 		return nil, err
@@ -68,6 +71,7 @@ func (h *serviceHandler) NumberCreate(u *user.User, num string) (*number.Number,
 // It sends a request to the number-manager to get a existed number.
 // it returns got number information if it succeed.
 func (h *serviceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -75,7 +79,7 @@ func (h *serviceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, 
 	})
 
 	// get number info
-	res, err := h.reqHandler.NMNumberGet(id)
+	res, err := h.reqHandler.NMV1NumberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -101,6 +105,7 @@ func (h *serviceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, 
 // It sends a request to the number-manager to delete a existed number.
 // it returns deleted number information if it succeed.
 func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Number, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -108,7 +113,7 @@ func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Numbe
 	})
 
 	// get number info
-	tmp, err := h.reqHandler.NMNumberGet(id)
+	tmp, err := h.reqHandler.NMV1NumberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -126,7 +131,7 @@ func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Numbe
 	}
 
 	// delete numbers
-	res, err := h.reqHandler.NMNumberDelete(id)
+	res, err := h.reqHandler.NMV1NumberDelete(ctx, id)
 	if err != nil {
 		log.Infof("Could not delete numbers info. err: %v", err)
 		return nil, err
@@ -140,6 +145,7 @@ func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Numbe
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
 func (h *serviceHandler) NumberUpdate(u *user.User, numb *number.Number) (*number.Number, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -147,7 +153,7 @@ func (h *serviceHandler) NumberUpdate(u *user.User, numb *number.Number) (*numbe
 	})
 
 	// get number
-	tmpNumb, err := h.reqHandler.NMNumberGet(numb.ID)
+	tmpNumb, err := h.reqHandler.NMV1NumberGet(ctx, numb.ID)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -166,7 +172,7 @@ func (h *serviceHandler) NumberUpdate(u *user.User, numb *number.Number) (*numbe
 
 	// update number
 	nNumb := number.CreateNumber(numb)
-	tmp, err := h.reqHandler.NMNumberUpdate(nNumb)
+	tmp, err := h.reqHandler.NMV1NumberUpdate(ctx, nNumb)
 	if err != nil {
 		log.Errorf("Could not update the number info. err: %v", err)
 		return nil, err

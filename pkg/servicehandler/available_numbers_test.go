@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestAvailableNumberGets(t *testing.T) {
@@ -44,7 +44,7 @@ func TestAvailableNumberGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().NMAvailableNumbersGet(tt.user.ID, tt.limit, tt.countryCode).Return([]nmavailablenumber.AvailableNumber{}, nil)
+			mockReq.EXPECT().NMV1AvailableNumberGets(gomock.Any(), tt.user.ID, tt.limit, tt.countryCode).Return([]nmavailablenumber.AvailableNumber{}, nil)
 
 			_, err := h.AvailableNumberGets(tt.user, tt.limit, tt.countryCode)
 			if err != nil {
