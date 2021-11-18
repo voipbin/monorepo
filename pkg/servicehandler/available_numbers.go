@@ -1,6 +1,8 @@
 package servicehandler
 
 import (
+	"context"
+
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 
@@ -11,6 +13,7 @@ import (
 // It sends a request to the number-manager to getting a list of calls.
 // it returns list of available numbers if it succeed.
 func (h *serviceHandler) AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":         u.ID,
 		"username":     u.Username,
@@ -19,7 +22,7 @@ func (h *serviceHandler) AvailableNumberGets(u *user.User, size uint64, countryC
 	})
 
 	// get available numbers
-	tmps, err := h.reqHandler.NMAvailableNumbersGet(u.ID, size, countryCode)
+	tmps, err := h.reqHandler.NMV1AvailableNumberGets(ctx, u.ID, size, countryCode)
 	if err != nil {
 		log.Infof("Could not get available numbers info. err: %v", err)
 		return nil, err

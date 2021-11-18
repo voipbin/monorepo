@@ -20,8 +20,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
@@ -32,15 +32,6 @@ var sslCert = flag.String("ssl_cert", "./etc/ssl/cert.pem", "Cert key file for s
 var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
 
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
-
-var rabbitQueueRequestCall = flag.String("rabbit_queue_request_call", "bin-manager.call-manager.request", "rabbitmq queue name for call request")
-var rabbitQueueRequestFlow = flag.String("rabbit_queue_request_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
-var rabbitQueueRequestStorage = flag.String("rabbit_queue_request_storage", "bin-manager.storage-manager.request", "rabbitmq queue name for storage request")
-var rabbitQueueRequestRegistrar = flag.String("rabbit_queue_request_registrar", "bin-manager.registrar-manager.request", "rabbitmq queue name for registrar request")
-var rabbitQueueRequestNumber = flag.String("rabbit_queue_request_number", "bin-manager.number-manager.request", "rabbitmq queue name for number request")
-var rabbitQueueRequestTranscribe = flag.String("rabbit_queue_request_transcribe", "bin-manager.transcribe-manager.request", "rabbitmq queue name for transcribe request")
-var rabbitQueueRequestConference = flag.String("rabbit_queue_request_conference", "bin-manager.conference-manager.request", "rabbitmq queue name for conference request")
 
 // args for redis
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
@@ -84,17 +75,7 @@ func main() {
 	sock.Connect()
 
 	// create servicehandler
-	requestHandler := requesthandler.NewRequestHandler(
-		sock,
-		*rabbitExchangeDelay,
-		*rabbitQueueRequestCall,
-		*rabbitQueueRequestFlow,
-		*rabbitQueueRequestStorage,
-		*rabbitQueueRequestRegistrar,
-		*rabbitQueueRequestNumber,
-		*rabbitQueueRequestTranscribe,
-		*rabbitQueueRequestConference,
-	)
+	requestHandler := requesthandler.NewRequestHandler(sock, "api_manager")
 	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db)
 
 	app := gin.Default()

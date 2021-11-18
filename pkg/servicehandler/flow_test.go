@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestFlowCreate(t *testing.T) {
@@ -120,8 +120,8 @@ func TestFlowCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().FMFlowCreate(tt.reqFlow).Return(tt.response, nil)
-			res, err := h.FlowCreate(tt.user, tt.flow)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.user.ID, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.response, nil)
+			res, err := h.FlowCreate(tt.user, tt.flow.Name, tt.flow.Detail, tt.flow.WebhookURI, tt.flow.Actions, tt.flow.Persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -194,8 +194,8 @@ func TestFlowUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().FMFlowGet(tt.flow.ID).Return(&fmflow.Flow{UserID: 1}, nil)
-			mockReq.EXPECT().FMFlowUpdate(tt.requestFlow).Return(tt.response, nil)
+			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flow.ID).Return(&fmflow.Flow{UserID: 1}, nil)
+			mockReq.EXPECT().FMV1FlowUpdate(gomock.Any(), tt.requestFlow).Return(tt.response, nil)
 			res, err := h.FlowUpdate(tt.user, tt.flow)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -248,8 +248,8 @@ func TestFlowDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().FMFlowGet(tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FMFlowDelete(tt.flowID).Return(nil)
+			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FMV1FlowDelete(gomock.Any(), tt.flowID).Return(nil)
 
 			if err := h.FlowDelete(tt.user, tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -337,7 +337,7 @@ func TestFlowGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().FMFlowGet(tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
 
 			res, err := h.FlowGet(tt.user, tt.flowID)
 			if err != nil {
@@ -455,7 +455,7 @@ func TestFlowGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().FMFlowGets(tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().FMV1FlowGets(gomock.Any(), tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.FlowGets(tt.user, tt.pageSize, tt.pageToken)
 			if err != nil {

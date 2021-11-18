@@ -61,7 +61,7 @@ func TestCallsPOST(t *testing.T) {
 				Actions: []action.Action{},
 			},
 			&flow.Flow{
-				Name:    "temp",
+				Name:    "tmp",
 				Detail:  "tmp outbound flow",
 				Actions: []action.Action{},
 				Persist: false,
@@ -91,7 +91,7 @@ func TestCallsPOST(t *testing.T) {
 				Actions: []action.Action{},
 			},
 			&flow.Flow{
-				Name:       "temp",
+				Name:       "tmp",
 				Detail:     "tmp outbound flow",
 				WebhookURI: "https://test.com/webhook",
 				Actions:    []action.Action{},
@@ -129,7 +129,7 @@ func TestCallsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().FlowCreate(&tt.user, tt.reqFlow).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().FlowCreate(&tt.user, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
 			mockSvc.EXPECT().CallCreate(&tt.user, tt.resFlow.ID, tt.req.Source, tt.req.Destination).Return(nil, nil)
 
 			r.ServeHTTP(w, req)

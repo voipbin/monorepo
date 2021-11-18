@@ -11,8 +11,8 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestRecordingGets(t *testing.T) {
@@ -80,7 +80,7 @@ func TestRecordingGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().CMRecordingGets(tt.user.ID, tt.size, tt.token).Return(tt.response, nil)
+			mockReq.EXPECT().CMV1RecordingGets(gomock.Any(), tt.user.ID, tt.size, tt.token).Return(tt.response, nil)
 
 			res, err := h.RecordingGets(tt.user, tt.size, tt.token)
 

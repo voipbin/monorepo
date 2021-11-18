@@ -20,7 +20,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 const (
@@ -63,7 +63,7 @@ type ServiceHandler interface {
 	ExtensionUpdate(u *user.User, d *extension.Extension) (*extension.Extension, error)
 
 	// flow handlers
-	FlowCreate(u *user.User, f *flow.Flow) (*flow.Flow, error)
+	FlowCreate(u *user.User, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error)
 	FlowDelete(u *user.User, id uuid.UUID) error
 	FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 	FlowGets(u *user.User, pageSize uint64, pageToken string) ([]*flow.Flow, error)

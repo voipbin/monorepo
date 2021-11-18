@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -12,6 +13,7 @@ import (
 
 // DomainCreate is a service handler for flow creation.
 func (h *serviceHandler) DomainCreate(u *user.User, domainName, name, detail string) (*domain.Domain, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":        u.ID,
 		"domain_name": domainName,
@@ -19,7 +21,7 @@ func (h *serviceHandler) DomainCreate(u *user.User, domainName, name, detail str
 	})
 	log.Debug("Creating a new domain.")
 
-	tmp, err := h.reqHandler.RMDomainCreate(u.ID, domainName, name, detail)
+	tmp, err := h.reqHandler.RMV1DomainCreate(ctx, u.ID, domainName, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a new domain. err: %v", err)
 		return nil, err
@@ -31,6 +33,7 @@ func (h *serviceHandler) DomainCreate(u *user.User, domainName, name, detail str
 
 // DomainDelete deletes the domain of the given id.
 func (h *serviceHandler) DomainDelete(u *user.User, id uuid.UUID) error {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":      u.ID,
 		"username":  u.Username,
@@ -39,7 +42,7 @@ func (h *serviceHandler) DomainDelete(u *user.User, id uuid.UUID) error {
 	log.Debug("Deleting a domain.")
 
 	// get domain
-	domain, err := h.reqHandler.RMDomainGet(id)
+	domain, err := h.reqHandler.RMV1DomainGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get domain info from the registrar-manager. err: %v", err)
 		return fmt.Errorf("could not find flow info. err: %v", err)
@@ -51,7 +54,7 @@ func (h *serviceHandler) DomainDelete(u *user.User, id uuid.UUID) error {
 		return fmt.Errorf("user has no permission")
 	}
 
-	if err := h.reqHandler.RMDomainDelete(id); err != nil {
+	if err := h.reqHandler.RMV1DomainDelete(ctx, id); err != nil {
 		return err
 	}
 
@@ -61,6 +64,7 @@ func (h *serviceHandler) DomainDelete(u *user.User, id uuid.UUID) error {
 // DomainGet gets the domain of the given id.
 // It returns domain if it succeed.
 func (h *serviceHandler) DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":      u.ID,
 		"username":  u.Username,
@@ -69,7 +73,7 @@ func (h *serviceHandler) DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, 
 	log.Debug("Getting a domain.")
 
 	// get domain
-	d, err := h.reqHandler.RMDomainGet(id)
+	d, err := h.reqHandler.RMV1DomainGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get domain info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find domain info. err: %v", err)
@@ -88,6 +92,7 @@ func (h *serviceHandler) DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, 
 // DomainGets gets the list of domains of the given user id.
 // It returns list of domains if it succeed.
 func (h *serviceHandler) DomainGets(u *user.User, size uint64, token string) ([]*domain.Domain, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -101,7 +106,7 @@ func (h *serviceHandler) DomainGets(u *user.User, size uint64, token string) ([]
 	}
 
 	// get domains
-	domains, err := h.reqHandler.RMDomainGets(u.ID, token, size)
+	domains, err := h.reqHandler.RMV1DomainGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get domains info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find domains info. err: %v", err)
@@ -120,6 +125,7 @@ func (h *serviceHandler) DomainGets(u *user.User, size uint64, token string) ([]
 // DomainUpdate updates the flow info.
 // It returns updated domain if it succeed.
 func (h *serviceHandler) DomainUpdate(u *user.User, d *domain.Domain) (*domain.Domain, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -128,7 +134,7 @@ func (h *serviceHandler) DomainUpdate(u *user.User, d *domain.Domain) (*domain.D
 	log.Debug("Updating a domain.")
 
 	// get flows
-	tmpDomain, err := h.reqHandler.RMDomainGet(d.ID)
+	tmpDomain, err := h.reqHandler.RMV1DomainGet(ctx, d.ID)
 	if err != nil {
 		log.Errorf("Could not get domain info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find domain info. err: %v", err)
@@ -141,7 +147,7 @@ func (h *serviceHandler) DomainUpdate(u *user.User, d *domain.Domain) (*domain.D
 	}
 
 	reqDomain := domain.CreateDomain(d)
-	res, err := h.reqHandler.RMDomainUpdate(reqDomain)
+	res, err := h.reqHandler.RMV1DomainUpdate(ctx, reqDomain)
 	if err != nil {
 		logrus.Errorf("Could not update the domain. err: %v", err)
 		return nil, err

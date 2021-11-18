@@ -11,8 +11,8 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestExtensionCreate(t *testing.T) {
@@ -85,7 +85,7 @@ func TestExtensionCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMExtensionCreate(tt.reqExtension).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1ExtensionCreate(gomock.Any(), tt.reqExtension).Return(tt.response, nil)
 
 			res, err := h.ExtensionCreate(tt.user, tt.extension)
 			if err != nil {
@@ -165,8 +165,8 @@ func TestExtensionUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMExtensionGet(tt.extension.ID).Return(&rmextension.Extension{UserID: 1}, nil)
-			mockReq.EXPECT().RMExtensionUpdate(tt.requestExt).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1ExtensionGet(gomock.Any(), tt.extension.ID).Return(&rmextension.Extension{UserID: 1}, nil)
+			mockReq.EXPECT().RMV1ExtensionUpdate(gomock.Any(), tt.requestExt).Return(tt.response, nil)
 			res, err := h.ExtensionUpdate(tt.user, tt.extension)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -223,8 +223,8 @@ func TestExtensionDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMExtensionGet(tt.extensionID).Return(tt.response, nil)
-			mockReq.EXPECT().RMExtensionDelete(tt.extensionID).Return(nil)
+			mockReq.EXPECT().RMV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1ExtensionDelete(gomock.Any(), tt.extensionID).Return(nil)
 
 			if err := h.ExtensionDelete(tt.user, tt.extensionID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -282,7 +282,7 @@ func TestExtensionGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMExtensionGet(tt.extensionID).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
 			res, err := h.ExtensionGet(tt.user, tt.extensionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -365,7 +365,7 @@ func TestExtensionGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMExtensionGets(tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1ExtensionGets(gomock.Any(), tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.ExtensionGets(tt.user, tt.domainID, tt.pageSize, tt.pageToken)
 			if err != nil {

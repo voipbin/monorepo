@@ -11,7 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestRecordingfileGet(t *testing.T) {
@@ -59,8 +59,8 @@ func TestRecordingfileGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().CMRecordingGet(tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().SMRecordingGet(tt.response.ID).Return(tt.responseST, nil)
+			mockReq.EXPECT().CMV1RecordingGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().SMV1RecordingGet(gomock.Any(), tt.response.ID).Return(tt.responseST, nil)
 
 			res, err := h.RecordingfileGet(tt.user, tt.id)
 			if err != nil {
