@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -16,6 +17,7 @@ import (
 // ConferenceGet gets the conference.
 // It returns conference info if it succeed.
 func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":       u.ID,
 		"username":   u.Username,
@@ -24,7 +26,7 @@ func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.
 	log.Debugf("Get conference. conference: %s", id)
 
 	// get conference
-	res, err := h.reqHandler.CFConferenceGet(id)
+	res, err := h.reqHandler.CFV1ConferenceGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
@@ -43,6 +45,7 @@ func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.
 // ConferenceGets gets the list of conference.
 // It returns list of calls if it succeed.
 func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -55,7 +58,7 @@ func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string)
 	}
 
 	// get conferences
-	tmps, err := h.reqHandler.CFConferenceGets(u.ID, token, size, "conference")
+	tmps, err := h.reqHandler.CFV1ConferenceGets(ctx, u.ID, token, size, "conference")
 	if err != nil {
 		log.Infof("Could not get conferences info. err: %v", err)
 		return nil, err
@@ -81,6 +84,7 @@ func (h *serviceHandler) ConferenceCreate(
 	preActions []action.Action,
 	postActions []action.Action,
 ) (*conference.Conference, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user":         u.ID,
@@ -105,7 +109,7 @@ func (h *serviceHandler) ConferenceCreate(
 		fmPostActions = append(fmPostActions, *action.CreateAction(&a))
 	}
 
-	conf, err := h.reqHandler.CFConferenceCreate(u.ID, cfconference.Type(confType), name, detail, webhookURI, fmPreActions, fmPostActions)
+	conf, err := h.reqHandler.CFV1ConferenceCreate(ctx, u.ID, cfconference.Type(confType), name, detail, 0, webhookURI, map[string]interface{}{}, fmPreActions, fmPostActions)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
@@ -117,6 +121,7 @@ func (h *serviceHandler) ConferenceCreate(
 
 // ConferenceDelete is a service handler for conference creating.
 func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error {
+	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user":       u.ID,
@@ -126,7 +131,7 @@ func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error 
 	)
 
 	// get conference
-	cf, err := h.reqHandler.CFConferenceGet(confID)
+	cf, err := h.reqHandler.CFV1ConferenceGet(ctx, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return err
@@ -140,7 +145,7 @@ func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error 
 
 	// destroy
 	log.Debug("Destroying conference.")
-	if err := h.reqHandler.CFConferenceDelete(confID); err != nil {
+	if err := h.reqHandler.CFV1ConferenceDelete(ctx, confID); err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
 		return err
 	}
@@ -150,6 +155,7 @@ func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error 
 
 // ConferenceDelete is a service handler for conference creating.
 func (h *serviceHandler) ConferenceKick(u *user.User, confID uuid.UUID, callID uuid.UUID) error {
+	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user":          u.ID,
@@ -160,7 +166,7 @@ func (h *serviceHandler) ConferenceKick(u *user.User, confID uuid.UUID, callID u
 	)
 
 	// get conference
-	cf, err := h.reqHandler.CFConferenceGet(confID)
+	cf, err := h.reqHandler.CFV1ConferenceGet(ctx, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return err
@@ -174,7 +180,7 @@ func (h *serviceHandler) ConferenceKick(u *user.User, confID uuid.UUID, callID u
 
 	// kick the call from the conference
 	log.Debug("Kick")
-	if err := h.reqHandler.CFConferenceKick(confID, callID); err != nil {
+	if err := h.reqHandler.CFV1ConferenceKick(ctx, confID, callID); err != nil {
 		log.Errorf("Could not kick the call from the conference. err: %v", err)
 		return err
 	}

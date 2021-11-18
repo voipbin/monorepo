@@ -142,7 +142,7 @@ func TestFlowsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowCreate(&tt.user, tt.reqFlow).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().FlowCreate(&tt.user, tt.reqFlow.Name, tt.reqFlow.Detail, tt.requestBody.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/flows", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 

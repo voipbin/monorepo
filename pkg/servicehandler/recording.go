@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -12,7 +13,7 @@ import (
 
 // RecordingGet returns downloadable url for recording
 func (h *serviceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error) {
-
+	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
 			"user":      u,
@@ -21,7 +22,7 @@ func (h *serviceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Re
 	)
 
 	// get recording info from call-manager
-	rec, err := h.reqHandler.CMRecordingGet(id)
+	rec, err := h.reqHandler.CMV1RecordingGet(ctx, id)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -43,6 +44,7 @@ func (h *serviceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Re
 // to getting a list of calls.
 // it returns list of calls if it succeed.
 func (h *serviceHandler) RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
 		"username": u.Username,
@@ -54,7 +56,7 @@ func (h *serviceHandler) RecordingGets(u *user.User, size uint64, token string) 
 		token = getCurTime()
 	}
 
-	tmp, err := h.reqHandler.CMRecordingGets(u.ID, size, token)
+	tmp, err := h.reqHandler.CMV1RecordingGets(ctx, u.ID, size, token)
 	if err != nil {
 		log.Errorf("Could not get recordings from the call manager. err: %v", err)
 		return nil, err

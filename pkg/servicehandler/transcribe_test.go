@@ -10,8 +10,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
@@ -87,8 +87,8 @@ func TestTranscribeCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().CMRecordingGet(tt.referenceID).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().TMRecordingPost(tt.referenceID, tt.language).Return(tt.response, nil)
+			mockReq.EXPECT().CMV1RecordingGet(gomock.Any(), tt.referenceID).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().TSV1RecordingCreate(gomock.Any(), tt.referenceID, tt.language).Return(tt.response, nil)
 
 			res, err := h.TranscribeCreate(tt.user, tt.referenceID, tt.language)
 			if err != nil {

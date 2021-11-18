@@ -11,7 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestOrderNumberGets(t *testing.T) {
@@ -76,7 +76,7 @@ func TestOrderNumberGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().NMNumberGets(tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().NMV1NumberGets(gomock.Any(), tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.NumberGets(tt.user, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -154,7 +154,7 @@ func TestOrderNumberGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().NMNumberGet(tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
 			res, err := h.NumberGet(tt.user, tt.id)
 			if err != nil {
@@ -213,7 +213,7 @@ func TestOrderNumberGetError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().NMNumberGet(tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
 			_, err := h.NumberGet(tt.user, tt.id)
 			if err == nil {
@@ -281,7 +281,7 @@ func TestNumberCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// ctx := context.Background()
 
-			mockReq.EXPECT().NMNumberCreate(tt.user.ID, tt.numbers).Return(tt.response, nil)
+			mockReq.EXPECT().NMV1NumberCreate(gomock.Any(), tt.user.ID, tt.numbers).Return(tt.response, nil)
 
 			res, err := h.NumberCreate(tt.user, tt.numbers)
 			if err != nil {
@@ -368,8 +368,8 @@ func TestNumberDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().NMNumberGet(tt.id).Return(tt.responseGet, nil)
-			mockReq.EXPECT().NMNumberDelete(tt.id).Return(tt.responseDelete, nil)
+			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NMV1NumberDelete(gomock.Any(), tt.id).Return(tt.responseDelete, nil)
 
 			res, err := h.NumberDelete(tt.user, tt.id)
 			if err != nil {
@@ -463,8 +463,8 @@ func TestNumberUpdate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().NMNumberGet(tt.updateNumber.ID).Return(tt.responseGet, nil)
-			mockReq.EXPECT().NMNumberUpdate(tt.updateNMNumber).Return(tt.responseUpdate, nil)
+			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.updateNumber.ID).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NMV1NumberUpdate(gomock.Any(), tt.updateNMNumber).Return(tt.responseUpdate, nil)
 
 			res, err := h.NumberUpdate(tt.user, tt.updateNumber)
 			if err != nil {
@@ -526,7 +526,7 @@ func TestNumberUpdateError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().NMNumberGet(tt.updateNumber.ID).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.updateNumber.ID).Return(tt.responseGet, nil)
 
 			_, err := h.NumberUpdate(tt.user, tt.updateNumber)
 			if err == nil {

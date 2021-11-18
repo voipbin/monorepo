@@ -31,7 +31,7 @@ require (
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210323024036-8c44f8dca2de
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210409195628-27c9b796b068
-	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210909170208-c66eaaf9ef83
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210926125509-0133dd6b7146
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20210924151903-3ad01bbaa167 // indirect
@@ -40,7 +40,10 @@ require (
 	golang.org/x/tools v0.1.6 // indirect
 )
 
-require gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211108024040-223d0a6c9ed9
+require (
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211117045559-85c8d74244e2
+	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211117114033-62270bbca1ac
+)
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
@@ -68,6 +71,8 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.5 // indirect
+	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210323024756-a7b0838b069d // indirect
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210909052905-558ef2d8332e // indirect
 	google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
