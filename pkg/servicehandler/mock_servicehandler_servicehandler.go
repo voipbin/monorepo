@@ -595,16 +595,16 @@ func (mr *MockServiceHandlerMockRecorder) UserGet(userID interface{}) *gomock.Ca
 }
 
 // UserGets mocks base method.
-func (m *MockServiceHandler) UserGets() ([]*user.User, error) {
+func (m *MockServiceHandler) UserGets(size uint64, token string) ([]*user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserGets")
+	ret := m.ctrl.Call(m, "UserGets", size, token)
 	ret0, _ := ret[0].([]*user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UserGets indicates an expected call of UserGets.
-func (mr *MockServiceHandlerMockRecorder) UserGets() *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) UserGets(size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGets", reflect.TypeOf((*MockServiceHandler)(nil).UserGets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGets", reflect.TypeOf((*MockServiceHandler)(nil).UserGets), size, token)
 }

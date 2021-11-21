@@ -3,6 +3,7 @@ package users
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -101,8 +102,12 @@ func TestUsersGET(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name string
-		user user.User
+		name      string
+		user      user.User
+		pageSize  uint64
+		pageToken string
+
+		res []*user.User
 	}
 
 	tests := []test{
@@ -111,6 +116,20 @@ func TestUsersGET(t *testing.T) {
 			user.User{
 				ID:         1,
 				Permission: user.PermissionAdmin,
+			},
+			10,
+			"2021-01-29 03:18:22.131000",
+			[]*user.User{
+				{
+					ID:         1,
+					Username:   "test1",
+					Name:       "test1",
+					Detail:     "test1",
+					Permission: 1,
+					TMCreate:   "",
+					TMUpdate:   "",
+					TMDelete:   "",
+				},
 			},
 		},
 	}
@@ -127,8 +146,10 @@ func TestUsersGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().UserGets().Return(nil, nil)
-			req, _ := http.NewRequest("GET", "/v1.0/users", bytes.NewBuffer([]byte("")))
+			mockSvc.EXPECT().UserGets(tt.pageSize, tt.pageToken).Return(tt.res, nil)
+
+			reqQuery := fmt.Sprintf("/v1.0/users?page_size=%d&page_token=%s", tt.pageSize, tt.pageToken)
+			req, _ := http.NewRequest("GET", reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)

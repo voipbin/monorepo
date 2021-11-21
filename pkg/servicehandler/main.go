@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
@@ -20,7 +21,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 const (
@@ -89,7 +89,7 @@ type ServiceHandler interface {
 	// user handlers
 	UserCreate(username, password string, permission uint64) (*user.User, error)
 	UserGet(userID uint64) (*user.User, error)
-	UserGets() ([]*user.User, error)
+	UserGets(size uint64, token string) ([]*user.User, error)
 }
 
 type serviceHandler struct {

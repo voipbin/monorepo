@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -59,8 +60,22 @@ func usersGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
+
+	var requestParam request.ParamUsersGET
+
+	if err := c.BindQuery(&requestParam); err != nil {
+		c.AbortWithStatus(400)
+		return
+	}
+	log := logrus.WithFields(
+		logrus.Fields{
+			"request_address": c.ClientIP,
+		},
+	)
+	log.Debugf("usersGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
+
 	u := tmp.(user.User)
-	log := logrus.WithFields(logrus.Fields{
+	log = log.WithFields(logrus.Fields{
 		"id":         u.ID,
 		"username":   u.Username,
 		"permission": u.Permission,
@@ -76,7 +91,7 @@ func usersGET(c *gin.Context) {
 
 	// create an user
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	users, err := serviceHandler.UserGets()
+	users, err := serviceHandler.UserGets(requestParam.PageSize, requestParam.PageToken)
 	if err != nil {
 		log.Errorf("Could not get users info. err: %v", err)
 		c.AbortWithStatus(400)
