@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -10,66 +9,58 @@ import (
 )
 
 func (h *serviceHandler) UserCreate(username, password string, permission uint64) (*user.User, error) {
+	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"Username":   username,
 		"Permission": permission,
 	})
 	log.Debug("Creating a new user.")
 
-	ctx := context.Background()
-	tmp, _ := h.dbHandler.UserGetByUsername(ctx, username)
-	if tmp != nil {
-		log.Info("User is already existing.")
-		return nil, fmt.Errorf("user already exist")
-	}
-
-	// generate hash password
-	hashPassword, err := generateHash(password)
+	tmp, err := h.reqHandler.UMV1UserCreate(ctx, username, password, permission)
 	if err != nil {
-		log.Errorf("Could not generate hash. err: %v", err)
-		return nil, err
-	}
-
-	// create user
-	u := &user.User{
-		Username:     username,
-		PasswordHash: hashPassword,
-		Permission:   user.Permission(permission),
-	}
-
-	if err := h.dbHandler.UserCreate(ctx, u); err != nil {
 		log.Errorf("Could not create a new user. err: %v", err)
 		return nil, err
 	}
 
-	res, err := h.dbHandler.UserGetByUsername(ctx, username)
-	if err != nil {
-		log.Errorf("Could not get created user info. err: %v", err)
-		return nil, err
-	}
-
+	res := user.ConvertUser(tmp)
 	return res, nil
 }
 
 // UserGet returns user info of given userID.
 func (h *serviceHandler) UserGet(userID uint64) (*user.User, error) {
 	ctx := context.Background()
-	res, err := h.dbHandler.UserGet(ctx, userID)
+
+	tmp, err := h.reqHandler.UMV1UserGet(ctx, userID)
 	if err != nil {
 		logrus.Errorf("Could not get user info. err: %v", err)
 		return nil, err
 	}
 
+	res := user.ConvertUser(tmp)
 	return res, nil
 }
 
 // UserGets returns list of all users
-func (h *serviceHandler) UserGets() ([]*user.User, error) {
+func (h *serviceHandler) UserGets(size uint64, token string) ([]*user.User, error) {
 	ctx := context.Background()
-	res, err := h.dbHandler.UserGets(ctx)
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "UserGets",
+		"size":  size,
+		"token": token,
+	})
+	log.Debug("Received request detail.")
+
+	tmp, err := h.reqHandler.UMV1UserGets(ctx, token, size)
 	if err != nil {
 		logrus.Errorf("Could not get users info. err: %v", err)
 		return nil, err
+	}
+
+	res := []*user.User{}
+
+	for _, u := range tmp {
+		t := user.ConvertUser(&u)
+		res = append(res, t)
 	}
 
 	return res, nil

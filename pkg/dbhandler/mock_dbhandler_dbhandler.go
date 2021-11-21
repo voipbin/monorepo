@@ -5,11 +5,7 @@
 package dbhandler
 
 import (
-	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
-	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // MockDBHandler is a mock of DBHandler interface.
@@ -33,106 +29,4 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
-}
-
-// UserCreate mocks base method.
-func (m *MockDBHandler) UserCreate(ctx context.Context, b *user.User) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserCreate", ctx, b)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserCreate indicates an expected call of UserCreate.
-func (mr *MockDBHandlerMockRecorder) UserCreate(ctx, b interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserCreate", reflect.TypeOf((*MockDBHandler)(nil).UserCreate), ctx, b)
-}
-
-// UserGet mocks base method.
-func (m *MockDBHandler) UserGet(ctx context.Context, id uint64) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserGet", ctx, id)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserGet indicates an expected call of UserGet.
-func (mr *MockDBHandlerMockRecorder) UserGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGet", reflect.TypeOf((*MockDBHandler)(nil).UserGet), ctx, id)
-}
-
-// UserGetByUsername mocks base method.
-func (m *MockDBHandler) UserGetByUsername(ctx context.Context, username string) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserGetByUsername", ctx, username)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserGetByUsername indicates an expected call of UserGetByUsername.
-func (mr *MockDBHandlerMockRecorder) UserGetByUsername(ctx, username interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGetByUsername", reflect.TypeOf((*MockDBHandler)(nil).UserGetByUsername), ctx, username)
-}
-
-// UserGetFromDB mocks base method.
-func (m *MockDBHandler) UserGetFromDB(ctx context.Context, id uint64) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserGetFromDB", ctx, id)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserGetFromDB indicates an expected call of UserGetFromDB.
-func (mr *MockDBHandlerMockRecorder) UserGetFromDB(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).UserGetFromDB), ctx, id)
-}
-
-// UserGets mocks base method.
-func (m *MockDBHandler) UserGets(ctx context.Context) ([]*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserGets", ctx)
-	ret0, _ := ret[0].([]*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserGets indicates an expected call of UserGets.
-func (mr *MockDBHandlerMockRecorder) UserGets(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGets", reflect.TypeOf((*MockDBHandler)(nil).UserGets), ctx)
-}
-
-// UserSetToCache mocks base method.
-func (m *MockDBHandler) UserSetToCache(ctx context.Context, u *user.User) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserSetToCache", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserSetToCache indicates an expected call of UserSetToCache.
-func (mr *MockDBHandlerMockRecorder) UserSetToCache(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserSetToCache", reflect.TypeOf((*MockDBHandler)(nil).UserSetToCache), ctx, u)
-}
-
-// UserUpdateToCache mocks base method.
-func (m *MockDBHandler) UserUpdateToCache(ctx context.Context, id uint64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserUpdateToCache", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserUpdateToCache indicates an expected call of UserUpdateToCache.
-func (mr *MockDBHandlerMockRecorder) UserUpdateToCache(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).UserUpdateToCache), ctx, id)
 }

@@ -8,8 +8,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	users.POST("", usersPOST)
 	users.GET("", usersGET)
-	// users.GET("/:id", conferencesIDGET)
-	// users.DELETE("/:id", conferencesIDDELETE)
 }
 
 // RequestBodyUsersPOST is rquest body define for POST /users
