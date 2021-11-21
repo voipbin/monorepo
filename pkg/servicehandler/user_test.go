@@ -1,14 +1,14 @@
 package servicehandler
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestUserCreate(t *testing.T) {
@@ -18,33 +18,36 @@ func TestUserCreate(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
-	type test struct {
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	tests := []struct {
 		name string
 
 		userName string
 		userPass string
 		userPerm uint64
-	}
 
-	tests := []test{
+		res *umuser.User
+	}{
 		{
 			"normal",
-			"test username",
-			"test userpass",
+			"test1",
+			"test userpass 1",
 			uint64(user.PermissionNone),
+
+			&umuser.User{
+				Username:   "test1",
+				Permission: 0,
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-
-			mockDB.EXPECT().UserGetByUsername(gomock.Any(), tt.userName).Return(nil, fmt.Errorf("not found"))
-			mockDB.EXPECT().UserCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().UserGetByUsername(gomock.Any(), tt.userName)
+			mockReq.EXPECT().UMV1UserCreate(gomock.Any(), tt.userName, tt.userPass, tt.userPerm).Return(tt.res, nil)
 
 			_, err := h.UserCreate(tt.userName, tt.userPass, tt.userPerm)
 			if err != nil {

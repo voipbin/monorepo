@@ -1,11 +1,17 @@
 package user
 
+import (
+	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
+)
+
 // User data model
 type User struct {
 	// gorm.Model
-	ID           uint64 `json:"id"`       // User's ID
-	Username     string `json:"username"` // User's username
-	PasswordHash string `json:"-"`        // Hashed Password
+	ID       uint64 `json:"id"`       // User's ID
+	Username string `json:"username"` // User's username
+
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
 
 	Permission Permission `json:"permission"` // User's permission.
 
@@ -44,3 +50,20 @@ const (
 	PermissionNone  Permission = 0x0000
 	PermissionAdmin Permission = 0x0001
 )
+
+// ConvertUser returns user from umuser.User
+func ConvertUser(h *umuser.User) *User {
+	c := &User{
+		ID:         h.ID,
+		Username:   h.Username,
+		Name:       h.Name,
+		Detail:     h.Detail,
+		Permission: Permission(h.Permission),
+
+		TMCreate: h.TMCreate,
+		TMUpdate: h.TMUpdate,
+		TMDelete: h.TMDelete,
+	}
+
+	return c
+}
