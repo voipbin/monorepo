@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-playground/validator/v10 v10.5.0 // indirect
-	github.com/go-redis/redis/v8 v8.11.3
+	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.6.0
@@ -18,7 +18,7 @@ require (
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
@@ -42,7 +42,8 @@ require (
 
 require (
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211117045559-85c8d74244e2
-	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211117114033-62270bbca1ac
+	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211121161503-0c7085ff6e3c
+	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211121083714-46f6a29dcb8e
 )
 
 require (

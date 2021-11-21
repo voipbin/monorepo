@@ -14,16 +14,16 @@ import (
 func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
 	ctx := context.Background()
 
-	u, err := h.dbHandler.UserGetByUsername(ctx, username)
+	u, err := h.reqHandler.UMV1UserLogin(ctx, username, password)
 	if err != nil {
 		logrus.Warningf("Could not find userinfo. username: %s", username)
 		return "", err
 	}
 
-	if !checkHash(password, u.PasswordHash) {
-		logrus.Warningf("The password does not match. username: %s", username)
-		return "", fmt.Errorf("password does not match")
-	}
+	// if !checkHash(password, u.PasswordHash) {
+	// 	logrus.Warningf("The password does not match. username: %s", username)
+	// 	return "", fmt.Errorf("password does not match")
+	// }
 
 	serialized := u.Serialize()
 	token, err := middleware.GenerateToken(serialized)
