@@ -6,16 +6,16 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
+func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *call.Address) (*call.Call, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":        u.ID,
@@ -26,12 +26,12 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 	})
 
 	// parse source/destination
-	addrSrc := cmaddress.Address{
+	addrSrc := &cmaddress.Address{
 		Type:   cmaddress.Type(source.Type),
 		Target: source.Target,
 		Name:   source.Name,
 	}
-	addrDest := cmaddress.Address{
+	addrDest := &cmaddress.Address{
 		Type:   cmaddress.Type(destination.Type),
 		Target: destination.Target,
 		Name:   destination.Name,

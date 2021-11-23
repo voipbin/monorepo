@@ -21,7 +21,7 @@ require (
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
-	github.com/smotes/purse v1.0.1
+	github.com/smotes/purse v1.0.1 // indirect
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.3.0
 	github.com/swaggo/swag v1.7.0
@@ -42,7 +42,7 @@ require (
 
 require (
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211117045559-85c8d74244e2
-	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211121161503-0c7085ff6e3c
+	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211123154953-659b484a28d6
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211121083714-46f6a29dcb8e
 )
 
