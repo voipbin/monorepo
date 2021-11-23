@@ -57,9 +57,11 @@ const (
 
 // Address contains source/destination detail info.
 type Address struct {
-	Type   AddressType `json:"type"`   // Type of address. must be one of ["sip", "tel"].
-	Target string      `json:"target"` // Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
-	Name   string      `json:"name"`   // Name.
+	Type       AddressType `json:"type"`        // Type of address. must be one of ["sip", "tel"].
+	Target     string      `json:"target"`      // Target address. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
+	TargetName string      `json:"target_name"` // Target's shown name.
+	Name       string      `json:"name"`        // Name.
+	Detail     string      `json:"detail"`      // Detail.
 }
 
 // Status type

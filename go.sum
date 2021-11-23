@@ -564,6 +564,8 @@ gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210323024036-8c44f
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210323024036-8c44f8dca2de/go.mod h1:cnERbnMN9V4sqfuqGSI7IyLpnvQj2W7pi91oRD2M72A=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211121161503-0c7085ff6e3c h1:Vga3h19oSLMa/21mH2DJhjaAUM9OisYfwEryhFeyLGY=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211121161503-0c7085ff6e3c/go.mod h1:+KJ987y0qKCybP/xSVlY52/M5Tz9x4eIMj7LTnjyE7o=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211123154953-659b484a28d6 h1:oCjIZMLsRsDYhKd58pyf2gY+27ZLZD/VKr3sEuFzRd4=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211123154953-659b484a28d6/go.mod h1:+KJ987y0qKCybP/xSVlY52/M5Tz9x4eIMj7LTnjyE7o=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210409195628-27c9b796b068 h1:89Zwm7FTsZREqWCi14XUcaQf/cQiEP6ijyz+CiqPHjY=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210409195628-27c9b796b068/go.mod h1:OmmzOIFyIwjplHcmQVxndP/9ckf33tzikZRljJLjLOM=
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210926125509-0133dd6b7146 h1:stpWGDUI63F+E/K/7sJID2DEbyRqqj2cSJiRbuzavpc=

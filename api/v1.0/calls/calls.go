@@ -50,7 +50,7 @@ func callsPOST(c *gin.Context) {
 	}
 
 	// create call
-	res, err := serviceHandler.CallCreate(&u, flow.ID, requestBody.Source, requestBody.Destination)
+	res, err := serviceHandler.CallCreate(&u, flow.ID, &requestBody.Source, &requestBody.Destination)
 	if err != nil {
 		logrus.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)

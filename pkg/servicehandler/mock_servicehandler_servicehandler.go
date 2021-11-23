@@ -76,7 +76,7 @@ func (mr *MockServiceHandlerMockRecorder) AvailableNumberGets(u, size, countryCo
 }
 
 // CallCreate mocks base method.
-func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error) {
+func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *call.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallCreate", u, flowID, source, destination)
 	ret0, _ := ret[0].(*call.Call)

@@ -36,7 +36,7 @@ type ServiceHandler interface {
 	AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error)
 
 	// call handlers
-	CallCreate(u *user.User, flowID uuid.UUID, source, destination call.Address) (*call.Call, error)
+	CallCreate(u *user.User, flowID uuid.UUID, source, destination *call.Address) (*call.Call, error)
 	CallGet(u *user.User, callID uuid.UUID) (*call.Call, error)
 	CallGets(u *user.User, size uint64, token string) ([]*call.Call, error)
 	CallDelete(u *user.User, callID uuid.UUID) error
