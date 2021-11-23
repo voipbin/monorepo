@@ -54,14 +54,14 @@ func TestCreateCallOutgoing(t *testing.T) {
 			1,
 			uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
 			address.Address{
-				Type:   address.TypeSIP,
-				Name:   "test",
-				Target: "testsrc@test.com",
+				Type:       address.TypeSIP,
+				Target:     "testsrc@test.com",
+				TargetName: "test",
 			},
 			address.Address{
-				Type:   address.TypeSIP,
-				Name:   "test target",
-				Target: "testoutgoing@test.com",
+				Type:       address.TypeSIP,
+				Target:     "testoutgoing@test.com",
+				TargetName: "test target",
 			},
 
 			&activeflow.ActiveFlow{
@@ -78,14 +78,14 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Status:    call.StatusDialing,
 				Direction: call.DirectionOutgoing,
 				Source: address.Address{
-					Type:   address.TypeSIP,
-					Name:   "test",
-					Target: "testsrc@test.com",
+					Type:       address.TypeSIP,
+					Target:     "testsrc@test.com",
+					TargetName: "test",
 				},
 				Destination: address.Address{
-					Type:   address.TypeSIP,
-					Name:   "test target",
-					Target: "testoutgoing@test.com",
+					Type:       address.TypeSIP,
+					Target:     "testoutgoing@test.com",
+					TargetName: "test target",
 				},
 				Action: action.Action{
 					ID: action.IDStart,
@@ -103,14 +103,14 @@ func TestCreateCallOutgoing(t *testing.T) {
 			1,
 			uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
 			address.Address{
-				Type:   address.TypeTel,
-				Name:   "test",
-				Target: "+99999888",
+				Type:       address.TypeTel,
+				Target:     "+99999888",
+				TargetName: "test",
 			},
 			address.Address{
-				Type:   address.TypeTel,
-				Name:   "test target",
-				Target: "+123456789",
+				Type:       address.TypeTel,
+				Target:     "+123456789",
+				TargetName: "test target",
 			},
 
 			&activeflow.ActiveFlow{
@@ -127,14 +127,14 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Status:    call.StatusDialing,
 				Direction: call.DirectionOutgoing,
 				Source: address.Address{
-					Type:   address.TypeTel,
-					Name:   "test",
-					Target: "+99999888",
+					Type:       address.TypeTel,
+					Target:     "+99999888",
+					TargetName: "test",
 				},
 				Destination: address.Address{
-					Type:   address.TypeTel,
-					Name:   "test target",
-					Target: "+123456789",
+					Type:       address.TypeTel,
+					Target:     "+123456789",
+					TargetName: "test target",
 				},
 				Action: action.Action{
 					ID: action.IDStart,
@@ -153,14 +153,14 @@ func TestCreateCallOutgoing(t *testing.T) {
 			1,
 			uuid.FromStringOrNil("4394ad24-8304-11eb-b397-ff7bf34c829f"),
 			address.Address{
-				Type:   address.TypeTel,
-				Name:   "test",
-				Target: "+99999888",
+				Type:       address.TypeTel,
+				Target:     "+99999888",
+				TargetName: "test",
 			},
 			address.Address{
-				Type:   address.TypeTel,
-				Name:   "test target",
-				Target: "+123456789",
+				Type:       address.TypeTel,
+				Target:     "+123456789",
+				TargetName: "test target",
 			},
 
 			&activeflow.ActiveFlow{
@@ -179,14 +179,14 @@ func TestCreateCallOutgoing(t *testing.T) {
 				Direction:  call.DirectionOutgoing,
 				WebhookURI: "https://test.com/wwasdd",
 				Source: address.Address{
-					Type:   address.TypeTel,
-					Name:   "test",
-					Target: "+99999888",
+					Type:       address.TypeTel,
+					Target:     "+99999888",
+					TargetName: "test",
 				},
 				Destination: address.Address{
-					Type:   address.TypeTel,
-					Name:   "test target",
-					Target: "+123456789",
+					Type:       address.TypeTel,
+					Target:     "+123456789",
+					TargetName: "test target",
 				},
 				Action: action.Action{
 					ID: action.IDStart,
