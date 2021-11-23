@@ -7,9 +7,11 @@ import (
 
 // Address contains source/destination detail info.
 type Address struct {
-	Type   Type   `json:"type"`   // type of address
-	Target string `json:"target"` // parsed destination
-	Name   string `json:"name"`   // parsed name
+	Type       Type   `json:"type"`        // type of address
+	Target     string `json:"target"`      // address endpoint
+	TargetName string `json:"target_name"` // address's name.
+	Name       string `json:"name"`        // parsed name
+	Detail     string `json:"detail"`
 }
 
 // Type type
@@ -24,9 +26,9 @@ const (
 // CreateAddressByChannelSource creates and return the Address using channel's source.
 func CreateAddressByChannelSource(cn *channel.Channel) *Address {
 	r := &Address{
-		Type:   TypeTel,
-		Target: cn.SourceNumber,
-		Name:   cn.SourceName,
+		Type:       TypeTel,
+		Target:     cn.SourceNumber,
+		TargetName: cn.SourceName,
 	}
 	return r
 }
@@ -34,9 +36,9 @@ func CreateAddressByChannelSource(cn *channel.Channel) *Address {
 // CreateAddressByChannelDestination creates and return the Address using channel's destination.
 func CreateAddressByChannelDestination(cn *channel.Channel) *Address {
 	r := &Address{
-		Type:   TypeTel,
-		Target: cn.DestinationNumber,
-		Name:   cn.DestinationName,
+		Type:       TypeTel,
+		Target:     cn.DestinationNumber,
+		TargetName: cn.DestinationName,
 	}
 	return r
 }
@@ -44,9 +46,9 @@ func CreateAddressByChannelDestination(cn *channel.Channel) *Address {
 // ParseAddressByCallerID parsing the ari's CallerID and returns Address
 func ParseAddressByCallerID(e *ari.CallerID) *Address {
 	r := &Address{
-		Type:   TypeTel,
-		Target: e.Number,
-		Name:   e.Name,
+		Type:       TypeTel,
+		Target:     e.Number,
+		TargetName: e.Name,
 	}
 
 	return r

@@ -91,7 +91,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, user
 	if source.Type == address.TypeTel {
 		endpointSrc = source.Target
 	} else {
-		endpointSrc = fmt.Sprintf("\"%s\" <sip:%s>", source.Name, source.Target)
+		endpointSrc = fmt.Sprintf("\"%s\" <sip:%s>", source.TargetName, source.Target)
 	}
 
 	// set app args

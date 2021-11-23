@@ -22,9 +22,9 @@ func TestParseAddressByCallerID(t *testing.T) {
 				Number: "123456789",
 			},
 			&Address{
-				Type:   TypeTel,
-				Target: "123456789",
-				Name:   "test",
+				Type:       TypeTel,
+				Target:     "123456789",
+				TargetName: "test",
 			},
 		},
 		{
