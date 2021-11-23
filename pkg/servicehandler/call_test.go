@@ -8,11 +8,11 @@ import (
 	"github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestCallCreate(t *testing.T) {
@@ -26,8 +26,8 @@ func TestCallCreate(t *testing.T) {
 		name        string
 		user        *user.User
 		flowID      uuid.UUID
-		source      call.Address
-		destination call.Address
+		source      *call.Address
+		destination *call.Address
 		cmCall      *cmcall.Call
 		expectCall  call.Call
 	}
@@ -39,11 +39,11 @@ func TestCallCreate(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-			call.Address{
+			&call.Address{
 				Type:   call.AddressTypeSIP,
 				Target: "testsource@test.com",
 			},
-			call.Address{
+			&call.Address{
 				Type:   call.AddressTypeSIP,
 				Target: "testdestination@test.com",
 			},
@@ -102,7 +102,7 @@ func TestCallCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CMV1CallCreate(gomock.Any(), tt.user.ID, tt.flowID, tt.cmCall.Source, tt.cmCall.Destination).Return(tt.cmCall, nil)
+			mockReq.EXPECT().CMV1CallCreate(gomock.Any(), tt.user.ID, tt.flowID, &tt.cmCall.Source, &tt.cmCall.Destination).Return(tt.cmCall, nil)
 
 			res, err := h.CallCreate(tt.user, tt.flowID, tt.source, tt.destination)
 			if err != nil {
