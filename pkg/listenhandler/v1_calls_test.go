@@ -414,6 +414,7 @@ func TestProcessV1CallsPost(t *testing.T) {
 	type test struct {
 		name      string
 		call      *call.Call
+		callID    uuid.UUID
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
 	}
@@ -428,6 +429,7 @@ func TestProcessV1CallsPost(t *testing.T) {
 				Source:      address.Address{},
 				Destination: address.Address{},
 			},
+			uuid.Nil,
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
@@ -453,6 +455,7 @@ func TestProcessV1CallsPost(t *testing.T) {
 				},
 				Destination: address.Address{},
 			},
+			uuid.Nil,
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
@@ -482,6 +485,7 @@ func TestProcessV1CallsPost(t *testing.T) {
 					Name:   "test_destination",
 				},
 			},
+			uuid.Nil,
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
@@ -494,12 +498,46 @@ func TestProcessV1CallsPost(t *testing.T) {
 				Data:       []byte(`{"id":"09b84a24-f3a9-11ea-80f6-d7e6af125065","user_id":1,"asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"sip","target":"test_source@127.0.0.1:5061","target_name":"","name":"test_source","detail":""},"destination":{"type":"sip","target":"test_destination@127.0.0.1:5061","target_name":"","name":"test_destination","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
 			},
 		},
+		{
+			"call_id given",
+			&call.Call{
+				ID:     uuid.FromStringOrNil("0f6a5396-4d16-11ec-8b94-c7eb75f79860"),
+				UserID: 1,
+				FlowID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+				Source: address.Address{
+					Type:   address.TypeSIP,
+					Target: "test_source@127.0.0.1:5061",
+					Name:   "test_source",
+				},
+				Destination: address.Address{
+					Type:   address.TypeSIP,
+					Target: "test_destination@127.0.0.1:5061",
+					Name:   "test_destination",
+				},
+			},
+			uuid.FromStringOrNil("0f6a5396-4d16-11ec-8b94-c7eb75f79860"),
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id": "0f6a5396-4d16-11ec-8b94-c7eb75f79860", "user_id": 1, "flow_id": "00000000-0000-0000-0000-000000000000","source": {"type": "sip","target": "test_source@127.0.0.1:5061","name": "test_source"},"destination": {"type": "sip","target": "test_destination@127.0.0.1:5061","name": "test_destination"}}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0f6a5396-4d16-11ec-8b94-c7eb75f79860","user_id":1,"asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"sip","target":"test_source@127.0.0.1:5061","target_name":"","name":"test_source","detail":""},"destination":{"type":"sip","target":"test_destination@127.0.0.1:5061","target_name":"","name":"test_destination","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), gomock.Any(), tt.call.UserID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			if tt.callID != uuid.Nil {
+				mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.call.UserID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			} else {
+				mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), gomock.Any(), tt.call.UserID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

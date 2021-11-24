@@ -2,15 +2,16 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // V1DataCallsPost is
 // v1 data type request struct for
 // /v1/calls POST
 type V1DataCallsPost struct {
+	ID          uuid.UUID       `json:"id"`
 	FlowID      uuid.UUID       `json:"flow_id"`
 	UserID      uint64          `json:"user_id"`
 	Source      address.Address `json:"source"`
