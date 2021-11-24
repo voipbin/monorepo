@@ -14,7 +14,133 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
+
+func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &callHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotfiy,
+	}
+
+	type test struct {
+		name    string
+		channel *channel.Channel
+		call    *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal answer",
+			&channel.Channel{
+				ID:       "31384bbc-dd97-11ea-9e42-433e5113c783",
+				Data:     map[string]interface{}{},
+				State:    ari.ChannelStateUp,
+				Type:     channel.TypeCall,
+				TMAnswer: "2020-05-02 20:56:51.498",
+			},
+			&call.Call{
+				ID:     uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				Status: call.StatusRinging,
+			},
+		},
+		{
+			"update answer from dialing",
+			&channel.Channel{
+				ID:       "849f1e92-4d40-11ec-b40a-739fbc078d18",
+				Data:     map[string]interface{}{},
+				State:    ari.ChannelStateUp,
+				Type:     channel.TypeCall,
+				TMAnswer: "2020-05-02 20:56:51.498",
+			},
+			&call.Call{
+				ID:     uuid.FromStringOrNil("84e77160-4d40-11ec-aa31-8b1d57a189d0"),
+				Status: call.StatusDialing,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+
+			mockNotfiy.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallAnswered, tt.call.WebhookURI, tt.call)
+
+			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any())
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestARIChannelStateChangeStatusRinging(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &callHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotfiy,
+	}
+
+	type test struct {
+		name    string
+		channel *channel.Channel
+		call    *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal ringing",
+			&channel.Channel{
+				ID:        "31384bbc-dd97-11ea-9e42-433e5113c783",
+				Data:      map[string]interface{}{},
+				State:     ari.ChannelStateRing,
+				Type:      channel.TypeCall,
+				TMRinging: "2020-05-02 20:56:51.498",
+			},
+			&call.Call{
+				ID:     uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				Status: call.StatusDialing,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusRinging, tt.channel.TMRinging)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+
+			mockNotfiy.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallRinging, tt.call.WebhookURI, tt.call)
+
+			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
 
 func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 	mc := gomock.NewController(t)
