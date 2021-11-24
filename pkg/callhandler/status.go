@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -13,54 +13,62 @@ import (
 
 // updateStatusRinging updates the call's status to ringing
 func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Channel, c *call.Call) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "updateStatusRinging",
+		"call_id":    c.ID,
+		"old_status": c.Status,
+		"new_status": call.StatusRinging,
+	})
 
 	// check status is updatable
 	if !call.IsUpdatableStatus(c.Status, call.StatusRinging) {
-		log.WithFields(log.Fields{
-			"call_id":    c.ID,
-			"old_status": c.Status,
-			"new_status": call.StatusRinging,
-		}).Infof("The status is not updatable.")
+		log.Infof("The status is not updatable.")
 		return fmt.Errorf("status change is not possible. call: %s, old_status: %s, new_status: %s", c.ID, c.Status, call.StatusRinging)
 	}
 
 	// update status
 	if err := h.db.CallSetStatus(ctx, c.ID, call.StatusRinging, cn.TMRinging); err != nil {
+		log.Errorf("Could not update the call status. err: %v", err)
 		return err
 	}
 
 	res, err := h.db.CallGet(ctx, c.ID)
 	if err != nil {
+		log.Errorf("Could not get updated call info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallUpdated, res.WebhookURI, res)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallRinging, res.WebhookURI, res)
 
 	return nil
 }
 
 // updateStatusProgressing updates the call's status to progressing and does required actions.
 func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.Channel, c *call.Call) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "updateStatusProgressing",
+		"call_id":    c.ID,
+		"old_status": c.Status,
+		"new_status": call.StatusProgressing,
+	})
 
 	// check status is updatable
 	if !call.IsUpdatableStatus(c.Status, call.StatusProgressing) {
-		log.WithFields(log.Fields{
-			"call_id":    c.ID,
-			"old_status": c.Status,
-			"new_status": call.StatusProgressing,
-		}).Infof("The status is not updatable.")
+		log.Infof("The status is not updatable.")
 		return fmt.Errorf("status change is not possible. call: %s, old_status: %s, new_status: %s", c.ID, c.Status, call.StatusProgressing)
 	}
 
 	// update status
 	if err := h.db.CallSetStatus(ctx, c.ID, call.StatusProgressing, cn.TMAnswer); err != nil {
+		log.Errorf("Could not update the call status. err: %v", err)
 		return err
 	}
 
 	res, err := h.db.CallGet(ctx, c.ID)
 	if err != nil {
+		log.Errorf("Could not get updated call info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallUpdated, res.WebhookURI, res)
+	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallAnswered, res.WebhookURI, res)
 
 	if c.Direction == call.DirectionIncoming {
 		// nothing to do with incoming call at here.

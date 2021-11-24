@@ -27,9 +27,11 @@ type EventType string
 // list of event types
 const (
 	// call
-	EventTypeCallCreated EventType = "call_created"
-	EventTypeCallUpdated EventType = "call_updated"
-	EventTypeCallHungup  EventType = "call_hungup"
+	EventTypeCallCreated  EventType = "call_created"
+	EventTypeCallUpdated  EventType = "call_updated"
+	EventTypeCallRinging  EventType = "call_ringing"
+	EventTypeCallAnswered EventType = "call_answered"
+	EventTypeCallHungup   EventType = "call_hungup"
 
 	// confbridge
 	EventTypeConfbridgeCreated EventType = "confbridge_created"
