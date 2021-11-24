@@ -104,7 +104,13 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 	if len(uriItems) < 3 {
 		return simpleResponse(400), nil
 	}
-	log := logrus.WithField("func", "processV1CallsPost")
+
+	// generate call id.
+	id := uuid.Must(uuid.NewV4())
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
 	log.Debug("Executing processV1CallsPost.")
 
 	var reqData request.V1DataCallsPost
@@ -114,20 +120,11 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"id":          reqData.ID,
 		"user":        reqData.UserID,
 		"flow":        reqData.FlowID,
 		"source":      reqData.Source,
 		"destination": reqData.Destination,
 	})
-
-	// check id.
-	id := reqData.ID
-	if id == uuid.Nil {
-		id = uuid.Must(uuid.NewV4())
-		log.Debugf("Invalid call id. Generated a new call id. call_id: %s", id)
-	}
-	log = log.WithField("id", id)
 
 	log.Debug("Creating outgoing call.")
 	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
