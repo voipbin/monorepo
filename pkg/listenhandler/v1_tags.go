@@ -1,0 +1,207 @@
+package listenhandler
+
+import (
+	"context"
+	"encoding/json"
+	"net/url"
+	"strconv"
+	"strings"
+
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler/models/request"
+)
+
+// processV1TagsGet handles GET /v1/tags request
+func (h *listenHandler) processV1TagsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the pagination params
+	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := u.Query().Get(PageToken)
+
+	// get user_id
+	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
+	userID := uint64(tmpUserID)
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processV1TagsGet",
+		"user":  userID,
+		"size":  pageSize,
+		"token": pageToken,
+	})
+
+	tmp, err := h.tagHandler.Gets(ctx, userID, pageSize, pageToken)
+	if err != nil {
+		log.Errorf("Could not get tags info. err:%v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1TagsIDGet handles Get /v1/tags/<tag-id> request
+func (h *listenHandler) processV1TagsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":   "processV1TagsIDGet",
+			"tag_id": id,
+		})
+	log.Debug("Executing processV1TagsIDGet.")
+
+	tmp, err := h.tagHandler.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get an tag info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1TagsIDPut handles Put /v1/tags/<tag-id> request
+func (h *listenHandler) processV1TagsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":   "processV1TagsIDPut",
+			"tag_id": id,
+		})
+	log.Debug("Executing processV1TagsIDPut.")
+
+	var reqData request.V1DataTagsIDPut
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+	log.WithField("request", reqData).Debug("Updating the tag.")
+
+	if err := h.tagHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail); err != nil {
+		log.Errorf("Could not update the tag info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
+// processV1TagPost handles Post /v1/tags request
+func (h *listenHandler) processV1TagsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1TagPost",
+		})
+	log.Debug("Executing processV1TagPost.")
+
+	var reqData request.V1DataTagsPost
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+	log = log.WithFields(logrus.Fields{
+		"user_id": reqData.UserID,
+	})
+	log.WithField("request", reqData).Debug("Creating a tag.")
+
+	// create an agent
+	tmp, err := h.tagHandler.Create(
+		ctx,
+		reqData.UserID,
+		reqData.Name,
+		reqData.Detail,
+	)
+	if err != nil {
+		log.Errorf("Could not create a tag info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1TagsIDDelete handles Delete /v1/tag/<tag_id> request
+func (h *listenHandler) processV1TagsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":   "processV1TagsIDDelete",
+			"tag_id": id,
+		})
+	log.Debug("Executing processV1TagsIDDelete.")
+
+	if err := h.tagHandler.Delete(ctx, id); err != nil {
+		log.Errorf("Could not delete the tag info. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
