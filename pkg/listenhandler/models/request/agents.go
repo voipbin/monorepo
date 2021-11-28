@@ -65,6 +65,13 @@ type V1DataAgentsIDTagIDsPut struct {
 	TagIDs []uuid.UUID `json:"tag_ids"`
 }
 
+// V1DataAgentsIDStatusPut is
+// v1 data type request struct for
+// /v1/agents/<agent-id>/status PUT
+type V1DataAgentsIDStatusPut struct {
+	Status string `json:"status"`
+}
+
 // V1DataAgentsIDDialPost is
 // v1 data type request struct for
 // /v1/agents/<agent-id>/dial PUT

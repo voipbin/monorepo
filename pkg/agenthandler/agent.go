@@ -193,7 +193,7 @@ func (h *agentHandler) AgentLogin(ctx context.Context, userID uint64, username, 
 }
 
 // AgentUpdateBasicInfo updates the agent's basic info.
-func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) ( error) {
+func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AgentUpdateBasicInfo",
 		"agent_id":     id,
@@ -205,11 +205,10 @@ func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, n
 	err := h.db.AgentSetBasicInfo(ctx, id, name, detail, ringMethod)
 	if err != nil {
 		log.Errorf("Could not update the name and detail. err: %v", err)
-		return  err
+		return err
 	}
 
-
-	return  nil
+	return nil
 }
 
 // AgentUpdatePassword updates the agent's password.
@@ -272,10 +271,26 @@ func (h *agentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, a
 		"func":     "AgentUpdateAddresses",
 		"agent_id": id,
 	})
-	log.Debug("Updating the agent tag.")
+	log.Debug("Updating the agent's addresses.")
 
 	if err := h.db.AgentSetAddresses(ctx, id, addresses); err != nil {
-		log.Errorf("Could not set the tags. err: %v", err)
+		log.Errorf("Could not set the addresses. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// AgentUpdateStatus updates the agent's status.
+func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "AgentUpdateStatus",
+		"agent_id": id,
+	})
+	log.Debug("Updating the agent's status.")
+
+	if err := h.db.AgentSetStatus(ctx, id, status); err != nil {
+		log.Errorf("Could not set the status. err: %v", err)
 		return err
 	}
 

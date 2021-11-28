@@ -226,6 +226,20 @@ func (mr *MockAgentHandlerMockRecorder) AgentUpdatePermission(ctx, id, permissio
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdatePermission", reflect.TypeOf((*MockAgentHandler)(nil).AgentUpdatePermission), ctx, id, permission)
 }
 
+// AgentUpdateStatus mocks base method.
+func (m *MockAgentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentUpdateStatus", ctx, id, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AgentUpdateStatus indicates an expected call of AgentUpdateStatus.
+func (mr *MockAgentHandlerMockRecorder) AgentUpdateStatus(ctx, id, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdateStatus", reflect.TypeOf((*MockAgentHandler)(nil).AgentUpdateStatus), ctx, id, status)
+}
+
 // AgentUpdateTagIDs mocks base method.
 func (m *MockAgentHandler) AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error {
 	m.ctrl.T.Helper()
