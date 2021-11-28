@@ -41,6 +41,7 @@ type AgentHandler interface {
 	AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error
 	AgentUpdatePassword(ctx context.Context, id uuid.UUID, username, password string) error
 	AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) error
+	AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) error
 	AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error
 
 	AgentCallAnswered(ctx context.Context, c *cmcall.Call) error
