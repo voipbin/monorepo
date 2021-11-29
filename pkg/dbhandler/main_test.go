@@ -1,9 +1,5 @@
 package dbhandler
 
-import (
-	_ "github.com/mattn/go-sqlite3"
-)
-
 // var dbTest *sql.DB = nil // database for test
 
 // func TestMain(m *testing.M) {
