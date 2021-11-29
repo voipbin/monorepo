@@ -280,7 +280,7 @@ func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *ra
 // processV1AgentsIDPut handles Post /v1/agents/<agent_id> request
 func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 5 {
+	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 

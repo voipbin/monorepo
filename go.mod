@@ -15,7 +15,7 @@ require (
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20211124163836-60c527d08a1d
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211116051551-e1a031ee1bbd
-	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211128065312-1d5d6d0cd7b6
+	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211129061343-f7e10d6f7bab
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
 )
 
@@ -35,7 +35,7 @@ require (
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210926124500-ba74a1b88236 // indirect
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210926125509-0133dd6b7146 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210926124840-54f19990bf19 // indirect
-	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211123175237-2f000c6f32eb // indirect
+	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211128235458-e1dd5c7ad1be // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2 // indirect
 	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 // indirect

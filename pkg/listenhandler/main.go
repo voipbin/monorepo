@@ -201,7 +201,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1AgentsIDDelete(ctx, m)
 		requestType = "/v1/agents"
 
-	// PUT /agents
+	// PUT /agents/<agent-id>
 	case regV1AgentsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1AgentsIDPut(ctx, m)
 		requestType = "/v1/agents"
