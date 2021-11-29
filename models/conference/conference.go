@@ -52,8 +52,8 @@ const (
 	StatusTerminated  Status = "terminated"
 )
 
-// Convert returns conference.Conference from cfconference.Conference
-func Convert(conf *cfconference.Conference) *Conference {
+// ConvertToConference returns conference.Conference from cfconference.Conference
+func ConvertToConference(conf *cfconference.Conference) *Conference {
 
 	preActions := []action.Action{}
 	for _, a := range conf.PreActions {

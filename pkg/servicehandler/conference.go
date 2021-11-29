@@ -14,6 +14,34 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
+// conferenceGet vaildates the user's ownership and returns the conference info.
+func (h *serviceHandler) conferenceGet(ctx context.Context, u *user.User, id uuid.UUID) (*conference.Conference, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "conferenceGet",
+			"user_id":       u.ID,
+			"conference_id": id,
+		},
+	)
+
+	// send request
+	tmp, err := h.reqHandler.CFV1ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get the conference. err: %v", err)
+		return nil, err
+	}
+	log.WithField("conference", tmp).Debug("Received result.")
+
+	if u.Permission != user.PermissionAdmin && u.ID != tmp.UserID {
+		log.Info("The user has no permission for this conference.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// create result
+	res := conference.ConvertToConference(tmp)
+	return res, nil
+}
+
 // ConferenceGet gets the conference.
 // It returns conference info if it succeed.
 func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error) {
@@ -26,20 +54,13 @@ func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.
 	log.Debugf("Get conference. conference: %s", id)
 
 	// get conference
-	res, err := h.reqHandler.CFV1ConferenceGet(ctx, id)
+	res, err := h.conferenceGet(ctx, u, id)
 	if err != nil {
-		log.Infof("Could not get calls info. err: %v", err)
+		log.Infof("Could not get conference info. err: %v", err)
 		return nil, err
 	}
-	c := conference.Convert(res)
 
-	// check permission
-	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
-		log.Info("The user has no permission for this conference.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	return c, nil
+	return res, nil
 }
 
 // ConferenceGets gets the list of conference.
@@ -67,7 +88,7 @@ func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string)
 	// create result
 	res := []*conference.Conference{}
 	for _, tmp := range tmps {
-		c := conference.Convert(&tmp)
+		c := conference.ConvertToConference(&tmp)
 		res = append(res, c)
 	}
 
@@ -115,7 +136,7 @@ func (h *serviceHandler) ConferenceCreate(
 		return nil, err
 	}
 
-	res := conference.Convert(conf)
+	res := conference.ConvertToConference(conf)
 	return res, nil
 }
 
@@ -130,17 +151,11 @@ func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error 
 		},
 	)
 
-	// get conference
-	cf, err := h.reqHandler.CFV1ConferenceGet(ctx, confID)
+	// get conference for ownership check
+	_, err := h.conferenceGet(ctx, u, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return err
-	}
-
-	// check onwer
-	if cf.UserID != u.ID {
-		log.Error("The user does not have permission to delete this conference.")
-		return fmt.Errorf("%s", "not owned conference")
 	}
 
 	// destroy
@@ -165,17 +180,11 @@ func (h *serviceHandler) ConferenceKick(u *user.User, confID uuid.UUID, callID u
 		},
 	)
 
-	// get conference
-	cf, err := h.reqHandler.CFV1ConferenceGet(ctx, confID)
+	// get conference for ownership check
+	_, err := h.conferenceGet(ctx, u, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return err
-	}
-
-	// check owner
-	if cf.UserID != u.ID {
-		log.Error("The user does not have permission to delete this conference.")
-		return fmt.Errorf("%s", "not owned conference")
 	}
 
 	// kick the call from the conference
