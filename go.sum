@@ -582,6 +582,8 @@ gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211124143610-2eaaf09
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211124143610-2eaaf09440f3/go.mod h1:/67TjlE3OdQoJR8kFT9E+PgA+wteT8pS1veAhg2RgwM=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211128065312-1d5d6d0cd7b6 h1:iJRxuzA0KNt4MtdPSLXn37VEn6+HPsYc3R6oxgT9y3s=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211128065312-1d5d6d0cd7b6/go.mod h1:FRRNCSInVMXDNn1q1dNTH2ZalWr5t0Deafn0qXZF8w8=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211129061343-f7e10d6f7bab h1:Gj6vfPx9vr5H02i5jPebEbnPh1s5ojnXByTTgbqXbUg=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211129061343-f7e10d6f7bab/go.mod h1:pUZnvE0NelN4TQ7usS9qIQE6v0M/T4Vfzn7qmXzDEeU=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210323024331-0732164cf894/go.mod h1:1C5Z8qL/xDt+KzNu0WYAitV7Qi2vxKTC4df1ehxOQ4I=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210408192237-4079c56261c5/go.mod h1:3jy5mdMg2QBL2UPLKBSF4qOf26ZdLxVUN9YuksXXHnI=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210409195628-27c9b796b068/go.mod h1:OmmzOIFyIwjplHcmQVxndP/9ckf33tzikZRljJLjLOM=
@@ -598,6 +600,8 @@ gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210926124840-54f19990bf1
 gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211121083714-46f6a29dcb8e/go.mod h1:3dicaWnwQj+iNqVStfBHF1UIqWwPE3Ng+ApeC/Yy4eI=
 gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211123175237-2f000c6f32eb h1:j8u2YUfH+pd/9RiZEC8Z+hMciZKax9yp2ZcJAUJTCOg=
 gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211123175237-2f000c6f32eb/go.mod h1:Yolv/9/29qJIVpZdaygqUyApIUX7h9vLBD8b570wcPg=
+gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211128235458-e1dd5c7ad1be h1:7pFPnL358ukAfjEfY18oJ0sfyVN1lJDMil4SrfZ8wlk=
+gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211128235458-e1dd5c7ad1be/go.mod h1:haRX22sAFp1R9OWoN+amnL24pIHs6KdT2BgtpxxayAw=
 gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210410172355-d1894606b9df/go.mod h1:EK3tII9+SXxX3o2ekPyDeiNVRHv4JSyxdal0sLmvODM=
 gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210909052905-558ef2d8332e/go.mod h1:xHaiZammTUG74b3YrSeQtb6UD70gNuqEXZrgqNU2508=
 gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2 h1:8JqKuv3XT2VQuf3e/SYU/ec9qgUt9Ehe6hchYXsU12A=

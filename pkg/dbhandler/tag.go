@@ -153,7 +153,7 @@ func (h *handler) TagGets(ctx context.Context, userID uint64, size uint64, token
 
 // TagCreate creates new tag record and returns the created tag record.
 func (h *handler) TagCreate(ctx context.Context, a *tag.Tag) error {
-	q := `insert into tag(
+	q := `insert into tags(
 		id,
 		user_id,
 
@@ -196,7 +196,7 @@ func (h *handler) TagSetBasicInfo(ctx context.Context, id uuid.UUID, name, detai
 	// prepare
 	q := `
 	update
-		tag
+		tags
 	set
 		name = ?,
 		detail = ?,
@@ -220,7 +220,7 @@ func (h *handler) TagDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
-		tag
+		tags
 	set
 		tm_update = ?,
 		tm_delete = ?

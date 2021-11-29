@@ -111,6 +111,7 @@ func (h *agentHandler) AgentCreate(ctx context.Context, userID uint64, username,
 
 	if ringMethod != agent.RingMethodRingAll {
 		log.Errorf("Unsupported ring method. Currently, support ringall only. ringMethod: %s", ringMethod)
+		return nil, fmt.Errorf("wrong ring_method")
 	}
 
 	// generate hash password

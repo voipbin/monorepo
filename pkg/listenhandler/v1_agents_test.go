@@ -723,6 +723,72 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 	}
 }
 
+func TestProcessV1AgentsIDPut(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:   mockSock,
+		db:           mockDB,
+		reqHandler:   mockReq,
+		agentHandler: mockAgent,
+	}
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id         uuid.UUID
+		agentName  string
+		detail     string
+		ringMethod agent.RingMethod
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"name1","detail":"detail1","ring_method":"ringall"}`),
+			},
+
+			uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+			"name1",
+			"detail1",
+			agent.RingMethodRingAll,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockAgent.EXPECT().AgentUpdateBasicInfo(gomock.Any(), tt.id, tt.agentName, tt.detail, tt.ringMethod).Return(nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
 func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
