@@ -16,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -50,12 +51,12 @@ func TestCallsPOST(t *testing.T) {
 				ID: 1,
 			},
 			request.BodyCallsPOST{
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: address.Address{
+					Type:   address.TypeSIP,
 					Target: "source@test.voipbin.net",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeSIP,
+				Destination: address.Address{
+					Type:   address.TypeSIP,
 					Target: "destination@test.voipbin.net",
 				},
 				Actions: []action.Action{},
@@ -80,12 +81,12 @@ func TestCallsPOST(t *testing.T) {
 			},
 			request.BodyCallsPOST{
 				WebhookURI: "https://test.com/webhook",
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: address.Address{
+					Type:   address.TypeSIP,
 					Target: "source@test.voipbin.net",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeSIP,
+				Destination: address.Address{
+					Type:   address.TypeSIP,
 					Target: "destination@test.voipbin.net",
 				},
 				Actions: []action.Action{},

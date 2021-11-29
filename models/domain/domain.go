@@ -21,8 +21,8 @@ type Domain struct {
 
 }
 
-// ConvertDomain returns converted data from rmdomain.Domain to domain.Domain
-func ConvertDomain(f *rmdomain.Domain) *Domain {
+// ConvertToDomain returns converted data from rmdomain.Domain to domain.Domain
+func ConvertToDomain(f *rmdomain.Domain) *Domain {
 
 	res := &Domain{
 		ID:     f.ID,

@@ -10,6 +10,7 @@ import (
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -26,8 +27,8 @@ func TestCallCreate(t *testing.T) {
 		name        string
 		user        *user.User
 		flowID      uuid.UUID
-		source      *call.Address
-		destination *call.Address
+		source      *address.Address
+		destination *address.Address
 		cmCall      *cmcall.Call
 		expectCall  call.Call
 	}
@@ -39,12 +40,12 @@ func TestCallCreate(t *testing.T) {
 				ID: 1,
 			},
 			uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-			&call.Address{
-				Type:   call.AddressTypeSIP,
+			&address.Address{
+				Type:   address.TypeSIP,
 				Target: "testsource@test.com",
 			},
-			&call.Address{
-				Type:   call.AddressTypeSIP,
+			&address.Address{
+				Type:   address.TypeSIP,
 				Target: "testdestination@test.com",
 			},
 			&cmcall.Call{
@@ -78,12 +79,12 @@ func TestCallCreate(t *testing.T) {
 				ConfID: uuid.Nil,
 				Type:   call.TypeFlow,
 
-				Source: call.Address{
-					Type:   call.AddressTypeSIP,
+				Source: address.Address{
+					Type:   address.TypeSIP,
 					Target: "testsource@test.com",
 				},
-				Destination: call.Address{
-					Type:   call.AddressTypeSIP,
+				Destination: address.Address{
+					Type:   address.TypeSIP,
 					Target: "testdestination@test.com",
 				},
 

@@ -1,0 +1,302 @@
+package tags
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+)
+
+// tagsPOST handles POST /tag request.
+// It creates a new tag.
+// @Summary Create a new tag.
+// @Description create a new tag.
+// @Produce  json
+// @Param name body string true "Tag's name"
+// @Param detail body string true "Tag's detail"
+// @Success 200 {object} tag.Tag
+// @Router /v1.0/tags [post]
+func tagsPOST(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "tagsPOST",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("user")
+	u := tmp.(user.User)
+	if !exists {
+		log.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	var req request.BodyTagsPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not bind the request body. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// create flow
+	res, err := serviceHandler.TagCreate(&u, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not create a new tag. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// tagsIDDelete handles DELETE /tags/<tag-id> request.
+// It deletes the tag.
+// @Summary Delete the tag
+// @Description Delete the tag of the given id
+// @Produce json
+// @Param id path string true "The ID of the tag"
+// @Success 200
+// @Router /v1.0/tags/{id} [delete]
+func tagsIDDelete(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "tagsIDDelete",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("user")
+	if !exists {
+		log.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	if id == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// delete
+	err := serviceHandler.TagDelete(&u, id)
+	if err != nil {
+		log.Infof("Could not delete the tag info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// tagsIDGet handles GET /tags/<tag-id> request.
+// It gets the tag.
+// @Summary Get the tag
+// @Description Get the tag of the given id
+// @Produce json
+// @Param id path string true "The ID of the tag"
+// @Success 200 {object} tag.Tag
+// @Router /v1.0/tags/{id} [get]
+func tagsIDGet(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "tagsIDGet",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("user")
+	if !exists {
+		log.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	if id == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// get
+	res, err := serviceHandler.TagGet(&u, id)
+	if err != nil {
+		log.Infof("Could not get the tag info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// tagsGET handles GET /tags request.
+// It returns list of tags of the given user.
+// @Summary List tags
+// @Description get tags of the user
+// @Produce  json
+// @Param page_size query int false "The size of results. Max 100"
+// @Param page_token query string false "The token. tm_create"
+// @Success 200 {object} response.BodyTagsGET
+// @Router /v1.0/tags [get]
+func tagsGET(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "tagsGET",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("user")
+	if !exists {
+		log.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	var req request.ParamTagsGET
+	if err := c.BindQuery(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.Debugf("Received request detail. page_size: %d, page_token: %s", req.PageSize, req.PageToken)
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// set max page size
+	pageSize := req.PageSize
+	if pageSize <= 0 {
+		pageSize = 10
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	} else if pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to max. page_size: %d", pageSize)
+	}
+
+	// get tmps
+	tmps, err := serviceHandler.TagGets(&u, pageSize, req.PageToken)
+	if err != nil {
+		log.Errorf("Could not get tags info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := ""
+	if len(tmps) > 0 {
+		nextToken = tmps[len(tmps)-1].TMCreate
+	}
+	res := response.BodyTagsGET{
+		Result: tmps,
+		Pagination: response.Pagination{
+			NextPageToken: nextToken,
+		},
+	}
+
+	c.JSON(200, res)
+}
+
+// tagsIDPUT handles PUT /tags/{id} request.
+// It updates a tag's basic info with the given info.
+// @Summary Update the tag info.
+// @Description Update the tag info.
+// @Produce json
+// @Param id path string true "The ID of the tag"
+// @Param name body string true "the tag's name"
+// @Param detail body string true "the tag's detail"
+// @Success 200
+// @Router /v1.0/tags/{id} [put]
+func tagsIDPUT(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "tagsIDPUT",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	// get user info
+	tmp, exists := c.Get("user")
+	if !exists {
+		logrus.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	var req request.BodyTagsIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not bind the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// update the tag
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.TagUpdate(&u, id, req.Name, req.Detail); err != nil {
+		log.Errorf("Could not update the tag. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
