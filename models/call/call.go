@@ -3,6 +3,8 @@ package call
 import (
 	"github.com/gofrs/uuid"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 )
 
 // Call struct represent asterisk's channel information for client show
@@ -18,8 +20,8 @@ type Call struct {
 	RecordingID    uuid.UUID   `json:"recording_id"`     // Recording id(current)
 	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // Recording ids
 
-	Source      Address `json:"source"`      // Source info
-	Destination Address `json:"destination"` // Destination info
+	Source      address.Address `json:"source"`      // Source info
+	Destination address.Address `json:"destination"` // Destination info
 
 	Status       Status       `json:"status"`        // Call's status.
 	Direction    Direction    `json:"direction"`     // Call's direction.
@@ -45,24 +47,6 @@ const (
 	TypeConference Type = "conference"  // conference call.
 	TypeSipService Type = "sip-service" // sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.
 )
-
-// AddressType type
-type AddressType string
-
-// List of CallAddressType
-const (
-	AddressTypeSIP AddressType = "sip"
-	AddressTypeTel AddressType = "tel"
-)
-
-// Address contains source/destination detail info.
-type Address struct {
-	Type       AddressType `json:"type"`        // Type of address. must be one of ["sip", "tel"].
-	Target     string      `json:"target"`      // Target address. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
-	TargetName string      `json:"target_name"` // Target's shown name.
-	Name       string      `json:"name"`        // Name.
-	Detail     string      `json:"detail"`      // Detail.
-}
 
 // Status type
 type Status string
@@ -123,13 +107,13 @@ func ConvertCall(h *cmcall.Call) *Call {
 		RecordingID:    h.RecordingID,
 		RecordingIDs:   h.RecordingIDs,
 
-		Source: Address{
-			Type:   AddressType(h.Source.Type),
+		Source: address.Address{
+			Type:   address.Type(h.Source.Type),
 			Name:   h.Source.Name,
 			Target: h.Source.Target,
 		},
-		Destination: Address{
-			Type:   AddressType(h.Destination.Type),
+		Destination: address.Address{
+			Type:   address.Type(h.Destination.Type),
 			Name:   h.Destination.Name,
 			Target: h.Destination.Target,
 		},

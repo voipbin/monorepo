@@ -8,11 +8,10 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	users.POST("", usersPOST)
 	users.GET("", usersGET)
-}
 
-// RequestBodyUsersPOST is rquest body define for POST /users
-type RequestBodyUsersPOST struct {
-	Username   string `json:"username" binding:"required"`
-	Password   string `json:"password" binding:"required"`
-	Permission uint64 `json:"permission"`
+	users.GET("/:id", usersIDGET)
+	users.PUT("/:id", usersIDPUT)
+
+	users.PUT("/:id/password", usersIDPasswordPUT)
+	users.PUT("/:id/permission", usersIDPermissionPUT)
 }

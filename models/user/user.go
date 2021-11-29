@@ -51,8 +51,8 @@ const (
 	PermissionAdmin Permission = 0x0001
 )
 
-// ConvertUser returns user from umuser.User
-func ConvertUser(h *umuser.User) *User {
+// ConvertToUser returns user from umuser.User
+func ConvertToUser(h *umuser.User) *User {
 	c := &User{
 		ID:         h.ID,
 		Username:   h.Username,
