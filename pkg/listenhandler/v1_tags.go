@@ -37,6 +37,7 @@ func (h *listenHandler) processV1TagsGet(ctx context.Context, req *rabbitmqhandl
 		"size":  pageSize,
 		"token": pageToken,
 	})
+	log.WithField("request", req).Debug("Received request.")
 
 	tmp, err := h.tagHandler.Gets(ctx, userID, pageSize, pageToken)
 	if err != nil {
@@ -73,7 +74,7 @@ func (h *listenHandler) processV1TagsIDGet(ctx context.Context, m *rabbitmqhandl
 			"func":   "processV1TagsIDGet",
 			"tag_id": id,
 		})
-	log.Debug("Executing processV1TagsIDGet.")
+	log.WithField("request", m).Debug("Received request.")
 
 	tmp, err := h.tagHandler.Get(ctx, id)
 	if err != nil {
@@ -110,7 +111,7 @@ func (h *listenHandler) processV1TagsIDPut(ctx context.Context, m *rabbitmqhandl
 			"func":   "processV1TagsIDPut",
 			"tag_id": id,
 		})
-	log.Debug("Executing processV1TagsIDPut.")
+	log.WithField("request", m).Debug("Received request.")
 
 	var reqData request.V1DataTagsIDPut
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
@@ -138,7 +139,7 @@ func (h *listenHandler) processV1TagsPost(ctx context.Context, m *rabbitmqhandle
 		logrus.Fields{
 			"func": "processV1TagPost",
 		})
-	log.Debug("Executing processV1TagPost.")
+	log.WithField("request", m).Debug("Received request.")
 
 	var reqData request.V1DataTagsPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
@@ -191,7 +192,7 @@ func (h *listenHandler) processV1TagsIDDelete(ctx context.Context, m *rabbitmqha
 			"func":   "processV1TagsIDDelete",
 			"tag_id": id,
 		})
-	log.Debug("Executing processV1TagsIDDelete.")
+	log.WithField("request", m).Debug("Received request.")
 
 	if err := h.tagHandler.Delete(ctx, id); err != nil {
 		log.Errorf("Could not delete the tag info. err: %v", err)

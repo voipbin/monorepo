@@ -192,6 +192,8 @@ github.com/gofrs/uuid v3.3.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRx
 github.com/gofrs/uuid v4.0.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gofrs/uuid v4.1.0+incompatible h1:sIa2eCvUTwgjbqXrPLfNwUf9S3i3mpH1O1atV+iL/Wk=
 github.com/gofrs/uuid v4.1.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
+github.com/gofrs/uuid v4.2.0+incompatible h1:yyYWMnhkhrKwwr8gAOcOCYxOOscHgDS9yZgBrnJfGa0=
+github.com/gofrs/uuid v4.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gogo/googleapis v1.1.0/go.mod h1:gf4bu3Q80BeJ6H1S1vYPm8/ELATdvryBaNFGgqEef3s=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/gogo/protobuf v1.2.0/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
@@ -578,6 +580,8 @@ gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211117114033-62270bb
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211123154953-659b484a28d6/go.mod h1:+KJ987y0qKCybP/xSVlY52/M5Tz9x4eIMj7LTnjyE7o=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211124143610-2eaaf09440f3 h1:2tMGYGZDqhZA5ExqDjnBOU//jH1stqKn/CBx7AtF+gw=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211124143610-2eaaf09440f3/go.mod h1:/67TjlE3OdQoJR8kFT9E+PgA+wteT8pS1veAhg2RgwM=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211128065312-1d5d6d0cd7b6 h1:iJRxuzA0KNt4MtdPSLXn37VEn6+HPsYc3R6oxgT9y3s=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211128065312-1d5d6d0cd7b6/go.mod h1:FRRNCSInVMXDNn1q1dNTH2ZalWr5t0Deafn0qXZF8w8=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210323024331-0732164cf894/go.mod h1:1C5Z8qL/xDt+KzNu0WYAitV7Qi2vxKTC4df1ehxOQ4I=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210408192237-4079c56261c5/go.mod h1:3jy5mdMg2QBL2UPLKBSF4qOf26ZdLxVUN9YuksXXHnI=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210409195628-27c9b796b068/go.mod h1:OmmzOIFyIwjplHcmQVxndP/9ckf33tzikZRljJLjLOM=
@@ -849,6 +853,8 @@ golang.org/x/sys v0.0.0-20210925032602-92d5a993a665/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20211123173158-ef496fb156ab h1:rfJ1bsoJQQIAoAxTxB7bme+vHrNkRw8CqfsYh9w54cw=
 golang.org/x/sys v0.0.0-20211123173158-ef496fb156ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 h1:TyHqChC80pFkXWraUUf6RuB5IqFdQieMLwwCJokV2pc=
+golang.org/x/sys v0.0.0-20211124211545-fe61309f8881/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=

@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/gofrs/uuid v4.1.0+incompatible
+	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
@@ -15,7 +15,7 @@ require (
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20211124163836-60c527d08a1d
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211116051551-e1a031ee1bbd
-	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211124143610-2eaaf09440f3
+	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211128065312-1d5d6d0cd7b6
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
 )
 
@@ -37,7 +37,7 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210926124840-54f19990bf19 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211123175237-2f000c6f32eb // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2 // indirect
-	golang.org/x/sys v0.0.0-20211123173158-ef496fb156ab // indirect
+	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
