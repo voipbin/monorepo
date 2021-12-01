@@ -81,6 +81,7 @@ func usersGET(c *gin.Context) {
 		logrus.Fields{
 			"func":            "usersGET",
 			"request_address": c.ClientIP,
+			"request_uri":     c.Request.URL,
 		},
 	)
 
@@ -104,7 +105,7 @@ func usersGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	log.WithField("request", c.Request).Debug("Received request detail.")
+	log.WithField("request_body", c.Request.Body).Debug("Received request detail.")
 
 	log = log.WithFields(logrus.Fields{
 		"id":         u.ID,
@@ -169,7 +170,7 @@ func usersIDGET(c *gin.Context) {
 	// get id
 	tmpID := c.Params.ByName("id")
 	id, _ := strconv.Atoi(tmpID)
-	log.WithField("request", c.Request).Debug("Received request detail.")
+	log.WithField("request_body", c.Request.Body).Debug("Received request detail.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.UserGet(&u, uint64(id))
@@ -180,6 +181,52 @@ func usersIDGET(c *gin.Context) {
 	}
 
 	c.JSON(200, res)
+}
+
+// usersIDDELETE handles DELETE /users/<user-id> request.
+// It delets the user.
+// @Summary Delete the user
+// @Description Delete the user of the given id
+// @Produce json
+// @Param id path string true "The ID of the user"
+// @Success 200
+// @Router /v1.0/users/{id} [delete]
+func usersIDDELETE(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "usersIDDELETE",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("user")
+	if !exists {
+		log.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	tmpID := c.Params.ByName("id")
+	id, _ := strconv.Atoi(tmpID)
+	log.WithField("request_body", c.Request.Body).Debug("Received request detail.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.UserDelete(&u, uint64(id)); err != nil {
+		log.Errorf("Could not get users info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
 }
 
 // usersIDPUT handles PUT /users/<user-id> request.
@@ -224,7 +271,7 @@ func usersIDPUT(c *gin.Context) {
 	// get id
 	tmpID := c.Params.ByName("id")
 	id, _ := strconv.Atoi(tmpID)
-	log.WithField("request", c.Request).Debug("Received request detail.")
+	log.WithField("request_body", c.Request.Body).Debug("Received request detail.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.UserUpdate(&u, uint64(id), req.Name, req.Detail); err != nil {
@@ -278,7 +325,7 @@ func usersIDPasswordPUT(c *gin.Context) {
 	// get id
 	tmpID := c.Params.ByName("id")
 	id, _ := strconv.Atoi(tmpID)
-	log.WithField("request", c.Request).Debug("Received request detail.")
+	log.WithField("request_body", c.Request.Body).Debug("Received request detail.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.UserUpdatePassword(&u, uint64(id), req.Password); err != nil {
@@ -332,7 +379,7 @@ func usersIDPermissionPUT(c *gin.Context) {
 	// get id
 	tmpID := c.Params.ByName("id")
 	id, _ := strconv.Atoi(tmpID)
-	log.WithField("request", c.Request).Debug("Received request detail.")
+	log.WithField("request_body", c.Request.Body).Debug("Received request detail.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.UserUpdatePermission(&u, uint64(id), user.Permission(req.Permission)); err != nil {

@@ -11,6 +11,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	users.GET("/:id", usersIDGET)
 	users.PUT("/:id", usersIDPUT)
+	users.DELETE("/:id", usersIDDELETE)
 
 	users.PUT("/:id/password", usersIDPasswordPUT)
 	users.PUT("/:id/permission", usersIDPermissionPUT)

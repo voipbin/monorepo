@@ -771,6 +771,20 @@ func (mr *MockServiceHandlerMockRecorder) UserCreate(u, username, password, name
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserCreate", reflect.TypeOf((*MockServiceHandler)(nil).UserCreate), u, username, password, name, detail, permission)
 }
 
+// UserDelete mocks base method.
+func (m *MockServiceHandler) UserDelete(u *user.User, id uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserDelete", u, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UserDelete indicates an expected call of UserDelete.
+func (mr *MockServiceHandlerMockRecorder) UserDelete(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserDelete", reflect.TypeOf((*MockServiceHandler)(nil).UserDelete), u, id)
+}
+
 // UserGet mocks base method.
 func (m *MockServiceHandler) UserGet(u *user.User, userID uint64) (*user.User, error) {
 	m.ctrl.T.Helper()
