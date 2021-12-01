@@ -118,6 +118,7 @@ type ServiceHandler interface {
 
 	// user handlers
 	UserCreate(u *user.User, username, password, name, detail string, permission user.Permission) (*user.User, error)
+	UserDelete(u *user.User, id uint64) error
 	UserGet(u *user.User, userID uint64) (*user.User, error)
 	UserGets(u *user.User, size uint64, token string) ([]*user.User, error)
 	UserUpdate(u *user.User, id uint64, name, detail string) error
