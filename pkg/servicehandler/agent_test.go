@@ -77,7 +77,7 @@ func TestAgentCreate(t *testing.T) {
 				addresses = append(addresses, *a)
 			}
 
-			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), tt.user.ID, tt.username, tt.password, tt.agentName, tt.detail, amagent.RingMethod(tt.ringMethod), amagent.Permission(tt.permission), tt.tagIDs, addresses).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.user.ID, tt.username, tt.password, tt.agentName, tt.detail, amagent.RingMethod(tt.ringMethod), amagent.Permission(tt.permission), tt.tagIDs, addresses).Return(tt.response, nil)
 
 			res, err := h.AgentCreate(tt.user, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
@@ -515,7 +515,7 @@ func TestAgentLogin(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AMV1AgentLogin(gomock.Any(), tt.user.ID, tt.username, tt.password).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentLogin(gomock.Any(), 30, tt.user.ID, tt.username, tt.password).Return(tt.response, nil)
 
 			_, err := h.AgentLogin(tt.user.ID, tt.username, tt.password)
 			if err != nil {

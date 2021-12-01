@@ -59,10 +59,59 @@ func TestUserCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().UMV1UserCreate(gomock.Any(), tt.username, tt.password, tt.userName, tt.detail, umuser.Permission(tt.permission)).Return(tt.res, nil)
+			mockReq.EXPECT().UMV1UserCreate(gomock.Any(), 30, tt.username, tt.password, tt.userName, tt.detail, umuser.Permission(tt.permission)).Return(tt.res, nil)
 
 			_, err := h.UserCreate(tt.user, tt.username, tt.password, tt.userName, tt.detail, tt.permission)
 			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+		})
+	}
+}
+
+func TestUserDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	tests := []struct {
+		name string
+
+		user *user.User
+
+		id uint64
+
+		res *umuser.User
+	}{
+		{
+			"normal",
+
+			&user.User{
+				ID:         1,
+				Permission: user.PermissionAdmin,
+			},
+
+			1,
+
+			&umuser.User{
+				Username:   "test1",
+				Permission: 0,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().UMV1UserDelete(gomock.Any(), tt.id).Return(nil)
+
+			if err := h.UserDelete(tt.user, tt.id); err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 		})
@@ -276,7 +325,7 @@ func TestUserUpdatePassword(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().UMV1UserGet(gomock.Any(), tt.user.ID).Return(&umuser.User{Permission: umuser.PermissionAdmin}, nil)
-			mockReq.EXPECT().UMV1UserUpdatePassword(gomock.Any(), tt.id, tt.password).Return(nil)
+			mockReq.EXPECT().UMV1UserUpdatePassword(gomock.Any(), 30, tt.id, tt.password).Return(nil)
 
 			if err := h.UserUpdatePassword(tt.user, tt.id, tt.password); err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)

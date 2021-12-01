@@ -37,10 +37,10 @@ require (
 )
 
 require (
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20211129014555-7a4fc05b8538
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20211201023044-989ad20954bd
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211117045559-85c8d74244e2
-	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211129061343-f7e10d6f7bab
-	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211128235458-e1dd5c7ad1be
+	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211201053649-d6dab97aa386
+	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
 )
 
 require (
@@ -71,7 +71,7 @@ require (
 	github.com/ugorji/go/codec v1.2.6 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210926124840-54f19990bf19 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2 // indirect
-	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 // indirect
+	google.golang.org/genproto v0.0.0-20211129164237-f09f9a12af12 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

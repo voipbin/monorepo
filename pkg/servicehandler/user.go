@@ -21,7 +21,7 @@ func (h *serviceHandler) userGet(ctx context.Context, u *user.User, userID uint6
 	)
 
 	if u.Permission != user.PermissionAdmin && u.ID != userID {
-		log.Info("The user has no permission.")
+		log.Warn("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -49,12 +49,12 @@ func (h *serviceHandler) UserCreate(u *user.User, username, password, name, deta
 	// check permission
 	// only admin permssion can create a new user.
 	if !u.HasPermission(user.PermissionAdmin) {
-		log.Info("The user has no permission")
+		log.Warn("The user has no permission")
 		return nil, fmt.Errorf("has no permission")
 	}
 
 	p := umuser.Permission(permission)
-	tmp, err := h.reqHandler.UMV1UserCreate(ctx, username, password, name, detail, p)
+	tmp, err := h.reqHandler.UMV1UserCreate(ctx, 30, username, password, name, detail, p)
 	if err != nil {
 		log.Errorf("Could not create a new user. err: %v", err)
 		return nil, err
@@ -95,8 +95,15 @@ func (h *serviceHandler) UserGets(u *user.User, size uint64, token string) ([]*u
 	log.Debug("Received request detail.")
 
 	if u.Permission != user.PermissionAdmin {
-		log.Info("The user has no permission.")
+		log.Warn("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
+	}
+
+	if size <= 0 {
+		size = 10
+	}
+	if token == "" {
+		token = getCurTime()
 	}
 
 	tmp, err := h.reqHandler.UMV1UserGets(ctx, token, size)
@@ -132,7 +139,30 @@ func (h *serviceHandler) UserUpdate(u *user.User, id uint64, name, detail string
 
 	// send request
 	if err := h.reqHandler.UMV1UserUpdateBasicInfo(ctx, id, name, detail); err != nil {
-		log.Infof("Could not update the user's basic info. err: %v", err)
+		log.Errorf("Could not update the user's basic info. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// UserDelete sends a request to user-manager
+// to delete the user.
+func (h *serviceHandler) UserDelete(u *user.User, id uint64) error {
+	ctx := context.Background()
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "UserDelete",
+		"user_id":  u.ID,
+		"username": u.Username,
+	})
+
+	if u.Permission != user.PermissionAdmin && u.ID != id {
+		log.Warn("The user has no permission.")
+		return fmt.Errorf("user has no permission")
+	}
+
+	if err := h.reqHandler.UMV1UserDelete(ctx, id); err != nil {
+		log.Errorf("Could not delete the user. err: %v", err)
 		return err
 	}
 
@@ -156,7 +186,7 @@ func (h *serviceHandler) UserUpdatePassword(u *user.User, id uint64, password st
 	}
 
 	// send request
-	if err := h.reqHandler.UMV1UserUpdatePassword(ctx, id, password); err != nil {
+	if err := h.reqHandler.UMV1UserUpdatePassword(ctx, 30, id, password); err != nil {
 		log.Infof("Could not update the user's password. err: %v", err)
 		return err
 	}
@@ -175,13 +205,13 @@ func (h *serviceHandler) UserUpdatePermission(u *user.User, id uint64, permissio
 	})
 
 	if u.Permission != user.PermissionAdmin {
-		log.Info("The user has no permission.")
+		log.Warn("The user has no permission.")
 		return fmt.Errorf("user has no permission")
 	}
 
 	// send request
 	if err := h.reqHandler.UMV1UserUpdatePermission(ctx, id, umuser.Permission(permission)); err != nil {
-		log.Infof("Could not update the user's permission. err: %v", err)
+		log.Errorf("Could not update the user's permission. err: %v", err)
 		return err
 	}
 
