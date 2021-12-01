@@ -201,11 +201,11 @@ func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, n
 		"agent_name":   name,
 		"agent_detail": detail,
 	})
-	log.Debug("Updating the agent info basic.")
+	log.Debug("Updating the agent's basic info.")
 
 	err := h.db.AgentSetBasicInfo(ctx, id, name, detail, ringMethod)
 	if err != nil {
-		log.Errorf("Could not update the name and detail. err: %v", err)
+		log.Errorf("Could not update the basic info. err: %v", err)
 		return err
 	}
 
@@ -213,12 +213,12 @@ func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, n
 }
 
 // AgentUpdatePassword updates the agent's password.
-func (h *agentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, username, password string) error {
+func (h *agentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdateNameDetail",
+		"func":     "AgentUpdatePassword",
 		"agent_id": id,
 	})
-	log.Debug("Updating the agent info password.")
+	log.Debug("Updating the agent's password.")
 
 	passHash, err := generateHash(password)
 	if err != nil {
@@ -227,7 +227,7 @@ func (h *agentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, us
 	}
 
 	if err := h.db.AgentSetPasswordHash(ctx, id, passHash); err != nil {
-		log.Errorf("Could not update the name and detail. err: %v", err)
+		log.Errorf("Could not update the password. err: %v", err)
 		return err
 	}
 
@@ -240,7 +240,7 @@ func (h *agentHandler) AgentUpdatePermission(ctx context.Context, id uuid.UUID, 
 		"func":     "AgentUpdatePermission",
 		"agent_id": id,
 	})
-	log.Debug("Updating the agent info password.")
+	log.Debug("Updating the agent's permission'.")
 
 	if err := h.db.AgentSetPermission(ctx, id, permission); err != nil {
 		log.Errorf("Could not set the permission. err: %v", err)
