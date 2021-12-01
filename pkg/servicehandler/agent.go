@@ -72,7 +72,7 @@ func (h *serviceHandler) AgentCreate(
 
 	// send request
 	log.Debug("Creating a new agent.")
-	tmp, err := h.reqHandler.AMV1AgentCreate(ctx, u.ID, username, password, name, detail, amagent.RingMethod(ringMethod), amagent.Permission(permission), tagIDs, cmAddresses)
+	tmp, err := h.reqHandler.AMV1AgentCreate(ctx, 30, u.ID, username, password, name, detail, amagent.RingMethod(ringMethod), amagent.Permission(permission), tagIDs, cmAddresses)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -185,7 +185,7 @@ func (h *serviceHandler) AgentLogin(userID uint64, username, password string) (s
 	})
 
 	// send request
-	ag, err := h.reqHandler.AMV1AgentLogin(ctx, userID, username, password)
+	ag, err := h.reqHandler.AMV1AgentLogin(ctx, 30, userID, username, password)
 	if err != nil {
 		log.Warningf("Could not agent login. err: %v", err)
 		return "", err

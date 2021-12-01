@@ -20,7 +20,7 @@ func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
 		},
 	)
 
-	u, err := h.reqHandler.UMV1UserLogin(ctx, username, password)
+	u, err := h.reqHandler.UMV1UserLogin(ctx, 30, username, password)
 	if err != nil {
 		log.Warningf("Could not get user info. err: %v", err)
 		return "", err
