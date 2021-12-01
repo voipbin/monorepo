@@ -56,6 +56,7 @@ var (
 	regV1AgentsIDAddresses   = regexp.MustCompile("/v1/agents/" + regUUID + "/addresses$")
 	regV1AgentsIDTagIDs      = regexp.MustCompile("/v1/agents/" + regUUID + "/tag_ids$")
 	regV1AgentsIDStatus      = regexp.MustCompile("/v1/agents/" + regUUID + "/status$")
+	regV1AgentsIDPassword    = regexp.MustCompile("/v1/agents/" + regUUID + "/password$")
 	regV1AgentsIDDial        = regexp.MustCompile("/v1/agents/" + regUUID + "/dial$")
 
 	// tags
@@ -214,6 +215,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// PUT /agents/<agent-id>/addresses
 	case regV1AgentsIDAddresses.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1AgentsIDAddressesPut(ctx, m)
+		requestType = "/v1/agents"
+
+	// PUT /agents/<agent-id>/password
+	case regV1AgentsIDPassword.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1AgentsIDPasswordPut(ctx, m)
 		requestType = "/v1/agents"
 
 	// PUT /agents/<agent-id>/tag_ids

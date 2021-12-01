@@ -199,17 +199,17 @@ func (mr *MockAgentHandlerMockRecorder) AgentUpdateBasicInfo(ctx, id, name, deta
 }
 
 // AgentUpdatePassword mocks base method.
-func (m *MockAgentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, username, password string) error {
+func (m *MockAgentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentUpdatePassword", ctx, id, username, password)
+	ret := m.ctrl.Call(m, "AgentUpdatePassword", ctx, id, password)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AgentUpdatePassword indicates an expected call of AgentUpdatePassword.
-func (mr *MockAgentHandlerMockRecorder) AgentUpdatePassword(ctx, id, username, password interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) AgentUpdatePassword(ctx, id, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdatePassword", reflect.TypeOf((*MockAgentHandler)(nil).AgentUpdatePassword), ctx, id, username, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdatePassword", reflect.TypeOf((*MockAgentHandler)(nil).AgentUpdatePassword), ctx, id, password)
 }
 
 // AgentUpdatePermission mocks base method.

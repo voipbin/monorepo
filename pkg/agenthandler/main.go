@@ -39,7 +39,7 @@ type AgentHandler interface {
 	AgentLogin(ctx context.Context, userID uint64, username, password string) (*agent.Agent, error)
 	AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) error
 	AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error
-	AgentUpdatePassword(ctx context.Context, id uuid.UUID, username, password string) error
+	AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) error
 	AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) error
 	AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) error
 	AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error
