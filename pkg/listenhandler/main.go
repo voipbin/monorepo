@@ -50,7 +50,7 @@ var (
 	// v1
 	// agents
 	regV1Agents              = regexp.MustCompile("/v1/agents$")
-	regV1AgentsGet           = regexp.MustCompile("/v1/agents?(.*)$")
+	regV1AgentsGet           = regexp.MustCompile(`/v1/agents\?(.*)$`)
 	regV1AgentsUsernameLogin = regexp.MustCompile("/v1/agents/" + regAny + "/login$")
 	regV1AgentsID            = regexp.MustCompile("/v1/agents/" + regUUID + "$")
 	regV1AgentsIDAddresses   = regexp.MustCompile("/v1/agents/" + regUUID + "/addresses$")
