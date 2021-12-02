@@ -723,6 +723,83 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 	}
 }
 
+func TestProcessV1AgentsIDGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:   mockSock,
+		db:           mockDB,
+		reqHandler:   mockReq,
+		agentHandler: mockAgent,
+	}
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id    uuid.UUID
+		agent *agent.Agent
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+			&agent.Agent{
+				ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+				UserID:       1,
+				Username:     "",
+				PasswordHash: "",
+				Name:         "",
+				Detail:       "",
+				RingMethod:   "",
+				Status:       "",
+				Permission:   0,
+				TagIDs:       []uuid.UUID{},
+				Addresses:    []cmaddress.Address{},
+				TMCreate:     "",
+				TMUpdate:     "",
+				TMDelete:     "",
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":[],"addresses":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockAgent.EXPECT().AgentGet(gomock.Any(), tt.id).Return(tt.agent, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
 func TestProcessV1AgentsIDPut(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
