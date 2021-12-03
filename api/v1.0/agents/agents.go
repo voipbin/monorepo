@@ -415,3 +415,56 @@ func agentsIDTagIDsPUT(c *gin.Context) {
 
 	c.AbortWithStatus(200)
 }
+
+// agentsIDStatusPUT handles PUT /agents/{id}/status request.
+// It updates a agent's status info with the given info.
+// @Summary Update an agent's status info.
+// @Description Update an agent status info.
+// @Produce json
+// @Param id path string true "The ID of the agent"
+// @Param status body [string] true "Agent's status"
+// @Success 200
+// @Router /v1.0/agents/{id}/status [put]
+func agentsIDStatusPUT(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "agentsIDStatusPUT",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("user")
+	if !exists {
+		log.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+
+	var req request.BodyAgentsIDStatusPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not bind the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// update the agent
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.AgentUpdateStatus(&u, id, agent.Status(req.Status)); err != nil {
+		log.Errorf("Could not update the agent's status. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}

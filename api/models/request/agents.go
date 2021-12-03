@@ -43,3 +43,8 @@ type BodyAgentsIDAddressesPUT struct {
 type BodyAgentsIDTagIDsPUT struct {
 	TagIDs []uuid.UUID `json:"tag_ids" binding:"required"`
 }
+
+// BodyAgentsIDStatusPUT is rquest body define for PUT /agents/<agent-id>/status
+type BodyAgentsIDStatusPUT struct {
+	Status string `json:"status" binding:"required"`
+}

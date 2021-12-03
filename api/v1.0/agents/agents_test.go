@@ -233,3 +233,63 @@ func TestAgentsGET(t *testing.T) {
 		})
 	}
 }
+
+func TestAgentsIDStatusPUT(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name string
+
+		user     user.User
+		reqQuery string
+		reqBody  []byte
+
+		agentID uuid.UUID
+		status  agent.Status
+	}
+
+	tests := []test{
+		{
+			"normal",
+			user.User{
+				ID: 1,
+			},
+			"/v1.0/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/status",
+			[]byte(`{"status":"available"}`),
+
+			uuid.FromStringOrNil("a8ba6662-540a-11ec-9a9f-b31de1a77615"),
+			agent.StatusAvailable,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("user", tt.user)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().AgentUpdateStatus(&tt.user, tt.agentID, tt.status).Return(nil)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			// if w.Body.String() != tt.expectRes {
+			// 	t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			// }
+		})
+	}
+}

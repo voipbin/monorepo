@@ -14,6 +14,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	targets.PUT("/:id", agentsIDPUT)
 
 	targets.PUT("/:id/addresses", agentsIDAddressesPUT)
+	targets.PUT("/:id/status", agentsIDStatusPUT)
 	targets.PUT("/:id/tag_ids", agentsIDTagIDsPUT)
 
 }
