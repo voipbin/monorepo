@@ -51,6 +51,7 @@ type ServiceHandler interface {
 	AgentLogin(userID uint64, username, password string) (string, error)
 	AgentUpdate(u *user.User, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) error
 	AgentUpdateAddresses(u *user.User, agentID uuid.UUID, addresses []address.Address) error
+	AgentUpdateStatus(u *user.User, agentID uuid.UUID, status agent.Status) error
 	AgentUpdateTagIDs(u *user.User, agentID uuid.UUID, tagIDs []uuid.UUID) error
 
 	// auth handlers
