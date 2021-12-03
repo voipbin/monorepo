@@ -281,6 +281,7 @@ func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
 	update
 		agents
+	set
 		tm_update = ?,
 		tm_delete = ?
 	where

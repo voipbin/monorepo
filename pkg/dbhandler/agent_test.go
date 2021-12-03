@@ -159,6 +159,66 @@ func TestAgentCreate(t *testing.T) {
 	}
 }
 
+func TestAgentDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
+
+	tests := []struct {
+		name        string
+		ag          *agent.Agent
+		expectAgent *agent.Agent
+	}{
+		{
+			"test normal",
+			&agent.Agent{
+				ID:           uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				Username:     "test",
+				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				TMCreate:     "2020-04-18T03:22:17.995000",
+			},
+			&agent.Agent{
+				ID:           uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				Username:     "test",
+				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				TagIDs:       []uuid.UUID{},
+				Addresses:    []cmaddress.Address{},
+				TMCreate:     "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockCache.EXPECT().AgentGet(gomock.Any(), tt.ag.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any()).AnyTimes()
+
+			if err := h.AgentCreate(context.Background(), tt.ag); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if err := h.AgentDelete(ctx, tt.ag.ID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.AgentGet(context.Background(), tt.ag.ID)
+			if err != nil {
+				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
+			}
+
+			tt.expectAgent.TMUpdate = res.TMUpdate
+			tt.expectAgent.TMDelete = res.TMDelete
+			if reflect.DeepEqual(tt.expectAgent, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectAgent, res)
+			}
+		})
+	}
+}
+
 func TestAgentGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
