@@ -41,6 +41,7 @@ type Type string
 
 // List of Action types
 const (
+	TypeAgentCall           Type = "agent_call"
 	TypeAMD                 Type = "amd"
 	TypeAnswer              Type = "answer"
 	TypeConfbridgeJoin      Type = "confbridge_join"
@@ -66,6 +67,7 @@ const (
 
 // TypeList list of type array
 var TypeList []Type = []Type{
+	TypeAgentCall,
 	TypeAMD,
 	TypeAnswer,
 	TypeConfbridgeJoin,
@@ -93,6 +95,11 @@ var TypeList []Type = []Type{
 type OptionAMD struct {
 	MachineHandle string `json:"machine_handle"` // hangup,delay,continue if the machine answered a call
 	Async         bool   `json:"async"`          // if it's false, the call flow will be stop until amd done.
+}
+
+// OptionAgentCall defines action agent_call's option.
+type OptionAgentCall struct {
+	AgentID string `json:"agent_id"`
 }
 
 // OptionAnswer defines action answer's option.

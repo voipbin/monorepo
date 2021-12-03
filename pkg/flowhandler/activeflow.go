@@ -59,7 +59,7 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 // It sets next action to current action.
 func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"call":              callID,
+		"call_id":           callID,
 		"current_action_id": caID,
 	})
 
@@ -71,22 +71,9 @@ func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.U
 	}
 
 	switch nextAction.Type {
-	case action.TypePatch:
-		// handle the patch
-		// add the patched actions to the active-flow
-		if err := h.activeFlowHandleActionPatch(ctx, callID, nextAction); err != nil {
-			log.Errorf("Could not handle the patch action correctly. err: %v", err)
-			return nil, err
-		}
-
-		// do activeflow next action get again.
-		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
-
-	case action.TypePatchFlow:
-		// handle the patch
-		// add the patched actions to the active-flow
-		if err := h.activeFlowHandleActionPatchFlow(ctx, callID, nextAction); err != nil {
-			log.Errorf("Could not handle the patch_flow action correctly. err: %v", err)
+	case action.TypeAgentCall:
+		if err := h.activeFlowHandleActionAgentCall(ctx, callID, nextAction); err != nil {
+			log.Errorf("Could not handle the agent_call action correctly. err: %v", err)
 			return nil, err
 		}
 
@@ -105,6 +92,28 @@ func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.U
 	case action.TypeConnect:
 		if err := h.activeFlowHandleActionConnect(ctx, callID, nextAction); err != nil {
 			log.Errorf("Could not handle the connect action correctly. err: %v", err)
+			return nil, err
+		}
+
+		// do activeflow next action get again.
+		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+
+	case action.TypePatch:
+		// handle the patch
+		// add the patched actions to the active-flow
+		if err := h.activeFlowHandleActionPatch(ctx, callID, nextAction); err != nil {
+			log.Errorf("Could not handle the patch action correctly. err: %v", err)
+			return nil, err
+		}
+
+		// do activeflow next action get again.
+		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+
+	case action.TypePatchFlow:
+		// handle the patch
+		// add the patched actions to the active-flow
+		if err := h.activeFlowHandleActionPatchFlow(ctx, callID, nextAction); err != nil {
+			log.Errorf("Could not handle the patch_flow action correctly. err: %v", err)
 			return nil, err
 		}
 
@@ -137,8 +146,8 @@ func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.U
 func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID uuid.UUID, action *action.Action) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"call_id": callID,
-			"action":  action,
+			"call_id":   callID,
+			"action_id": action,
 		},
 	)
 
@@ -165,7 +174,7 @@ func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID 
 // It sets next action to current action.
 func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"call":              callID,
+		"call_id":           callID,
 		"current_action_id": caID,
 	})
 	log.Debug("Getting next action.")
@@ -254,8 +263,8 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 // it downloads the actions from the given action(patch) and append it to the active flow.
 func (h *flowHandler) activeFlowHandleActionPatch(ctx context.Context, callID uuid.UUID, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
-		"call":   callID,
-		"action": act.ID,
+		"call_id":   callID,
+		"action_id": act.ID,
 	})
 
 	// patch the actions from the remote
@@ -397,8 +406,8 @@ func (h *flowHandler) activeFlowHandleActionConferenceJoin(ctx context.Context, 
 // activeFlowHandleActionConnect handles action connect with active flow.
 func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID uuid.UUID, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
-		"call":   callID,
-		"action": act.ID,
+		"call_id":   callID,
+		"action_id": act.ID,
 	})
 
 	// get active-flow
@@ -456,13 +465,13 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	// create a call for each destination
 	successCount := 0
 	for _, dest := range optConnect.Destinations {
-		source := address.Address{
+		source := &address.Address{
 			Type:   address.Type(optConnect.Source.Type),
 			Target: optConnect.Source.Target,
 			Name:   optConnect.Source.Name,
 		}
 
-		destination := address.Address{
+		destination := &address.Address{
 			Type:   address.Type(dest.Type),
 			Target: dest.Target,
 			Name:   dest.Name,
@@ -523,8 +532,8 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 func (h *flowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Context, callID uuid.UUID, act *action.Action) error {
 
 	log := logrus.WithFields(logrus.Fields{
-		"call":   callID,
-		"action": act.ID,
+		"call_id":   callID,
+		"action_id": act.ID,
 	})
 
 	var optRecordingToText action.OptionTranscribeRecording
@@ -546,8 +555,8 @@ func (h *flowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Cont
 func (h *flowHandler) activeFlowHandleActionTranscribeStart(ctx context.Context, callID uuid.UUID, act *action.Action) error {
 
 	log := logrus.WithFields(logrus.Fields{
-		"call":   callID,
-		"action": act.ID,
+		"call_id":   callID,
+		"action_id": act.ID,
 	})
 
 	var opt action.OptionTranscribeStart
@@ -557,13 +566,92 @@ func (h *flowHandler) activeFlowHandleActionTranscribeStart(ctx context.Context,
 	}
 
 	// transcribe-recording
-	trans, err := h.reqHandler.TSV1StreamingsCreate(ctx, callID, opt.Language, opt.WebhookURI, opt.WebhookMethod)
+	trans, err := h.reqHandler.TSV1StreamingCreate(ctx, callID, opt.Language, opt.WebhookURI, opt.WebhookMethod)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
 	}
 
 	log.Debugf("The streaming transcribe has started. transcribe: %v", trans)
+	return nil
+}
+
+// activeFlowHandleActionAgentCall handles action agent_call with active flow.
+func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "activeFlowHandleActionAgentCall",
+		"call_id":   callID,
+		"action_id": act.ID,
+	})
+
+	var opt action.OptionAgentCall
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		return err
+	}
+	agentID := uuid.FromStringOrNil(opt.AgentID)
+	log = log.WithField("agent_id", agentID)
+
+	// get active-flow
+	af, err := h.db.ActiveFlowGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get active-flow. err: %v", err)
+		return fmt.Errorf("could not get active-flow. err: %v", err)
+	}
+
+	// create conference room for agent_call
+	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
+	if err != nil {
+		log.Errorf("Could not create conference for agent_call. err: %v", err)
+		return fmt.Errorf("could not create conference for agent_call. err: %v", err)
+	}
+	log = log.WithFields(logrus.Fields{
+		"conference_id": cf.ID,
+	})
+	log.Debug("Created conference for agent_call.")
+
+	// get call info
+	c, err := h.reqHandler.CMV1CallGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// call to the agent
+	if errDial := h.reqHandler.AMV1AgentDial(ctx, agentID, &c.Source, cf.ConfbridgeID); errDial != nil {
+		log.Errorf("Could not dial to the agent. err: %v", errDial)
+		return errDial
+	}
+
+	// create action connect for conference join
+	optJoin := action.OptionConferenceJoin{
+		ConferenceID: cf.ID.String(),
+	}
+	optString, err := json.Marshal(optJoin)
+	if err != nil {
+		log.Errorf("Could not marshal the conference join option. err: %v", err)
+		return fmt.Errorf("could not marshal the conference join option. err: %v", err)
+	}
+
+	resAction := action.Action{
+		ID:     uuid.Must(uuid.NewV4()),
+		Type:   action.TypeConferenceJoin,
+		Option: optString,
+	}
+
+	// add the created action next to the given action id.
+	if err := appendActionsAfterID(af, act.ID, []action.Action{resAction}); err != nil {
+		log.Errorf("Could not append new action. err: %v", err)
+		return fmt.Errorf("could not append new action. err: %v", err)
+	}
+	af.TMUpdate = getCurTime()
+
+	// update active flow
+	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
 	return nil
 }
 
