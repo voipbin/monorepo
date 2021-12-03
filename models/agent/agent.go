@@ -56,5 +56,7 @@ type Status string
 const (
 	StatusAvailable Status = "available"
 	StatusAway      Status = "away"
+	StatusBusy      Status = "busy"
 	StatusOffline   Status = "offline"
+	StatusRinging   Status = "ringing"
 )

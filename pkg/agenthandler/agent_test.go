@@ -9,6 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
@@ -507,6 +509,101 @@ func TestAgentCreate(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestAgentDial(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &agentHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		source       *cmaddress.Address
+		confbridgeID uuid.UUID
+
+		agent   *agent.Agent
+		actions []fmaction.Action
+
+		resFlowCreate *fmflow.Flow
+
+		expectRes *agent.Agent
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("9b608bde-53df-11ec-9437-ab8a0e581104"),
+			&cmaddress.Address{},
+			uuid.FromStringOrNil("54f65714-53df-11ec-9327-470dfe854f0d"),
+
+			&agent.Agent{
+				ID:         uuid.FromStringOrNil("9b608bde-53df-11ec-9437-ab8a0e581104"),
+				UserID:     1,
+				Username:   "test1",
+				Name:       "test1 name",
+				Detail:     "test1 detail",
+				Status:     agent.StatusAvailable,
+				Permission: agent.PermissionNone,
+				TagIDs:     []uuid.UUID{},
+				Addresses: []cmaddress.Address{
+					{
+						Type:   cmaddress.TypeTel,
+						Target: "+821021656521",
+					},
+				},
+			},
+			[]fmaction.Action{
+				{
+					Type:   fmaction.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"54f65714-53df-11ec-9327-470dfe854f0d"}`),
+				},
+			},
+
+			&fmflow.Flow{},
+
+			&agent.Agent{
+				ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
+				UserID:     1,
+				Username:   "test1",
+				Name:       "test1 name",
+				Detail:     "test1 detail",
+				Permission: agent.PermissionNone,
+				TagIDs:     []uuid.UUID{},
+				Addresses:  []cmaddress.Address{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().AgentGet(gomock.Any(), tt.id).Return(tt.agent, nil)
+			mockDB.EXPECT().AgentSetStatus(gomock.Any(), tt.id, agent.StatusRinging).Return(nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.agent.UserID, "agent dial", "", "", tt.actions, false).Return(tt.resFlowCreate, nil)
+
+			for i := 0; i < len(tt.agent.Addresses); i++ {
+				mockDB.EXPECT().AgentCallCreate(gomock.Any(), gomock.Any()).Return(nil)
+			}
+
+			mockDB.EXPECT().AgentDialCreate(gomock.Any(), gomock.Any()).Return(nil)
+			for _, addr := range tt.agent.Addresses {
+				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.UserID, tt.resFlowCreate.ID, tt.source, &addr)
+			}
+
+			if err := h.AgentDial(ctx, tt.id, tt.source, tt.confbridgeID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
