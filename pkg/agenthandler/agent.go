@@ -318,10 +318,10 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 	// check agent's status and addresses
 	if ag.Status != agent.StatusAvailable {
 		log.Debugf("Agent is not available. status: %s", ag.Status)
-		return nil
+		return fmt.Errorf("agant is not available")
 	} else if len(ag.Addresses) == 0 {
 		log.Debugf("Agent has no address.")
-		return nil
+		return fmt.Errorf("agent has no address")
 	}
 
 	// set agent status to ringing
