@@ -5,6 +5,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) error {
@@ -19,6 +21,14 @@ func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) er
 	if err != nil {
 		// not an agent call. ignore it.
 		return nil
+	}
+
+	// set agent's status to busy
+	if err := h.db.AgentSetStatus(ctx, ac.AgentID, agent.StatusBusy); err != nil {
+		log.Errorf("Could not update agent's status. err: %v", err)
+
+		// we couldn't update the agent's status.
+		// but the agent answered the call already, we just keep going.
 	}
 
 	// get agent dial

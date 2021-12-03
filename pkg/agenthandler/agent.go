@@ -301,7 +301,7 @@ func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, stat
 // AgentDial dials to the agent.
 func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "AgentUpdateDial",
+		"func":          "AgentDial",
 		"agent_id":      id,
 		"confbridge_id": confbridgeID,
 	})
@@ -322,6 +322,12 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 	} else if len(ag.Addresses) == 0 {
 		log.Debugf("Agent has no address.")
 		return nil
+	}
+
+	// set agent status to ringing
+	if err := h.db.AgentSetStatus(ctx, ag.ID, agent.StatusRinging); err != nil {
+		log.Errorf("Could not update the agent's status. err: %v", err)
+		return err
 	}
 
 	opt, err := json.Marshal(fmaction.OptionConfbridgeJoin{
@@ -350,10 +356,11 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 	// generate the call ids and agentcall info
 	callIDs := []uuid.UUID{}
 	for i := 0; i < len(ag.Addresses); i++ {
-		callIDs = append(callIDs, uuid.Must(uuid.NewV4()))
+		callID := uuid.Must(uuid.NewV4())
+		callIDs = append(callIDs, callID)
 
 		ac := &agentcall.AgentCall{
-			ID:      id,
+			ID:      callID,
 			AgentID: ag.ID,
 		}
 		if err := h.db.AgentCallCreate(ctx, ac); err != nil {
