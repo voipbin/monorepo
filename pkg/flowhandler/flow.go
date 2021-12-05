@@ -2,17 +2,21 @@ package flowhandler
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 // FlowGet returns flow
 func (h *flowHandler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+	log := logrus.WithField("func", "FlowGet")
 	resFlow, err := h.db.FlowGet(ctx, id)
 	if err != nil {
+		log.Errorf("Could not get flow. err: %v", err)
 		return nil, err
 	}
 
@@ -21,37 +25,40 @@ func (h *flowHandler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, er
 
 // FlowCreate creates a flow
 func (h *flowHandler) FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow, error) {
+	log := logrus.WithField("func", "FlowCreate")
+	log.WithField("flow", f).Debug("Create flow request.")
 
 	f.ID = uuid.Must(uuid.NewV4())
 	f.TMCreate = getCurTime()
 	f.TMUpdate = defaultTimeStamp
 	f.TMDelete = defaultTimeStamp
 
-	// validate actions
-	if err := h.ValidateActions(f.Actions); err != nil {
-		logrus.Errorf("Could not pass the action validation. err: %v", err)
+	// generates the actions
+	actions, err := h.generateFlowActions(ctx, f.Actions)
+	if err != nil {
+		log.Errorf("Could not generate the flow actions. err: %v", err)
 		return nil, err
 	}
-
-	// set action id
-	for i := range f.Actions {
-		f.Actions[i].ID = uuid.Must(uuid.NewV4())
-	}
+	f.Actions = actions
+	log.WithField("flow", f).Debug("Creating a new flow.")
 
 	switch {
 	case f.Persist:
 		if err := h.db.FlowCreate(ctx, f); err != nil {
+			log.Errorf("Could not create the flow in the database. err: %v", err)
 			return nil, err
 		}
 
 	default:
 		if err := h.db.FlowSetToCache(ctx, f); err != nil {
+			log.Errorf("Could not create the flow in the cache. err: %v", err)
 			return nil, err
 		}
 	}
 
 	resFlow, err := h.FlowGet(ctx, f.ID)
 	if err != nil {
+		log.Errorf("Could not get created flow. err: %v", err)
 		return nil, err
 	}
 
@@ -60,10 +67,18 @@ func (h *flowHandler) FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow,
 
 // FlowGetsByUserID returns list of flows
 func (h *flowHandler) FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "FlowGetsByUserID",
+			"user_id": userID,
+			"token":   token,
+			"limit":   limit,
+		})
+	log.Debug("Getting flows.")
 
 	flows, err := h.db.FlowGetsByUserID(ctx, userID, token, limit)
 	if err != nil {
-		logrus.Errorf("Could not get flows. err: %v", err)
+		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err
 	}
 
@@ -72,25 +87,30 @@ func (h *flowHandler) FlowGetsByUserID(ctx context.Context, userID uint64, token
 
 // FlowUpdate updates the flow info and return the updated flow
 func (h *flowHandler) FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow, error) {
-	logrus.WithFields(
+	log := logrus.WithFields(
 		logrus.Fields{
-			"flow": f,
-		},
-	).Debugf("Updating flow. flow: %s", f.ID)
+			"func":    "FlowUpdate",
+			"flow_id": f.ID,
+		})
+	log.WithField("flow", f).Debug("Update flow request.")
 
-	// set action id
-	for i := range f.Actions {
-		f.Actions[i].ID = uuid.Must(uuid.NewV4())
+	// generates the actions
+	actions, err := h.generateFlowActions(ctx, f.Actions)
+	if err != nil {
+		log.Errorf("Could not generate the flow actions. err: %v", err)
+		return nil, err
 	}
+	f.Actions = actions
+	log.WithField("flow", f).Debug("Updating the flow.")
 
 	if err := h.db.FlowUpdate(ctx, f); err != nil {
-		logrus.Errorf("Could not update the flow info. err: %v", err)
+		log.Errorf("Could not update the flow info. err: %v", err)
 		return nil, err
 	}
 
 	res, err := h.db.FlowGet(ctx, f.ID)
 	if err != nil {
-		logrus.Errorf("Could not get updated flow. err: %v", err)
+		log.Errorf("Could not get updated flow. err: %v", err)
 		return nil, err
 	}
 
@@ -100,18 +120,71 @@ func (h *flowHandler) FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow,
 // FlowDelete delets the given flow
 // And it also removes the related flow_id from the number-manager
 func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "FlowDelete",
+			"flow_id": id,
+		},
+	)
+	log.Debug("Deleting the flow.")
+
 	err := h.db.FlowDelete(ctx, id)
 	if err != nil {
+		log.Errorf("Could not delete the flow. err: %v", err)
 		return err
 	}
 
 	// send related flow-id clean up request to the number-manager
 	if err := h.reqHandler.NMV1NumberFlowDelete(ctx, id); err != nil {
-		logrus.Errorf("Could not clean up the flow_id from the number-manager. err: %v", err)
+		log.Errorf("Could not clean up the flow_id from the number-manager. err: %v", err)
 		// we don't return the err here, because the flow has been removed already.
 		// and the numbers which have the removed flow-id are OK too, because
 		// when the call-manager request the flow, that request will be failed too.
 	}
 
 	return nil
+}
+
+// generateFlowActions generates actions for flow.
+func (h *flowHandler) generateFlowActions(ctx context.Context, actions []action.Action) ([]action.Action, error) {
+	log := logrus.WithField("func", "generateFlowActions")
+
+	res := []action.Action{}
+	// validate actions
+	if err := h.ValidateActions(actions); err != nil {
+		log.Errorf("Could not pass the action validation. err: %v", err)
+		return nil, err
+	}
+
+	// set action id
+	for _, a := range actions {
+		// a.ID = uuid.Must(uuid.NewV4())
+		tmpAction := a
+		tmpAction.ID = uuid.Must(uuid.NewV4())
+		res = append(res, tmpAction)
+	}
+
+	// parse the flow change options
+	for i, a := range res {
+		// goto type
+		if a.Type == action.TypeGoto {
+			var option action.OptionGoto
+			if err := json.Unmarshal(a.Option, &option); err != nil {
+				log.Errorf("Could not unmarshal the option. err: %v", err)
+				return nil, err
+			}
+
+			option.TargetID = res[option.TargetIndex].ID
+			tmp, err := json.Marshal(option)
+			if err != nil {
+				log.Errorf("Could not marshal the option")
+				return nil, err
+			}
+
+			a.Option = tmp
+			res[i] = a
+		}
+	}
+
+	return res, nil
 }

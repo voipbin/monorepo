@@ -15,6 +15,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
+const (
+	maxActiveFlowExecuteCount = 100
+)
+
 // FlowCreate creates a flow
 func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
 
@@ -59,6 +63,7 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 // It sets next action to current action.
 func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
+		"func":              "ActiveFlowNextActionGet",
 		"call_id":           callID,
 		"current_action_id": caID,
 	})
@@ -69,77 +74,113 @@ func (h *flowHandler) ActiveFlowNextActionGet(ctx context.Context, callID uuid.U
 		log.Errorf("Could not get next action. err: %v", err)
 		return nil, err
 	}
+	log.WithField("action", nextAction).Debug("Found next action.")
 
-	switch nextAction.Type {
+	// execute the active action
+	res, err := h.executeActiveAction(ctx, callID, nextAction)
+	if err != nil {
+		log.Errorf("Could not execute the active action. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// executeActiveAction execute the active action.
+// some of active-actions are flow-manager need to run.
+func (h *flowHandler) executeActiveAction(ctx context.Context, callID uuid.UUID, act *action.Action) (*action.Action, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "executeActiveAction",
+			"call_id": callID,
+		},
+	)
+
+	// update current action in active-flow
+	if err := h.activeFlowUpdateCurrentAction(ctx, callID, act); err != nil {
+		log.Errorf("Could not update the current action. err: %v", err)
+		return nil, fmt.Errorf("could not update the current action. err: %v", err)
+	}
+
+	switch act.Type {
 	case action.TypeAgentCall:
-		if err := h.activeFlowHandleActionAgentCall(ctx, callID, nextAction); err != nil {
+		if err := h.activeFlowHandleActionAgentCall(ctx, callID, act); err != nil {
 			log.Errorf("Could not handle the agent_call action correctly. err: %v", err)
 			return nil, err
 		}
 
 		// do activeflow next action get again.
-		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeConferenceJoin:
-		if err := h.activeFlowHandleActionConferenceJoin(ctx, callID, nextAction); err != nil {
+		if err := h.activeFlowHandleActionConferenceJoin(ctx, callID, act); err != nil {
 			log.Errorf("Could not handle the conference_join action correctly. err: %v", err)
 			return nil, err
 		}
 
 		// do activeflow next action get again.
-		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeConnect:
-		if err := h.activeFlowHandleActionConnect(ctx, callID, nextAction); err != nil {
+		if err := h.activeFlowHandleActionConnect(ctx, callID, act); err != nil {
 			log.Errorf("Could not handle the connect action correctly. err: %v", err)
 			return nil, err
 		}
 
 		// do activeflow next action get again.
-		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+		return h.executeActiveAction(ctx, callID, act)
+
+	case action.TypeGoto:
+		act, err := h.activeFlowHandleActionGoto(ctx, callID, act)
+		if err != nil {
+			log.Errorf("Could not handle the goto action correctly. err: %v", err)
+			return nil, err
+		}
+
+		return h.executeActiveAction(ctx, callID, act)
 
 	case action.TypePatch:
 		// handle the patch
 		// add the patched actions to the active-flow
-		if err := h.activeFlowHandleActionPatch(ctx, callID, nextAction); err != nil {
+		if err := h.activeFlowHandleActionPatch(ctx, callID, act); err != nil {
 			log.Errorf("Could not handle the patch action correctly. err: %v", err)
 			return nil, err
 		}
 
 		// do activeflow next action get again.
-		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypePatchFlow:
 		// handle the patch
 		// add the patched actions to the active-flow
-		if err := h.activeFlowHandleActionPatchFlow(ctx, callID, nextAction); err != nil {
+		if err := h.activeFlowHandleActionPatchFlow(ctx, callID, act); err != nil {
 			log.Errorf("Could not handle the patch_flow action correctly. err: %v", err)
 			return nil, err
 		}
 
 		// do activeflow next action get again.
-		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeTranscribeRecording:
-		if err := h.activeFlowHandleActionTranscribeRecording(ctx, callID, nextAction); err != nil {
+		if err := h.activeFlowHandleActionTranscribeRecording(ctx, callID, act); err != nil {
 			log.Errorf("Could not handle the recording_to_text action correctly. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
 
 		// do activeflow next action get again.
-		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeTranscribeStart:
-		if err := h.activeFlowHandleActionTranscribeStart(ctx, callID, nextAction); err != nil {
+		if err := h.activeFlowHandleActionTranscribeStart(ctx, callID, act); err != nil {
 			log.Errorf("Could not start the transcribe. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
 
 		// do activeflow next action get again.
-		return h.ActiveFlowNextActionGet(ctx, callID, nextAction.ID)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 	}
 
-	return nextAction, nil
+	return act, nil
 }
 
 // activeFlowUpdateCurrentAction updates the current action in active-flow.
@@ -161,6 +202,7 @@ func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID 
 	// set current Action
 	af.CurrentAction = *action
 	af.TMUpdate = getCurTime()
+	af.ExecuteCount++
 
 	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
 		log.Errorf("Could not update the active-flow's current action. err: %v", err)
@@ -174,6 +216,7 @@ func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID 
 // It sets next action to current action.
 func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
+		"func":              "activeFlowGetNextAction",
 		"call_id":           callID,
 		"current_action_id": caID,
 	})
@@ -185,33 +228,26 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 		log.Errorf("Could not get active-flow. err: %v", err)
 		return nil, err
 	}
+	log = log.WithField("active_flow_current_action_id", af.CurrentAction.ID)
+	log.WithField("active_flow", af).Debug("Found active flow.")
+
+	// check execute count.
+	if af.ExecuteCount > maxActiveFlowExecuteCount {
+		log.Errorf("Exceed maximum action execution count. execute_count: %d", af.ExecuteCount)
+		return nil, fmt.Errorf("exceed maximum action execution count")
+	}
 
 	// check the empty actions and action id is start id or not.
 	switch {
 	case len(af.Actions) == 0:
 		resAction := *(h.CreateActionHangup())
-
-		// update current action in active-flow
-		if err := h.activeFlowUpdateCurrentAction(ctx, callID, &resAction); err != nil {
-			log.Errorf("Could not update the current action. err: %v", err)
-			return nil, fmt.Errorf("could not update the current action. err: %v", err)
-		}
-
+		log.Warn("The actions are empty. Returning the action hangup.")
 		return &resAction, nil
 
 	case af.CurrentAction.ID == action.IDStart:
 		resAction := af.Actions[0]
-
-		// update current action in active-flow
-		if err := h.activeFlowUpdateCurrentAction(ctx, callID, &resAction); err != nil {
-			log.Errorf("Could not update the current action. err: %v", err)
-			return nil, fmt.Errorf("could not update the current action. err: %v", err)
-		}
 		return &resAction, nil
 	}
-	log = log.WithFields(logrus.Fields{
-		"active_flow_current_action_id": af.CurrentAction.ID,
-	})
 
 	// compare current action.
 	// if the current action does not match with the active-flow's current action,
@@ -232,12 +268,6 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 		idx++
 	}
 
-	// check maximum action execution count
-	if idx > 100 {
-		log.Errorf("Exceed maximum action execution count. idx: %d", idx)
-		return nil, fmt.Errorf("exceed maximum action execution count")
-	}
-
 	// get nextAction
 	var nextAction action.Action
 	if !found || idx >= (len(af.Actions)-1) {
@@ -248,12 +278,6 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 		nextAction = *(h.CreateActionHangup())
 	} else {
 		nextAction = af.Actions[idx+1]
-	}
-
-	// update current action in active-flow
-	if err := h.activeFlowUpdateCurrentAction(ctx, callID, &nextAction); err != nil {
-		log.Errorf("Could not update the current action. err: %v", err)
-		return nil, fmt.Errorf("could not update the current action. err: %v", err)
 	}
 
 	return &nextAction, nil
@@ -528,6 +552,66 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	return nil
 }
 
+// activeFlowHandleActionGoto handles action goto with active flow.
+func (h *flowHandler) activeFlowHandleActionGoto(ctx context.Context, callID uuid.UUID, act *action.Action) (*action.Action, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "activeFlowHandleActionGoto",
+		"call_id":   callID,
+		"action_id": act.ID,
+	})
+	log.WithField("action", act).Debug("Handle action goto.")
+
+	// get active-flow
+	af, err := h.db.ActiveFlowGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get active-flow. err: %v", err)
+		return nil, fmt.Errorf("could not get active-flow. err: %v", err)
+	}
+
+	var opt action.OptionGoto
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not marshal the goto action's option. err: %v", err)
+		return nil, err
+	}
+
+	var res *action.Action
+	targetIndex := -1
+	for i, a := range af.Actions {
+		if a.ID == opt.TargetID {
+			targetIndex = i
+			res = &a
+			break
+		}
+	}
+	if targetIndex == -1 {
+		log.Errorf("Could not find the target ID in the action flow.")
+		return nil, fmt.Errorf("no target id found")
+	}
+
+	if !opt.Loop {
+		return res, nil
+	} else if opt.LoopCount > 0 {
+		if err := h.activeFlowHandleActionGotoUpdate(ctx, af, act); err != nil {
+			log.Errorf("Could not update the active flow for action goto. err: %v", err)
+			return nil, err
+		}
+		return res, nil
+	} else {
+		// get next action
+		for i, a := range af.Actions {
+			if a.ID == act.ID {
+				if i+1 >= len(af.Actions) {
+					log.Errorf("Exceed length of actions.")
+					return nil, fmt.Errorf("exceed action length")
+				}
+				res = &af.Actions[i+1]
+				return res, nil
+			}
+		}
+		return nil, fmt.Errorf("action not found")
+	}
+}
+
 // activeFlowHandleActionTranscribeRecording handles transcribe_recording
 func (h *flowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Context, callID uuid.UUID, act *action.Action) error {
 
@@ -678,6 +762,48 @@ func appendActionsAfterID(af *activeflow.ActiveFlow, id uuid.UUID, act []action.
 	res = append(res, af.Actions[idx+1:]...)
 
 	af.Actions = res
+
+	return nil
+}
+
+// activeFlowHandleActionGotoUpdate Updates the action flow.
+// it updates the loop_count.
+func (h *flowHandler) activeFlowHandleActionGotoUpdate(ctx context.Context, af *activeflow.ActiveFlow, act *action.Action) error {
+	log := logrus.New().WithFields(
+		logrus.Fields{
+			"func":      "activeFlowHandleActionGotoLoopUpdate",
+			"call_id":   af.CallID,
+			"action_id": act.ID,
+		},
+	)
+
+	// find goto action
+	for i, a := range af.Actions {
+		if a.ID == act.ID {
+			tmpGoto := af.Actions[i]
+			var tmpGotoOpt action.OptionGoto
+			if err := json.Unmarshal(tmpGoto.Option, &tmpGotoOpt); err != nil {
+				log.Errorf("Could not unmarshal the goto option. err: %v", err)
+				return err
+			}
+
+			tmpGotoOpt.LoopCount--
+			tmpRaw, err := json.Marshal(tmpGotoOpt)
+			if err != nil {
+				log.Errorf("Could not marshal the goto option. err: %v", err)
+				return err
+			}
+			af.Actions[i].Option = tmpRaw
+
+			// update active flow
+			if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+				log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+				return err
+			}
+
+			break
+		}
+	}
 
 	return nil
 }

@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
@@ -61,7 +61,7 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"call_id":"1d8dacf4-05ee-11eb-9eae-037ddd66443e","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","user_id":0,"webhook_uri":"","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"call_id":"1d8dacf4-05ee-11eb-9eae-037ddd66443e","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","user_id":0,"webhook_uri":"","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"execute_count":0,"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
