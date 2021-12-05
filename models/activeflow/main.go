@@ -17,6 +17,7 @@ type ActiveFlow struct {
 	WebhookURI string    `json:"webhook_uri"`
 
 	CurrentAction action.Action `json:"current_action"`
+	ExecuteCount  uint64        `json:"execute_count"`
 
 	Actions []action.Action `json:"actions"`
 

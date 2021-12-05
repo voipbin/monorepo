@@ -29,14 +29,14 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20211203045508-3edc4467bb54 // indirect
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20211203075602-7cbc50a11b16 // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20211018180403-4e3bcfe187ff // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210926124428-8c2c84532038 // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210926124500-ba74a1b88236 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210926124840-54f19990bf19 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2 // indirect
-	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
-	google.golang.org/genproto v0.0.0-20211129164237-f09f9a12af12 // indirect
+	golang.org/x/sys v0.0.0-20211204120058-94396e421777 // indirect
+	google.golang.org/genproto v0.0.0-20211203200212-54befc351ae9 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )

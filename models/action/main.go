@@ -41,28 +41,29 @@ type Type string
 
 // List of Action types
 const (
-	TypeAgentCall           Type = "agent_call"
-	TypeAMD                 Type = "amd"
-	TypeAnswer              Type = "answer"
-	TypeConfbridgeJoin      Type = "confbridge_join"
-	TypeConferenceJoin      Type = "conference_join"
-	TypeConnect             Type = "connect"
-	TypeDTMFReceive         Type = "dtmf_receive" // receive the dtmfs.
-	TypeDTMFSend            Type = "dtmf_send"    // send the dtmfs.
-	TypeEcho                Type = "echo"
-	TypeExternalMediaStart  Type = "external_media_start"
-	TypeExternalMediaStop   Type = "external_media_stop"
-	TypeHangup              Type = "hangup"
-	TypePatch               Type = "patch"
-	TypePatchFlow           Type = "patch_flow"
-	TypePlay                Type = "play"
-	TypeRecordingStart      Type = "recording_start" // startr the record of the given call.
-	TypeRecordingStop       Type = "recording_stop"  // stop the record of the given call.
-	TypeStreamEcho          Type = "stream_echo"
-	TypeTalk                Type = "talk"                 // generate audio from the given text(ssml or plain text) and play it.
-	TypeTranscribeStart     Type = "transcribe_start"     // start transcribe the call
-	TypeTranscribeStop      Type = "transcribe_stop"      // stop transcribe the call
-	TypeTranscribeRecording Type = "transcribe_recording" // transcribe the recording and send it to webhook.
+	TypeAgentCall           Type = "agent_call"           // agent-manager. make a all to the agent.
+	TypeAMD                 Type = "amd"                  // call-manager. answering machine detection.
+	TypeAnswer              Type = "answer"               // call-manager. answer the call.
+	TypeConfbridgeJoin      Type = "confbridge_join"      // call-manager. join to the confbridge.
+	TypeConferenceJoin      Type = "conference_join"      // conference-manager. join to the conference.
+	TypeConnect             Type = "connect"              // flow-manager. connect to the other destination.
+	TypeDTMFReceive         Type = "dtmf_receive"         // call-manager. receive the dtmfs.
+	TypeDTMFSend            Type = "dtmf_send"            // call-manager. send the dtmfs.
+	TypeEcho                Type = "echo"                 // call-manager.
+	TypeExternalMediaStart  Type = "external_media_start" // call-manager.
+	TypeExternalMediaStop   Type = "external_media_stop"  // call-manager.
+	TypeGoto                Type = "goto"                 // flow-manager.
+	TypeHangup              Type = "hangup"               // call-manager.
+	TypePatch               Type = "patch"                // flow-manager.
+	TypePatchFlow           Type = "patch_flow"           // flow-manager.
+	TypePlay                Type = "play"                 // call-manager.
+	TypeRecordingStart      Type = "recording_start"      // call-manager. startr the record of the given call.
+	TypeRecordingStop       Type = "recording_stop"       // call-manager. stop the record of the given call.
+	TypeStreamEcho          Type = "stream_echo"          // call-manager.
+	TypeTalk                Type = "talk"                 // call-manager. generate audio from the given text(ssml or plain text) and play it.
+	TypeTranscribeStart     Type = "transcribe_start"     // transcribe-manager. start transcribe the call
+	TypeTranscribeStop      Type = "transcribe_stop"      // transcribe-manager. stop transcribe the call
+	TypeTranscribeRecording Type = "transcribe_recording" // transcribe-manager. transcribe the recording and send it to webhook.
 )
 
 // TypeList list of type array
@@ -78,6 +79,7 @@ var TypeList []Type = []Type{
 	TypeEcho,
 	TypeExternalMediaStart,
 	TypeExternalMediaStop,
+	TypeGoto,
 	TypeHangup,
 	TypePatch,
 	TypePatchFlow,
@@ -157,6 +159,14 @@ type OptionExternalMediaStart struct {
 // OptionExternalMediaStop defines action OptionExternalMediaStop's option
 type OptionExternalMediaStop struct {
 	// no option
+}
+
+// OptionGoto defines action goto's option
+type OptionGoto struct {
+	TargetIndex int       `json:"target_index"` // taget's index of flow aray for go to.
+	TargetID    uuid.UUID `json:"target_id"`    // target's action id in the flow array for go to.
+	Loop        bool      `json:"loop"`         // if it's true, do the count goto.
+	LoopCount   int       `json:"loop_count"`   // loop count.
 }
 
 // OptionHangup defines action hangup's option.
