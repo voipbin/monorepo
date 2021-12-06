@@ -18,6 +18,8 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume C
 // ConsumeMessageOpt consumes message with given options
 // If the queueName was not defined, then uses with default queue name values.
 func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, messageConsume CbMsgConsume) error {
+	log := logrus.WithField("func", "ConsumeMessageOpt")
+
 	queue := r.queueGet(queueName)
 	if queue == nil {
 		return fmt.Errorf("queue not found")
@@ -43,7 +45,9 @@ func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive boo
 		if err != nil {
 			logrus.Errorf("Could not execute the message consume callback. err: %v", err)
 		}
-		message.Ack(false)
+		if err := message.Ack(false); err != nil {
+			log.Errorf("Could not ack the message. err: %v", err)
+		}
 	}
 
 	return nil
@@ -54,11 +58,11 @@ func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume CbM
 	var event Event
 
 	if err := json.Unmarshal(message.Body, &event); err != nil {
-		return fmt.Errorf("Could out unmarshal the message. err: %v", err)
+		return fmt.Errorf("could out unmarshal the message. err: %v", err)
 	}
 
 	if err := messageConsume(&event); err != nil {
-		return fmt.Errorf("Message consumer returns error. err: %v", err)
+		return fmt.Errorf("message consumer returns error. err: %v", err)
 	}
 
 	return nil
@@ -72,6 +76,8 @@ func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) 
 
 // ConsumeRPCOpt consumes RPC message with given options
 func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, cbConsume CbMsgRPC) error {
+	log := logrus.WithField("func", "ConsumeRPCOpt")
+
 	queue := r.queueGet(queueName)
 	if queue == nil {
 		return fmt.Errorf("queue not found")
@@ -94,9 +100,11 @@ func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, n
 	for message := range messages {
 
 		if err := r.executeConsumeRPC(message, cbConsume); err != nil {
-			logrus.Errorf("Could not consume the RPC message correctly. err: %v", err)
+			log.Errorf("Could not consume the RPC message correctly. err: %v", err)
 		}
-		message.Ack(false)
+		if err := message.Ack(false); err != nil {
+			log.Errorf("Could not ack the message. err: %v", err)
+		}
 	}
 
 	return nil
@@ -108,7 +116,7 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) er
 	// message parse
 	var req Request
 	if err := json.Unmarshal(message.Body, &req); err != nil {
-		return fmt.Errorf("Could not parse the message. message: %s, err: %v", string(message.Body), err)
+		return fmt.Errorf("could not parse the message. message: %s, err: %v", string(message.Body), err)
 	}
 
 	// execute callback
