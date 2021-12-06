@@ -29,6 +29,34 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Generate the JWT token and return it.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Generate the JWT token and return it.",
+                "parameters": [
+                    {
+                        "description": "login info",
+                        "name": "login_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyLoginPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyLoginPOST"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "description": "Used to check the server is alive",
@@ -40,6 +68,233 @@ var doc = `{
                     "200": {
                         "description": "{\"message\": \"pong\"}"
                     }
+                }
+            }
+        },
+        "/v1.0/agents": {
+            "get": {
+                "description": "get agents of the user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List agents",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma seperated tag ids",
+                        "name": "tag_ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Agent status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyAgentsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new agent",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new agent.",
+                "parameters": [
+                    {
+                        "description": "The agent detail",
+                        "name": "agent",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyAgentsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/agent.Agent"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/agents/{id}": {
+            "get": {
+                "description": "Get the agent of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the agent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the agent",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "put": {
+                "description": "Update an agent and returns detail updated agent info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an agent and reuturns updated agent info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the agent",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Agent's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyAgentsIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "delete": {
+                "description": "Delete the agent of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete the agent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the agent",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/agents/{id}/addresses": {
+            "put": {
+                "description": "Update an agent addresses info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an agent info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the agent",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Agent's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyAgentsIDAddressesPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/agents/{id}/status": {
+            "put": {
+                "description": "Update an agent status info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an agent's status info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the agent",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Agent's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyAgentsIDStatusPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/agents/{id}/tag_ids": {
+            "put": {
+                "description": "Update an agent tag_ids info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an agent's tag_id info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the agent",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Agent's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyAgentsIDTagIDsPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
                 }
             }
         },
@@ -81,7 +336,7 @@ var doc = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "List calls",
+                "summary": "Get list of calls",
                 "parameters": [
                     {
                         "type": "integer",
@@ -138,20 +393,13 @@ var doc = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Returns detail call info.",
+                "summary": "Get detail call info.",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "The ID of the call",
                         "name": "id",
                         "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "JWT token",
-                        "name": "token",
-                        "in": "query",
                         "required": true
                     }
                 ],
@@ -198,13 +446,6 @@ var doc = `{
                 "summary": "Get list of conferences",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "JWT token",
-                        "name": "token",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "type": "integer",
                         "description": "The size of results. Max 100",
                         "name": "page_size",
@@ -234,15 +475,8 @@ var doc = `{
                 "summary": "Create a new conferences",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "JWT token",
-                        "name": "token",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "description": "The conference detail",
-                        "name": "call",
+                        "name": "conference",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -297,12 +531,40 @@ var doc = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Delete the confernce.",
+                "summary": "Delete the conference.",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "The ID of the conference",
                         "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/conferences/{id}/calls/{call_id}": {
+            "delete": {
+                "description": "Kick the call from the conference.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Kick the call from the conference.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conference",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The call's id",
+                        "name": "call_id",
                         "in": "path",
                         "required": true
                     },
@@ -326,14 +588,25 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Gets a list of domains.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/domain.Domain"
-                            }
+                            "$ref": "#/definitions/response.BodyDomainsGET"
                         }
                     }
                 }
@@ -367,13 +640,6 @@ var doc = `{
                         "description": "The ID of the domain",
                         "name": "id",
                         "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "JWT token",
-                        "name": "token",
-                        "in": "query",
                         "required": true
                     }
                 ],
@@ -426,13 +692,6 @@ var doc = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "JWT token",
-                        "name": "token",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -452,6 +711,27 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Gets a list of extensions.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The domain's id",
+                        "name": "domain_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -470,6 +750,17 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Create a new domain and returns detail created extension info.",
+                "parameters": [
+                    {
+                        "description": "extension info",
+                        "name": "extension",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyExtensionsPOST"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -487,6 +778,24 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Update a extension and reuturns updated extension info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "extension's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyExtensionsIDPUT"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -502,6 +811,15 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Delete a existing extension.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The extension's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {}
                 }
@@ -514,14 +832,25 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Gets a list of flows.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/flow.Flow"
-                            }
+                            "$ref": "#/definitions/response.BodyFlowsGET"
                         }
                     }
                 }
@@ -532,6 +861,17 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Create a new flow and returns detail created flow info.",
+                "parameters": [
+                    {
+                        "description": "flow info.",
+                        "name": "flow",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyFlowsPOST"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -556,13 +896,6 @@ var doc = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "JWT token",
-                        "name": "token",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -580,6 +913,24 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Update a flow and reuturns updated flow info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The flow's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyFlowsIDPUT"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -595,6 +946,15 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Delete a existing flow.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The flow's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {}
                 }
@@ -616,10 +976,9 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "The ISO country code",
-                        "name": "country_code",
-                        "in": "query",
-                        "required": true
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -637,6 +996,17 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Create a new number and returns detail created number info.",
+                "parameters": [
+                    {
+                        "description": "Creating number info.",
+                        "name": "number",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyNumbersPOST"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -661,13 +1031,6 @@ var doc = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "JWT token",
-                        "name": "token",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -679,12 +1042,23 @@ var doc = `{
                     }
                 }
             },
-            "post": {
-                "description": "Create a new number and returns detail created number info.",
+            "put": {
+                "description": "Update the number's basic information.",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Create a new number and returns detail created number info.",
+                "summary": "Update the number's basic information.",
+                "parameters": [
+                    {
+                        "description": "Update info.",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyNumbersIDPUT"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -703,16 +1077,9 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "The ID of the order number",
+                        "description": "The number's id",
                         "name": "id",
                         "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "JWT token",
-                        "name": "token",
-                        "in": "query",
                         "required": true
                     }
                 ],
@@ -733,8 +1100,19 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Download the recording file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The recordingfile's id.",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "recording file"
+                    }
                 }
             }
         },
@@ -776,6 +1154,15 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Returns a detail recording information.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The recording's id.",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -786,6 +1173,125 @@ var doc = `{
                 }
             }
         },
+        "/v1.0/tags": {
+            "get": {
+                "description": "get tags of the user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List tags",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyTagsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new tag.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new tag.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/tag.Tag"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/tags/{id}": {
+            "get": {
+                "description": "Get the tag of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the tag",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the tag",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/tag.Tag"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update the tag info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update the tag info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The tag's id.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info.",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyTagsIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "delete": {
+                "description": "Delete the tag of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete the tag",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the tag",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/v1.0/transcribes": {
             "post": {
                 "description": "transcribe a recording",
@@ -793,6 +1299,17 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Create a transcribe",
+                "parameters": [
+                    {
+                        "description": "Creating transcribe info.",
+                        "name": "transcribe",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyTranscribesPOST"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -802,19 +1319,289 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/v1.0/users": {
+            "get": {
+                "description": "get tags of the user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List tags",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyUsersGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new user.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new user.",
+                "parameters": [
+                    {
+                        "description": "Creating user info.",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyUsersPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/users/{id}": {
+            "get": {
+                "description": "Get the user of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The user's id.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "put": {
+                "description": "Get the user of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Put the user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the user",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info.",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyUsersIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "delete": {
+                "description": "Delete the user of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete the user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The user's id.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/users/{id}/password": {
+            "put": {
+                "description": "Get the user of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Put the user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The user's id.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update info.",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyUsersIDPasswordPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/users/{id}/permission": {
+            "put": {
+                "description": "Get the user of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Put the user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The user's id.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update info.",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyUsersIDPermissionPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
         }
     },
     "definitions": {
         "action.Action": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "string"
-                },
                 "option": {
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "address.Address": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "description": "Detail.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name.",
+                    "type": "string"
+                },
+                "target": {
+                    "description": "Target address. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).",
+                    "type": "string"
+                },
+                "target_name": {
+                    "description": "Target's shown name.",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Type of address. must be one of [\"sip\", \"tel\"].",
+                    "type": "string"
+                }
+            }
+        },
+        "agent.Agent": {
+            "type": "object",
+            "properties": {
+                "addresses": {
+                    "description": "agent's endpoint addresses",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "detail": {
+                    "description": "agent's detail",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "agent id",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "agent's name",
+                    "type": "string"
+                },
+                "permission": {
+                    "description": "agent's permission.",
+                    "type": "integer"
+                },
+                "ring_method": {
+                    "description": "agent's ring method",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "agent's status",
+                    "type": "string"
+                },
+                "tag_ids": {
+                    "description": "agent's tag ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
+                },
+                "user_id": {
+                    "description": "owned user's id",
+                    "type": "integer"
+                },
+                "username": {
+                    "description": "agent's username",
                     "type": "string"
                 }
             }
@@ -842,23 +1629,6 @@ var doc = `{
                 }
             }
         },
-        "call.Address": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "description": "Name.",
-                    "type": "string"
-                },
-                "target": {
-                    "description": "Destination. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "Type of address. must be one of [\"sip\", \"tel\"].",
-                    "type": "string"
-                }
-            }
-        },
         "call.Call": {
             "type": "object",
             "properties": {
@@ -876,7 +1646,7 @@ var doc = `{
                 "destination": {
                     "description": "Destination info",
                     "type": "object",
-                    "$ref": "#/definitions/call.Address"
+                    "$ref": "#/definitions/address.Address"
                 },
                 "direction": {
                     "description": "Call's direction.",
@@ -916,7 +1686,7 @@ var doc = `{
                 "source": {
                     "description": "Source info",
                     "type": "object",
-                    "$ref": "#/definitions/call.Address"
+                    "$ref": "#/definitions/address.Address"
                 },
                 "status": {
                     "description": "Call's status.",
@@ -978,6 +1748,20 @@ var doc = `{
                     "description": "Name.",
                     "type": "string"
                 },
+                "postActions": {
+                    "description": "actions after leaving from the conference.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "preActions": {
+                    "description": "actions before joining to the conference.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
                 "recording_id": {
                     "description": "Currently recording ID.",
                     "type": "string"
@@ -1012,6 +1796,10 @@ var doc = `{
                 "user_id": {
                     "description": "Conference owner's ID.",
                     "type": "integer"
+                },
+                "webhook_uri": {
+                    "description": "webhook uri",
+                    "type": "string"
                 }
             }
         },
@@ -1200,6 +1988,98 @@ var doc = `{
                 }
             }
         },
+        "request.BodyAgentsIDAddressesPUT": {
+            "type": "object",
+            "required": [
+                "addresses"
+            ],
+            "properties": {
+                "addresses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                }
+            }
+        },
+        "request.BodyAgentsIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ring_method": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyAgentsIDStatusPUT": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyAgentsIDTagIDsPUT": {
+            "type": "object",
+            "required": [
+                "tag_ids"
+            ],
+            "properties": {
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "request.BodyAgentsPOST": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "addresses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "permission": {
+                    "type": "integer"
+                },
+                "ring_method": {
+                    "type": "string"
+                },
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyCallsPOST": {
             "type": "object",
             "required": [
@@ -1215,11 +2095,11 @@ var doc = `{
                 },
                 "destination": {
                     "type": "object",
-                    "$ref": "#/definitions/call.Address"
+                    "$ref": "#/definitions/address.Address"
                 },
                 "source": {
                     "type": "object",
-                    "$ref": "#/definitions/call.Address"
+                    "$ref": "#/definitions/address.Address"
                 },
                 "webhook_uri": {
                     "type": "string"
@@ -1238,8 +2118,215 @@ var doc = `{
                 "name": {
                     "type": "string"
                 },
+                "post_actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "pre_actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
                 "type": {
                     "type": "string"
+                },
+                "webhook_uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyExtensionsIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyExtensionsPOST": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "domain_id": {
+                    "type": "string"
+                },
+                "extension": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyFlowsIDPUT": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "webhook_uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyFlowsPOST": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "webhook_uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyLoginPOST": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyNumbersIDPUT": {
+            "type": "object",
+            "properties": {
+                "flow_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyNumbersPOST": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyTagsIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyTranscribesPOST": {
+            "type": "object",
+            "properties": {
+                "language": {
+                    "type": "string"
+                },
+                "recording_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyUsersIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyUsersIDPasswordPUT": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyUsersIDPermissionPUT": {
+            "type": "object",
+            "properties": {
+                "permission": {
+                    "type": "integer"
+                }
+            }
+        },
+        "request.BodyUsersPOST": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "permission": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.BodyAgentsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/agent.Agent"
+                    }
                 }
             }
         },
@@ -1265,6 +2352,45 @@ var doc = `{
                     "items": {
                         "$ref": "#/definitions/call.Call"
                     }
+                }
+            }
+        },
+        "response.BodyDomainsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Domain"
+                    }
+                }
+            }
+        },
+        "response.BodyFlowsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/flow.Flow"
+                    }
+                }
+            }
+        },
+        "response.BodyLoginPOST": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
@@ -1296,6 +2422,67 @@ var doc = `{
                 }
             }
         },
+        "response.BodyTagsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/tag.Tag"
+                    }
+                }
+            }
+        },
+        "response.BodyUsersGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/user.User"
+                    }
+                }
+            }
+        },
+        "tag.Tag": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "description": "tag's detail",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "tag id",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "tag's name",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
+                },
+                "user_id": {
+                    "description": "owned user's id",
+                    "type": "integer"
+                }
+            }
+        },
         "transcribe.Transcribe": {
             "type": "object",
             "properties": {
@@ -1311,9 +2498,12 @@ var doc = `{
                     "description": "recording's id",
                     "type": "string"
                 },
-                "transcription": {
-                    "description": "transcription",
-                    "type": "string"
+                "transcripts": {
+                    "description": "transcripts",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/transcribe.Transcript"
+                    }
                 },
                 "type": {
                     "description": "type",
@@ -1325,6 +2515,58 @@ var doc = `{
                 },
                 "webhook_uri": {
                     "description": "webhook destination uri",
+                    "type": "string"
+                }
+            }
+        },
+        "transcribe.Transcript": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "description": "direction. in/out",
+                    "type": "string"
+                },
+                "message": {
+                    "description": "message",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                }
+            }
+        },
+        "user.User": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "gorm.Model",
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permission": {
+                    "description": "User's permission.",
+                    "type": "integer"
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "User's username",
                     "type": "string"
                 }
             }

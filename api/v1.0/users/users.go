@@ -18,11 +18,7 @@ import (
 // @Summary Create a new user.
 // @Description create a new user.
 // @Produce  json
-// @Param username body string true "User's username"
-// @Param password body string true "User's password"
-// @Param name body string false "User's name"
-// @Param detail body string false "User's detail"
-// @Param permission body uint64 false "User's permission"
+// @Param user body request.BodyUsersPOST true "Creating user info."
 // @Success 200 {object} user.User
 // @Router /v1.0/users [post]
 func usersPOST(c *gin.Context) {
@@ -54,6 +50,7 @@ func usersPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
+	log.WithField("request", req).Debug("Executing usersPOST.")
 
 	// create an user
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
@@ -102,16 +99,11 @@ func usersGET(c *gin.Context) {
 
 	var req request.ParamUsersGET
 	if err := c.BindQuery(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
-	log.WithField("request_body", c.Request.Body).Debug("Received request detail.")
-
-	log = log.WithFields(logrus.Fields{
-		"id":         u.ID,
-		"username":   u.Username,
-		"permission": u.Permission,
-	})
+	log.WithField("request", req).Debug("Executing usersGET.")
 
 	// get tmps
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
@@ -141,7 +133,7 @@ func usersGET(c *gin.Context) {
 // @Summary Get the user
 // @Description Get the user of the given id
 // @Produce json
-// @Param id path string true "The ID of the user"
+// @Param id path string true "The user's id."
 // @Success 200
 // @Router /v1.0/users/{id} [get]
 func usersIDGET(c *gin.Context) {
@@ -170,7 +162,7 @@ func usersIDGET(c *gin.Context) {
 	// get id
 	tmpID := c.Params.ByName("id")
 	id, _ := strconv.Atoi(tmpID)
-	log.WithField("request_body", c.Request.Body).Debug("Received request detail.")
+	log.WithField("request", c.Request.Body).Debug("Executing usersIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.UserGet(&u, uint64(id))
@@ -188,7 +180,7 @@ func usersIDGET(c *gin.Context) {
 // @Summary Delete the user
 // @Description Delete the user of the given id
 // @Produce json
-// @Param id path string true "The ID of the user"
+// @Param id path string true "The user's id."
 // @Success 200
 // @Router /v1.0/users/{id} [delete]
 func usersIDDELETE(c *gin.Context) {
@@ -217,11 +209,11 @@ func usersIDDELETE(c *gin.Context) {
 	// get id
 	tmpID := c.Params.ByName("id")
 	id, _ := strconv.Atoi(tmpID)
-	log.WithField("request_body", c.Request.Body).Debug("Received request detail.")
+	log.WithField("request_body", c.Request.Body).Debug("Executing usersIDDELETE.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.UserDelete(&u, uint64(id)); err != nil {
-		log.Errorf("Could not get users info. err: %v", err)
+		log.Errorf("Could not delete the user info. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -235,14 +227,13 @@ func usersIDDELETE(c *gin.Context) {
 // @Description Get the user of the given id
 // @Produce json
 // @Param id path string true "The ID of the user"
-// @Param name body string false "User's name"
-// @Param detail body string false "User's detail"
+// @Param update_info body request.BodyUsersIDPUT true "The update info."
 // @Success 200
 // @Router /v1.0/users/{id} [put]
 func usersIDPUT(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":            "usersIDGET",
+			"func":            "usersIDPUT",
 			"request_address": c.ClientIP,
 		},
 	)
@@ -264,9 +255,11 @@ func usersIDPUT(c *gin.Context) {
 
 	var req request.BodyUsersIDPUT
 	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
+	log.WithField("request", req).Debug("Executing usersIDPUT.")
 
 	// get id
 	tmpID := c.Params.ByName("id")
@@ -288,8 +281,8 @@ func usersIDPUT(c *gin.Context) {
 // @Summary Put the user
 // @Description Get the user of the given id
 // @Produce json
-// @Param id path string true "The ID of the user"
-// @Param password body string true "New password"
+// @Param id path string true "The user's id."
+// @Param update_info body request.BodyUsersIDPasswordPUT true "Update info."
 // @Success 200
 // @Router /v1.0/users/{id}/password [put]
 func usersIDPasswordPUT(c *gin.Context) {
@@ -342,8 +335,8 @@ func usersIDPasswordPUT(c *gin.Context) {
 // @Summary Put the user
 // @Description Get the user of the given id
 // @Produce json
-// @Param id path string true "The ID of the user"
-// @Param permission body uint64 true "New permission"
+// @Param id path string true "The user's id."
+// @Param update_info body request.BodyUsersIDPermissionPUT true "Update info."
 // @Success 200
 // @Router /v1.0/users/{id}/permission [put]
 func usersIDPermissionPUT(c *gin.Context) {

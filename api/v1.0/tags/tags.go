@@ -17,8 +17,7 @@ import (
 // @Summary Create a new tag.
 // @Description create a new tag.
 // @Produce  json
-// @Param name body string true "Tag's name"
-// @Param detail body string true "Tag's detail"
+// @Prama tag body request.BodyTagsPOST true "Creating tag info."
 // @Success 200 {object} tag.Tag
 // @Router /v1.0/tags [post]
 func tagsPOST(c *gin.Context) {
@@ -209,10 +208,6 @@ func tagsGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	log.Debugf("Received request detail. page_size: %d, page_token: %s", req.PageSize, req.PageToken)
-
-	// get service
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// set max page size
 	pageSize := req.PageSize
@@ -223,6 +218,10 @@ func tagsGET(c *gin.Context) {
 		pageSize = 100
 		log.Debugf("Invalid requested page size. Set to max. page_size: %d", pageSize)
 	}
+	log.Debugf("Received request detail. page_size: %d, page_token: %s", pageSize, req.PageToken)
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get tmps
 	tmps, err := serviceHandler.TagGets(&u, pageSize, req.PageToken)
@@ -251,9 +250,8 @@ func tagsGET(c *gin.Context) {
 // @Summary Update the tag info.
 // @Description Update the tag info.
 // @Produce json
-// @Param id path string true "The ID of the tag"
-// @Param name body string true "the tag's name"
-// @Param detail body string true "the tag's detail"
+// @Param id path string true "The tag's id."
+// @Param update_info body request.BodyTagsIDPUT true "The update info."
 // @Success 200
 // @Router /v1.0/tags/{id} [put]
 func tagsIDPUT(c *gin.Context) {
@@ -282,6 +280,7 @@ func tagsIDPUT(c *gin.Context) {
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("tag_id", id)
 
 	var req request.BodyTagsIDPUT
 	if err := c.BindJSON(&req); err != nil {
@@ -289,6 +288,7 @@ func tagsIDPUT(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
+	log.WithField("request", req).Debug("Executing tagsIDPUT.")
 
 	// update the tag
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
