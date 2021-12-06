@@ -102,6 +102,9 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *Request)
 		false,
 		nil,
 	)
+	if err != nil {
+		return nil, fmt.Errorf("could not consume the message. err: %v", err)
+	}
 
 	// publish the message
 	err = channel.Publish(
