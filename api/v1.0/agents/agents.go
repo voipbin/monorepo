@@ -260,9 +260,7 @@ func agentsGET(c *gin.Context) {
 // @Description Update an agent and returns detail updated agent info.
 // @Produce json
 // @Param id path string true "The ID of the agent"
-// @Param name body string true "Agent's name"
-// @Param detail body string true "Agent's detail"
-// @Param ring_method body string true "Agent's ring method"
+// @Param update_info body request.BodyAgentsIDPUT true "Agent's update info"
 // @Success 200
 // @Router /v1.0/agents/{id} [put]
 func agentsIDPUT(c *gin.Context) {
@@ -316,7 +314,7 @@ func agentsIDPUT(c *gin.Context) {
 // @Description Update an agent addresses info.
 // @Produce json
 // @Param id path string true "The ID of the agent"
-// @Param addresses body [{object}] address.Address true "Agent's addresses"
+// @Param update_info body request.BodyAgentsIDAddressesPUT true "Agent's update info"
 // @Success 200
 // @Router /v1.0/agents/{id}/addresses [put]
 func agentsIDAddressesPUT(c *gin.Context) {
@@ -369,7 +367,7 @@ func agentsIDAddressesPUT(c *gin.Context) {
 // @Description Update an agent tag_ids info.
 // @Produce json
 // @Param id path string true "The ID of the agent"
-// @Param addresses body [string] true "Agent's tag ids"
+// @Param update_info body request.BodyAgentsIDTagIDsPUT true "Agent's update info"
 // @Success 200
 // @Router /v1.0/agents/{id}/tag_ids [put]
 func agentsIDTagIDsPUT(c *gin.Context) {
@@ -398,7 +396,7 @@ func agentsIDTagIDsPUT(c *gin.Context) {
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 
-	var req request.BodyAgentsIDAddressesPUT
+	var req request.BodyAgentsIDTagIDsPUT
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not bind the request. err: %v", err)
 		c.AbortWithStatus(400)
@@ -407,7 +405,7 @@ func agentsIDTagIDsPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.AgentUpdateAddresses(&u, id, req.Addresses); err != nil {
+	if err := serviceHandler.AgentUpdateTagIDs(&u, id, req.TagIDs); err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -422,7 +420,7 @@ func agentsIDTagIDsPUT(c *gin.Context) {
 // @Description Update an agent status info.
 // @Produce json
 // @Param id path string true "The ID of the agent"
-// @Param status body [string] true "Agent's status"
+// @Param update_info body request.BodyAgentsIDStatusPUT true "Agent's update info"
 // @Success 200
 // @Router /v1.0/agents/{id}/status [put]
 func agentsIDStatusPUT(c *gin.Context) {
@@ -450,6 +448,8 @@ func agentsIDStatusPUT(c *gin.Context) {
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("agent_id", id)
+	log.Debug("Executing agentsIDStatusPUT.")
 
 	var req request.BodyAgentsIDStatusPUT
 	if err := c.BindJSON(&req); err != nil {

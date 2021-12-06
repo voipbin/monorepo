@@ -15,38 +15,47 @@ import (
 // @Summary Create a transcribe
 // @Description transcribe a recording
 // @Produce json
+// @Param transcribe body request.BodyTranscribesPOST true "Creating transcribe info."
 // @Success 200 {object} transcribe.Transcribe
 // @Router /v1.0/transcribes [post]
 func transcribesPOST(c *gin.Context) {
-
-	var requestParam request.BodyTranscribesPOST
-
-	if err := c.BindJSON(&requestParam); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":            "agentsGET",
 			"request_address": c.ClientIP,
 		},
 	)
-	log.Debugf("transcribesPOST. Received request detail. recording_id: %s, language: %s", requestParam.RecordingID, requestParam.Language)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	var req request.BodyTranscribesPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing transcribesPOST.")
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create a transcribe
-	res, err := serviceHandler.TranscribeCreate(&u, requestParam.RecordingID, requestParam.Language)
+	res, err := serviceHandler.TranscribeCreate(&u, req.RecordingID, req.Language)
 	if err != nil {
-		logrus.Errorf("Could not create a transcribe. err: %v", err)
+		log.Errorf("Could not create a transcribe. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

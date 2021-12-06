@@ -1,8 +1,6 @@
 package recordings
 
 import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -10,6 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -23,30 +22,34 @@ import (
 // @Success 200 {object} response.BodyRecordingsGET
 // @Router /v1.0/recordings [get]
 func recordingsGET(c *gin.Context) {
-
-	var requestParam request.ParamRecordingsGET
-
-	if err := c.BindQuery(&requestParam); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":            "recordingsGET",
 			"request_address": c.ClientIP,
 		},
 	)
-	log.Debugf("recordingsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
 
-	// get service
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	var requestParam request.ParamRecordingsGET
+	if err := c.BindQuery(&requestParam); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -54,6 +57,10 @@ func recordingsGET(c *gin.Context) {
 		pageSize = 10
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
+	log.Debugf("recordingsGET. Received request detail. page_size: %d, page_token: %s", pageSize, requestParam.PageToken)
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get recordings
 	recordings, err := serviceHandler.RecordingGets(&u, pageSize, requestParam.PageToken)
@@ -82,27 +89,35 @@ func recordingsGET(c *gin.Context) {
 // @Summary Returns a detail recording information.
 // @Description Returns a detial recording information of the given recording id.
 // @Produce json
+// @Param id query string true "The recording's id."
 // @Success 200 {object} recording.Recording
 // @Router /v1.0/recordings/{id} [get]
 func recordingsIDGET(c *gin.Context) {
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "recordingsIDGET",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
-
-	// get user
 	u := tmp.(user.User)
-	log := logrus.WithFields(logrus.Fields{
-		"id":         u.ID,
-		"username":   u.Username,
-		"permission": u.Permission,
-	})
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("recording_id", id)
 	log.Debug("Executing recordingsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
