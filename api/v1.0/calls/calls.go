@@ -22,37 +22,50 @@ import (
 // @Success 200 {object} call.Call
 // @Router /v1.0/calls [post]
 func callsPOST(c *gin.Context) {
-
-	var requestBody request.BodyCallsPOST
-
-	if err := c.BindJSON(&requestBody); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "callsPOST",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	var req request.BodyCallsPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create flow
-	flow, err := serviceHandler.FlowCreate(&u, "tmp", "tmp outbound flow", requestBody.WebhookURI, requestBody.Actions, false)
+	flow, err := serviceHandler.FlowCreate(&u, "tmp", "tmp outbound flow", req.WebhookURI, req.Actions, false)
 	if err != nil {
-		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
+		log.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
 	// create call
-	res, err := serviceHandler.CallCreate(&u, flow.ID, &requestBody.Source, &requestBody.Destination)
+	res, err := serviceHandler.CallCreate(&u, flow.ID, &req.Source, &req.Destination)
 	if err != nil {
-		logrus.Errorf("Could not create a call for outgoing. err; %v", err)
+		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -70,17 +83,31 @@ func callsPOST(c *gin.Context) {
 // @Success 200 {object} call.Call
 // @Router /v1.0/calls/{id} [delete]
 func callsIDDelete(c *gin.Context) {
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "callsIDDelete",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log.Debug("Executing callsIDDelete.")
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
@@ -88,7 +115,7 @@ func callsIDDelete(c *gin.Context) {
 	// hangup the call
 	err := serviceHandler.CallDelete(&u, id)
 	if err != nil {
-		logrus.Infof("Could not get the call info. err: %v", err)
+		log.Errorf("Could not hangup the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -99,7 +126,7 @@ func callsIDDelete(c *gin.Context) {
 // callsGET handles GET /calls request.
 // It returns list of calls of the given user.
 
-// @Summary List calls
+// @Summary Get list of calls
 // @Description get calls of the user
 // @Produce  json
 // @Param page_size query int false "The size of results. Max 100"
@@ -107,19 +134,12 @@ func callsIDDelete(c *gin.Context) {
 // @Success 200 {object} response.BodyCallsGET
 // @Router /v1.0/calls [get]
 func callsGET(c *gin.Context) {
-
-	var requestParam request.ParamCallsGET
-
-	if err := c.BindQuery(&requestParam); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":            "callsGET",
 			"request_address": c.ClientIP,
 		},
 	)
-	log.Debugf("callsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	tmp, exists := c.Get("user")
 	if !exists {
@@ -128,9 +148,21 @@ func callsGET(c *gin.Context) {
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
 
-	// get service
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	var requestParam request.ParamCallsGET
+	if err := c.BindQuery(&requestParam); err != nil {
+		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.Debugf("callsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -138,6 +170,9 @@ func callsGET(c *gin.Context) {
 		pageSize = 10
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get calls
 	calls, err := serviceHandler.CallGets(&u, pageSize, requestParam.PageToken)
@@ -163,17 +198,19 @@ func callsGET(c *gin.Context) {
 
 // callsIDGET handles GET /calls/{id} request.
 // It returns detail call info.
-
-// @Summary Returns detail call info.
+// @Summary Get detail call info.
 // @Description Returns detail call info of the given call id.
 // @Produce json
 // @Param id path string true "The ID of the call"
-// @Param token query string true "JWT token"
 // @Success 200 {object} call.Call
 // @Router /v1.0/calls/{id} [get]
 func callsIDGET(c *gin.Context) {
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "callsIDGET",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
@@ -182,11 +219,17 @@ func callsIDGET(c *gin.Context) {
 		return
 	}
 	u := tmp.(user.User)
-	log := logrus.WithFields(logrus.Fields{
-		"id":         u.ID,
-		"username":   u.Username,
-		"permission": u.Permission,
-	})
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
 	log.Debug("Executing callsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)

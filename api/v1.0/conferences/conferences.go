@@ -12,54 +12,45 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
-// ApplyRoutes applies router to the gin Engine
-func ApplyRoutes(r *gin.RouterGroup) {
-	conferences := r.Group("/conferences")
-
-	conferences.POST("", conferencesPOST)
-	conferences.GET("", conferencesGET)
-	conferences.GET("/:id", conferencesIDGET)
-	conferences.DELETE("/:id", conferencesIDDELETE)
-
-	conferences.DELETE("/:id/calls/:call_id", conferencesIDCallsIDDELETE)
-}
-
 // conferencesGET handles GET /conferences request.
 // It returns list of conferences of the given user.
 
 // @Summary Get list of conferences
 // @Description get conferences of the user
 // @Produce json
-// @Param token query string true "JWT token"
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
 // @Success 200 {object} response.BodyCallsGET
 // @Router /v1.0/conferences [get]
 func conferencesGET(c *gin.Context) {
-
-	var requestParam request.ParamConferencesGET
-
-	if err := c.BindQuery(&requestParam); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":            "conferencesGET",
 			"request_address": c.ClientIP,
 		},
 	)
-	log.Debugf("conferencesGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
 
-	// get service
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	var requestParam request.ParamConferencesGET
+	if err := c.BindQuery(&requestParam); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -67,6 +58,10 @@ func conferencesGET(c *gin.Context) {
 		pageSize = 10
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
+	log.Debugf("conferencesGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get conferences
 	confs, err := serviceHandler.ConferenceGets(&u, pageSize, requestParam.PageToken)
@@ -96,29 +91,43 @@ func conferencesGET(c *gin.Context) {
 // @Summary Create a new conferences
 // @Description Create a new conference with the given information.
 // @Produce json
-// @Param token query string true "JWT token"
-// @Param call body request.BodyConferencesPOST true "The conference detail"
+// @Param conference body request.BodyConferencesPOST true "The conference detail"
 // @Success 200 {object} conference.Conference
 // @Router /v1.0/conferences [post]
 func conferencesPOST(c *gin.Context) {
-	var requestBody request.BodyConferencesPOST
-
-	if err := c.BindJSON(&requestBody); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conferencesPOST",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	var requestBody request.BodyConferencesPOST
+	if err := c.BindJSON(&requestBody); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := servicehandler.ConferenceCreate(&u, requestBody.Type, requestBody.Name, requestBody.Detail, requestBody.WebhookURI, requestBody.PreActions, requestBody.PostActions)
 	if err != nil || res == nil {
+		log.Errorf("Could not create the conference. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -136,20 +145,37 @@ func conferencesPOST(c *gin.Context) {
 // @Success 200 {object} conference.Conference
 // @Router /v1.0/conferences/{id} [get]
 func conferencesIDGET(c *gin.Context) {
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conferencesIDGET",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("conference_id", id)
+	log.Debug("Executing conferencesIDGET.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := servicehandler.ConferenceGet(&u, id)
 	if err != nil || res == nil {
+		log.Errorf("Could not get the conference. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -163,25 +189,40 @@ func conferencesIDGET(c *gin.Context) {
 // @Description Delete the conference. All the participants in the conference will be kicked out.
 // @Produce json
 // @Param id path string true "The ID of the conference"
-// @Param token query string true "JWT token"
 // @Success 200
 // @Router /v1.0/conferences/{id} [delete]
 func conferencesIDDELETE(c *gin.Context) {
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conferencesIDDELETE",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("conference_id", id)
+	log.Debug("Executing conferencesIDDELETE.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	err := servicehandler.ConferenceDelete(&u, id)
 	if err != nil {
+		log.Errorf("Could not delete the conference. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -195,26 +236,46 @@ func conferencesIDDELETE(c *gin.Context) {
 // @Description Kick the call from the conference.
 // @Produce json
 // @Param id path string true "The ID of the conference"
-// @Param call_id
+// @Param call_id path string true "The call's id"
 // @Param token query string true "JWT token"
 // @Success 200
 // @Router /v1.0/conferences/{id}/calls/{call_id} [delete]
 func conferencesIDCallsIDDELETE(c *gin.Context) {
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-	callID := uuid.FromStringOrNil(c.Params.ByName("call_id"))
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conferencesIDCallsIDDELETE",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	callID := uuid.FromStringOrNil(c.Params.ByName("call_id"))
+	log = log.WithFields(
+		logrus.Fields{
+			"conference_id": id,
+			"call_id":       callID,
+		},
+	)
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := servicehandler.ConferenceKick(&u, id, callID); err != nil {
+		log.Errorf("Could not kick the call from the conference. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
