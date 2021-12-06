@@ -18,38 +18,48 @@ import (
 // @Summary Create a new domain and returns detail created extension info.
 // @Description Create a new extension and returns detail created extension info.
 // @Produce json
+// @Param extension body request.BodyExtensionsPOST true "extension info"
 // @Success 200 {object} extension.Extension
 // @Router /v1.0/extensions [post]
 func extensionsPOST(c *gin.Context) {
-
-	var body request.BodyExtensionsPOST
-	if err := c.BindJSON(&body); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "extensionsPOST",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
-	log := logrus.WithFields(logrus.Fields{
-		"id":         u.ID,
-		"username":   u.Username,
-		"permission": u.Permission,
-	})
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	var req request.BodyExtensionsPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
 
 	// create a extension
 	e := &extension.Extension{
 		UserID:   u.ID,
-		Name:     body.Name,
-		Detail:   body.Detail,
-		DomainID: body.DomainID,
+		Name:     req.Name,
+		Detail:   req.Detail,
+		DomainID: req.DomainID,
 
-		Extension: body.Extension,
-		Password:  body.Password,
+		Extension: req.Extension,
+		Password:  req.Password,
 	}
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
@@ -68,52 +78,55 @@ func extensionsPOST(c *gin.Context) {
 // @Summary Gets a list of extensions.
 // @Description Gets a list of extensions
 // @Produce json
+// @Param page_size query int false "The size of results. Max 100"
+// @Param page_token query string false "The token. tm_create"
+// @Param domain_id query string true "The domain's id"
 // @Success 200 {array} extension.Extension
 // @Router /v1.0/extensions [get]
 func extensionsGET(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "extensionsGET",
+			"request_address": c.ClientIP,
+		},
+	)
 
-	var requestParam request.ParamExtensionsGET
+	tmp, exists := c.Get("user")
+	if !exists {
+		log.Errorf("Could not find user info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(user.User)
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
 
-	if err := c.BindQuery(&requestParam); err != nil {
+	var req request.ParamExtensionsGET
+	if err := c.BindQuery(&req); err != nil {
 		logrus.Errorf("Could not bind query. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
-	log := logrus.WithFields(
-		logrus.Fields{
-			"request_address": c.ClientIP,
-			"request":         requestParam,
-		},
-	)
-	log.Debugf("extensionsGET. Received request detail. domain_id: %s, page_size: %d, page_token: %s", requestParam.DomainID, requestParam.PageSize, requestParam.PageToken)
 
-	tmp, exists := c.Get("user")
-	if !exists {
-		logrus.Errorf("Could not find user info.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	u := tmp.(user.User)
-	log = log.WithFields(logrus.Fields{
-		"id":         u.ID,
-		"username":   u.Username,
-		"permission": u.Permission,
-	})
-
-	// set max page size
-	pageSize := requestParam.PageSize
+	// get params
+	pageSize := req.PageSize
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 10
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
+	domainID := uuid.FromStringOrNil(req.DomainID)
+	log.Debugf("extensionsGET. Received request detail. domain_id: %s, page_size: %d, page_token: %s", req.DomainID, req.PageSize, req.PageToken)
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get extensions
-	domainID := uuid.FromStringOrNil(requestParam.DomainID)
-	exts, err := serviceHandler.ExtensionGets(&u, domainID, pageSize, requestParam.PageToken)
+	exts, err := serviceHandler.ExtensionGets(&u, domainID, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a extensions list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -140,31 +153,40 @@ func extensionsGET(c *gin.Context) {
 // @Description Returns detail extension info of the given extension id.
 // @Produce json
 // @Param id path string true "The ID of the extension"
-// @Param token query string true "JWT token"
 // @Success 200 {object} extension.Extension
 // @Router /v1.0/extension/{id} [get]
 func extensionsIDGET(c *gin.Context) {
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "extensionsIDGET",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
-	log := logrus.WithFields(logrus.Fields{
-		"id":         u.ID,
-		"username":   u.Username,
-		"permission": u.Permission,
-	})
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("extension_id", id)
 	log.Debug("Executing extensionsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.ExtensionGet(&u, id)
 	if err != nil {
-		log.Errorf("Could not get a domain. err: %v", err)
+		log.Errorf("Could not get the extension. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -178,44 +200,57 @@ func extensionsIDGET(c *gin.Context) {
 // @Summary Update a extension and reuturns updated extension info.
 // @Description Update a extension and returns detail updated extension info.
 // @Produce json
+// @Param id path string true "extension's id"
+// @Param update_info body request.BodyExtensionsIDPUT true "Update info"
 // @Success 200 {object} extension.Extension
 // @Router /v1.0/extensions/{id} [put]
 func extensionsIDPUT(c *gin.Context) {
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-
-	var body request.BodyExtensionsIDPUT
-	if err := c.BindJSON(&body); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "extensionsIDPUT",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
-	log := logrus.WithFields(logrus.Fields{
-		"id":         u.ID,
-		"username":   u.Username,
-		"permission": u.Permission,
-	})
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("extension_id", id)
+
+	var req request.BodyExtensionsIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.Debug("Executing extensionsIDPUT.")
 
 	f := &extension.Extension{
 		ID:       id,
-		Name:     body.Name,
-		Detail:   body.Detail,
-		Password: body.Password,
+		Name:     req.Name,
+		Detail:   req.Detail,
+		Password: req.Password,
 	}
 
-	// update a domain
+	// update
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.ExtensionUpdate(&u, f)
 	if err != nil {
-		log.Errorf("Could not create a extension. err: %v", err)
+		log.Errorf("Could not update the extension. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -229,24 +264,35 @@ func extensionsIDPUT(c *gin.Context) {
 // @Description Delete a existing extension.
 // @Produce json
 // @Success 200
+// @Param id path string true "The extension's id"
 // @Router /v1.0/extensions/{id} [delete]
 func extensionsIDDELETE(c *gin.Context) {
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "extensionsIDDELETE",
+			"request_address": c.ClientIP,
+		},
+	)
 
 	tmp, exists := c.Get("user")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		log.Errorf("Could not find user info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	u := tmp.(user.User)
-	log := logrus.WithFields(logrus.Fields{
-		"id":         u.ID,
-		"username":   u.Username,
-		"permission": u.Permission,
-	})
+	log = log.WithFields(
+		logrus.Fields{
+			"user_id":    u.ID,
+			"username":   u.Username,
+			"permission": u.Permission,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("extension_id", id)
+	log.Debug("Executing extensionsIDDELETE.")
 
 	// delete a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
