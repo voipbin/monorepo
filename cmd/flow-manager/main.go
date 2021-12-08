@@ -147,7 +147,7 @@ func runListen(dbHandler dbhandler.DBHandler) error {
 	// create flowhandler
 	sockRequest := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	sockRequest.Connect()
-	requestHandler := requesthandler.NewRequestHandler(sockRequest, "flow_manager")
+	requestHandler := requesthandler.NewRequestHandler(sockRequest, "flow-manager")
 	flowHandler := flowhandler.NewFlowHandler(dbHandler, requestHandler)
 
 	// create and run the listen handler

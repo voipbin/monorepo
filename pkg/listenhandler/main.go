@@ -36,13 +36,15 @@ var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// activeflows
-	regV1ActiveFlows       = regexp.MustCompile("/v1/active-flows")
-	regV1ActiveFlowsIDNext = regexp.MustCompile("/v1/active-flows/" + regUUID + "/next")
+	regV1ActiveFlows                  = regexp.MustCompile("/v1/active-flows$")
+	regV1ActiveFlowsIDNext            = regexp.MustCompile("/v1/active-flows/" + regUUID + "/next$")
+	regV1ActiveFlowsIDForwardActionID = regexp.MustCompile("/v1/active-flows/" + regUUID + "/forward_action_id$")
 
 	// flows
-	regV1Flows            = regexp.MustCompile("/v1/flows")
-	regV1FlowsID          = regexp.MustCompile("/v1/flows/" + regUUID)
-	regV1FlowsIDActionsID = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID)
+	regV1FlowsGet         = regexp.MustCompile(`/v1/flows\?`)
+	regV1Flows            = regexp.MustCompile("/v1/flows$")
+	regV1FlowsID          = regexp.MustCompile("/v1/flows/" + regUUID + "$")
+	regV1FlowsIDActionsID = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "$")
 )
 
 var (
@@ -154,6 +156,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/active-flows"
 		response, err = h.v1ActiveFlowsIDNextGet(m)
 
+	case regV1ActiveFlowsIDForwardActionID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/active-flows"
+		response, err = h.v1ActiveFlowsIDForwardActionIDPut(m)
+
 	case regV1FlowsIDActionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows/actions"
 		response, err = h.v1FlowsIDActionsIDGet(m)
@@ -174,7 +180,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/flows"
 		response, err = h.v1FlowsIDDelete(m)
 
-	case regV1Flows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1FlowsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows"
 		response, err = h.v1FlowsGet(m)
 

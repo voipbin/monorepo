@@ -33,14 +33,12 @@ func TestActiveFlowCreate(t *testing.T) {
 		db: mockDB,
 	}
 
-	type test struct {
+	tests := []struct {
 		name         string
 		flow         *flow.Flow
 		callID       uuid.UUID
 		expectActive *activeflow.ActiveFlow
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&flow.Flow{
@@ -54,7 +52,9 @@ func TestActiveFlowCreate(t *testing.T) {
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
-				Actions: []action.Action{},
+				ExecuteCount:    0,
+				ForwardActionID: action.IDEmpty,
+				Actions:         []action.Action{},
 			},
 		},
 		{
@@ -72,7 +72,9 @@ func TestActiveFlowCreate(t *testing.T) {
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
-				Actions: []action.Action{},
+				ExecuteCount:    0,
+				ForwardActionID: action.IDEmpty,
+				Actions:         []action.Action{},
 			},
 		},
 	}
@@ -164,6 +166,7 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 					ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
 					Type: action.TypeAnswer,
 				},
+				ForwardActionID: action.IDEmpty,
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
@@ -188,7 +191,8 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
-				Actions: []action.Action{},
+				ForwardActionID: action.IDEmpty,
+				Actions:         []action.Action{},
 			},
 			action.Action{
 				ID:   action.IDFinish,
@@ -203,6 +207,7 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
+				ForwardActionID: action.IDEmpty,
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("97f96f9c-08a4-11eb-8ea0-57d38a96eca3"),
@@ -219,13 +224,45 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 				Type: action.TypeAnswer,
 			},
 		},
+		{
+			"move action id has set",
+			uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
+			uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
+			activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID: uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
+				},
+				ForwardActionID: uuid.FromStringOrNil("ab88bd9a-5733-11ec-9fa5-df017a802cfc"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("97f96f9c-08a4-11eb-8ea0-57d38a96eca3"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("ab88bd9a-5733-11ec-9fa5-df017a802cfc"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("bfec567a-5733-11ec-846c-efcfc0955605"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			action.Action{
+				ID:   uuid.FromStringOrNil("ab88bd9a-5733-11ec-9fa5-df017a802cfc"),
+				Type: action.TypeAnswer,
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
+			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil).AnyTimes()
 
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 			act, err := h.ActiveFlowNextActionGet(ctx, tt.callID, tt.actionID)
@@ -560,14 +597,12 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 		reqHandler: mockReq,
 	}
 
-	type test struct {
+	tests := []struct {
 		name         string
 		callID       uuid.UUID
 		af           activeflow.ActiveFlow
 		expectAction action.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"next action echo",
 			uuid.FromStringOrNil("f96b5730-0c24-11eb-89ff-af22fc6e8dce"),
@@ -578,6 +613,7 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 					Type:   action.TypeConnect,
 					Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
 				},
+				ForwardActionID: action.IDEmpty,
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("005a71ac-0c25-11eb-b9ba-ffa78e01ffc9"),
@@ -603,11 +639,42 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
+				ForwardActionID: action.IDEmpty,
 			},
 			action.Action{
 				ID:     action.IDFinish,
 				Type:   action.TypeHangup,
 				Option: []byte(`{}`),
+			},
+		},
+		{
+			"forwrad action id has set",
+			uuid.FromStringOrNil("44413184-0c26-11eb-83a9-974d19b06d35"),
+			activeflow.ActiveFlow{
+				UserID: 1,
+				CurrentAction: action.Action{
+					ID: uuid.FromStringOrNil("15d7d942-574d-11ec-9e99-2fa8e28a2590"),
+				},
+
+				ForwardActionID: uuid.FromStringOrNil("055eaece-574d-11ec-a54a-8fe3a5c78c8b"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("055eaece-574d-11ec-a54a-8fe3a5c78c8b"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("15d7d942-574d-11ec-9e99-2fa8e28a2590"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("15f911a2-574d-11ec-ba14-2fabebacf4bb"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			action.Action{
+				ID:   uuid.FromStringOrNil("055eaece-574d-11ec-a54a-8fe3a5c78c8b"),
+				Type: action.TypeAnswer,
 			},
 		},
 	}

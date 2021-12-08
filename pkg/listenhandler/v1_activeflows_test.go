@@ -28,16 +28,14 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 		flowHandler: mockFlowHandler,
 	}
 
-	type test struct {
+	tests := []struct {
 		name         string
 		request      *rabbitmqhandler.Request
 		expectCallID uuid.UUID
 		expectFlowID uuid.UUID
 		af           *activeflow.ActiveFlow
 		expectRes    *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&rabbitmqhandler.Request{
@@ -56,12 +54,14 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
-				Actions: []action.Action{},
+				ExecuteCount:    0,
+				ForwardActionID: action.IDEmpty,
+				Actions:         []action.Action{},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"call_id":"1d8dacf4-05ee-11eb-9eae-037ddd66443e","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","user_id":0,"webhook_uri":"","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"execute_count":0,"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"call_id":"1d8dacf4-05ee-11eb-9eae-037ddd66443e","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","user_id":0,"webhook_uri":"","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"execute_count":0,"forward_action_id":"00000000-0000-0000-0000-000000000002","actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -130,6 +130,70 @@ func TestV1ActiveFlowsIDNextGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockFlowHandler.EXPECT().ActiveFlowNextActionGet(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.nextAction, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.StatusCode != 200 {
+				t.Errorf("Wrong match. expect: 200, got: %d", res.StatusCode)
+			}
+		})
+	}
+}
+
+func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+
+	h := &listenHandler{
+		db:          mockDB,
+		rabbitSock:  mockSock,
+		flowHandler: mockFlowHandler,
+	}
+
+	type test struct {
+		name            string
+		request         *rabbitmqhandler.Request
+		callID          uuid.UUID
+		forwardActionID uuid.UUID
+		forwardNow      bool
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/active-flows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": true}`),
+			},
+			uuid.FromStringOrNil("6f14f3b8-5758-11ec-a413-772c32e3e51f"),
+			uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
+			true,
+		},
+		{
+			"forward now false",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/active-flows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": false}`),
+			},
+			uuid.FromStringOrNil("6f14f3b8-5758-11ec-a413-772c32e3e51f"),
+			uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockFlowHandler.EXPECT().ActiveFlowSetForwardActionID(gomock.Any(), tt.callID, tt.forwardActionID, tt.forwardNow).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -32,8 +32,9 @@ func (a *Action) String() string {
 
 // static ActionID
 var (
-	IDStart  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
 	IDFinish uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000")
+	IDStart  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
+	IDEmpty  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002")
 )
 
 // Type type

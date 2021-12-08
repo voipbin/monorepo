@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 type flowHandler struct {
@@ -27,6 +27,7 @@ type FlowHandler interface {
 
 	ActiveFlowCreate(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
 	ActiveFlowNextActionGet(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
+	ActiveFlowSetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
 
 	FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow, error)
 	FlowDelete(ctx context.Context, id uuid.UUID) error
