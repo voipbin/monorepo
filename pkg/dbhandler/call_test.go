@@ -923,7 +923,7 @@ func TestCallSetConferenceID(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				ConfID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
+				ConferenceID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
 
 				Source:      address.Address{},
 				Destination: address.Address{},

@@ -49,7 +49,7 @@ func TestBridgeLeftJoin(t *testing.T) {
 				ID:        uuid.FromStringOrNil("095658d8-151c-11ec-8aa9-1fca7824a72f"),
 				ChannelID: "0820e474-151c-11ec-859d-0b3af329400f",
 				Status:    call.StatusProgressing,
-				ConfID:    uuid.FromStringOrNil("3d093cca-2022-11ec-9358-c7e3a147380e"),
+				ConferenceID:    uuid.FromStringOrNil("3d093cca-2022-11ec-9358-c7e3a147380e"),
 			},
 			&bridge.Bridge{
 				ReferenceID: uuid.FromStringOrNil("095658d8-151c-11ec-8aa9-1fca7824a72f"),

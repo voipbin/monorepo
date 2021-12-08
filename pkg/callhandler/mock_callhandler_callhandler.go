@@ -139,6 +139,20 @@ func (mr *MockCallHandlerMockRecorder) ActionNext(ctx, c interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionNext", reflect.TypeOf((*MockCallHandler)(nil).ActionNext), ctx, c)
 }
 
+// ActionNextForce mocks base method.
+func (m *MockCallHandler) ActionNextForce(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActionNextForce", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActionNextForce indicates an expected call of ActionNextForce.
+func (mr *MockCallHandlerMockRecorder) ActionNextForce(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionNextForce", reflect.TypeOf((*MockCallHandler)(nil).ActionNextForce), ctx, c)
+}
+
 // ActionTimeout mocks base method.
 func (m *MockCallHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *action.Action) error {
 	m.ctrl.T.Helper()

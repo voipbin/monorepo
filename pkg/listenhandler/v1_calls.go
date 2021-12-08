@@ -341,9 +341,14 @@ func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *r
 	id := uuid.FromStringOrNil(uriItems[3])
 	log := logrus.WithFields(
 		logrus.Fields{
-			"id": id,
+			"call_id": id,
 		})
-	log.Debug("Executing processV1CallsIDActionNextPost.")
+	log.WithField("request", m).Debug("Executing processV1CallsIDActionNextPost.")
+
+	var data request.V1DataCallsIDActionNextPost
+	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+		return nil, err
+	}
 
 	c, err := h.db.CallGet(ctx, id)
 	if err != nil {
@@ -354,8 +359,14 @@ func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *r
 	// we run the go runc() here.
 	// because we don't want to action's running time caused the request timeout.
 	go func() {
-		if err := h.callHandler.ActionNext(ctx, c); err != nil {
-			log.Errorf("Could not execute the action next. err: %v", err)
+		if data.Force {
+			if err := h.callHandler.ActionNextForce(ctx, c); err != nil {
+				log.Errorf("Could not execute the action next force. err: %v", err)
+			}
+		} else {
+			if err := h.callHandler.ActionNext(ctx, c); err != nil {
+				log.Errorf("Could not execute the action next. err: %v", err)
+			}
 		}
 	}()
 

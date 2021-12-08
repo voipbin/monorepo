@@ -790,6 +790,20 @@ func (mr *MockDBHandlerMockRecorder) ChannelSetDirection(ctx, id, direction inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDirection", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDirection), ctx, id, direction)
 }
 
+// ChannelSetPlaybackID mocks base method.
+func (m *MockDBHandler) ChannelSetPlaybackID(ctx context.Context, id, playbackID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetPlaybackID", ctx, id, playbackID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetPlaybackID indicates an expected call of ChannelSetPlaybackID.
+func (mr *MockDBHandlerMockRecorder) ChannelSetPlaybackID(ctx, id, playbackID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetPlaybackID", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetPlaybackID), ctx, id, playbackID)
+}
+
 // ChannelSetSIPCallID mocks base method.
 func (m *MockDBHandler) ChannelSetSIPCallID(ctx context.Context, id, sipID string) error {
 	m.ctrl.T.Helper()

@@ -30,6 +30,7 @@ type Channel struct {
 	StasisName string            // stasis name
 	StasisData map[string]string // stasis data
 	BridgeID   string
+	PlaybackID string // playback id
 
 	DialResult  string
 	HangupCause ari.ChannelCause

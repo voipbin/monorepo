@@ -150,7 +150,7 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "call_manager_ari")
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "call-manager-ari")
 
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
@@ -175,7 +175,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock.Connect()
 
 	// request handler
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "call_manager")
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "call-manager")
 
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)

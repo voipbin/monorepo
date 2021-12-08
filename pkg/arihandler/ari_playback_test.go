@@ -55,6 +55,7 @@ func TestEventHandlerPlaybackFinished(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
+			mockDB.EXPECT().ChannelSetPlaybackID(gomock.Any(), tt.channel.ID, "").Return(nil)
 			mockReq.EXPECT().AstChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
 			mockSvc.EXPECT().ARIPlaybackFinished(gomock.Any(), tt.channel, tt.playbackID).Return(nil)
@@ -107,6 +108,7 @@ func TestEventHandlerPlaybackFinishedChannelGone(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
+			mockDB.EXPECT().ChannelSetPlaybackID(gomock.Any(), tt.channel.ID, "").Return(nil)
 			mockReq.EXPECT().AstChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(nil, fmt.Errorf("channel does not exist"))
 
 			if err := h.processEvent(tt.event); err != nil {

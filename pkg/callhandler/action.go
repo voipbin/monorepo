@@ -135,7 +135,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	}
 
 	// get next action
-	nextAction, err := h.reqHandler.FMV1ActvieFlowNextGet(ctx, c.ID, c.Action.ID)
+	nextAction, err := h.reqHandler.FMV1ActvieFlowGetNextAction(ctx, c.ID, c.Action.ID)
 	if err != nil {
 		log.Errorf("Could not get the next action from the flow-manager. Hanging up the call. err: %v", err)
 		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
@@ -150,6 +150,24 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	}
 
 	return nil
+}
+
+// ActionNextForce Execute next action forcedly
+func (h *callHandler) ActionNextForce(ctx context.Context, c *call.Call) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": c.ID,
+			"flow_id": c.FlowID,
+			"func":    "ActionNextForce",
+		})
+	log.WithField("action", c.Action).Debug("Getting a next action for the call.")
+
+	// cleanup the call's current action
+	if err := h.cleanCurrentAction(ctx, c); err != nil {
+		log.Errorf("Could not cleanup the current action. err: %v", err)
+	}
+
+	return h.ActionNext(ctx, c)
 }
 
 // ActionTimeout handles action's timeout
@@ -897,6 +915,41 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call, a *act
 	if app.Async {
 		// send next action request
 		return h.reqHandler.CMV1CallActionNext(ctx, c.ID)
+	}
+
+	return nil
+}
+
+// actionExecuteAMD executes the action type external_media_start.
+func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "cleanCurrentAction",
+			"call_id": c.ID,
+		},
+	)
+
+	// get channel
+	cn, err := h.db.ChannelGet(ctx, c.ChannelID)
+	if err != nil {
+		log.Errorf("Could not get channel. err: %v", err)
+		return err
+	}
+
+	// check channel's playback.
+	if cn.PlaybackID != "" {
+		log.WithField("playback_id", cn.PlaybackID).Debug("The channel has playback id. Stopping now.")
+		if err := h.reqHandler.AstPlaybackStop(ctx, cn.AsteriskID, cn.PlaybackID); err != nil {
+			log.Errorf("Could not stop the playback. err: %v", err)
+		}
+	}
+
+	// check call's conference
+	if c.ConferenceID != uuid.Nil {
+		log.WithField("conference_id", c.ConferenceID).Debug("The call is in the conference. Leaving from the conference now.")
+		if err := h.reqHandler.CFV1ConferenceKick(ctx, c.ConferenceID, c.ID); err != nil {
+			log.Errorf("Could not leave from the conference. err: %v", err)
+		}
 	}
 
 	return nil

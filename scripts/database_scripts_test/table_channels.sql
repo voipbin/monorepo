@@ -22,6 +22,7 @@ create table channels(
   stasis_name   varchar(255), -- stasis application name.
   stasis_data   json,         -- stasis application data.
   bridge_id     varchar(255), -- bridge id
+  playback_id   varchar(255), -- playback id
 
   dial_result       varchar(255), -- dial result. answer, busy, cancel, ...
   hangup_cause      int,          -- hangup cause code.
