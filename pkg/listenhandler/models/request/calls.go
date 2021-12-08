@@ -2,9 +2,9 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // V1DataCallsPost is
@@ -50,6 +50,13 @@ type V1DataCallsIDActionTimeoutPost struct {
 // /v1/calls/<id>/chained-call-ids POST
 type V1DataCallsIDChainedCallIDsPost struct {
 	ChainedCallID uuid.UUID `json:"chained_call_id"`
+}
+
+// V1DataCallsIDActionNextPost is
+// v1 data type for
+// /v1/calls/<id>/action-next POST
+type V1DataCallsIDActionNextPost struct {
+	Force bool `json:"force"`
 }
 
 // V1DataCallsIDExternalMediaPost is

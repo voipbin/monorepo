@@ -69,7 +69,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.ChannelID,
 		&res.BridgeID,
 		&res.FlowID,
-		&res.ConfID,
+		&res.ConferenceID,
 		&res.Type,
 
 		&res.MasterCallID,
@@ -216,7 +216,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.ChannelID,
 		c.BridgeID,
 		c.FlowID.Bytes(),
-		c.ConfID.Bytes(),
+		c.ConferenceID.Bytes(),
 		c.Type,
 
 		c.MasterCallID.Bytes(),

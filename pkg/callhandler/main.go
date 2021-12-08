@@ -39,6 +39,7 @@ type CallHandler interface {
 	HangingUp(ctx context.Context, c *call.Call, cause ari.ChannelCause) error
 
 	ActionNext(ctx context.Context, c *call.Call) error
+	ActionNextForce(ctx context.Context, c *call.Call) error
 	ActionTimeout(ctx context.Context, callID uuid.UUID, a *action.Action) error
 
 	ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) error

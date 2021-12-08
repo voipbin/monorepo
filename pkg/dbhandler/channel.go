@@ -34,6 +34,7 @@ const (
 		stasis_name,
 		stasis_data,
 		bridge_id,
+		playback_id,
 
 		dial_result,
 		hangup_cause,
@@ -76,6 +77,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		stasis_name,
 		stasis_data,
 		bridge_id,
+		playback_id,
 
 		dial_result,
 		hangup_cause,
@@ -93,7 +95,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		?, ?, ?, ?, ?,
 		?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?,
 		?, ?,
 		?,
 		?, ?,
@@ -130,6 +132,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		c.StasisName,
 		stasisData,
 		c.BridgeID,
+		c.PlaybackID,
 
 		c.DialResult,
 		c.HangupCause,
@@ -197,6 +200,7 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 		&res.StasisName,
 		&stasisData,
 		&res.BridgeID,
+		&res.PlaybackID,
 
 		&res.DialResult,
 		&res.HangupCause,
@@ -514,6 +518,28 @@ func (h *handler) ChannelSetSIPCallID(ctx context.Context, id string, sipID stri
 	_, err := h.db.Exec(q, sipID, getCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetSIPCallID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.ChannelUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ChannelSetPlaybackID sets the channel's playback_id
+func (h *handler) ChannelSetPlaybackID(ctx context.Context, id string, playbackID string) error {
+	//prepare
+	q := `
+	update channels set
+		playback_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, playbackID, getCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetPlaybackID. err: %v", err)
 	}
 
 	// update the cache

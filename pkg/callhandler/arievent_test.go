@@ -271,7 +271,7 @@ func TestARIPlaybackFinished(t *testing.T) {
 			}
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().FMV1ActvieFlowNextGet(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(&returnAction, nil)
+			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(&returnAction, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, ari.ChannelCauseNormalClearing)

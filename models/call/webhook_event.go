@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 
 	uuid "github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // WebhookEventData defines
 type WebhookEventData struct {
 	// identity
-	ID     uuid.UUID `json:"id"`
-	FlowID uuid.UUID `json:"flow_id"` // flow id
-	ConfID uuid.UUID `json:"conf_id"` // currently joined conference id
-	Type   string    `json:"type"`    // call type
+	ID           uuid.UUID `json:"id"`
+	FlowID       uuid.UUID `json:"flow_id"`       // flow id
+	ConferenceID uuid.UUID `json:"conference_id"` // currently joined conference id
+	Type         string    `json:"type"`          // call type
 
 	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
@@ -47,10 +47,10 @@ type WebhookEventData struct {
 // CreateWebhookEvent generate WebhookEvent
 func (h *Call) CreateWebhookEvent(t string) ([]byte, error) {
 	e := &WebhookEventData{
-		ID:     h.ID,
-		FlowID: h.FlowID,
-		ConfID: h.ConfID,
-		Type:   string(h.Type),
+		ID:           h.ID,
+		FlowID:       h.FlowID,
+		ConferenceID: h.ConferenceID,
+		Type:         string(h.Type),
 
 		MasterCallID:   h.MasterCallID,
 		ChainedCallIDs: h.ChainedCallIDs,

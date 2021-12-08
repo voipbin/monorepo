@@ -796,3 +796,203 @@ func TestActionExecuteAMD(t *testing.T) {
 		})
 	}
 }
+
+func TestCleanCurrentAction(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &callHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	tests := []struct {
+		name    string
+		call    *call.Call
+		channel *channel.Channel
+	}{
+		{
+			"playback has set",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+			},
+			&channel.Channel{
+				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				AsteriskID: "42:01:0a:a4:00:05",
+				PlaybackID: "44a07af0-5837-11ec-bdce-6bfc534e86b7",
+			},
+		},
+		{
+			"conferenceID has set",
+			&call.Call{
+				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				AsteriskID:   "42:01:0a:a4:00:05",
+				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				ConferenceID: uuid.FromStringOrNil("619bba82-5839-11ec-8733-c3a8bf0aee26"),
+			},
+			&channel.Channel{
+				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				AsteriskID: "42:01:0a:a4:00:05",
+			},
+		},
+		{
+			"conferenceID playback have set",
+			&call.Call{
+				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				AsteriskID:   "42:01:0a:a4:00:05",
+				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				ConferenceID: uuid.FromStringOrNil("619bba82-5839-11ec-8733-c3a8bf0aee26"),
+			},
+			&channel.Channel{
+				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				AsteriskID: "42:01:0a:a4:00:05",
+				PlaybackID: "44a07af0-5837-11ec-bdce-6bfc534e86b7",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
+			if tt.channel.PlaybackID != "" {
+				mockReq.EXPECT().AstPlaybackStop(gomock.Any(), tt.channel.AsteriskID, tt.channel.PlaybackID)
+			}
+
+			if tt.call.ConferenceID != uuid.Nil {
+				mockReq.EXPECT().CFV1ConferenceKick(gomock.Any(), tt.call.ConferenceID, tt.call.ID).Return(nil)
+			}
+
+			if err := h.cleanCurrentAction(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionNext(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &callHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	tests := []struct {
+		name    string
+		call    *call.Call
+		channel *channel.Channel
+		act     *action.Action
+	}{
+		{
+			"normal",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				Status:     call.StatusProgressing,
+				FlowID:     uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
+				Action: action.Action{
+					ID:   uuid.FromStringOrNil("c9bc39a0-583b-11ec-b0c4-2373b012eba7"),
+					Type: action.TypeAnswer,
+				},
+			},
+			&channel.Channel{
+				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				AsteriskID: "42:01:0a:a4:00:05",
+				PlaybackID: "44a07af0-5837-11ec-bdce-6bfc534e86b7",
+			},
+			&action.Action{
+				ID: uuid.FromStringOrNil("fe96418e-583b-11ec-93d8-738261aee2c9"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(tt.act, nil)
+			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID).Return(nil)
+
+			if err := h.ActionNext(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActionNextForce(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &callHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	tests := []struct {
+		name    string
+		call    *call.Call
+		channel *channel.Channel
+		act     *action.Action
+	}{
+		{
+			"normal",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				Status:     call.StatusProgressing,
+				FlowID:     uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
+				Action: action.Action{
+					ID:   uuid.FromStringOrNil("c9bc39a0-583b-11ec-b0c4-2373b012eba7"),
+					Type: action.TypeAnswer,
+				},
+			},
+			&channel.Channel{
+				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				AsteriskID: "42:01:0a:a4:00:05",
+				PlaybackID: "44a07af0-5837-11ec-bdce-6bfc534e86b7",
+			},
+			&action.Action{
+				ID: uuid.FromStringOrNil("fe96418e-583b-11ec-93d8-738261aee2c9"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
+			if tt.channel.PlaybackID != "" {
+				mockReq.EXPECT().AstPlaybackStop(gomock.Any(), tt.channel.AsteriskID, tt.channel.PlaybackID)
+			}
+
+			if tt.call.ConferenceID != uuid.Nil {
+				mockReq.EXPECT().CFV1ConferenceKick(gomock.Any(), tt.call.ConferenceID, tt.call.ID).Return(nil)
+			}
+
+			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(tt.act, nil)
+			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID).Return(nil)
+
+			if err := h.ActionNextForce(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

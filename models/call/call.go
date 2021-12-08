@@ -5,24 +5,24 @@ import (
 	"reflect"
 
 	uuid "github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // Call struct represent asterisk's channel information
 type Call struct {
 	// identity
-	ID         uuid.UUID `json:"id"`
-	UserID     uint64    `json:"user_id"`
-	AsteriskID string    `json:"asterisk_id"`
-	ChannelID  string    `json:"channel_id"`
-	BridgeID   string    `json:"bridge_id"` // call bridge id
-	FlowID     uuid.UUID `json:"flow_id"`   // flow id
-	ConfID     uuid.UUID `json:"conf_id"`   // currently joined conference id
-	Type       Type      `json:"type"`      // call type
+	ID           uuid.UUID `json:"id"`
+	UserID       uint64    `json:"user_id"`
+	AsteriskID   string    `json:"asterisk_id"`
+	ChannelID    string    `json:"channel_id"`
+	BridgeID     string    `json:"bridge_id"`     // call bridge id
+	FlowID       uuid.UUID `json:"flow_id"`       // flow id
+	ConferenceID uuid.UUID `json:"conference_id"` // currently joined conference id
+	Type         Type      `json:"type"`          // call type
 
 	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id

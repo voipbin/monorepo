@@ -85,6 +85,7 @@ type DBHandler interface {
 	ChannelSetStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) error
 	ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error
+	ChannelSetPlaybackID(ctx context.Context, id string, playbackID string) error
 	ChannelSetSIPCallID(ctx context.Context, id string, sipID string) error
 	ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
 	ChannelSetStasis(ctx context.Context, id, stasis string) error

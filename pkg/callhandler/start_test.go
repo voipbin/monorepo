@@ -208,7 +208,7 @@ func TestTypeConferenceStart(t *testing.T) {
 			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
 
 			// action next part.
-			mockReq.EXPECT().FMV1ActvieFlowNextGet(gomock.Any(), gomock.Any(), action.IDStart).Return(&action.Action{Type: action.TypeHangup}, nil)
+			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), gomock.Any(), action.IDStart).Return(&action.Action{Type: action.TypeHangup}, nil)
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
@@ -648,7 +648,7 @@ func TestTypeFlowStart(t *testing.T) {
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
-			mockReq.EXPECT().FMV1ActvieFlowNextGet(gomock.Any(), gomock.Any(), action.IDStart).Return(&action.Action{Type: action.TypeHangup}, nil)
+			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), gomock.Any(), action.IDStart).Return(&action.Action{Type: action.TypeHangup}, nil)
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
