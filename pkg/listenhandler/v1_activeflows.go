@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -76,6 +76,43 @@ func (h *listenHandler) v1ActiveFlowsIDNextGet(req *rabbitmqhandler.Request) (*r
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1ActiveFlowsIDForwardActionIDPut handles
+// /v1/active-flows/{id}/forward_action_id PUT
+func (h *listenHandler) v1ActiveFlowsIDForwardActionIDPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+
+	// "/v1/active-flows/be2692f8-066a-11eb-847f-1b4de696fafb/forward_action_id"
+	tmpVals := strings.Split(req.URI, "/")
+	callID := uuid.FromStringOrNil(tmpVals[3])
+
+	var reqData request.V1DataActiveFlowsIDForwardActionIDPut
+	if err := json.Unmarshal(req.Data, &reqData); err != nil {
+		logrus.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":              "v1ActiveFlowsIDForwardActionIDPut",
+			"call_id":           callID,
+			"forward_action_id": reqData.ForwardActionID,
+			"forward_now":       reqData.ForwardNow,
+		},
+	)
+	log.Debug("Executing v1ActiveFlowsIDForwardActionIDPut.")
+
+	if err := h.flowHandler.ActiveFlowSetForwardActionID(ctx, callID, reqData.ForwardActionID, reqData.ForwardNow); err != nil {
+		log.Errorf("Could not set the forward action id. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
 	}
 
 	return res, nil

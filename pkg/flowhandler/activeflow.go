@@ -40,6 +40,8 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 		CurrentAction: action.Action{
 			ID: action.IDStart,
 		},
+		ExecuteCount:    0,
+		ForwardActionID: action.IDEmpty,
 
 		Actions: f.Actions,
 
@@ -57,6 +59,53 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 	}
 
 	return af, nil
+}
+
+// ActiveFlowSetForwardActionID sets the move action id of the call.
+func (h *flowHandler) ActiveFlowSetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "ActiveFlowSetForwardActionID",
+		"call_id":           callID,
+		"forward_action_id": actionID,
+		"forward_now":       forwardNow,
+	})
+
+	// get active flow
+	af, err := h.db.ActiveFlowGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get active flow. err: %v", err)
+		return err
+	}
+
+	// check the action ID exists in the actions.
+	found := false
+	for _, a := range af.Actions {
+		if a.ID == actionID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		log.Errorf("Could not find move action id in the actions.")
+		return fmt.Errorf("move action id not found")
+	}
+
+	// update active flow
+	af.ForwardActionID = actionID
+	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow.")
+		return err
+	}
+
+	// send action next
+	if forwardNow {
+		if err := h.reqHandler.CMV1CallActionNext(ctx, callID); err != nil {
+			log.Errorf("Could not send action next request. err: %v", err)
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ActiveFlowNextActionGet returns next action from the active-flow
@@ -184,11 +233,11 @@ func (h *flowHandler) executeActiveAction(ctx context.Context, callID uuid.UUID,
 }
 
 // activeFlowUpdateCurrentAction updates the current action in active-flow.
-func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID uuid.UUID, action *action.Action) error {
+func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID uuid.UUID, act *action.Action) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"call_id":   callID,
-			"action_id": action,
+			"action_id": act,
 		},
 	)
 
@@ -199,8 +248,9 @@ func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID 
 		return err
 	}
 
-	// set current Action
-	af.CurrentAction = *action
+	// update active flow
+	af.CurrentAction = *act
+	af.ForwardActionID = action.IDEmpty
 	af.TMUpdate = getCurTime()
 	af.ExecuteCount++
 
@@ -255,6 +305,19 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 	if af.CurrentAction.ID != caID {
 		log.Error("The current action does not match.")
 		return nil, fmt.Errorf("current action does not match")
+	}
+
+	// check the move action id.
+	if af.ForwardActionID != action.IDEmpty {
+		log.Debug("The move action ID exist.")
+		for _, act := range af.Actions {
+			if act.ID == af.ForwardActionID {
+				log.WithField("action", act).Debugf("Found move action.")
+				return &act, nil
+			}
+		}
+		log.WithField("actions", af.Actions).Errorf("Could not find forward action in the actions. forward_action_id: %v", af.ForwardActionID)
+		return nil, fmt.Errorf("could not find move action in the actions array")
 	}
 
 	// get current action's index

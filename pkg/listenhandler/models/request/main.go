@@ -21,6 +21,14 @@ type V1DataActiveFlowsIDNextGet struct {
 	CurrentActionID uuid.UUID `json:"current_action_id"`
 }
 
+// V1DataActiveFlowsIDForwardActionIDPut is
+// v1 data type request struct for
+// /v1/active-flows/{id}/forward_action_id PUT
+type V1DataActiveFlowsIDForwardActionIDPut struct {
+	ForwardActionID uuid.UUID `json:"forward_action_id"`
+	ForwardNow      bool      `json:"forward_now"`
+}
+
 // V1DataFlowPost is
 // v1 data type request struct for
 // /v1/flows POST
