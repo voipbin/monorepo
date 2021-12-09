@@ -292,7 +292,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 			mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID)
+			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false)
 
 			if err := h.StartCallHandle(context.Background(), tt.channel, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
