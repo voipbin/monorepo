@@ -63,7 +63,7 @@ func (h *callHandler) startServiceFromAMD(ctx context.Context, cn *channel.Chann
 	}
 
 	if !amd.Async {
-		return h.reqHandler.CMV1CallActionNext(ctx, c.ID)
+		return h.reqHandler.CMV1CallActionNext(ctx, c.ID, false)
 	}
 
 	return nil

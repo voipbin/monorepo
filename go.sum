@@ -594,6 +594,8 @@ gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211208061819-a583f92
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211208061819-a583f9213676/go.mod h1:R2QwDbKkG2iJY4KEaHX86Y9qGUUFCbloUyHYvVbxEYI=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211208062426-1941a3073805 h1:OESgAsNGHj2MybaT8Z7EbWKT86NaLJhhHt+IIVb7mfU=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211208062426-1941a3073805/go.mod h1:R2QwDbKkG2iJY4KEaHX86Y9qGUUFCbloUyHYvVbxEYI=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211208174841-2d9bcee02698 h1:O/ElIiWO/rb4ZfKSjRVZp0bOqy80civPXUtKYsK8ecQ=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211208174841-2d9bcee02698/go.mod h1:ugPVb74tpA4Pf8aMXgyqEM1U1hTXkatlXVBDMptjbKY=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210323024331-0732164cf894/go.mod h1:1C5Z8qL/xDt+KzNu0WYAitV7Qi2vxKTC4df1ehxOQ4I=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210408192237-4079c56261c5/go.mod h1:3jy5mdMg2QBL2UPLKBSF4qOf26ZdLxVUN9YuksXXHnI=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210409195628-27c9b796b068 h1:89Zwm7FTsZREqWCi14XUcaQf/cQiEP6ijyz+CiqPHjY=
@@ -1063,6 +1065,8 @@ google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 h1:b9mVrqYfq3P4bCd
 google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1/go.mod h1:5CzLGKJ67TSI2B9POpiiyGha0AjJvZIUgRMt1dSmuhc=
 google.golang.org/genproto v0.0.0-20211207154714-918901c715cf h1:PSEM+IQFb9xdsj2CGhfqUTfsZvF8DScCVP1QZb2IiTQ=
 google.golang.org/genproto v0.0.0-20211207154714-918901c715cf/go.mod h1:5CzLGKJ67TSI2B9POpiiyGha0AjJvZIUgRMt1dSmuhc=
+google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa h1:I0YcKz0I7OAhddo7ya8kMnvprhcWM045PmkBdMO9zN0=
+google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa/go.mod h1:5CzLGKJ67TSI2B9POpiiyGha0AjJvZIUgRMt1dSmuhc=
 google.golang.org/grpc v1.17.0/go.mod h1:6QZJwpn2B+Zp71q/5VxRsJ6NXXVCE5NRUHRo+f3cWCs=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.0/go.mod h1:chYK+tFQF0nDUGJgXMSgLCQk3phJEuONr2DCgLDdAQM=

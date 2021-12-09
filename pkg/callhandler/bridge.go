@@ -49,7 +49,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	}
 
 	// send a call action next
-	if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID); err != nil {
+	if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID, false); err != nil {
 		log.Debugf("Could not send the call action next request. err: %v", err)
 		return err
 	}
