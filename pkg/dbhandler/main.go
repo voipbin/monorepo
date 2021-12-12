@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 )
 
@@ -35,6 +36,9 @@ type DBHandler interface {
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
 	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
 	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error
+
+	ConferenceConfbridgeSet(ctx context.Context, data *conferenceconfbridge.ConferenceConfbridge) error
+	ConferenceConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*conferenceconfbridge.ConferenceConfbridge, error)
 }
 
 // handler database handler

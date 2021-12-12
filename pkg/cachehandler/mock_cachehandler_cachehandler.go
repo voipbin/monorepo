@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	conferenceconfbridge "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -34,6 +35,35 @@ func NewMockCacheHandler(ctrl *gomock.Controller) *MockCacheHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
+}
+
+// ConferenceConfbridgeGet mocks base method.
+func (m *MockCacheHandler) ConferenceConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*conferenceconfbridge.ConferenceConfbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceConfbridgeGet", ctx, confbridgeID)
+	ret0, _ := ret[0].(*conferenceconfbridge.ConferenceConfbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceConfbridgeGet indicates an expected call of ConferenceConfbridgeGet.
+func (mr *MockCacheHandlerMockRecorder) ConferenceConfbridgeGet(ctx, confbridgeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceConfbridgeGet", reflect.TypeOf((*MockCacheHandler)(nil).ConferenceConfbridgeGet), ctx, confbridgeID)
+}
+
+// ConferenceConfbridgeSet mocks base method.
+func (m *MockCacheHandler) ConferenceConfbridgeSet(ctx context.Context, data *conferenceconfbridge.ConferenceConfbridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceConfbridgeSet", ctx, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceConfbridgeSet indicates an expected call of ConferenceConfbridgeSet.
+func (mr *MockCacheHandlerMockRecorder) ConferenceConfbridgeSet(ctx, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceConfbridgeSet", reflect.TypeOf((*MockCacheHandler)(nil).ConferenceConfbridgeSet), ctx, data)
 }
 
 // ConferenceGet mocks base method.

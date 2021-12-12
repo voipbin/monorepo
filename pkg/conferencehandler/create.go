@@ -7,10 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
 )
 
@@ -26,10 +27,16 @@ func (h *conferenceHandler) Create(
 	detail string,
 	timeout int,
 	webhookURI string,
-	preActions []action.Action,
-	postActions []action.Action,
+	preActions []fmaction.Action,
+	postActions []fmaction.Action,
 ) (*conference.Conference, error) {
-	log := logrus.New().WithField("func", "Create")
+	log := logrus.New().WithFields(
+		logrus.Fields{
+			"func":            "Create",
+			"user_id":         userID,
+			"conference_type": conferenceType,
+		},
+	)
 
 	id := uuid.Must(uuid.NewV4())
 	log = log.WithField("confbridge_id", id.String())
@@ -43,7 +50,7 @@ func (h *conferenceHandler) Create(
 	log.Debugf("Created confbridge. confbridge_id: %s", cb.ID)
 
 	// create flow
-	f, err := h.createConferenceFlow(userID, id, cb.ID, preActions, postActions)
+	f, err := h.createConferenceFlow(ctx, userID, id, cb.ID, preActions, postActions)
 	if err != nil {
 		log.Errorf("Could not create conference flow. err: %v", err)
 		return nil, err
@@ -91,6 +98,16 @@ func (h *conferenceHandler) Create(
 	}
 	promConferenceCreateTotal.WithLabelValues(string(newCf.Type)).Inc()
 
+	// create conference-confbridge
+	confCb := &conferenceconfbridge.ConferenceConfbridge{
+		ConferenceID: newCf.ID,
+		ConfbridgeID: cb.ID,
+	}
+	if err := h.db.ConferenceConfbridgeSet(ctx, confCb); err != nil {
+		log.Errorf("Could not set conference-confbridge. err: %v", err)
+		return nil, err
+	}
+
 	// get created conference and notify
 	cf, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
@@ -110,15 +127,15 @@ func (h *conferenceHandler) Create(
 }
 
 // createConferenceFlowActions creates the actions for conference join.
-func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, preActions []action.Action, postActions []action.Action) ([]action.Action, error) {
+func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) ([]fmaction.Action, error) {
 	log := logrus.New().WithField("func", "createConferenceFlow")
-	actions := []action.Action{}
+	actions := []fmaction.Action{}
 
 	// append the pre actions
 	actions = append(actions, preActions...)
 
 	// append the confbridge join
-	option := action.OptionConfbridgeJoin{
+	option := fmaction.OptionConfbridgeJoin{
 		ConfbridgeID: confbridgeID.String(),
 	}
 	opt, err := json.Marshal(option)
@@ -127,8 +144,8 @@ func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, 
 		return nil, err
 	}
 
-	confbridgeJoin := action.Action{
-		Type:   action.TypeConfbridgeJoin,
+	confbridgeJoin := fmaction.Action{
+		Type:   fmaction.TypeConfbridgeJoin,
 		Option: opt,
 	}
 	actions = append(actions, confbridgeJoin)
@@ -140,8 +157,7 @@ func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, 
 }
 
 // createConferenceFlow creates a conference flow and returns created flow.
-func (h *conferenceHandler) createConferenceFlow(userID uint64, conferenceID uuid.UUID, confbridgeID uuid.UUID, preActions []action.Action, postActions []action.Action) (*flow.Flow, error) {
-	ctx := context.Background()
+func (h *conferenceHandler) createConferenceFlow(ctx context.Context, userID uint64, conferenceID uuid.UUID, confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) (*fmflow.Flow, error) {
 	log := logrus.WithField("func", "createConferenceFlow")
 
 	// create flow actions
