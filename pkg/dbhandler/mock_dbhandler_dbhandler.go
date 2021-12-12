@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	conferenceconfbridge "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
@@ -63,6 +64,35 @@ func (m *MockDBHandler) ConferenceAddRecordIDs(ctx context.Context, id, recordID
 func (mr *MockDBHandlerMockRecorder) ConferenceAddRecordIDs(ctx, id, recordID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddRecordIDs", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddRecordIDs), ctx, id, recordID)
+}
+
+// ConferenceConfbridgeGet mocks base method.
+func (m *MockDBHandler) ConferenceConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*conferenceconfbridge.ConferenceConfbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceConfbridgeGet", ctx, confbridgeID)
+	ret0, _ := ret[0].(*conferenceconfbridge.ConferenceConfbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceConfbridgeGet indicates an expected call of ConferenceConfbridgeGet.
+func (mr *MockDBHandlerMockRecorder) ConferenceConfbridgeGet(ctx, confbridgeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceConfbridgeGet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceConfbridgeGet), ctx, confbridgeID)
+}
+
+// ConferenceConfbridgeSet mocks base method.
+func (m *MockDBHandler) ConferenceConfbridgeSet(ctx context.Context, data *conferenceconfbridge.ConferenceConfbridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceConfbridgeSet", ctx, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceConfbridgeSet indicates an expected call of ConferenceConfbridgeSet.
+func (mr *MockDBHandlerMockRecorder) ConferenceConfbridgeSet(ctx, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceConfbridgeSet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceConfbridgeSet), ctx, data)
 }
 
 // ConferenceCreate mocks base method.
