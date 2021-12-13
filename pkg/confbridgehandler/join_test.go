@@ -101,9 +101,8 @@ func TestJoin(t *testing.T) {
 		{
 			"has bridge id",
 			&confbridge.Confbridge{
-				ID:           uuid.FromStringOrNil("9c637510-36e2-11ec-b37c-63ed644a2629"),
-				BridgeID:     "a5c525ec-dca0-11ea-b139-17780451d9da",
-				ConferenceID: uuid.FromStringOrNil("e5a73f1c-36e3-11ec-afc3-330513db8c19"),
+				ID:       uuid.FromStringOrNil("9c637510-36e2-11ec-b37c-63ed644a2629"),
+				BridgeID: "a5c525ec-dca0-11ea-b139-17780451d9da",
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("00b8301e-9f1d-11ea-a08e-038ccf4318cd"),
@@ -120,8 +119,7 @@ func TestJoin(t *testing.T) {
 		{
 			"has no bridge id",
 			&confbridge.Confbridge{
-				ID:           uuid.FromStringOrNil("20fb7f68-38e4-11ec-a269-8f5f84d4c603"),
-				ConferenceID: uuid.FromStringOrNil("211674b2-38e4-11ec-ac6d-f3a275453b52"),
+				ID: uuid.FromStringOrNil("20fb7f68-38e4-11ec-a269-8f5f84d4c603"),
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("2133ea06-38e4-11ec-a400-df96309626a9"),

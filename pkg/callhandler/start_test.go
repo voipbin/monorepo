@@ -854,7 +854,6 @@ func TestStartHandlerContextJoin(t *testing.T) {
 				"bridge_id":     "ed08cbf8-4319-11ec-a768-23af5da287d4",
 				"call_id":       "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
 				"confbridge_id": "ed70a890-4319-11ec-a8dc-8baa3bdb6a39",
-				"conference_id": "ed8d82d0-4319-11ec-9847-4bd48a0b2fb1",
 			},
 			"ed08cbf8-4319-11ec-a768-23af5da287d4",
 		},
@@ -867,7 +866,6 @@ func TestStartHandlerContextJoin(t *testing.T) {
 
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "PJSIP_HEADER(add,VB-CALL-ID)", tt.data["call_id"]).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "PJSIP_HEADER(add,VB-CONFBRIDGE-ID)", tt.data["confbridge_id"]).Return(nil)
-			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "PJSIP_HEADER(add,VB-CONFERENCE-ID)", tt.data["conference_id"]).Return(nil)
 
 			mockReq.EXPECT().AstChannelDial(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "", defaultDialTimeout).Return(nil)
 

@@ -7,9 +7,9 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 const (
@@ -22,7 +22,7 @@ const (
 		channel_id,
 		bridge_id,
 		flow_id,
-		conference_id,
+		confbridge_id,
 		type,
 
 		master_call_id,
@@ -69,7 +69,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.ChannelID,
 		&res.BridgeID,
 		&res.FlowID,
-		&res.ConferenceID,
+		&res.ConfbridgeID,
 		&res.Type,
 
 		&res.MasterCallID,
@@ -137,7 +137,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		channel_id,
 		bridge_id,
 		flow_id,
-		conference_id,
+		confbridge_id,
 		type,
 
 		master_call_id,
@@ -216,7 +216,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.ChannelID,
 		c.BridgeID,
 		c.FlowID.Bytes(),
-		c.ConferenceID.Bytes(),
+		c.ConfbridgeID.Bytes(),
 		c.Type,
 
 		c.MasterCallID.Bytes(),
@@ -249,7 +249,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	}
 
 	// update the cache
-	_=h.CallUpdateToCache(ctx, c.ID)
+	_ = h.CallUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -522,23 +522,23 @@ func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	return nil
 }
 
-// CallSetFlowID sets the call status
-func (h *handler) CallSetConferenceID(ctx context.Context, id, conferenceID uuid.UUID) error {
+// CallSetConfbridgeID sets the call's confbridge_id
+func (h *handler) CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error {
 
 	// prepare
 	q := `
 	update
 		calls
 	set
-		conference_id = ?,
+		confbridge_id = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, conferenceID.Bytes(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, confbridgeID.Bytes(), getCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. CallSetConferenceID. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetConfbridgeID. err: %v", err)
 	}
 
 	// update the cache

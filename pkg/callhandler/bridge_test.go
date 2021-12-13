@@ -49,7 +49,7 @@ func TestBridgeLeftJoin(t *testing.T) {
 				ID:           uuid.FromStringOrNil("095658d8-151c-11ec-8aa9-1fca7824a72f"),
 				ChannelID:    "0820e474-151c-11ec-859d-0b3af329400f",
 				Status:       call.StatusProgressing,
-				ConferenceID: uuid.FromStringOrNil("3d093cca-2022-11ec-9358-c7e3a147380e"),
+				ConfbridgeID: uuid.FromStringOrNil("3d093cca-2022-11ec-9358-c7e3a147380e"),
 			},
 			&bridge.Bridge{
 				ReferenceID: uuid.FromStringOrNil("095658d8-151c-11ec-8aa9-1fca7824a72f"),
@@ -61,7 +61,7 @@ func TestBridgeLeftJoin(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
-			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.bridge.ReferenceID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.bridge.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.call, nil)
 			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
 			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)

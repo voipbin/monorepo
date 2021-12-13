@@ -81,18 +81,18 @@ func (mr *MockConfbridgeHandlerMockRecorder) ARIStasisStart(ctx, cn, data interf
 }
 
 // Create mocks base method.
-func (m *MockConfbridgeHandler) Create(ctx context.Context, confID uuid.UUID) (*confbridge.Confbridge, error) {
+func (m *MockConfbridgeHandler) Create(ctx context.Context) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, confID)
+	ret := m.ctrl.Call(m, "Create", ctx)
 	ret0, _ := ret[0].(*confbridge.Confbridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockConfbridgeHandlerMockRecorder) Create(ctx, confID interface{}) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) Create(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfbridgeHandler)(nil).Create), ctx, confID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfbridgeHandler)(nil).Create), ctx)
 }
 
 // Join mocks base method.

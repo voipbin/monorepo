@@ -14,7 +14,7 @@ type WebhookEventData struct {
 	// identity
 	ID           uuid.UUID `json:"id"`
 	FlowID       uuid.UUID `json:"flow_id"`       // flow id
-	ConferenceID uuid.UUID `json:"conference_id"` // currently joined conference id
+	ConfbridgeID uuid.UUID `json:"confbridge_id"` // currently joined confbridge id.
 	Type         string    `json:"type"`          // call type
 
 	// etc info
@@ -49,7 +49,7 @@ func (h *Call) CreateWebhookEvent(t string) ([]byte, error) {
 	e := &WebhookEventData{
 		ID:           h.ID,
 		FlowID:       h.FlowID,
-		ConferenceID: h.ConferenceID,
+		ConfbridgeID: h.ConfbridgeID,
 		Type:         string(h.Type),
 
 		MasterCallID:   h.MasterCallID,

@@ -31,13 +31,11 @@ func TestConfbridgeCreateAndGet(t *testing.T) {
 			"normal",
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
-				ConferenceID:   uuid.FromStringOrNil("151e5f90-3302-11ec-acc0-afdac0cb7cb2"),
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 			},
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
-				ConferenceID:   uuid.FromStringOrNil("151e5f90-3302-11ec-acc0-afdac0cb7cb2"),
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 			},
@@ -45,16 +43,14 @@ func TestConfbridgeCreateAndGet(t *testing.T) {
 		{
 			"have channel call id",
 			&confbridge.Confbridge{
-				ID:           uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
-				ConferenceID: uuid.FromStringOrNil("9eacc014-4494-11ec-86f8-9b8577df8f21"),
+				ID: uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
 				ChannelCallIDs: map[string]uuid.UUID{
 					"9ed7ad74-4494-11ec-857e-e37007ea55e6": uuid.FromStringOrNil("9efa08ce-4494-11ec-8759-e3502fbffddb"),
 				},
 				RecordingIDs: []uuid.UUID{},
 			},
 			&confbridge.Confbridge{
-				ID:           uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
-				ConferenceID: uuid.FromStringOrNil("9eacc014-4494-11ec-86f8-9b8577df8f21"),
+				ID: uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
 				ChannelCallIDs: map[string]uuid.UUID{
 					"9ed7ad74-4494-11ec-857e-e37007ea55e6": uuid.FromStringOrNil("9efa08ce-4494-11ec-8759-e3502fbffddb"),
 				},
@@ -105,14 +101,12 @@ func TestConfbridgeGetByBridgeID(t *testing.T) {
 			"type conference",
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("bf738558-34ef-11ec-a927-6ba7cd3ff490"),
-				ConferenceID:   uuid.FromStringOrNil("bf9c36e2-34ef-11ec-8fc4-7b7734a478f0"),
 				BridgeID:       "bfc5a1e4-34ef-11ec-ad12-870a5704955c",
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 			},
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("bf738558-34ef-11ec-a927-6ba7cd3ff490"),
-				ConferenceID:   uuid.FromStringOrNil("bf9c36e2-34ef-11ec-8fc4-7b7734a478f0"),
 				BridgeID:       "bfc5a1e4-34ef-11ec-ad12-870a5704955c",
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},

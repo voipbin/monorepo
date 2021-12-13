@@ -944,11 +944,11 @@ func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) erro
 		}
 	}
 
-	// check call's conference
-	if c.ConferenceID != uuid.Nil {
-		log.WithField("conference_id", c.ConferenceID).Debug("The call is in the conference. Leaving from the conference now.")
-		if err := h.reqHandler.CFV1ConferenceKick(ctx, c.ConferenceID, c.ID); err != nil {
-			log.Errorf("Could not leave from the conference. err: %v", err)
+	// check call's confbridge
+	if c.ConfbridgeID != uuid.Nil {
+		log.WithField("confbridge_id", c.ConfbridgeID).Debug("The call is in the conference. Leaving from the conference now.")
+		if err := h.confbridgeHandler.Kick(ctx, c.ConfbridgeID, c.ID); err != nil {
+			log.Errorf("Could not kick the call from the confbridge. err: %v", err)
 		}
 	}
 

@@ -16,7 +16,6 @@ const (
 	confbridgeSelect = `
 	select
 		id,
-		conference_id,
 		bridge_id,
 
 		channel_call_ids,
@@ -42,7 +41,6 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 	res := &confbridge.Confbridge{}
 	if err := row.Scan(
 		&res.ID,
-		&res.ConferenceID,
 		&res.BridgeID,
 
 		&channelCallIDs,
@@ -136,11 +134,10 @@ func (h *handler) ConfbridgeSetToCache(ctx context.Context, data *confbridge.Con
 	return nil
 }
 
-// ConfbridgeCreate creates a new conference record.
+// ConfbridgeCreate creates a new confbridge record.
 func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridge) error {
 	q := `insert into confbridges(
 		id,
-		conference_id,
 		bridge_id,
 
 		channel_call_ids,
@@ -152,7 +149,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?,
+		?, ?,
 		?,
 		?, ?,
 		?, ?, ?
@@ -171,7 +168,6 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 
 	_, err = h.db.Exec(q,
 		cb.ID.Bytes(),
-		cb.ConferenceID.Bytes(),
 		cb.BridgeID,
 
 		callChannelIDs,

@@ -6,7 +6,7 @@ create table calls(
   channel_id        varchar(255), -- channel id
   bridge_id         varchar(255), -- call bridge id
   flow_id           binary(16),   -- flow id
-  conference_id     binary(16),   -- currently joined conference id
+  confbridge_id     binary(16),   -- currently joined confbridge id
   type              varchar(16),  -- type of call
 
   -- etc info

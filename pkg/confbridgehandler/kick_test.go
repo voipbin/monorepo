@@ -45,9 +45,8 @@ func TestKick(t *testing.T) {
 			uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 
 			&confbridge.Confbridge{
-				ID:           uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
-				BridgeID:     "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
-				ConferenceID: uuid.FromStringOrNil("eb93c4ac-38cf-11ec-bcc5-031b06ff96b3"),
+				ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+				BridgeID: "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
 				ChannelCallIDs: map[string]uuid.UUID{
 					"372b84b4-38e8-11ec-b135-638987bdf59b": uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 				},

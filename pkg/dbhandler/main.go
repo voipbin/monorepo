@@ -53,7 +53,7 @@ type DBHandler interface {
 	CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error
 	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
 	CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
-	CallSetConferenceID(ctx context.Context, id, conferenceID uuid.UUID) error
+	CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
