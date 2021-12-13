@@ -51,7 +51,6 @@ func TestARIStasisStart(t *testing.T) {
 			},
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("69e97312-3748-11ec-a94b-2357c957d67e"),
-				ConferenceID:   uuid.FromStringOrNil("76981f96-3748-11ec-b34f-83dea76e6f0d"),
 				BridgeID:       "80c2e1ae-3748-11ec-b52c-c7e704ec1140",
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -171,7 +170,6 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{
 					"confbridge_id": "e9051ac8-9566-11ea-bde6-331b8236a4c2",
-					"conference_id": "ef2a078e-3bf9-11ec-a6a4-93f5f5d2fede",
 					"call_id":       "ef83edb2-3bf9-11ec-bc7d-1f524326656b",
 				},
 				Type: channel.TypeConfbridge,
@@ -182,9 +180,8 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 			},
 			&event.ConfbridgeJoinedLeaved{
-				ID:           uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
-				ConferenceID: uuid.FromStringOrNil("ef2a078e-3bf9-11ec-a6a4-93f5f5d2fede"),
-				CallID:       uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
+				ID:     uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
+				CallID: uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
 			},
 		},
 	}
@@ -193,7 +190,7 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID)
-			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.callID, uuid.Nil)
+			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.callID, uuid.Nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), notifyhandler.EventTypeConfbridgeLeaved, tt.event)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
 			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, "", gomock.Any())

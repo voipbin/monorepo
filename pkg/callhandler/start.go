@@ -263,8 +263,7 @@ func (h *callHandler) startHandlerContextJoin(ctx context.Context, cn *channel.C
 	confbridgeID := data["confbridge_id"]
 	callID := data["call_id"]
 	bridgeID := data["bridge_id"]
-	conferenceID := data["conference_id"]
-	log.Debugf("Parsed info. call_id: %s, bridge_id: %s, confbridge_id: %s, conference_id: %s", callID, bridgeID, confbridgeID, conferenceID)
+	log.Debugf("Parsed info. call_id: %s, bridge_id: %s, confbridge_id: %s", callID, bridgeID, confbridgeID)
 
 	// put the channel to the bridge
 	if err := h.reqHandler.AstBridgeAddChannel(ctx, cn.AsteriskID, bridgeID, cn.ID, "", false, false); err != nil {
@@ -279,10 +278,6 @@ func (h *callHandler) startHandlerContextJoin(ctx context.Context, cn *channel.C
 		return errSet
 	}
 	if errSet := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "PJSIP_HEADER(add,VB-CONFBRIDGE-ID)", confbridgeID); errSet != nil {
-		log.Errorf("Could not set sip header. err: %v", errSet)
-		return errSet
-	}
-	if errSet := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "PJSIP_HEADER(add,VB-CONFERENCE-ID)", conferenceID); errSet != nil {
 		log.Errorf("Could not set sip header. err: %v", errSet)
 		return errSet
 	}

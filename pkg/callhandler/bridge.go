@@ -27,7 +27,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 
 	// set empty conference id
-	if err := h.db.CallSetConferenceID(ctx, br.ReferenceID, uuid.Nil); err != nil {
+	if err := h.db.CallSetConfbridgeID(ctx, br.ReferenceID, uuid.Nil); err != nil {
 		log.Errorf("Could not reset the conference for a call. err: %v", err)
 		return err
 	}

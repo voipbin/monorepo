@@ -8,8 +8,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 )
 
 // processV1ConfbridgesPost handles /v1/confbriges request
@@ -22,14 +20,8 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *rabbitm
 		},
 	)
 
-	var data request.V1DataConfbridgesPost
-	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
-		log.Errorf("Could not unmarshal the requested data. err: %v", err)
-		return nil, err
-	}
-
 	// create confbridge
-	cb, err := h.confbridgeHandler.Create(ctx, data.ConferenceID)
+	cb, err := h.confbridgeHandler.Create(ctx)
 
 	if err != nil {
 		log.Errorf("Could not create the confbridge. err: %v", err)
@@ -139,7 +131,7 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(ctx context.Context,
 func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"handler": "processV1ConfbridgesIDCallsIDDelete",
+			"handler": "processV1ConfbridgesIDCallsIDPost",
 			"uri":     m.URI,
 		},
 	)

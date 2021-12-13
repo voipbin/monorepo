@@ -21,7 +21,7 @@ type Call struct {
 	ChannelID    string    `json:"channel_id"`
 	BridgeID     string    `json:"bridge_id"`     // call bridge id
 	FlowID       uuid.UUID `json:"flow_id"`       // flow id
-	ConferenceID uuid.UUID `json:"conference_id"` // currently joined conference id
+	ConfbridgeID uuid.UUID `json:"confbridge_id"` // currently joined confbridge id.
 	Type         Type      `json:"type"`          // call type
 
 	// etc info

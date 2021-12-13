@@ -107,12 +107,11 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 	// confbridge_id: The conference ID which this channel belongs to.
 	// bridge_id: The bridge ID where this channel entered after StasisStart.
 	// call_id: The call ID which this channel has related with.
-	args := fmt.Sprintf("context=%s,confbridge_id=%s,bridge_id=%s,call_id=%s,conference_id=%s",
+	args := fmt.Sprintf("context=%s,confbridge_id=%s,bridge_id=%s,call_id=%s",
 		contextCallJoin,
 		cb.ID.String(),
 		c.BridgeID,
 		c.ID.String(),
-		cb.ConferenceID.String(),
 	)
 
 	// create a another channel with joining context

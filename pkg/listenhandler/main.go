@@ -50,18 +50,20 @@ var (
 	regV1AsterisksIDChannelsIDHealth = regexp.MustCompile("/v1/asterisks/" + regAny + "/channels/" + regAny + "/health-check")
 
 	// calls
-	regV1Calls                 = regexp.MustCompile("/v1/calls")
-	regV1CallsID               = regexp.MustCompile("/v1/calls/" + regUUID)
-	regV1CallsIDHealth         = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check")
-	regV1CallsIDActionNext     = regexp.MustCompile("/v1/calls/" + regUUID + "/action-next")
-	regV1CallsIDActionTimeout  = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout")
-	regV1CallsIDChainedCallIDs = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids")
-	regV1CallsIDExternalMedia  = regexp.MustCompile("/v1/calls/" + regUUID + "/external-media")
+	regV1Calls                    = regexp.MustCompile("/v1/calls$")
+	regV1CallsGet                 = regexp.MustCompile(`/v1/calls\?`)
+	regV1CallsID                  = regexp.MustCompile("/v1/calls/" + regUUID + "$")
+	regV1CallsIDHealth            = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check$")
+	regV1CallsIDActionNext        = regexp.MustCompile("/v1/calls/" + regUUID + "/action-next$")
+	regV1CallsIDActionTimeout     = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout$")
+	regV1CallsIDChainedCallIDs    = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids$")
+	regV1CallsIDChainedCallIDsIDs = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids/" + regUUID + "$")
+	regV1CallsIDExternalMedia     = regexp.MustCompile("/v1/calls/" + regUUID + "/external-media$")
 
 	// confbridges
-	regV1Confbridges          = regexp.MustCompile("/v1/confbridges")
-	regV1ConfbridgesID        = regexp.MustCompile("/v1/confbridges/" + regUUID)
-	regV1ConfbridgesIDCallsID = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID)
+	regV1Confbridges          = regexp.MustCompile("/v1/confbridges$")
+	regV1ConfbridgesID        = regexp.MustCompile("/v1/confbridges/" + regUUID + "$")
+	regV1ConfbridgesIDCallsID = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
 
 	// recordings
 	regV1RecordingsID = regexp.MustCompile("/v1/recordings/" + regAny)
@@ -212,8 +214,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1CallsIDChainedCallIDsPost(ctx, m)
 		requestType = "/v1/calls/chained-call-ids"
 
-	// DELETE /calls/<id>/chained-call-ids
-	case regV1CallsIDChainedCallIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	// DELETE /calls/<id>/chained-call-ids/<chaied_call_id>
+	case regV1CallsIDChainedCallIDsIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1CallsIDChainedCallIDsDelete(ctx, m)
 		requestType = "/v1/calls/chained-call-ids"
 
@@ -238,7 +240,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/v1/calls"
 
 	// GET /calls
-	case regV1Calls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1CallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1CallsGet(ctx, m)
 		requestType = "/v1/calls"
 

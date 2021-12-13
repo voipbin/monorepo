@@ -17,8 +17,3 @@ Echo the incoming streams. Voice/Video including DTMFs.
 	// no option
 
 
-conference_join
--------------------------
-Join to the existed conference.
-
-	ConferenceID string `json:"conference_id"`

@@ -173,10 +173,10 @@ func TestParseBridge(t *testing.T) {
 	tests := []test{
 		{
 			"test normal",
-			`{"id":"3e6eec96-fabe-4041-870d-e1daee11aafb","technology":"softmix","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"conference_type=conference,conference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7,join=false","channels":[],"creationtime":"2020-08-10T22:50:28.085+0000","video_mode":"sfu"}`,
+			`{"id":"3e6eec96-fabe-4041-870d-e1daee11aafb","technology":"softmix","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"conference_type=conference,join=false","channels":[],"creationtime":"2020-08-10T22:50:28.085+0000","video_mode":"sfu"}`,
 			&Bridge{
 				ID:            "3e6eec96-fabe-4041-870d-e1daee11aafb",
-				Name:          "conference_type=conference,conference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7,join=false",
+				Name:          "conference_type=conference,join=false",
 				Technology:    "softmix",
 				BridgeType:    "mixing",
 				BridgeClass:   "stasis",

@@ -43,9 +43,8 @@ func TestLeaved(t *testing.T) {
 		{
 			"normal",
 			&confbridge.Confbridge{
-				ID:           uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
-				BridgeID:     "1f940122-38e9-11ec-a25c-cb08db10a7c1",
-				ConferenceID: uuid.FromStringOrNil("eb93c4ac-38cf-11ec-bcc5-031b06ff96b3"),
+				ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+				BridgeID: "1f940122-38e9-11ec-a25c-cb08db10a7c1",
 				ChannelCallIDs: map[string]uuid.UUID{
 					"372b84b4-38e8-11ec-b135-638987bdf59b": uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 				},
@@ -57,7 +56,6 @@ func TestLeaved(t *testing.T) {
 				StasisData: map[string]string{
 					"confbridge_id": "eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2",
 					"call_id":       "eaa09918-38e7-11ec-b386-bb681c4ba744",
-					"conference_id": "eb93c4ac-38cf-11ec-bcc5-031b06ff96b3",
 				},
 			},
 			&bridge.Bridge{
@@ -72,7 +70,7 @@ func TestLeaved(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(gomock.Any(), tt.confbridge.ID, tt.channel.ID).Return(nil)
-			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.callID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.callID, uuid.Nil).Return(nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), notifyhandler.EventTypeConfbridgeLeaved, gomock.Any())
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
 			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, "", gomock.Any())

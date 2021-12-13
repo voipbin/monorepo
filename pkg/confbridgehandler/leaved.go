@@ -25,7 +25,6 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		},
 	)
 	confbridgeID := uuid.FromStringOrNil(cn.StasisData["confbridge_id"])
-	conferenceID := uuid.FromStringOrNil(cn.StasisData["conference_id"])
 	callID := uuid.FromStringOrNil(cn.StasisData["call_id"])
 
 	// remove the channel/call info from the confbridge
@@ -36,7 +35,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 	// set nil conference id to the call
 	// note: here we are setting the conference's id to the call.
 	// we don't set the confbridge id to the call.
-	if err := h.db.CallSetConferenceID(ctx, callID, uuid.Nil); err != nil {
+	if err := h.db.CallSetConfbridgeID(ctx, callID, uuid.Nil); err != nil {
 		log.Errorf("Could not set the conference id for a call. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		return err
@@ -44,9 +43,8 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 
 	// Publish the event
 	evt := &event.ConfbridgeJoinedLeaved{
-		ID:           confbridgeID,
-		ConferenceID: conferenceID,
-		CallID:       callID,
+		ID:     confbridgeID,
+		CallID: callID,
 	}
 	h.notifyHandler.PublishEvent(ctx, notifyhandler.EventTypeConfbridgeLeaved, evt)
 

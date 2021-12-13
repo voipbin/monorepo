@@ -6,8 +6,7 @@ import "github.com/gofrs/uuid"
 type Confbridge struct {
 	ID uuid.UUID `json:"id"`
 
-	ConferenceID uuid.UUID `json:"conference_id"`
-	BridgeID     string    `json:"bridge_id"`
+	BridgeID string `json:"bridge_id"`
 
 	ChannelCallIDs map[string]uuid.UUID `json:"channel_call_ids"` // channelid:callid
 

@@ -1,7 +1,6 @@
 create table confbridges(
   -- identity
   id            binary(16),   -- id
-  conference_id binary(16),   -- conference id
   type          varchar(255), -- type
   bridge_id     varchar(255), -- conference's bridge id
 
@@ -20,5 +19,4 @@ create table confbridges(
 );
 
 create index idx_confbridges_create on confbridges(tm_create);
-create index idx_confbridges_conference_id on confbridges(conference_id);
 create index idx_confbridges_bridge_id on confbridges(bridge_id);

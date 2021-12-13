@@ -39,7 +39,6 @@ func TestJoined(t *testing.T) {
 		bridge       *bridge.Bridge
 		callID       uuid.UUID
 		confbridgeID uuid.UUID
-		conferenceID uuid.UUID
 
 		confbridge *confbridge.Confbridge
 	}{
@@ -51,7 +50,6 @@ func TestJoined(t *testing.T) {
 				StasisData: map[string]string{
 					"confbridge_id": "eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2",
 					"call_id":       "ebb3c432-38cf-11ec-ad96-fb9640d4c6ee",
-					"conference_id": "16e47452-38d1-11ec-8093-b39079fca8e2",
 				},
 			},
 			&bridge.Bridge{
@@ -61,12 +59,10 @@ func TestJoined(t *testing.T) {
 			},
 			uuid.FromStringOrNil("ebb3c432-38cf-11ec-ad96-fb9640d4c6ee"),
 			uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
-			uuid.FromStringOrNil("16e47452-38d1-11ec-8093-b39079fca8e2"),
 
 			&confbridge.Confbridge{
-				ID:           uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
-				BridgeID:     "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
-				ConferenceID: uuid.FromStringOrNil("eb93c4ac-38cf-11ec-bcc5-031b06ff96b3"),
+				ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+				BridgeID: "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
 			},
 		},
 	}
@@ -76,7 +72,7 @@ func TestJoined(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeAddChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID, tt.callID).Return(nil)
-			mockDB.EXPECT().CallSetConferenceID(gomock.Any(), tt.callID, tt.conferenceID).Return(nil)
+			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.callID, tt.confbridgeID).Return(nil)
 
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), notifyhandler.EventTypeConfbridgeJoined, gomock.Any())
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)

@@ -9,11 +9,11 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 func TestCallCreate(t *testing.T) {
@@ -882,7 +882,7 @@ func TestCallSetFlowID(t *testing.T) {
 	}
 }
 
-func TestCallSetConferenceID(t *testing.T) {
+func TestCallSetConfbridgeID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -890,7 +890,7 @@ func TestCallSetConferenceID(t *testing.T) {
 
 	type test struct {
 		name         string
-		conferenceID uuid.UUID
+		confbridgeID uuid.UUID
 		call         *call.Call
 
 		expectCall *call.Call
@@ -923,7 +923,7 @@ func TestCallSetConferenceID(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				ConferenceID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
+				ConfbridgeID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
 
 				Source:      address.Address{},
 				Destination: address.Address{},
@@ -946,7 +946,7 @@ func TestCallSetConferenceID(t *testing.T) {
 			}
 
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallSetConferenceID(context.Background(), tt.call.ID, tt.conferenceID); err != nil {
+			if err := h.CallSetConfbridgeID(context.Background(), tt.call.ID, tt.confbridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

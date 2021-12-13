@@ -803,10 +803,12 @@ func TestCleanCurrentAction(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:        mockReq,
+		db:                mockDB,
+		confbridgeHandler: mockConf,
 	}
 
 	tests := []struct {
@@ -828,12 +830,12 @@ func TestCleanCurrentAction(t *testing.T) {
 			},
 		},
 		{
-			"conferenceID has set",
+			"confbridgeID has set",
 			&call.Call{
 				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
 				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
-				ConferenceID: uuid.FromStringOrNil("619bba82-5839-11ec-8733-c3a8bf0aee26"),
+				ConfbridgeID: uuid.FromStringOrNil("619bba82-5839-11ec-8733-c3a8bf0aee26"),
 			},
 			&channel.Channel{
 				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
@@ -841,12 +843,12 @@ func TestCleanCurrentAction(t *testing.T) {
 			},
 		},
 		{
-			"conferenceID playback have set",
+			"confbridgeID playback have set",
 			&call.Call{
 				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
 				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
-				ConferenceID: uuid.FromStringOrNil("619bba82-5839-11ec-8733-c3a8bf0aee26"),
+				ConfbridgeID: uuid.FromStringOrNil("619bba82-5839-11ec-8733-c3a8bf0aee26"),
 			},
 			&channel.Channel{
 				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
@@ -865,8 +867,8 @@ func TestCleanCurrentAction(t *testing.T) {
 				mockReq.EXPECT().AstPlaybackStop(gomock.Any(), tt.channel.AsteriskID, tt.channel.PlaybackID)
 			}
 
-			if tt.call.ConferenceID != uuid.Nil {
-				mockReq.EXPECT().CFV1ConferenceKick(gomock.Any(), tt.call.ConferenceID, tt.call.ID).Return(nil)
+			if tt.call.ConfbridgeID != uuid.Nil {
+				mockConf.EXPECT().Kick(gomock.Any(), tt.call.ConfbridgeID, tt.call.ID).Return(nil)
 			}
 
 			if err := h.cleanCurrentAction(ctx, tt.call); err != nil {
@@ -938,6 +940,7 @@ func TestActionNextForce(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &callHandler{
 		reqHandler: mockReq,
@@ -983,8 +986,8 @@ func TestActionNextForce(t *testing.T) {
 				mockReq.EXPECT().AstPlaybackStop(gomock.Any(), tt.channel.AsteriskID, tt.channel.PlaybackID)
 			}
 
-			if tt.call.ConferenceID != uuid.Nil {
-				mockReq.EXPECT().CFV1ConferenceKick(gomock.Any(), tt.call.ConferenceID, tt.call.ID).Return(nil)
+			if tt.call.ConfbridgeID != uuid.Nil {
+				mockConf.EXPECT().Kick(gomock.Any(), tt.call.ConfbridgeID, tt.call.ID).Return(nil)
 			}
 
 			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(tt.act, nil)

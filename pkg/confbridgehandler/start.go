@@ -15,19 +15,17 @@ import (
 
 // Create is handy function for creating a confbridge.
 // it increases corresponded counter
-func (h *confbridgeHandler) Create(ctx context.Context, confID uuid.UUID) (*confbridge.Confbridge, error) {
+func (h *confbridgeHandler) Create(ctx context.Context) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":          "Create",
-			"conference_id": confID.String(),
+			"func": "Create",
 		},
 	)
 
 	id := uuid.Must(uuid.NewV4())
 
 	cb := &confbridge.Confbridge{
-		ID:           id,
-		ConferenceID: confID,
+		ID: id,
 
 		RecordingIDs:   []uuid.UUID{},
 		ChannelCallIDs: map[string]uuid.UUID{},
