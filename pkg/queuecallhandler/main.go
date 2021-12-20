@@ -51,6 +51,9 @@ type QueuecallHandler interface {
 
 	TimeoutService(ctx context.Context, queuecallID uuid.UUID)
 	TimeoutWait(ctx context.Context, queuecallID uuid.UUID)
+
+	Get(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
+	Gets(ctx context.Context, userID, size uint64, token string) ([]*queuecall.Queuecall, error)
 }
 
 // queuecallHandler define

@@ -65,6 +65,36 @@ func (mr *MockQueuecallHandlerMockRecorder) Execute(ctx, queuecallID interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockQueuecallHandler)(nil).Execute), ctx, queuecallID)
 }
 
+// Get mocks base method.
+func (m *MockQueuecallHandler) Get(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockQueuecallHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockQueuecallHandler)(nil).Get), ctx, id)
+}
+
+// Gets mocks base method.
+func (m *MockQueuecallHandler) Gets(ctx context.Context, userID, size uint64, token string) ([]*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, userID, size, token)
+	ret0, _ := ret[0].([]*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockQueuecallHandlerMockRecorder) Gets(ctx, userID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueuecallHandler)(nil).Gets), ctx, userID, size, token)
+}
+
 // Hangup mocks base method.
 func (m *MockQueuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
 	m.ctrl.T.Helper()
