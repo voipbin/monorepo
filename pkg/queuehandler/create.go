@@ -1,0 +1,225 @@
+package queuehandler
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+)
+
+// Create creates a new queue.
+// waitTimeout: wait timeout(MS)
+// serviceTimeout: service timeout(MS)
+func (h *queueHandler) Create(
+	ctx context.Context,
+	userID uint64,
+	name string,
+	detail string,
+	webhookURI string,
+	webhookMethod string,
+	routingMethod queue.RoutingMethod,
+	tagIDs []uuid.UUID,
+	waitActions []fmaction.Action,
+	waitTimeout int,
+	serviceTimeout int,
+) (*queue.Queue, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "Create",
+		"userid": userID,
+	})
+	log.Debug("Creating a new user.")
+
+	// generate queue id
+	id := uuid.Must(uuid.NewV4())
+	log = log.WithField("queue_id", id)
+
+	if routingMethod != queue.RoutingMethodRandom {
+		log.Errorf("Unsupported routing method. Currently, support random only. routingMethod: %s", routingMethod)
+		return nil, fmt.Errorf("wrong routing_method")
+	}
+
+	// create confbridge
+	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx)
+	if err != nil {
+		log.Errorf("Could not create the confbridge. err: %v", err)
+		return nil, err
+	}
+
+	// create queue flow
+	f, err := h.createQueueFlow(ctx, userID, id, cb.ID, waitActions)
+	if err != nil {
+		log.Errorf("Could not create the queue flow. err: %v", err)
+		return nil, err
+	}
+
+	// get flow target action id
+	forwardActionID, err := h.getForwardActionID(ctx, f.ID)
+	if err != nil {
+		log.Errorf("Could not get forward action id. err: %v", err)
+		return nil, err
+	}
+
+	// create a new queue
+	a := &queue.Queue{
+		ID:              id,
+		UserID:          userID,
+		FlowID:          f.ID,
+		ConfbridgeID:    cb.ID,
+		ForwardActionID: forwardActionID,
+
+		Name:          name,
+		Detail:        detail,
+		WebhookURI:    webhookURI,
+		WebhookMethod: webhookMethod,
+
+		RoutingMethod: routingMethod,
+		TagIDs:        tagIDs,
+
+		WaitActions:         waitActions,
+		WaitQueueCallIDs:    []uuid.UUID{},
+		WaitTimeout:         waitTimeout,
+		ServiceQueueCallIDs: []uuid.UUID{},
+		ServiceTimeout:      serviceTimeout,
+
+		TotalIncomingCount:   0,
+		TotalServicedCount:   0,
+		TotalAbandonedCount:  0,
+		TotalWaitDuration:    0,
+		TotalServiceDuration: 0,
+
+		TMCreate: getCurTime(),
+		TMUpdate: defaultTimeStamp,
+		TMDelete: defaultTimeStamp,
+	}
+
+	if err := h.db.QueueCreate(ctx, a); err != nil {
+		log.Errorf("Could not create a new queue. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.QueueGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get created queue info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("queue", res).Debug("Created a new queue.")
+
+	return res, nil
+}
+
+// createQueueFlow creates a queue flow and returns created flow.
+func (h *queueHandler) createQueueFlow(ctx context.Context, userID uint64, queueID uuid.UUID, confbridgeID uuid.UUID, waitActions []fmaction.Action) (*fmflow.Flow, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":     "createQueueFlow",
+			"queue_id": queueID,
+		})
+
+	// create flow actions
+	actions, err := h.createQueueFlowActions(waitActions, confbridgeID)
+	if err != nil {
+		log.Errorf("Could not create actions. err: %v", err)
+		return nil, err
+	}
+	log.Debugf("Created flow actions. actions: %v", actions)
+
+	// create flow name
+	flowName := fmt.Sprintf("queue-%s", queueID.String())
+
+	// create flow
+	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, flowName, "generated for queue by queue-manager.", "", actions, true)
+	if err != nil {
+		log.Errorf("Could not create a queue flow. err: %v", err)
+		return nil, err
+	}
+	log.Debugf("Created a queue flow. res: %v", resFlow)
+
+	return resFlow, nil
+}
+
+// createConferenceFlowActions creates the actions for conference join.
+func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, confbridgeID uuid.UUID) ([]fmaction.Action, error) {
+	log := logrus.New().WithFields(
+		logrus.Fields{
+			"func":          "createQueueFlowActions",
+			"confbridge_id": confbridgeID,
+		})
+
+	res := []fmaction.Action{}
+
+	// append the wait actions
+	res = append(res, waitActions...)
+
+	// append the goto
+	{
+		option := fmaction.OptionGoto{
+			TargetIndex: 0,
+			Loop:        false,
+		}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			log.Errorf("Could not marshal the option. err: %v", err)
+			return nil, err
+		}
+		act := fmaction.Action{
+			Type:   fmaction.TypeGoto,
+			Option: opt,
+		}
+		res = append(res, act)
+	}
+
+	// append the confbridge join
+	{
+		option := fmaction.OptionConfbridgeJoin{
+			ConfbridgeID: confbridgeID.String(),
+		}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			log.Errorf("Could not marshal the option. err: %v", err)
+			return nil, err
+		}
+		act := fmaction.Action{
+			Type:   fmaction.TypeConfbridgeJoin,
+			Option: opt,
+		}
+		res = append(res, act)
+	}
+
+	return res, nil
+}
+
+// getForwardActionID returns action id for froward.
+func (h *queueHandler) getForwardActionID(ctx context.Context, flowID uuid.UUID) (uuid.UUID, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "getForwardActionID",
+			"flow_id": flowID,
+		},
+	)
+
+	f, err := h.reqHandler.FMV1FlowGet(ctx, flowID)
+	if err != nil {
+		log.Errorf("Could not get flow. err: %v", err)
+		return uuid.Nil, err
+	}
+
+	res := uuid.Nil
+	for _, act := range f.Actions {
+		if act.Type == fmaction.TypeConfbridgeJoin {
+			res = act.ID
+		}
+	}
+
+	if res == uuid.Nil {
+		log.Errorf("Could not find forward action id.")
+		return uuid.Nil, fmt.Errorf("forward action id not found")
+	}
+
+	return res, nil
+}

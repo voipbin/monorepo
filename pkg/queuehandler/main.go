@@ -1,0 +1,85 @@
+package queuehandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package queuehandler -destination ./mock_queuehandler.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+	"strings"
+	"time"
+
+	"github.com/gofrs/uuid"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
+)
+
+// List of default values
+const (
+	defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
+)
+
+// QueueHandler interface
+type QueueHandler interface {
+	Create(
+		ctx context.Context,
+		userID uint64,
+		name string,
+		detail string,
+		webhookURI string,
+		webhookMethod string,
+		routingMethod queue.RoutingMethod,
+		tagIDs []uuid.UUID,
+		waitActions []fmaction.Action,
+		waitTimeout int,
+		serviceTimeout int,
+	) (*queue.Queue, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
+	Gets(ctx context.Context, userID, size uint64, token string) ([]*queue.Queue, error)
+	Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID uuid.UUID, exitActionID uuid.UUID) (*queuecall.Queuecall, error)
+	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookURI, webhookMethod string) error
+	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error
+	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) error
+	UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) error
+}
+
+type queueHandler struct {
+	reqHandler    requesthandler.RequestHandler
+	db            dbhandler.DBHandler
+	notifyhandler notifyhandler.NotifyHandler
+
+	queuecallHandler          queuecallhandler.QueuecallHandler
+	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler
+}
+
+// NewQueueHandler return AgentHandler interface
+func NewQueueHandler(
+	reqHandler requesthandler.RequestHandler,
+	dbHandler dbhandler.DBHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	queuecallHandler queuecallhandler.QueuecallHandler,
+	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
+) QueueHandler {
+	return &queueHandler{
+		reqHandler:    reqHandler,
+		db:            dbHandler,
+		notifyhandler: notifyHandler,
+
+		queuecallHandler:          queuecallHandler,
+		queuecallReferenceHandler: queuecallReferenceHandler,
+	}
+}
+
+// getCurTime return current utc time string
+func getCurTime() string {
+	now := time.Now().UTC().String()
+	res := strings.TrimSuffix(now, " +0000 UTC")
+
+	return res
+}
