@@ -309,6 +309,66 @@ func TestProcessV1QueuesIDGet(t *testing.T) {
 	}
 }
 
+func TestProcessV1QueuesIDDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:   mockSock,
+		db:           mockDB,
+		reqHandler:   mockReq,
+		queueHandler: mockQueue,
+	}
+
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		id uuid.UUID
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queues/a8e8faba-6150-11ec-bde0-e75ae9f16df7",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("a8e8faba-6150-11ec-bde0-e75ae9f16df7"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockQueue.EXPECT().Delete(gomock.Any(), tt.id).Return(nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func TestProcessV1QueuesIDPut(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
