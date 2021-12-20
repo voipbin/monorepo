@@ -92,7 +92,7 @@ func TestCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any(), gomock.Any()).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any()).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceConfbridgeSet(gomock.Any(), gomock.Any()).Return(nil)
