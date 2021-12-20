@@ -11,12 +11,11 @@ import (
 	"github.com/sirupsen/logrus"
 	cmnotifyhandler "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 // list of publishers
@@ -32,7 +31,6 @@ type SubscribeHandler interface {
 type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 	db         dbhandler.DBHandler
-	cache      cachehandler.CacheHandler
 
 	subscribeQueue    string
 	subscribesTargets string
@@ -66,18 +64,16 @@ func init() {
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	db dbhandler.DBHandler,
-	cache cachehandler.CacheHandler,
 	subscribeQueue string,
 	subscribeTargets string,
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+	conferenceHandler conferencehandler.ConferenceHandler,
 ) SubscribeHandler {
-	conferenceHandler := conferencehandler.NewConferenceHandler(reqHandler, notifyHandler, db, cache)
 
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
 		db:         db,
-		cache:      cache,
 
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,

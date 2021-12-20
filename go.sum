@@ -407,6 +407,8 @@ gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20211203075602-7cbc50a11
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20211203075602-7cbc50a11b16/go.mod h1:xZS9gMBoRfMsIZh0JjGDcrH31B4nSwh1ODj76tbzYkM=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20211209022915-722b9f1e4885 h1:uCOo7TblygZlb/9is7TA/iCi0OeAZzP7c116rAQ5gRM=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20211209022915-722b9f1e4885/go.mod h1:ciGVw1ysfUKjRCKf31r/VUMXO/+hC4IucmuniIvfxBo=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20211213012316-c2a67012821b h1:tOR9mZOXldoPb3942tOiHggO0/2i6Or2bSmYbrws9Hg=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20211213012316-c2a67012821b/go.mod h1:hRXDOVFUqFg5W6zj3ISj9diUCb+n6kCHpx12RLSOxMA=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210314173554-61bfbbbd5633/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20211206174652-79b78ab12d71 h1:hRJLEqXHh7YoFwOgS0IV4yMwuc3Rw28z+0HmbpTq9q4=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20211206174652-79b78ab12d71/go.mod h1:AMuev+MrDnH+Rq8zIrzMBsTOqiAc8nkfZznJ9pUI6yw=
@@ -414,10 +416,14 @@ gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211208005659-c39db6fb31
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20211208005659-c39db6fb3135/go.mod h1:AdLfVIvDMgeQYRp6/Uu1Wir79y4YJuqlOmgvuMOdBlY=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20211018180403-4e3bcfe187ff h1:2rhYS+WDAD/RRImK57UHiZdW19N/3Uo/+z7z7lLiY4k=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20211018180403-4e3bcfe187ff/go.mod h1:gWSzdd7bB5fqmBER/1Ree4OJeFhK6vqK3u/nitdNK70=
+gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20211220065018-454c40607da2 h1:o3Ju4SK29GSVvsiFtTG/cJR5Ud8xzLGBFoq75xypVGA=
+gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20211220065018-454c40607da2/go.mod h1:gy9NkKzwD/nKbrw760Rq6/0+Ipb0g2vWWYUUyNcy3KA=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210926124428-8c2c84532038 h1:iAQNF1Lr/QwlCh1BB2wub30iS8FQggCbbtdZYnqvFvQ=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20210926124428-8c2c84532038/go.mod h1:sfbmdjiN6M8Qh7JuofmiityRqn7T4D+N9zjCrHzWDWM=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211208174841-2d9bcee02698 h1:O/ElIiWO/rb4ZfKSjRVZp0bOqy80civPXUtKYsK8ecQ=
 gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211208174841-2d9bcee02698/go.mod h1:ugPVb74tpA4Pf8aMXgyqEM1U1hTXkatlXVBDMptjbKY=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211220070423-827af633ce02 h1:oyvo+QeE00ivfhHORFoRqYWsVD2USnOikLmmv2JcFMc=
+gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20211220070423-827af633ce02/go.mod h1:8FdDCuM334wXk+CbLbv/IYIwyS/hcqvrmff3CFkukkU=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210926124500-ba74a1b88236 h1:Vc3IlI5t+ayjnNReeGxwBgLv8SVbG1gV7fhZUmxZSxI=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20210926124500-ba74a1b88236/go.mod h1:S10q6RV6rGKwDq7N+W9fBT7J8cquSl7k6UfU14Rv8u8=
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210926125509-0133dd6b7146 h1:stpWGDUI63F+E/K/7sJID2DEbyRqqj2cSJiRbuzavpc=
@@ -606,6 +612,8 @@ golang.org/x/sys v0.0.0-20210510120138-977fb7262007/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20210603081109-ebe580a85c40/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20211210111614-af8b64212486 h1:5hpz5aRr+W1erYCL5JRhSUBJRph7l9XkNveoExlrKYk=
 golang.org/x/sys v0.0.0-20211210111614-af8b64212486/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e h1:fLOSk5Q00efkSvAm+4xcoXD+RRmLmmulPn5I3Y9F2EM=
+golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=

@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
 )
 
 // pagination parameters
@@ -30,7 +31,9 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock        rabbitmqhandler.Rabbit
+	rabbitSock    rabbitmqhandler.Rabbit
+	notifyHandler notifyhandler.NotifyHandler
+
 	conferenceHandler conferencehandler.ConferenceHandler
 }
 
@@ -78,10 +81,12 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	db dbhandler.DBHandler,
+	notifyHandler notifyhandler.NotifyHandler,
 	cfHandler conferencehandler.ConferenceHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:        rabbitSock,
+		notifyHandler:     notifyHandler,
 		conferenceHandler: cfHandler,
 	}
 

@@ -21,7 +21,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
-	subscribehandler "gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/subsribehandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/subscribehandler"
 )
 
 // channels
@@ -50,6 +50,10 @@ var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test",
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
+
+const (
+	serviceName = "conference-manager"
+)
 
 func main() {
 	log := logrus.WithField("func", "main")
@@ -128,15 +132,30 @@ func initProm(endpoint, listen string) {
 }
 
 // run runs the main thread.
-func run(db *sql.DB, cache cachehandler.CacheHandler) error {
+func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	log := logrus.WithField("func", "run")
+
+	// dbhandler
+	db := dbhandler.NewHandler(sqlDB, cache)
+
+	// rabbitmq sock connect
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	requestHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify)
+
+	conferenceHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db, cache)
 
 	// run listen
-	if err := runListen(db, cache); err != nil {
+	if err := runListen(db, rabbitSock, requestHandler, notifyHandler, conferenceHandler); err != nil {
+		log.Errorf("Could not start runListen. err: %v", err)
 		return err
 	}
 
 	// run subscribe
-	if err := runSubscribe(db, cache); err != nil {
+	if err := runSubscribe(db, rabbitSock, requestHandler, notifyHandler, conferenceHandler); err != nil {
+		log.Errorf("Could not start runSubscribe. err: %v", err)
 		return err
 	}
 
@@ -144,30 +163,21 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
-
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
-
-	requestHandler := requesthandler.NewRequestHandler(rabbitSock, "conference_manager_subscribe")
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify)
+func runSubscribe(db dbhandler.DBHandler, rabbitSock rabbitmqhandler.Rabbit, requestHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, conferenceHandler conferencehandler.ConferenceHandler) error {
 
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
 		db,
-		cache,
 		*rabbitQueueSubscribe,
 		*rabbitListenSubscribes,
 		requestHandler,
 		notifyHandler,
+		conferenceHandler,
 	)
 
 	// run
 	if err := subHandler.Run(*rabbitQueueSubscribe, *rabbitListenSubscribes); err != nil {
+		logrus.Errorf("Could not run the subscribehandler correctly. err: %v", err)
 		return err
 	}
 
@@ -175,23 +185,14 @@ func runSubscribe(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen handler
-func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
+func runListen(db dbhandler.DBHandler, rabbitSock rabbitmqhandler.Rabbit, requestHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, conferenceHandler conferencehandler.ConferenceHandler) error {
 
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
-
-	requestHandler := requesthandler.NewRequestHandler(rabbitSock, "conference_manager")
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify)
-
-	cfHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cfHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, notifyHandler, conferenceHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+		return err
 	}
 
 	return nil

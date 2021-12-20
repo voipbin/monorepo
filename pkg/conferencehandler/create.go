@@ -42,7 +42,7 @@ func (h *conferenceHandler) Create(
 	log = log.WithField("confbridge_id", id.String())
 
 	// send confbridge create request
-	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx, id)
+	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx)
 	if err != nil {
 		log.Errorf("Could not crate confbridge. err: %v", err)
 		return nil, err
