@@ -46,7 +46,7 @@ var (
 	// v1
 	// queues
 	regV1Queues                = regexp.MustCompile("/v1/queues$")
-	regV1QueuesGet             = regexp.MustCompile(`/v1/queues\?(.*)$`)
+	regV1QueuesGet             = regexp.MustCompile(`/v1/queues\?` + regAny + "$")
 	reqV1QueuesID              = regexp.MustCompile("/v1/queues/" + regUUID + "$")
 	reqV1QueuesIDTagIDs        = regexp.MustCompile("/v1/queues/" + regUUID + "/tag_ids$")
 	reqV1QueuesIDRoutingMethod = regexp.MustCompile("/v1/queues/" + regUUID + "/routing_method$")
@@ -54,6 +54,7 @@ var (
 	reqV1QueuesIDWaitActions   = regexp.MustCompile("/v1/queues/" + regUUID + "/wait_actions$")
 
 	// queuecalls
+	regV1QueuecallsGet              = regexp.MustCompile(`/v1/queuecalls\?` + regAny + "$")
 	regV1QueuecallsID               = regexp.MustCompile("/v1/queuecalls/" + regUUID + "$")
 	regV1QueuecallsIDExecute        = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/execute$")
 	regV1QueuecallsIDTimeoutWait    = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_wait$")
@@ -188,6 +189,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1QueuesPost(ctx, m)
 		requestType = "/v1/queues"
 
+	// GET /queues/<queue-id>
+	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1QueuesIDGet(ctx, m)
+		requestType = "/v1/queues"
+
 	// PUT /queues/<queue-id>
 	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1QueuesIDPut(ctx, m)
@@ -216,6 +222,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	/////////////
 	// queuecalls
 	/////////////
+
+	// GET /queuecalls
+	case regV1QueuecallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1QueuecallsGet(ctx, m)
+		requestType = "/v1/queuecalls"
+
+	// GET /queuecalls/<queuecall-id>
+	case regV1QueuecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1QueuecallsIDGet(ctx, m)
+		requestType = "/v1/queuecalls"
 
 	// DELETE /queuecalls/<queuecall-id>
 	case regV1QueuecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:

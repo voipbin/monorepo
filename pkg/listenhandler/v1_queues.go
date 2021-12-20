@@ -114,7 +114,44 @@ func (h *listenHandler) processV1QueuesGet(ctx context.Context, m *rabbitmqhandl
 	}
 
 	return res, nil
+}
 
+// processV1QueuesIDGet handles Get /v1/queues/<queue-id> request
+func (h *listenHandler) processV1QueuesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":     "processV1QueuesIDGet",
+			"queue_id": id,
+		})
+	log.Debug("Executing processV1QueuesIDGet.")
+
+	// get queue
+	tmp, err := h.queueHandler.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get queue info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
 }
 
 // processV1QueuesIDPut handles Put /v1/queues/<queue-id> request

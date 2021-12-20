@@ -9,9 +9,169 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
 )
+
+func TestProcessV1QueuecallsGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock: mockSock,
+		db:         mockDB,
+		reqHandler: mockReq,
+
+		queuecallHandler: mockQueuecall,
+	}
+
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		userID    uint64
+		pageSize  uint64
+		pageToken string
+
+		queuecalls []*queuecall.Queuecall
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			1,
+			10,
+			"2020-05-03 21:35:02.809",
+			[]*queuecall.Queuecall{
+				{
+					ID:     uuid.FromStringOrNil("4b46ad9c-6152-11ec-a4a6-7b3b226046a5"),
+					UserID: 1,
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"4b46ad9c-6152-11ec-a4a6-7b3b226046a5","user_id":1,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
+			"2 items",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			1,
+			10,
+			"2020-05-03 21:35:02.809",
+			[]*queuecall.Queuecall{
+				{
+					ID:     uuid.FromStringOrNil("4ca0c722-6152-11ec-a0ad-1be04f100fff"),
+					UserID: 1,
+				},
+				{
+					ID:     uuid.FromStringOrNil("4cc9430a-6152-11ec-9295-d783a3ffb68e"),
+					UserID: 1,
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"4ca0c722-6152-11ec-a0ad-1be04f100fff","user_id":1,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""},{"id":"4cc9430a-6152-11ec-9295-d783a3ffb68e","user_id":1,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockQueuecall.EXPECT().Gets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.queuecalls, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func TestProcessV1QueuecallsIDGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock: mockSock,
+		db:         mockDB,
+		reqHandler: mockReq,
+
+		queuecallHandler: mockQueuecall,
+	}
+
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		id        uuid.UUID
+		queuecall *queuecall.Queuecall
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/queuecalls/0bc84788-6153-11ec-b08a-d74a5a04d995",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+
+			uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
+			&queuecall.Queuecall{
+				ID:     uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
+				UserID: 1,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0bc84788-6153-11ec-b08a-d74a5a04d995","user_id":1,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockQueuecall.EXPECT().Get(gomock.Any(), tt.id).Return(tt.queuecall, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
 
 func TestProcessV1QueuescallsIDDelete(t *testing.T) {
 	mc := gomock.NewController(t)
