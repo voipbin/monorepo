@@ -154,6 +154,36 @@ func (h *listenHandler) processV1QueuesIDGet(ctx context.Context, m *rabbitmqhan
 	return res, nil
 }
 
+// processV1QueuesIDDelete handles Delete /v1/queues/<queue-id> request
+func (h *listenHandler) processV1QueuesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":     "processV1QueuesIDDelete",
+			"queue_id": id,
+		})
+	log.Debug("Executing processV1QueuesIDDelete.")
+
+	// get queue
+	err := h.queueHandler.Delete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get queue info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
 // processV1QueuesIDPut handles Put /v1/queues/<queue-id> request
 func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")

@@ -194,6 +194,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1QueuesIDGet(ctx, m)
 		requestType = "/v1/queues"
 
+	// DELETE /queues/<queue-id>
+	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1QueuesIDDelete(ctx, m)
+		requestType = "/v1/queues"
+
 	// PUT /queues/<queue-id>
 	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1QueuesIDPut(ctx, m)
@@ -238,7 +243,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1QueuecallsIDDelete(ctx, m)
 		requestType = "/v1/queuecalls"
 
-	// PUT /queuecalls/<queuecall-id>/execute
+	// POST /queuecalls/<queuecall-id>/execute
 	case regV1QueuecallsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDExecutePost(ctx, m)
 		requestType = "/v1/queuecalls"
@@ -259,7 +264,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// DELETE /queuecallreferences/<queuecallreference-id>
 	case regV1QueuecallreferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1QueuecallreferencesIDDelete(ctx, m)
-		requestType = "/v1/queuecalls"
+		requestType = "/v1/queuecallreferences"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
