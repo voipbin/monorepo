@@ -5,7 +5,7 @@ metadata:
   labels:
     app: registrar-manager
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: registrar-manager
@@ -52,5 +52,5 @@ spec:
               containerPort: 2112
           resources:
             limits:
-              cpu: "60m"
+              cpu: "10m"
               memory: "30M"
