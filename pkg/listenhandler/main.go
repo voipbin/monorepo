@@ -16,6 +16,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
@@ -35,8 +36,9 @@ type listenHandler struct {
 	db         dbhandler.DBHandler
 	reqHandler requesthandler.RequestHandler
 
-	queueHandler     queuehandler.QueueHandler
-	queuecallHandler queuecallhandler.QueuecallHandler
+	queueHandler              queuehandler.QueueHandler
+	queuecallHandler          queuecallhandler.QueuecallHandler
+	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler
 }
 
 var (
@@ -100,14 +102,16 @@ func NewListenHandler(
 	reqHandler requesthandler.RequestHandler,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
+	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock: rabbitSock,
 		db:         db,
 		reqHandler: reqHandler,
 
-		queueHandler:     queueHandler,
-		queuecallHandler: queuecallHandler,
+		queueHandler:              queueHandler,
+		queuecallHandler:          queuecallHandler,
+		queuecallReferenceHandler: queuecallReferenceHandler,
 	}
 
 	return h
@@ -261,6 +265,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	//////////////////////
 	// queuecallreferences
 	//////////////////////
+	// GET /queuecallreferences/<queuecallreference-id>
+	case regV1QueuecallreferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1QueuecallreferencesIDGet(ctx, m)
+		requestType = "/v1/queuecallreferences"
+
 	// DELETE /queuecallreferences/<queuecallreference-id>
 	case regV1QueuecallreferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1QueuecallreferencesIDDelete(ctx, m)

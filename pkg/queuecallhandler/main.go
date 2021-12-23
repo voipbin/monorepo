@@ -53,6 +53,7 @@ type QueuecallHandler interface {
 	TimeoutWait(ctx context.Context, queuecallID uuid.UUID)
 
 	Get(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
+	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	Gets(ctx context.Context, userID, size uint64, token string) ([]*queuecall.Queuecall, error)
 }
 

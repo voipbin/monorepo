@@ -80,6 +80,21 @@ func (mr *MockQueuecallHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockQueuecallHandler)(nil).Get), ctx, id)
 }
 
+// GetByReferenceID mocks base method.
+func (m *MockQueuecallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByReferenceID", ctx, referenceID)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByReferenceID indicates an expected call of GetByReferenceID.
+func (mr *MockQueuecallHandlerMockRecorder) GetByReferenceID(ctx, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockQueuecallHandler)(nil).GetByReferenceID), ctx, referenceID)
+}
+
 // Gets mocks base method.
 func (m *MockQueuecallHandler) Gets(ctx context.Context, userID, size uint64, token string) ([]*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
