@@ -213,7 +213,7 @@ func runListen(
 	queuecallHandler queuecallhandler.QueuecallHandler,
 	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
 ) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, reqHandler, queueHandler, queuecallHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, reqHandler, queueHandler, queuecallHandler, queuecallReferenceHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

@@ -2,6 +2,7 @@ package queuecallhandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -29,6 +30,35 @@ func (h *queuecallHandler) Get(ctx context.Context, id uuid.UUID) (*queuecall.Qu
 	res, err := h.db.QueuecallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get queuecall info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// GetByReferenceID returns queuecall info of the given referenceID.
+func (h *queuecallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":         "GetByReferenceID",
+			"reference_id": referenceID,
+		})
+
+	qcf, err := h.queuecallReferenceHandler.Get(ctx, referenceID)
+	if err != nil {
+		log.Errorf("Could not get queuecall reference. err: %v", err)
+		return nil, err
+	}
+
+	if qcf.CurrentQueuecallID == uuid.Nil {
+		log.Errorf("No current queuecall info exist.")
+		return nil, fmt.Errorf("no current queuecall id info")
+	}
+
+	// get current queuecall info
+	res, err := h.db.QueuecallGet(ctx, qcf.CurrentQueuecallID)
+	if err != nil {
+		log.Errorf("Could not get queuecall reference info. err: %v", err)
 		return nil, err
 	}
 
