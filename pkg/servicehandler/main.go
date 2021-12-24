@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
@@ -100,6 +102,27 @@ type ServiceHandler interface {
 	NumberGets(u *user.User, size uint64, token string) ([]*number.Number, error)
 	NumberDelete(u *user.User, id uuid.UUID) (*number.Number, error)
 	NumberUpdate(u *user.User, numb *number.Number) (*number.Number, error)
+
+	// queue handler
+	QueueGet(u *user.User, queueID uuid.UUID) (*qmqueue.Event, error)
+	QueueGets(u *user.User, size uint64, token string) ([]*qmqueue.Event, error)
+	QueueCreate(
+		u *user.User,
+		name string,
+		detail string,
+		webhookURI string,
+		webhookMethod string,
+		routingMethod string,
+		tagIDs []uuid.UUID,
+		waitActions []fmaction.Action,
+		timeoutWait int,
+		timeoutService int,
+	) (*qmqueue.Event, error)
+	QueueDelete(u *user.User, queueID uuid.UUID) error
+	QueueUpdate(u *user.User, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error
+	QueueUpdateTagIDs(u *user.User, queueID uuid.UUID, tagIDs []uuid.UUID) error
+	QueueUpdateRoutingMethod(u *user.User, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) error
+	QueueUpdateActions(u *user.User, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) error
 
 	// recording handlers
 	RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error)

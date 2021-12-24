@@ -54,7 +54,6 @@ func TestCallCreate(t *testing.T) {
 				ChannelID:  "d66d7c02-efc5-11ea-9f77-6fe9fae57afd",
 				UserID:     1,
 				FlowID:     uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-				ConfID:     uuid.Nil,
 				Type:       cmcall.TypeFlow,
 
 				Source: cmaddress.Address{
@@ -76,7 +75,6 @@ func TestCallCreate(t *testing.T) {
 				ID:     uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
 				UserID: 1,
 				FlowID: uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-				ConfID: uuid.Nil,
 				Type:   call.TypeFlow,
 
 				Source: address.Address{

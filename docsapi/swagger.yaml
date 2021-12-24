@@ -92,9 +92,6 @@ definitions:
         items:
           type: string
         type: array
-      conf_id:
-        description: Currently joined conference id.
-        type: string
       destination:
         $ref: '#/definitions/address.Address'
         description: Destination info
@@ -312,6 +309,57 @@ definitions:
       tm_update:
         type: string
     type: object
+  queue.Event:
+    properties:
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      routing_method:
+        type: RoutingMethod
+      service_queue_call_ids:
+        items:
+          type: string
+        type: array
+      service_timeout:
+        type: integer
+      tag_ids:
+        items:
+          type: string
+        type: array
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      total_abandoned_count:
+        type: integer
+      total_incoming_count:
+        type: integer
+      total_service_duration:
+        type: integer
+      total_serviced_count:
+        type: integer
+      total_waittime:
+        type: integer
+      wait_actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      wait_queue_call_ids:
+        items:
+          type: string
+        type: array
+      wait_timeout:
+        type: integer
+      webhook_method:
+        type: string
+      webhook_uri:
+        type: string
+    type: object
   recording.Recording:
     properties:
       filename:
@@ -506,6 +554,35 @@ definitions:
       number:
         type: string
     type: object
+  request.BodyQueuesIDActionsPUT:
+    properties:
+      timeout_service:
+        type: integer
+      timeout_wait:
+        type: integer
+      wait_actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+    type: object
+  request.BodyQueuesIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      webhook_method:
+        type: string
+      webhook_uri:
+        type: string
+    type: object
+  request.BodyQueuesIDTagIDsPUT:
+    properties:
+      tag_ids:
+        items:
+          type: string
+        type: array
+    type: object
   request.BodyTagsIDPUT:
     properties:
       detail:
@@ -610,6 +687,15 @@ definitions:
       result:
         items:
           $ref: '#/definitions/number.Number'
+        type: array
+    type: object
+  response.BodyQueuesGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/queue.Event'
         type: array
     type: object
   response.BodyRecordingsGET:
@@ -1439,6 +1525,149 @@ paths:
           schema:
             $ref: '#/definitions/number.Number'
       summary: Update the number's basic information.
+  /v1.0/queues:
+    get:
+      description: get queues of the user
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyQueuesGET'
+      summary: List qeueus
+    post:
+      description: create a new queue
+      parameters:
+      - description: The queue detail
+        in: body
+        name: agent
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyAgentsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/queue.Event'
+      summary: Create a new queue.
+  /v1.0/queues/{id}:
+    delete:
+      description: Delete the queue of the given id
+      parameters:
+      - description: The ID of the queue
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete the queue
+    get:
+      description: Get the queue of the given id
+      parameters:
+      - description: The ID of the queue
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Get the queue
+    put:
+      description: Update an queue and returns detail updated queue info.
+      parameters:
+      - description: The ID of the queue
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Queue's update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyQueuesIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Update an queue and reuturns updated queue info.
+  /v1.0/queues/{id}/routing_method:
+    put:
+      description: Update an queue routing_method info.
+      parameters:
+      - description: The ID of the queue
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Queue's update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyAgentsIDTagIDsPUT'
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Update an queue's tag_id info.
+  /v1.0/queues/{id}/status:
+    put:
+      description: Update the queue's action handle info.
+      parameters:
+      - description: The ID of the queue
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Queue's update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyQueuesIDActionsPUT'
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Update an queue's action handle info.
+  /v1.0/queues/{id}/tag_ids:
+    put:
+      description: Update the queue's tag_ids.
+      parameters:
+      - description: The ID of the queue
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Queue's update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyQueuesIDTagIDsPUT'
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Update an queue's tag_ids info.
   /v1.0/recordingfiles/{id}:
     get:
       description: Download the recording file

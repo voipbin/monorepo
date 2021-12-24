@@ -23,6 +23,8 @@ import (
 	tag "gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 	transcribe "gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	action0 "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
 
 // MockServiceHandler is a mock of ServiceHandler interface.
@@ -635,6 +637,121 @@ func (m *MockServiceHandler) NumberUpdate(u *user.User, numb *number.Number) (*n
 func (mr *MockServiceHandlerMockRecorder) NumberUpdate(u, numb interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdate", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdate), u, numb)
+}
+
+// QueueCreate mocks base method.
+func (m *MockServiceHandler) QueueCreate(u *user.User, name, detail, webhookURI, webhookMethod, routingMethod string, tagIDs []uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) (*queue.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueCreate", u, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
+	ret0, _ := ret[0].(*queue.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueCreate indicates an expected call of QueueCreate.
+func (mr *MockServiceHandlerMockRecorder) QueueCreate(u, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueCreate", reflect.TypeOf((*MockServiceHandler)(nil).QueueCreate), u, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
+}
+
+// QueueDelete mocks base method.
+func (m *MockServiceHandler) QueueDelete(u *user.User, queueID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueDelete", u, queueID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueDelete indicates an expected call of QueueDelete.
+func (mr *MockServiceHandlerMockRecorder) QueueDelete(u, queueID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueDelete", reflect.TypeOf((*MockServiceHandler)(nil).QueueDelete), u, queueID)
+}
+
+// QueueGet mocks base method.
+func (m *MockServiceHandler) QueueGet(u *user.User, queueID uuid.UUID) (*queue.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueGet", u, queueID)
+	ret0, _ := ret[0].(*queue.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueGet indicates an expected call of QueueGet.
+func (mr *MockServiceHandlerMockRecorder) QueueGet(u, queueID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueGet", reflect.TypeOf((*MockServiceHandler)(nil).QueueGet), u, queueID)
+}
+
+// QueueGets mocks base method.
+func (m *MockServiceHandler) QueueGets(u *user.User, size uint64, token string) ([]*queue.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueGets", u, size, token)
+	ret0, _ := ret[0].([]*queue.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueGets indicates an expected call of QueueGets.
+func (mr *MockServiceHandlerMockRecorder) QueueGets(u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueGets", reflect.TypeOf((*MockServiceHandler)(nil).QueueGets), u, size, token)
+}
+
+// QueueUpdate mocks base method.
+func (m *MockServiceHandler) QueueUpdate(u *user.User, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueUpdate", u, queueID, name, detail, webhookURI, webhookMethod)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueUpdate indicates an expected call of QueueUpdate.
+func (mr *MockServiceHandlerMockRecorder) QueueUpdate(u, queueID, name, detail, webhookURI, webhookMethod interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUpdate", reflect.TypeOf((*MockServiceHandler)(nil).QueueUpdate), u, queueID, name, detail, webhookURI, webhookMethod)
+}
+
+// QueueUpdateActions mocks base method.
+func (m *MockServiceHandler) QueueUpdateActions(u *user.User, queueID uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueUpdateActions", u, queueID, waitActions, timeoutWait, timeoutService)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueUpdateActions indicates an expected call of QueueUpdateActions.
+func (mr *MockServiceHandlerMockRecorder) QueueUpdateActions(u, queueID, waitActions, timeoutWait, timeoutService interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUpdateActions", reflect.TypeOf((*MockServiceHandler)(nil).QueueUpdateActions), u, queueID, waitActions, timeoutWait, timeoutService)
+}
+
+// QueueUpdateRoutingMethod mocks base method.
+func (m *MockServiceHandler) QueueUpdateRoutingMethod(u *user.User, queueID uuid.UUID, routingMethod queue.RoutingMethod) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueUpdateRoutingMethod", u, queueID, routingMethod)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueUpdateRoutingMethod indicates an expected call of QueueUpdateRoutingMethod.
+func (mr *MockServiceHandlerMockRecorder) QueueUpdateRoutingMethod(u, queueID, routingMethod interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUpdateRoutingMethod", reflect.TypeOf((*MockServiceHandler)(nil).QueueUpdateRoutingMethod), u, queueID, routingMethod)
+}
+
+// QueueUpdateTagIDs mocks base method.
+func (m *MockServiceHandler) QueueUpdateTagIDs(u *user.User, queueID uuid.UUID, tagIDs []uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueUpdateTagIDs", u, queueID, tagIDs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueUpdateTagIDs indicates an expected call of QueueUpdateTagIDs.
+func (mr *MockServiceHandlerMockRecorder) QueueUpdateTagIDs(u, queueID, tagIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUpdateTagIDs", reflect.TypeOf((*MockServiceHandler)(nil).QueueUpdateTagIDs), u, queueID, tagIDs)
 }
 
 // RecordingGet mocks base method.

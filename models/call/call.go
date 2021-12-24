@@ -12,7 +12,6 @@ type Call struct {
 	ID     uuid.UUID `json:"id"`      // Call's ID.
 	UserID uint64    `json:"user_id"` // Call owner's ID.
 	FlowID uuid.UUID `json:"flow_id"` // Attached flow id
-	ConfID uuid.UUID `json:"conf_id"` // Currently joined conference id.
 	Type   Type      `json:"type"`    // Call's type.
 
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // Master call id
@@ -99,7 +98,6 @@ func ConvertCall(h *cmcall.Call) *Call {
 		ID:     h.ID,
 		UserID: h.UserID,
 		FlowID: h.FlowID,
-		ConfID: h.ConfID,
 		Type:   Type(h.Type),
 
 		MasterCallID:   h.MasterCallID,
