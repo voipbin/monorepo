@@ -320,7 +320,7 @@ func TestCreateActionHangup(t *testing.T) {
 	}
 }
 
-func TestAppendActionsAfterID(t *testing.T) {
+func TestAppendActions(t *testing.T) {
 	type test struct {
 		name         string
 		action1      []action.Action
@@ -386,7 +386,81 @@ func TestAppendActionsAfterID(t *testing.T) {
 			af := &activeflow.ActiveFlow{
 				Actions: tt.action1,
 			}
-			if err := appendActionsAfterID(af, tt.targetActionID, tt.action2); err != nil {
+			if err := appendActions(af, tt.targetActionID, tt.action2); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(af.Actions, tt.expectAction) != true {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectAction, tt.action1)
+			}
+		})
+	}
+}
+
+func TestReplaceActions(t *testing.T) {
+	type test struct {
+		name         string
+		action1      []action.Action
+		action2      []action.Action
+		expectAction []action.Action
+
+		targetActionID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			[]action.Action{
+				{
+					ID: uuid.FromStringOrNil("c0a54954-0a96-11eb-80b2-8b6ef3a21db9"),
+				},
+				{
+					ID: uuid.FromStringOrNil("ce32b80e-0a96-11eb-9ca3-3f423a830f93"),
+				},
+				{
+					ID: uuid.FromStringOrNil("ce32b80e-0a96-11eb-9ca3-3f423a830f93"),
+				},
+			},
+			[]action.Action{
+				{
+					ID: uuid.FromStringOrNil("e14c605c-0a96-11eb-9542-233abdd04f35"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e1858a8a-0a96-11eb-bf05-ab02488632d7"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e1b6e8d2-0a96-11eb-be8e-131d2f0bf1fe"),
+				},
+			},
+
+			[]action.Action{
+				{
+					ID: uuid.FromStringOrNil("c0a54954-0a96-11eb-80b2-8b6ef3a21db9"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e14c605c-0a96-11eb-9542-233abdd04f35"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e1858a8a-0a96-11eb-bf05-ab02488632d7"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e1b6e8d2-0a96-11eb-be8e-131d2f0bf1fe"),
+				},
+				{
+					ID: uuid.FromStringOrNil("ce32b80e-0a96-11eb-9ca3-3f423a830f93"),
+				},
+			},
+			uuid.FromStringOrNil("ce32b80e-0a96-11eb-9ca3-3f423a830f93"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			af := &activeflow.ActiveFlow{
+				Actions: tt.action1,
+			}
+			if err := replaceActions(af, tt.targetActionID, tt.action2); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -818,10 +892,13 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID     uuid.UUID
-		act        *action.Action
-		activeFlow *activeflow.ActiveFlow
-		flow       *flow.Flow
+		callID        uuid.UUID
+		act           *action.Action
+		resActiveFlow *activeflow.ActiveFlow
+		flow          *flow.Flow
+
+		expectFlow *activeflow.ActiveFlow
+		expectRes  *action.Action
 	}{
 		{
 			"normal",
@@ -834,8 +911,16 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 			&activeflow.ActiveFlow{
 				Actions: []action.Action{
 					{
-						ID:   uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
+						ID:   uuid.FromStringOrNil("f0b5605e-648e-11ec-b318-a7f267cc71fc"),
 						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
+						Type: action.TypePatchFlow,
+					},
+					{
+						ID:   uuid.FromStringOrNil("ad108d6a-648e-11ec-a226-536bc1253066"),
+						Type: action.TypeTalk,
 					},
 				},
 			},
@@ -843,9 +928,94 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 				ID: uuid.FromStringOrNil("a1d247b4-3cbf-11ec-8d08-970ce7001aaa"),
 				Actions: []action.Action{
 					{
+						ID:   uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
 						Type: action.TypeAMD,
 					},
 				},
+			},
+
+			&activeflow.ActiveFlow{
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("f0b5605e-648e-11ec-b318-a7f267cc71fc"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
+						Type: action.TypeAMD,
+					},
+					{
+						ID:   uuid.FromStringOrNil("ad108d6a-648e-11ec-a226-536bc1253066"),
+						Type: action.TypeTalk,
+					},
+				},
+			},
+			&action.Action{
+				ID:   uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
+				Type: action.TypeAMD,
+			},
+		},
+		{
+			"replace flow has 2 actions",
+			uuid.FromStringOrNil("3639f716-648f-11ec-ba9a-3fd10dbd241b"),
+			&action.Action{
+				ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
+				Type:   action.TypePatchFlow,
+				Option: []byte(`{"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e"}`),
+			},
+			&activeflow.ActiveFlow{
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("36900886-648f-11ec-88c7-5bc937041ab5"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
+						Type: action.TypePatchFlow,
+					},
+					{
+						ID:   uuid.FromStringOrNil("36ba131a-648f-11ec-8a6b-830a37358fbe"),
+						Type: action.TypeTalk,
+					},
+				},
+			},
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("36e14dae-648f-11ec-b947-6f91a363d29e"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
+						Type: action.TypeAMD,
+					},
+					{
+						ID:   uuid.FromStringOrNil("59e09512-648f-11ec-bcec-438ee13c4be1"),
+						Type: action.TypeTalk,
+					},
+				},
+			},
+
+			&activeflow.ActiveFlow{
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("36900886-648f-11ec-88c7-5bc937041ab5"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
+						Type: action.TypeAMD,
+					},
+					{
+						ID:   uuid.FromStringOrNil("59e09512-648f-11ec-bcec-438ee13c4be1"),
+						Type: action.TypeTalk,
+					},
+					{
+						ID:   uuid.FromStringOrNil("36ba131a-648f-11ec-8a6b-830a37358fbe"),
+						Type: action.TypeTalk,
+					},
+				},
+			},
+			&action.Action{
+				ID:   uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
+				Type: action.TypeAMD,
 			},
 		},
 	}
@@ -853,12 +1023,17 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
+			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.resActiveFlow, nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectFlow).Return(nil)
 
-			if err := h.activeFlowHandleActionPatchFlow(ctx, tt.callID, tt.act); err != nil {
+			res, err := h.activeFlowHandleActionPatchFlow(ctx, tt.callID, tt.act)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -884,6 +1059,8 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 		activeFlow     *activeflow.ActiveFlow
 		conference     *cfconference.Conference
 		conferenceFlow *flow.Flow
+
+		expectRes *action.Action
 	}{
 		{
 			"normal",
@@ -923,6 +1100,10 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 					},
 				},
 			},
+			&action.Action{
+				ID:   uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
+				Type: action.TypeAnswer,
+			},
 		},
 	}
 
@@ -935,8 +1116,13 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
-			if err := h.activeFlowHandleActionConferenceJoin(ctx, tt.callID, tt.act); err != nil {
+			res, err := h.activeFlowHandleActionConferenceJoin(ctx, tt.callID, tt.act)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
