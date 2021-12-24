@@ -1077,6 +1077,221 @@
                 }
             }
         },
+        "/v1.0/queues": {
+            "get": {
+                "description": "get queues of the user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List qeueus",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyQueuesGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new queue",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new queue.",
+                "parameters": [
+                    {
+                        "description": "The queue detail",
+                        "name": "agent",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyAgentsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/queue.Event"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/queues/{id}": {
+            "get": {
+                "description": "Get the queue of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the queue",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queue",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "put": {
+                "description": "Update an queue and returns detail updated queue info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an queue and reuturns updated queue info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queue",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Queue's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyQueuesIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "delete": {
+                "description": "Delete the queue of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete the queue",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queue",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/queues/{id}/routing_method": {
+            "put": {
+                "description": "Update an queue routing_method info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an queue's tag_id info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queue",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Queue's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyAgentsIDTagIDsPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/queues/{id}/status": {
+            "put": {
+                "description": "Update the queue's action handle info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an queue's action handle info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queue",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Queue's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyQueuesIDActionsPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/queues/{id}/tag_ids": {
+            "put": {
+                "description": "Update the queue's tag_ids.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an queue's tag_ids info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queue",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Queue's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyQueuesIDTagIDsPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/v1.0/recordingfiles/{id}": {
             "get": {
                 "description": "Download the recording file",
@@ -1623,10 +1838,6 @@
                         "type": "string"
                     }
                 },
-                "conf_id": {
-                    "description": "Currently joined conference id.",
-                    "type": "string"
-                },
                 "destination": {
                     "description": "Destination info",
                     "type": "object",
@@ -1931,6 +2142,83 @@
                 }
             }
         },
+        "queue.Event": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "routing_method": {
+                    "type": "RoutingMethod"
+                },
+                "service_queue_call_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "service_timeout": {
+                    "type": "integer"
+                },
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "total_abandoned_count": {
+                    "type": "integer"
+                },
+                "total_incoming_count": {
+                    "type": "integer"
+                },
+                "total_service_duration": {
+                    "type": "integer"
+                },
+                "total_serviced_count": {
+                    "type": "integer"
+                },
+                "total_waittime": {
+                    "type": "integer"
+                },
+                "wait_actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "wait_queue_call_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "wait_timeout": {
+                    "type": "integer"
+                },
+                "webhook_method": {
+                    "type": "string"
+                },
+                "webhook_uri": {
+                    "type": "string"
+                }
+            }
+        },
         "recording.Recording": {
             "type": "object",
             "properties": {
@@ -2227,6 +2515,51 @@
                 }
             }
         },
+        "request.BodyQueuesIDActionsPUT": {
+            "type": "object",
+            "properties": {
+                "timeout_service": {
+                    "type": "integer"
+                },
+                "timeout_wait": {
+                    "type": "integer"
+                },
+                "wait_actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                }
+            }
+        },
+        "request.BodyQueuesIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "webhook_method": {
+                    "type": "string"
+                },
+                "webhook_uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyQueuesIDTagIDsPUT": {
+            "type": "object",
+            "properties": {
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "request.BodyTagsIDPUT": {
             "type": "object",
             "properties": {
@@ -2388,6 +2721,20 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/number.Number"
+                    }
+                }
+            }
+        },
+        "response.BodyQueuesGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/queue.Event"
                     }
                 }
             }
