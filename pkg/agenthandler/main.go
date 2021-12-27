@@ -45,6 +45,7 @@ type AgentHandler interface {
 	AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error
 
 	AgentCallAnswered(ctx context.Context, c *cmcall.Call) error
+	AgentCallHungup(ctx context.Context, c *cmcall.Call) error
 }
 
 type agentHandler struct {

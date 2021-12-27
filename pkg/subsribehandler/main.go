@@ -148,6 +148,9 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	case m.Publisher == publisherCallManager && (m.Type == string(cmnotifyhandler.EventTypeCallAnswered)):
 		err = h.processEventCMCallAnswered(m)
 
+	case m.Publisher == publisherCallManager && (m.Type == string(cmnotifyhandler.EventTypeCallHungup)):
+		err = h.processEventCMCallHungup(m)
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////

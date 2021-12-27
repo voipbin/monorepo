@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
+// AgentCallAnswered handles the situation for agent's call answered.
 func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "AgentCallAnswered",
@@ -52,5 +53,20 @@ func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) er
 		log.WithField("call", tmpCall).Debug("Hangup the call.")
 	}
 
+	return nil
+}
+
+// AgentCallHungup handles the situation for agent's call hungup.
+func (h *agentHandler) AgentCallHungup(ctx context.Context, c *cmcall.Call) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "AgentCallHungup",
+		"call_id": c.ID,
+	})
+	log.Debug("The agent's call has answered.")
+
+	// currently, we don't do anything here.
+	// the plan was, if the agent's call has hungup put the agent's status to the available.
+	// but if the agent's call is more than 2, it is hard to know this is right time or not.
+	// so leave it as is.
 	return nil
 }
