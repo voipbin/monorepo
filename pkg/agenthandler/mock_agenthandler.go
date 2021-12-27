@@ -52,6 +52,20 @@ func (mr *MockAgentHandlerMockRecorder) AgentCallAnswered(ctx, c interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCallAnswered", reflect.TypeOf((*MockAgentHandler)(nil).AgentCallAnswered), ctx, c)
 }
 
+// AgentCallHungup mocks base method.
+func (m *MockAgentHandler) AgentCallHungup(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentCallHungup", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AgentCallHungup indicates an expected call of AgentCallHungup.
+func (mr *MockAgentHandlerMockRecorder) AgentCallHungup(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCallHungup", reflect.TypeOf((*MockAgentHandler)(nil).AgentCallHungup), ctx, c)
+}
+
 // AgentCreate mocks base method.
 func (m *MockAgentHandler) AgentCreate(ctx context.Context, userID uint64, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
