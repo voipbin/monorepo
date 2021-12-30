@@ -54,9 +54,9 @@ type Status string
 
 // List of Status types
 const (
-	StatusAvailable Status = "available"
-	StatusAway      Status = "away"
-	StatusBusy      Status = "busy"
-	StatusOffline   Status = "offline"
-	StatusRinging   Status = "ringing"
+	StatusAvailable Status = "available" // available
+	StatusAway      Status = "away"      // away
+	StatusBusy      Status = "busy"      // busy
+	StatusOffline   Status = "offline"   // offline
+	StatusRinging   Status = "ringing"   // voipbin is making a call to the agent
 )
