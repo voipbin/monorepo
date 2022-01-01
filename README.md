@@ -169,3 +169,71 @@ $ export GOPRIVATE="gitlab.com/voipbin"
 $ go mod vendor
 $ go build ./cmd/...
 ```
+
+# Resources
+
+## flow
+
+```
+	ID     uuid.UUID `json:"id"`
+	UserID uint64    `json:"user_id"`
+
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+
+	Persist    bool   `json:"persist"`
+	WebhookURI string `json:"webhook_uri"`
+
+	Actions []action.Action `json:"actions"`
+
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
+```
+
+## active-flow
+
+```
+	CallID     uuid.UUID `json:"call_id"`
+	FlowID     uuid.UUID `json:"flow_id"`
+	UserID     uint64    `json:"user_id"`
+	WebhookURI string    `json:"webhook_uri"`
+
+	CurrentAction   action.Action `json:"current_action"`
+	ExecuteCount    uint64        `json:"execute_count"`
+	ForwardActionID uuid.UUID     `json:"forward_action_id"`
+
+	Actions []action.Action `json:"actions"`
+
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
+```
+
+## action
+```
+	TypeAgentCall           Type = "agent_call"           // agent-manager. make a all to the agent.
+	TypeAMD                 Type = "amd"                  // call-manager. answering machine detection.
+	TypeAnswer              Type = "answer"               // call-manager. answer the call.
+	TypeConfbridgeJoin      Type = "confbridge_join"      // call-manager. join to the confbridge.
+	TypeConferenceJoin      Type = "conference_join"      // conference-manager. join to the conference.
+	TypeConnect             Type = "connect"              // flow-manager. connect to the other destination.
+	TypeDTMFReceive         Type = "dtmf_receive"         // call-manager. receive the dtmfs.
+	TypeDTMFSend            Type = "dtmf_send"            // call-manager. send the dtmfs.
+	TypeEcho                Type = "echo"                 // call-manager.
+	TypeExternalMediaStart  Type = "external_media_start" // call-manager.
+	TypeExternalMediaStop   Type = "external_media_stop"  // call-manager.
+	TypeGoto                Type = "goto"                 // flow-manager.
+	TypeHangup              Type = "hangup"               // call-manager.
+	TypePatch               Type = "patch"                // flow-manager.
+	TypePatchFlow           Type = "patch_flow"           // flow-manager.
+	TypePlay                Type = "play"                 // call-manager.
+	TypeQueueJoin           Type = "queue_join"           // flow-manager. put the call into the queue.
+	TypeRecordingStart      Type = "recording_start"      // call-manager. startr the record of the given call.
+	TypeRecordingStop       Type = "recording_stop"       // call-manager. stop the record of the given call.
+	TypeStreamEcho          Type = "stream_echo"          // call-manager.
+	TypeTalk                Type = "talk"                 // call-manager. generate audio from the given text(ssml or plain text) and play it.
+	TypeTranscribeStart     Type = "transcribe_start"     // transcribe-manager. start transcribe the call
+	TypeTranscribeStop      Type = "transcribe_stop"      // transcribe-manager. stop transcribe the call
+	TypeTranscribeRecording Type = "transcribe_recording" // transcribe-manager. transcribe the recording and send it to webhook.
+```
