@@ -9,8 +9,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
 )
@@ -124,34 +124,40 @@ func (h *listenHandler) v1FlowsIDDelete(req *rabbitmqhandler.Request) (*rabbitmq
 
 // v1FlowsPost handles /v1/flows POST request
 // creates a new flow with given data and return the created flow info.
-func (h *listenHandler) v1FlowsPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FlowsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1FlowsPost",
+		},
+	)
+	log.WithField("request", m).Debug("Received request.")
 
-	var reqData request.V1DataFlowPost
-	if err := json.Unmarshal(req.Data, &reqData); err != nil {
+	var req request.V1DataFlowPost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
 		logrus.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
 
-	flow := &flow.Flow{
-		UserID:     reqData.UserID,
-		Name:       reqData.Name,
-		Detail:     reqData.Detail,
-		Actions:    reqData.Actions,
-		WebhookURI: reqData.WebhookURI,
-		Persist:    reqData.Persist,
-	}
-
 	// create flow
-	resFlow, err := h.flowHandler.FlowCreate(ctx, flow)
+	resFlow, err := h.flowHandler.FlowCreate(
+		ctx,
+		req.UserID,
+		flow.Type(req.Type),
+		req.Name,
+		req.Detail,
+		req.Persist,
+		req.WebhookURI,
+		req.Actions,
+	)
 	if err != nil {
-		logrus.Errorf("Could not create anew flow. err: %v", err)
+		log.Errorf("Could not create anew flow. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(resFlow)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -168,6 +174,13 @@ func (h *listenHandler) v1FlowsPost(req *rabbitmqhandler.Request) (*rabbitmqhand
 func (h *listenHandler) v1FlowsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1FlowsGet",
+		},
+	)
+	log.WithField("request", req).Debug("Received request.")
+
 	u, err := url.Parse(req.URI)
 	if err != nil {
 		return nil, err
@@ -182,10 +195,22 @@ func (h *listenHandler) v1FlowsGet(req *rabbitmqhandler.Request) (*rabbitmqhandl
 	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
 	userID := uint64(tmpUserID)
 
-	resFlows, err := h.flowHandler.FlowGetsByUserID(ctx, userID, pageToken, pageSize)
-	if err != nil {
-		logrus.Errorf("Could not get flows. err: %v", err)
-		return nil, err
+	// get type
+	tmpType := flow.Type(u.Query().Get("type"))
+
+	var resFlows []*flow.Flow
+	if tmpType != flow.TypeNone {
+		resFlows, err = h.flowHandler.FlowGetsByUserIDAndType(ctx, userID, flow.Type(tmpType), pageToken, pageSize)
+		if err != nil {
+			log.Errorf("Could not get flows. err: %v", err)
+			return nil, err
+		}
+	} else {
+		resFlows, err = h.flowHandler.FlowGetsByUserID(ctx, userID, pageToken, pageSize)
+		if err != nil {
+			logrus.Errorf("Could not get flows. err: %v", err)
+			return nil, err
+		}
 	}
 
 	data, err := json.Marshal(resFlows)

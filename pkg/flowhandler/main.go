@@ -29,19 +29,24 @@ type FlowHandler interface {
 	ActiveFlowNextActionGet(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
 	ActiveFlowSetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
 
-	FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow, error)
+	FlowCreate(
+		ctx context.Context,
+		userID uint64,
+		flowType flow.Type,
+		name string,
+		detail string,
+		persist bool,
+		webhookURI string,
+		actions []action.Action,
+	) (*flow.Flow, error)
 	FlowDelete(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error)
+	FlowGetsByUserIDAndType(ctx context.Context, userID uint64, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
 	FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow, error)
 
 	ValidateActions(actions []action.Action) error
 }
-
-// list of default values
-const (
-	defaultTimeStamp = "9999-01-01 00:00:000"
-)
 
 // NewFlowHandler return FlowHandler
 func NewFlowHandler(db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler) FlowHandler {

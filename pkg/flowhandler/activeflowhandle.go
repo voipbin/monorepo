@@ -348,28 +348,24 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 		return fmt.Errorf("could not marshal the conference join option. err: %v", err)
 	}
 
-	tmpCF := &flow.Flow{
-		UserID:  cf.UserID,
-		Persist: false,
-		Actions: []action.Action{
-			{
-				Type:   action.TypeConferenceJoin,
-				Option: optString,
-			},
+	actions := []action.Action{
+		{
+			Type:   action.TypeConferenceJoin,
+			Option: optString,
 		},
+	}
+
+	// create a flow
+	connectCF, err := h.FlowCreate(ctx, cf.UserID, flow.TypeFlow, "", "", false, "", actions)
+	if err != nil {
+		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
+		return fmt.Errorf("could not create a call flow. err: %v", err)
 	}
 
 	var optConnect action.OptionConnect
 	if err := json.Unmarshal(act.Option, &optConnect); err != nil {
 		log.Errorf("Could not unmarshal the connect option. err: %v", err)
 		return fmt.Errorf("could not unmarshal the connect option. err: %v", err)
-	}
-
-	// create a flow
-	connectCF, err := h.FlowCreate(ctx, tmpCF)
-	if err != nil {
-		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
-		return fmt.Errorf("could not create a call flow. err: %v", err)
 	}
 
 	// create a call for each destination

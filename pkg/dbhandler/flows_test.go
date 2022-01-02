@@ -160,14 +160,14 @@ func TestFlowGetsByUserID(t *testing.T) {
 					UserID:   1,
 					Name:     "test1",
 					Persist:  true,
-					TMDelete: defaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
 					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
 					UserID:   1,
 					Name:     "test2",
 					Persist:  true,
-					TMDelete: defaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 			[]*flow.Flow{
@@ -176,14 +176,14 @@ func TestFlowGetsByUserID(t *testing.T) {
 					UserID:   1,
 					Name:     "test2",
 					Persist:  true,
-					TMDelete: defaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
 					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
 					UserID:   1,
 					Name:     "test1",
 					Persist:  true,
-					TMDelete: defaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -200,7 +200,98 @@ func TestFlowGetsByUserID(t *testing.T) {
 				}
 			}
 
-			flows, err := h.FlowGetsByUserID(ctx, tt.userID, getCurTime(), tt.limit)
+			flows, err := h.FlowGetsByUserID(ctx, tt.userID, GetCurTime(), tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			for _, flow := range flows {
+				flow.TMCreate = ""
+			}
+
+			if reflect.DeepEqual(flows, tt.expectFlow) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectFlow, flows)
+			}
+		})
+	}
+}
+
+func TestFlowGetsByUserIDAndType(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		db:    dbTest,
+		cache: mockCache,
+	}
+
+	type test struct {
+		name       string
+		userID     uint64
+		flowType   flow.Type
+		limit      uint64
+		flows      []flow.Flow
+		expectFlow []*flow.Flow
+	}
+
+	tests := []test{
+		{
+			"normal",
+			1,
+			flow.TypeFlow,
+			10,
+			[]flow.Flow{
+				{
+					ID:       uuid.FromStringOrNil("4f351e4c-6c0c-11ec-aeb7-63ef13f21b04"),
+					UserID:   1,
+					Type:     flow.TypeFlow,
+					Name:     "test1",
+					Persist:  true,
+					TMDelete: DefaultTimeStamp,
+				},
+				{
+					ID:       uuid.FromStringOrNil("4fb2c612-6c0c-11ec-af63-832d2d72863f"),
+					UserID:   1,
+					Type:     flow.TypeFlow,
+					Name:     "test2",
+					Persist:  true,
+					TMDelete: DefaultTimeStamp,
+				},
+			},
+			[]*flow.Flow{
+				{
+					ID:       uuid.FromStringOrNil("4fb2c612-6c0c-11ec-af63-832d2d72863f"),
+					UserID:   1,
+					Type:     flow.TypeFlow,
+					Name:     "test2",
+					Persist:  true,
+					TMDelete: DefaultTimeStamp,
+				},
+				{
+					ID:       uuid.FromStringOrNil("4f351e4c-6c0c-11ec-aeb7-63ef13f21b04"),
+					UserID:   1,
+					Type:     flow.TypeFlow,
+					Name:     "test1",
+					Persist:  true,
+					TMDelete: DefaultTimeStamp,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			for _, flow := range tt.flows {
+				mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+				if err := h.FlowCreate(ctx, &flow); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			flows, err := h.FlowGetsByUserIDAndType(ctx, tt.userID, tt.flowType, GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -379,7 +470,7 @@ func TestFlowDelete(t *testing.T) {
 				Name:     "test flow name",
 				Detail:   "test flow detail",
 				TMCreate: "2020-04-18T03:22:17.995000",
-				TMDelete: defaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -404,7 +495,7 @@ func TestFlowDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == defaultTimeStamp {
+			if res.TMDelete == DefaultTimeStamp {
 				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
 			}
 

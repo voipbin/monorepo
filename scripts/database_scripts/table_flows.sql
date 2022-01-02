@@ -2,6 +2,7 @@ create table flows(
   -- identity
   id        binary(16),
   user_id   int(10),
+  type      varchar(255),
 
   name      varchar(255),
   detail    text,

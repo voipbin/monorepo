@@ -12,10 +12,12 @@ import (
 )
 
 const (
+	// select query for flow get
 	flowSelect = `
-		select
+	select
 		id,
 		user_id,
+		type,
 
 		name,
 		detail,
@@ -40,6 +42,7 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 	if err := row.Scan(
 		&res.ID,
 		&res.UserID,
+		&res.Type,
 
 		&res.Name,
 		&res.Detail,
@@ -61,6 +64,66 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 	res.Persist = true
 
 	return res, nil
+}
+
+func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
+
+	q := `insert into flows(
+		id,
+		user_id,
+		type,
+
+		name,
+		detail,
+
+		webhook_uri,
+
+		actions,
+
+		tm_create,
+		tm_update,
+		tm_delete
+	) values(
+		?, ?, ?,
+		?, ?,
+		?,
+		?,
+		?, ?, ?
+		)`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. FlowCreate. err: %v", err)
+	}
+	defer stmt.Close()
+
+	tmpActions, err := json.Marshal(f.Actions)
+	if err != nil {
+		return fmt.Errorf("could not marshal actions. FlowCreate. err: %v", err)
+	}
+
+	_, err = stmt.ExecContext(ctx,
+		f.ID.Bytes(),
+		f.UserID,
+		f.Type,
+
+		f.Name,
+		f.Detail,
+
+		f.WebhookURI,
+
+		tmpActions,
+
+		f.TMCreate,
+		f.TMUpdate,
+		f.TMDelete,
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute query. FlowCreate. err: %v", err)
+	}
+
+	_ = h.FlowUpdateToCache(ctx, f.ID)
+
+	return nil
 }
 
 // FlowUpdateToCache gets the flow from the DB and update the cache.
@@ -107,62 +170,6 @@ func (h *handler) FlowDeleteCache(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
-
-	q := `insert into flows(
-		id,
-		user_id,
-		name,
-		detail,
-
-		webhook_uri,
-
-		actions,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?, ?,
-		?,
-		?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. FlowCreate. err: %v", err)
-	}
-	defer stmt.Close()
-
-	tmpActions, err := json.Marshal(f.Actions)
-	if err != nil {
-		return fmt.Errorf("could not marshal actions. FlowCreate. err: %v", err)
-	}
-
-	_, err = stmt.ExecContext(ctx,
-		f.ID.Bytes(),
-		f.UserID,
-
-		f.Name,
-		f.Detail,
-
-		f.WebhookURI,
-
-		tmpActions,
-
-		f.TMCreate,
-		f.TMUpdate,
-		f.TMDelete,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute query. FlowCreate. err: %v", err)
-	}
-
-	_ = h.FlowUpdateToCache(ctx, f.ID)
 
 	return nil
 }
@@ -234,7 +241,7 @@ func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token str
 		limit ?
 	`, flowSelect)
 
-	rows, err := h.db.Query(q, defaultTimeStamp, userID, token, limit)
+	rows, err := h.db.Query(q, DefaultTimeStamp, userID, token, limit)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. FlowGetsByUserID. err: %v", err)
 	}
@@ -245,6 +252,41 @@ func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token str
 		u, err := h.flowGetFromRow(rows)
 		if err != nil {
 			return nil, fmt.Errorf("dbhandler: Could not scan the row. FlowGetsByUserID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
+// FlowGetsByUserIDAndType returns list of flows of the given userID and flowType.
+func (h *handler) FlowGetsByUserIDAndType(ctx context.Context, userID uint64, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete >= ?
+			and user_id = ?
+			and type = ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, flowSelect)
+
+	rows, err := h.db.Query(q, DefaultTimeStamp, userID, flowType, token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. FlowGetsByUserIDAndType. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*flow.Flow
+	for rows.Next() {
+		u, err := h.flowGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. FlowGetsByUserIDAndType. err: %v", err)
 		}
 
 		res = append(res, u)
@@ -272,7 +314,7 @@ func (h *handler) FlowUpdate(ctx context.Context, f *flow.Flow) error {
 		return fmt.Errorf("could not marshal actions. FlowUpdate. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, f.Name, f.Detail, f.WebhookURI, tmpActions, getCurTime(), f.ID.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, f.Name, f.Detail, f.WebhookURI, tmpActions, GetCurTime(), f.ID.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. FlowUpdate. err: %v", err)
 	}
 
@@ -292,7 +334,7 @@ func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, getCurTime(), getCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. FlowDelete. err: %v", err)
 	}
 
