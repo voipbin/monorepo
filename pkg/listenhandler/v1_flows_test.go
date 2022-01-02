@@ -31,7 +31,7 @@ func TestFlowsPost(t *testing.T) {
 	type test struct {
 		name    string
 		request *rabbitmqhandler.Request
-		// expectFlow *flow.Flow
+
 		userID     uint64
 		flowType   flow.Type
 		flowName   string
@@ -50,6 +50,7 @@ func TestFlowsPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"user_id":1,"type":"flow","name":"test","detail":"test detail","actions":[]}`),
 			},
+
 			1,
 			flow.TypeFlow,
 			"test",
@@ -124,6 +125,30 @@ func TestFlowsPost(t *testing.T) {
 				},
 			},
 		},
+		{
+			"type conference",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"type":"conference","name":"test","detail":"test detail","user_id":1,"actions":[{"type":"answer"},{"type":"echo"}]}`),
+			},
+			1,
+			flow.TypeConference,
+			"test",
+			"test detail",
+			false,
+			"",
+			[]action.Action{
+				{
+					Type: action.TypeAnswer,
+				},
+				{
+					Type: action.TypeEcho,
+				},
+			},
+		},
+
 	}
 
 	for _, tt := range tests {
