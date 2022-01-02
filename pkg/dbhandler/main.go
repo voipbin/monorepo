@@ -30,6 +30,7 @@ type DBHandler interface {
 	FlowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error)
+	FlowGetsByUserIDAndType(ctx context.Context, userID uint64, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
 	FlowSetToCache(ctx context.Context, f *flow.Flow) error
 	FlowUpdate(ctx context.Context, f *flow.Flow) error
 	FlowUpdateToCache(ctx context.Context, id uuid.UUID) error
@@ -48,7 +49,7 @@ var (
 
 // list of default values
 const (
-	defaultTimeStamp = "9999-01-01 00:00:000"
+	DefaultTimeStamp = "9999-01-01 00:00:000"
 )
 
 // NewHandler creates DBHandler
@@ -60,8 +61,8 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	return h
 }
 
-// getCurTime return current utc time string
-func getCurTime() string {
+// GetCurTime return current utc time string
+func GetCurTime() string {
 	now := time.Now().UTC().String()
 	res := strings.TrimSuffix(now, " +0000 UTC")
 

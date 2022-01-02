@@ -13,6 +13,7 @@ import (
 type Flow struct {
 	ID     uuid.UUID `json:"id"`
 	UserID uint64    `json:"user_id"`
+	Type   Type      `json:"type"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
@@ -26,6 +27,17 @@ type Flow struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
+
+// Type defines
+type Type string
+
+// list of types
+const (
+	TypeNone       Type = ""
+	TypeFlow       Type = "flow"       // normal flow
+	TypeConference Type = "conference" // conference-manager
+	TypeQueue      Type = "queue"      // queue-manager
+)
 
 // Matches return true if the given items are the same
 func (a *Flow) Matches(x interface{}) bool {

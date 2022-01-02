@@ -25,21 +25,51 @@ func TestFlowCreate(t *testing.T) {
 
 	type test struct {
 		name string
-		flow *flow.Flow
+
+		userID     uint64
+		flowType   flow.Type
+		flowName   string
+		detail     string
+		persist    bool
+		webhookURI string
+		actions    []action.Action
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&flow.Flow{
-				ID:     uuid.FromStringOrNil("7ae994f6-92a4-11eb-8085-3bfd5ed58227"),
-				Name:   "test name",
-				Detail: "test detail",
+
+			1,
+			flow.TypeFlow,
+			"test",
+			"test detail",
+			true,
+			"test.com",
+			[]action.Action{
+				{
+					Type: action.TypeAnswer,
+				},
 			},
 		},
 		{
 			"test empty",
-			&flow.Flow{},
+			1,
+			flow.TypeFlow,
+			"test",
+			"test detail",
+			true,
+			"test.com",
+			[]action.Action{},
+		},
+		{
+			"test empty with persist false",
+			1,
+			flow.TypeFlow,
+			"test",
+			"test detail",
+			false,
+			"test.com",
+			[]action.Action{},
 		},
 	}
 
@@ -47,9 +77,15 @@ func TestFlowCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
-			_, err := h.FlowCreate(ctx, tt.flow)
+			if tt.persist == true {
+				mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
+			} else {
+				mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
+				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
+			}
+
+			_, err := h.FlowCreate(ctx, tt.userID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.webhookURI, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -128,84 +164,84 @@ func TestFlowDelete(t *testing.T) {
 	}
 }
 
-func TestFlowCreatePersistTrue(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+// func TestFlowCreatePersistTrue(t *testing.T) {
+// 	mc := gomock.NewController(t)
+// 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
+// 	mockDB := dbhandler.NewMockDBHandler(mc)
 
-	h := &flowHandler{
-		db: mockDB,
-	}
+// 	h := &flowHandler{
+// 		db: mockDB,
+// 	}
 
-	type test struct {
-		name string
-		flow *flow.Flow
-	}
+// 	type test struct {
+// 		name string
+// 		flow *flow.Flow
+// 	}
 
-	tests := []test{
-		{
-			"normal",
-			&flow.Flow{
-				ID:      uuid.FromStringOrNil("8bf11004-ef06-11ea-91ed-0ba639a6618b"),
-				Persist: true,
-			},
-		},
-	}
+// 	tests := []test{
+// 		{
+// 			"normal",
+// 			&flow.Flow{
+// 				ID:      uuid.FromStringOrNil("8bf11004-ef06-11ea-91ed-0ba639a6618b"),
+// 				Persist: true,
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.flow, nil)
+// 			mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
+// 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.flow, nil)
 
-			_, err := h.FlowCreate(ctx, tt.flow)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
+// 			_, err := h.FlowCreate(ctx, tt.flow)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
+// 		})
+// 	}
+// }
 
-func TestFlowCreatePersistFalse(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+// func TestFlowCreatePersistFalse(t *testing.T) {
+// 	mc := gomock.NewController(t)
+// 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
+// 	mockDB := dbhandler.NewMockDBHandler(mc)
 
-	h := &flowHandler{
-		db: mockDB,
-	}
+// 	h := &flowHandler{
+// 		db: mockDB,
+// 	}
 
-	type test struct {
-		name string
-		flow *flow.Flow
-	}
+// 	type test struct {
+// 		name string
+// 		flow *flow.Flow
+// 	}
 
-	tests := []test{
-		{
-			"normal",
-			&flow.Flow{
-				Persist: false,
-			},
-		},
-	}
+// 	tests := []test{
+// 		{
+// 			"normal",
+// 			&flow.Flow{
+// 				Persist: false,
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.flow, nil)
+// 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
+// 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.flow, nil)
 
-			_, err := h.FlowCreate(ctx, tt.flow)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
+// 			_, err := h.FlowCreate(ctx, tt.flow)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
+// 		})
+// 	}
+// }
 
 func TestFlowGetByUserID(t *testing.T) {
 	mc := gomock.NewController(t)

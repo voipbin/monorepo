@@ -9,6 +9,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 )
 
 // FlowGet returns flow
@@ -23,23 +24,44 @@ func (h *flowHandler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, er
 	return resFlow, nil
 }
 
-// FlowCreate creates a flow
-func (h *flowHandler) FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow, error) {
+// FlowCreate creates a new flow
+func (h *flowHandler) FlowCreate(
+	ctx context.Context,
+	userID uint64,
+	flowType flow.Type,
+	name string,
+	detail string,
+	persist bool,
+	webhookURI string,
+	actions []action.Action,
+) (*flow.Flow, error) {
 	log := logrus.WithField("func", "FlowCreate")
-	log.WithField("flow", f).Debug("Create flow request.")
-
-	f.ID = uuid.Must(uuid.NewV4())
-	f.TMCreate = getCurTime()
-	f.TMUpdate = defaultTimeStamp
-	f.TMDelete = defaultTimeStamp
 
 	// generates the actions
-	actions, err := h.generateFlowActions(ctx, f.Actions)
+	a, err := h.generateFlowActions(ctx, actions)
 	if err != nil {
 		log.Errorf("Could not generate the flow actions. err: %v", err)
 		return nil, err
 	}
-	f.Actions = actions
+
+	id := uuid.Must(uuid.NewV4())
+	f := &flow.Flow{
+		ID:     id,
+		UserID: userID,
+		Type:   flowType,
+
+		Name:   name,
+		Detail: detail,
+
+		Persist:    persist,
+		WebhookURI: webhookURI,
+
+		Actions: a,
+
+		TMCreate: dbhandler.GetCurTime(),
+		TMUpdate: dbhandler.DefaultTimeStamp,
+		TMDelete: dbhandler.DefaultTimeStamp,
+	}
 	log.WithField("flow", f).Debug("Creating a new flow.")
 
 	switch {
@@ -56,13 +78,13 @@ func (h *flowHandler) FlowCreate(ctx context.Context, f *flow.Flow) (*flow.Flow,
 		}
 	}
 
-	resFlow, err := h.FlowGet(ctx, f.ID)
+	res, err := h.FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get created flow. err: %v", err)
 		return nil, err
 	}
 
-	return resFlow, nil
+	return res, nil
 }
 
 // FlowGetsByUserID returns list of flows
@@ -77,6 +99,26 @@ func (h *flowHandler) FlowGetsByUserID(ctx context.Context, userID uint64, token
 	log.Debug("Getting flows.")
 
 	flows, err := h.db.FlowGetsByUserID(ctx, userID, token, limit)
+	if err != nil {
+		log.Errorf("Could not get flows. err: %v", err)
+		return nil, err
+	}
+
+	return flows, nil
+}
+
+// FlowGetsByUserIDAndType returns list of flows
+func (h *flowHandler) FlowGetsByUserIDAndType(ctx context.Context, userID uint64, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "FlowGetsByUserIDAndType",
+			"user_id": userID,
+			"token":   token,
+			"limit":   limit,
+		})
+	log.Debug("Getting flows.")
+
+	flows, err := h.db.FlowGetsByUserIDAndType(ctx, userID, flowType, token, limit)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err
