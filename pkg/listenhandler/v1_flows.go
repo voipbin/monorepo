@@ -143,7 +143,7 @@ func (h *listenHandler) v1FlowsPost(m *rabbitmqhandler.Request) (*rabbitmqhandle
 	resFlow, err := h.flowHandler.FlowCreate(
 		ctx,
 		req.UserID,
-		flow.Type(req.Type),
+		req.Type,
 		req.Name,
 		req.Detail,
 		req.Persist,
