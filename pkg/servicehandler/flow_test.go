@@ -8,12 +8,12 @@ import (
 	"github.com/golang/mock/gomock"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestFlowCreate(t *testing.T) {
@@ -120,7 +120,7 @@ func TestFlowCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.user.ID, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.response, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.user.ID, fmflow.TypeFlow, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.response, nil)
 			res, err := h.FlowCreate(tt.user, tt.flow.Name, tt.flow.Detail, tt.flow.WebhookURI, tt.flow.Actions, tt.flow.Persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -455,7 +455,7 @@ func TestFlowGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().FMV1FlowGets(gomock.Any(), tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().FMV1FlowGets(gomock.Any(), tt.user.ID, fmflow.TypeFlow, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.FlowGets(tt.user, tt.pageSize, tt.pageToken)
 			if err != nil {
