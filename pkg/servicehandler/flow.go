@@ -6,11 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // FlowCreate is a service handler for flow creation.
@@ -29,7 +30,7 @@ func (h *serviceHandler) FlowCreate(u *user.User, name, detail, webhookURI strin
 	}
 
 	log.WithField("flow_actions", flowActions).Debug("Creating a new flow.")
-	tmp, err := h.reqHandler.FMV1FlowCreate(ctx, u.ID, name, detail, webhookURI, flowActions, persist)
+	tmp, err := h.reqHandler.FMV1FlowCreate(ctx, u.ID, fmflow.TypeFlow, name, detail, webhookURI, flowActions, persist)
 	if err != nil {
 		log.Errorf("Could not create a new flow. err: %v", err)
 		return nil, err
@@ -115,7 +116,7 @@ func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*f
 	}
 
 	// get flows
-	flows, err := h.reqHandler.FMV1FlowGets(ctx, u.ID, token, size)
+	flows, err := h.reqHandler.FMV1FlowGets(ctx, u.ID, fmflow.TypeFlow, token, size)
 	if err != nil {
 		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flows info. err: %v", err)
