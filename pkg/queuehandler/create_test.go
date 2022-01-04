@@ -91,7 +91,7 @@ func TestCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any()).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.userID, gomock.Any(), gomock.Any(), "", gomock.Any(), true).Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.userID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), "", gomock.Any(), true).Return(&fmflow.Flow{}, nil)
 			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
 
 			mockDB.EXPECT().QueueCreate(gomock.Any(), gomock.Any()).Return(nil)
@@ -189,7 +189,7 @@ func TestCreateQueueFlow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.userID, tt.flowName, "generated for queue by queue-manager.", "", tt.flowActions, true).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.userID, fmflow.TypeQueue, tt.flowName, "generated for queue by queue-manager.", "", tt.flowActions, true).Return(tt.responseFlow, nil)
 
 			res, err := h.createQueueFlow(ctx, tt.userID, tt.queueID, tt.confbridgeID, tt.waitActions)
 			if err != nil {
