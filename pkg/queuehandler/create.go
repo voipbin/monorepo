@@ -133,7 +133,7 @@ func (h *queueHandler) createQueueFlow(ctx context.Context, userID uint64, queue
 	flowName := fmt.Sprintf("queue-%s", queueID.String())
 
 	// create flow
-	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, flowName, "generated for queue by queue-manager.", "", actions, true)
+	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", "", actions, true)
 	if err != nil {
 		log.Errorf("Could not create a queue flow. err: %v", err)
 		return nil, err
