@@ -172,7 +172,7 @@ func (h *conferenceHandler) createConferenceFlow(ctx context.Context, userID uin
 	flowName := fmt.Sprintf("conference-%s", conferenceID.String())
 
 	// create flow
-	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, flowName, "generated for conference by conference-manager.", "", actions, true)
+	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, fmflow.TypeConference, flowName, "generated for conference by conference-manager.", "", actions, true)
 	if err != nil {
 		log.Errorf("Could not create a conference flow. err: %v", err)
 		return nil, err
