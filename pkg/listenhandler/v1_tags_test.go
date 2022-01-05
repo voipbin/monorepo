@@ -7,10 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/taghandler"
 )
 
@@ -19,14 +17,10 @@ func TestProcessV1TagsGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockTag := taghandler.NewMockTagHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
 
 		tagHandler: mockTag,
 	}
@@ -134,15 +128,11 @@ func TestProcessV1TagsPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 
 	mockTag := taghandler.NewMockTagHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
 
 		tagHandler: mockTag,
 	}
@@ -211,15 +201,11 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 
 	mockTag := taghandler.NewMockTagHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
 
 		tagHandler: mockTag,
 	}
@@ -283,15 +269,11 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 
 	mockTag := taghandler.NewMockTagHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
 
 		tagHandler: mockTag,
 	}
@@ -349,15 +331,11 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 
 	mockTag := taghandler.NewMockTagHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
 
 		tagHandler: mockTag,
 	}

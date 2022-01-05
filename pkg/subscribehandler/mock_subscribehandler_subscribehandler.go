@@ -34,15 +34,15 @@ func (m *MockSubscribeHandler) EXPECT() *MockSubscribeHandlerMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockSubscribeHandler) Run(queue, exchangeDelay string) error {
+func (m *MockSubscribeHandler) Run() error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run", queue, exchangeDelay)
+	ret := m.ctrl.Call(m, "Run")
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockSubscribeHandlerMockRecorder) Run(queue, exchangeDelay interface{}) *gomock.Call {
+func (mr *MockSubscribeHandlerMockRecorder) Run() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockSubscribeHandler)(nil).Run), queue, exchangeDelay)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockSubscribeHandler)(nil).Run))
 }

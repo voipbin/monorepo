@@ -21,6 +21,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/subscribehandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/taghandler"
 )
 
@@ -30,9 +31,12 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.agent-manager.request", "rabbitmq queue name for request listen")
 
+var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event", "comma separated rabbitmq exchange name for subscribe")
+
+var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.agent-manager.request", "rabbitmq queue name for request listen")
 var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.agent-manager.event", "rabbitmq exchange name for event notify")
+var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.agent-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -127,8 +131,24 @@ func initProm(endpoint, listen string) {
 }
 
 // run runs the listen
-func run(db *sql.DB, cache cachehandler.CacheHandler) error {
-	if err := runListen(db, cache); err != nil {
+func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+
+	// rabbitmq sock connect
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	// create handlers
+	db := dbhandler.NewHandler(sqlDB, cache)
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "agent-manager")
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
+	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
+	tagHandler := taghandler.NewTagHandler(reqHandler, db, notifyHandler, agentHandler)
+
+	if err := runListen(rabbitSock, agentHandler, tagHandler); err != nil {
+		return err
+	}
+
+	if err := runSubscribe(rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, agentHandler); err != nil {
 		return err
 	}
 
@@ -136,25 +156,24 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
-
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
-
-	// request handler
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "agent_manager")
-
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
-	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
-	tagHandler := taghandler.NewTagHandler(reqHandler, db, notifyHandler, agentHandler)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, agentHandler, tagHandler)
+func runListen(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler, tagHandler taghandler.TagHandler) error {
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, agentHandler, tagHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	}
+
+	return nil
+}
+
+// runSubscribe runs the subscribed event handler
+func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, subscribeQueue string, subscribeTargets string, agentHandler agenthandler.AgentHandler) error {
+	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, subscribeQueue, subscribeTargets, agentHandler)
+
+	// run
+	if err := subHandler.Run(); err != nil {
+		return err
 	}
 
 	return nil

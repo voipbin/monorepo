@@ -49,7 +49,7 @@ const (
 )
 
 // EventPublisher type
-const EventPublisher = "user-manager"
+const EventPublisher = "agent-manager"
 
 // Data types
 var (
@@ -68,7 +68,7 @@ const (
 )
 
 var (
-	metricsNamespace = "user_manager"
+	metricsNamespace = "agent_manager"
 
 	promNotifyProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{

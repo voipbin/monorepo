@@ -18,14 +18,13 @@ func TestTagCreate(t *testing.T) {
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
 
-	type test struct {
+	tests := []struct {
 		name        string
 		tg          *tag.Tag
 		expectAgent *tag.Tag
-	}
-
-	tests := []test{
+	}{
 		{
 			"test normal",
 			&tag.Tag{
@@ -45,16 +44,16 @@ func TestTagCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
 
 			mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
-			if err := h.TagCreate(context.Background(), tt.tg); err != nil {
+			if err := h.TagCreate(ctx, tt.tg); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().TagGet(gomock.Any(), tt.tg.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
-			res, err := h.TagGet(context.Background(), tt.tg.ID)
+			res, err := h.TagGet(ctx, tt.tg.ID)
 			if err != nil {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
@@ -71,16 +70,15 @@ func TestTagGets(t *testing.T) {
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
 
-	type test struct {
+	tests := []struct {
 		name      string
 		userID    uint64
 		tag       []*tag.Tag
 		size      uint64
 		expectRes []*tag.Tag
-	}
-
-	tests := []test{
+	}{
 		{
 			"test normal",
 			11,
@@ -123,14 +121,10 @@ func TestTagGets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			// clean test database users
-			_ = cleanTestDBUsers()
-
-			h := NewHandler(dbTest, mockCache)
 
 			for _, u := range tt.tag {
 				mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
-				if err := h.TagCreate(context.Background(), u); err != nil {
+				if err := h.TagCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
@@ -152,8 +146,9 @@ func TestTagSetBasicInfo(t *testing.T) {
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		id      uuid.UUID
@@ -163,9 +158,7 @@ func TestTagSetBasicInfo(t *testing.T) {
 		tags []*tag.Tag
 
 		expectRes *tag.Tag
-	}
-
-	tests := []test{
+	}{
 		{
 			"test normal",
 
@@ -197,14 +190,10 @@ func TestTagSetBasicInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			// clean test database users
-			_ = cleanTestDBUsers()
-
-			h := NewHandler(dbTest, mockCache)
 
 			for _, u := range tt.tags {
 				mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
-				if err := h.TagCreate(context.Background(), u); err != nil {
+				if err := h.TagCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
@@ -236,6 +225,7 @@ func TestTagDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name string
@@ -273,13 +263,9 @@ func TestTagDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			// clean test database users
-			_ = cleanTestDBUsers()
-
-			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
-			if err := h.TagCreate(context.Background(), tt.tag); err != nil {
+			if err := h.TagCreate(ctx, tt.tag); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

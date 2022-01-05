@@ -591,7 +591,7 @@ func TestAgentDial(t *testing.T) {
 
 			mockDB.EXPECT().AgentGet(gomock.Any(), tt.id).Return(tt.agent, nil)
 			mockDB.EXPECT().AgentSetStatus(gomock.Any(), tt.id, agent.StatusRinging).Return(nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.agent.UserID, "agent dial", "", "", tt.actions, false).Return(tt.resFlowCreate, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.agent.UserID, fmflow.TypeFlow, "agent dial", "", "", tt.actions, false).Return(tt.resFlowCreate, nil)
 
 			for i := 0; i < len(tt.agent.Addresses); i++ {
 				mockDB.EXPECT().AgentCallCreate(gomock.Any(), gomock.Any()).Return(nil)
