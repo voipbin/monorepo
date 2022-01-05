@@ -147,25 +147,21 @@ func run(db dbhandler.DBHandler) error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
-	// create request-handler
+	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-
-	// create notify-handler
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
-
-	// create required handlers
 	queuecallReferenceHandler := queuecallreferencehandler.NewQueuecallReferenceHandler(reqHandler, db, notifyHandler)
 	queuecallHandler := queuecallhandler.NewQueuecallHandler(reqHandler, db, notifyHandler, queuecallReferenceHandler)
 	queueHandler := queuehandler.NewQueueHandler(reqHandler, db, notifyHandler, queuecallHandler, queuecallReferenceHandler)
 
 	// run listen
-	if err := runListen(db, rabbitSock, reqHandler, notifyHandler, queueHandler, queuecallHandler, queuecallReferenceHandler); err != nil {
+	if err := runListen(rabbitSock, queueHandler, queuecallHandler, queuecallReferenceHandler); err != nil {
 		log.Errorf("Could not run listen. err: %v", err)
 		return err
 	}
 
 	// run subscribe
-	if err := runSubscribe(db, rabbitSock, reqHandler, notifyHandler, queueHandler, queuecallHandler, queuecallReferenceHandler); err != nil {
+	if err := runSubscribe(rabbitSock, queueHandler, queuecallHandler, queuecallReferenceHandler); err != nil {
 		log.Errorf("Could not run subscribe. err: %v", err)
 		return err
 	}
@@ -175,10 +171,7 @@ func run(db dbhandler.DBHandler) error {
 
 // runSubscribe runs the subscribed event handler
 func runSubscribe(
-	db dbhandler.DBHandler,
 	rabbitSock rabbitmqhandler.Rabbit,
-	requestHandler requesthandler.RequestHandler,
-	notifyHandler notifyhandler.NotifyHandler,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
 	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
@@ -186,17 +179,14 @@ func runSubscribe(
 
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
-		db,
 		*rabbitQueueSubscribe,
 		*rabbitListenSubscribes,
-		requestHandler,
-		notifyHandler,
 		queueHandler,
 		queuecallHandler,
 	)
 
 	// run
-	if err := subHandler.Run(*rabbitQueueSubscribe, *rabbitListenSubscribes); err != nil {
+	if err := subHandler.Run(); err != nil {
 		return err
 	}
 
@@ -205,15 +195,12 @@ func runSubscribe(
 
 // runListen runs the listen service
 func runListen(
-	db dbhandler.DBHandler,
 	rabbitSock rabbitmqhandler.Rabbit,
-	reqHandler requesthandler.RequestHandler,
-	notifyHandler notifyhandler.NotifyHandler,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
 	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
 ) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, reqHandler, queueHandler, queuecallHandler, queuecallReferenceHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, queueHandler, queuecallHandler, queuecallReferenceHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

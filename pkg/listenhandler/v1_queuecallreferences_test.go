@@ -7,10 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
@@ -20,16 +18,12 @@ func TestProcessV1QueuescallreferencesIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 
 	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 	mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:                mockSock,
-		db:                        mockDB,
-		reqHandler:                mockReq,
 		queuecallHandler:          mockQueuecall,
 		queuecallReferenceHandler: mockQueuecallReference,
 	}
@@ -88,15 +82,11 @@ func TestProcessV1QueuescallreferencesIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 
 	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:       mockSock,
-		db:               mockDB,
-		reqHandler:       mockReq,
 		queuecallHandler: mockQueuecall,
 	}
 
