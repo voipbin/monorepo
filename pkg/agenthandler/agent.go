@@ -10,6 +10,7 @@ import (
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
@@ -346,7 +347,7 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 		},
 	}
 
-	f, err := h.reqHandler.FMV1FlowCreate(ctx, ag.UserID, "agent dial", "", "", actions, false)
+	f, err := h.reqHandler.FMV1FlowCreate(ctx, ag.UserID, fmflow.TypeFlow, "agent dial", "", "", actions, false)
 	if err != nil {
 		log.Errorf("Could not create the flow. err: %v", err)
 		return err

@@ -19,14 +19,13 @@ func TestAgentCreate(t *testing.T) {
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
 
-	type test struct {
-		name        string
-		ag          *agent.Agent
-		expectAgent *agent.Agent
-	}
-
-	tests := []test{
+	tests := []struct {
+		name      string
+		ag        *agent.Agent
+		expectRes *agent.Agent
+	}{
 		{
 			"test normal",
 			&agent.Agent{
@@ -138,22 +137,22 @@ func TestAgentCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
 
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any())
-			if err := h.AgentCreate(context.Background(), tt.ag); err != nil {
+			if err := h.AgentCreate(ctx, tt.ag); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().AgentGet(gomock.Any(), tt.ag.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any())
-			res, err := h.AgentGet(context.Background(), tt.ag.ID)
+			res, err := h.AgentGet(ctx, tt.ag.ID)
 			if err != nil {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectAgent, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectAgent, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -167,9 +166,9 @@ func TestAgentDelete(t *testing.T) {
 	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
-		name        string
-		ag          *agent.Agent
-		expectAgent *agent.Agent
+		name      string
+		ag        *agent.Agent
+		expectRes *agent.Agent
 	}{
 		{
 			"test normal",
@@ -197,7 +196,7 @@ func TestAgentDelete(t *testing.T) {
 			mockCache.EXPECT().AgentGet(gomock.Any(), tt.ag.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any()).AnyTimes()
 
-			if err := h.AgentCreate(context.Background(), tt.ag); err != nil {
+			if err := h.AgentCreate(ctx, tt.ag); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -205,15 +204,15 @@ func TestAgentDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.AgentGet(context.Background(), tt.ag.ID)
+			res, err := h.AgentGet(ctx, tt.ag.ID)
 			if err != nil {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
 
-			tt.expectAgent.TMUpdate = res.TMUpdate
-			tt.expectAgent.TMDelete = res.TMDelete
-			if reflect.DeepEqual(tt.expectAgent, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectAgent, res)
+			tt.expectRes.TMUpdate = res.TMUpdate
+			tt.expectRes.TMDelete = res.TMDelete
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -224,16 +223,15 @@ func TestAgentGets(t *testing.T) {
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
 
-	type test struct {
-		name        string
-		userID      uint64
-		agent       []*agent.Agent
-		size        uint64
-		expectAgent []*agent.Agent
-	}
-
-	tests := []test{
+	tests := []struct {
+		name      string
+		userID    uint64
+		data      []*agent.Agent
+		size      uint64
+		expectRes []*agent.Agent
+	}{
 		{
 			"test normal",
 			11,
@@ -280,14 +278,10 @@ func TestAgentGets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			// clean test database users
-			_ = cleanTestDBUsers()
 
-			h := NewHandler(dbTest, mockCache)
-
-			for _, u := range tt.agent {
-				mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any())
-				if err := h.AgentCreate(context.Background(), u); err != nil {
+			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			for _, u := range tt.data {
+				if err := h.AgentCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
@@ -297,8 +291,8 @@ func TestAgentGets(t *testing.T) {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectAgent, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectAgent[0], res[0])
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
 			}
 		})
 	}
@@ -309,8 +303,9 @@ func TestAgentSetAddresses(t *testing.T) {
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		id        uuid.UUID
@@ -318,10 +313,8 @@ func TestAgentSetAddresses(t *testing.T) {
 
 		agents []*agent.Agent
 
-		expectAgent *agent.Agent
-	}
-
-	tests := []test{
+		expectRes *agent.Agent
+	}{
 		{
 			"test normal",
 
@@ -374,14 +367,10 @@ func TestAgentSetAddresses(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			// clean test database users
-			_ = cleanTestDBUsers()
-
-			h := NewHandler(dbTest, mockCache)
 
 			for _, u := range tt.agents {
 				mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any())
-				if err := h.AgentCreate(context.Background(), u); err != nil {
+				if err := h.AgentCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
@@ -401,8 +390,8 @@ func TestAgentSetAddresses(t *testing.T) {
 
 			res.TMCreate = ""
 			res.TMUpdate = ""
-			if reflect.DeepEqual(tt.expectAgent, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectAgent, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

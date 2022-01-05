@@ -8,11 +8,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 )
 
 func TestProcessV1AgentsGetNormal(t *testing.T) {
@@ -20,14 +18,10 @@ func TestProcessV1AgentsGetNormal(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -108,14 +102,10 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -260,14 +250,10 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -415,14 +401,10 @@ func TestProcessV1AgentsPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -641,14 +623,10 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -728,14 +706,10 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -805,14 +779,10 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -871,14 +841,10 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -938,14 +904,10 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -1000,14 +962,10 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -1062,14 +1020,10 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -1126,14 +1080,10 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 
@@ -1215,14 +1165,10 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		agentHandler: mockAgent,
 	}
 

@@ -11,12 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 	cmnotifyhandler "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/notifyhandler"
 )
 
 // list of publishers
@@ -26,13 +22,11 @@ const (
 
 // SubscribeHandler interface
 type SubscribeHandler interface {
-	Run(queue, exchangeDelay string) error
+	Run() error
 }
 
 type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
-	db         dbhandler.DBHandler
-	cache      cachehandler.CacheHandler
 
 	subscribeQueue    string
 	subscribesTargets string
@@ -65,19 +59,12 @@ func init() {
 // NewSubscribeHandler return SubscribeHandler interface
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
-	db dbhandler.DBHandler,
-	cache cachehandler.CacheHandler,
 	subscribeQueue string,
 	subscribeTargets string,
-	reqHandler requesthandler.RequestHandler,
-	notifyHandler notifyhandler.NotifyHandler,
+	agentHandler agenthandler.AgentHandler,
 ) SubscribeHandler {
-	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
-
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
-		db:         db,
-		cache:      cache,
 
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
@@ -87,23 +74,22 @@ func NewSubscribeHandler(
 	return h
 }
 
-func (h *subscribeHandler) Run(subscribeQueue, subscribeTargets string) error {
+func (h *subscribeHandler) Run() error {
 	logrus.WithFields(logrus.Fields{
-		"subscribe_queue":   subscribeQueue,
-		"subscribe_targets": subscribeTargets,
+		"func": "run",
 	}).Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueDeclare(subscribeQueue, true, true, false, false); err != nil {
+	if err := h.rabbitSock.QueueDeclare(h.subscribeQueue, true, true, false, false); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
 	// subscribe each targets
-	targets := strings.Split(subscribeTargets, ",")
+	targets := strings.Split(h.subscribesTargets, ",")
 	for _, target := range targets {
 
 		// bind each targets
-		if err := h.rabbitSock.QueueBind(subscribeQueue, "", target, false, nil); err != nil {
+		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
 			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
 			return err
 		}
@@ -112,7 +98,7 @@ func (h *subscribeHandler) Run(subscribeQueue, subscribeTargets string) error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(subscribeQueue, "webhook-manager", false, false, false, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "webhook-manager", false, false, false, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -155,7 +141,7 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		log.Debugf("Could not find correct event handler.")
+		// ignore the event.
 	}
 	elapsed := time.Since(start)
 	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))

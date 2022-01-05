@@ -14,11 +14,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/taghandler"
 )
 
@@ -35,9 +32,6 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
-	db         dbhandler.DBHandler
-	cache      cachehandler.CacheHandler
-	reqHandler requesthandler.RequestHandler
 
 	agentHandler agenthandler.AgentHandler
 	tagHandler   taghandler.TagHandler
@@ -95,19 +89,9 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(
-	rabbitSock rabbitmqhandler.Rabbit,
-	db dbhandler.DBHandler,
-	cache cachehandler.CacheHandler,
-	reqHandler requesthandler.RequestHandler,
-	agentHandler agenthandler.AgentHandler,
-	tagHandler taghandler.TagHandler,
-) ListenHandler {
+func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler, tagHandler taghandler.TagHandler) ListenHandler {
 	h := &listenHandler{
 		rabbitSock: rabbitSock,
-		db:         db,
-		cache:      cache,
-		reqHandler: reqHandler,
 
 		agentHandler: agentHandler,
 		tagHandler:   tagHandler,

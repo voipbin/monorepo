@@ -88,7 +88,7 @@ func (h *handler) AgentDialSet(ctx context.Context, u *agentdial.AgentDial) erro
 
 // AgentCallGet returns cached agentcall info
 func (h *handler) AgentCallGet(ctx context.Context, id uuid.UUID) (*agentcall.AgentCall, error) {
-	key := fmt.Sprintf("agentdial:%d", id)
+	key := fmt.Sprintf("agentcall:%d", id)
 
 	var res agentcall.AgentCall
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -100,7 +100,7 @@ func (h *handler) AgentCallGet(ctx context.Context, id uuid.UUID) (*agentcall.Ag
 
 // AgentCallSet sets the agentcall info into the cache.
 func (h *handler) AgentCallSet(ctx context.Context, u *agentcall.AgentCall) error {
-	key := fmt.Sprintf("agentdial:%d", u.AgentID)
+	key := fmt.Sprintf("agentcall:%d", u.ID)
 
 	if err := h.setSerialize(ctx, key, u); err != nil {
 		return err

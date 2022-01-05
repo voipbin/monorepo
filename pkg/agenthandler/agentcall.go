@@ -38,6 +38,7 @@ func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) er
 		log.Errorf("Could not get agent dial. err: %v", err)
 		return err
 	}
+	log.WithField("agent_dial", ad).Debug("Found agent dial info.")
 
 	// hang up the other agent calls.
 	for _, callID := range ad.CallIDs {
