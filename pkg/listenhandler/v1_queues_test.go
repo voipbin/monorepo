@@ -8,7 +8,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -21,15 +20,10 @@ func TestProcessV1QueuesPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
 	mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		queueHandler: mockQueue,
 	}
 
@@ -158,14 +152,10 @@ func TestProcessV1QueuesGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
 
 		queueHandler: mockQueue,
 	}
@@ -253,15 +243,10 @@ func TestProcessV1QueuesIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
 	mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		queueHandler: mockQueue,
 	}
 
@@ -314,15 +299,10 @@ func TestProcessV1QueuesIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
 	mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		queueHandler: mockQueue,
 	}
 
@@ -374,15 +354,10 @@ func TestProcessV1QueuesIDPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
 	mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		queueHandler: mockQueue,
 	}
 
@@ -450,15 +425,10 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
 	mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		queueHandler: mockQueue,
 	}
 
@@ -524,15 +494,10 @@ func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
 	mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		queueHandler: mockQueue,
 	}
 
@@ -609,15 +574,10 @@ func TestProcessV1QueuesIDRoutingMethodPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
 	mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		queueHandler: mockQueue,
 	}
 
@@ -672,15 +632,10 @@ func TestProcessV1QueuesIDWaitActionsPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
 	mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:   mockSock,
-		db:           mockDB,
-		reqHandler:   mockReq,
 		queueHandler: mockQueue,
 	}
 
