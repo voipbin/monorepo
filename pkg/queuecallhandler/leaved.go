@@ -54,7 +54,7 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 	}
 
 	// get updated queuecall and notify.
-	tmp, err := h.db.QueuecallGet(ctx, referenceID)
+	tmp, err := h.db.QueuecallGet(ctx, qm.CurrentQueuecallID)
 	if err != nil {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return

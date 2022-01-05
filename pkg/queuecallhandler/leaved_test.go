@@ -112,7 +112,7 @@ func TestLeaved(t *testing.T) {
 			mockQueuecallMasterHandler.EXPECT().Get(gomock.Any(), tt.referenceID).Return(tt.queuecallReference, nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.queuecall, nil)
 			mockDB.EXPECT().QueuecallDelete(gomock.Any(), tt.referenceID, queuecall.StatusDone).Return(nil)
-			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.referenceID).Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeQueuecallDone, tt.responseQueuecall.WebhookURI, tt.responseQueuecall)
 
 			duration := getDuration(ctx, tt.responseQueuecall.TMService, tt.responseQueuecall.TMDelete)

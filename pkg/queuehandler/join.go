@@ -6,10 +6,16 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/ttacon/libphonenumber"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+)
+
+const (
+	defaultSourceType   = cmaddress.TypeTel
+	defaultSourceTarget = "+821021656521"
 )
 
 // Join creates the new queuecall
@@ -34,20 +40,17 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		return nil, fmt.Errorf("unsupported reference type")
 	}
 
-	// get source
+	// get call
 	c, err := h.reqHandler.CMV1CallGet(ctx, referenceID)
 	if err != nil {
 		log.Errorf("Could not get reference info. err: %v", err)
 		return nil, fmt.Errorf("reference info not found")
 	}
+	log.WithField("call", c).Debug("Found call info.")
 
 	// get source
-	var source cmaddress.Address
-	if c.Direction == cmcall.DirectionIncoming {
-		source = c.Source
-	} else {
-		source = c.Destination
-	}
+	source := h.getSource(c)
+	log.WithField("source", source).Debug("Source address info.")
 
 	// create a new queuecall
 	res, err := h.queuecallHandler.Create(
@@ -84,4 +87,41 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 	}
 
 	return res, nil
+}
+
+// getSource returns cmaddress for source.
+func (h *queueHandler) getSource(c *cmcall.Call) cmaddress.Address {
+	log := logrus.WithField("call_id", c.ID)
+
+	var res cmaddress.Address
+	if c.Direction == cmcall.DirectionIncoming {
+		res = c.Source
+	} else {
+		res = c.Destination
+	}
+
+	valid := true
+	if res.Type == cmaddress.TypeTel {
+		num, err := libphonenumber.Parse(res.Target, "US")
+		if err != nil {
+			log.Debugf("Could not parse the number. err: %v", err)
+			valid = false
+		}
+
+		if valid && !libphonenumber.IsValidNumber(num) {
+			log.Debugf("Given source target is not valid. num: %v", num)
+			valid = false
+		}
+
+	} else {
+		valid = false
+	}
+
+	// check the address is valid or not.
+	if !valid {
+		res.Type = defaultSourceType
+		res.Target = defaultSourceTarget
+	}
+
+	return res
 }
