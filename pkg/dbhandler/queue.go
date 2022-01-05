@@ -56,8 +56,8 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 
 	tagIDs := ""
 	waitActions := ""
-	waitQueueCallIDs := ""
-	serviceQueueCallIDs := ""
+	waitQueuecallIDs := ""
+	serviceQueuecallIDs := ""
 
 	res := &queue.Queue{}
 	if err := row.Scan(
@@ -76,9 +76,9 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 		&tagIDs,
 
 		&waitActions,
-		&waitQueueCallIDs,
+		&waitQueuecallIDs,
 		&res.WaitTimeout,
-		&serviceQueueCallIDs,
+		&serviceQueuecallIDs,
 		&res.ServiceTimeout,
 
 		&res.TotalIncomingCount,
@@ -108,14 +108,14 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 		res.WaitActions = []fmaction.Action{}
 	}
 
-	if err := json.Unmarshal([]byte(waitQueueCallIDs), &res.WaitQueueCallIDs); err != nil {
+	if err := json.Unmarshal([]byte(waitQueuecallIDs), &res.WaitQueueCallIDs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the tag_ids. queueGetFromRow. err: %v", err)
 	}
 	if res.WaitQueueCallIDs == nil {
 		res.WaitQueueCallIDs = []uuid.UUID{}
 	}
 
-	if err := json.Unmarshal([]byte(serviceQueueCallIDs), &res.ServiceQueueCallIDs); err != nil {
+	if err := json.Unmarshal([]byte(serviceQueuecallIDs), &res.ServiceQueueCallIDs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the tag_ids. queueGetFromRow. err: %v", err)
 	}
 	if res.ServiceQueueCallIDs == nil {

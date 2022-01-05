@@ -131,3 +131,120 @@ func TestJoin(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSource(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+	mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
+
+	h := &queueHandler{
+		db:                        mockDB,
+		reqHandler:                mockReq,
+		notifyhandler:             mockNotify,
+		queuecallHandler:          mockQueuecall,
+		queuecallReferenceHandler: mockQueuecallReference,
+	}
+
+	tests := []struct {
+		name string
+
+		call *cmcall.Call
+
+		expectRes cmaddress.Address
+	}{
+		{
+			"incoming tel type",
+
+			&cmcall.Call{
+				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
+				Direction: cmcall.DirectionIncoming,
+				Source: cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821021656522",
+				},
+			},
+			cmaddress.Address{
+				Type:       cmaddress.TypeTel,
+				Target:     "+821021656522",
+				TargetName: "",
+				Name:       "",
+				Detail:     "",
+			},
+		},
+		{
+			"incoming sip type",
+
+			&cmcall.Call{
+				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
+				Direction: cmcall.DirectionIncoming,
+				Source: cmaddress.Address{
+					Type:   cmaddress.TypeSIP,
+					Target: "test@voipbin.net",
+				},
+			},
+			cmaddress.Address{
+				Type:       defaultSourceType,
+				Target:     defaultSourceTarget,
+				TargetName: "",
+				Name:       "",
+				Detail:     "",
+			},
+		},
+		{
+			"outgoing tel type",
+
+			&cmcall.Call{
+				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
+				Direction: cmcall.DirectionOutgoing,
+				Destination: cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821021656522",
+				},
+			},
+			cmaddress.Address{
+				Type:       cmaddress.TypeTel,
+				Target:     "+821021656522",
+				TargetName: "",
+				Name:       "",
+				Detail:     "",
+			},
+		},
+		{
+			"outgoing sip type",
+
+			&cmcall.Call{
+				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
+				Direction: cmcall.DirectionOutgoing,
+				Destination: cmaddress.Address{
+					Type:   cmaddress.TypeSIP,
+					Target: "test@voipbin.net",
+				},
+			},
+			cmaddress.Address{
+				Type:       defaultSourceType,
+				Target:     defaultSourceTarget,
+				TargetName: "",
+				Name:       "",
+				Detail:     "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := h.getSource(tt.call)
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+
+}

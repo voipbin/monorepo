@@ -33,7 +33,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID) {
 
 	// check the status
 	if qc.Status != queuecall.StatusWait {
-		log.Errorf("Invalid status.")
+		// no need to execute anymore.
 		return
 	}
 
