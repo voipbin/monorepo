@@ -1,4 +1,4 @@
-package arihandler
+package arieventhandler
 
 import (
 	"context"
@@ -13,8 +13,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
-// eventHandlerRecordingStarted handles RecordingStarted ARI event
-func (h *eventHandler) eventHandlerRecordingStarted(ctx context.Context, evt interface{}) error {
+// EventHandlerRecordingStarted handles RecordingStarted ARI event
+func (h *eventHandler) EventHandlerRecordingStarted(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.RecordingStarted)
 
 	log := log.WithFields(
@@ -54,8 +54,8 @@ func (h *eventHandler) eventHandlerRecordingStarted(ctx context.Context, evt int
 	return nil
 }
 
-// eventHandlerRecordingFinished handles RecordingFinished ARI event
-func (h *eventHandler) eventHandlerRecordingFinished(ctx context.Context, evt interface{}) error {
+// EventHandlerRecordingFinished handles RecordingFinished ARI event
+func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.RecordingFinished)
 
 	log := log.WithFields(

@@ -1,6 +1,7 @@
-package arihandler
+package arieventhandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -8,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -21,21 +23,44 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
-
-	type test struct {
-		name         string
-		event        *rabbitmqhandler.Event
-		expectBridge *bridge.Bridge
+	h := eventHandler{
+		db:          mockDB,
+		rabbitSock:  mockSock,
+		reqHandler:  mockRequest,
+		callHandler: mockCall,
 	}
 
-	tests := []test{
+	tests := []struct {
+		name        string
+		event       *ari.BridgeCreated
+		expectEvent *bridge.Bridge
+	}{
 		{
 			"normal",
-			&rabbitmqhandler.Event{
-				Type:     "ari_event",
-				DataType: "application/json",
-				Data:     []byte(`{"type":"BridgeCreated","timestamp":"2020-05-09T12:41:43.591+0000","bridge":{"id":"4625f6e6-6330-48ea-9d93-5cca714322b3","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"echo","channels":[],"creationtime":"2020-05-09T12:41:43.591+0000","video_mode":"none"},"asterisk_id":"42:01:0a:a4:00:05","application":"voipbin"}`),
+			&ari.BridgeCreated{
+				Event: ari.Event{
+					Type:        ari.EventTypeBridgeCreated,
+					Application: "voipbin",
+					AsteriskID:  "42:01:0a:a4:00:05",
+				},
+
+				Bridge: ari.Bridge{
+					ID:   "4625f6e6-6330-48ea-9d93-5cca714322b3",
+					Name: "echo",
+
+					BridgeType:  "mixing",
+					Technology:  "simple_bridge",
+					BridgeClass: "stasis",
+					Creator:     "Stasis",
+
+					VideoMode: "none",
+
+					Channels: []string{},
+
+					CreationTime: "2020-05-09T12:41:43.591+0000",
+				},
 			},
+
 			&bridge.Bridge{
 				ID:         "4625f6e6-6330-48ea-9d93-5cca714322b3",
 				AsteriskID: "42:01:0a:a4:00:05",
@@ -60,16 +85,10 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := eventHandler{
-				db:          mockDB,
-				rabbitSock:  mockSock,
-				reqHandler:  mockRequest,
-				callHandler: mockCall,
-			}
+			ctx := context.Background()
+			mockDB.EXPECT().BridgeCreate(gomock.Any(), tt.expectEvent)
 
-			mockDB.EXPECT().BridgeCreate(gomock.Any(), tt.expectBridge)
-
-			if err := h.processEvent(tt.event); err != nil {
+			if err := h.EventHandlerBridgeCreated(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -84,21 +103,44 @@ func TestEventHandlerBridgeDestroyed(t *testing.T) {
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
-
-	type test struct {
-		name            string
-		event           *rabbitmqhandler.Event
-		expectBridgeID  string
-		expectTimestamp string
+	h := eventHandler{
+		db:          mockDB,
+		rabbitSock:  mockSock,
+		reqHandler:  mockRequest,
+		callHandler: mockCall,
 	}
 
-	tests := []test{
+	tests := []struct {
+		name            string
+		event           *ari.BridgeDestroyed
+		expectBridgeID  string
+		expectTimestamp string
+	}{
 		{
 			"normal",
-			&rabbitmqhandler.Event{
-				Type:     "ari_event",
-				DataType: "application/json",
-				Data:     []byte(`{"type":"BridgeDestroyed","timestamp":"2020-05-04T00:27:59.747+0000","bridge":{"id":"17174a5e-91f6-11ea-b637-fb223e63cedf","technology":"simple_bridge","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"test","channels":[],"creationtime":"2020-05-03T23:37:49.233+0000","video_mode":"talker"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`),
+			&ari.BridgeDestroyed{
+				Event: ari.Event{
+					Type:        ari.EventTypeBridgeDestroyed,
+					Application: "voipbin",
+					Timestamp:   "2020-05-04T00:27:59.747",
+					AsteriskID:  "42:01:0a:a4:00:03",
+				},
+
+				Bridge: ari.Bridge{
+					ID:   "17174a5e-91f6-11ea-b637-fb223e63cedf",
+					Name: "test",
+
+					BridgeType:  "mixing",
+					Technology:  "simple_bridge",
+					BridgeClass: "stasis",
+					Creator:     "Stasis",
+
+					VideoMode: "talker",
+
+					Channels: []string{},
+
+					CreationTime: "2020-05-03T23:37:49.233+0000",
+				},
 			},
 			"17174a5e-91f6-11ea-b637-fb223e63cedf",
 			"2020-05-04T00:27:59.747",
@@ -107,17 +149,12 @@ func TestEventHandlerBridgeDestroyed(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := eventHandler{
-				db:          mockDB,
-				rabbitSock:  mockSock,
-				reqHandler:  mockRequest,
-				callHandler: mockCall,
-			}
+			ctx := context.Background()
 
 			mockDB.EXPECT().BridgeIsExist(tt.expectBridgeID, defaultExistTimeout).Return(true)
 			mockDB.EXPECT().BridgeEnd(gomock.Any(), tt.expectBridgeID, tt.expectTimestamp)
 
-			if err := h.processEvent(tt.event); err != nil {
+			if err := h.EventHandlerBridgeDestroyed(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

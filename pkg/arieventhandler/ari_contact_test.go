@@ -1,12 +1,14 @@
-package arihandler
+package arieventhandler
 
 import (
+	"context"
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -29,17 +31,32 @@ func TestEventHandlerContactStatusChange(t *testing.T) {
 
 	type test struct {
 		name     string
-		event    *rabbitmqhandler.Event
+		event    *ari.ContactStatusChange
 		endpoint string
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Event{
-				Type:     "ari_event",
-				DataType: "application/json",
-				Data:     []byte(`{ "application": "voipbin", "contact_info": { "uri": "sip:jgo101ml@r5e5vuutihlr.invalid;transport=ws", "roundtrip_usec": "0", "aor": "test11@test.sip.voipbin.net", "contact_status": "NonQualified" }, "type": "ContactStatusChange", "endpoint": { "channel_ids": [], "resource": "test11@test.sip.voipbin.net", "state": "online", "technology": "PJSIP" }, "timestamp": "2021-02-19T06:32:14.621+0000", "asterisk_id": "8e:86:e2:2c:a7:51"}`),
+			&ari.ContactStatusChange{
+				Event: ari.Event{
+					Type:        ari.EventTypeContactStatusChange,
+					Application: "voipbin",
+					Timestamp:   "2021-02-19T06:32:14.621",
+					AsteriskID:  "8e:86:e2:2c:a7:51",
+				},
+				Endpoint: ari.Endpoint{
+					Resource:   "test11@test.sip.voipbin.net",
+					State:      ari.EndpointStateOnline,
+					Technology: "PJSIP",
+					ChannelIDs: []string{},
+				},
+				ContactInfo: ari.ContactInfo{
+					AOR:           "test11@test.sip.voipbin.net",
+					URI:           "sip:jgo101ml@r5e5vuutihlr.invalid;transport=ws",
+					RoundtripUsec: "0",
+					ContactStatus: ari.ContactStatusTypeNonQualified,
+				},
 			},
 			"test11@test.sip.voipbin.net",
 		},
@@ -47,9 +64,10 @@ func TestEventHandlerContactStatusChange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
 			mockReq.EXPECT().RMV1ContactUpdate(gomock.Any(), tt.endpoint).Return(nil)
-			if err := h.processEvent(tt.event); err != nil {
+			if err := h.EventHandlerContactStatusChange(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

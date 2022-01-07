@@ -1,4 +1,4 @@
-package arihandler
+package arieventhandler
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 )
 
-// eventHandlerStasisStart handles StasisStart ARI event
-func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interface{}) error {
+// EventHandlerStasisStart handles StasisStart ARI event
+func (h *eventHandler) EventHandlerStasisStart(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisStart)
 
 	log := log.WithFields(
@@ -61,8 +61,8 @@ func (h *eventHandler) eventHandlerStasisStart(ctx context.Context, evt interfac
 	}
 }
 
-// eventHandlerStasisEnd handles StasisEnd ARI event
-func (h *eventHandler) eventHandlerStasisEnd(ctx context.Context, evt interface{}) error {
+// EventHandlerStasisEnd handles StasisEnd ARI event
+func (h *eventHandler) EventHandlerStasisEnd(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisEnd)
 
 	if err := h.db.ChannelSetStasis(ctx, e.Channel.ID, ""); err != nil {

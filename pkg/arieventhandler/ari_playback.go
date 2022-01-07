@@ -1,4 +1,4 @@
-package arihandler
+package arieventhandler
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 )
 
-// eventHandlerPlaybackStarted handles PlaybackStarted ARI event
-func (h *eventHandler) eventHandlerPlaybackStarted(ctx context.Context, evt interface{}) error {
+// EventHandlerPlaybackStarted handles PlaybackStarted ARI event
+func (h *eventHandler) EventHandlerPlaybackStarted(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.PlaybackStarted)
 
 	log := log.WithFields(
@@ -50,8 +50,8 @@ func (h *eventHandler) eventHandlerPlaybackStarted(ctx context.Context, evt inte
 	return nil
 }
 
-// eventHandlerPlaybackFinished handles PlaybackFinished ARI event
-func (h *eventHandler) eventHandlerPlaybackFinished(ctx context.Context, evt interface{}) error {
+// EventHandlerPlaybackFinished handles PlaybackFinished ARI event
+func (h *eventHandler) EventHandlerPlaybackFinished(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.PlaybackFinished)
 
 	log := log.WithFields(
