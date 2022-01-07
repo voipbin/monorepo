@@ -1,4 +1,4 @@
-package arihandler
+package arieventhandler
 
 import (
 	"context"
@@ -13,8 +13,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
-// eventHandlerChannelCreated handels ChannelCreated ARI event
-func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt interface{}) error {
+// EventHandlerChannelCreated handels ChannelCreated ARI event
+func (h *eventHandler) EventHandlerChannelCreated(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelCreated)
 
 	cn := channel.NewChannelByChannelCreated(e)
@@ -44,8 +44,8 @@ func (h *eventHandler) eventHandlerChannelCreated(ctx context.Context, evt inter
 	return nil
 }
 
-// eventHandlerChannelDestroyed handels ChannelDestroyed ARI event
-func (h *eventHandler) eventHandlerChannelDestroyed(ctx context.Context, evt interface{}) error {
+// EventHandlerChannelDestroyed handels ChannelDestroyed ARI event
+func (h *eventHandler) EventHandlerChannelDestroyed(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelDestroyed)
 
 	if err := h.db.ChannelEnd(ctx, e.Channel.ID, string(e.Timestamp), e.Cause); err != nil {
@@ -64,8 +64,8 @@ func (h *eventHandler) eventHandlerChannelDestroyed(ctx context.Context, evt int
 	return nil
 }
 
-// eventHandlerChannelDtmfReceived handels ChannelDtmfReceived ARI event
-func (h *eventHandler) eventHandlerChannelDtmfReceived(ctx context.Context, evt interface{}) error {
+// EventHandlerChannelDtmfReceived handels ChannelDtmfReceived ARI event
+func (h *eventHandler) EventHandlerChannelDtmfReceived(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelDtmfReceived)
 
 	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
@@ -80,8 +80,8 @@ func (h *eventHandler) eventHandlerChannelDtmfReceived(ctx context.Context, evt 
 	return nil
 }
 
-// eventHandlerChannelEnteredBridge handles ChannelEnteredBridge ARI event
-func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt interface{}) error {
+// EventHandlerChannelEnteredBridge handles ChannelEnteredBridge ARI event
+func (h *eventHandler) EventHandlerChannelEnteredBridge(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelEnteredBridge)
 
 	log := log.WithFields(
@@ -137,8 +137,8 @@ func (h *eventHandler) eventHandlerChannelEnteredBridge(ctx context.Context, evt
 	return nil
 }
 
-// eventHandlerChannelLeftBridge handles ChannelLeftBridge ARI event
-func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt interface{}) error {
+// EventHandlerChannelLeftBridge handles ChannelLeftBridge ARI event
+func (h *eventHandler) EventHandlerChannelLeftBridge(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelLeftBridge)
 
 	log := log.WithFields(
@@ -202,8 +202,8 @@ func (h *eventHandler) eventHandlerChannelLeftBridge(ctx context.Context, evt in
 	}
 }
 
-// eventHandlerChannelStateChange handels ChannelStateChange ARI event
-func (h *eventHandler) eventHandlerChannelStateChange(ctx context.Context, evt interface{}) error {
+// EventHandlerChannelStateChange handels ChannelStateChange ARI event
+func (h *eventHandler) EventHandlerChannelStateChange(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelStateChange)
 
 	if err := h.db.ChannelSetState(ctx, e.Channel.ID, string(e.Timestamp), e.Channel.State); err != nil {
@@ -222,8 +222,8 @@ func (h *eventHandler) eventHandlerChannelStateChange(ctx context.Context, evt i
 	return nil
 }
 
-// eventHandlerChannelVarset handels ChannelVarset ARI event
-func (h *eventHandler) eventHandlerChannelVarset(ctx context.Context, evt interface{}) error {
+// EventHandlerChannelVarset handels ChannelVarset ARI event
+func (h *eventHandler) EventHandlerChannelVarset(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelVarset)
 
 	switch e.Variable {

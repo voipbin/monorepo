@@ -1,4 +1,4 @@
-package arihandler
+package arieventhandler
 
 import (
 	"context"
@@ -10,7 +10,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 )
 
-func (h *eventHandler) eventHandlerBridgeCreated(ctx context.Context, evt interface{}) error {
+// EventHandlerBridgeCreated handles BridgeCreated ari event.
+func (h *eventHandler) EventHandlerBridgeCreated(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.BridgeCreated)
 
 	b := bridge.NewBridgeByBridgeCreated(e)
@@ -24,11 +25,13 @@ func (h *eventHandler) eventHandlerBridgeCreated(ctx context.Context, evt interf
 	return nil
 }
 
-func (h *eventHandler) eventHandlerBridgeDestroyed(ctx context.Context, evt interface{}) error {
+// EventHandlerBridgeDestroyed handles BridgeDestroyed ari event.
+func (h *eventHandler) EventHandlerBridgeDestroyed(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.BridgeDestroyed)
 
 	log := log.WithFields(
 		log.Fields{
+			"func":     "EventHandlerBridgeDestroyed",
 			"bridge":   e.Bridge.ID,
 			"asterisk": e.AsteriskID,
 			"stasis":   e.Application,

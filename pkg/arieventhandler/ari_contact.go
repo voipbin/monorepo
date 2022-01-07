@@ -1,4 +1,4 @@
-package arihandler
+package arieventhandler
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 )
 
-// eventHandlerContactStatusChange handles ContactStatusChange ARI event
-func (h *eventHandler) eventHandlerContactStatusChange(ctx context.Context, evt interface{}) error {
+// EventHandlerContactStatusChange handles ContactStatusChange ARI event
+func (h *eventHandler) EventHandlerContactStatusChange(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ContactStatusChange)
 
 	log := log.WithFields(

@@ -16,7 +16,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arihandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventlistenhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
@@ -48,6 +49,10 @@ var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test",
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
+
+const (
+	serviceName = "call-manager"
+)
 
 func main() {
 	log := logrus.WithField("func", "main")
@@ -139,48 +144,37 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "call-manager")
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
+	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler)
 
-	if err := runARI(sqlDB, cache); err != nil {
+	if err := runARIEventListen(rabbitSock, ariEventHandler); err != nil {
 		return err
 	}
 
-	if err := runListen(rabbitSock, callHandler, confbridgeHandler); err != nil {
+	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// runARI runs the ARI listen service
-func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
-
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
-
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "call-manager-ari")
-
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
-	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
-	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
-	eventHandler := arihandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler)
+// runARIEventListen runs the ARI event listen service
+func runARIEventListen(rabbitSock rabbitmqhandler.Rabbit, ariEventHandler arieventhandler.ARIEventHandler) error {
+	ariEventListenHandler := arieventlistenhandler.NewARIEventListenHandler(rabbitSock, ariEventHandler)
 
 	// run
-	if err := eventHandler.Run(*rabbitQueueARIEvent, "call-manager"); err != nil {
-		logrus.Errorf("Could not run the arihandler correctly. err: %v", err)
+	if err := ariEventListenHandler.Run(*rabbitQueueARIEvent, serviceName); err != nil {
+		logrus.Errorf("Could not run the ari event listen handler correctly. err: %v", err)
 	}
 
 	return nil
 }
 
-// runListen runs the listen service
-func runListen(rabbitSock rabbitmqhandler.Rabbit, callHandler callhandler.CallHandler, confbridgeHandler confbridgehandler.ConfbridgeHandler) error {
+// runRequestListen runs the request listen service
+func runRequestListen(rabbitSock rabbitmqhandler.Rabbit, callHandler callhandler.CallHandler, confbridgeHandler confbridgehandler.ConfbridgeHandler) error {
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler)
 
 	// run
