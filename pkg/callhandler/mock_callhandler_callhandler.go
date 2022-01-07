@@ -15,6 +15,7 @@ import (
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
@@ -167,6 +168,18 @@ func (mr *MockCallHandlerMockRecorder) ActionTimeout(ctx, callID, a interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionTimeout", reflect.TypeOf((*MockCallHandler)(nil).ActionTimeout), ctx, callID, a)
 }
 
+// CallHealthCheck mocks base method.
+func (m *MockCallHandler) CallHealthCheck(ctx context.Context, id uuid.UUID, retryCount, delay int) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CallHealthCheck", ctx, id, retryCount, delay)
+}
+
+// CallHealthCheck indicates an expected call of CallHealthCheck.
+func (mr *MockCallHandlerMockRecorder) CallHealthCheck(ctx, id, retryCount, delay interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHealthCheck", reflect.TypeOf((*MockCallHandler)(nil).CallHealthCheck), ctx, id, retryCount, delay)
+}
+
 // ChainedCallIDAdd mocks base method.
 func (m *MockCallHandler) ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -193,6 +206,18 @@ func (m *MockCallHandler) ChainedCallIDRemove(ctx context.Context, id, chainedCa
 func (mr *MockCallHandlerMockRecorder) ChainedCallIDRemove(ctx, id, chainedCallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChainedCallIDRemove", reflect.TypeOf((*MockCallHandler)(nil).ChainedCallIDRemove), ctx, id, chainedCallID)
+}
+
+// ChannelHealthCheck mocks base method.
+func (m *MockCallHandler) ChannelHealthCheck(ctx context.Context, asteriskID, channelID string, retryCount, retryCountMax, delay int) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ChannelHealthCheck", ctx, asteriskID, channelID, retryCount, retryCountMax, delay)
+}
+
+// ChannelHealthCheck indicates an expected call of ChannelHealthCheck.
+func (mr *MockCallHandlerMockRecorder) ChannelHealthCheck(ctx, asteriskID, channelID, retryCount, retryCountMax, delay interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelHealthCheck", reflect.TypeOf((*MockCallHandler)(nil).ChannelHealthCheck), ctx, asteriskID, channelID, retryCount, retryCountMax, delay)
 }
 
 // CreateCallOutgoing mocks base method.
@@ -239,18 +264,48 @@ func (mr *MockCallHandlerMockRecorder) ExternalMediaStop(ctx, callID interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStop", reflect.TypeOf((*MockCallHandler)(nil).ExternalMediaStop), ctx, callID)
 }
 
-// HangingUp mocks base method.
-func (m *MockCallHandler) HangingUp(ctx context.Context, c *call.Call, cause ari.ChannelCause) error {
+// Get mocks base method.
+func (m *MockCallHandler) Get(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HangingUp", ctx, c, cause)
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockCallHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCallHandler)(nil).Get), ctx, id)
+}
+
+// Gets mocks base method.
+func (m *MockCallHandler) Gets(ctx context.Context, userID, size uint64, token string) ([]*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, userID, size, token)
+	ret0, _ := ret[0].([]*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockCallHandlerMockRecorder) Gets(ctx, userID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCallHandler)(nil).Gets), ctx, userID, size, token)
+}
+
+// HangingUp mocks base method.
+func (m *MockCallHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HangingUp", ctx, id, cause)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // HangingUp indicates an expected call of HangingUp.
-func (mr *MockCallHandlerMockRecorder) HangingUp(ctx, c, cause interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) HangingUp(ctx, id, cause interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangingUp", reflect.TypeOf((*MockCallHandler)(nil).HangingUp), ctx, c, cause)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangingUp", reflect.TypeOf((*MockCallHandler)(nil).HangingUp), ctx, id, cause)
 }
 
 // Hangup mocks base method.
@@ -279,6 +334,36 @@ func (m *MockCallHandler) HangupWithReason(ctx context.Context, c *call.Call, re
 func (mr *MockCallHandlerMockRecorder) HangupWithReason(ctx, c, reason, hangupBy, timestamp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangupWithReason", reflect.TypeOf((*MockCallHandler)(nil).HangupWithReason), ctx, c, reason, hangupBy, timestamp)
+}
+
+// RecordingGet mocks base method.
+func (m *MockCallHandler) RecordingGet(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingGet", ctx, recordingID)
+	ret0, _ := ret[0].(*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingGet indicates an expected call of RecordingGet.
+func (mr *MockCallHandlerMockRecorder) RecordingGet(ctx, recordingID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockCallHandler)(nil).RecordingGet), ctx, recordingID)
+}
+
+// RecordingGets mocks base method.
+func (m *MockCallHandler) RecordingGets(ctx context.Context, userID, size uint64, token string) ([]*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingGets", ctx, userID, size, token)
+	ret0, _ := ret[0].([]*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingGets indicates an expected call of RecordingGets.
+func (mr *MockCallHandlerMockRecorder) RecordingGets(ctx, userID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockCallHandler)(nil).RecordingGets), ctx, userID, size, token)
 }
 
 // StartCallHandle mocks base method.

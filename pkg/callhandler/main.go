@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -32,11 +33,20 @@ type CallHandler interface {
 	ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error
 	ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error
 
+	ChannelHealthCheck(ctx context.Context, asteriskID string, channelID string, retryCount int, retryCountMax int, delay int)
+	CallHealthCheck(ctx context.Context, id uuid.UUID, retryCount int, delay int)
+
+	Gets(ctx context.Context, userID uint64, size uint64, token string) ([]*call.Call, error)
+	Get(ctx context.Context, id uuid.UUID) (*call.Call, error)
+
+	RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]*recording.Recording, error)
+	RecordingGet(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error)
+
 	CreateCallOutgoing(ctx context.Context, id uuid.UUID, userID uint64, flowID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error)
 	StartCallHandle(ctx context.Context, cn *channel.Channel, data map[string]string) error
 	Hangup(ctx context.Context, cn *channel.Channel) error
 	HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error
-	HangingUp(ctx context.Context, c *call.Call, cause ari.ChannelCause) error
+	HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) error
 
 	ActionNext(ctx context.Context, c *call.Call) error
 	ActionNextForce(ctx context.Context, c *call.Call) error

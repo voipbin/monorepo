@@ -7,12 +7,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func TestProcessV1ConfbridgePost(t *testing.T) {
@@ -20,15 +18,11 @@ func TestProcessV1ConfbridgePost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:        mockSock,
-		db:                mockDB,
-		reqHandler:        mockReq,
 		callHandler:       mockCall,
 		confbridgeHandler: mockConfbridge,
 	}
@@ -88,15 +82,11 @@ func TestProcessV1ConfbridgesIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:        mockSock,
-		db:                mockDB,
-		reqHandler:        mockReq,
 		callHandler:       mockCall,
 		confbridgeHandler: mockConfbridge,
 	}
@@ -147,15 +137,11 @@ func TestProcessV1ConfbridgesIDCallsIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:        mockSock,
-		db:                mockDB,
-		reqHandler:        mockReq,
 		callHandler:       mockCall,
 		confbridgeHandler: mockConfbridge,
 	}
@@ -208,15 +194,11 @@ func TestProcessV1ConfbridgesIDCallsIDPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:        mockSock,
-		db:                mockDB,
-		reqHandler:        mockReq,
 		callHandler:       mockCall,
 		confbridgeHandler: mockConfbridge,
 	}

@@ -130,7 +130,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 
 	if c.FlowID == uuid.Nil {
 		log.WithField("call", c).Info("No flow id found. Hangup the call.")
-		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
@@ -138,14 +138,14 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	nextAction, err := h.reqHandler.FMV1ActvieFlowGetNextAction(ctx, c.ID, c.Action.ID)
 	if err != nil {
 		log.Errorf("Could not get the next action from the flow-manager. Hanging up the call. err: %v", err)
-		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 	log.Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
 
 	if err := h.ActionExecute(ctx, c, nextAction); err != nil {
 		log.Errorf("Could not execute the next action correctly. Hanging up the call. err: %v", err)
-		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
@@ -485,7 +485,9 @@ func (h *callHandler) actionExecuteHangup(c *call.Call, a *action.Action) error 
 		return fmt.Errorf("could not set the action for call. err: %v", err)
 	}
 
-	_ = h.HangingUp(context.Background(), c, ari.ChannelCauseNormalClearing)
+	if err := h.HangingUp(context.Background(), c.ID, ari.ChannelCauseNormalClearing); err != nil {
+		log.Errorf("Could not hangup the call. err: %v", err)
+	}
 
 	return nil
 }

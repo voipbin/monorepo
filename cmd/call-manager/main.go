@@ -129,12 +129,26 @@ func initProm(endpoint, listen string) {
 }
 
 // run runs the call-manager
-func run(db *sql.DB, cache cachehandler.CacheHandler) error {
-	if err := runARI(db, cache); err != nil {
+func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+
+	// dbhandler
+	db := dbhandler.NewHandler(sqlDB, cache)
+
+	// rabbitmq sock connect
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	// create handlers
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "call-manager")
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
+	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
+
+	if err := runARI(sqlDB, cache); err != nil {
 		return err
 	}
 
-	if err := runListen(db, cache); err != nil {
+	if err := runListen(rabbitSock, callHandler, confbridgeHandler); err != nil {
 		return err
 	}
 
@@ -166,21 +180,8 @@ func runARI(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
-
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
-
-	// request handler
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "call-manager")
-
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
-	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
-	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, callHandler, confbridgeHandler)
+func runListen(rabbitSock rabbitmqhandler.Rabbit, callHandler callhandler.CallHandler, confbridgeHandler confbridgehandler.ConfbridgeHandler) error {
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

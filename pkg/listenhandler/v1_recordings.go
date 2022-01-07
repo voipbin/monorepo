@@ -36,7 +36,7 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, req *rabbitm
 	})
 
 	log.Debug("Getting recordings.")
-	recordings, err := h.db.RecordingGets(context.Background(), userID, pageSize, pageToken)
+	recordings, err := h.callHandler.RecordingGets(context.Background(), userID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil
@@ -72,7 +72,7 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitm
 		})
 	log.Debug("Executing processV1CallsIDGet.")
 
-	record, err := h.db.RecordingGet(ctx, id)
+	record, err := h.callHandler.RecordingGet(ctx, id)
 	if err != nil {
 		return simpleResponse(404), nil
 	}

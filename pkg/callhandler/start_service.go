@@ -49,21 +49,15 @@ func (h *callHandler) startServiceFromAMD(ctx context.Context, cn *channel.Chann
 	}
 	log = log.WithField("call_id", amd.CallID)
 
-	// get call
-	c, err := h.db.CallGet(ctx, amd.CallID)
-	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
-		return err
-	}
-
+	// check the result
 	if status == "MACHINE" && amd.MachineHandle == callapplication.AMDMachineHandleHangup {
 		// hangup the call
 		log.Infof("The amd option is machine hangup. machine_handle: %s", amd.MachineHandle)
-		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, amd.CallID, ari.ChannelCauseNormalClearing)
 	}
 
 	if !amd.Async {
-		return h.reqHandler.CMV1CallActionNext(ctx, c.ID, false)
+		return h.reqHandler.CMV1CallActionNext(ctx, amd.CallID, false)
 	}
 
 	return nil
