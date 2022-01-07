@@ -639,14 +639,14 @@ func (h *callHandler) typeSipServiceStart(ctx context.Context, cn *channel.Chann
 	// get action for sip-service
 	act, err := h.getSipServiceAction(ctx, c, cn)
 	if err != nil {
-		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not get action handle for sip-service. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
 	// execute action
 	if err := h.ActionExecute(ctx, c, act); err != nil {
 		log.Errorf("Could not execte the action. Hanging up the call. action: %s", act.Type)
-		_ = h.HangingUp(ctx, c, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return fmt.Errorf("Could not get execute the action. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
 	}
 

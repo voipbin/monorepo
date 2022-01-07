@@ -3,7 +3,6 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -42,7 +41,7 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, req *rabbitmqhand
 		"token": pageToken,
 	})
 
-	calls, err := h.db.CallGets(ctx, userID, pageSize, pageToken)
+	calls, err := h.callHandler.Gets(ctx, userID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil
@@ -77,7 +76,7 @@ func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *rabbitmqhand
 		})
 	log.Debug("Executing processV1CallsIDGet.")
 
-	c, err := h.db.CallGet(ctx, id)
+	c, err := h.callHandler.Get(ctx, id)
 	if err != nil {
 		return simpleResponse(404), nil
 	}
@@ -215,21 +214,14 @@ func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqh
 		})
 	log.Debug("Executing processV1CallsIDDelete.")
 
-	// get call
-	c, err := h.db.CallGet(ctx, id)
-	if err != nil {
-		log.Debugf("Could not get call info. err: %v", err)
-		return simpleResponse(404), nil
-	}
-
 	// hanging up the call
-	if err := h.callHandler.HangingUp(ctx, c, ari.ChannelCauseNormalClearing); err != nil {
+	if err := h.callHandler.HangingUp(ctx, id, ari.ChannelCauseNormalClearing); err != nil {
 		log.Debugf("Could not hanging up the call. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
 	// get updated call info
-	resCall, err := h.db.CallGet(ctx, id)
+	resCall, err := h.callHandler.Get(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get updated call info. err: %v", err)
 		return simpleResponse(500), nil
@@ -237,7 +229,7 @@ func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqh
 
 	data, err := json.Marshal(resCall)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", c, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", resCall, err)
 		return simpleResponse(500), nil
 	}
 
@@ -268,24 +260,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *rabbi
 		return nil, err
 	}
 
-	c, err := h.db.CallGet(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not find a call. call: %s", id)
-	}
-
-	// send a channel heaclth check
-	_, err = h.reqHandler.AstChannelGet(ctx, c.AsteriskID, c.ChannelID)
-	if err != nil {
-		data.RetryCount++
-	} else {
-		data.RetryCount = 0
-	}
-
-	// send another health check.
-	if err := h.reqHandler.CMV1CallHealth(ctx, id, data.Delay, data.RetryCount); err != nil {
-		return nil, err
-	}
-
+	h.callHandler.CallHealthCheck(ctx, id, data.RetryCount, data.Delay)
 	return nil, nil
 }
 
@@ -350,7 +325,7 @@ func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *r
 		return nil, err
 	}
 
-	c, err := h.db.CallGet(ctx, id)
+	c, err := h.callHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get call info from the database. err: %v", err)
 		return simpleResponse(404), nil

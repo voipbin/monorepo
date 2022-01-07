@@ -193,10 +193,11 @@ func TestHanginUp(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.cause).Return(nil)
 
-			if err := h.HangingUp(context.Background(), tt.call, tt.cause); err != nil {
+			if err := h.HangingUp(context.Background(), tt.call.ID, tt.cause); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

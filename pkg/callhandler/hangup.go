@@ -3,6 +3,7 @@ package callhandler
 import (
 	"context"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -45,14 +46,10 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 
 	// hangup the chained call
 	for _, callID := range c.ChainedCallIDs {
-		chainedCall, err := h.db.CallGet(ctx, callID)
-		if err != nil {
-			log.WithField("chained_call_id", chainedCall).Errorf("Could not get chained call info. err: %v", err)
-			continue
-		}
-
 		// hang up the call
-		_ = h.HangingUp(ctx, chainedCall, ari.ChannelCauseNormalClearing)
+		if err := h.HangingUp(ctx, callID, ari.ChannelCauseNormalClearing); err != nil {
+			log.Errorf("Could not hangup the chained call. err: %v", err)
+		}
 	}
 
 	return nil
@@ -77,14 +74,20 @@ func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason
 
 // HangingUp starts hangup process.
 // It sets the call status to the terminating and sends the hangup request to the Asterisk.
-func (h *callHandler) HangingUp(ctx context.Context, c *call.Call, cause ari.ChannelCause) error {
+func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) error {
 	log := logrus.WithFields(logrus.Fields{
-		"call":          c.ID,
-		"asterisk":      c.AsteriskID,
-		"channel":       c.ChannelID,
+		"func":          "HangingUp",
+		"call_id":       id,
 		"hangup reason": cause,
 	})
 	log.Debug("Hanging up the call.")
+
+	c, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return err
+	}
+	log.WithField("call", c).Debug("Call info.")
 
 	if c.Status == call.StatusCanceling || c.Status == call.StatusHangup || c.Status == call.StatusTerminating {
 		// already hanging up

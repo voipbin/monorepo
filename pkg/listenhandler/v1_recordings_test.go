@@ -7,11 +7,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func TestProcessV1RecordingsGet(t *testing.T) {
@@ -19,14 +17,10 @@ func TestProcessV1RecordingsGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 
@@ -71,7 +65,7 @@ func TestProcessV1RecordingsGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().RecordingGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.recordings, nil)
+			mockCall.EXPECT().RecordingGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.recordings, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -90,14 +84,10 @@ func TestProcessV1RecordingsIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 
@@ -134,7 +124,7 @@ func TestProcessV1RecordingsIDGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
+			mockCall.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

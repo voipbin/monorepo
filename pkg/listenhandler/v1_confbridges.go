@@ -56,8 +56,7 @@ func (h *listenHandler) processV1ConfbridgesIDGet(ctx context.Context, m *rabbit
 		})
 	log.WithField("request", m).Debug("Executing processV1ConfbridgesIDGet.")
 
-	// create confbridge
-	cb, err := h.db.ConfbridgeGet(ctx, id)
+	cb, err := h.confbridgeHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the confbridge. err: %v", err)
 		return simpleResponse(400), nil

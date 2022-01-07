@@ -10,14 +10,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func TestProcessV1CallsIDGet(t *testing.T) {
@@ -25,23 +23,19 @@ func TestProcessV1CallsIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
+		rabbitSock:  mockSock,
+		callHandler: mockCall,
 	}
 
-	type test struct {
+	tests := []struct {
 		name      string
 		request   *rabbitmqhandler.Request
 		call      *call.Call
 		expectRes *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"basic",
 			&rabbitmqhandler.Request{
@@ -80,7 +74,7 @@ func TestProcessV1CallsIDGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockCall.EXPECT().Get(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -94,21 +88,19 @@ func TestProcessV1CallsIDGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1CallsGets(t *testing.T) {
+func TestProcessV1CallsGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
+		rabbitSock:  mockSock,
+		callHandler: mockCall,
 	}
 
-	type test struct {
+	tests := []struct {
 		name      string
 		request   *rabbitmqhandler.Request
 		userID    uint64
@@ -116,11 +108,9 @@ func TestProcessV1CallsGets(t *testing.T) {
 		pageToken string
 		calls     []*call.Call
 		expectRes *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
-			"basic",
+			"normal",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
 				Method: rabbitmqhandler.RequestMethodGet,
@@ -140,12 +130,37 @@ func TestProcessV1CallsGets(t *testing.T) {
 				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","user_id":1,"asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}]`),
 			},
 		},
+		{
+			"2 items",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			1,
+			10,
+			"2020-05-03 21:35:02.809",
+			[]*call.Call{
+				{
+					ID:     uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
+					UserID: 1,
+				},
+				{
+					ID:     uuid.FromStringOrNil("095e2ec4-5f6c-11ec-b64c-efe2fb8efcbc"),
+					UserID: 1,
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","user_id":1,"asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"095e2ec4-5f6c-11ec-b64c-efe2fb8efcbc","user_id":1,"asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}]`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().CallGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.calls, nil)
+			mockCall.EXPECT().Gets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.calls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -164,29 +179,31 @@ func TestProcessV1CallsIDHealthPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
+		rabbitSock:  mockSock,
+		callHandler: mockCall,
 	}
 
 	type test struct {
-		name    string
-		call    *call.Call
+		name string
+
+		id         uuid.UUID
+		retryCount int
+		delay      int
+
 		request *rabbitmqhandler.Request
 	}
 
 	tests := []test{
 		{
 			"normal test",
-			&call.Call{
-				ID:         uuid.FromStringOrNil("1a94c1e6-982e-11ea-9298-43412daaf0da"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "94490ad8-982e-11ea-959d-b3d42fe73e00",
-			},
+
+			uuid.FromStringOrNil("1a94c1e6-982e-11ea-9298-43412daaf0da"),
+			0,
+			10,
+
 			&rabbitmqhandler.Request{
 				URI:    "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/health-check",
 				Method: rabbitmqhandler.RequestMethodPost,
@@ -198,9 +215,7 @@ func TestProcessV1CallsIDHealthPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstChannelGet(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(&channel.Channel{}, nil)
-			mockReq.EXPECT().CMV1CallHealth(gomock.Any(), tt.call.ID, 10, 0).Return(nil)
+			mockCall.EXPECT().CallHealthCheck(gomock.Any(), tt.id, tt.retryCount, tt.delay)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -218,14 +233,10 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 
@@ -280,14 +291,10 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 
@@ -400,14 +407,10 @@ func TestProcessV1CallsPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 
@@ -517,19 +520,16 @@ func TestProcessV1CallsIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 
 	type test struct {
 		name      string
+		id        uuid.UUID
 		call      *call.Call
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
@@ -538,6 +538,7 @@ func TestProcessV1CallsIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			"empty addresses",
+			uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
 			&call.Call{
 				ID:          uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
 				UserID:      1,
@@ -561,9 +562,8 @@ func TestProcessV1CallsIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockCall.EXPECT().HangingUp(context.Background(), tt.call, ari.ChannelCauseNormalClearing)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockCall.EXPECT().HangingUp(context.Background(), tt.id, ari.ChannelCauseNormalClearing)
+			mockCall.EXPECT().Get(gomock.Any(), tt.id).Return(tt.call, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -582,14 +582,10 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 
@@ -644,7 +640,7 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockCall.EXPECT().Get(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 
 			if !tt.force {
 				mockCall.EXPECT().ActionNext(context.Background(), tt.call)
@@ -670,14 +666,10 @@ func TestProcessV1CallsIDChainedCallIDsPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 
@@ -731,14 +723,10 @@ func TestProcessV1CallsIDChainedCallIDsDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 
@@ -790,14 +778,10 @@ func TestProcessV1CallsIDExternalMediaPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:  mockSock,
-		db:          mockDB,
-		reqHandler:  mockReq,
 		callHandler: mockCall,
 	}
 

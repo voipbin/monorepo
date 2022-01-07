@@ -5,10 +5,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 )
 
 func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
@@ -16,28 +14,33 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock: mockSock,
-		db:         mockDB,
-		reqHandler: mockReq,
+		rabbitSock:  mockSock,
+		callHandler: mockCall,
 	}
 
-	type test struct {
-		name    string
-		channel *channel.Channel
+	tests := []struct {
+		name string
+
+		asteriskID    string
+		channelID     string
+		retryCount    int
+		retryCountMax int
+		delay         int
+
 		request *rabbitmqhandler.Request
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal test",
-			&channel.Channel{
-				ID:         "f1f90a0a-9844-11ea-8948-5378837e7179",
-				AsteriskID: "42:01:0a:a4:00:05",
-			},
+
+			"42:01:0a:a4:00:05",
+			"f1f90a0a-9844-11ea-8948-5378837e7179",
+			0,
+			2,
+			10000,
+
 			&rabbitmqhandler.Request{
 				URI:    "/v1/asterisks/42%3A01%3A0a%3Aa4%3A00%3A05/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
 				Method: rabbitmqhandler.RequestMethodPost,
@@ -49,9 +52,7 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
-			mockReq.EXPECT().AstChannelGet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(tt.channel, nil)
-			mockReq.EXPECT().CMV1ChannelHealth(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, 10000, 0, 2).Return(nil)
+			mockCall.EXPECT().ChannelHealthCheck(gomock.Any(), tt.asteriskID, tt.channelID, tt.retryCount, tt.retryCountMax, tt.delay)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

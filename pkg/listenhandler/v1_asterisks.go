@@ -38,48 +38,7 @@ func (h *listenHandler) processV1AsterisksIDChannelsIDHealthPost(ctx context.Con
 		})
 	log.Debugf("Received health-check request. retry: %d, retry_max: %d, delay: %d", data.RetryCount, data.RetryCountMax, data.Delay)
 
-	channel, err := h.db.ChannelGet(ctx, channelID)
-	if err != nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"asterisk": asteriskID,
-				"channel":  channelID,
-			}).Errorf("Could not get the channel from the database. err: %v", err)
-	}
-
-	if channel.TMEnd != "" {
-		logrus.WithFields(
-			logrus.Fields{
-				"asterisk": asteriskID,
-				"channel":  channelID,
-			}).Debug("The channel has hungup already. Stop to health-check.")
-		return nil, nil
-	}
-
-	// send a channel heaclth check
-	_, err = h.reqHandler.AstChannelGet(ctx, asteriskID, channelID)
-	if err != nil {
-		data.RetryCount++
-	} else {
-		data.RetryCount = 0
-	}
-
-	// todo: if the retry count is bigger than 2,
-	// then generate fake-ChannelDestroyed event
-	if data.RetryCount >= data.RetryCountMax {
-		logrus.WithFields(
-			logrus.Fields{
-				"asterisk": asteriskID,
-				"channel":  channelID,
-			}).Info("Could not get channel info correctly. Terminating the channel.")
-		return nil, nil
-	}
-
-	// send another health check.
-	log.Debugf("Sending health-check request. retry: %d, retry_max: %d, delay: %d", data.RetryCount, data.RetryCountMax, data.Delay)
-	if err := h.reqHandler.CMV1ChannelHealth(ctx, asteriskID, channelID, data.Delay, data.RetryCount, data.RetryCountMax); err != nil {
-		return nil, err
-	}
+	h.callHandler.ChannelHealthCheck(ctx, asteriskID, channelID, data.RetryCount, data.RetryCountMax, data.Delay)
 
 	return nil, nil
 }
