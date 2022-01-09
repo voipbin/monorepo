@@ -9,8 +9,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
-// WebhookEventData defines
-type WebhookEventData struct {
+// Event defines
+type Event struct {
 	// identity
 	ID           uuid.UUID `json:"id"`
 	FlowID       uuid.UUID `json:"flow_id"`       // flow id
@@ -44,9 +44,9 @@ type WebhookEventData struct {
 	TMHangup      string `json:"tm_hangup"`
 }
 
-// CreateWebhookEvent generate WebhookEvent
-func (h *Call) CreateWebhookEvent(t string) ([]byte, error) {
-	e := &WebhookEventData{
+// ConvertEvent converts to the event
+func (h *Call) ConvertEvent() *Event {
+	return &Event{
 		ID:           h.ID,
 		FlowID:       h.FlowID,
 		ConfbridgeID: h.ConfbridgeID,
@@ -72,6 +72,12 @@ func (h *Call) CreateWebhookEvent(t string) ([]byte, error) {
 		TMRinging:     h.TMRinging,
 		TMHangup:      h.TMHangup,
 	}
+
+}
+
+// CreateWebhookEvent generate WebhookEvent
+func (h *Call) CreateWebhookEvent() ([]byte, error) {
+	e := h.ConvertEvent()
 
 	m, err := json.Marshal(e)
 	if err != nil {

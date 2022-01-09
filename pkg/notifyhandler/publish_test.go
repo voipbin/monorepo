@@ -16,7 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
-func TestNotifyEventCall(t *testing.T) {
+func TestPublishWebhookEventCall(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -137,14 +137,14 @@ func TestNotifyEventCall(t *testing.T) {
 			if tt.call.WebhookURI != "" {
 				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), "POST", tt.call.WebhookURI, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
-			h.NotifyEvent(context.Background(), tt.eventType, tt.call.WebhookURI, tt.call)
+			h.PublishWebhookEvent(context.Background(), tt.eventType, tt.call.WebhookURI, tt.call)
 
 			time.Sleep(time.Millisecond * 1000)
 		})
 	}
 }
 
-func TestNotifyEventRecordingStarted(t *testing.T) {
+func TestPublishWebhookEventRecordingStarted(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -212,14 +212,14 @@ func TestNotifyEventRecordingStarted(t *testing.T) {
 			if tt.r.WebhookURI != "" {
 				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), "POST", tt.r.WebhookURI, dataTypeJSON, string(EventTypeRecordingStarted), tt.expectWebhook)
 			}
-			h.NotifyEvent(context.Background(), EventTypeRecordingStarted, tt.r.WebhookURI, tt.r)
+			h.PublishWebhookEvent(context.Background(), EventTypeRecordingStarted, tt.r.WebhookURI, tt.r)
 
 			time.Sleep(time.Millisecond * 100)
 		})
 	}
 }
 
-func TestNotifyEventRecordingFinished(t *testing.T) {
+func TestPublishWebhookEventRecordingFinished(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -287,7 +287,7 @@ func TestNotifyEventRecordingFinished(t *testing.T) {
 			if tt.r.WebhookURI != "" {
 				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), "POST", tt.r.WebhookURI, dataTypeJSON, string(EventTypeRecordingFinished), tt.expectWebhook)
 			}
-			h.NotifyEvent(context.Background(), EventTypeRecordingFinished, tt.r.WebhookURI, tt.r)
+			h.PublishWebhookEvent(context.Background(), EventTypeRecordingFinished, tt.r.WebhookURI, tt.r)
 
 			time.Sleep(time.Millisecond * 100)
 		})

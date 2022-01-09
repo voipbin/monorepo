@@ -46,7 +46,7 @@ func (h *confbridgeHandler) Create(ctx context.Context) (*confbridge.Confbridge,
 		log.Errorf("Could not get created confbridge info. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeConfbridgeCreated, "", res)
+	h.notifyHandler.PublishEvent(ctx, notifyhandler.EventTypeConfbridgeCreated, res)
 
 	return res, nil
 }

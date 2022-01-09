@@ -94,7 +94,7 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call,
 	if err != nil {
 		return nil, err
 	}
-	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallCreated, res.WebhookURI, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeCallCreated, res.WebhookURI, res)
 
 	return res, nil
 }

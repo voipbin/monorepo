@@ -35,18 +35,18 @@ func (m *MockWebhookMessage) EXPECT() *MockWebhookMessageMockRecorder {
 }
 
 // CreateWebhookEvent mocks base method.
-func (m *MockWebhookMessage) CreateWebhookEvent(t string) ([]byte, error) {
+func (m *MockWebhookMessage) CreateWebhookEvent() ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateWebhookEvent", t)
+	ret := m.ctrl.Call(m, "CreateWebhookEvent")
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateWebhookEvent indicates an expected call of CreateWebhookEvent.
-func (mr *MockWebhookMessageMockRecorder) CreateWebhookEvent(t interface{}) *gomock.Call {
+func (mr *MockWebhookMessageMockRecorder) CreateWebhookEvent() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWebhookEvent", reflect.TypeOf((*MockWebhookMessage)(nil).CreateWebhookEvent), t)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWebhookEvent", reflect.TypeOf((*MockWebhookMessage)(nil).CreateWebhookEvent))
 }
 
 // MockNotifyHandler is a mock of NotifyHandler interface.
@@ -72,18 +72,6 @@ func (m *MockNotifyHandler) EXPECT() *MockNotifyHandlerMockRecorder {
 	return m.recorder
 }
 
-// NotifyEvent mocks base method.
-func (m *MockNotifyHandler) NotifyEvent(ctx context.Context, eventType EventType, webhookURI string, message WebhookMessage) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "NotifyEvent", ctx, eventType, webhookURI, message)
-}
-
-// NotifyEvent indicates an expected call of NotifyEvent.
-func (mr *MockNotifyHandlerMockRecorder) NotifyEvent(ctx, eventType, webhookURI, message interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyEvent", reflect.TypeOf((*MockNotifyHandler)(nil).NotifyEvent), ctx, eventType, webhookURI, message)
-}
-
 // PublishEvent mocks base method.
 func (m *MockNotifyHandler) PublishEvent(ctx context.Context, t EventType, c interface{}) {
 	m.ctrl.T.Helper()
@@ -94,4 +82,28 @@ func (m *MockNotifyHandler) PublishEvent(ctx context.Context, t EventType, c int
 func (mr *MockNotifyHandlerMockRecorder) PublishEvent(ctx, t, c interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEvent", reflect.TypeOf((*MockNotifyHandler)(nil).PublishEvent), ctx, t, c)
+}
+
+// PublishWebhook mocks base method.
+func (m *MockNotifyHandler) PublishWebhook(ctx context.Context, t EventType, webhookURI string, c WebhookMessage) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "PublishWebhook", ctx, t, webhookURI, c)
+}
+
+// PublishWebhook indicates an expected call of PublishWebhook.
+func (mr *MockNotifyHandlerMockRecorder) PublishWebhook(ctx, t, webhookURI, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWebhook", reflect.TypeOf((*MockNotifyHandler)(nil).PublishWebhook), ctx, t, webhookURI, c)
+}
+
+// PublishWebhookEvent mocks base method.
+func (m *MockNotifyHandler) PublishWebhookEvent(ctx context.Context, eventType EventType, webhookURI string, message WebhookMessage) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "PublishWebhookEvent", ctx, eventType, webhookURI, message)
+}
+
+// PublishWebhookEvent indicates an expected call of PublishWebhookEvent.
+func (mr *MockNotifyHandlerMockRecorder) PublishWebhookEvent(ctx, eventType, webhookURI, message interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWebhookEvent", reflect.TypeOf((*MockNotifyHandler)(nil).PublishWebhookEvent), ctx, eventType, webhookURI, message)
 }
