@@ -150,10 +150,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
 	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler)
 
+	// run ari event listener
 	if err := runARIEventListen(rabbitSock, ariEventHandler); err != nil {
 		return err
 	}
 
+	// run request listener
 	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler); err != nil {
 		return err
 	}

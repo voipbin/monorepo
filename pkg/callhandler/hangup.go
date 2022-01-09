@@ -66,7 +66,7 @@ func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason
 		logrus.Errorf("Could not get hungup call data. call: %s, err: %v", c.ID, err)
 		return nil
 	}
-	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallHungup, tmpCall.WebhookURI, tmpCall)
+	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeCallHungup, tmpCall.WebhookURI, tmpCall)
 
 	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
 	return nil

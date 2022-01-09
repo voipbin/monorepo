@@ -43,7 +43,7 @@ func (h *confbridgeHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 		log.Errorf("Could not get updated confbridge info. err: %v", err)
 		return nil
 	}
-	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeConfbridgeDeleted, "", tmpCB)
+	h.notifyHandler.PublishEvent(ctx, notifyhandler.EventTypeConfbridgeDeleted, tmpCB)
 
 	return nil
 }

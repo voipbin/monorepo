@@ -6,8 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// WebhookEventData struct represent record information
-type WebhookEventData struct {
+// Event struct represent record information
+type Event struct {
 	ID          uuid.UUID `json:"id"`
 	Type        string    `json:"type"`
 	ReferenceID uuid.UUID `json:"reference_id"`
@@ -23,9 +23,9 @@ type WebhookEventData struct {
 	TMDelete string `json:"tm_delete"`
 }
 
-// CreateWebhookEvent generates webhook event
-func (h *Recording) CreateWebhookEvent(t string) ([]byte, error) {
-	e := &WebhookEventData{
+// ConvertEvent converts to the event
+func (h *Recording) ConvertEvent() *Event {
+	return &Event{
 		ID:          h.ID,
 		Type:        string(h.Type),
 		ReferenceID: h.ReferenceID,
@@ -38,6 +38,11 @@ func (h *Recording) CreateWebhookEvent(t string) ([]byte, error) {
 		TMUpdate:    h.TMUpdate,
 		TMDelete:    h.TMDelete,
 	}
+}
+
+// CreateWebhookEvent generates webhook event
+func (h *Recording) CreateWebhookEvent() ([]byte, error) {
+	e := h.ConvertEvent()
 
 	m, err := json.Marshal(e)
 	if err != nil {

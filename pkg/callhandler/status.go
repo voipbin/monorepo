@@ -37,7 +37,7 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 		log.Errorf("Could not get updated call info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallRinging, res.WebhookURI, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeCallRinging, res.WebhookURI, res)
 
 	return nil
 }
@@ -68,7 +68,7 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 		log.Errorf("Could not get updated call info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.NotifyEvent(ctx, notifyhandler.EventTypeCallAnswered, res.WebhookURI, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeCallAnswered, res.WebhookURI, res)
 
 	if c.Direction == call.DirectionIncoming {
 		// nothing to do with incoming call at here.
