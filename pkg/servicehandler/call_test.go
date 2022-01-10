@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -30,7 +29,6 @@ func TestCallCreate(t *testing.T) {
 		source      *address.Address
 		destination *address.Address
 		cmCall      *cmcall.Call
-		expectCall  call.Call
 	}
 
 	tests := []test{
@@ -71,26 +69,6 @@ func TestCallCreate(t *testing.T) {
 				HangupBy:     "",
 				HangupReason: "",
 			},
-			call.Call{
-				ID:     uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
-				UserID: 1,
-				FlowID: uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-				Type:   call.TypeFlow,
-
-				Source: address.Address{
-					Type:   address.TypeSIP,
-					Target: "testsource@test.com",
-				},
-				Destination: address.Address{
-					Type:   address.TypeSIP,
-					Target: "testdestination@test.com",
-				},
-
-				Status:       call.StatusDialing,
-				Direction:    call.DirectionIncoming,
-				HangupBy:     "",
-				HangupReason: "",
-			},
 		},
 	}
 
@@ -108,8 +86,8 @@ func TestCallCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(*res, tt.expectCall) != true {
-				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectCall, res)
+			if reflect.DeepEqual(res, tt.cmCall.ConvertEvent()) != true {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.cmCall.ConvertEvent(), res)
 			}
 		})
 	}

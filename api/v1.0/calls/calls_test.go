@@ -6,18 +6,19 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
@@ -154,7 +155,7 @@ func TestCallsGET(t *testing.T) {
 		name      string
 		user      user.User
 		req       request.ParamCallsGET
-		resCalls  []*call.Call
+		resCalls  []*cmcall.Event
 		expectRes string
 	}
 
@@ -170,13 +171,13 @@ func TestCallsGET(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*call.Call{
+			[]*cmcall.Event{
 				{
 					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -189,7 +190,7 @@ func TestCallsGET(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*call.Call{
+			[]*cmcall.Event{
 				{
 					ID:       uuid.FromStringOrNil("668e6ee6-f989-11ea-abca-bf1ca885b142"),
 					TMCreate: "2020-09-20T03:23:21.995000",
@@ -203,7 +204,7 @@ func TestCallsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"668e6ee6-f989-11ea-abca-bf1ca885b142","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"5d8167e0-f989-11ea-8b34-2b0a03c78fc5","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"61c6626a-f989-11ea-abbf-97944933fee9","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"668e6ee6-f989-11ea-abca-bf1ca885b142","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"5d8167e0-f989-11ea-8b34-2b0a03c78fc5","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"61c6626a-f989-11ea-abbf-97944933fee9","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -245,10 +246,9 @@ func TestCallsIDGET(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name      string
-		user      user.User
-		resCall   *call.Call
-		expectRes string
+		name    string
+		user    user.User
+		resCall *cmcall.Event
 	}
 
 	tests := []test{
@@ -257,23 +257,21 @@ func TestCallsIDGET(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			&call.Call{
+			&cmcall.Event{
 				ID:       uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
 				TMCreate: "2020-09-20T03:23:21.995000",
 			},
-			`{"id":"395518ca-830a-11eb-badc-b3582bc51917","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
 		},
 		{
 			"webhook",
 			user.User{
 				ID: 1,
 			},
-			&call.Call{
+			&cmcall.Event{
 				ID:         uuid.FromStringOrNil("9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353"),
 				WebhookURI: "https://test.com/tesadf",
 				TMCreate:   "2020-09-20T03:23:21.995000",
 			},
-			`{"id":"9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"https://test.com/tesadf","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
 		},
 	}
 
@@ -298,8 +296,13 @@ func TestCallsIDGET(t *testing.T) {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
 
-			if w.Body.String() != tt.expectRes {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			res, err := json.Marshal(tt.resCall)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(w.Body.Bytes(), res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", res, w.Body.Bytes())
 			}
 		})
 	}
