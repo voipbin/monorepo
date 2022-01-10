@@ -13,7 +13,6 @@ import (
 	address "gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	agent "gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 	availablenumber "gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
-	call "gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	domain "gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
@@ -23,6 +22,7 @@ import (
 	tag "gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 	transcribe "gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
+	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	action0 "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
@@ -211,10 +211,10 @@ func (mr *MockServiceHandlerMockRecorder) AvailableNumberGets(u, size, countryCo
 }
 
 // CallCreate mocks base method.
-func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
+func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*call.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallCreate", u, flowID, source, destination)
-	ret0, _ := ret[0].(*call.Call)
+	ret0, _ := ret[0].(*call.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -240,10 +240,10 @@ func (mr *MockServiceHandlerMockRecorder) CallDelete(u, callID interface{}) *gom
 }
 
 // CallGet mocks base method.
-func (m *MockServiceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, error) {
+func (m *MockServiceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGet", u, callID)
-	ret0, _ := ret[0].(*call.Call)
+	ret0, _ := ret[0].(*call.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -255,10 +255,10 @@ func (mr *MockServiceHandlerMockRecorder) CallGet(u, callID interface{}) *gomock
 }
 
 // CallGets mocks base method.
-func (m *MockServiceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Call, error) {
+func (m *MockServiceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGets", u, size, token)
-	ret0, _ := ret[0].([]*call.Call)
+	ret0, _ := ret[0].([]*call.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

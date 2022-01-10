@@ -7,16 +7,16 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
+func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*cmcall.Event, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":        u.ID,
@@ -40,22 +40,21 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 
 	// send request
 	log.Debug("Creating a new call.")
-	res, err := h.reqHandler.CMV1CallCreate(ctx, u.ID, flowID, addrSrc, addrDest)
+	tmp, err := h.reqHandler.CMV1CallCreate(ctx, u.ID, flowID, addrSrc, addrDest)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
 	}
 
-	// create call.Call
-	c := call.ConvertCall(res)
+	res := tmp.ConvertEvent()
 
-	return c, err
+	return res, err
 }
 
 // CallGet sends a request to call-manager
 // to getting a call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, error) {
+func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*cmcall.Event, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
@@ -77,7 +76,7 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, er
 	}
 
 	// convert
-	res := call.ConvertCall(c)
+	res := c.ConvertEvent()
 
 	return res, nil
 }
@@ -85,7 +84,7 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Call, er
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Call, error) {
+func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*cmcall.Event, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
@@ -106,9 +105,9 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 	}
 
 	// create result
-	res := []*call.Call{}
+	res := []*cmcall.Event{}
 	for _, tmp := range tmps {
-		c := call.ConvertCall(&tmp)
+		c := tmp.ConvertEvent()
 		res = append(res, c)
 	}
 
