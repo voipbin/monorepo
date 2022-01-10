@@ -1,12 +1,13 @@
 package servicehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package servicehandler -destination ./mock_servicehandler_servicehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package servicehandler -destination ./mock_servicehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
@@ -15,7 +16,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
@@ -63,9 +63,9 @@ type ServiceHandler interface {
 	AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error)
 
 	// call handlers
-	CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*call.Call, error)
-	CallGet(u *user.User, callID uuid.UUID) (*call.Call, error)
-	CallGets(u *user.User, size uint64, token string) ([]*call.Call, error)
+	CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*cmcall.Event, error)
+	CallGet(u *user.User, callID uuid.UUID) (*cmcall.Event, error)
+	CallGets(u *user.User, size uint64, token string) ([]*cmcall.Event, error)
 	CallDelete(u *user.User, callID uuid.UUID) error
 
 	// conference handlers
