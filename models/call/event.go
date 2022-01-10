@@ -15,7 +15,7 @@ type Event struct {
 	ID           uuid.UUID `json:"id"`
 	FlowID       uuid.UUID `json:"flow_id"`       // flow id
 	ConfbridgeID uuid.UUID `json:"confbridge_id"` // currently joined confbridge id.
-	Type         string    `json:"type"`          // call type
+	Type         Type      `json:"type"`          // call type
 
 	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
@@ -28,11 +28,11 @@ type Event struct {
 	Destination address.Address `json:"destination"`
 
 	// info
-	Status       string        `json:"status"`
+	Status       Status        `json:"status"`
 	Action       action.Action `json:"action"`
-	Direction    string        `json:"direction"`
-	HangupBy     string        `json:"hangup_by"`
-	HangupReason string        `json:"hangup_reason"`
+	Direction    Direction     `json:"direction"`
+	HangupBy     HangupBy      `json:"hangup_by"`
+	HangupReason HangupReason  `json:"hangup_reason"`
 	WebhookURI   string        `json:"webhook_uri"`
 
 	// timestamp
@@ -50,7 +50,7 @@ func (h *Call) ConvertEvent() *Event {
 		ID:           h.ID,
 		FlowID:       h.FlowID,
 		ConfbridgeID: h.ConfbridgeID,
-		Type:         string(h.Type),
+		Type:         h.Type,
 
 		MasterCallID:   h.MasterCallID,
 		ChainedCallIDs: h.ChainedCallIDs,
@@ -59,12 +59,12 @@ func (h *Call) ConvertEvent() *Event {
 
 		Source:      h.Source,
 		Destination: h.Destination,
-		Status:      string(h.Status),
+		Status:      h.Status,
 		Action:      h.Action,
-		Direction:   string(h.Direction),
+		Direction:   h.Direction,
 
-		HangupBy:      string(h.HangupBy),
-		HangupReason:  string(h.HangupReason),
+		HangupBy:      h.HangupBy,
+		HangupReason:  h.HangupReason,
 		WebhookURI:    h.WebhookURI,
 		TMCreate:      h.TMCreate,
 		TMUpdate:      h.TMUpdate,
