@@ -6,12 +6,12 @@ import (
 	uuid "github.com/gofrs/uuid"
 )
 
-// WebhookEventData defines conference webhook event
-type WebhookEventData struct {
+// Event defines conference webhook event
+type Event struct {
 	ID   uuid.UUID `json:"id"`
-	Type string    `json:"type"`
+	Type Type      `json:"type"`
 
-	Status string `json:"status"`
+	Status Status `json:"status"`
 
 	Name    string                 `json:"name"`
 	Detail  string                 `json:"detail"`
@@ -30,13 +30,13 @@ type WebhookEventData struct {
 	TMDelete string `json:"tm_delete"`
 }
 
-// CreateWebhookEvent generate WebhookEvent
-func (h *Conference) CreateWebhookEvent(t string) ([]byte, error) {
-	e := &WebhookEventData{
+// ConvertEvent converts to the event
+func (h *Conference) ConvertEvent() *Event {
+	return &Event{
 		ID:   h.ID,
-		Type: string(h.Type),
+		Type: h.Type,
 
-		Status: string(h.Status),
+		Status: h.Status,
 
 		Name:    h.Name,
 		Detail:  h.Detail,
@@ -54,6 +54,12 @@ func (h *Conference) CreateWebhookEvent(t string) ([]byte, error) {
 		TMUpdate: h.TMUpdate,
 		TMDelete: h.TMDelete,
 	}
+
+}
+
+// CreateWebhookEvent generate WebhookEvent
+func (h *Conference) CreateWebhookEvent() ([]byte, error) {
+	e := h.ConvertEvent()
 
 	m, err := json.Marshal(e)
 	if err != nil {

@@ -13,13 +13,12 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 // WebhookMessage defines
 type WebhookMessage interface {
-	CreateWebhookEvent(t string) ([]byte, error)
+	CreateWebhookEvent() ([]byte, error)
 }
 
 // EventType string
