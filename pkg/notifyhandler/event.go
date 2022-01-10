@@ -23,7 +23,7 @@ func (h *notifyHandler) publishWebhook(t EventType, webhookURI string, c Webhook
 	}
 
 	// create webhook event
-	m, err := c.CreateWebhookEvent(string(t))
+	m, err := c.CreateWebhookEvent()
 	if err != nil {
 		log.Errorf("Could not marshal the message. err: %v", err)
 		return

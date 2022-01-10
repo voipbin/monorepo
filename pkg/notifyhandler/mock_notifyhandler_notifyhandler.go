@@ -34,18 +34,18 @@ func (m *MockWebhookMessage) EXPECT() *MockWebhookMessageMockRecorder {
 }
 
 // CreateWebhookEvent mocks base method.
-func (m *MockWebhookMessage) CreateWebhookEvent(t string) ([]byte, error) {
+func (m *MockWebhookMessage) CreateWebhookEvent() ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateWebhookEvent", t)
+	ret := m.ctrl.Call(m, "CreateWebhookEvent")
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateWebhookEvent indicates an expected call of CreateWebhookEvent.
-func (mr *MockWebhookMessageMockRecorder) CreateWebhookEvent(t interface{}) *gomock.Call {
+func (mr *MockWebhookMessageMockRecorder) CreateWebhookEvent() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWebhookEvent", reflect.TypeOf((*MockWebhookMessage)(nil).CreateWebhookEvent), t)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWebhookEvent", reflect.TypeOf((*MockWebhookMessage)(nil).CreateWebhookEvent))
 }
 
 // MockNotifyHandler is a mock of NotifyHandler interface.
