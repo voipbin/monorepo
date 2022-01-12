@@ -3,11 +3,37 @@ module gitlab.com/voipbin/bin-manager/common-handler.git
 go 1.17
 
 require (
-	github.com/golang/mock v1.4.4
-	github.com/sirupsen/logrus v1.6.0
+	github.com/golang/mock v1.6.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
-	github.com/stretchr/testify v1.6.1 // indirect
-	golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1 // indirect
+	golang.org/x/sys v0.0.0-20220111092808-5a964db01320 // indirect
 )
 
-require github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
+require (
+	github.com/gofrs/uuid v4.2.0+incompatible
+	github.com/prometheus/client_golang v1.11.0
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220105125759-c8c04b8f27a9
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220110004848-35010b5c5371
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220110032905-c6b412ac9588
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220102222517-646792536ea1
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20211018180403-4e3bcfe187ff
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220105131125-18b0a3371ec0
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20211221032228-f73ce135fa46
+	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20220103005331-229d07d977e5
+	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210926125509-0133dd6b7146
+	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20211221033736-1c9c086d3d00
+	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2
+)
+
+require (
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/common v0.32.1 // indirect
+	github.com/prometheus/procfs v0.7.3 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
+)
