@@ -9,8 +9,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
