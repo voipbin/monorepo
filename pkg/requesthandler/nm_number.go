@@ -1,0 +1,193 @@
+package requesthandler
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/url"
+
+	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	nmrequest "gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
+)
+
+// NMV1NumberGet sends the /v1/numbers/<number> GET request to number-manager
+func (r *requestHandler) NMV1NumberGetByNumber(ctx context.Context, num string) (*nmnumber.Number, error) {
+
+	uri := fmt.Sprintf("/v1/numbers/%s", url.QueryEscape(num))
+
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode >= 299 {
+		return nil, fmt.Errorf("could not find action")
+	}
+
+	tmpRes := nmnumber.Number{}
+	if err := json.Unmarshal([]byte(res.Data), &tmpRes); err != nil {
+		return nil, err
+	}
+
+	return &tmpRes, nil
+}
+
+// NMV1NumberGet sends a request to number-manager
+// to get a given id of number.
+// Returns number
+func (r *requestHandler) NMV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/%s", numberID)
+
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData nmnumber.Number
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
+}
+
+// NMV1NumberGets sends a request to number-manager
+// to get a list of numbers.
+// Returns list of numbers
+func (r *requestHandler) NMV1NumberGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData []nmnumber.Number
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return resData, nil
+}
+
+// NMV1NumberFlowDelete sends a request to number-manager
+// to delete a flow from the number.
+func (r *requestHandler) NMV1NumberFlowDelete(ctx context.Context, flowID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/number_flows/%s", flowID)
+
+	tmp, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// NMNumberCreate sends a request to the number-manager
+// to create an number.
+// Returns created number
+func (r *requestHandler) NMV1NumberCreate(ctx context.Context, userID uint64, numb string) (*nmnumber.Number, error) {
+	uri := "/v1/numbers"
+
+	data := &nmrequest.V1DataNumbersPost{
+		UserID: userID,
+		Number: numb,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodPost, resourceNumberNumbers, 15, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData nmnumber.Number
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
+}
+
+// NMV1NumberDelete sends a request to number-manager
+// to delete a number.
+// Returns deletedd number
+func (r *requestHandler) NMV1NumberDelete(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/%s", id)
+
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, 15, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData nmnumber.Number
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
+}
+
+// NMV1NumberUpdate sends a request to the number-manager
+// to update a number.
+// Returns updated number info
+func (r *requestHandler) NMV1NumberUpdate(ctx context.Context, num *nmnumber.Number) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/%s", num.ID)
+
+	data := &nmrequest.V1DataNumbersIDPut{
+		FlowID: num.FlowID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, 15, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData nmnumber.Number
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
+}
