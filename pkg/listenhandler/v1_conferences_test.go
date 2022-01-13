@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
@@ -75,8 +75,8 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 					FlowID:       uuid.FromStringOrNil("49da6378-3bef-11ec-88b6-f31f8c97b61b"),
 					Data:         map[string]interface{}{},
 					Timeout:      86400,
-					PreActions:   []action.Action{},
-					PostActions:  []action.Action{},
+					PreActions:   []fmaction.Action{},
+					PostActions:  []fmaction.Action{},
 					CallIDs:      []uuid.UUID{},
 					RecordingID:  [16]byte{},
 					RecordingIDs: []uuid.UUID{},
@@ -107,8 +107,8 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 					FlowID:       uuid.FromStringOrNil("c234ce0a-3de6-11ec-8807-0b3f00d6e280"),
 					Data:         map[string]interface{}{},
 					Timeout:      86400,
-					PreActions:   []action.Action{},
-					PostActions:  []action.Action{},
+					PreActions:   []fmaction.Action{},
+					PostActions:  []fmaction.Action{},
 					CallIDs:      []uuid.UUID{},
 					RecordingID:  [16]byte{},
 					RecordingIDs: []uuid.UUID{},
@@ -172,12 +172,12 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				Name:    "test",
 				Detail:  "test detail",
 				Timeout: 86400,
-				PreActions: []action.Action{
+				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
-				PostActions: []action.Action{
+				PostActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
@@ -294,12 +294,12 @@ func TestProcessV1ConferencesIDPut(t *testing.T) {
 				Detail:       "test detail update",
 				Data:         map[string]interface{}{},
 				Timeout:      86400,
-				PreActions: []action.Action{
+				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
-				PostActions: []action.Action{
+				PostActions: []fmaction.Action{
 					{
 						Type: "hangup",
 					},
@@ -364,12 +364,12 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 				Name:    "test",
 				Detail:  "test detail",
 				Timeout: 86400,
-				PreActions: []action.Action{
+				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
-				PostActions: []action.Action{
+				PostActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
@@ -434,12 +434,12 @@ func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
 				Name:    "test",
 				Detail:  "test detail",
 				Timeout: 86400,
-				PreActions: []action.Action{
+				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
-				PostActions: []action.Action{
+				PostActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},

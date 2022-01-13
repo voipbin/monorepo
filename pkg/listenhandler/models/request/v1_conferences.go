@@ -1,7 +1,7 @@
 package request
 
 import (
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 )
@@ -17,18 +17,18 @@ type V1DataConferencesPost struct {
 	Timeout     int                    `json:"timeout"`     // timeout. second
 	WebhookURI  string                 `json:"webhook_uri"` // webhook uri
 	Data        map[string]interface{} `json:"data"`
-	PreActions  []action.Action        `json:"pre_actions"`  // actions before enter the conference.
-	PostActions []action.Action        `json:"post_actions"` // actions after leave the conference.
+	PreActions  []fmaction.Action      `json:"pre_actions"`  // actions before enter the conference.
+	PostActions []fmaction.Action      `json:"post_actions"` // actions after leave the conference.
 }
 
 // V1DataConferencesIDPut is
 // v1 data type request struct for
 // /v1/conferences/<conference-id>" PUT
 type V1DataConferencesIDPut struct {
-	Name        string          `json:"name"`
-	Detail      string          `json:"detail"`
-	Timeout     int             `json:"timeout"`      // timeout. second
-	WebhookURI  string          `json:"webhook_uri"`  // webhook uri
-	PreActions  []action.Action `json:"pre_actions"`  // actions before enter the conference.
-	PostActions []action.Action `json:"post_actions"` // actions after leave the conference.
+	Name        string            `json:"name"`
+	Detail      string            `json:"detail"`
+	Timeout     int               `json:"timeout"`      // timeout. second
+	WebhookURI  string            `json:"webhook_uri"`  // webhook uri
+	PreActions  []fmaction.Action `json:"pre_actions"`  // actions before enter the conference.
+	PostActions []fmaction.Action `json:"post_actions"` // actions after leave the conference.
 }

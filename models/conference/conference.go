@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // Conference type
@@ -23,8 +23,8 @@ type Conference struct {
 	Data    map[string]interface{} `json:"data"`
 	Timeout int                    `json:"timeout"` // timeout. second
 
-	PreActions  []action.Action `json:"pre_actions"`  // pre actions
-	PostActions []action.Action `json:"post_actions"` // post actions
+	PreActions  []fmaction.Action `json:"pre_actions"`  // pre actions
+	PostActions []fmaction.Action `json:"post_actions"` // post actions
 
 	CallIDs []uuid.UUID `json:"call_ids"` // list of call ids of conference
 

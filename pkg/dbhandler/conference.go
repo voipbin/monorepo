@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 )
@@ -90,14 +90,14 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		return nil, fmt.Errorf("could not unmarshal the pre-actions. conferenceGetFromRow. err: %v", err)
 	}
 	if res.PreActions == nil {
-		res.PreActions = []action.Action{}
+		res.PreActions = []fmaction.Action{}
 	}
 
 	if err := json.Unmarshal([]byte(postActions), &res.PostActions); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the post-actions. conferenceGetFromRow. err: %v", err)
 	}
 	if res.PostActions == nil {
-		res.PostActions = []action.Action{}
+		res.PostActions = []fmaction.Action{}
 	}
 
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
@@ -429,7 +429,7 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 }
 
 // ConferenceSet sets the status
-func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) error {
+func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []fmaction.Action) error {
 	//prepare
 	q := `
 	update conferences set
