@@ -8,7 +8,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // updateStatusRinging updates the call's status to ringing
@@ -37,7 +36,7 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 		log.Errorf("Could not get updated call info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeCallRinging, res.WebhookURI, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, call.EventTypeCallRinging, res.WebhookURI, res)
 
 	return nil
 }
@@ -68,7 +67,7 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 		log.Errorf("Could not get updated call info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeCallAnswered, res.WebhookURI, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, call.EventTypeCallAnswered, res.WebhookURI, res)
 
 	if c.Direction == call.DirectionIncoming {
 		// nothing to do with incoming call at here.

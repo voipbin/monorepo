@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // bridgeLeftJoin handles the case which join channel left from the call bridge
@@ -40,7 +39,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	}
 
 	// send call notification
-	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeCallUpdated, c.WebhookURI, c)
+	h.notifyHandler.PublishWebhookEvent(ctx, call.EventTypeCallUpdated, c.WebhookURI, c)
 
 	// check the call status
 	if c.Status != call.StatusProgressing && c.Status != call.StatusDialing && c.Status != call.StatusRinging {

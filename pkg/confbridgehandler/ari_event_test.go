@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -14,9 +15,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler/models/event"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler/models/event"
 )
 
 func TestARIStasisStart(t *testing.T) {
@@ -191,9 +191,9 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID)
 			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.callID, uuid.Nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), notifyhandler.EventTypeConfbridgeLeaved, tt.event)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), confbridge.EventTypeConfbridgeLeaved, tt.event)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, "", gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallUpdated, "", gomock.Any())
 
 			err := h.ARIChannelLeftBridge(context.Background(), tt.channel, tt.bridge)
 			if err != nil {

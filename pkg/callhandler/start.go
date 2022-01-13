@@ -17,7 +17,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // StasisStart event's context types
@@ -94,7 +93,7 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call,
 	if err != nil {
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeCallCreated, res.WebhookURI, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, call.EventTypeCallCreated, res.WebhookURI, res)
 
 	return res, nil
 }

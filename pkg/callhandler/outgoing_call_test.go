@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -16,7 +17,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 func TestCreateCallOutgoing(t *testing.T) {
@@ -206,7 +206,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), notifyhandler.EventTypeCallCreated, tt.expectCall.WebhookURI, tt.expectCall)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallCreated, tt.expectCall.WebhookURI, tt.expectCall)
 			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.id, tt.flowID).Return(tt.af, nil)
 			mockReq.EXPECT().AstChannelCreate(gomock.Any(), requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
 

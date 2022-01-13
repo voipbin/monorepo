@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -13,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 func TestBridgeLeftJoin(t *testing.T) {
@@ -63,7 +63,7 @@ func TestBridgeLeftJoin(t *testing.T) {
 			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
 			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.bridge.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallUpdated, tt.call.WebhookURI, tt.call)
 			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
 
 			if err := h.bridgeLeftJoin(context.Background(), tt.channel, tt.bridge); err != nil {

@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // Create is handy function for creating a confbridge.
@@ -46,7 +45,7 @@ func (h *confbridgeHandler) Create(ctx context.Context) (*confbridge.Confbridge,
 		log.Errorf("Could not get created confbridge info. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishEvent(ctx, notifyhandler.EventTypeConfbridgeCreated, res)
+	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeCreated, res)
 
 	return res, nil
 }

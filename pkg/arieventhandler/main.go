@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -15,7 +16,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	db "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // ARIEventHandler intreface for ARI request handler
@@ -57,6 +57,12 @@ type eventHandler struct {
 // List of default values
 const (
 	defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
+)
+
+// list of event types
+const (
+	EventTypeRecordingStarted  string = "recording_started"  // recording has started
+	EventTypeRecordingFinished string = "recording_finished" // recording has finished
 )
 
 var (

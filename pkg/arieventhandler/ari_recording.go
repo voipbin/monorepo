@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 // EventHandlerRecordingStarted handles RecordingStarted ARI event
@@ -49,7 +48,7 @@ func (h *eventHandler) EventHandlerRecordingStarted(ctx context.Context, evt int
 		log.Errorf("Could not get the call info. err: %v", err)
 		return err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeRecordingStarted, c.WebhookURI, tmpRecording)
+	h.notifyHandler.PublishWebhookEvent(ctx, EventTypeRecordingStarted, c.WebhookURI, tmpRecording)
 
 	return nil
 }
@@ -98,7 +97,7 @@ func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt in
 		return err
 	}
 
-	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeRecordingFinished, c.WebhookURI, tmpRecording)
+	h.notifyHandler.PublishWebhookEvent(ctx, EventTypeRecordingFinished, c.WebhookURI, tmpRecording)
 
 	// set empty recordID
 	switch r.Type {

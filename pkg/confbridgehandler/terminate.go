@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 )
 
 // Terminate is terminating the conference
@@ -43,7 +43,7 @@ func (h *confbridgeHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 		log.Errorf("Could not get updated confbridge info. err: %v", err)
 		return nil
 	}
-	h.notifyHandler.PublishEvent(ctx, notifyhandler.EventTypeConfbridgeDeleted, tmpCB)
+	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, tmpCB)
 
 	return nil
 }
