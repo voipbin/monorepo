@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
 )
 
 func TestTerminateConference(t *testing.T) {
@@ -85,7 +85,7 @@ func TestTerminateConference(t *testing.T) {
 				mockReq.EXPECT().CMV1ConfbridgeDelete(gomock.Any(), tt.conference.ConfbridgeID).Return(nil)
 				mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
 				mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-				mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceDeleted, tt.conference.WebhookURI, tt.conference)
+				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), conference.EventTypeConferenceDeleted, tt.conference.WebhookURI, tt.conference)
 			}
 
 			if err := h.Terminate(ctx, tt.conference.ID); err != nil {

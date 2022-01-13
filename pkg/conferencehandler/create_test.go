@@ -8,14 +8,14 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
 )
 
 func TestCreate(t *testing.T) {
@@ -97,7 +97,7 @@ func TestCreate(t *testing.T) {
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceConfbridgeSet(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)
-			mockNotify.EXPECT().NotifyEvent(notifyhandler.EventTypeConferenceCreated, gomock.Any(), gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), conference.EventTypeConferenceCreated, gomock.Any(), gomock.Any())
 			if tt.timeout > 0 {
 				mockReq.EXPECT().CFV1ConferenceDeleteDelay(gomock.Any(), gomock.Any(), tt.timeout*1000).Return(nil)
 			}

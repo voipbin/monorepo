@@ -8,7 +8,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
 )
 
 // Create is handy function for creating a conference.
@@ -79,7 +78,7 @@ func (h *conferenceHandler) Update(
 		log.Errorf("Could not get updated conference. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceUpdated, newConf.WebhookURI, newConf)
+	h.notifyHandler.PublishWebhookEvent(ctx, conference.EventTypeConferenceUpdated, newConf.WebhookURI, newConf)
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {

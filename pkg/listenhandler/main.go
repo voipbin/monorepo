@@ -10,9 +10,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
 )
 
 // pagination parameters

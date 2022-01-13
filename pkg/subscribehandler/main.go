@@ -9,13 +9,13 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmnotifyhandler "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
 )
 
 // list of publishers
@@ -142,7 +142,7 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	//// call-manager
 	// call
 	case m.Publisher == publisherCallManager &&
-		(m.Type == string(cmnotifyhandler.EventTypeConfbridgeJoined) || m.Type == string(cmnotifyhandler.EventTypeConfbridgeLeaved)):
+		(m.Type == string(cmconfbridge.EventTypeConfbridgeJoined) || m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved)):
 		err = h.processEventCMConfbridgeJoinedLeaved(m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////

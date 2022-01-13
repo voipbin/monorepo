@@ -1,70 +1,9 @@
 package conference
 
-import (
-	"encoding/json"
-
-	uuid "github.com/gofrs/uuid"
+// list of event types
+const (
+	// conference
+	EventTypeConferenceCreated string = "conference_created" // the conference has created
+	EventTypeConferenceDeleted string = "conference_deleted" // the conference has deleted
+	EventTypeConferenceUpdated string = "conference_updated" // the conference has updated
 )
-
-// Event defines conference webhook event
-type Event struct {
-	ID   uuid.UUID `json:"id"`
-	Type Type      `json:"type"`
-
-	Status Status `json:"status"`
-
-	Name    string                 `json:"name"`
-	Detail  string                 `json:"detail"`
-	Data    map[string]interface{} `json:"data"`
-	Timeout int                    `json:"timeout"` // timeout. second
-
-	CallIDs []uuid.UUID `json:"call_ids"` // list of call ids of conference
-
-	RecordingID  uuid.UUID   `json:"recording_id"`
-	RecordingIDs []uuid.UUID `json:"recording_ids"`
-
-	WebhookURI string `json:"webhook_uri"`
-
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
-}
-
-// ConvertEvent converts to the event
-func (h *Conference) ConvertEvent() *Event {
-	return &Event{
-		ID:   h.ID,
-		Type: h.Type,
-
-		Status: h.Status,
-
-		Name:    h.Name,
-		Detail:  h.Detail,
-		Data:    h.Data,
-		Timeout: h.Timeout,
-
-		CallIDs: h.CallIDs,
-
-		RecordingID:  h.RecordingID,
-		RecordingIDs: h.RecordingIDs,
-
-		WebhookURI: h.WebhookURI,
-
-		TMCreate: h.TMCreate,
-		TMUpdate: h.TMUpdate,
-		TMDelete: h.TMDelete,
-	}
-
-}
-
-// CreateWebhookEvent generate WebhookEvent
-func (h *Conference) CreateWebhookEvent() ([]byte, error) {
-	e := h.ConvertEvent()
-
-	m, err := json.Marshal(e)
-	if err != nil {
-		return nil, err
-	}
-
-	return m, nil
-}
