@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"

@@ -11,7 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 func TestOrderNumberGets(t *testing.T) {

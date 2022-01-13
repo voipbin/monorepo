@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"

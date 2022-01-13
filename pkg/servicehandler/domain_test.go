@@ -11,8 +11,8 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestDomainCreate(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"

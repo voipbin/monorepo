@@ -6,14 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 )
 
 func TestConferenceCreate(t *testing.T) {
@@ -26,14 +24,14 @@ func TestConferenceCreate(t *testing.T) {
 	type test struct {
 		name             string
 		user             *user.User
-		confType         conference.Type
+		confType         cfconference.Type
 		confName         string
 		confDetail       string
 		webhookURI       string
-		preActions       []action.Action
-		postActions      []action.Action
+		preActions       []fmaction.Action
+		postActions      []fmaction.Action
 		cfConference     *cfconference.Conference
-		expectConference *conference.Conference
+		expectConference *cfconference.WebhookMessage
 	}
 
 	tests := []test{
@@ -42,12 +40,12 @@ func TestConferenceCreate(t *testing.T) {
 			&user.User{
 				ID: 1,
 			},
-			conference.TypeConference,
+			cfconference.TypeConference,
 			"test name",
 			"test detail",
 			"",
-			[]action.Action{},
-			[]action.Action{},
+			[]fmaction.Action{},
+			[]fmaction.Action{},
 			&cfconference.Conference{
 				ID:     uuid.FromStringOrNil("cea799a4-efce-11ea-9115-03d321ec6ff8"),
 				Type:   cfconference.TypeConference,
@@ -56,25 +54,14 @@ func TestConferenceCreate(t *testing.T) {
 				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
-				Data:   map[string]interface{}{},
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
-
-				CallIDs: []uuid.UUID{},
 			},
-			&conference.Conference{
+			&cfconference.WebhookMessage{
 				ID:   uuid.FromStringOrNil("cea799a4-efce-11ea-9115-03d321ec6ff8"),
-				Type: conference.TypeConference,
+				Type: cfconference.TypeConference,
 
-				Status: conference.StatusProgressing,
+				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
-
-				PreActions:  []action.Action{},
-				PostActions: []action.Action{},
-
-				CallIDs: []uuid.UUID{},
 			},
 		},
 		{
@@ -82,12 +69,12 @@ func TestConferenceCreate(t *testing.T) {
 			&user.User{
 				ID: 1,
 			},
-			conference.TypeConference,
+			cfconference.TypeConference,
 			"test name",
 			"test detail",
 			"test.com/webhook",
-			[]action.Action{},
-			[]action.Action{},
+			[]fmaction.Action{},
+			[]fmaction.Action{},
 			&cfconference.Conference{
 				ID:     uuid.FromStringOrNil("57916d8a-2089-11ec-98bb-9fcde2f6e0ff"),
 				Type:   cfconference.TypeConference,
@@ -96,27 +83,17 @@ func TestConferenceCreate(t *testing.T) {
 				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
-				Data:   map[string]interface{}{},
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 
 				WebhookURI: "test.com/webhook",
-
-				CallIDs: []uuid.UUID{},
 			},
-			&conference.Conference{
+			&cfconference.WebhookMessage{
 				ID:   uuid.FromStringOrNil("57916d8a-2089-11ec-98bb-9fcde2f6e0ff"),
-				Type: conference.TypeConference,
+				Type: cfconference.TypeConference,
 
-				Status: conference.StatusProgressing,
+				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
 
-				PreActions:  []action.Action{},
-				PostActions: []action.Action{},
-
-				CallIDs:    []uuid.UUID{},
 				WebhookURI: "test.com/webhook",
 			},
 		},
@@ -125,18 +102,18 @@ func TestConferenceCreate(t *testing.T) {
 			&user.User{
 				ID: 1,
 			},
-			conference.TypeConference,
+			cfconference.TypeConference,
 			"test name",
 			"test detail",
 			"test.com/webhook",
-			[]action.Action{
+			[]fmaction.Action{
 				{
-					Type: "answer",
+					Type: fmaction.TypeAnswer,
 				},
 			},
-			[]action.Action{
+			[]fmaction.Action{
 				{
-					Type: "hangup",
+					Type: fmaction.TypeHangup,
 				},
 			},
 			&cfconference.Conference{
@@ -147,7 +124,6 @@ func TestConferenceCreate(t *testing.T) {
 				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
-				Data:   map[string]interface{}{},
 
 				PreActions: []fmaction.Action{
 					{
@@ -161,29 +137,26 @@ func TestConferenceCreate(t *testing.T) {
 				},
 
 				WebhookURI: "test.com/webhook",
-
-				CallIDs: []uuid.UUID{},
 			},
-			&conference.Conference{
+			&cfconference.WebhookMessage{
 				ID:   uuid.FromStringOrNil("f63e863e-3fe7-11ec-9713-33d614df6067"),
-				Type: conference.TypeConference,
+				Type: cfconference.TypeConference,
 
-				Status: conference.StatusProgressing,
+				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
 
-				PreActions: []action.Action{
+				PreActions: []fmaction.Action{
 					{
-						Type: "answer",
+						Type: fmaction.TypeAnswer,
 					},
 				},
-				PostActions: []action.Action{
+				PostActions: []fmaction.Action{
 					{
-						Type: "hangup",
+						Type: fmaction.TypeHangup,
 					},
 				},
 
-				CallIDs:    []uuid.UUID{},
 				WebhookURI: "test.com/webhook",
 			},
 		},
@@ -196,8 +169,7 @@ func TestConferenceCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.user.ID, cfconference.Type(tt.confType), tt.confName, tt.confDetail, 0, tt.webhookURI, map[string]interface{}{}, tt.cfConference.PreActions, tt.cfConference.PostActions).Return(tt.cfConference, nil)
-
+			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.user.ID, tt.confType, tt.confName, tt.confDetail, 0, tt.webhookURI, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
 			res, err := h.ConferenceCreate(tt.user, tt.confType, tt.confName, tt.confDetail, tt.webhookURI, tt.preActions, tt.postActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -281,7 +253,7 @@ func TestConferenceGets(t *testing.T) {
 		token     string
 		limit     uint64
 		response  []cfconference.Conference
-		expectRes []*conference.Conference
+		expectRes []*cfconference.WebhookMessage
 	}
 
 	tests := []test{
@@ -301,13 +273,12 @@ func TestConferenceGets(t *testing.T) {
 					PostActions: []fmaction.Action{},
 				},
 			},
-			[]*conference.Conference{
+			[]*cfconference.WebhookMessage{
 				{
-					ID:     uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
-					UserID: 1,
+					ID: uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
 
-					PreActions:  []action.Action{},
-					PostActions: []action.Action{},
+					PreActions:  []fmaction.Action{},
+					PostActions: []fmaction.Action{},
 				},
 			},
 		},
@@ -344,7 +315,7 @@ func TestConferenceGet(t *testing.T) {
 		user      *user.User
 		id        uuid.UUID
 		response  *cfconference.Conference
-		expectRes *conference.Conference
+		expectRes *cfconference.WebhookMessage
 	}
 
 	tests := []test{
@@ -361,12 +332,11 @@ func TestConferenceGet(t *testing.T) {
 				PreActions:  []fmaction.Action{},
 				PostActions: []fmaction.Action{},
 			},
-			&conference.Conference{
-				ID:     uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
-				UserID: 1,
+			&cfconference.WebhookMessage{
+				ID: uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 
-				PreActions:  []action.Action{},
-				PostActions: []action.Action{},
+				PreActions:  []fmaction.Action{},
+				PostActions: []fmaction.Action{},
 			},
 		},
 		{
@@ -384,12 +354,11 @@ func TestConferenceGet(t *testing.T) {
 
 				WebhookURI: "test.com/webhook",
 			},
-			&conference.Conference{
-				ID:     uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
-				UserID: 1,
+			&cfconference.WebhookMessage{
+				ID: uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
 
-				PreActions:  []action.Action{},
-				PostActions: []action.Action{},
+				PreActions:  []fmaction.Action{},
+				PostActions: []fmaction.Action{},
 
 				WebhookURI: "test.com/webhook",
 			},
