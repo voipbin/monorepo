@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler/models/event"
 )
 
 // Leaved handles event the channel has left from the bridge
@@ -43,7 +42,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 	}
 
 	// Publish the event
-	evt := &event.ConfbridgeJoinedLeaved{
+	evt := &confbridge.EventConfbridgeJoinedLeaved{
 		ID:     confbridgeID,
 		CallID: callID,
 	}

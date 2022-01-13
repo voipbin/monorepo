@@ -1,5 +1,7 @@
 package confbridge
 
+import "github.com/gofrs/uuid"
+
 // list of confbridge event types
 const (
 	EventTypeConfbridgeCreated string = "confbridge_created" // confbridge created
@@ -7,3 +9,9 @@ const (
 	EventTypeConfbridgeJoined  string = "confbridge_joined"  // the call has joined to the confbridge
 	EventTypeConfbridgeLeaved  string = "confbridge_leaved"  // the call has left from the confbridge
 )
+
+// EventConfbridgeJoinedLeaved event struct for confbridge joined
+type EventConfbridgeJoinedLeaved struct {
+	ID     uuid.UUID `json:"id"`      // confbridge id
+	CallID uuid.UUID `json:"call_id"` // call id.
+}
