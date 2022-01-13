@@ -12,7 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 func TestRecordingGets(t *testing.T) {

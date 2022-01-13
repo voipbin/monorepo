@@ -13,7 +13,6 @@ import (
 	address "gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	agent "gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 	availablenumber "gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
-	conference "gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	domain "gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	flow "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
@@ -23,6 +22,7 @@ import (
 	transcribe "gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	action0 "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
@@ -211,10 +211,10 @@ func (mr *MockServiceHandlerMockRecorder) AvailableNumberGets(u, size, countryCo
 }
 
 // CallCreate mocks base method.
-func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*call.Event, error) {
+func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallCreate", u, flowID, source, destination)
-	ret0, _ := ret[0].(*call.Event)
+	ret0, _ := ret[0].(*call.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -240,10 +240,10 @@ func (mr *MockServiceHandlerMockRecorder) CallDelete(u, callID interface{}) *gom
 }
 
 // CallGet mocks base method.
-func (m *MockServiceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.Event, error) {
+func (m *MockServiceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGet", u, callID)
-	ret0, _ := ret[0].(*call.Event)
+	ret0, _ := ret[0].(*call.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -255,10 +255,10 @@ func (mr *MockServiceHandlerMockRecorder) CallGet(u, callID interface{}) *gomock
 }
 
 // CallGets mocks base method.
-func (m *MockServiceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.Event, error) {
+func (m *MockServiceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGets", u, size, token)
-	ret0, _ := ret[0].([]*call.Event)
+	ret0, _ := ret[0].([]*call.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -270,10 +270,10 @@ func (mr *MockServiceHandlerMockRecorder) CallGets(u, size, token interface{}) *
 }
 
 // ConferenceCreate mocks base method.
-func (m *MockServiceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error) {
+func (m *MockServiceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action0.Action) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceCreate", u, confType, name, detail, webhookURI, preActions, postActions)
-	ret0, _ := ret[0].(*conference.Conference)
+	ret0, _ := ret[0].(*conference.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -299,10 +299,10 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceDelete(u, confID interface{}
 }
 
 // ConferenceGet mocks base method.
-func (m *MockServiceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error) {
+func (m *MockServiceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGet", u, id)
-	ret0, _ := ret[0].(*conference.Conference)
+	ret0, _ := ret[0].(*conference.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -314,10 +314,10 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceGet(u, id interface{}) *gomo
 }
 
 // ConferenceGets mocks base method.
-func (m *MockServiceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error) {
+func (m *MockServiceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGets", u, size, token)
-	ret0, _ := ret[0].([]*conference.Conference)
+	ret0, _ := ret[0].([]*conference.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
