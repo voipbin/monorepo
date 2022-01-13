@@ -7,7 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
 )
 
 // Terminate is terminating the conference
@@ -92,7 +91,7 @@ func (h *conferenceHandler) Destroy(ctx context.Context, cf *conference.Conferen
 		log.Errorf("Could not get updated conference info. err: %v", err)
 		return nil
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceDeleted, tmpConf.WebhookURI, tmpConf)
+	h.notifyHandler.PublishWebhookEvent(ctx, conference.EventTypeConferenceDeleted, tmpConf.WebhookURI, tmpConf)
 
 	return nil
 }

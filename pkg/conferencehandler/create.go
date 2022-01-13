@@ -12,7 +12,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
 )
 
 const defaultConferenceTimeout = 86400
@@ -114,7 +113,7 @@ func (h *conferenceHandler) Create(
 		log.Errorf("Could not get created conference. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceCreated, cf.WebhookURI, cf)
+	h.notifyHandler.PublishWebhookEvent(ctx, conference.EventTypeConferenceCreated, cf.WebhookURI, cf)
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {

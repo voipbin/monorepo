@@ -6,8 +6,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	cmnotifyhandler "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
-	cmnotifyhandlerevent "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler/models/event"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -22,7 +21,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoinedLeaved(m *rabbitmqhandl
 	)
 	log.Debugf("Received call event. event: %s", m.Type)
 
-	evt := cmnotifyhandlerevent.ConfbridgeJoinedLeaved{}
+	evt := cmconfbridge.EventConfbridgeJoinedLeaved{}
 	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
@@ -40,10 +39,10 @@ func (h *subscribeHandler) processEventCMConfbridgeJoinedLeaved(m *rabbitmqhandl
 	}
 
 	switch m.Type {
-	case string(cmnotifyhandler.EventTypeConfbridgeJoined):
+	case string(cmconfbridge.EventTypeConfbridgeJoined):
 		return h.conferenceHandler.Joined(ctx, tmp.ConferenceID, evt.CallID)
 
-	case string(cmnotifyhandler.EventTypeConfbridgeLeaved):
+	case string(cmconfbridge.EventTypeConfbridgeLeaved):
 		return h.conferenceHandler.Leaved(ctx, tmp.ConferenceID, evt.CallID)
 
 	default:

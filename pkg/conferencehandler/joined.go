@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 )
 
 // Joined handles call's joined notification
@@ -37,7 +37,7 @@ func (h *conferenceHandler) Joined(ctx context.Context, conferenceID, callID uui
 	if err != nil {
 		log.Errorf("Could not get updated conference info. err: %v", err)
 	}
-	h.notifyHandler.NotifyEvent(notifyhandler.EventTypeConferenceUpdated, tmpCf.WebhookURI, tmpCf)
+	h.notifyHandler.PublishWebhookEvent(ctx, conference.EventTypeConferenceUpdated, tmpCf.WebhookURI, tmpCf)
 
 	return nil
 }
