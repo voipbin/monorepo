@@ -2,7 +2,6 @@ package conferences
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
@@ -140,7 +138,7 @@ func TestConferencesPOST(t *testing.T) {
 
 			&cfconference.WebhookMessage{
 				ID:         uuid.FromStringOrNil("b85ee002-2089-11ec-a49b-531b1931ddbd"),
-				Type:       conference.TypeConference,
+				Type:       cfconference.TypeConference,
 				Name:       "conference name",
 				Detail:     "conference detail",
 				WebhookURI: "test.com/webhook",
@@ -222,22 +220,21 @@ func TestConferencesIDDELETE(t *testing.T) {
 
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
-	type test struct {
-		name       string
-		user       user.User
-		conference *conference.Conference
-	}
+	tests := []struct {
+		name string
+		user user.User
+		id   uuid.UUID
 
-	tests := []test{
+		requestURI string
+	}{
 		{
 			"simple test",
 			user.User{
 				ID:         1,
 				Permission: user.PermissionAdmin,
 			},
-			&conference.Conference{
-				ID: uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
-			},
+			uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
+			"/v1.0/conferences/f49f8cc6-ac7f-11ea-91a3-e7103a41fa51",
 		},
 	}
 
@@ -253,9 +250,9 @@ func TestConferencesIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceDelete(&tt.user, tt.conference.ID).Return(nil)
+			mockSvc.EXPECT().ConferenceDelete(&tt.user, tt.id).Return(nil)
 
-			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/conferences/%s", tt.conference.ID), nil)
+			req, _ := http.NewRequest("DELETE", tt.requestURI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -278,8 +275,9 @@ func TestConferencesIDCallsIDDELETE(t *testing.T) {
 		name       string
 		user       user.User
 		requestURI string
-		conference *conference.Conference
-		callID     uuid.UUID
+
+		conferenceID uuid.UUID
+		callID       uuid.UUID
 	}
 
 	tests := []test{
@@ -290,9 +288,7 @@ func TestConferencesIDCallsIDDELETE(t *testing.T) {
 				Permission: user.PermissionAdmin,
 			},
 			"/v1.0/conferences/88f410a4-44aa-11ec-a648-ef1c8a8d5b49/calls/a5f77e0c-44aa-11ec-860c-0718d81c0e6b",
-			&conference.Conference{
-				ID: uuid.FromStringOrNil("88f410a4-44aa-11ec-a648-ef1c8a8d5b49"),
-			},
+			uuid.FromStringOrNil("88f410a4-44aa-11ec-a648-ef1c8a8d5b49"),
 			uuid.FromStringOrNil("a5f77e0c-44aa-11ec-860c-0718d81c0e6b"),
 		},
 	}
@@ -309,7 +305,7 @@ func TestConferencesIDCallsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceKick(&tt.user, tt.conference.ID, tt.callID).Return(nil)
+			mockSvc.EXPECT().ConferenceKick(&tt.user, tt.conferenceID, tt.callID).Return(nil)
 
 			req, _ := http.NewRequest("DELETE", tt.requestURI, nil)
 
