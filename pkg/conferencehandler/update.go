@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 )
@@ -19,8 +19,8 @@ func (h *conferenceHandler) Update(
 	detail string,
 	timeout int,
 	webhookURI string,
-	preActions []action.Action,
-	postActions []action.Action,
+	preActions []fmaction.Action,
+	postActions []fmaction.Action,
 ) (*conference.Conference, error) {
 	log := logrus.New().WithFields(
 		logrus.Fields{

@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
@@ -43,8 +43,8 @@ func TestConferenceCreate(t *testing.T) {
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{},
 			},
@@ -64,8 +64,8 @@ func TestConferenceCreate(t *testing.T) {
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{},
 			},
@@ -86,8 +86,8 @@ func TestConferenceCreate(t *testing.T) {
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingID:  uuid.FromStringOrNil("37962c54-6122-11eb-a8b2-4ff0062b4c1b"),
 				RecordingIDs: []uuid.UUID{},
@@ -109,8 +109,8 @@ func TestConferenceCreate(t *testing.T) {
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("515f79ce-6122-11eb-b3ca-db50409503c4")},
 			},
@@ -132,8 +132,8 @@ func TestConferenceCreate(t *testing.T) {
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("71aac0ec-1ff6-11ec-bfd0-af46a0a99821")},
 				WebhookURI:   "test.com/webhook",
@@ -147,7 +147,7 @@ func TestConferenceCreate(t *testing.T) {
 				Type:   conference.TypeConference,
 				Name:   "test type conference",
 				Detail: "test type conference detail",
-				PreActions: []action.Action{
+				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
@@ -159,12 +159,12 @@ func TestConferenceCreate(t *testing.T) {
 				Type:   conference.TypeConference,
 				Name:   "test type conference",
 				Detail: "test type conference detail",
-				PreActions: []action.Action{
+				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
-				PostActions:  []action.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{},
 			},
@@ -177,7 +177,7 @@ func TestConferenceCreate(t *testing.T) {
 				Type:   conference.TypeConference,
 				Name:   "test type conference",
 				Detail: "test type conference detail",
-				PostActions: []action.Action{
+				PostActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
@@ -189,8 +189,8 @@ func TestConferenceCreate(t *testing.T) {
 				Type:       conference.TypeConference,
 				Name:       "test type conference",
 				Detail:     "test type conference detail",
-				PreActions: []action.Action{},
-				PostActions: []action.Action{
+				PreActions: []fmaction.Action{},
+				PostActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
@@ -216,8 +216,8 @@ func TestConferenceCreate(t *testing.T) {
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
 				Timeout:      86400,
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{},
 			},
@@ -270,8 +270,8 @@ func TestConferenceSetRecordID(t *testing.T) {
 			uuid.FromStringOrNil("2fb4b446-2834-11eb-b864-1fdb13777d08"),
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("2f7b0ee4-2834-11eb-9a6d-5beea5795ea6"),
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingID:  uuid.FromStringOrNil("2fb4b446-2834-11eb-b864-1fdb13777d08"),
 				RecordingIDs: []uuid.UUID{},
@@ -333,8 +333,8 @@ func TestConferenceSetData(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("0a64e234-675d-11eb-92c7-13f0c9a0e28b"),
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{},
 				Data: map[string]interface{}{
@@ -353,8 +353,8 @@ func TestConferenceSetData(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("d54bf5b4-675d-11eb-b133-9b06996a9b99"),
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{},
 				Data: map[string]interface{}{
@@ -374,8 +374,8 @@ func TestConferenceSetData(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("efa1ec2a-675d-11eb-b854-ffe06d0fc488"),
-				PreActions:   []action.Action{},
-				PostActions:  []action.Action{},
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{},
 				Data: map[string]interface{}{

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	uuid "github.com/gofrs/uuid"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // WebhookMessage defines conference webhook event
@@ -17,6 +18,9 @@ type WebhookMessage struct {
 	Detail  string                 `json:"detail"`
 	Data    map[string]interface{} `json:"data"`
 	Timeout int                    `json:"timeout"` // timeout. second
+
+	PreActions  []fmaction.Action `json:"pre_actions"`  // pre actions
+	PostActions []fmaction.Action `json:"post_actions"` // post actions
 
 	CallIDs []uuid.UUID `json:"call_ids"` // list of call ids of conference
 
@@ -42,6 +46,9 @@ func (h *Conference) ConvertWebhookMessage() *WebhookMessage {
 		Detail:  h.Detail,
 		Data:    h.Data,
 		Timeout: h.Timeout,
+
+		PreActions:  h.PostActions,
+		PostActions: h.PostActions,
 
 		CallIDs: h.CallIDs,
 
