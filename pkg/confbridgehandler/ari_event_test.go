@@ -15,7 +15,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler/models/event"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -156,7 +155,7 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 		callID       uuid.UUID
 		channel      *channel.Channel
 		bridge       *bridge.Bridge
-		event        *event.ConfbridgeJoinedLeaved
+		event        *confbridge.EventConfbridgeJoinedLeaved
 	}
 
 	tests := []test{
@@ -179,7 +178,7 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 			},
-			&event.ConfbridgeJoinedLeaved{
+			&confbridge.EventConfbridgeJoinedLeaved{
 				ID:     uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
 				CallID: uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
 			},
