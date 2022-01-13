@@ -47,7 +47,7 @@ func (h *Conference) ConvertWebhookMessage() *WebhookMessage {
 		Data:    h.Data,
 		Timeout: h.Timeout,
 
-		PreActions:  h.PostActions,
+		PreActions:  h.PreActions,
 		PostActions: h.PostActions,
 
 		CallIDs: h.CallIDs,
