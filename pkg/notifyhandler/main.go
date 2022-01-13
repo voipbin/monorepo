@@ -8,43 +8,15 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // WebhookMessage defines
 type WebhookMessage interface {
 	CreateWebhookEvent() ([]byte, error)
 }
-
-// EventType string
-type EventType string
-
-// list of event types
-const (
-	// call
-	EventTypeCallCreated  EventType = "call_created"
-	EventTypeCallUpdated  EventType = "call_updated"
-	EventTypeCallRinging  EventType = "call_ringing"
-	EventTypeCallAnswered EventType = "call_answered"
-	EventTypeCallHungup   EventType = "call_hungup"
-
-	// confbridge
-	EventTypeConfbridgeCreated EventType = "confbridge_created"
-	EventTypeConfbridgeDeleted EventType = "confbridge_deleted"
-	EventTypeConfbridgeJoined  EventType = "confbridge_joined"
-	EventTypeConfbridgeLeaved  EventType = "confbridge_leaved"
-
-	// conference
-	EventTypeConferenceCreated EventType = "conference_created"
-	EventTypeConferenceDeleted EventType = "conference_deleted"
-	EventTypeConferenceJoined  EventType = "conference_joined"
-	EventTypeConferenceLeaved  EventType = "conference_leaved"
-
-	// recording
-	EventTypeRecordingStarted  EventType = "recording_started"
-	EventTypeRecordingFinished EventType = "recording_finished"
-)
 
 // Data types
 var (
