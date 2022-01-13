@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -14,7 +15,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 func TestJoined(t *testing.T) {
@@ -74,9 +74,9 @@ func TestJoined(t *testing.T) {
 			mockDB.EXPECT().ConfbridgeAddChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID, tt.callID).Return(nil)
 			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.callID, tt.confbridgeID).Return(nil)
 
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), notifyhandler.EventTypeConfbridgeJoined, gomock.Any())
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), confbridge.EventTypeConfbridgeJoined, gomock.Any())
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), notifyhandler.EventTypeCallUpdated, "", gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallUpdated, "", gomock.Any())
 
 			if err := h.Joined(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

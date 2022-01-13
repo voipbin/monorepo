@@ -9,9 +9,10 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler/models/event"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler/models/event"
 )
 
 // Joined handles joined call
@@ -49,14 +50,14 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 		ID:     confbridgeID,
 		CallID: callID,
 	}
-	h.notifyHandler.PublishEvent(ctx, notifyhandler.EventTypeConfbridgeJoined, evt)
+	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, evt)
 
 	// get updated call info and notify
-	call, err := h.db.CallGet(ctx, callID)
+	c, err := h.db.CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get updated call info. But we are keep moving. err: %v", err)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, notifyhandler.EventTypeCallUpdated, call.WebhookURI, call)
+	h.notifyHandler.PublishWebhookEvent(ctx, call.EventTypeCallUpdated, c.WebhookURI, c)
 
 	return nil
 }

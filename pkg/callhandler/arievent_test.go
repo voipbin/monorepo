@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
@@ -14,7 +15,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
@@ -76,7 +76,7 @@ func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil).AnyTimes()
 
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), notifyhandler.EventTypeCallAnswered, tt.call.WebhookURI, tt.call)
+			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallAnswered, tt.call.WebhookURI, tt.call)
 
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any())
 			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -133,7 +133,7 @@ func TestARIChannelStateChangeStatusRinging(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusRinging, tt.channel.TMRinging)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), notifyhandler.EventTypeCallRinging, tt.call.WebhookURI, tt.call)
+			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallRinging, tt.call.WebhookURI, tt.call)
 
 			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

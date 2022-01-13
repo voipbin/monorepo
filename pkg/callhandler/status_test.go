@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
 )
 
 func TestUpdateStatusRinging(t *testing.T) {
@@ -53,7 +53,7 @@ func TestUpdateStatusRinging(t *testing.T) {
 
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusRinging, tt.channel.TMRinging).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), notifyhandler.EventTypeCallRinging, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallRinging, tt.call.WebhookURI, tt.call)
 
 			if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -197,7 +197,7 @@ func TestUpdateStatusProgressing(t *testing.T) {
 
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), notifyhandler.EventTypeCallAnswered, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallAnswered, tt.call.WebhookURI, tt.call)
 
 			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
