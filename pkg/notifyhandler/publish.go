@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -81,12 +81,15 @@ func (h *notifyHandler) PublishEvent(ctx context.Context, t string, c interface{
 // publishEvent publishes a event to the event queue.
 func (h *notifyHandler) publishEvent(eventType string, dataType string, data json.RawMessage, timeout int, delay int) error {
 
-	log.WithFields(log.Fields{
-		"func":      "publishEvent",
-		"type":      eventType,
-		"data_type": dataType,
-		"data":      data,
-	}).Debugf("Publishing the notification. type: %s", eventType)
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":      "publishEvent",
+			"type":      eventType,
+			"data_type": dataType,
+			"data":      data,
+		},
+	)
+	log.Debugf("Publishing the event. type: %s", eventType)
 
 	// create a event
 	evt := &rabbitmqhandler.Event{
@@ -116,7 +119,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	}
 
 	promNotifyTotal.WithLabelValues(evt.Type).Inc()
-	log.WithFields(log.Fields{
+	log.WithFields(logrus.Fields{
 		"event": evt,
 	}).Debugf("Published event. type: %s", evt.Type)
 
