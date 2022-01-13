@@ -8,15 +8,15 @@ import (
 
 	"github.com/gofrs/uuid"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
@@ -63,16 +63,16 @@ type ServiceHandler interface {
 	AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error)
 
 	// call handlers
-	CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*cmcall.Event, error)
-	CallGet(u *user.User, callID uuid.UUID) (*cmcall.Event, error)
-	CallGets(u *user.User, size uint64, token string) ([]*cmcall.Event, error)
+	CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*cmcall.WebhookMessage, error)
+	CallGet(u *user.User, callID uuid.UUID) (*cmcall.WebhookMessage, error)
+	CallGets(u *user.User, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	CallDelete(u *user.User, callID uuid.UUID) error
 
 	// conference handlers
-	ConferenceCreate(u *user.User, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error)
+	ConferenceCreate(u *user.User, confType cfconference.Type, name, detail, webhookURI string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)
 	ConferenceDelete(u *user.User, confID uuid.UUID) error
-	ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error)
-	ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error)
+	ConferenceGet(u *user.User, id uuid.UUID) (*cfconference.WebhookMessage, error)
+	ConferenceGets(u *user.User, size uint64, token string) ([]*cfconference.WebhookMessage, error)
 	ConferenceKick(u *user.User, confID uuid.UUID, callID uuid.UUID) error
 
 	// domain handlers

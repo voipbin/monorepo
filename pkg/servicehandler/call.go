@@ -16,7 +16,7 @@ import (
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*cmcall.Event, error) {
+func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":        u.ID,
@@ -46,7 +46,7 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 		return nil, err
 	}
 
-	res := tmp.ConvertEvent()
+	res := tmp.ConvertWebhookMessage()
 
 	return res, err
 }
@@ -54,7 +54,7 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 // CallGet sends a request to call-manager
 // to getting a call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*cmcall.Event, error) {
+func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
@@ -76,7 +76,7 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*cmcall.Event,
 	}
 
 	// convert
-	res := c.ConvertEvent()
+	res := c.ConvertWebhookMessage()
 
 	return res, nil
 }
@@ -84,7 +84,7 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*cmcall.Event,
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*cmcall.Event, error) {
+func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
@@ -105,9 +105,9 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 	}
 
 	// create result
-	res := []*cmcall.Event{}
+	res := []*cmcall.WebhookMessage{}
 	for _, tmp := range tmps {
-		c := tmp.ConvertEvent()
+		c := tmp.ConvertWebhookMessage()
 		res = append(res, c)
 	}
 

@@ -10,11 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -32,20 +33,25 @@ func TestConferencesIDGET(t *testing.T) {
 
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
-	type test struct {
-		name       string
-		user       user.User
-		conference *conference.Conference
-	}
+	tests := []struct {
+		name string
+		user user.User
+		id   uuid.UUID
 
-	tests := []test{
+		requestURI string
+
+		conference *cfconference.WebhookMessage
+	}{
 		{
 			"simple test",
 			user.User{
 				ID:         1,
 				Permission: user.PermissionAdmin,
 			},
-			&conference.Conference{
+			uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
+
+			"/v1.0/conferences/5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb",
+			&cfconference.WebhookMessage{
 				ID: uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
 			},
 		},
@@ -63,9 +69,9 @@ func TestConferencesIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceGet(&tt.user, tt.conference.ID).Return(tt.conference, nil)
+			mockSvc.EXPECT().ConferenceGet(&tt.user, tt.id).Return(tt.conference, nil)
 
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/conferences/%s", tt.conference.ID), nil)
+			req, _ := http.NewRequest("GET", tt.requestURI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -84,22 +90,36 @@ func TestConferencesPOST(t *testing.T) {
 
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
-	type test struct {
-		name       string
-		user       user.User
-		conference *conference.Conference
-		request    []byte
-	}
+	tests := []struct {
+		name string
+		user user.User
 
-	tests := []test{
+		conferenceType cfconference.Type
+		conferenceName string
+		detail         string
+		webhookURI     string
+		preActions     []fmaction.Action
+		postActions    []fmaction.Action
+
+		conference *cfconference.WebhookMessage
+		request    []byte
+	}{
 		{
 			"conference type",
 			user.User{
 				ID: 1,
 			},
-			&conference.Conference{
+
+			cfconference.TypeConference,
+			"conference name",
+			"conference detail",
+			"",
+			[]fmaction.Action{},
+			[]fmaction.Action{},
+
+			&cfconference.WebhookMessage{
 				ID:     uuid.FromStringOrNil("ee1e90cc-ac7a-11ea-8474-e740530b4266"),
-				Type:   conference.TypeConference,
+				Type:   cfconference.TypeConference,
 				Name:   "conference name",
 				Detail: "conference detail",
 			},
@@ -110,7 +130,15 @@ func TestConferencesPOST(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			&conference.Conference{
+
+			cfconference.TypeConference,
+			"conference name",
+			"conference detail",
+			"test.com/webhook",
+			[]fmaction.Action{},
+			[]fmaction.Action{},
+
+			&cfconference.WebhookMessage{
 				ID:         uuid.FromStringOrNil("b85ee002-2089-11ec-a49b-531b1931ddbd"),
 				Type:       conference.TypeConference,
 				Name:       "conference name",
@@ -124,18 +152,33 @@ func TestConferencesPOST(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			&conference.Conference{
+
+			cfconference.TypeConference,
+			"conference name",
+			"conference detail",
+			"test.com/webhook",
+			[]fmaction.Action{
+				{
+					Type: "answer",
+				},
+			},
+			[]fmaction.Action{
+				{
+					Type: "hangup",
+				},
+			},
+			&cfconference.WebhookMessage{
 				ID:         uuid.FromStringOrNil("62fc88ba-3fe9-11ec-8ebb-8f1ee591edec"),
-				Type:       conference.TypeConference,
+				Type:       cfconference.TypeConference,
 				Name:       "conference name",
 				Detail:     "conference detail",
 				WebhookURI: "test.com/webhook",
-				PreActions: []action.Action{
+				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
-				PostActions: []action.Action{
+				PostActions: []fmaction.Action{
 					{
 						Type: "hangup",
 					},
