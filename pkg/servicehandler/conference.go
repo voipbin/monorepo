@@ -9,13 +9,11 @@ import (
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // conferenceGet vaildates the user's ownership and returns the conference info.
-func (h *serviceHandler) conferenceGet(ctx context.Context, u *user.User, id uuid.UUID) (*conference.Conference, error) {
+func (h *serviceHandler) conferenceGet(ctx context.Context, u *user.User, id uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "conferenceGet",
@@ -38,13 +36,13 @@ func (h *serviceHandler) conferenceGet(ctx context.Context, u *user.User, id uui
 	}
 
 	// create result
-	res := conference.ConvertToConference(tmp)
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // ConferenceGet gets the conference.
 // It returns conference info if it succeed.
-func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.Conference, error) {
+func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*cfconference.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":       u.ID,
@@ -65,7 +63,7 @@ func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.
 
 // ConferenceGets gets the list of conference.
 // It returns list of calls if it succeed.
-func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.Conference, error) {
+func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"user":     u.ID,
@@ -86,9 +84,9 @@ func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string)
 	}
 
 	// create result
-	res := []*conference.Conference{}
+	res := []*cfconference.WebhookMessage{}
 	for _, tmp := range tmps {
-		c := conference.ConvertToConference(&tmp)
+		c := tmp.ConvertWebhookMessage()
 		res = append(res, c)
 	}
 
@@ -98,13 +96,13 @@ func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string)
 // ConferenceCreate is a service handler for conference creating.
 func (h *serviceHandler) ConferenceCreate(
 	u *user.User,
-	confType conference.Type,
+	confType cfconference.Type,
 	name string,
 	detail string,
 	webhookURI string,
-	preActions []action.Action,
-	postActions []action.Action,
-) (*conference.Conference, error) {
+	preActions []fmaction.Action,
+	postActions []fmaction.Action,
+) (*cfconference.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -120,23 +118,13 @@ func (h *serviceHandler) ConferenceCreate(
 	)
 	log.Debugf("Creating a conference.")
 
-	fmPreActions := []fmaction.Action{}
-	for _, a := range preActions {
-		fmPreActions = append(fmPreActions, *action.CreateAction(&a))
-	}
-
-	fmPostActions := []fmaction.Action{}
-	for _, a := range postActions {
-		fmPostActions = append(fmPostActions, *action.CreateAction(&a))
-	}
-
-	conf, err := h.reqHandler.CFV1ConferenceCreate(ctx, u.ID, cfconference.Type(confType), name, detail, 0, webhookURI, map[string]interface{}{}, fmPreActions, fmPostActions)
+	tmp, err := h.reqHandler.CFV1ConferenceCreate(ctx, u.ID, confType, name, detail, 0, webhookURI, map[string]interface{}{}, preActions, postActions)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
 	}
 
-	res := conference.ConvertToConference(conf)
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 

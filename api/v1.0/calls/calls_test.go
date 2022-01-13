@@ -155,7 +155,7 @@ func TestCallsGET(t *testing.T) {
 		name      string
 		user      user.User
 		req       request.ParamCallsGET
-		resCalls  []*cmcall.Event
+		resCalls  []*cmcall.WebhookMessage
 		expectRes string
 	}
 
@@ -171,7 +171,7 @@ func TestCallsGET(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*cmcall.Event{
+			[]*cmcall.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					TMCreate: "2020-09-20T03:23:21.995000",
@@ -190,7 +190,7 @@ func TestCallsGET(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*cmcall.Event{
+			[]*cmcall.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("668e6ee6-f989-11ea-abca-bf1ca885b142"),
 					TMCreate: "2020-09-20T03:23:21.995000",
@@ -248,7 +248,7 @@ func TestCallsIDGET(t *testing.T) {
 	type test struct {
 		name    string
 		user    user.User
-		resCall *cmcall.Event
+		resCall *cmcall.WebhookMessage
 	}
 
 	tests := []test{
@@ -257,7 +257,7 @@ func TestCallsIDGET(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			&cmcall.Event{
+			&cmcall.WebhookMessage{
 				ID:       uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
 				TMCreate: "2020-09-20T03:23:21.995000",
 			},
@@ -267,7 +267,7 @@ func TestCallsIDGET(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			&cmcall.Event{
+			&cmcall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353"),
 				WebhookURI: "https://test.com/tesadf",
 				TMCreate:   "2020-09-20T03:23:21.995000",

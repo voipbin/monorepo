@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
@@ -86,8 +86,8 @@ func TestCallCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.cmCall.ConvertEvent()) != true {
-				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.cmCall.ConvertEvent(), res)
+			if reflect.DeepEqual(res, tt.cmCall.ConvertWebhookMessage()) != true {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.cmCall.ConvertWebhookMessage(), res)
 			}
 		})
 	}
