@@ -151,7 +151,7 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
 		// ignore the event
-		log.Debugf("Not interesting. Ignore the event.")
+		return
 	}
 	elapsed := time.Since(start)
 	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))
