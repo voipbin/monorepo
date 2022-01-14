@@ -114,7 +114,7 @@ func TestHangup(t *testing.T) {
 			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeQueuecallAbandoned, tt.responseQueuecall.WebhookURI, tt.responseQueuecall)
 
 			duration := getDuration(ctx, tt.responseQueuecall.TMCreate, tt.responseQueuecall.TMDelete)
-			mockDB.EXPECT().QueueIncreaseTotalAbandonedCount(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ReferenceID, duration)
+			mockDB.EXPECT().QueueIncreaseTotalAbandonedCount(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ID, duration)
 
 			h.Hangup(ctx, tt.referenceID)
 		})

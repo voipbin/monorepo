@@ -63,7 +63,7 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 
 	// calculate the duration and increase the serviced count
 	duration := getDuration(ctx, tmp.TMService, tmp.TMDelete)
-	if err := h.db.QueueRemoveServiceQueueCall(ctx, tmp.QueueID, referenceID, duration); err != nil {
+	if err := h.db.QueueRemoveServiceQueueCall(ctx, tmp.QueueID, tmp.ID, duration); err != nil {
 		log.Errorf("Could not remove the queuecall from the service queuecall. err: %v", err)
 		return
 	}

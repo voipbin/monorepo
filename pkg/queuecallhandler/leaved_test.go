@@ -116,7 +116,7 @@ func TestLeaved(t *testing.T) {
 			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeQueuecallDone, tt.responseQueuecall.WebhookURI, tt.responseQueuecall)
 
 			duration := getDuration(ctx, tt.responseQueuecall.TMService, tt.responseQueuecall.TMDelete)
-			mockDB.EXPECT().QueueRemoveServiceQueueCall(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ReferenceID, duration)
+			mockDB.EXPECT().QueueRemoveServiceQueueCall(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ID, duration)
 
 			h.Leaved(ctx, tt.referenceID, tt.confbridgeID)
 		})

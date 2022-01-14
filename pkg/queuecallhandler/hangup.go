@@ -25,6 +25,7 @@ func (h *queuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
 		log.Debug("Could not get queuecallreference. Consider this reference has not in the queue service.")
 		return
 	}
+	log.WithField("queuecallreference", qm).Debug("Found queuecallreference.")
 
 	// get queuecall
 	qc, err := h.db.QueuecallGet(ctx, qm.CurrentQueuecallID)
@@ -55,7 +56,7 @@ func (h *queuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
 
 	// calculate the duration and increase the abandoned count
 	duration := getDuration(ctx, tmp.TMCreate, tmp.TMDelete)
-	if err := h.db.QueueIncreaseTotalAbandonedCount(ctx, tmp.QueueID, referenceID, duration); err != nil {
+	if err := h.db.QueueIncreaseTotalAbandonedCount(ctx, tmp.QueueID, tmp.ID, duration); err != nil {
 		log.Errorf("Could not increase the total abandoned count. err: %v", err)
 		return
 	}
