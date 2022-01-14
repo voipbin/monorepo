@@ -9,7 +9,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmnotifyhandler "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
@@ -136,14 +137,14 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 	//// call-manager
 	// confbridge
-	case m.Publisher == publisherCallManager && (m.Type == string(cmnotifyhandler.EventTypeConfbridgeJoined)):
+	case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeJoined)):
 		err = h.processEventCMConfbridgeJoined(m)
 
-	case m.Publisher == publisherCallManager && (m.Type == string(cmnotifyhandler.EventTypeConfbridgeLeaved)):
+	case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved)):
 		err = h.processEventCMConfbridgeLeaved(m)
 
 	// call
-	case m.Publisher == publisherCallManager && (m.Type == string(cmnotifyhandler.EventTypeCallHungup)):
+	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHungup)):
 		err = h.processEventCMCallHungup(m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
