@@ -13,11 +13,10 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	github.com/ttacon/libphonenumber v1.2.1
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20211230145216-e7651a5bbfff
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20211213012316-c2a67012821b
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20211206174652-79b78ab12d71
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220105125759-c8c04b8f27a9
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220113020441-12ada9a1cc5a
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220113010014-8e2a6ea54901
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220102222517-646792536ea1
-	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20220103005331-229d07d977e5
 )
 
 require (
@@ -31,7 +30,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211220072610-7e1197525ecc // indirect
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220113054925-e64f9b21a70d // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20211018180403-4e3bcfe187ff // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20211221032228-f73ce135fa46 // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6 // indirect
@@ -40,7 +39,7 @@ require (
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
-	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb // indirect
+	golang.org/x/sys v0.0.0-20220111092808-5a964db01320 // indirect
+	google.golang.org/genproto v0.0.0-20220114172242-44263ffb69e1 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
