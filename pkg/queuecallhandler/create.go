@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/notifyhandler"
 )
 
 // QueueCreate creates a new queue.
@@ -84,7 +83,7 @@ func (h *queuecallHandler) Create(
 		log.Errorf("Could not get created queuecall. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.NotifyEvent(ctx, notifyhandler.EventTypeQueuecallCreated, c.WebhookURI, res)
+	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallCreated, c.WebhookURI, res)
 
 	// send the queuecall excute request
 	if err := h.reqHandler.QMV1QueuecallExecute(ctx, res.ID, defaultDelayQueuecallExecute); err != nil {

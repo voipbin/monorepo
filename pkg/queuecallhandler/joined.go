@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
 // Joined handle the situation when the queuecall joined to the the queue's confbridge.
@@ -53,7 +53,7 @@ func (h *queuecallHandler) Joined(ctx context.Context, referenceID, confbridgeID
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.NotifyEvent(ctx, notifyhandler.EventTypeQueuecallServiced, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallServiced, tmp.WebhookURI, tmp)
 
 	// get wait duration and increase the serviced count
 	waitDuration := getDuration(ctx, qc.TMCreate, qc.TMService)
