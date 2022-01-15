@@ -13,13 +13,13 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
@@ -149,7 +149,7 @@ func run(db dbhandler.DBHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 	queuecallReferenceHandler := queuecallreferencehandler.NewQueuecallReferenceHandler(reqHandler, db, notifyHandler)
 	queuecallHandler := queuecallhandler.NewQueuecallHandler(reqHandler, db, notifyHandler, queuecallReferenceHandler)
 	queueHandler := queuehandler.NewQueueHandler(reqHandler, db, notifyHandler, queuecallHandler, queuecallReferenceHandler)

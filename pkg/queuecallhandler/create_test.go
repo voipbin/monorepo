@@ -8,12 +8,12 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/notifyhandler"
 )
 
 func TestCreate(t *testing.T) {
@@ -98,7 +98,7 @@ func TestCreate(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(tt.queuecall, nil)
-			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeQueuecallCreated, tt.queuecall.WebhookURI, tt.queuecall)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), queuecall.EventTypeQueuecallCreated, tt.queuecall.WebhookURI, tt.queuecall)
 			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.queuecall.ID, defaultDelayQueuecallExecute).Return(nil)
 			if tt.queuecall.TimeoutWait > 0 {
 				mockReq.EXPECT().QMV1QueuecallTiemoutWait(gomock.Any(), tt.queuecall.ID, tt.queuecall.TimeoutWait).Return(nil)

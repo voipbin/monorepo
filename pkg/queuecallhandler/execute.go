@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/notifyhandler"
 )
 
 // Execute search the available agent and dial to them.
@@ -87,6 +86,6 @@ func (h *queuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID) {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.NotifyEvent(ctx, notifyhandler.EventTypeQueuecallEntering, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallEntering, tmp.WebhookURI, tmp)
 
 }

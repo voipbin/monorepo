@@ -7,7 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/notifyhandler"
 )
 
 // HangupByReferenceID handles reference's hangup.
@@ -56,7 +55,7 @@ func (h *queuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.NotifyEvent(ctx, notifyhandler.EventTypeQueuecallAbandoned, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallAbandoned, tmp.WebhookURI, tmp)
 
 	// calculate the duration and increase the abandoned count
 	duration := getDuration(ctx, tmp.TMCreate, tmp.TMDelete)

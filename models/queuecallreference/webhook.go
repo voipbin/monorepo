@@ -6,8 +6,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
-// Event defines
-type Event struct {
+// WebhookMessage defines
+type WebhookMessage struct {
 	ID   uuid.UUID               `json:"id"`   // reference's id
 	Type queuecall.ReferenceType `json:"type"` // reference's type
 
@@ -19,9 +19,9 @@ type Event struct {
 	TMDelete string `json:"tm_delete"` // Deleted timestamp.
 }
 
-// ConvertEvent convert to Event
-func (h *QueuecallReference) ConvertEvent() *Event {
-	return &Event{
+// ConvertWebhookMessage convert to Event
+func (h *QueuecallReference) ConvertWebhookMessage() *WebhookMessage {
+	return &WebhookMessage{
 		ID:   h.ID,
 		Type: h.Type,
 

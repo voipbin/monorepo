@@ -7,7 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/notifyhandler"
 )
 
 // Leaved handle the situation when the queuecall left from the queue's confbridge.
@@ -61,7 +60,7 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.NotifyEvent(ctx, notifyhandler.EventTypeQueuecallDone, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallDone, tmp.WebhookURI, tmp)
 
 	// calculate the duration and increase the serviced count
 	duration := getDuration(ctx, tmp.TMService, tmp.TMDelete)
