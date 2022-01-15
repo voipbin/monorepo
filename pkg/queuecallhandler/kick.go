@@ -65,7 +65,7 @@ func (h *queuecallHandler) KickByReferenceID(ctx context.Context, referenceID uu
 	}
 
 	// check the queuecall's status
-	if qc.Status != queuecall.StatusWait && qc.Status != queuecall.StatusService {
+	if qc.Status == queuecall.StatusDone || qc.Status == queuecall.StatusAbandoned {
 		log.Errorf("The queuecall's status is not valid. status: %s", qc.Status)
 		return fmt.Errorf("invalid queuecall status. status: %s", qc.Status)
 	}

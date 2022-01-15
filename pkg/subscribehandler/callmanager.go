@@ -12,7 +12,7 @@ import (
 
 // processEventCMConfbridgeJoined handles the call-manager's confbridge_joined event.
 func (h *subscribeHandler) processEventCMConfbridgeJoined(m *rabbitmqhandler.Event) error {
-	// ctx := context.Background()
+	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":  "processEventCMConfbridgeJoined",
@@ -26,6 +26,8 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(m *rabbitmqhandler.Eve
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
 	}
+
+	h.queuecallHandler.Joined(ctx, e.CallID, e.ID)
 
 	return nil
 }

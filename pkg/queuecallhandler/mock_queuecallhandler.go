@@ -122,6 +122,18 @@ func (mr *MockQueuecallHandlerMockRecorder) Hangup(ctx, referenceID interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockQueuecallHandler)(nil).Hangup), ctx, referenceID)
 }
 
+// Joined mocks base method.
+func (m *MockQueuecallHandler) Joined(ctx context.Context, referenceID, confbridgeID uuid.UUID) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Joined", ctx, referenceID, confbridgeID)
+}
+
+// Joined indicates an expected call of Joined.
+func (mr *MockQueuecallHandlerMockRecorder) Joined(ctx, referenceID, confbridgeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Joined", reflect.TypeOf((*MockQueuecallHandler)(nil).Joined), ctx, referenceID, confbridgeID)
+}
+
 // Kick mocks base method.
 func (m *MockQueuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) error {
 	m.ctrl.T.Helper()

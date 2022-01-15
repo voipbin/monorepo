@@ -21,11 +21,12 @@ func (h *queuecallReferenceHandler) SetCurrentQueuecallID(ctx context.Context, r
 		},
 	)
 
-	qm, err := h.db.QueuecallReferenceGet(ctx, referenceID)
+	_, err := h.db.QueuecallReferenceGet(ctx, referenceID)
 	if err != nil {
+		log.Debugf("The queuecall reference does not exist. Create a new queuecallreference. reference_id: %s, reference_type: %s", referenceID, queuecallType)
 
 		// create a new QueuecallMaster
-		qm = &queuecallreference.QueuecallReference{
+		qm := &queuecallreference.QueuecallReference{
 			ID:           referenceID,
 			Type:         queuecallType,
 			QueuecallIDs: []uuid.UUID{},
@@ -39,12 +40,7 @@ func (h *queuecallReferenceHandler) SetCurrentQueuecallID(ctx context.Context, r
 			log.Errorf("Could not create the QueuecallReference. err: %v", errCreate)
 			return errCreate
 		}
-
 	}
-
-	// set variables
-	qm.CurrentQueuecallID = queuecallID
-	qm.QueuecallIDs = append(qm.QueuecallIDs, queuecallID)
 
 	// set
 	if err := h.db.QueuecallReferenceSetCurrentQueuecallID(ctx, referenceID, queuecallID); err != nil {
@@ -67,4 +63,14 @@ func (h *queuecallReferenceHandler) Get(ctx context.Context, id uuid.UUID) (*que
 	}
 
 	return qm, nil
+}
+
+// Delete deletes the queuecallreference.
+func (h *queuecallReferenceHandler) Delete(ctx context.Context, id uuid.UUID) error {
+
+	if errDel := h.db.QueuecallReferenceDelete(ctx, id); errDel != nil {
+		return errDel
+	}
+
+	return nil
 }

@@ -17,6 +17,7 @@ import (
 // QueuecallReferenceHandler interface
 type QueuecallReferenceHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error)
+	Delete(ctx context.Context, id uuid.UUID) error
 	SetCurrentQueuecallID(ctx context.Context, referenceID uuid.UUID, queuecallType queuecall.ReferenceType, queuecallID uuid.UUID) error
 }
 

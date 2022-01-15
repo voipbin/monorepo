@@ -17,20 +17,20 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
 
-func TestLeaved(t *testing.T) {
+func TestJoined(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockQueuecallMasterHandler := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
+	mockQueuecallReferenceHandler := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
 
 	h := &queuecallHandler{
 		db:                        mockDB,
 		reqHandler:                mockReq,
 		notifyhandler:             mockNotify,
-		queuecallReferenceHandler: mockQueuecallMasterHandler,
+		queuecallReferenceHandler: mockQueuecallReferenceHandler,
 	}
 
 	tests := []struct {
@@ -109,16 +109,20 @@ func TestLeaved(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockQueuecallMasterHandler.EXPECT().Get(gomock.Any(), tt.referenceID).Return(tt.queuecallReference, nil)
+			mockQueuecallReferenceHandler.EXPECT().Get(gomock.Any(), tt.referenceID).Return(tt.queuecallReference, nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.queuecall, nil)
-			mockDB.EXPECT().QueuecallDelete(gomock.Any(), tt.queuecall.ID, queuecall.StatusDone).Return(nil)
-			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
-			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeQueuecallDone, tt.responseQueuecall.WebhookURI, tt.responseQueuecall)
+			mockDB.EXPECT().QueuecallSetStatusService(gomock.Any(), tt.queuecall.ID).Return(nil)
+			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecall.ID).Return(tt.queuecall, nil)
+			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeQueuecallServiced, tt.queuecall.WebhookURI, tt.queuecall)
 
-			duration := getDuration(ctx, tt.responseQueuecall.TMService, tt.responseQueuecall.TMDelete)
-			mockDB.EXPECT().QueueRemoveServiceQueueCall(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ID, duration)
+			duration := getDuration(ctx, tt.responseQueuecall.TMCreate, tt.responseQueuecall.TMService)
+			mockDB.EXPECT().QueueIncreaseTotalServicedCount(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ID, duration)
 
-			h.Leaved(ctx, tt.referenceID, tt.confbridgeID)
+			if tt.queuecall.TimeoutService > 0 {
+				mockReq.EXPECT().QMV1QueuecallTiemoutService(gomock.Any(), tt.queuecall.ID, tt.queuecall.TimeoutService).Return(nil)
+			}
+
+			h.Joined(ctx, tt.referenceID, tt.confbridgeID)
 		})
 	}
 }

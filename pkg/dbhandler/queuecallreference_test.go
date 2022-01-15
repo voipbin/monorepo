@@ -73,6 +73,81 @@ func TestQueuecallReferenceCreate(t *testing.T) {
 	}
 }
 
+func TestQueuecallReferenceDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		data      *queuecallreference.QueuecallReference
+		expectRes *queuecallreference.QueuecallReference
+	}{
+		{
+			"test normal",
+
+			uuid.FromStringOrNil("447196b0-762b-11ec-9010-375c278aee23"),
+
+			&queuecallreference.QueuecallReference{
+				ID:           uuid.FromStringOrNil("447196b0-762b-11ec-9010-375c278aee23"),
+				UserID:       1,
+				Type:         queuecall.ReferenceTypeCall,
+				QueuecallIDs: []uuid.UUID{},
+				TMCreate:     DefaultTimeStamp,
+				TMUpdate:     DefaultTimeStamp,
+				TMDelete:     DefaultTimeStamp,
+			},
+			&queuecallreference.QueuecallReference{
+				ID:           uuid.FromStringOrNil("447196b0-762b-11ec-9010-375c278aee23"),
+				UserID:       1,
+				Type:         queuecall.ReferenceTypeCall,
+				QueuecallIDs: []uuid.UUID{},
+				TMCreate:     DefaultTimeStamp,
+				TMUpdate:     DefaultTimeStamp,
+				TMDelete:     DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().QueuecallReferenceSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallReferenceGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.QueuecallReferenceCreate(ctx, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			err := h.QueuecallReferenceDelete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.QueuecallReferenceGet(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v\n", err)
+			}
+			if res.TMDelete == "" {
+				t.Errorf("Wrong match. expect: not empty, got: empty")
+			}
+
+			tt.expectRes.TMCreate = res.TMCreate
+			tt.expectRes.TMUpdate = res.TMUpdate
+			tt.expectRes.TMDelete = res.TMDelete
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 // func TestQueuecallGets(t *testing.T) {
 // 	mc := gomock.NewController(t)
 // 	defer mc.Finish()

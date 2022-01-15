@@ -33,6 +33,7 @@ const (
 
 	// queuecall
 	EventTypeQueuecallCreated   EventType = "queuecall_created"
+	EventTypeQueuecallEntering  EventType = "queuecall_entering"
 	EventTypeQueuecallServiced  EventType = "queuecall_serviced"
 	EventTypeQueuecallDone      EventType = "queuecall_done"
 	EventTypeQueuecallAbandoned EventType = "queuecall_abandoned"
