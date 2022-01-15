@@ -51,6 +51,7 @@ type Status string
 // list of status
 const (
 	StatusWait      Status = "wait"      // queue call is waiting in the wait actions.
+	StatusEntering  Status = "entering"  // queue call is entering to the queue's confbridge
 	StatusService   Status = "service"   // queue call is being service now.
 	StatusDone      Status = "done"      // queue call done.
 	StatusAbandoned Status = "abandoned" // queue call has been abandoned.

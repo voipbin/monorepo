@@ -44,8 +44,10 @@ type DBHandler interface {
 	QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error
 	QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error
 	QueuecallSetServiceAgentID(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error
+	QueuecallSetStatusService(ctx context.Context, id uuid.UUID) error
 
 	QueuecallReferenceCreate(ctx context.Context, a *queuecallreference.QueuecallReference) error
+	QueuecallReferenceDelete(ctx context.Context, id uuid.UUID) error
 	QueuecallReferenceGet(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error)
 	QueuecallReferenceSetCurrentQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) error
 }
@@ -58,7 +60,7 @@ type handler struct {
 
 // handler errors
 var (
-	ErrNotFound = errors.New("Record not found")
+	ErrNotFound = errors.New("record not found")
 )
 
 // NewHandler creates DBHandler

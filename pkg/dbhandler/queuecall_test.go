@@ -406,7 +406,7 @@ func TestQueuecallSetServiceAgentID(t *testing.T) {
 			&queuecall.Queuecall{
 				ID:             uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
 				UserID:         1,
-				Status:         queuecall.StatusService,
+				Status:         queuecall.StatusEntering,
 				Source:         cmaddress.Address{},
 				TagIDs:         []uuid.UUID{},
 				ServiceAgentID: uuid.FromStringOrNil("85b89f08-5ab8-11ec-94ea-5bed0069b7e9"),
@@ -427,6 +427,75 @@ func TestQueuecallSetServiceAgentID(t *testing.T) {
 			}
 
 			err := h.QueuecallSetServiceAgentID(ctx, tt.id, tt.serviceAgentID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.QueuecallGet(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v\n", err)
+			}
+			if res.TMService == "" || res.TMUpdate == "" {
+				t.Errorf("Wrong match. expect: not empty, got: empty")
+			}
+
+			tt.expectRes.TMUpdate = res.TMUpdate
+			tt.expectRes.TMService = res.TMService
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestQueuecallSetStatusService(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		data *queuecall.Queuecall
+
+		expectRes *queuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
+
+			&queuecall.Queuecall{
+				ID:     uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
+				UserID: 1,
+			},
+
+			&queuecall.Queuecall{
+				ID:     uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
+				UserID: 1,
+				Status: queuecall.StatusService,
+				Source: cmaddress.Address{},
+				TagIDs: []uuid.UUID{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			err := h.QueuecallSetStatusService(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

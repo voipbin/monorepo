@@ -37,6 +37,20 @@ func (m *MockQueuecallReferenceHandler) EXPECT() *MockQueuecallReferenceHandlerM
 	return m.recorder
 }
 
+// Delete mocks base method.
+func (m *MockQueuecallReferenceHandler) Delete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockQueuecallReferenceHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockQueuecallReferenceHandler)(nil).Delete), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockQueuecallReferenceHandler) Get(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error) {
 	m.ctrl.T.Helper()

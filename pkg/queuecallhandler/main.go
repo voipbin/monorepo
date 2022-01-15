@@ -48,6 +48,7 @@ type QueuecallHandler interface {
 	Kick(ctx context.Context, queuecallID uuid.UUID) error
 	KickByReferenceID(ctx context.Context, referenceID uuid.UUID) error
 	Leaved(ctx context.Context, referenceID, confbridgeID uuid.UUID)
+	Joined(ctx context.Context, referenceID, confbridgeID uuid.UUID)
 
 	TimeoutService(ctx context.Context, queuecallID uuid.UUID)
 	TimeoutWait(ctx context.Context, queuecallID uuid.UUID)

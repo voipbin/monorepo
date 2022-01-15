@@ -87,19 +87,6 @@ func (h *queuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID) {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.NotifyEvent(ctx, notifyhandler.EventTypeQueuecallServiced, tmp.WebhookURI, tmp)
-
-	// get wait duration and increase the serviced count
-	waitDuration := getDuration(ctx, tmp.TMCreate, tmp.TMService)
-	if err := h.db.QueueIncreaseTotalServicedCount(ctx, tmp.QueueID, tmp.ID, waitDuration); err != nil {
-		log.Errorf("Could not increase the total serviced count. err: %v", err)
-	}
-
-	// send the queuecall timeout-service
-	if tmp.TimeoutService > 0 {
-		if err := h.reqHandler.QMV1QueuecallTiemoutService(ctx, tmp.ID, tmp.TimeoutService); err != nil {
-			log.Errorf("Could not send the timeout-service request. err: %v", err)
-		}
-	}
+	h.notifyhandler.NotifyEvent(ctx, notifyhandler.EventTypeQueuecallEntering, tmp.WebhookURI, tmp)
 
 }

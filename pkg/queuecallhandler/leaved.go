@@ -10,7 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/notifyhandler"
 )
 
-// Leaved handle the situation when the queuecall left from the queue.
+// Leaved handle the situation when the queuecall left from the queue's confbridge.
 func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID uuid.UUID) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -26,6 +26,7 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 		log.Debugf("Could not get queuecallreference. err: %v", err)
 		return
 	}
+	log.WithField("queuecallreference", qm).Debug("Found queuecall reference.")
 
 	// get queuecall
 	qc, err := h.db.QueuecallGet(ctx, qm.CurrentQueuecallID)
@@ -34,6 +35,7 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 		return
 	}
 	log = log.WithField("queuecall_id", qc.ID)
+	log.WithField("queuecall", qc).Debug("Found queuecall.")
 
 	// compare confbridge info
 	if qc.ConfbridgeID != confbridgeID {
@@ -48,7 +50,7 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 		return
 	}
 
-	if err := h.db.QueuecallDelete(ctx, referenceID, queuecall.StatusDone); err != nil {
+	if err := h.db.QueuecallDelete(ctx, qc.ID, queuecall.StatusDone); err != nil {
 		log.Errorf("Could not delete the queuecall. err: %v", err)
 		return
 	}
@@ -64,7 +66,7 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 	// calculate the duration and increase the serviced count
 	duration := getDuration(ctx, tmp.TMService, tmp.TMDelete)
 	if err := h.db.QueueRemoveServiceQueueCall(ctx, tmp.QueueID, tmp.ID, duration); err != nil {
-		log.Errorf("Could not remove the queuecall from the service queuecall. err: %v", err)
+		log.Errorf("Could not remove the queuecall from the service queuecall. service_duration: %d, err: %v", duration.Milliseconds(), err)
 		return
 	}
 

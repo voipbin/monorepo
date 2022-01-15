@@ -20,15 +20,19 @@ func (h *queuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
 	)
 
 	// get queuecallreference
-	qm, err := h.queuecallReferenceHandler.Get(ctx, referenceID)
+	qr, err := h.queuecallReferenceHandler.Get(ctx, referenceID)
 	if err != nil {
 		log.Debug("Could not get queuecallreference. Consider this reference has not in the queue service.")
 		return
 	}
-	log.WithField("queuecallreference", qm).Debug("Found queuecallreference.")
+	log.WithField("queuecallreference", qr).Debug("Found queuecallreference.")
+
+	if errDel := h.queuecallReferenceHandler.Delete(ctx, qr.ID); errDel != nil {
+		log.Errorf("Could not delete the queuecall reference. But keep moving on. err: %v", errDel)
+	}
 
 	// get queuecall
-	qc, err := h.db.QueuecallGet(ctx, qm.CurrentQueuecallID)
+	qc, err := h.db.QueuecallGet(ctx, qr.CurrentQueuecallID)
 	if err != nil {
 		log.Errorf("Could not get queuecall. err: %v", err)
 		return

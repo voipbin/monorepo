@@ -357,7 +357,7 @@ func (h *handler) QueuecallSetServiceAgentID(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 	t := GetCurTime()
-	_, err := h.db.Exec(q, queuecall.StatusService, serviceAgentID.Bytes(), t, t, id.Bytes())
+	_, err := h.db.Exec(q, queuecall.StatusEntering, serviceAgentID.Bytes(), t, t, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallSetServiceAgentID. err: %v", err)
 	}
@@ -366,4 +366,30 @@ func (h *handler) QueuecallSetServiceAgentID(ctx context.Context, id uuid.UUID, 
 	_ = h.queuecallUpdateToCache(ctx, id)
 
 	return nil
+}
+
+// QueuecallSetStatusService sets the QueueCall's status to the service.
+func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		queuecalls
+	set
+		status = ?,
+		tm_service = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	t := GetCurTime()
+	_, err := h.db.Exec(q, queuecall.StatusService, t, t, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetStatusService. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return nil
+
 }

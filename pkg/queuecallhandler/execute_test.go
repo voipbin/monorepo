@@ -112,10 +112,7 @@ func TestExecute(t *testing.T) {
 			mockReq.EXPECT().FMV1ActvieFlowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceID, tt.queuecall.ForwardActionID, true).Return(nil)
 			mockDB.EXPECT().QueuecallSetServiceAgentID(gomock.Any(), tt.queuecall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.responseQueuecall, nil)
-			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeQueuecallServiced, tt.responseQueuecall.WebhookURI, tt.responseQueuecall)
-
-			waitDuration := getDuration(ctx, tt.responseQueuecall.TMCreate, tt.responseQueuecall.TMService)
-			mockDB.EXPECT().QueueIncreaseTotalServicedCount(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ID, waitDuration).Return(nil)
+			mockNotify.EXPECT().NotifyEvent(gomock.Any(), notifyhandler.EventTypeQueuecallEntering, tt.responseQueuecall.WebhookURI, tt.responseQueuecall)
 
 			h.Execute(ctx, tt.queueCallID)
 		})

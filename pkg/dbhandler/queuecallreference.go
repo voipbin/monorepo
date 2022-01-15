@@ -214,3 +214,28 @@ func (h *handler) QueuecallReferenceSetCurrentQueuecallID(ctx context.Context, i
 
 	return nil
 }
+
+// QueuecallReferenceDelete deletes the queuecallreference.
+func (h *handler) QueuecallReferenceDelete(ctx context.Context, id uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		queuecallreferences
+	set
+		tm_update = ?,
+		tm_delete = ?
+	where
+		id = ?
+	`
+
+	t := GetCurTime()
+	_, err := h.db.Exec(q, t, t, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueuecallReferenceDelete. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallReferenceUpdateToCache(ctx, id)
+
+	return nil
+}

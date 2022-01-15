@@ -108,6 +108,7 @@ func TestHangup(t *testing.T) {
 			ctx := context.Background()
 
 			mockQueuecallReference.EXPECT().Get(gomock.Any(), tt.referenceID).Return(tt.queuecallReference, nil)
+			mockQueuecallReference.EXPECT().Delete(gomock.Any(), tt.queuecallReference.ID).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.queuecall, nil)
 			mockDB.EXPECT().QueuecallDelete(gomock.Any(), tt.queuecallReference.CurrentQueuecallID, queuecall.StatusAbandoned).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
