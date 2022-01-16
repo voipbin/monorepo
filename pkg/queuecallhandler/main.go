@@ -10,9 +10,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
@@ -32,6 +32,7 @@ type QueuecallHandler interface {
 		queueID uuid.UUID,
 		referenceType queuecall.ReferenceType,
 		referenceID uuid.UUID,
+		flowID uuid.UUID,
 		exitActionID uuid.UUID,
 		forwardActionID uuid.UUID,
 		confbridgeID uuid.UUID,

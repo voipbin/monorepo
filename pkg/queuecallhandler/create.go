@@ -19,6 +19,7 @@ func (h *queuecallHandler) Create(
 	queueID uuid.UUID,
 	referenceType queuecall.ReferenceType,
 	referenceID uuid.UUID,
+	flowID uuid.UUID,
 	forwardActionID uuid.UUID,
 	exitActionID uuid.UUID,
 	confbridgeID uuid.UUID,
@@ -43,11 +44,13 @@ func (h *queuecallHandler) Create(
 	log = log.WithField("queuecall_id", id)
 
 	c := &queuecall.Queuecall{
-		ID:              id,
-		UserID:          userID,
-		QueueID:         queueID,
-		ReferenceType:   referenceType,
-		ReferenceID:     referenceID,
+		ID:            id,
+		UserID:        userID,
+		QueueID:       queueID,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+
+		FlowID:          flowID,
 		ForwardActionID: forwardActionID,
 		ExitActionID:    exitActionID,
 		ConfbridgeID:    confbridgeID,

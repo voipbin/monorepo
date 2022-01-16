@@ -81,6 +81,7 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		q.ID,
 		referenceType,
 		referenceID,
+		f.ID,
 		forwardActionID,
 		exitActionID,
 		cb.ID,
