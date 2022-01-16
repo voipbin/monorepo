@@ -19,9 +19,6 @@ const (
 	select
 		id,
 		user_id,
-		flow_id,
-		confbridge_id,
-		forward_action_id,
 
 		name,
 		detail,
@@ -63,9 +60,6 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 	if err := row.Scan(
 		&res.ID,
 		&res.UserID,
-		&res.FlowID,
-		&res.ConfbridgeID,
-		&res.ForwardActionID,
 
 		&res.Name,
 		&res.Detail,
@@ -130,9 +124,6 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 	q := `insert into queues(
 		id,
 		user_id,
-		flow_id,
-		confbridge_id,
-		forward_action_id,
 
 		name,
 		detail,
@@ -158,7 +149,7 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?, ?, ?,
+		?, ?,
 		?, ?, ?, ?,
 		?, ?,
 		?, ?, ?, ?, ?,
@@ -187,9 +178,6 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 	_, err = h.db.Exec(q,
 		a.ID.Bytes(),
 		a.UserID,
-		a.FlowID.Bytes(),
-		a.ConfbridgeID.Bytes(),
-		a.ForwardActionID.Bytes(),
 
 		a.Name,
 		a.Detail,

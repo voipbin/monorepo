@@ -35,6 +35,7 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		return nil, err
 	}
 
+	// check the reference type. currently support the call type only.
 	if referenceType != queuecall.ReferenceTypeCall {
 		log.Errorf("unsupported reference type")
 		return nil, fmt.Errorf("unsupported reference type")
@@ -52,6 +53,27 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 	source := h.getSource(c)
 	log.WithField("source", source).Debug("Source address info.")
 
+	// create confbridge
+	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx)
+	if err != nil {
+		log.Errorf("Could not create the confbridge. err: %v", err)
+		return nil, err
+	}
+
+	// create queue flow
+	f, err := h.createQueueFlow(ctx, q.UserID, q.ID, cb.ID, q.WaitActions)
+	if err != nil {
+		log.Errorf("Could not create the queue flow. err: %v", err)
+		return nil, err
+	}
+
+	// get flow target action id
+	forwardActionID, err := h.getForwardActionID(ctx, f)
+	if err != nil {
+		log.Errorf("Could not get forward action id. err: %v", err)
+		return nil, err
+	}
+
 	// create a new queuecall
 	res, err := h.queuecallHandler.Create(
 		ctx,
@@ -59,9 +81,9 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		q.ID,
 		referenceType,
 		referenceID,
-		q.ForwardActionID,
+		forwardActionID,
 		exitActionID,
-		q.ConfbridgeID,
+		cb.ID,
 		q.WebhookURI,
 		q.WebhookMethod,
 		source,

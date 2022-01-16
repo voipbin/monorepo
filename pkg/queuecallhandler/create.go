@@ -85,19 +85,5 @@ func (h *queuecallHandler) Create(
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallCreated, c.WebhookURI, res)
 
-	// send the queuecall excute request
-	if err := h.reqHandler.QMV1QueuecallExecute(ctx, res.ID, defaultDelayQueuecallExecute); err != nil {
-		log.Errorf("Could not send the execute request. err: %v", err)
-		return nil, err
-	}
-
-	// send the queuecall timeout-wait
-	if res.TimeoutWait > 0 {
-		if err := h.reqHandler.QMV1QueuecallTiemoutWait(ctx, res.ID, res.TimeoutWait); err != nil {
-			log.Errorf("Could not send the timeout-wait request. err: %v", err)
-			return nil, err
-		}
-	}
-
 	return res, nil
 }

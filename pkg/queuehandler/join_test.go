@@ -9,9 +9,12 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
@@ -49,6 +52,9 @@ func TestJoin(t *testing.T) {
 		call      *cmcall.Call
 		queuecall *queuecall.Queuecall
 
+		responseConfbridge *cmconfbridge.Confbridge
+		responseFlow       *fmflow.Flow
+
 		expectRes *queuecall.Queuecall
 	}{
 		{
@@ -60,10 +66,8 @@ func TestJoin(t *testing.T) {
 			uuid.FromStringOrNil("8f29be1e-60e9-11ec-8032-977e00b8b523"),
 
 			&queue.Queue{
-				ID:              uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
-				UserID:          1,
-				ForwardActionID: uuid.FromStringOrNil("1fb424a0-60eb-11ec-aae3-731297df86c1"),
-				ConfbridgeID:    uuid.FromStringOrNil("2b7daf7c-60eb-11ec-9d2e-ebec25af18e8"),
+				ID:     uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
+				UserID: 1,
 			},
 			&cmcall.Call{
 				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
@@ -76,6 +80,18 @@ func TestJoin(t *testing.T) {
 			&queuecall.Queuecall{
 				ID:      uuid.FromStringOrNil("20e2616a-60ec-11ec-912a-978318aa1f5e"),
 				QueueID: uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
+			},
+
+			&cmconfbridge.Confbridge{
+				ID: uuid.FromStringOrNil("ad4c17a0-60e6-11ec-9eeb-e76c2c4c7fd4"),
+			},
+			&fmflow.Flow{
+				Actions: []fmaction.Action{
+					{
+						ID:   uuid.FromStringOrNil("1cf6612c-60e8-11ec-810d-a79b29cef25c"),
+						Type: fmaction.TypeConfbridgeJoin,
+					},
+				},
 			},
 
 			&queuecall.Queuecall{
@@ -92,11 +108,19 @@ func TestJoin(t *testing.T) {
 			mockDB.EXPECT().QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.referenceID).Return(tt.call, nil)
 
+			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any()).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queue.UserID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), "", gomock.Any(), true).Return(tt.responseFlow, nil)
+
 			var source cmaddress.Address
 			if tt.call.Direction == cmcall.DirectionIncoming {
 				source = tt.call.Source
 			} else {
 				source = tt.call.Destination
+			}
+
+			forwardActionID, err := h.getForwardActionID(ctx, tt.responseFlow)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockQueuecall.EXPECT().Create(
@@ -105,9 +129,9 @@ func TestJoin(t *testing.T) {
 				tt.queue.ID,
 				tt.referenceType,
 				tt.referenceID,
-				tt.queue.ForwardActionID,
+				forwardActionID,
 				tt.exitActionID,
-				tt.queue.ConfbridgeID,
+				tt.responseConfbridge.ID,
 				tt.queue.WebhookURI,
 				tt.queue.WebhookMethod,
 				source,

@@ -44,34 +44,34 @@ func (h *queueHandler) Create(
 		return nil, fmt.Errorf("wrong routing_method")
 	}
 
-	// create confbridge
-	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx)
-	if err != nil {
-		log.Errorf("Could not create the confbridge. err: %v", err)
-		return nil, err
-	}
+	// // create confbridge
+	// cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx)
+	// if err != nil {
+	// 	log.Errorf("Could not create the confbridge. err: %v", err)
+	// 	return nil, err
+	// }
 
-	// create queue flow
-	f, err := h.createQueueFlow(ctx, userID, id, cb.ID, waitActions)
-	if err != nil {
-		log.Errorf("Could not create the queue flow. err: %v", err)
-		return nil, err
-	}
+	// // create queue flow
+	// f, err := h.createQueueFlow(ctx, userID, id, cb.ID, waitActions)
+	// if err != nil {
+	// 	log.Errorf("Could not create the queue flow. err: %v", err)
+	// 	return nil, err
+	// }
 
-	// get flow target action id
-	forwardActionID, err := h.getForwardActionID(ctx, f.ID)
-	if err != nil {
-		log.Errorf("Could not get forward action id. err: %v", err)
-		return nil, err
-	}
+	// // get flow target action id
+	// forwardActionID, err := h.getForwardActionID(ctx, f.ID)
+	// if err != nil {
+	// 	log.Errorf("Could not get forward action id. err: %v", err)
+	// 	return nil, err
+	// }
 
 	// create a new queue
 	a := &queue.Queue{
-		ID:              id,
-		UserID:          userID,
-		FlowID:          f.ID,
-		ConfbridgeID:    cb.ID,
-		ForwardActionID: forwardActionID,
+		ID:     id,
+		UserID: userID,
+		// FlowID:          f.ID,
+		// ConfbridgeID:    cb.ID,
+		// ForwardActionID: forwardActionID,
 
 		Name:          name,
 		Detail:        detail,
@@ -195,19 +195,19 @@ func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, con
 }
 
 // getForwardActionID returns action id for froward.
-func (h *queueHandler) getForwardActionID(ctx context.Context, flowID uuid.UUID) (uuid.UUID, error) {
+func (h *queueHandler) getForwardActionID(ctx context.Context, f *fmflow.Flow) (uuid.UUID, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":    "getForwardActionID",
-			"flow_id": flowID,
+			"flow_id": f.ID,
 		},
 	)
 
-	f, err := h.reqHandler.FMV1FlowGet(ctx, flowID)
-	if err != nil {
-		log.Errorf("Could not get flow. err: %v", err)
-		return uuid.Nil, err
-	}
+	// f, err := h.reqHandler.FMV1FlowGet(ctx, flowID)
+	// if err != nil {
+	// 	log.Errorf("Could not get flow. err: %v", err)
+	// 	return uuid.Nil, err
+	// }
 
 	res := uuid.Nil
 	for _, act := range f.Actions {

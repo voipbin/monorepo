@@ -8,11 +8,11 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
@@ -90,9 +90,9 @@ func TestCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any()).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.userID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), "", gomock.Any(), true).Return(&fmflow.Flow{}, nil)
-			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
+			// mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any()).Return(tt.responseConfbridge, nil)
+			// mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.userID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), "", gomock.Any(), true).Return(&fmflow.Flow{}, nil)
+			// mockReq.EXPECT().FMV1FlowGet(gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
 
 			mockDB.EXPECT().QueueCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueueGet(gomock.Any(), gomock.Any()).Return(&queue.Queue{}, nil)
@@ -315,15 +315,15 @@ func TestGetForwardActionID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		flowID       uuid.UUID
-		responseFlow *fmflow.Flow
+		// flowID       uuid.UUID
+		flow *fmflow.Flow
 
 		expectRes uuid.UUID
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("f21fdbc6-60de-11ec-ad49-5fa7a8a1a0fc"),
+			// uuid.FromStringOrNil("f21fdbc6-60de-11ec-ad49-5fa7a8a1a0fc"),
 			&fmflow.Flow{
 				Actions: []fmaction.Action{
 					{
@@ -345,9 +345,9 @@ func TestGetForwardActionID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.responseFlow, nil)
+			// mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.responseFlow, nil)
 
-			res, err := h.getForwardActionID(ctx, tt.flowID)
+			res, err := h.getForwardActionID(ctx, tt.flow)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

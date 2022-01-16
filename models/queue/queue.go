@@ -7,11 +7,8 @@ import (
 
 // Queue defines
 type Queue struct {
-	ID              uuid.UUID `json:"id"`                // queue id
-	UserID          uint64    `json:"user_id"`           // owned user's id
-	FlowID          uuid.UUID `json:"flow_id"`           // flow id
-	ConfbridgeID    uuid.UUID `json:"confbridge_id"`     // confbridge id(call-manager)
-	ForwardActionID uuid.UUID `json:"forward_action_id"` // action id for forward
+	ID     uuid.UUID `json:"id"`      // queue id
+	UserID uint64    `json:"user_id"` // owned user's id
 
 	// basic info
 	Name          string `json:"name"`           // queue's name
