@@ -33,10 +33,12 @@ func TestCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID          uint64
-		queueID         uuid.UUID
-		referenceType   queuecall.ReferenceType
-		referenceID     uuid.UUID
+		userID        uint64
+		queueID       uuid.UUID
+		referenceType queuecall.ReferenceType
+		referenceID   uuid.UUID
+
+		flowID          uuid.UUID
 		forwardActionID uuid.UUID
 		exitActionID    uuid.UUID
 		confbridgeID    uuid.UUID
@@ -61,6 +63,8 @@ func TestCreate(t *testing.T) {
 			uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
 			queuecall.ReferenceTypeCall,
 			uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
+
+			uuid.FromStringOrNil("c9e87138-7699-11ec-aa80-0321af12db91"),
 			uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
 			uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 			uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
@@ -106,6 +110,7 @@ func TestCreate(t *testing.T) {
 				tt.queueID,
 				tt.referenceType,
 				tt.referenceID,
+				tt.flowID,
 				tt.forwardActionID,
 				tt.exitActionID,
 				tt.confbridgeID,

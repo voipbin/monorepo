@@ -109,7 +109,7 @@ func TestJoin(t *testing.T) {
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.referenceID).Return(tt.call, nil)
 
 			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any()).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queue.UserID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), "", gomock.Any(), true).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queue.UserID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), "", gomock.Any(), false).Return(tt.responseFlow, nil)
 
 			var source cmaddress.Address
 			if tt.call.Direction == cmcall.DirectionIncoming {
@@ -129,6 +129,7 @@ func TestJoin(t *testing.T) {
 				tt.queue.ID,
 				tt.referenceType,
 				tt.referenceID,
+				tt.responseFlow.ID,
 				forwardActionID,
 				tt.exitActionID,
 				tt.responseConfbridge.ID,

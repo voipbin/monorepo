@@ -44,34 +44,10 @@ func (h *queueHandler) Create(
 		return nil, fmt.Errorf("wrong routing_method")
 	}
 
-	// // create confbridge
-	// cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx)
-	// if err != nil {
-	// 	log.Errorf("Could not create the confbridge. err: %v", err)
-	// 	return nil, err
-	// }
-
-	// // create queue flow
-	// f, err := h.createQueueFlow(ctx, userID, id, cb.ID, waitActions)
-	// if err != nil {
-	// 	log.Errorf("Could not create the queue flow. err: %v", err)
-	// 	return nil, err
-	// }
-
-	// // get flow target action id
-	// forwardActionID, err := h.getForwardActionID(ctx, f.ID)
-	// if err != nil {
-	// 	log.Errorf("Could not get forward action id. err: %v", err)
-	// 	return nil, err
-	// }
-
 	// create a new queue
 	a := &queue.Queue{
 		ID:     id,
 		UserID: userID,
-		// FlowID:          f.ID,
-		// ConfbridgeID:    cb.ID,
-		// ForwardActionID: forwardActionID,
 
 		Name:          name,
 		Detail:        detail,
@@ -133,7 +109,7 @@ func (h *queueHandler) createQueueFlow(ctx context.Context, userID uint64, queue
 	flowName := fmt.Sprintf("queue-%s", queueID.String())
 
 	// create flow
-	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", "", actions, true)
+	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", "", actions, false)
 	if err != nil {
 		log.Errorf("Could not create a queue flow. err: %v", err)
 		return nil, err
