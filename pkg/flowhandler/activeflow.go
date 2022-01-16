@@ -79,6 +79,7 @@ func (h *flowHandler) ActiveFlowSetForwardActionID(ctx context.Context, callID u
 		log.Errorf("Could not get active flow. err: %v", err)
 		return err
 	}
+	log.WithField("active_flow", af).Debug("Found active flow.")
 
 	// check the action ID exists in the actions.
 	found := false
@@ -89,8 +90,8 @@ func (h *flowHandler) ActiveFlowSetForwardActionID(ctx context.Context, callID u
 		}
 	}
 	if !found {
-		log.Errorf("Could not find move action id in the actions.")
-		return fmt.Errorf("move action id not found")
+		log.Errorf("Could not find foward action id in the actions.")
+		return fmt.Errorf("foward action id not found")
 	}
 
 	// update active flow

@@ -1047,8 +1047,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 				},
 			},
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"),
-				FlowID: uuid.FromStringOrNil("0f0a4864-6591-11ec-bc0e-db27e08ddec2"),
+				ID: uuid.FromStringOrNil("bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"),
 			},
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("0f0a4864-6591-11ec-bc0e-db27e08ddec2"),
@@ -1083,11 +1082,82 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			},
 
 			&qmqueuecall.Queuecall{
-				ID: uuid.FromStringOrNil("c9002972-6592-11ec-af59-afccad96c5a4"),
+				ID:     uuid.FromStringOrNil("c9002972-6592-11ec-af59-afccad96c5a4"),
+				FlowID: uuid.FromStringOrNil("0f0a4864-6591-11ec-bc0e-db27e08ddec2"),
 			},
 
 			&action.Action{
 				ID:   uuid.FromStringOrNil("5de173bc-6592-11ec-bd97-bfe78cdda0f5"),
+				Type: action.TypeAnswer,
+			},
+		},
+
+		{
+			"timeout wait",
+			uuid.FromStringOrNil("d1cff4dc-7691-11ec-851a-5b3385e6cb03"),
+			&action.Action{
+				ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
+				Type:   action.TypeQueueJoin,
+				Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
+			},
+			uuid.FromStringOrNil("d28cb860-7691-11ec-b24f-a31daa9b0585"),
+
+			&activeflow.ActiveFlow{
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
+						Type:   action.TypeQueueJoin,
+						Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("d2b8883c-7691-11ec-a001-075712b96511"),
+						Type: action.TypeTalk,
+					},
+				},
+			},
+			&qmqueue.Queue{
+				ID:          uuid.FromStringOrNil("d28cb860-7691-11ec-b24f-a31daa9b0585"),
+				WaitTimeout: 600000,
+			},
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("d2e1b810-7691-11ec-b63f-a7af3ca6f888"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("5e0bb1c2-6592-11ec-ad88-63adb38da11e"),
+						Type: action.TypeConfbridgeJoin,
+					},
+				},
+			},
+			uuid.FromStringOrNil("d2b8883c-7691-11ec-a001-075712b96511"),
+
+			&activeflow.ActiveFlow{
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("5e0bb1c2-6592-11ec-ad88-63adb38da11e"),
+						Type: action.TypeConfbridgeJoin,
+					},
+					{
+						ID:   uuid.FromStringOrNil("d2b8883c-7691-11ec-a001-075712b96511"),
+						Type: action.TypeTalk,
+					},
+				},
+			},
+
+			&qmqueuecall.Queuecall{
+				ID:     uuid.FromStringOrNil("c9002972-6592-11ec-af59-afccad96c5a4"),
+				FlowID: uuid.FromStringOrNil("d2e1b810-7691-11ec-b63f-a7af3ca6f888"),
+			},
+
+			&action.Action{
+				ID:   uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
 				Type: action.TypeAnswer,
 			},
 		},
@@ -1098,10 +1168,14 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
-			mockDB.EXPECT().FlowGet(gomock.Any(), tt.queue.FlowID).Return(tt.queueFlow, nil)
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
 			mockReq.EXPECT().QMV1QueueCreateQueuecall(gomock.Any(), tt.queue.ID, gomock.Any(), tt.callID, tt.exitActionID).Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.responseQueuecall.FlowID).Return(tt.queueFlow, nil)
+			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
+			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.responseQueuecall.ID, 1000).Return(nil)
+			if tt.responseQueuecall.TimeoutWait > 0 {
+				mockReq.EXPECT().QMV1QueuecallTiemoutWait(gomock.Any(), tt.responseQueuecall.ID, tt.responseQueuecall.TimeoutWait).Return(nil)
+			}
 
 			res, err := h.activeFlowHandleActionQueueJoin(ctx, tt.callID, tt.act)
 			if err != nil {

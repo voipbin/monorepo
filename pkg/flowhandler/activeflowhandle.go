@@ -646,13 +646,6 @@ func (h *flowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callI
 	}
 	log.WithField("queue", q).Debug("Found queue info.")
 
-	// get flow's action
-	patchedActions, err := h.getActionsFromFlow(q.FlowID, q.UserID)
-	if err != nil {
-		log.Errorf("Could not get queue flow's actions. err: %v", err)
-		return nil, err
-	}
-
 	// get active flow
 	af, err := h.db.ActiveFlowGet(ctx, callID)
 	if err != nil {
@@ -665,6 +658,24 @@ func (h *flowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callI
 	exitActionID, err := h.getExitActionID(af.Actions, act.ID)
 	if err != nil {
 		log.Errorf("Could not get exit action id. err: %v", err)
+		return nil, err
+	}
+
+	// send the queue join request
+	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, q.ID, qmqueuecall.ReferenceTypeCall, callID, exitActionID)
+	if err != nil {
+		log.WithField("exit_action_id", exitActionID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
+		errForward := h.reqHandler.FMV1ActvieFlowUpdateForwardActionID(ctx, callID, exitActionID, true)
+		if errForward != nil {
+			log.Errorf("Could not forward the active flow. err: %v", errForward)
+		}
+	}
+	log.WithField("queuecall", qc).Debug("Created the queuecall.")
+
+	// get flow's action
+	patchedActions, err := h.getActionsFromFlow(qc.FlowID, q.UserID)
+	if err != nil {
+		log.Errorf("Could not get queue flow's actions. err: %v", err)
 		return nil, err
 	}
 
@@ -681,16 +692,19 @@ func (h *flowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callI
 		return nil, err
 	}
 
-	// send the queue join request
-	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, q.ID, qmqueuecall.ReferenceTypeCall, callID, exitActionID)
-	if err != nil {
-		log.WithField("exit_action_id", exitActionID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
-		errForward := h.reqHandler.FMV1ActvieFlowUpdateForwardActionID(ctx, callID, exitActionID, true)
-		if errForward != nil {
-			log.Errorf("Could not forward the active flow. err: %v", errForward)
+	// send the queuecall excute request
+	if err := h.reqHandler.QMV1QueuecallExecute(ctx, qc.ID, 1000); err != nil {
+		log.Errorf("Could not send the execute request. err: %v", err)
+		return nil, err
+	}
+
+	// send the queuecall timeout-wait
+	if qc.TimeoutWait > 0 {
+		if err := h.reqHandler.QMV1QueuecallTiemoutWait(ctx, qc.ID, qc.TimeoutWait); err != nil {
+			log.Errorf("Could not send the timeout-wait request. err: %v", err)
+			return nil, err
 		}
 	}
-	log.WithField("queuecall", qc).Debug("Created the queuecall.")
 
 	return &patchedActions[0], nil
 }
