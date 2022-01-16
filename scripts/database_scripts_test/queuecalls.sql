@@ -2,10 +2,11 @@ create table queuecalls(
   -- identity
   id                binary(16),   -- id
   user_id           integer,      -- user's id
-
   queue_id          binary(16),   -- queue id
   reference_type    varchar(255), -- reference's type
   reference_id      binary(16),   -- reference's id
+
+  flow_id           binary(16),   -- queuecall's queue flow id.
   forward_action_id binary(16),   -- action id for forward.
   exit_action_id    binary(16),   -- action id for queue exit.
   confbridge_id     binary(16),

@@ -32,7 +32,6 @@ func TestQueueCreate(t *testing.T) {
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
 				UserID:        1,
-				FlowID:        uuid.FromStringOrNil("538791ae-5c81-11ec-9cd9-4f0755b8aca6"),
 				Name:          "test name",
 				Detail:        "test detail",
 				WebhookURI:    "test.com",
@@ -56,7 +55,6 @@ func TestQueueCreate(t *testing.T) {
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
 				UserID:        1,
-				FlowID:        uuid.FromStringOrNil("538791ae-5c81-11ec-9cd9-4f0755b8aca6"),
 				Name:          "test name",
 				Detail:        "test detail",
 				WebhookURI:    "test.com",

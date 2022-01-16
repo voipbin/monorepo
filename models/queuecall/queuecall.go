@@ -9,14 +9,16 @@ import (
 
 // Queuecall defines
 type Queuecall struct {
-	ID              uuid.UUID     `json:"id"`
-	UserID          uint64        `json:"user_id"`
-	QueueID         uuid.UUID     `json:"queue_id"`
-	ReferenceType   ReferenceType `json:"reference_type"`
-	ReferenceID     uuid.UUID     `json:"reference_id"`
-	ForwardActionID uuid.UUID     `json:"forward_action_id"` // action id for forward. This is for the confbridge_join's action id.
-	ExitActionID    uuid.UUID     `json:"exit_action_id"`    // action id for queue exit. When the queuecall has ended, the queuemanager will send the request forward to this action id.
-	ConfbridgeID    uuid.UUID     `json:"confbridge_id"`     // confbridge id
+	ID            uuid.UUID     `json:"id"`
+	UserID        uint64        `json:"user_id"`
+	QueueID       uuid.UUID     `json:"queue_id"`
+	ReferenceType ReferenceType `json:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id"`
+
+	FlowID          uuid.UUID `json:"flow_id"`           // queuecall's queue flow id.
+	ForwardActionID uuid.UUID `json:"forward_action_id"` // action id for forward. This is for the confbridge_join's action id.
+	ExitActionID    uuid.UUID `json:"exit_action_id"`    // action id for queue exit. When the queuecall has ended, the queuemanager will send the request forward to this action id.
+	ConfbridgeID    uuid.UUID `json:"confbridge_id"`     // confbridge id
 
 	WebhookURI    string `json:"webhook_uri"`    // webhook uri.
 	WebhookMethod string `json:"webhook_method"` // webhook method.

@@ -17,10 +17,11 @@ const (
 	select
 		id,
 		user_id,
-
 		queue_id,
 		reference_type,
 		reference_id,
+
+		flow_id,
 		forward_action_id,
 		exit_action_id,
 		confbridge_id,
@@ -57,10 +58,11 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 	if err := row.Scan(
 		&res.ID,
 		&res.UserID,
-
 		&res.QueueID,
 		&res.ReferenceType,
 		&res.ReferenceID,
+
+		&res.FlowID,
 		&res.ForwardActionID,
 		&res.ExitActionID,
 		&res.ConfbridgeID,
@@ -105,10 +107,11 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 	q := `insert into queuecalls(
 		id,
 		user_id,
-
 		queue_id,
 		reference_type,
 		reference_id,
+
+		flow_id,
 		forward_action_id,
 		exit_action_id,
 		confbridge_id,
@@ -131,8 +134,8 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		tm_update,
 		tm_delete
 	) values(
-		?, ?,
-		?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?,
+		?, ?, ?, ?,
 		?, ?,
 		?, ?, ?,
 		?, ?,
@@ -154,10 +157,11 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 	_, err = h.db.Exec(q,
 		a.ID.Bytes(),
 		a.UserID,
-
 		a.QueueID.Bytes(),
 		a.ReferenceType,
 		a.ReferenceID.Bytes(),
+
+		a.FlowID.Bytes(),
 		a.ForwardActionID.Bytes(),
 		a.ExitActionID.Bytes(),
 		a.ConfbridgeID.Bytes(),

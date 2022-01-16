@@ -74,11 +74,8 @@ func TestProcessV1QueuesPost(t *testing.T) {
 			6000000,
 
 			&queue.Queue{
-				ID:              uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
-				UserID:          1,
-				FlowID:          uuid.FromStringOrNil("538791ae-5c81-11ec-9cd9-4f0755b8aca6"),
-				ConfbridgeID:    uuid.FromStringOrNil("9ec20c00-5f36-11ec-8ab6-1339e6ad8fb7"),
-				ForwardActionID: uuid.FromStringOrNil("9ee0848c-5f36-11ec-b4f4-6fa8ca6f5406"),
+				ID:     uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
+				UserID: 1,
 
 				Name:          "name",
 				Detail:        "detail",
@@ -113,7 +110,7 @@ func TestProcessV1QueuesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","user_id":1,"flow_id":"538791ae-5c81-11ec-9cd9-4f0755b8aca6","confbridge_id":"9ec20c00-5f36-11ec-8ab6-1339e6ad8fb7","forward_action_id":"9ee0848c-5f36-11ec-b4f4-6fa8ca6f5406","name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","user_id":1,"name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -191,7 +188,7 @@ func TestProcessV1QueuesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","user_id":1,"flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","user_id":1,"name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -216,7 +213,7 @@ func TestProcessV1QueuesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","user_id":1,"flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","user_id":1,"flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","user_id":1,"name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","user_id":1,"name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -272,7 +269,7 @@ func TestProcessV1QueuesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","user_id":0,"flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","user_id":0,"name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -467,7 +464,7 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a7261c56-5f6d-11ec-8d91-ff8f64486712","user_id":0,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a7261c56-5f6d-11ec-8d91-ff8f64486712","user_id":0,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

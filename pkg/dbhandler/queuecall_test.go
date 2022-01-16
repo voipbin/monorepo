@@ -87,6 +87,67 @@ func TestQueuecallCreate(t *testing.T) {
 				TMDelete:       DefaultTimeStamp,
 			},
 		},
+		{
+			"added flow_id",
+			&queuecall.Queuecall{
+				ID:              uuid.FromStringOrNil("e09db874-7686-11ec-8245-27e9d4dad47d"),
+				UserID:          1,
+				QueueID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
+				ReferenceType:   queuecall.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
+				FlowID:          uuid.FromStringOrNil("e0c80b2e-7686-11ec-9eed-6f64a02073fb"),
+				ForwardActionID: uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
+				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
+				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
+
+				WebhookURI:    "test.com",
+				WebhookMethod: "POST",
+				Source: cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821021656521",
+				},
+				RoutingMethod: queue.RoutingMethodRandom,
+				TagIDs: []uuid.UUID{
+					uuid.FromStringOrNil("a8f7abf8-5e5a-11ec-b03a-0f722823a0ca"),
+				},
+
+				Status:         queuecall.StatusWait,
+				ServiceAgentID: [16]byte{},
+				TMCreate:       DefaultTimeStamp,
+				TMService:      DefaultTimeStamp,
+				TMUpdate:       DefaultTimeStamp,
+				TMDelete:       DefaultTimeStamp,
+			},
+			&queuecall.Queuecall{
+				ID:              uuid.FromStringOrNil("e09db874-7686-11ec-8245-27e9d4dad47d"),
+				UserID:          1,
+				QueueID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
+				ReferenceType:   queuecall.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
+				FlowID:          uuid.FromStringOrNil("e0c80b2e-7686-11ec-9eed-6f64a02073fb"),
+				ForwardActionID: uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
+				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
+				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
+
+				WebhookURI:    "test.com",
+				WebhookMethod: "POST",
+				Source: cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821021656521",
+				},
+				RoutingMethod: queue.RoutingMethodRandom,
+				TagIDs: []uuid.UUID{
+					uuid.FromStringOrNil("a8f7abf8-5e5a-11ec-b03a-0f722823a0ca"),
+				},
+
+				Status:         queuecall.StatusWait,
+				ServiceAgentID: [16]byte{},
+				TMCreate:       DefaultTimeStamp,
+				TMService:      DefaultTimeStamp,
+				TMUpdate:       DefaultTimeStamp,
+				TMDelete:       DefaultTimeStamp,
+			},
+		},
 	}
 
 	for _, tt := range tests {
