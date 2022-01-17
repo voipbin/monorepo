@@ -121,6 +121,11 @@ type OptionRecordingStop struct {
 	// no option
 }
 
+// OptionSleep defines action sleep's option.
+type OptionSleep struct {
+	Duration int `json:"duration"` // Sleep duration. Milliseconds.
+}
+
 // OptionStreamEcho defines action stream_echo's option.
 type OptionStreamEcho struct {
 	Duration int `json:"duration"`

@@ -31,9 +31,9 @@ func (a *Action) String() string {
 
 // static ActionID
 var (
-	IDFinish uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000")
-	IDStart  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
-	IDEmpty  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002")
+	IDFinish uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000") // reserved action id for finish(hangup)
+	IDStart  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001") // reserved action id for start.
+	IDEmpty  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002") // empty action
 )
 
 // Type type
@@ -60,6 +60,7 @@ const (
 	TypeQueueJoin           Type = "queue_join"           // flow-manager. put the call into the queue.
 	TypeRecordingStart      Type = "recording_start"      // call-manager. startr the record of the given call.
 	TypeRecordingStop       Type = "recording_stop"       // call-manager. stop the record of the given call.
+	TypeSleep               Type = "sleep"                // call-manager. Sleep.
 	TypeStreamEcho          Type = "stream_echo"          // call-manager.
 	TypeTalk                Type = "talk"                 // call-manager. generate audio from the given text(ssml or plain text) and play it.
 	TypeTranscribeStart     Type = "transcribe_start"     // transcribe-manager. start transcribe the call
@@ -89,6 +90,7 @@ var TypeList []Type = []Type{
 	TypeRecordingStart,
 	TypeRecordingStop,
 	TypeStreamEcho,
+	TypeSleep,
 	TypeTalk,
 	TypeTranscribeStart,
 	TypeTranscribeStop,
