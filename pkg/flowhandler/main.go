@@ -8,7 +8,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -17,8 +18,9 @@ import (
 )
 
 type flowHandler struct {
-	db         dbhandler.DBHandler
-	reqHandler requesthandler.RequestHandler
+	db            dbhandler.DBHandler
+	reqHandler    requesthandler.RequestHandler
+	notifyHandler notifyhandler.NotifyHandler
 }
 
 // FlowHandler interface
@@ -49,10 +51,11 @@ type FlowHandler interface {
 }
 
 // NewFlowHandler return FlowHandler
-func NewFlowHandler(db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler) FlowHandler {
+func NewFlowHandler(db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler) FlowHandler {
 	h := &flowHandler{
-		db:         db,
-		reqHandler: reqHandler,
+		db:            db,
+		reqHandler:    reqHandler,
+		notifyHandler: notifyHandler,
 	}
 
 	return h

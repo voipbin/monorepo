@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
@@ -18,12 +17,10 @@ func TestFlowsPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
-		db:          mockDB,
 		rabbitSock:  mockSock,
 		flowHandler: mockFlowHandler,
 	}
@@ -148,7 +145,6 @@ func TestFlowsPost(t *testing.T) {
 				},
 			},
 		},
-
 	}
 
 	for _, tt := range tests {
@@ -166,12 +162,10 @@ func TestV1FlowsGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
-		db:          mockDB,
 		rabbitSock:  mockSock,
 		flowHandler: mockFlowHandler,
 	}
@@ -330,12 +324,10 @@ func TestV1FlowsIDActionsIDGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
-		db:          mockDB,
 		rabbitSock:  mockSock,
 		flowHandler: mockFlowHandler,
 	}
@@ -380,12 +372,10 @@ func TestV1FlowsIDGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
-		db:          mockDB,
 		rabbitSock:  mockSock,
 		flowHandler: mockFlowHandler,
 	}
@@ -490,12 +480,10 @@ func TestV1FlowsIDPut(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
-		db:          mockDB,
 		rabbitSock:  mockSock,
 		flowHandler: mockFlowHandler,
 	}
@@ -610,12 +598,10 @@ func TestV1FlowsIDDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
-		db:          mockDB,
 		rabbitSock:  mockSock,
 		flowHandler: mockFlowHandler,
 	}

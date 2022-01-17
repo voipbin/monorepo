@@ -10,7 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
@@ -27,7 +26,6 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
-	db         dbhandler.DBHandler
 
 	flowHandler flowhandler.FlowHandler
 }
@@ -79,12 +77,10 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
-	db dbhandler.DBHandler,
 	flowHandler flowhandler.FlowHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:  rabbitSock,
-		db:          db,
 		flowHandler: flowHandler,
 	}
 
