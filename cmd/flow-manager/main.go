@@ -14,14 +14,17 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler"
 )
+
+const serviceName = "flow-manager"
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -30,7 +33,7 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.flow-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueEvent = flag.String("rabbit_queue_event", "bin-manager.flow-manager.event", "rabbitmq queue name for event notify") //nolint:deadcode,unused,varcheck // reserved
+var rabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.flow-manager.event", "rabbitmq queue name for event notify") //nolint:deadcode,unused,varcheck // reserved
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -133,36 +136,33 @@ func createDBHandler() (dbhandler.DBHandler, error) {
 }
 
 func run(dbHandler dbhandler.DBHandler) {
+	log := logrus.WithField("func", "run")
 
-	// run the listen service
-	go func() {
-		_ = runListen(dbHandler)
-	}()
+	// rabbitmq sock connect
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	// create handlers
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	flowHandler := flowhandler.NewFlowHandler(dbHandler, reqHandler, notifyHandler)
+
+	// run listen
+	if errListen := runListen(rabbitSock, flowHandler); errListen != nil {
+		log.Errorf("Could not run the listen correctly. err: %v", errListen)
+		return
+	}
 }
 
 // runListen runs the listen service
-func runListen(dbHandler dbhandler.DBHandler) error {
+func runListen(sockListen rabbitmqhandler.Rabbit, flowHandler flowhandler.FlowHandler) error {
 	log := logrus.WithField("func", "runListen")
 
-	// create flowhandler
-	sockRequest := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	sockRequest.Connect()
-	requestHandler := requesthandler.NewRequestHandler(sockRequest, "flow-manager")
-	flowHandler := flowhandler.NewFlowHandler(dbHandler, requestHandler)
-
-	// create and run the listen handler
-	// listen to the request queue
-	sockListen := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	sockListen.Connect()
-	listenHandler := listenhandler.NewListenHandler(
-		sockListen,
-		dbHandler,
-		flowHandler,
-	)
+	listenHandler := listenhandler.NewListenHandler(sockListen, flowHandler)
 
 	// run the service
-	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
-		log.Errorf("Error occurred in listen handler. err: %v", err)
+	if errRun := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); errRun != nil {
+		log.Errorf("Error occurred in listen handler. err: %v", errRun)
 	}
 
 	return nil

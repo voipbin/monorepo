@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
@@ -18,12 +17,10 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
-		db:          mockDB,
 		rabbitSock:  mockSock,
 		flowHandler: mockFlowHandler,
 	}
@@ -91,12 +88,10 @@ func TestV1ActiveFlowsIDNextGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
-		db:          mockDB,
 		rabbitSock:  mockSock,
 		flowHandler: mockFlowHandler,
 	}
@@ -146,12 +141,10 @@ func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 	h := &listenHandler{
-		db:          mockDB,
 		rabbitSock:  mockSock,
 		flowHandler: mockFlowHandler,
 	}
