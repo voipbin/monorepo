@@ -78,10 +78,9 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 	}
 
 	type test struct {
-		name         string
-		call         *call.Call
-		action       *action.Action
-		expectAction *action.Action
+		name   string
+		call   *call.Call
+		action *action.Action
 	}
 
 	tests := []test{
@@ -92,20 +91,15 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 				Type:   action.TypeStreamEcho,
 				Option: []byte(`{}`),
 			},
-			&action.Action{
-				Type:   action.TypeStreamEcho,
-				ID:     uuid.Nil,
-				Option: []byte(`{"duration":180000}`),
-			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
-			mockReq.EXPECT().CMV1CallActionTimeout(gomock.Any(), tt.call.ID, gomock.Any(), tt.expectAction).Return(nil)
+			mockReq.EXPECT().CMV1CallActionTimeout(gomock.Any(), tt.call.ID, gomock.Any(), tt.action).Return(nil)
 			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -924,6 +918,7 @@ func TestActionNext(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
 			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(tt.act, nil)
 			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
 
@@ -992,6 +987,7 @@ func TestActionNextForce(t *testing.T) {
 
 			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(tt.act, nil)
 			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
+			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
 
 			if err := h.ActionNextForce(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
