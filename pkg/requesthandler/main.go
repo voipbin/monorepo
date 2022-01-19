@@ -10,16 +10,14 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -35,6 +33,8 @@ import (
 	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // contents type
@@ -49,7 +49,7 @@ var (
 	AsteriskIDConference = "conference" // asterisk-conference
 )
 
-const requestTimeoutDefault int = 3 // default request timeout
+const requestTimeoutDefault int = 3000 // default request timeout(3 sec)
 
 // delay units
 const (
@@ -176,9 +176,9 @@ type RequestHandler interface {
 
 	// asterisk bridges
 	AstBridgeAddChannel(ctx context.Context, asteriskID, bridgeID, channelID, role string, absorbDTMF, mute bool) error
-	AstBridgeCreate(ctx context.Context, asteriskID, bridgeID, bridgeName string, bridgeType []bridge.Type) error
+	AstBridgeCreate(ctx context.Context, asteriskID, bridgeID, bridgeName string, bridgeType []cmbridge.Type) error
 	AstBridgeDelete(ctx context.Context, asteriskID, bridgeID string) error
-	AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*bridge.Bridge, error)
+	AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*cmbridge.Bridge, error)
 	AstBridgeRemoveChannel(ctx context.Context, asteriskID, bridgeID, channelID string) error
 
 	// asterisk channels
@@ -232,7 +232,7 @@ type RequestHandler interface {
 		detail string,
 	) (*amtag.Tag, error)
 	AMV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
-	AMV1TagGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]tag.Tag, error)
+	AMV1TagGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]amtag.Tag, error)
 	AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) error
 	AMV1TagDelete(ctx context.Context, id uuid.UUID) error
 

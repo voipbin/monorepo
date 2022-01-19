@@ -6,9 +6,10 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tsrequest "gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // TSV1RecordingCreate sends a request to transcribe-manager
@@ -27,7 +28,7 @@ func (r *requestHandler) TSV1RecordingCreate(ctx context.Context, id uuid.UUID, 
 		return nil, err
 	}
 
-	res, err := r.sendRequestTS(uri, rabbitmqhandler.RequestMethodPost, resourceStorageRecording, 60, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestTS(uri, rabbitmqhandler.RequestMethodPost, resourceStorageRecording, 60000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // NMV1AvailableNumberGets sends a request to number-manager
@@ -14,7 +15,7 @@ import (
 func (r *requestHandler) NMV1AvailableNumberGets(ctx context.Context, userID uint64, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error) {
 	uri := fmt.Sprintf("/v1/available_numbers?page_size=%d&user_id=%d&country_code=%s", pageSize, userID, countryCode)
 
-	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberAvailableNumbers, 15, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberAvailableNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

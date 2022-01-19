@@ -7,11 +7,11 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfrequest "gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // CFV1ConferenceGet gets the conference.
@@ -42,7 +42,7 @@ func (r *requestHandler) CFV1ConferenceGet(ctx context.Context, conferenceID uui
 func (r *requestHandler) CFV1ConferenceGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&user_id=%d&type=%s", url.QueryEscape(pageToken), pageSize, userID, conferenceType)
 
-	res, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, 30, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -102,8 +102,8 @@ func (r *requestHandler) CFV1ConferenceCreate(
 	timeout int,
 	webhookURI string,
 	data map[string]interface{},
-	preActions []action.Action,
-	postActions []action.Action,
+	preActions []fmaction.Action,
+	postActions []fmaction.Action,
 ) (*cfconference.Conference, error) {
 	uri := "/v1/conferences"
 

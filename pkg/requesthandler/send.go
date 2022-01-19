@@ -7,11 +7,13 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // sendRequest sends a request to the given destination.
 //
+// timeout: timeout(ms)
 // delayed: delay request(ms)
 func (r *requestHandler) sendRequest(queue string, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
@@ -31,7 +33,7 @@ func (r *requestHandler) sendRequest(queue string, uri string, method rabbitmqha
 	})
 	log.Debugf("Sending a request. queue: %s, method: %s, uri: %s", queue, method, uri)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(timeout))
 	defer cancel()
 
 	switch {
@@ -80,7 +82,7 @@ func (r *requestHandler) sendDelayedRequest(ctx context.Context, target string, 
 }
 
 // SendARIRequest send a request to the Asterisk-proxy and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
@@ -91,7 +93,7 @@ func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmqh
 }
 
 // sendRequestFM send a request to the flow-manager and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestFM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
@@ -99,7 +101,7 @@ func (r *requestHandler) sendRequestFM(uri string, method rabbitmqhandler.Reques
 }
 
 // sendRequestTTS send a request to the tts-manager and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
@@ -107,7 +109,7 @@ func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.Reque
 }
 
 // sendRequestWM send a request to the webhook-manager and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestWM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
@@ -115,7 +117,7 @@ func (r *requestHandler) sendRequestWM(uri string, method rabbitmqhandler.Reques
 }
 
 // sendRequestCM send a request to the call-manager and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestCM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
@@ -141,7 +143,7 @@ func (r *requestHandler) sendRequestCF(uri string, method rabbitmqhandler.Reques
 }
 
 // sendRequestTS send a request to the transcribe-manager and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestTS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
@@ -149,7 +151,7 @@ func (r *requestHandler) sendRequestTS(uri string, method rabbitmqhandler.Reques
 }
 
 // sendRequestSM send a request to the storage-manager and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestSM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
@@ -157,7 +159,7 @@ func (r *requestHandler) sendRequestSM(uri string, method rabbitmqhandler.Reques
 }
 
 // sendRequestUM send a request to the user-manager and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestUM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
@@ -165,7 +167,7 @@ func (r *requestHandler) sendRequestUM(uri string, method rabbitmqhandler.Reques
 }
 
 // sendRequestAM send a request to the agent-manager and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestAM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
@@ -173,7 +175,7 @@ func (r *requestHandler) sendRequestAM(uri string, method rabbitmqhandler.Reques
 }
 
 // sendRequestQM send a request to the queue-manager and return the response
-// timeout second
+// timeout millisecond
 // delayed millisecond
 func (r *requestHandler) sendRequestQM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 

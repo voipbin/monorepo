@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestFMV1ActvieFlowCreate(t *testing.T) {
@@ -36,7 +36,7 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response  *rabbitmqhandler.Response
-		expectRes *activeflow.ActiveFlow
+		expectRes *fmactiveflow.ActiveFlow
 	}{
 		{
 			"normal",
@@ -56,14 +56,14 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"call_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","user_id":0,"webhook_uri":"","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
-			&activeflow.ActiveFlow{
+			&fmactiveflow.ActiveFlow{
 				CallID: uuid.FromStringOrNil("447e712e-82d8-11eb-8900-7b97c080ddd8"),
 				FlowID: uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"),
 				UserID: 0,
-				CurrentAction: action.Action{
-					ID: action.IDStart,
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
 				},
-				Actions: []action.Action{},
+				Actions: []fmaction.Action{},
 			},
 		},
 		{
@@ -84,15 +84,15 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"call_id":"ec603bf8-82dc-11eb-afe2-d7c97817ab6f","flow_id":"f2c8b826-82dc-11eb-a8f0-e7519b0418a6","user_id":0,"webhook_uri":"https://test.com/test_webhook","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
-			&activeflow.ActiveFlow{
+			&fmactiveflow.ActiveFlow{
 				CallID:     uuid.FromStringOrNil("ec603bf8-82dc-11eb-afe2-d7c97817ab6f"),
 				FlowID:     uuid.FromStringOrNil("f2c8b826-82dc-11eb-a8f0-e7519b0418a6"),
 				UserID:     0,
 				WebhookURI: "https://test.com/test_webhook",
-				CurrentAction: action.Action{
-					ID: action.IDStart,
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
 				},
-				Actions: []action.Action{},
+				Actions: []fmaction.Action{},
 			},
 		},
 	}

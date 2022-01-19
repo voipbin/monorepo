@@ -10,13 +10,14 @@ import (
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amrequest "gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler/models/request"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // AMV1AgentCreate sends a request to agent-manager
 // to creating an Agent.
 // it returns created call if it succeed.
-// timeout: seconds
+// timeout: milliseconds
 func (r *requestHandler) AMV1AgentCreate(
 	ctx context.Context,
 	timeout int,
@@ -169,7 +170,7 @@ func (r *requestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, use
 
 	uri := fmt.Sprintf("/v1/agents?user_id=%d&tag_ids=%s&status=%s", userID, tagStr, status)
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMAgent, 3, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -211,7 +212,7 @@ func (r *requestHandler) AMV1AgentDelete(ctx context.Context, id uuid.UUID) erro
 // CMV1AgentLogin sends a request to agent-manager
 // to login the agent
 // it returns error if something went wrong.
-// timeout: seconds
+// timeout: milliseconds
 func (r *requestHandler) AMV1AgentLogin(ctx context.Context, timeout int, userID uint64, username, password string) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/login", username)
 
@@ -276,7 +277,7 @@ func (r *requestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.U
 // AMV1AgentUpdatePassword sends a request to agent-manager
 // to update the agent's password
 // it returns error if something went wrong.
-// timeout: seconds
+// timeout: milliseconds
 func (r *requestHandler) AMV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) error {
 	uri := fmt.Sprintf("/v1/agents/%s/password", id)
 

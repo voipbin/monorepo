@@ -9,11 +9,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestFMV1FlowCreate(t *testing.T) {
@@ -35,14 +34,14 @@ func TestFMV1FlowCreate(t *testing.T) {
 		flowType   fmflow.Type
 		flowName   string
 		flowDetail string
-		actions    []action.Action
+		actions    []fmaction.Action
 		persist    bool
 
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *flow.Flow
+		expectResult  *fmflow.Flow
 	}
 
 	tests := []test{
@@ -53,7 +52,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 			fmflow.TypeFlow,
 			"test flow",
 			"test flow detail",
-			[]action.Action{},
+			[]fmaction.Action{},
 			true,
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -68,13 +67,13 @@ func TestFMV1FlowCreate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"user_id":1,"type":"flow","name":"test flow","detail":"test flow detail","webhook_uri":"","actions":[],"persist":true}`),
 			},
-			&flow.Flow{
+			&fmflow.Flow{
 				ID:       uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
 				UserID:   1,
 				Type:     fmflow.TypeFlow,
 				Name:     "test flow",
 				Detail:   "test flow detail",
-				Actions:  []action.Action{},
+				Actions:  []fmaction.Action{},
 				Persist:  true,
 				TMCreate: "2020-09-20T03:23:20.995000",
 				TMUpdate: "",

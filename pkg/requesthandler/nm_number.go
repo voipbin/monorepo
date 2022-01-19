@@ -7,9 +7,10 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	nmrequest "gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // NMV1NumberGet sends the /v1/numbers/<number> GET request to number-manager
@@ -40,7 +41,7 @@ func (r *requestHandler) NMV1NumberGetByNumber(ctx context.Context, num string) 
 func (r *requestHandler) NMV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", numberID)
 
-	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -64,7 +65,7 @@ func (r *requestHandler) NMV1NumberGet(ctx context.Context, numberID uuid.UUID) 
 func (r *requestHandler) NMV1NumberGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
 
-	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -117,7 +118,7 @@ func (r *requestHandler) NMV1NumberCreate(ctx context.Context, userID uint64, nu
 		return nil, err
 	}
 
-	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodPost, resourceNumberNumbers, 15, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodPost, resourceNumberNumbers, 15000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -141,7 +142,7 @@ func (r *requestHandler) NMV1NumberCreate(ctx context.Context, userID uint64, nu
 func (r *requestHandler) NMV1NumberDelete(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", id)
 
-	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, 15, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -174,7 +175,7 @@ func (r *requestHandler) NMV1NumberUpdate(ctx context.Context, num *nmnumber.Num
 		return nil, err
 	}
 
-	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, 15, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, 15000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
