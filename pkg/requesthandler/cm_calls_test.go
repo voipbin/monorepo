@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestCMV1CallHealth(t *testing.T) {
@@ -628,8 +628,8 @@ func TestCMCallHangup(t *testing.T) {
 				ID:          uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
 				UserID:      1,
 				FlowID:      uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
-				Source:      address.Address{},
-				Destination: address.Address{},
+				Source:      cmaddress.Address{},
+				Destination: cmaddress.Address{},
 			},
 		},
 	}

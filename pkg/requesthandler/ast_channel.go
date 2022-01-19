@@ -7,10 +7,10 @@ import (
 	"strconv"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // AstChannelAnswer sends the channel answer request
@@ -284,7 +284,7 @@ func (r *requestHandler) AstChannelPlay(ctx context.Context, asteriskID string, 
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsPlay, 10, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsPlay, 10000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -321,7 +321,7 @@ func (r *requestHandler) AstChannelRecord(ctx context.Context, asteriskID string
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, 10, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, 10000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -365,7 +365,7 @@ func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID
 		return nil, err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsExternalMedia, 10, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsExternalMedia, 10000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

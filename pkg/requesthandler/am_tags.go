@@ -7,9 +7,9 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	amrequest "gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler/models/request"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -82,7 +82,7 @@ func (r *requestHandler) AMV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.T
 // AMV1TagGets sends a request to agent-manager
 // to getting a list of tag info.
 // it returns detail list of tag info if it succeed.
-func (r *requestHandler) AMV1TagGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]tag.Tag, error) {
+func (r *requestHandler) AMV1TagGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMTag, requestTimeoutDefault, 0, ContentTypeJSON, nil)
@@ -96,7 +96,7 @@ func (r *requestHandler) AMV1TagGets(ctx context.Context, userID uint64, pageTok
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res []tag.Tag
+	var res []amtag.Tag
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

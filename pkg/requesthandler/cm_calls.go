@@ -10,8 +10,9 @@ import (
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // CMV1CallHealth sends the request for call health-check
@@ -200,7 +201,7 @@ func (r *requestHandler) CMV1CallGet(ctx context.Context, callID uuid.UUID) (*cm
 func (r *requestHandler) CMV1CallGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, 30, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

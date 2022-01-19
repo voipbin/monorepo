@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // AstBridgeCreate sends the bridge create request
-func (r *requestHandler) AstBridgeCreate(ctx context.Context, asteriskID, bridgeID, bridgeName string, bridgeTypes []bridge.Type) error {
+func (r *requestHandler) AstBridgeCreate(ctx context.Context, asteriskID, bridgeID, bridgeName string, bridgeTypes []cmbridge.Type) error {
 	url := "/ari/bridges"
 
 	type Data struct {
@@ -61,7 +61,7 @@ func (r *requestHandler) AstBridgeDelete(ctx context.Context, asteriskID, bridge
 }
 
 // AstBridgeGet sends the bridge get request
-func (r *requestHandler) AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*bridge.Bridge, error) {
+func (r *requestHandler) AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*cmbridge.Bridge, error) {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodGet, resourceAstBridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
@@ -72,12 +72,12 @@ func (r *requestHandler) AstBridgeGet(ctx context.Context, asteriskID, bridgeID 
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	tmpBridge, err := ari.ParseBridge([]byte(res.Data))
+	tmpBridge, err := cmari.ParseBridge([]byte(res.Data))
 	if err != nil {
 		return nil, err
 	}
 
-	bridge := bridge.NewBridgeByARIBridge(tmpBridge)
+	bridge := cmbridge.NewBridgeByARIBridge(tmpBridge)
 	return bridge, nil
 }
 
