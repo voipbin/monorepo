@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -134,17 +135,17 @@ func TestFlowDelete(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	h := &flowHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
 	}
 
-	type test struct {
+	tests := []struct {
 		name   string
 		flowID uuid.UUID
-	}
-
-	tests := []test{
+	}{
 		{
 			"test normal",
 			uuid.FromStringOrNil("acb2d07e-67c5-11eb-a39d-6f0133ff0559"),
@@ -155,6 +156,9 @@ func TestFlowDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flowID).Return(&flow.Flow{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), flow.EventTypeFlowDeleted, gomock.Any(), gomock.Any())
+
 			mockReq.EXPECT().NMV1NumberFlowDelete(ctx, tt.flowID).Return(nil)
 
 			if err := h.FlowDelete(context.Background(), tt.flowID); err != nil {
@@ -286,18 +290,18 @@ func TestFlowUpdate(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	h := &flowHandler{
-		db: mockDB,
+		db:            mockDB,
+		notifyHandler: mockNotify,
 	}
 
-	type test struct {
+	tests := []struct {
 		name         string
 		updateFlow   *flow.Flow
 		responseFlow *flow.Flow
 		expectRes    *flow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"test normal",
 			&flow.Flow{
@@ -342,6 +346,8 @@ func TestFlowUpdate(t *testing.T) {
 
 			mockDB.EXPECT().FlowUpdate(ctx, tt.updateFlow).Return(nil)
 			mockDB.EXPECT().FlowGet(ctx, tt.updateFlow.ID).Return(tt.responseFlow, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow.WebhookURI, tt.responseFlow)
+
 			res, err := h.FlowUpdate(ctx, tt.updateFlow)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

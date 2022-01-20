@@ -60,6 +60,7 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 		log.Errorf("Could not get created active flow. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, activeflow.EventTypeActiveFlowCreated, af.WebhookURI, af)
 
 	return af, nil
 }
@@ -278,6 +279,15 @@ func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID 
 		log.Errorf("Could not update the active-flow's current action. err: %v", err)
 		return err
 	}
+
+	// get updated activeflow
+	tmp, err := h.db.ActiveFlowGet(ctx, callID)
+	if err != nil {
+		// because we
+		log.Errorf("Could not get updated active flow. err: %v", err)
+		return nil
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, activeflow.EventTypeActiveFlowUpdated, tmp.WebhookURI, tmp)
 
 	return nil
 }
