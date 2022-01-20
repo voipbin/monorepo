@@ -8,7 +8,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
@@ -94,7 +93,7 @@ func (h *agentHandler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent
 }
 
 // AgentCreate creates a new agent.
-func (h *agentHandler) AgentCreate(ctx context.Context, userID uint64, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error) {
+func (h *agentHandler) AgentCreate(ctx context.Context, userID uint64, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "AgentCreate",
 		"userid":     userID,
@@ -124,20 +123,22 @@ func (h *agentHandler) AgentCreate(ctx context.Context, userID uint64, username,
 
 	id := uuid.Must(uuid.NewV4())
 	a := &agent.Agent{
-		ID:           id,
-		UserID:       userID,
-		Username:     username,
-		PasswordHash: hashPassword,
-		Name:         name,
-		Detail:       detail,
-		RingMethod:   ringMethod,
-		Status:       agent.StatusOffline,
-		Permission:   permission,
-		TagIDs:       tags,
-		Addresses:    addresses,
-		TMCreate:     getCurTime(),
-		TMUpdate:     defaultTimeStamp,
-		TMDelete:     defaultTimeStamp,
+		ID:            id,
+		UserID:        userID,
+		Username:      username,
+		PasswordHash:  hashPassword,
+		Name:          name,
+		Detail:        detail,
+		WebhookMethod: webhookMethod,
+		WebhookURI:    webhookURI,
+		RingMethod:    ringMethod,
+		Status:        agent.StatusOffline,
+		Permission:    permission,
+		TagIDs:        tags,
+		Addresses:     addresses,
+		TMCreate:      getCurTime(),
+		TMUpdate:      defaultTimeStamp,
+		TMDelete:      defaultTimeStamp,
 	}
 	log = log.WithField("agent_id", id)
 
@@ -151,6 +152,8 @@ func (h *agentHandler) AgentCreate(ctx context.Context, userID uint64, username,
 		log.Errorf("Could not get created agent info. err: %v", err)
 		return nil, err
 	}
+	h.notifyhandler.PublishWebhookEvent(ctx, agent.EventTypeAgentCreated, res.WebhookURI, res)
+
 	log.WithField("agent", res).Debug("Created a new agent.")
 
 	return res, nil
@@ -168,6 +171,13 @@ func (h *agentHandler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 		log.Errorf("Could not delete the agent. err: %v", err)
 		return err
 	}
+
+	tmp, err := h.db.AgentGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted agent info. err: %v", err)
+		return nil
+	}
+	h.notifyhandler.PublishWebhookEvent(ctx, agent.EventTypeAgentDeleted, tmp.WebhookURI, tmp)
 
 	return nil
 }
@@ -296,6 +306,13 @@ func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, stat
 		return err
 	}
 
+	tmp, err := h.db.AgentGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated agent info. err: %v", err)
+		return nil
+	}
+	h.notifyhandler.PublishWebhookEvent(ctx, agent.EventTypeAgentUpdated, tmp.WebhookURI, tmp)
+
 	return nil
 }
 
@@ -340,7 +357,7 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 	}
 
 	// create flow
-	actions := []action.Action{
+	actions := []fmaction.Action{
 		{
 			Type:   fmaction.TypeConfbridgeJoin,
 			Option: opt,

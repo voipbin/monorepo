@@ -9,13 +9,13 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/notifyhandler"
 )
 
 func TestAgentGets(t *testing.T) {
@@ -441,24 +441,28 @@ func TestAgentCreate(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &agentHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyhandler: mockNotify,
 	}
 
 	tests := []struct {
 		name string
 
-		userID     uint64
-		username   string
-		password   string
-		agentName  string
-		detail     string
-		ringMethod agent.RingMethod
-		permission agent.Permission
-		tags       []uuid.UUID
-		addresses  []cmaddress.Address
+		userID        uint64
+		username      string
+		password      string
+		agentName     string
+		detail        string
+		webhookMethod string
+		webhookURI    string
+		ringMethod    agent.RingMethod
+		permission    agent.Permission
+		tags          []uuid.UUID
+		addresses     []cmaddress.Address
 
 		expectRes *agent.Agent
 	}{
@@ -470,6 +474,8 @@ func TestAgentCreate(t *testing.T) {
 			"test1password",
 			"test1 name",
 			"test1 detail",
+			"",
+			"",
 			agent.RingMethodRingAll,
 			agent.PermissionNone,
 			[]uuid.UUID{},
@@ -486,6 +492,34 @@ func TestAgentCreate(t *testing.T) {
 				Addresses:  []cmaddress.Address{},
 			},
 		},
+		{
+			"have webhook",
+
+			1,
+			"test2",
+			"test2password",
+			"test2 name",
+			"test2 detail",
+			"POST",
+			"test.com",
+			agent.RingMethodRingAll,
+			agent.PermissionNone,
+			[]uuid.UUID{},
+			[]cmaddress.Address{},
+
+			&agent.Agent{
+				ID:            uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
+				UserID:        1,
+				Username:      "test2",
+				Name:          "test2 name",
+				Detail:        "test2 detail",
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+				Permission:    agent.PermissionNone,
+				TagIDs:        []uuid.UUID{},
+				Addresses:     []cmaddress.Address{},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -495,8 +529,9 @@ func TestAgentCreate(t *testing.T) {
 			mockDB.EXPECT().AgentGetByUsername(gomock.Any(), tt.userID, tt.username).Return(nil, fmt.Errorf("not found"))
 			mockDB.EXPECT().AgentCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().AgentGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, agent.EventTypeAgentCreated, tt.expectRes.WebhookURI, tt.expectRes)
 
-			res, err := h.AgentCreate(ctx, tt.userID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tags, tt.addresses)
+			res, err := h.AgentCreate(ctx, tt.userID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tags, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
@@ -509,6 +544,119 @@ func TestAgentCreate(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestAgentDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &agentHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyhandler: mockNotify,
+	}
+
+	tests := []struct {
+		name string
+
+		id            uuid.UUID
+		responseAgent *agent.Agent
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+
+			&agent.Agent{
+				ID:            uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+				UserID:        1,
+				Username:      "test2",
+				Name:          "test2 name",
+				Detail:        "test2 detail",
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+				Permission:    agent.PermissionNone,
+				TagIDs:        []uuid.UUID{},
+				Addresses:     []cmaddress.Address{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().AgentDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, agent.EventTypeAgentDeleted, tt.responseAgent.WebhookURI, tt.responseAgent)
+
+			if errDel := h.AgentDelete(ctx, tt.id); errDel != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", errDel)
+			}
+		})
+	}
+}
+
+func TestAgentUpdateStatus(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &agentHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyhandler: mockNotify,
+	}
+
+	tests := []struct {
+		name string
+
+		id            uuid.UUID
+		status        agent.Status
+		responseAgent *agent.Agent
+	}{
+		{
+			"available",
+
+			uuid.FromStringOrNil("1f7e03de-79a5-11ec-ac0a-4f99eb1b36e8"),
+			agent.StatusAvailable,
+
+			&agent.Agent{
+				ID:            uuid.FromStringOrNil("1f7e03de-79a5-11ec-ac0a-4f99eb1b36e8"),
+				UserID:        1,
+				Username:      "test2",
+				Name:          "test2 name",
+				Detail:        "test2 detail",
+				Status:        agent.StatusAvailable,
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+				Permission:    agent.PermissionNone,
+				TagIDs:        []uuid.UUID{},
+				Addresses:     []cmaddress.Address{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().AgentSetStatus(ctx, tt.id, tt.status).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent.WebhookURI, tt.responseAgent)
+
+			if errStatus := h.AgentUpdateStatus(ctx, tt.id, tt.status); errStatus != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", errStatus)
 			}
 		})
 	}

@@ -9,15 +9,17 @@ import (
 // v1 data type request struct for
 // /v1/agents POST
 type V1DataAgentsPost struct {
-	UserID     uint64              `json:"user_id"`
-	Username   string              `json:"username"`
-	Password   string              `json:"password"`
-	Name       string              `json:"name"`
-	Detail     string              `json:"detail"`
-	RingMethod string              `json:"ring_method"`
-	Permission uint64              `json:"permission"`
-	TagIDs     []uuid.UUID         `json:"tag_ids"`
-	Addresses  []cmaddress.Address `json:"addresses"`
+	UserID        uint64              `json:"user_id"`
+	Username      string              `json:"username"`
+	Password      string              `json:"password"`
+	Name          string              `json:"name"`
+	Detail        string              `json:"detail"`
+	WebhookMethod string              `json:"webhook_method"`
+	WebhookURI    string              `json:"webhook_uri"`
+	RingMethod    string              `json:"ring_method"`
+	Permission    uint64              `json:"permission"`
+	TagIDs        []uuid.UUID         `json:"tag_ids"`
+	Addresses     []cmaddress.Address `json:"addresses"`
 }
 
 // V1DataAgentsUsernameLoginPost is

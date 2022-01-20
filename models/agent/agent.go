@@ -12,8 +12,11 @@ type Agent struct {
 	Username     string    `json:"username"`      // agent's username
 	PasswordHash string    `json:"password_hash"` // hashed Password
 
-	Name       string     `json:"name"`        // agent's name
-	Detail     string     `json:"detail"`      // agent's detail
+	Name          string `json:"name"`           // agent's name
+	Detail        string `json:"detail"`         // agent's detail
+	WebhookMethod string `json:"webhook_method"` // agent's webhook method
+	WebhookURI    string `json:"webhook_uri"`    // agent's wehook uri
+
 	RingMethod RingMethod `json:"ring_method"` // agent's ring method
 
 	Status     Status              `json:"status"`     // agent's status

@@ -9,7 +9,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmnotifyhandler "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/notifyhandler"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
@@ -131,10 +131,10 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 	//// call-manager
 	// call
-	case m.Publisher == publisherCallManager && (m.Type == string(cmnotifyhandler.EventTypeCallAnswered)):
+	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallAnswered)):
 		err = h.processEventCMCallAnswered(m)
 
-	case m.Publisher == publisherCallManager && (m.Type == string(cmnotifyhandler.EventTypeCallHungup)):
+	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHungup)):
 		err = h.processEventCMCallHungup(m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////

@@ -67,18 +67,18 @@ func (mr *MockAgentHandlerMockRecorder) AgentCallHungup(ctx, c interface{}) *gom
 }
 
 // AgentCreate mocks base method.
-func (m *MockAgentHandler) AgentCreate(ctx context.Context, userID uint64, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockAgentHandler) AgentCreate(ctx context.Context, userID uint64, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCreate", ctx, userID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
+	ret := m.ctrl.Call(m, "AgentCreate", ctx, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentCreate indicates an expected call of AgentCreate.
-func (mr *MockAgentHandlerMockRecorder) AgentCreate(ctx, userID, username, password, name, detail, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) AgentCreate(ctx, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockAgentHandler)(nil).AgentCreate), ctx, userID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockAgentHandler)(nil).AgentCreate), ctx, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 }
 
 // AgentDelete mocks base method.
