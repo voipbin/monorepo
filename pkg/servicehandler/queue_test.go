@@ -33,7 +33,7 @@ func TestQueueGets(t *testing.T) {
 		pageSize  uint64
 
 		response  []qmqueue.Queue
-		expectRes []*qmqueue.Event
+		expectRes []*qmqueue.WebhookMessage
 	}
 
 	tests := []test{
@@ -50,7 +50,7 @@ func TestQueueGets(t *testing.T) {
 					ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 				},
 			},
-			[]*qmqueue.Event{
+			[]*qmqueue.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 				},
@@ -98,7 +98,7 @@ func TestQueueGet(t *testing.T) {
 		id   uuid.UUID
 
 		response  *qmqueue.Queue
-		expectRes *qmqueue.Event
+		expectRes *qmqueue.WebhookMessage
 	}
 
 	tests := []test{
@@ -113,7 +113,7 @@ func TestQueueGet(t *testing.T) {
 				ID:     uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 				UserID: 1,
 			},
-			&qmqueue.Event{
+			&qmqueue.WebhookMessage{
 				ID: uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 			},
 		},
@@ -163,7 +163,7 @@ func TestQueueCreate(t *testing.T) {
 		timeoutService int
 
 		response  *qmqueue.Queue
-		expectRes *qmqueue.Event
+		expectRes *qmqueue.WebhookMessage
 	}
 
 	tests := []test{
@@ -193,7 +193,7 @@ func TestQueueCreate(t *testing.T) {
 				ID:     uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
 				UserID: 1,
 			},
-			&qmqueue.Event{
+			&qmqueue.WebhookMessage{
 				ID: uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
 			},
 		},

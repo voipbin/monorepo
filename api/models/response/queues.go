@@ -6,6 +6,6 @@ import (
 
 // BodyQueuesGET is rquest body define for GET /queues
 type BodyQueuesGET struct {
-	Result []*qmqueue.Event `json:"result"`
+	Result []*qmqueue.WebhookMessage `json:"result"`
 	Pagination
 }

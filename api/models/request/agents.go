@@ -16,11 +16,13 @@ type ParamAgentsGET struct {
 
 // BodyAgentsPOST is rquest body define for POST /agents
 type BodyAgentsPOST struct {
-	Username   string `json:"username" binding:"required"`
-	Password   string `json:"password" binding:"required"`
-	Name       string `json:"name"`
-	Detail     string `json:"detail"`
-	RingMethod string `json:"ring_method"`
+	Username      string `json:"username" binding:"required"`
+	Password      string `json:"password" binding:"required"`
+	Name          string `json:"name"`
+	Detail        string `json:"detail"`
+	WebhookMethod string `json:"webhook_method"`
+	WebhookURI    string `json:"webhook_uri"`
+	RingMethod    string `json:"ring_method"`
 
 	Permission agent.Permission  `json:"permission"`
 	TagIDs     []uuid.UUID       `json:"tag_ids"`

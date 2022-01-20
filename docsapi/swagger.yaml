@@ -87,127 +87,113 @@ definitions:
     type: object
   call.Call:
     properties:
+      action:
+        $ref: '#/definitions/action.Action'
+        type: object
       chained_call_ids:
-        description: Chained call ids
+        description: chained call ids
         items:
           type: string
         type: array
+      confbridge_id:
+        description: currently joined confbridge id.
+        type: string
       destination:
         $ref: '#/definitions/address.Address'
-        description: Destination info
         type: object
       direction:
-        description: Call's direction.
         type: string
       flow_id:
-        description: Attached flow id
+        description: flow id
         type: string
       hangup_by:
-        description: Describe which endpoint sent the hangup request first.
         type: string
       hangup_reason:
-        description: Desribe detail of hangup reason.
         type: string
       id:
-        description: Call's ID.
+        description: identity
         type: string
       master_call_id:
-        description: Master call id
+        description: etc info
         type: string
       recording_id:
-        description: Recording id(current)
+        description: recording id(current)
         type: string
       recording_ids:
-        description: Recording ids
+        description: recording ids
         items:
           type: string
         type: array
       source:
         $ref: '#/definitions/address.Address'
-        description: Source info
+        description: source/destination
         type: object
       status:
-        description: Call's status.
+        description: info
         type: string
       tm_create:
-        description: Timestamp. Created time.
+        description: timestamp
         type: string
       tm_hangup:
-        description: Timestamp. Hangup time.
         type: string
       tm_progressing:
-        description: Timestamp. Progressing time.
         type: string
       tm_ringing:
-        description: Timestamp. Ringing time.
         type: string
       tm_update:
-        description: Timestamp. Updated time.
         type: string
       type:
-        description: Call's type.
+        description: call type
         type: string
-      user_id:
-        description: Call owner's ID.
-        type: integer
       webhook_uri:
-        description: Webhook destination uri
         type: string
     type: object
   conference.Conference:
     properties:
       call_ids:
-        description: Currently joined call IDs.
+        description: list of call ids of conference
         items:
           type: string
         type: array
+      data:
+        additionalProperties: true
+        type: object
       detail:
-        description: Detail.
         type: string
       id:
-        description: Conference's ID.
         type: string
       name:
-        description: Name.
         type: string
-      postActions:
-        description: actions after leaving from the conference.
+      post_actions:
+        description: post actions
         items:
           $ref: '#/definitions/action.Action'
         type: array
-      preActions:
-        description: actions before joining to the conference.
+      pre_actions:
+        description: pre actions
         items:
           $ref: '#/definitions/action.Action'
         type: array
       recording_id:
-        description: Currently recording ID.
         type: string
       recording_ids:
-        description: Recorded recording IDs.
         items:
           type: string
         type: array
       status:
-        description: Status.
         type: string
+      timeout:
+        description: timeout. second
+        type: integer
       tm_create:
-        description: Created timestamp.
         type: string
       tm_delete:
-        description: Deleted timestamp.
         type: string
       tm_update:
-        description: Updated timestamp.
         type: string
       type:
-        description: Conference's type.
         type: string
-      user_id:
-        description: Conference owner's ID.
-        type: integer
       webhook_uri:
-        description: webhook uri
         type: string
     type: object
   domain.Domain:
@@ -309,7 +295,7 @@ definitions:
       tm_update:
         type: string
     type: object
-  queue.Event:
+  queue.WebhookMessage:
     properties:
       detail:
         type: string
@@ -442,6 +428,10 @@ definitions:
           type: string
         type: array
       username:
+        type: string
+      webhook_method:
+        type: string
+      webhook_uri:
         type: string
     required:
     - password
@@ -651,9 +641,7 @@ definitions:
       next_page_token:
         type: string
       result:
-        items:
-          $ref: '#/definitions/call.Call'
-        type: array
+        type: string
     type: object
   response.BodyDomainsGET:
     properties:
@@ -695,7 +683,7 @@ definitions:
         type: string
       result:
         items:
-          $ref: '#/definitions/queue.Event'
+          $ref: '#/definitions/queue.WebhookMessage'
         type: array
     type: object
   response.BodyRecordingsGET:
@@ -1560,7 +1548,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/queue.Event'
+            $ref: '#/definitions/queue.WebhookMessage'
       summary: Create a new queue.
   /v1.0/queues/{id}:
     delete:

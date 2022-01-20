@@ -38,14 +38,16 @@ func TestAgentsPOST(t *testing.T) {
 		user user.User
 		req  request.BodyAgentsPOST
 
-		username   string
-		password   string
-		agentName  string
-		detail     string
-		ringMethod string
-		permission uint64
-		tagIDs     []uuid.UUID
-		addresses  []address.Address
+		username      string
+		password      string
+		agentName     string
+		detail        string
+		webhookMethod string
+		webhookURI    string
+		ringMethod    string
+		permission    uint64
+		tagIDs        []uuid.UUID
+		addresses     []address.Address
 
 		res *agent.Agent
 	}
@@ -71,6 +73,8 @@ func TestAgentsPOST(t *testing.T) {
 			"password1",
 			"test1 name",
 			"test1 detail",
+			"",
+			"",
 			agent.RingMethodRingAll,
 			0,
 			[]uuid.UUID{},
@@ -80,7 +84,39 @@ func TestAgentsPOST(t *testing.T) {
 				ID: uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
 			},
 		},
-	}
+		{
+			"have webhook",
+			user.User{
+				ID: 1,
+			},
+			request.BodyAgentsPOST{
+				Username:      "test1",
+				Password:      "password1",
+				Name:          "test1 name",
+				Detail:        "test1 detail",
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+				RingMethod:    "ringall",
+				Permission:    0,
+				TagIDs:        []uuid.UUID{},
+				Addresses:     []address.Address{},
+			},
+
+			"test1",
+			"password1",
+			"test1 name",
+			"test1 detail",
+			"POST",
+			"test.com",
+			agent.RingMethodRingAll,
+			0,
+			[]uuid.UUID{},
+			[]address.Address{},
+
+			&agent.Agent{
+				ID: uuid.FromStringOrNil("3071bee2-79af-11ec-9f30-83b56e9d88b5"),
+			},
+		}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -104,7 +140,7 @@ func TestAgentsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AgentCreate(&tt.user, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
+			mockSvc.EXPECT().AgentCreate(&tt.user, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
