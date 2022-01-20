@@ -1,0 +1,66 @@
+package agent
+
+import (
+	"encoding/json"
+
+	"github.com/gofrs/uuid"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+)
+
+// WebhookMessage defines
+type WebhookMessage struct {
+	ID       uuid.UUID `json:"id"`       // agent id
+	Username string    `json:"username"` // agent's username
+
+	Name          string `json:"name"`           // agent's name
+	Detail        string `json:"detail"`         // agent's detail
+	WebhookMethod string `json:"webhook_method"` // agent's webhook method
+	WebhookURI    string `json:"webhook_uri"`    // agent's wehook uri
+
+	RingMethod RingMethod `json:"ring_method"` // agent's ring method
+
+	Status     Status              `json:"status"`     // agent's status
+	Permission Permission          `json:"permission"` // agent's permission.
+	TagIDs     []uuid.UUID         `json:"tag_ids"`    // agent's tag ids
+	Addresses  []cmaddress.Address `json:"addresses"`  // agent's endpoint addresses
+
+	TMCreate string `json:"tm_create"` // Created timestamp.
+	TMUpdate string `json:"tm_update"` // Updated timestamp.
+	TMDelete string `json:"tm_delete"` // Deleted timestamp.
+}
+
+// ConvertWebhookMessage converts to the event
+func (h *Agent) ConvertWebhookMessage() *WebhookMessage {
+	return &WebhookMessage{
+		ID:       h.ID,
+		Username: h.Username,
+
+		Name:          h.Name,
+		Detail:        h.Detail,
+		WebhookMethod: h.WebhookMethod,
+		WebhookURI:    h.WebhookURI,
+
+		RingMethod: h.RingMethod,
+
+		Status:     h.Status,
+		Permission: h.Permission,
+		TagIDs:     h.TagIDs,
+		Addresses:  h.Addresses,
+
+		TMCreate: h.TMCreate,
+		TMUpdate: h.TMUpdate,
+		TMDelete: h.TMDelete,
+	}
+}
+
+// CreateWebhookEvent generates the WebhookEvent
+func (h *Agent) CreateWebhookEvent() ([]byte, error) {
+	e := h.ConvertWebhookMessage()
+
+	m, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}

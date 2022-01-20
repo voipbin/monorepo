@@ -10,12 +10,12 @@ import (
 	"github.com/gofrs/uuid"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"golang.org/x/crypto/bcrypt"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/notifyhandler"
 )
 
 const (
@@ -29,7 +29,7 @@ const (
 
 // AgentHandler interface
 type AgentHandler interface {
-	AgentCreate(ctx context.Context, userID uint64, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error)
+	AgentCreate(ctx context.Context, userID uint64, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error)
 	AgentDelete(ctx context.Context, id uuid.UUID) error
 	AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID uuid.UUID) error
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)

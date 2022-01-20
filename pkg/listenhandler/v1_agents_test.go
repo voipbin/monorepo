@@ -74,7 +74,7 @@ func TestProcessV1AgentsGetNormal(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 	}
@@ -158,7 +158,7 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 		{
@@ -222,7 +222,7 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","user_id":1,"username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","user_id":1,"username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 	}
@@ -308,7 +308,7 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 		{
@@ -373,7 +373,7 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","user_id":1,"username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","user_id":1,"username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 	}
@@ -412,15 +412,17 @@ func TestProcessV1AgentsPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		userID     uint64
-		username   string
-		password   string
-		agentName  string
-		detail     string
-		ringMethod string
-		permission uint64
-		tagIDs     []uuid.UUID
-		addresses  []cmaddress.Address
+		userID        uint64
+		username      string
+		password      string
+		agentName     string
+		detail        string
+		webhookMethod string
+		webhookURI    string
+		ringMethod    string
+		permission    uint64
+		tagIDs        []uuid.UUID
+		addresses     []cmaddress.Address
 
 		agent     *agent.Agent
 		expectRes *rabbitmqhandler.Response
@@ -439,6 +441,8 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			"password",
 			"test agent1",
 			"test agent1 detail",
+			"",
+			"",
 			"ringall",
 			1,
 			[]uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
@@ -473,7 +477,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 		{
@@ -490,6 +494,8 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			"password",
 			"test agent1",
 			"test agent1 detail",
+			"",
+			"",
 			"ringall",
 			1,
 			[]uuid.UUID{
@@ -530,7 +536,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"28a63cc8-4d8c-11ec-959e-6bedf5864e94","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["159623f0-4d8c-11ec-85da-432863b96d60","15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"28a63cc8-4d8c-11ec-959e-6bedf5864e94","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["159623f0-4d8c-11ec-85da-432863b96d60","15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 		{
@@ -547,6 +553,8 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			"password",
 			"test agent1",
 			"test agent1 detail",
+			"",
+			"",
 			"ringall",
 			1,
 			[]uuid.UUID{
@@ -595,7 +603,76 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e85d8d78-4d8c-11ec-8a91-1f780097ef8d","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"e85d8d78-4d8c-11ec-8a91-1f780097ef8d","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+			},
+		},
+		{
+			"have webhook",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/agents",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"user_id":1,"username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "webhook_method": "POST", "webhook_uri": "test.com", "ring_method": "ringall", "permission": 1, "tag_ids": ["e7b166ec-4d8c-11ec-8c61-0b9e85603e10", "e82a311c-4d8c-11ec-9411-3382b1284325"], "addresses":[{"type": "tel", "target":"+821021656521"},{"type": "tel", "target":"+821021656522"}]}`),
+			},
+
+			1,
+			"test1",
+			"password",
+			"test agent1",
+			"test agent1 detail",
+			"POST",
+			"test.com",
+			"ringall",
+			1,
+			[]uuid.UUID{
+				uuid.FromStringOrNil("e7b166ec-4d8c-11ec-8c61-0b9e85603e10"),
+				uuid.FromStringOrNil("e82a311c-4d8c-11ec-9411-3382b1284325"),
+			},
+			[]cmaddress.Address{
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821021656521",
+				},
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821021656522",
+				},
+			},
+
+			&agent.Agent{
+				ID:            uuid.FromStringOrNil("5c404128-79a1-11ec-a2f8-638f1aced246"),
+				UserID:        1,
+				Username:      "test1",
+				PasswordHash:  "password",
+				Name:          "test agent1",
+				Detail:        "test agent1 detail",
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+				RingMethod:    "ringall",
+				Status:        agent.StatusOffline,
+				Permission:    1,
+				TagIDs: []uuid.UUID{
+					uuid.FromStringOrNil("e7b166ec-4d8c-11ec-8c61-0b9e85603e10"),
+					uuid.FromStringOrNil("e82a311c-4d8c-11ec-9411-3382b1284325"),
+				},
+				Addresses: []cmaddress.Address{
+					{
+						Type:   cmaddress.TypeTel,
+						Target: "+821021656521",
+					},
+					{
+						Type:   cmaddress.TypeTel,
+						Target: "+821021656522",
+					},
+				},
+				TMCreate: "2021-11-23 17:55:39.712000",
+				TMUpdate: "9999-01-01 00:00:00.000000",
+				TMDelete: "9999-01-01 00:00:00.000000",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"5c404128-79a1-11ec-a2f8-638f1aced246","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"POST","webhook_uri":"test.com","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -603,7 +680,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAgent.EXPECT().AgentCreate(gomock.Any(), tt.userID, tt.username, tt.password, tt.agentName, tt.detail, agent.RingMethod(tt.ringMethod), agent.Permission(tt.permission), tt.tagIDs, tt.addresses).Return(tt.agent, nil)
+			mockAgent.EXPECT().AgentCreate(gomock.Any(), tt.userID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, agent.RingMethod(tt.ringMethod), agent.Permission(tt.permission), tt.tagIDs, tt.addresses).Return(tt.agent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -678,7 +755,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -751,7 +828,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":[],"addresses":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"","password_hash":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":[],"addresses":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

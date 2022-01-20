@@ -146,6 +146,8 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *rabbitmqhand
 		reqData.Password,
 		reqData.Name,
 		reqData.Detail,
+		reqData.WebhookMethod,
+		reqData.WebhookURI,
 		agent.RingMethod(reqData.RingMethod),
 		agent.Permission(reqData.Permission),
 		reqData.TagIDs,

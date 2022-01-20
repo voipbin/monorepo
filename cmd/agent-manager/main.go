@@ -13,17 +13,19 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/subscribehandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/taghandler"
 )
+
+const serviceName = "agent-manager"
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -139,8 +141,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, "agent-manager")
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify)
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
 	tagHandler := taghandler.NewTagHandler(reqHandler, db, notifyHandler, agentHandler)
 

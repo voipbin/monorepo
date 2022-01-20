@@ -6,9 +6,12 @@ create table agents(
   password_hash varchar(255), -- password hash
 
   -- basic info
-  name        varchar(255),
-  detail      text,
-  ring_method varchar(255), -- ring method
+  name            varchar(255),
+  detail          text,
+  webhook_method  varchar(255),
+  webhook_uri     varchar(1023),
+
+  ring_method   varchar(255), -- ring method
 
   status      varchar(255),  -- agent's status
   permission  integer,

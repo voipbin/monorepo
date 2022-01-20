@@ -133,7 +133,30 @@ func TestAgentCreate(t *testing.T) {
 				TMCreate:     "2020-04-18T03:22:17.995000",
 			},
 		},
-	}
+		{
+			"have webhook",
+			&agent.Agent{
+				ID:            uuid.FromStringOrNil("796ace40-79a0-11ec-9944-5bcaa66e32ac"),
+				UserID:        1,
+				Username:      "test5",
+				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+				TagIDs:        []uuid.UUID{uuid.FromStringOrNil("7d4dba90-79a0-11ec-bd7b-4f343e208260")},
+				TMCreate:      "2020-04-18T03:22:17.995000",
+			},
+			&agent.Agent{
+				ID:            uuid.FromStringOrNil("796ace40-79a0-11ec-9944-5bcaa66e32ac"),
+				UserID:        1,
+				Username:      "test5",
+				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+				TagIDs:        []uuid.UUID{uuid.FromStringOrNil("7d4dba90-79a0-11ec-bd7b-4f343e208260")},
+				Addresses:     []cmaddress.Address{},
+				TMCreate:      "2020-04-18T03:22:17.995000",
+			},
+		}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

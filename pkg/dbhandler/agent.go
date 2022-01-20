@@ -23,6 +23,9 @@ const (
 
 		name,
 		detail,
+		webhook_method,
+		webhook_uri,
+
 		ring_method,
 
 		status,
@@ -37,6 +40,128 @@ const (
 		agents
 	`
 )
+
+// agentGetFromRow gets the agent from the row.
+func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
+
+	tagIDs := ""
+	addresses := ""
+
+	res := &agent.Agent{}
+	if err := row.Scan(
+		&res.ID,
+		&res.UserID,
+		&res.Username,
+		&res.PasswordHash,
+
+		&res.Name,
+		&res.Detail,
+		&res.WebhookMethod,
+		&res.WebhookURI,
+
+		&res.RingMethod,
+
+		&res.Status,
+		&res.Permission,
+		&tagIDs,
+		&addresses,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+		&res.TMDelete,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. agentGetFromRow. err: %v", err)
+	}
+
+	if err := json.Unmarshal([]byte(tagIDs), &res.TagIDs); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the tag_ids. agentGetFromRow. err: %v", err)
+	}
+	if res.TagIDs == nil {
+		res.TagIDs = []uuid.UUID{}
+	}
+
+	if err := json.Unmarshal([]byte(addresses), &res.Addresses); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the endpoints. agentGetFromRow. err: %v", err)
+	}
+	if res.Addresses == nil {
+		res.Addresses = []cmaddress.Address{}
+	}
+
+	return res, nil
+}
+
+// AgentCreate creates new agent record and returns the created agent record.
+func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
+	q := `insert into agents(
+		id,
+		user_id,
+		username,
+		password_hash,
+
+		name,
+		detail,
+		webhook_method,
+		webhook_uri,
+
+		ring_method,
+
+		status,
+		permission,
+		tag_ids,
+		addresses,
+
+		tm_create,
+		tm_update,
+		tm_delete
+	) values(
+		?, ?, ?, ?,
+		?, ?, ?, ?,
+		?,
+		?, ?, ?, ?,
+		?, ?, ?
+		)
+	`
+
+	tagIDs, err := json.Marshal(a.TagIDs)
+	if err != nil {
+		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
+	}
+	addresses, err := json.Marshal(a.Addresses)
+	if err != nil {
+		return fmt.Errorf("could not marshal the addresses. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q,
+		a.ID.Bytes(),
+		a.UserID,
+		a.Username,
+		a.PasswordHash,
+
+		a.Name,
+		a.Detail,
+		a.WebhookMethod,
+		a.WebhookURI,
+
+		a.RingMethod,
+
+		a.Status,
+		a.Permission,
+		tagIDs,
+		addresses,
+
+		a.TMCreate,
+		a.TMUpdate,
+		a.TMDelete,
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. AgentCreate. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.AgentUpdateToCache(ctx, a.ID)
+
+	return nil
+}
 
 // UserUpdateToCache gets the agent from the DB and update the cache.
 func (h *handler) AgentUpdateToCache(ctx context.Context, id uuid.UUID) error {
@@ -98,52 +223,6 @@ func (h *handler) AgentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 	return res, nil
 }
 
-// agentGetFromRow gets the agent from the row.
-func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
-
-	tagIDs := ""
-	addresses := ""
-
-	res := &agent.Agent{}
-	if err := row.Scan(
-		&res.ID,
-		&res.UserID,
-		&res.Username,
-		&res.PasswordHash,
-
-		&res.Name,
-		&res.Detail,
-		&res.RingMethod,
-
-		&res.Status,
-		&res.Permission,
-		&tagIDs,
-		&addresses,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. agentGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(tagIDs), &res.TagIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the tag_ids. agentGetFromRow. err: %v", err)
-	}
-	if res.TagIDs == nil {
-		res.TagIDs = []uuid.UUID{}
-	}
-
-	if err := json.Unmarshal([]byte(addresses), &res.Addresses); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the endpoints. agentGetFromRow. err: %v", err)
-	}
-	if res.Addresses == nil {
-		res.Addresses = []cmaddress.Address{}
-	}
-
-	return res, nil
-}
-
 // AgentGet returns agent.
 func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 	res, err := h.AgentGetFromCache(ctx, id)
@@ -184,72 +263,6 @@ func (h *handler) AgentGets(ctx context.Context, userID uint64, size uint64, tok
 	}
 
 	return res, nil
-}
-
-// AgentCreate creates new agent record and returns the created agent record.
-func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
-	q := `insert into agents(
-		id,
-		user_id,
-		username,
-		password_hash,
-
-		name,
-		detail,
-		ring_method,
-
-		status,
-		permission,
-		tag_ids,
-		addresses,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?, ?,
-		?, ?, ?,
-		?, ?, ?, ?,
-		?, ?, ?
-		)
-	`
-
-	tagIDs, err := json.Marshal(a.TagIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
-	}
-	addresses, err := json.Marshal(a.Addresses)
-	if err != nil {
-		return fmt.Errorf("could not marshal the addresses. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q,
-		a.ID.Bytes(),
-		a.UserID,
-		a.Username,
-		a.PasswordHash,
-
-		a.Name,
-		a.Detail,
-		a.RingMethod,
-
-		a.Status,
-		a.Permission,
-		tagIDs,
-		addresses,
-
-		a.TMCreate,
-		a.TMUpdate,
-		a.TMDelete,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. AgentCreate. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.AgentUpdateToCache(ctx, a.ID)
-
-	return nil
 }
 
 // AgentGetByUsername returns agent.
