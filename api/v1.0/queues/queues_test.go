@@ -38,7 +38,7 @@ func TestQueuesGet(t *testing.T) {
 		name      string
 		user      user.User
 		req       request.ParamCallsGET
-		resCalls  []*qmqueue.Event
+		resCalls  []*qmqueue.WebhookMessage
 		expectRes string
 	}
 
@@ -54,7 +54,7 @@ func TestQueuesGet(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*qmqueue.Event{
+			[]*qmqueue.WebhookMessage{
 				{
 					ID:          uuid.FromStringOrNil("f188b7aa-6476-11ec-a130-03a796c9e1e4"),
 					TagIDs:      []uuid.UUID{},
@@ -78,7 +78,7 @@ func TestQueuesGet(t *testing.T) {
 					PageToken: "2020-09-20T03:23:20.995000",
 				},
 			},
-			[]*qmqueue.Event{
+			[]*qmqueue.WebhookMessage{
 				{
 					ID:          uuid.FromStringOrNil("f1ad64a6-6476-11ec-a650-cf22de7273e6"),
 					TagIDs:      []uuid.UUID{},
@@ -152,7 +152,7 @@ func TestQueuesPost(t *testing.T) {
 		name     string
 		user     user.User
 		req      request.BodyQueuesPOST
-		resQueue *qmqueue.Event
+		resQueue *qmqueue.WebhookMessage
 	}
 
 	tests := []test{
@@ -178,7 +178,7 @@ func TestQueuesPost(t *testing.T) {
 				TimeoutWait:    10000,
 				TimeoutService: 100000,
 			},
-			&qmqueue.Event{
+			&qmqueue.WebhookMessage{
 				ID: uuid.FromStringOrNil("72fe03fa-6475-11ec-b559-0fdf19201178"),
 			},
 		},
@@ -239,7 +239,7 @@ func TestQueuesIDGet(t *testing.T) {
 	type test struct {
 		name      string
 		user      user.User
-		resQueue  *qmqueue.Event
+		resQueue  *qmqueue.WebhookMessage
 		expectRes string
 	}
 
@@ -249,7 +249,7 @@ func TestQueuesIDGet(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			&qmqueue.Event{
+			&qmqueue.WebhookMessage{
 				ID:          uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
 				TagIDs:      []uuid.UUID{},
 				WaitActions: []fmaction.Action{},
@@ -265,7 +265,7 @@ func TestQueuesIDGet(t *testing.T) {
 			user.User{
 				ID: 1,
 			},
-			&qmqueue.Event{
+			&qmqueue.WebhookMessage{
 				ID:          uuid.FromStringOrNil("9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353"),
 				WebhookURI:  "https://test.com/tesadf",
 				TagIDs:      []uuid.UUID{},

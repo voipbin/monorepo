@@ -16,29 +16,29 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.12.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
-	github.com/swaggo/gin-swagger v1.3.3
+	github.com/swaggo/gin-swagger v1.4.0
 	github.com/swaggo/swag v1.7.8
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220113020441-12ada9a1cc5a
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220113010014-8e2a6ea54901
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220102222517-646792536ea1
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220118182155-f59097f45747
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220120044832-1422d45929a7
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220120024348-ed1a6056ddc7
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20211018180403-4e3bcfe187ff
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20211221032228-f73ce135fa46
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210926125509-0133dd6b7146
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
-	golang.org/x/net v0.0.0-20220111093109-d55c255bac03 // indirect
-	golang.org/x/sys v0.0.0-20220111092808-5a964db01320 // indirect
+	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.8 // indirect
 )
 
 require (
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220105125759-c8c04b8f27a9
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220120042352-26cebc070efc
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220113054925-e64f9b21a70d
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220105131125-18b0a3371ec0
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220116074155-cb5c1352271e
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
 )
 
@@ -70,7 +70,7 @@ require (
 	github.com/ugorji/go/codec v1.2.6 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20211221033736-1c9c086d3d00 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2 // indirect
-	google.golang.org/genproto v0.0.0-20220112215332-a9c7c0acf9f2 // indirect
+	google.golang.org/genproto v0.0.0-20220118154757-00ab72f36ad5 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

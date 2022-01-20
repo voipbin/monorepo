@@ -12,7 +12,7 @@ import (
 )
 
 // queuecallGet validates the queuecall's ownership and returns the queuecall info.
-func (h *serviceHandler) queuecallGet(ctx context.Context, u *user.User, id uuid.UUID) (*qmqueuecall.Event, error) {
+func (h *serviceHandler) queuecallGet(ctx context.Context, u *user.User, id uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":     "queuecallGet",
@@ -35,13 +35,13 @@ func (h *serviceHandler) queuecallGet(ctx context.Context, u *user.User, id uuid
 	}
 
 	// create result
-	res := tmp.ConvertEvent()
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // QueuecallGet sends a request to queue-manager
 // to getting the queuecall.
-func (h *serviceHandler) QueuecallGet(u *user.User, queueID uuid.UUID) (*qmqueuecall.Event, error) {
+func (h *serviceHandler) QueuecallGet(u *user.User, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "QueueGet",
@@ -62,7 +62,7 @@ func (h *serviceHandler) QueuecallGet(u *user.User, queueID uuid.UUID) (*qmqueue
 // QueuecallGets sends a request to queue-manager
 // to getting a list of queuecalls.
 // it returns queuecall info if it succeed.
-func (h *serviceHandler) QueuecallGets(u *user.User, size uint64, token string) ([]*qmqueuecall.Event, error) {
+func (h *serviceHandler) QueuecallGets(u *user.User, size uint64, token string) ([]*qmqueuecall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "QueuecallGets",
@@ -82,9 +82,9 @@ func (h *serviceHandler) QueuecallGets(u *user.User, size uint64, token string) 
 		return nil, err
 	}
 
-	res := []*qmqueuecall.Event{}
+	res := []*qmqueuecall.WebhookMessage{}
 	for _, tmp := range tmps {
-		e := tmp.ConvertEvent()
+		e := tmp.ConvertWebhookMessage()
 		res = append(res, e)
 	}
 

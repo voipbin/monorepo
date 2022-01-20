@@ -51,18 +51,18 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 }
 
 // AgentCreate mocks base method.
-func (m *MockServiceHandler) AgentCreate(u *user.User, username, password, name, detail, ringMethod string, permission uint64, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockServiceHandler) AgentCreate(u *user.User, username, password, name, detail, webhookMethod, webhookURI, ringMethod string, permission uint64, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCreate", u, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
+	ret := m.ctrl.Call(m, "AgentCreate", u, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentCreate indicates an expected call of AgentCreate.
-func (mr *MockServiceHandlerMockRecorder) AgentCreate(u, username, password, name, detail, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AgentCreate(u, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockServiceHandler)(nil).AgentCreate), u, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockServiceHandler)(nil).AgentCreate), u, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 }
 
 // AgentDelete mocks base method.
@@ -640,10 +640,10 @@ func (mr *MockServiceHandlerMockRecorder) NumberUpdate(u, numb interface{}) *gom
 }
 
 // QueueCreate mocks base method.
-func (m *MockServiceHandler) QueueCreate(u *user.User, name, detail, webhookURI, webhookMethod, routingMethod string, tagIDs []uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) (*queue.Event, error) {
+func (m *MockServiceHandler) QueueCreate(u *user.User, name, detail, webhookURI, webhookMethod, routingMethod string, tagIDs []uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueCreate", u, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
-	ret0, _ := ret[0].(*queue.Event)
+	ret0, _ := ret[0].(*queue.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -669,10 +669,10 @@ func (mr *MockServiceHandlerMockRecorder) QueueDelete(u, queueID interface{}) *g
 }
 
 // QueueGet mocks base method.
-func (m *MockServiceHandler) QueueGet(u *user.User, queueID uuid.UUID) (*queue.Event, error) {
+func (m *MockServiceHandler) QueueGet(u *user.User, queueID uuid.UUID) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueGet", u, queueID)
-	ret0, _ := ret[0].(*queue.Event)
+	ret0, _ := ret[0].(*queue.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -684,10 +684,10 @@ func (mr *MockServiceHandlerMockRecorder) QueueGet(u, queueID interface{}) *gomo
 }
 
 // QueueGets mocks base method.
-func (m *MockServiceHandler) QueueGets(u *user.User, size uint64, token string) ([]*queue.Event, error) {
+func (m *MockServiceHandler) QueueGets(u *user.User, size uint64, token string) ([]*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueGets", u, size, token)
-	ret0, _ := ret[0].([]*queue.Event)
+	ret0, _ := ret[0].([]*queue.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

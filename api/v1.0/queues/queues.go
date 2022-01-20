@@ -93,7 +93,7 @@ func queuesGET(c *gin.Context) {
 // @Description create a new queue
 // @Produce  json
 // @Param agent body request.BodyAgentsPOST true "The queue detail"
-// @Success 200 {object} queue.Event
+// @Success 200 {object} queue.WebhookMessage
 // @Router /v1.0/queues [post]
 func queuesPOST(c *gin.Context) {
 	log := logrus.WithFields(

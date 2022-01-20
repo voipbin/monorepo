@@ -30,15 +30,17 @@ func TestAgentCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user       *user.User
-		username   string
-		password   string
-		agentName  string
-		detail     string
-		ringMethod string
-		permission uint64
-		tagIDs     []uuid.UUID
-		addresses  []address.Address
+		user          *user.User
+		username      string
+		password      string
+		agentName     string
+		detail        string
+		webhookMethod string
+		webhookURI    string
+		ringMethod    string
+		permission    uint64
+		tagIDs        []uuid.UUID
+		addresses     []address.Address
 
 		response  *amagent.Agent
 		expectRes *agent.Agent
@@ -52,6 +54,8 @@ func TestAgentCreate(t *testing.T) {
 			"password1",
 			"test1 name",
 			"test1 detail",
+			"",
+			"",
 			"ringall",
 			0,
 			[]uuid.UUID{},
@@ -62,6 +66,31 @@ func TestAgentCreate(t *testing.T) {
 			},
 			&agent.Agent{
 				ID:        uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				TagIDs:    nil,
+				Addresses: []address.Address{},
+			},
+		},
+		{
+			"have webhook",
+			&user.User{
+				ID: 1,
+			},
+			"test1",
+			"password1",
+			"test1 name",
+			"test1 detail",
+			"POST",
+			"test.com",
+			"ringall",
+			0,
+			[]uuid.UUID{},
+			[]address.Address{},
+
+			&amagent.Agent{
+				ID: uuid.FromStringOrNil("3d39a6c2-79ae-11ec-8f44-6bc6091af769"),
+			},
+			&agent.Agent{
+				ID:        uuid.FromStringOrNil("3d39a6c2-79ae-11ec-8f44-6bc6091af769"),
 				TagIDs:    nil,
 				Addresses: []address.Address{},
 			},
@@ -77,9 +106,9 @@ func TestAgentCreate(t *testing.T) {
 				addresses = append(addresses, *a)
 			}
 
-			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.user.ID, tt.username, tt.password, tt.agentName, tt.detail, amagent.RingMethod(tt.ringMethod), amagent.Permission(tt.permission), tt.tagIDs, addresses).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.user.ID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, amagent.RingMethod(tt.ringMethod), amagent.Permission(tt.permission), tt.tagIDs, addresses).Return(tt.response, nil)
 
-			res, err := h.AgentCreate(tt.user, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
+			res, err := h.AgentCreate(tt.user, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
