@@ -60,18 +60,18 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // AMV1AgentCreate mocks base method.
-func (m *MockRequestHandler) AMV1AgentCreate(ctx context.Context, timeout int, userID uint64, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentCreate(ctx context.Context, timeout int, userID uint64, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AMV1AgentCreate", ctx, timeout, userID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
+	ret := m.ctrl.Call(m, "AMV1AgentCreate", ctx, timeout, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AMV1AgentCreate indicates an expected call of AMV1AgentCreate.
-func (mr *MockRequestHandlerMockRecorder) AMV1AgentCreate(ctx, timeout, userID, username, password, name, detail, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AMV1AgentCreate(ctx, timeout, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentCreate", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentCreate), ctx, timeout, userID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentCreate", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentCreate), ctx, timeout, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 }
 
 // AMV1AgentDelete mocks base method.

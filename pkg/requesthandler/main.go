@@ -207,6 +207,8 @@ type RequestHandler interface {
 		password string,
 		name string,
 		detail string,
+		webhookMethod string,
+		webhookURI string,
 		ringMethod amagent.RingMethod,
 		permission amagent.Permission,
 		tagIDs []uuid.UUID,

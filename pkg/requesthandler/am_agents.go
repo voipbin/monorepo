@@ -26,6 +26,8 @@ func (r *requestHandler) AMV1AgentCreate(
 	password string,
 	name string,
 	detail string,
+	webhookMethod string,
+	webhookURI string,
 	ringMethod amagent.RingMethod,
 	permission amagent.Permission,
 	tagIDs []uuid.UUID,
@@ -34,15 +36,17 @@ func (r *requestHandler) AMV1AgentCreate(
 	uri := "/v1/agents"
 
 	data := &amrequest.V1DataAgentsPost{
-		UserID:     userID,
-		Username:   username,
-		Password:   password,
-		Name:       name,
-		Detail:     detail,
-		RingMethod: string(ringMethod),
-		Permission: uint64(permission),
-		TagIDs:     tagIDs,
-		Addresses:  addresses,
+		UserID:        userID,
+		Username:      username,
+		Password:      password,
+		Name:          name,
+		Detail:        detail,
+		WebhookMethod: webhookMethod,
+		WebhookURI:    webhookURI,
+		RingMethod:    string(ringMethod),
+		Permission:    uint64(permission),
+		TagIDs:        tagIDs,
+		Addresses:     addresses,
 	}
 
 	m, err := json.Marshal(data)
