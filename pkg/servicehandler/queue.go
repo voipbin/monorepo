@@ -13,7 +13,7 @@ import (
 )
 
 // queueGet validates the queue's ownership and returns the agent info.
-func (h *serviceHandler) queueGet(ctx context.Context, u *user.User, id uuid.UUID) (*qmqueue.Event, error) {
+func (h *serviceHandler) queueGet(ctx context.Context, u *user.User, id uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":     "queueGet",
@@ -36,13 +36,13 @@ func (h *serviceHandler) queueGet(ctx context.Context, u *user.User, id uuid.UUI
 	}
 
 	// create result
-	res := tmp.ConvertEvent()
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // QueueGet sends a request to queue-manager
 // to getting the queue.
-func (h *serviceHandler) QueueGet(u *user.User, queueID uuid.UUID) (*qmqueue.Event, error) {
+func (h *serviceHandler) QueueGet(u *user.User, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "QueueGet",
@@ -63,7 +63,7 @@ func (h *serviceHandler) QueueGet(u *user.User, queueID uuid.UUID) (*qmqueue.Eve
 // QueueGets sends a request to queue-manager
 // to getting a list of queues.
 // it returns queue info if it succeed.
-func (h *serviceHandler) QueueGets(u *user.User, size uint64, token string) ([]*qmqueue.Event, error) {
+func (h *serviceHandler) QueueGets(u *user.User, size uint64, token string) ([]*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "QueueGets",
@@ -83,9 +83,9 @@ func (h *serviceHandler) QueueGets(u *user.User, size uint64, token string) ([]*
 		return nil, err
 	}
 
-	res := []*qmqueue.Event{}
+	res := []*qmqueue.WebhookMessage{}
 	for _, tmp := range tmps {
-		e := tmp.ConvertEvent()
+		e := tmp.ConvertWebhookMessage()
 		res = append(res, e)
 	}
 
@@ -106,7 +106,7 @@ func (h *serviceHandler) QueueCreate(
 	waitActions []fmaction.Action,
 	timeoutWait int,
 	timeoutService int,
-) (*qmqueue.Event, error) {
+) (*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "QueueCreate",
@@ -133,7 +133,7 @@ func (h *serviceHandler) QueueCreate(
 	}
 	log.WithField("queue", tmp).Debug("Create a new queue.")
 
-	res := tmp.ConvertEvent()
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 

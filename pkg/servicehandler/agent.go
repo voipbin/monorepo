@@ -52,6 +52,8 @@ func (h *serviceHandler) AgentCreate(
 	password string,
 	name string,
 	detail string,
+	webhookMethod string,
+	webhookURI string,
 	ringMethod string,
 	permission uint64,
 	tagIDs []uuid.UUID,
@@ -72,7 +74,7 @@ func (h *serviceHandler) AgentCreate(
 
 	// send request
 	log.Debug("Creating a new agent.")
-	tmp, err := h.reqHandler.AMV1AgentCreate(ctx, 30, u.ID, username, password, name, detail, amagent.RingMethod(ringMethod), amagent.Permission(permission), tagIDs, cmAddresses)
+	tmp, err := h.reqHandler.AMV1AgentCreate(ctx, 30, u.ID, username, password, name, detail, webhookMethod, webhookURI, amagent.RingMethod(ringMethod), amagent.Permission(permission), tagIDs, cmAddresses)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err

@@ -32,7 +32,7 @@ func TestQueuecallGets(t *testing.T) {
 		pageSize  uint64
 
 		response  []qmqueuecall.Queuecall
-		expectRes []*qmqueuecall.Event
+		expectRes []*qmqueuecall.WebhookMessage
 	}
 
 	tests := []test{
@@ -49,7 +49,7 @@ func TestQueuecallGets(t *testing.T) {
 					ID: uuid.FromStringOrNil("cccf3e1a-6413-11ec-9874-afa5340c4843"),
 				},
 			},
-			[]*qmqueuecall.Event{
+			[]*qmqueuecall.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("cccf3e1a-6413-11ec-9874-afa5340c4843"),
 				},
@@ -97,7 +97,7 @@ func TestQueuecallGet(t *testing.T) {
 		id   uuid.UUID
 
 		response  *qmqueuecall.Queuecall
-		expectRes *qmqueuecall.Event
+		expectRes *qmqueuecall.WebhookMessage
 	}
 
 	tests := []test{
@@ -112,7 +112,7 @@ func TestQueuecallGet(t *testing.T) {
 				ID:     uuid.FromStringOrNil("cd268152-6413-11ec-8e49-4bc7bcc6d465"),
 				UserID: 1,
 			},
-			&qmqueuecall.Event{
+			&qmqueuecall.WebhookMessage{
 				ID: uuid.FromStringOrNil("cd268152-6413-11ec-8e49-4bc7bcc6d465"),
 			},
 		},
