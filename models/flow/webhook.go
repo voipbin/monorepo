@@ -1,0 +1,56 @@
+package flow
+
+import (
+	"encoding/json"
+
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+)
+
+// WebhookMessage defines
+type WebhookMessage struct {
+	ID   uuid.UUID `json:"id"`
+	Type Type      `json:"type"`
+
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+
+	WebhookURI string `json:"webhook_uri"`
+
+	Actions []action.Action `json:"actions"`
+
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
+}
+
+// ConvertWebhookMessage converts to the event
+func (h *Flow) ConvertWebhookMessage() *WebhookMessage {
+	return &WebhookMessage{
+		ID:   h.ID,
+		Type: h.Type,
+
+		Name:       h.Name,
+		Detail:     h.Detail,
+		WebhookURI: h.WebhookURI,
+
+		Actions: h.Actions,
+
+		TMCreate: h.TMCreate,
+		TMUpdate: h.TMUpdate,
+		TMDelete: h.TMDelete,
+	}
+}
+
+// CreateWebhookEvent generates the WebhookEvent
+func (h *Flow) CreateWebhookEvent() ([]byte, error) {
+	e := h.ConvertWebhookMessage()
+
+	m, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}

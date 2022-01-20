@@ -9,11 +9,11 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/client_golang v1.12.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220113020441-12ada9a1cc5a
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220113010014-8e2a6ea54901
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220118182155-f59097f45747
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220119151652-39679b5fa43c
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220113054925-e64f9b21a70d
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220116074155-cb5c1352271e
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210926125509-0133dd6b7146
@@ -38,6 +38,6 @@ require (
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2 // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
-	google.golang.org/genproto v0.0.0-20220114231437-d2e6a121cae0 // indirect
+	google.golang.org/genproto v0.0.0-20220118154757-00ab72f36ad5 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )

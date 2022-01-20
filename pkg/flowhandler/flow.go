@@ -155,6 +155,7 @@ func (h *flowHandler) FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow,
 		log.Errorf("Could not get updated flow. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, flow.EventTypeFlowUpdated, res.WebhookURI, res)
 
 	return res, nil
 }
@@ -183,6 +184,13 @@ func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 		// and the numbers which have the removed flow-id are OK too, because
 		// when the call-manager request the flow, that request will be failed too.
 	}
+
+	tmp, err := h.db.FlowGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated flow. err: %v", err)
+		return nil
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, flow.EventTypeFlowDeleted, tmp.WebhookURI, tmp)
 
 	return nil
 }

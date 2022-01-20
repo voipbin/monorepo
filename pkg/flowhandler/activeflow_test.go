@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -22,9 +23,11 @@ func TestActiveFlowCreate(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &flowHandler{
-		db: mockDB,
+		db:            mockDB,
+		notifyHandler: mockNotify,
 	}
 
 	tests := []struct {
@@ -80,6 +83,7 @@ func TestActiveFlowCreate(t *testing.T) {
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
 			mockDB.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectActive).Return(nil)
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.expectActive, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), activeflow.EventTypeActiveFlowCreated, tt.expectActive.WebhookURI, tt.expectActive)
 
 			res, err := h.ActiveFlowCreate(ctx, tt.callID, tt.flow.ID)
 			if err != nil {
@@ -98,18 +102,18 @@ func TestActiveFlowUpdateCurrentAction(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &flowHandler{
-		db: mockDB,
+		db:            mockDB,
+		notifyHandler: mockNotify,
 	}
 
-	type test struct {
+	tests := []struct {
 		name   string
 		callID uuid.UUID
 		act    *action.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
@@ -125,6 +129,8 @@ func TestActiveFlowUpdateCurrentAction(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&activeflow.ActiveFlow{}, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&activeflow.ActiveFlow{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), activeflow.EventTypeActiveFlowUpdated, gomock.Any(), gomock.Any())
 			if err := h.activeFlowUpdateCurrentAction(ctx, tt.callID, tt.act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -137,25 +143,25 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &flowHandler{
-		db: mockDB,
+		db:            mockDB,
+		notifyHandler: mockNotify,
 	}
 
-	type test struct {
+	tests := []struct {
 		name         string
 		callID       uuid.UUID
 		actionID     uuid.UUID
-		af           activeflow.ActiveFlow
+		af           *activeflow.ActiveFlow
 		expectAction action.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
 			uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
-			activeflow.ActiveFlow{
+			&activeflow.ActiveFlow{
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
 					Type: action.TypeAnswer,
@@ -181,7 +187,7 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 			"empty actions",
 			uuid.FromStringOrNil("085f48fc-08a4-11eb-8ef3-675e25cbc25c"),
 			action.IDStart,
-			activeflow.ActiveFlow{
+			&activeflow.ActiveFlow{
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -197,7 +203,7 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 			"current id start",
 			uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
 			action.IDStart,
-			activeflow.ActiveFlow{
+			&activeflow.ActiveFlow{
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -220,9 +226,9 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 		},
 		{
 			"move action id has set",
-			uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
+			uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
 			uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
-			activeflow.ActiveFlow{
+			&activeflow.ActiveFlow{
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
 				},
@@ -256,9 +262,11 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil).AnyTimes()
+			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.af, nil).AnyTimes()
 
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), activeflow.EventTypeActiveFlowUpdated, tt.af.WebhookURI, tt.af)
+
 			act, err := h.ActiveFlowNextActionGet(ctx, tt.callID, tt.actionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
