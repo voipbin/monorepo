@@ -42,6 +42,8 @@ type ServiceHandler interface {
 		password string,
 		name string,
 		detail string,
+		webhookMethod string,
+		webhookURI string,
 		ringMethod string,
 		permission uint64,
 		tagIDs []uuid.UUID,
@@ -104,8 +106,8 @@ type ServiceHandler interface {
 	NumberUpdate(u *user.User, numb *number.Number) (*number.Number, error)
 
 	// queue handler
-	QueueGet(u *user.User, queueID uuid.UUID) (*qmqueue.Event, error)
-	QueueGets(u *user.User, size uint64, token string) ([]*qmqueue.Event, error)
+	QueueGet(u *user.User, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
+	QueueGets(u *user.User, size uint64, token string) ([]*qmqueue.WebhookMessage, error)
 	QueueCreate(
 		u *user.User,
 		name string,
@@ -117,7 +119,7 @@ type ServiceHandler interface {
 		waitActions []fmaction.Action,
 		timeoutWait int,
 		timeoutService int,
-	) (*qmqueue.Event, error)
+	) (*qmqueue.WebhookMessage, error)
 	QueueDelete(u *user.User, queueID uuid.UUID) error
 	QueueUpdate(u *user.User, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error
 	QueueUpdateTagIDs(u *user.User, queueID uuid.UUID, tagIDs []uuid.UUID) error

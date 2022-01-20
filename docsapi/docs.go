@@ -1144,7 +1144,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/queue.Event"
+                            "$ref": "#/definitions/queue.WebhookMessage"
                         }
                     }
                 }
@@ -1847,92 +1847,87 @@ var doc = `{
         "call.Call": {
             "type": "object",
             "properties": {
+                "action": {
+                    "type": "object",
+                    "$ref": "#/definitions/action.Action"
+                },
                 "chained_call_ids": {
-                    "description": "Chained call ids",
+                    "description": "chained call ids",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
+                "confbridge_id": {
+                    "description": "currently joined confbridge id.",
+                    "type": "string"
+                },
                 "destination": {
-                    "description": "Destination info",
                     "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "direction": {
-                    "description": "Call's direction.",
                     "type": "string"
                 },
                 "flow_id": {
-                    "description": "Attached flow id",
+                    "description": "flow id",
                     "type": "string"
                 },
                 "hangup_by": {
-                    "description": "Describe which endpoint sent the hangup request first.",
                     "type": "string"
                 },
                 "hangup_reason": {
-                    "description": "Desribe detail of hangup reason.",
                     "type": "string"
                 },
                 "id": {
-                    "description": "Call's ID.",
+                    "description": "identity",
                     "type": "string"
                 },
                 "master_call_id": {
-                    "description": "Master call id",
+                    "description": "etc info",
                     "type": "string"
                 },
                 "recording_id": {
-                    "description": "Recording id(current)",
+                    "description": "recording id(current)",
                     "type": "string"
                 },
                 "recording_ids": {
-                    "description": "Recording ids",
+                    "description": "recording ids",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "source": {
-                    "description": "Source info",
+                    "description": "source/destination",
                     "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "status": {
-                    "description": "Call's status.",
+                    "description": "info",
                     "type": "string"
                 },
                 "tm_create": {
-                    "description": "Timestamp. Created time.",
+                    "description": "timestamp",
                     "type": "string"
                 },
                 "tm_hangup": {
-                    "description": "Timestamp. Hangup time.",
                     "type": "string"
                 },
                 "tm_progressing": {
-                    "description": "Timestamp. Progressing time.",
                     "type": "string"
                 },
                 "tm_ringing": {
-                    "description": "Timestamp. Ringing time.",
                     "type": "string"
                 },
                 "tm_update": {
-                    "description": "Timestamp. Updated time.",
                     "type": "string"
                 },
                 "type": {
-                    "description": "Call's type.",
+                    "description": "call type",
                     "type": "string"
                 },
-                "user_id": {
-                    "description": "Call owner's ID.",
-                    "type": "integer"
-                },
                 "webhook_uri": {
-                    "description": "Webhook destination uri",
                     "type": "string"
                 }
             }
@@ -1941,75 +1936,68 @@ var doc = `{
             "type": "object",
             "properties": {
                 "call_ids": {
-                    "description": "Currently joined call IDs.",
+                    "description": "list of call ids of conference",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "detail": {
-                    "description": "Detail.",
                     "type": "string"
                 },
                 "id": {
-                    "description": "Conference's ID.",
                     "type": "string"
                 },
                 "name": {
-                    "description": "Name.",
                     "type": "string"
                 },
-                "postActions": {
-                    "description": "actions after leaving from the conference.",
+                "post_actions": {
+                    "description": "post actions",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/action.Action"
                     }
                 },
-                "preActions": {
-                    "description": "actions before joining to the conference.",
+                "pre_actions": {
+                    "description": "pre actions",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/action.Action"
                     }
                 },
                 "recording_id": {
-                    "description": "Currently recording ID.",
                     "type": "string"
                 },
                 "recording_ids": {
-                    "description": "Recorded recording IDs.",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "status": {
-                    "description": "Status.",
                     "type": "string"
                 },
+                "timeout": {
+                    "description": "timeout. second",
+                    "type": "integer"
+                },
                 "tm_create": {
-                    "description": "Created timestamp.",
                     "type": "string"
                 },
                 "tm_delete": {
-                    "description": "Deleted timestamp.",
                     "type": "string"
                 },
                 "tm_update": {
-                    "description": "Updated timestamp.",
                     "type": "string"
                 },
                 "type": {
-                    "description": "Conference's type.",
                     "type": "string"
                 },
-                "user_id": {
-                    "description": "Conference owner's ID.",
-                    "type": "integer"
-                },
                 "webhook_uri": {
-                    "description": "webhook uri",
                     "type": "string"
                 }
             }
@@ -2158,7 +2146,7 @@ var doc = `{
                 }
             }
         },
-        "queue.Event": {
+        "queue.WebhookMessage": {
             "type": "object",
             "properties": {
                 "detail": {
@@ -2364,6 +2352,12 @@ var doc = `{
                     }
                 },
                 "username": {
+                    "type": "string"
+                },
+                "webhook_method": {
+                    "type": "string"
+                },
+                "webhook_uri": {
                     "type": "string"
                 }
             }
@@ -2681,10 +2675,7 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/call.Call"
-                    }
+                    "type": "string"
                 }
             }
         },
@@ -2750,7 +2741,7 @@ var doc = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/queue.Event"
+                        "$ref": "#/definitions/queue.WebhookMessage"
                     }
                 }
             }

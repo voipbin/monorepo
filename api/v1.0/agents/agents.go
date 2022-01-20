@@ -57,7 +57,7 @@ func agentsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create
-	res, err := serviceHandler.AgentCreate(&u, req.Username, req.Password, req.Name, req.Detail, req.RingMethod, uint64(req.Permission), req.TagIDs, req.Addresses)
+	res, err := serviceHandler.AgentCreate(&u, req.Username, req.Password, req.Name, req.Detail, req.WebhookMethod, req.WebhookURI, req.RingMethod, uint64(req.Permission), req.TagIDs, req.Addresses)
 	if err != nil {
 		log.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)
