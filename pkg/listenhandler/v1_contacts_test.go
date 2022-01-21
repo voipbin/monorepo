@@ -7,9 +7,9 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/contacthandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
 )
 
 func TestV1ContactsGet(t *testing.T) {

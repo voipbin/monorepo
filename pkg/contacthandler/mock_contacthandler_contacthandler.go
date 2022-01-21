@@ -6,35 +6,36 @@ package contacthandler
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	reflect "reflect"
 )
 
-// MockContactHandler is a mock of ContactHandler interface
+// MockContactHandler is a mock of ContactHandler interface.
 type MockContactHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockContactHandlerMockRecorder
 }
 
-// MockContactHandlerMockRecorder is the mock recorder for MockContactHandler
+// MockContactHandlerMockRecorder is the mock recorder for MockContactHandler.
 type MockContactHandlerMockRecorder struct {
 	mock *MockContactHandler
 }
 
-// NewMockContactHandler creates a new mock instance
+// NewMockContactHandler creates a new mock instance.
 func NewMockContactHandler(ctrl *gomock.Controller) *MockContactHandler {
 	mock := &MockContactHandler{ctrl: ctrl}
 	mock.recorder = &MockContactHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockContactHandler) EXPECT() *MockContactHandlerMockRecorder {
 	return m.recorder
 }
 
-// ContactGetsByEndpoint mocks base method
+// ContactGetsByEndpoint mocks base method.
 func (m *MockContactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactGetsByEndpoint", ctx, endpoint)
@@ -43,13 +44,13 @@ func (m *MockContactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint
 	return ret0, ret1
 }
 
-// ContactGetsByEndpoint indicates an expected call of ContactGetsByEndpoint
+// ContactGetsByEndpoint indicates an expected call of ContactGetsByEndpoint.
 func (mr *MockContactHandlerMockRecorder) ContactGetsByEndpoint(ctx, endpoint interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactGetsByEndpoint", reflect.TypeOf((*MockContactHandler)(nil).ContactGetsByEndpoint), ctx, endpoint)
 }
 
-// ContactRefreshByEndpoint mocks base method
+// ContactRefreshByEndpoint mocks base method.
 func (m *MockContactHandler) ContactRefreshByEndpoint(ctx context.Context, endpoint string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactRefreshByEndpoint", ctx, endpoint)
@@ -57,7 +58,7 @@ func (m *MockContactHandler) ContactRefreshByEndpoint(ctx context.Context, endpo
 	return ret0
 }
 
-// ContactRefreshByEndpoint indicates an expected call of ContactRefreshByEndpoint
+// ContactRefreshByEndpoint indicates an expected call of ContactRefreshByEndpoint.
 func (mr *MockContactHandlerMockRecorder) ContactRefreshByEndpoint(ctx, endpoint interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactRefreshByEndpoint", reflect.TypeOf((*MockContactHandler)(nil).ContactRefreshByEndpoint), ctx, endpoint)

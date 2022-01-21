@@ -6,36 +6,37 @@ package domainhandler
 
 import (
 	context "context"
+	reflect "reflect"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
-	reflect "reflect"
 )
 
-// MockDomainHandler is a mock of DomainHandler interface
+// MockDomainHandler is a mock of DomainHandler interface.
 type MockDomainHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockDomainHandlerMockRecorder
 }
 
-// MockDomainHandlerMockRecorder is the mock recorder for MockDomainHandler
+// MockDomainHandlerMockRecorder is the mock recorder for MockDomainHandler.
 type MockDomainHandlerMockRecorder struct {
 	mock *MockDomainHandler
 }
 
-// NewMockDomainHandler creates a new mock instance
+// NewMockDomainHandler creates a new mock instance.
 func NewMockDomainHandler(ctrl *gomock.Controller) *MockDomainHandler {
 	mock := &MockDomainHandler{ctrl: ctrl}
 	mock.recorder = &MockDomainHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDomainHandler) EXPECT() *MockDomainHandlerMockRecorder {
 	return m.recorder
 }
 
-// DomainCreate mocks base method
+// DomainCreate mocks base method.
 func (m *MockDomainHandler) DomainCreate(ctx context.Context, d *domain.Domain) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainCreate", ctx, d)
@@ -44,13 +45,13 @@ func (m *MockDomainHandler) DomainCreate(ctx context.Context, d *domain.Domain) 
 	return ret0, ret1
 }
 
-// DomainCreate indicates an expected call of DomainCreate
+// DomainCreate indicates an expected call of DomainCreate.
 func (mr *MockDomainHandlerMockRecorder) DomainCreate(ctx, d interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainCreate", reflect.TypeOf((*MockDomainHandler)(nil).DomainCreate), ctx, d)
 }
 
-// DomainDelete mocks base method
+// DomainDelete mocks base method.
 func (m *MockDomainHandler) DomainDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainDelete", ctx, id)
@@ -58,13 +59,13 @@ func (m *MockDomainHandler) DomainDelete(ctx context.Context, id uuid.UUID) erro
 	return ret0
 }
 
-// DomainDelete indicates an expected call of DomainDelete
+// DomainDelete indicates an expected call of DomainDelete.
 func (mr *MockDomainHandlerMockRecorder) DomainDelete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDelete", reflect.TypeOf((*MockDomainHandler)(nil).DomainDelete), ctx, id)
 }
 
-// DomainGet mocks base method
+// DomainGet mocks base method.
 func (m *MockDomainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGet", ctx, id)
@@ -73,13 +74,13 @@ func (m *MockDomainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domai
 	return ret0, ret1
 }
 
-// DomainGet indicates an expected call of DomainGet
+// DomainGet indicates an expected call of DomainGet.
 func (mr *MockDomainHandlerMockRecorder) DomainGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGet", reflect.TypeOf((*MockDomainHandler)(nil).DomainGet), ctx, id)
 }
 
-// DomainGetsByUserID mocks base method
+// DomainGetsByUserID mocks base method.
 func (m *MockDomainHandler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGetsByUserID", ctx, userID, token, limit)
@@ -88,13 +89,13 @@ func (m *MockDomainHandler) DomainGetsByUserID(ctx context.Context, userID uint6
 	return ret0, ret1
 }
 
-// DomainGetsByUserID indicates an expected call of DomainGetsByUserID
+// DomainGetsByUserID indicates an expected call of DomainGetsByUserID.
 func (mr *MockDomainHandlerMockRecorder) DomainGetsByUserID(ctx, userID, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetsByUserID", reflect.TypeOf((*MockDomainHandler)(nil).DomainGetsByUserID), ctx, userID, token, limit)
 }
 
-// DomainUpdate mocks base method
+// DomainUpdate mocks base method.
 func (m *MockDomainHandler) DomainUpdate(ctx context.Context, d *domain.Domain) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainUpdate", ctx, d)
@@ -103,7 +104,7 @@ func (m *MockDomainHandler) DomainUpdate(ctx context.Context, d *domain.Domain) 
 	return ret0, ret1
 }
 
-// DomainUpdate indicates an expected call of DomainUpdate
+// DomainUpdate indicates an expected call of DomainUpdate.
 func (mr *MockDomainHandlerMockRecorder) DomainUpdate(ctx, d interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdate", reflect.TypeOf((*MockDomainHandler)(nil).DomainUpdate), ctx, d)

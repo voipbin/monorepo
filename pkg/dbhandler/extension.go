@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
@@ -57,65 +58,6 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. extensionGetFromRow. err: %v", err)
-	}
-
-	return res, nil
-}
-
-// ExtensionGetFromDB returns Extension from the DB.
-func (h *handler) ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
-
-	q := fmt.Sprintf("%s where id = ?", extensionSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ExtensionGetFromDB. err: %v", err)
-	}
-	defer row.Close()
-
-	if row.Next() == false {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.extensionGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. ExtensionGetFromDB. err: %v", err)
-	}
-
-	return res, nil
-}
-
-// ExtensionUpdateToCache gets the extension from the DB and update the cache.
-func (h *handler) ExtensionUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
-	res, err := h.ExtensionGetFromDB(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	if err := h.ExtensionSetToCache(ctx, res); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ExtensionSetToCache sets the given extension to the cache
-func (h *handler) ExtensionSetToCache(ctx context.Context, e *extension.Extension) error {
-	if err := h.cache.ExtensionSet(ctx, e); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ExtensionGetFromCache returns Extension from the cache.
-func (h *handler) ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
-
-	// get from cache
-	res, err := h.cache.ExtensionGet(ctx, id)
-	if err != nil {
-		return nil, err
 	}
 
 	return res, nil
@@ -173,6 +115,65 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 	h.ExtensionUpdateToCache(ctx, b.ID)
 
 	return nil
+}
+
+// ExtensionGetFromDB returns Extension from the DB.
+func (h *handler) ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+
+	q := fmt.Sprintf("%s where id = ?", extensionSelect)
+
+	row, err := h.db.Query(q, id.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ExtensionGetFromDB. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.extensionGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan the row. ExtensionGetFromDB. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// ExtensionUpdateToCache gets the extension from the DB and update the cache.
+func (h *handler) ExtensionUpdateToCache(ctx context.Context, id uuid.UUID) error {
+
+	res, err := h.ExtensionGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.ExtensionSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ExtensionSetToCache sets the given extension to the cache
+func (h *handler) ExtensionSetToCache(ctx context.Context, e *extension.Extension) error {
+	if err := h.cache.ExtensionSet(ctx, e); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ExtensionGetFromCache returns Extension from the cache.
+func (h *handler) ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+
+	// get from cache
+	res, err := h.cache.ExtensionGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // ExtensionGet returns extension.

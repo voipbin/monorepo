@@ -8,9 +8,9 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/requesthandler"
 )
 
 func TestProcessV1DomainsPost(t *testing.T) {

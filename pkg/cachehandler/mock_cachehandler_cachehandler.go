@@ -6,6 +6,8 @@ package cachehandler
 
 import (
 	context "context"
+	reflect "reflect"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	astaor "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
@@ -14,47 +16,32 @@ import (
 	astendpoint "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
-	reflect "reflect"
 )
 
-// MockCacheHandler is a mock of CacheHandler interface
+// MockCacheHandler is a mock of CacheHandler interface.
 type MockCacheHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockCacheHandlerMockRecorder
 }
 
-// MockCacheHandlerMockRecorder is the mock recorder for MockCacheHandler
+// MockCacheHandlerMockRecorder is the mock recorder for MockCacheHandler.
 type MockCacheHandlerMockRecorder struct {
 	mock *MockCacheHandler
 }
 
-// NewMockCacheHandler creates a new mock instance
+// NewMockCacheHandler creates a new mock instance.
 func NewMockCacheHandler(ctrl *gomock.Controller) *MockCacheHandler {
 	mock := &MockCacheHandler{ctrl: ctrl}
 	mock.recorder = &MockCacheHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
 }
 
-// Connect mocks base method
-func (m *MockCacheHandler) Connect() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Connect")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Connect indicates an expected call of Connect
-func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
-}
-
-// AstAORDel mocks base method
+// AstAORDel mocks base method.
 func (m *MockCacheHandler) AstAORDel(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORDel", ctx, id)
@@ -62,13 +49,13 @@ func (m *MockCacheHandler) AstAORDel(ctx context.Context, id string) error {
 	return ret0
 }
 
-// AstAORDel indicates an expected call of AstAORDel
+// AstAORDel indicates an expected call of AstAORDel.
 func (mr *MockCacheHandlerMockRecorder) AstAORDel(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAORDel", reflect.TypeOf((*MockCacheHandler)(nil).AstAORDel), ctx, id)
 }
 
-// AstAORGet mocks base method
+// AstAORGet mocks base method.
 func (m *MockCacheHandler) AstAORGet(ctx context.Context, id string) (*astaor.AstAOR, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORGet", ctx, id)
@@ -77,13 +64,13 @@ func (m *MockCacheHandler) AstAORGet(ctx context.Context, id string) (*astaor.As
 	return ret0, ret1
 }
 
-// AstAORGet indicates an expected call of AstAORGet
+// AstAORGet indicates an expected call of AstAORGet.
 func (mr *MockCacheHandlerMockRecorder) AstAORGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAORGet", reflect.TypeOf((*MockCacheHandler)(nil).AstAORGet), ctx, id)
 }
 
-// AstAORSet mocks base method
+// AstAORSet mocks base method.
 func (m *MockCacheHandler) AstAORSet(ctx context.Context, e *astaor.AstAOR) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAORSet", ctx, e)
@@ -91,13 +78,13 @@ func (m *MockCacheHandler) AstAORSet(ctx context.Context, e *astaor.AstAOR) erro
 	return ret0
 }
 
-// AstAORSet indicates an expected call of AstAORSet
+// AstAORSet indicates an expected call of AstAORSet.
 func (mr *MockCacheHandlerMockRecorder) AstAORSet(ctx, e interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAORSet", reflect.TypeOf((*MockCacheHandler)(nil).AstAORSet), ctx, e)
 }
 
-// AstAuthDel mocks base method
+// AstAuthDel mocks base method.
 func (m *MockCacheHandler) AstAuthDel(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthDel", ctx, id)
@@ -105,13 +92,13 @@ func (m *MockCacheHandler) AstAuthDel(ctx context.Context, id string) error {
 	return ret0
 }
 
-// AstAuthDel indicates an expected call of AstAuthDel
+// AstAuthDel indicates an expected call of AstAuthDel.
 func (mr *MockCacheHandlerMockRecorder) AstAuthDel(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAuthDel", reflect.TypeOf((*MockCacheHandler)(nil).AstAuthDel), ctx, id)
 }
 
-// AstAuthGet mocks base method
+// AstAuthGet mocks base method.
 func (m *MockCacheHandler) AstAuthGet(ctx context.Context, id string) (*astauth.AstAuth, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthGet", ctx, id)
@@ -120,13 +107,13 @@ func (m *MockCacheHandler) AstAuthGet(ctx context.Context, id string) (*astauth.
 	return ret0, ret1
 }
 
-// AstAuthGet indicates an expected call of AstAuthGet
+// AstAuthGet indicates an expected call of AstAuthGet.
 func (mr *MockCacheHandlerMockRecorder) AstAuthGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAuthGet", reflect.TypeOf((*MockCacheHandler)(nil).AstAuthGet), ctx, id)
 }
 
-// AstAuthSet mocks base method
+// AstAuthSet mocks base method.
 func (m *MockCacheHandler) AstAuthSet(ctx context.Context, e *astauth.AstAuth) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstAuthSet", ctx, e)
@@ -134,13 +121,13 @@ func (m *MockCacheHandler) AstAuthSet(ctx context.Context, e *astauth.AstAuth) e
 	return ret0
 }
 
-// AstAuthSet indicates an expected call of AstAuthSet
+// AstAuthSet indicates an expected call of AstAuthSet.
 func (mr *MockCacheHandlerMockRecorder) AstAuthSet(ctx, e interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAuthSet", reflect.TypeOf((*MockCacheHandler)(nil).AstAuthSet), ctx, e)
 }
 
-// AstContactsDel mocks base method
+// AstContactsDel mocks base method.
 func (m *MockCacheHandler) AstContactsDel(ctx context.Context, endpoint string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstContactsDel", ctx, endpoint)
@@ -148,13 +135,13 @@ func (m *MockCacheHandler) AstContactsDel(ctx context.Context, endpoint string) 
 	return ret0
 }
 
-// AstContactsDel indicates an expected call of AstContactsDel
+// AstContactsDel indicates an expected call of AstContactsDel.
 func (mr *MockCacheHandlerMockRecorder) AstContactsDel(ctx, endpoint interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactsDel", reflect.TypeOf((*MockCacheHandler)(nil).AstContactsDel), ctx, endpoint)
 }
 
-// AstContactsGet mocks base method
+// AstContactsGet mocks base method.
 func (m *MockCacheHandler) AstContactsGet(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstContactsGet", ctx, endpoint)
@@ -163,13 +150,13 @@ func (m *MockCacheHandler) AstContactsGet(ctx context.Context, endpoint string) 
 	return ret0, ret1
 }
 
-// AstContactsGet indicates an expected call of AstContactsGet
+// AstContactsGet indicates an expected call of AstContactsGet.
 func (mr *MockCacheHandlerMockRecorder) AstContactsGet(ctx, endpoint interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactsGet", reflect.TypeOf((*MockCacheHandler)(nil).AstContactsGet), ctx, endpoint)
 }
 
-// AstContactsSet mocks base method
+// AstContactsSet mocks base method.
 func (m *MockCacheHandler) AstContactsSet(ctx context.Context, endpoint string, contacts []*astcontact.AstContact) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstContactsSet", ctx, endpoint, contacts)
@@ -177,13 +164,13 @@ func (m *MockCacheHandler) AstContactsSet(ctx context.Context, endpoint string, 
 	return ret0
 }
 
-// AstContactsSet indicates an expected call of AstContactsSet
+// AstContactsSet indicates an expected call of AstContactsSet.
 func (mr *MockCacheHandlerMockRecorder) AstContactsSet(ctx, endpoint, contacts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactsSet", reflect.TypeOf((*MockCacheHandler)(nil).AstContactsSet), ctx, endpoint, contacts)
 }
 
-// AstEndpointDel mocks base method
+// AstEndpointDel mocks base method.
 func (m *MockCacheHandler) AstEndpointDel(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointDel", ctx, id)
@@ -191,13 +178,13 @@ func (m *MockCacheHandler) AstEndpointDel(ctx context.Context, id string) error 
 	return ret0
 }
 
-// AstEndpointDel indicates an expected call of AstEndpointDel
+// AstEndpointDel indicates an expected call of AstEndpointDel.
 func (mr *MockCacheHandlerMockRecorder) AstEndpointDel(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstEndpointDel", reflect.TypeOf((*MockCacheHandler)(nil).AstEndpointDel), ctx, id)
 }
 
-// AstEndpointGet mocks base method
+// AstEndpointGet mocks base method.
 func (m *MockCacheHandler) AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointGet", ctx, id)
@@ -206,13 +193,13 @@ func (m *MockCacheHandler) AstEndpointGet(ctx context.Context, id string) (*aste
 	return ret0, ret1
 }
 
-// AstEndpointGet indicates an expected call of AstEndpointGet
+// AstEndpointGet indicates an expected call of AstEndpointGet.
 func (mr *MockCacheHandlerMockRecorder) AstEndpointGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstEndpointGet", reflect.TypeOf((*MockCacheHandler)(nil).AstEndpointGet), ctx, id)
 }
 
-// AstEndpointSet mocks base method
+// AstEndpointSet mocks base method.
 func (m *MockCacheHandler) AstEndpointSet(ctx context.Context, e *astendpoint.AstEndpoint) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstEndpointSet", ctx, e)
@@ -220,13 +207,41 @@ func (m *MockCacheHandler) AstEndpointSet(ctx context.Context, e *astendpoint.As
 	return ret0
 }
 
-// AstEndpointSet indicates an expected call of AstEndpointSet
+// AstEndpointSet indicates an expected call of AstEndpointSet.
 func (mr *MockCacheHandlerMockRecorder) AstEndpointSet(ctx, e interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstEndpointSet", reflect.TypeOf((*MockCacheHandler)(nil).AstEndpointSet), ctx, e)
 }
 
-// DomainGet mocks base method
+// Connect mocks base method.
+func (m *MockCacheHandler) Connect() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Connect")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Connect indicates an expected call of Connect.
+func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
+}
+
+// DomainDel mocks base method.
+func (m *MockCacheHandler) DomainDel(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainDel", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DomainDel indicates an expected call of DomainDel.
+func (mr *MockCacheHandlerMockRecorder) DomainDel(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDel", reflect.TypeOf((*MockCacheHandler)(nil).DomainDel), ctx, id)
+}
+
+// DomainGet mocks base method.
 func (m *MockCacheHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGet", ctx, id)
@@ -235,13 +250,13 @@ func (m *MockCacheHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain
 	return ret0, ret1
 }
 
-// DomainGet indicates an expected call of DomainGet
+// DomainGet indicates an expected call of DomainGet.
 func (mr *MockCacheHandlerMockRecorder) DomainGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGet", reflect.TypeOf((*MockCacheHandler)(nil).DomainGet), ctx, id)
 }
 
-// DomainSet mocks base method
+// DomainSet mocks base method.
 func (m *MockCacheHandler) DomainSet(ctx context.Context, e *domain.Domain) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainSet", ctx, e)
@@ -249,27 +264,27 @@ func (m *MockCacheHandler) DomainSet(ctx context.Context, e *domain.Domain) erro
 	return ret0
 }
 
-// DomainSet indicates an expected call of DomainSet
+// DomainSet indicates an expected call of DomainSet.
 func (mr *MockCacheHandlerMockRecorder) DomainSet(ctx, e interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainSet", reflect.TypeOf((*MockCacheHandler)(nil).DomainSet), ctx, e)
 }
 
-// DomainDel mocks base method
-func (m *MockCacheHandler) DomainDel(ctx context.Context, id uuid.UUID) error {
+// ExtensionDel mocks base method.
+func (m *MockCacheHandler) ExtensionDel(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainDel", ctx, id)
+	ret := m.ctrl.Call(m, "ExtensionDel", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DomainDel indicates an expected call of DomainDel
-func (mr *MockCacheHandlerMockRecorder) DomainDel(ctx, id interface{}) *gomock.Call {
+// ExtensionDel indicates an expected call of ExtensionDel.
+func (mr *MockCacheHandlerMockRecorder) ExtensionDel(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDel", reflect.TypeOf((*MockCacheHandler)(nil).DomainDel), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDel", reflect.TypeOf((*MockCacheHandler)(nil).ExtensionDel), ctx, id)
 }
 
-// ExtensionGet mocks base method
+// ExtensionGet mocks base method.
 func (m *MockCacheHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGet", ctx, id)
@@ -278,13 +293,13 @@ func (m *MockCacheHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*ext
 	return ret0, ret1
 }
 
-// ExtensionGet indicates an expected call of ExtensionGet
+// ExtensionGet indicates an expected call of ExtensionGet.
 func (mr *MockCacheHandlerMockRecorder) ExtensionGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGet", reflect.TypeOf((*MockCacheHandler)(nil).ExtensionGet), ctx, id)
 }
 
-// ExtensionSet mocks base method
+// ExtensionSet mocks base method.
 func (m *MockCacheHandler) ExtensionSet(ctx context.Context, e *extension.Extension) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionSet", ctx, e)
@@ -292,22 +307,8 @@ func (m *MockCacheHandler) ExtensionSet(ctx context.Context, e *extension.Extens
 	return ret0
 }
 
-// ExtensionSet indicates an expected call of ExtensionSet
+// ExtensionSet indicates an expected call of ExtensionSet.
 func (mr *MockCacheHandlerMockRecorder) ExtensionSet(ctx, e interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionSet", reflect.TypeOf((*MockCacheHandler)(nil).ExtensionSet), ctx, e)
-}
-
-// ExtensionDel mocks base method
-func (m *MockCacheHandler) ExtensionDel(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionDel", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ExtensionDel indicates an expected call of ExtensionDel
-func (mr *MockCacheHandlerMockRecorder) ExtensionDel(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDel", reflect.TypeOf((*MockCacheHandler)(nil).ExtensionDel), ctx, id)
 }
