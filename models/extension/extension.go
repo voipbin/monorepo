@@ -11,6 +11,7 @@ type Extension struct {
 	Detail   string    `json:"detail"`
 	DomainID uuid.UUID `json:"domain_id"`
 
+	// asterisk resources
 	EndpointID string `json:"endpoint_id"`
 	AORID      string `json:"aor_id"`
 	AuthID     string `json:"auth_id"`
