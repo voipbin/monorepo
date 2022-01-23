@@ -7,8 +7,9 @@ import (
 	"time"
 
 	gomock "github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/request-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 func TestPublishWebhookEvent(t *testing.T) {
