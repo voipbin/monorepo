@@ -24,7 +24,7 @@ func (h *listenHandler) processV1Login(ctx context.Context, m *rabbitmqhandler.R
 		})
 	log.Debug("Executing processV1Login.")
 
-	var reqData request.V1DataLogin
+	var reqData request.V1DataLoginPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
