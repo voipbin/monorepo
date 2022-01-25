@@ -230,8 +230,8 @@ func (h *listenHandler) processV1CustomersIDPasswordPut(ctx context.Context, m *
 	return res, nil
 }
 
-// processV1CustomersIDPermissionPut handles Put /v1/customers/<customer-id>/permission request
-func (h *listenHandler) processV1CustomersIDPermissionPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1CustomersIDPermissionIDsPut handles Put /v1/customers/<customer-id>/permission request
+func (h *listenHandler) processV1CustomersIDPermissionIDsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -245,7 +245,7 @@ func (h *listenHandler) processV1CustomersIDPermissionPut(ctx context.Context, m
 		})
 	log.Debug("Executing processV1CustomersIDPermissionPut.")
 
-	var req request.V1DataCustomersIDPermissionPut
+	var req request.V1DataCustomersIDPermissionIDsPut
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil

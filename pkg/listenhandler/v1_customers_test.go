@@ -443,7 +443,7 @@ func TestProcessV1UsersIDPasswordPut(t *testing.T) {
 	}
 }
 
-func TestProcessV1CustomersIDPermissionPut(t *testing.T) {
+func TestProcessV1CustomersIDPermissionIDsPut(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -469,7 +469,7 @@ func TestProcessV1CustomersIDPermissionPut(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/customers/e00b4e98-7dd5-11ec-82c1-8b583557f04d/permission",
+				URI:      "/v1/customers/e00b4e98-7dd5-11ec-82c1-8b583557f04d/permission_ids",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"permission_ids":["03796e14-7cb4-11ec-9dba-e72023efd1c6"]}`),
