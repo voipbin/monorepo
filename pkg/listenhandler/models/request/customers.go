@@ -34,10 +34,10 @@ type V1DataCustomersIDPut struct {
 	WebhookURI    string `json:"webhook_uri"`
 }
 
-// V1DataUsersIDPasswordPut is
+// V1DataCustomersIDPasswordPut is
 // v1 data type request struct for
 // /v1/customers/<customer-id>/password PUT
-type V1DataUsersIDPasswordPut struct {
+type V1DataCustomersIDPasswordPut struct {
 	Password string `json:"password"`
 }
 

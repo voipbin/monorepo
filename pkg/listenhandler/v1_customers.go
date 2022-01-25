@@ -95,49 +95,6 @@ func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *rabbitmqh
 	return res, nil
 }
 
-// processV1CustomersUsernameLogin handles Post /v1/customers request
-func (h *listenHandler) processV1CustomersUsernameLogin(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 5 {
-		return simpleResponse(400), nil
-	}
-
-	username := uriItems[3]
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1CustomersUsernameLogin",
-			"username": username,
-		})
-	log.Debug("Executing processV1CustomersUsernameLogin.")
-
-	var reqData request.V1DataCustomersUsernameLoginPost
-	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
-		return simpleResponse(400), nil
-	}
-
-	tmp, err := h.customerHandler.CustomerLogin(ctx, username, reqData.Password)
-	if err != nil {
-		log.Errorf("Could not login the customer info. err: %v", err)
-		return simpleResponse(400), nil
-	}
-
-	data, err := json.Marshal(tmp)
-	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
-		return simpleResponse(500), nil
-	}
-	log.Debugf("Sending result: %v", data)
-
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       data,
-	}
-
-	return res, nil
-}
-
 // processV1CustomersIDGet handles Get /v1/customers/<customer-id> request
 func (h *listenHandler) processV1CustomersIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
@@ -254,7 +211,7 @@ func (h *listenHandler) processV1CustomersIDPasswordPut(ctx context.Context, m *
 		})
 	log.Debug("Executing processV1CustomersIDPasswordPut.")
 
-	var req request.V1DataUsersIDPasswordPut
+	var req request.V1DataCustomersIDPasswordPut
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
