@@ -37,17 +37,17 @@ type listenHandler struct {
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" //nolint:deadcode,unused,varcheck // this is ok
-	// regNumber = "[0-9]*"
-	regAny = "(.*)"
 
 	// v1
-	// users
-	regV1Customers              = regexp.MustCompile("/v1/customers$")
-	regV1CustomersGet           = regexp.MustCompile(`/v1/customers\?(.*)$`)
-	regV1CustomersUsernameLogin = regexp.MustCompile("/v1/customers/" + regAny + "/login$")
-	regV1CustomersID            = regexp.MustCompile("/v1/customers/" + regUUID + "$")
-	regV1CustomersIDPassword    = regexp.MustCompile("/v1/customers/" + regUUID + "/password$")
-	regV1CustomersIDPermission  = regexp.MustCompile("/v1/customers/" + regUUID + "/permission$")
+	// customers
+	regV1Customers             = regexp.MustCompile("/v1/customers$")
+	regV1CustomersGet          = regexp.MustCompile(`/v1/customers\?(.*)$`)
+	regV1CustomersID           = regexp.MustCompile("/v1/customers/" + regUUID + "$")
+	regV1CustomersIDPassword   = regexp.MustCompile("/v1/customers/" + regUUID + "/password$")
+	regV1CustomersIDPermission = regexp.MustCompile("/v1/customers/" + regUUID + "/permission$")
+
+	// login
+	regV1Login = regexp.MustCompile("/v1/login$")
 )
 
 var (
@@ -195,10 +195,13 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1CustomersIDPermissionPut(ctx, m)
 		requestType = "/v1/users"
 
-	// POST /customers/<username>/login
-	case regV1CustomersUsernameLogin.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1CustomersUsernameLogin(ctx, m)
-		requestType = "/v1/customers"
+	////////////
+	// login
+	////////////
+	// POST /customers
+	case regV1Login.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1Login(ctx, m)
+		requestType = "/v1/login"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
