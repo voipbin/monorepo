@@ -1,6 +1,6 @@
 package requesthandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package requesthandler -destination ./mock_requesthandler_requesthandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package requesthandler -destination ./mock_requesthandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -18,6 +18,7 @@ import (
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -266,6 +267,18 @@ type RequestHandler interface {
 	// call-manager recordings
 	CMV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
 	CMV1RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]cmrecording.Recording, error)
+
+	// customer-manager customer
+	CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.Customer, error)
+	CSV1CustomerDelete(ctx context.Context, id uuid.UUID) error
+	CSV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error)
+	CSV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64) ([]cscustomer.Customer, error)
+	CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error
+	CSV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) error
+	CSV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error
+
+	// customer-manager login
+	CSV1Login(ctx context.Context, timeout int, username, password string) (*cscustomer.Customer, error)
 
 	// conference-manager conference
 	CFV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)

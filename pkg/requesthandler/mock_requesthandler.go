@@ -20,6 +20,7 @@ import (
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -921,6 +922,122 @@ func (m *MockRequestHandler) CMV1RecordingGets(ctx context.Context, userID, size
 func (mr *MockRequestHandlerMockRecorder) CMV1RecordingGets(ctx, userID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1RecordingGets", reflect.TypeOf((*MockRequestHandler)(nil).CMV1RecordingGets), ctx, userID, size, token)
+}
+
+// CSV1CustomerCreate mocks base method.
+func (m *MockRequestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CSV1CustomerCreate", ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CSV1CustomerCreate indicates an expected call of CSV1CustomerCreate.
+func (mr *MockRequestHandlerMockRecorder) CSV1CustomerCreate(ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerCreate", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerCreate), ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
+}
+
+// CSV1CustomerDelete mocks base method.
+func (m *MockRequestHandler) CSV1CustomerDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CSV1CustomerDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CSV1CustomerDelete indicates an expected call of CSV1CustomerDelete.
+func (mr *MockRequestHandlerMockRecorder) CSV1CustomerDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerDelete", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerDelete), ctx, id)
+}
+
+// CSV1CustomerGet mocks base method.
+func (m *MockRequestHandler) CSV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CSV1CustomerGet", ctx, customerID)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CSV1CustomerGet indicates an expected call of CSV1CustomerGet.
+func (mr *MockRequestHandlerMockRecorder) CSV1CustomerGet(ctx, customerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerGet", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerGet), ctx, customerID)
+}
+
+// CSV1CustomerGets mocks base method.
+func (m *MockRequestHandler) CSV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64) ([]customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CSV1CustomerGets", ctx, pageToken, pageSize)
+	ret0, _ := ret[0].([]customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CSV1CustomerGets indicates an expected call of CSV1CustomerGets.
+func (mr *MockRequestHandlerMockRecorder) CSV1CustomerGets(ctx, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerGets", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerGets), ctx, pageToken, pageSize)
+}
+
+// CSV1CustomerUpdate mocks base method.
+func (m *MockRequestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CSV1CustomerUpdate", ctx, id, name, detail, webhookMethod, webhookURI)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CSV1CustomerUpdate indicates an expected call of CSV1CustomerUpdate.
+func (mr *MockRequestHandlerMockRecorder) CSV1CustomerUpdate(ctx, id, name, detail, webhookMethod, webhookURI interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerUpdate", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerUpdate), ctx, id, name, detail, webhookMethod, webhookURI)
+}
+
+// CSV1CustomerUpdatePassword mocks base method.
+func (m *MockRequestHandler) CSV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CSV1CustomerUpdatePassword", ctx, requestTimeout, id, password)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CSV1CustomerUpdatePassword indicates an expected call of CSV1CustomerUpdatePassword.
+func (mr *MockRequestHandlerMockRecorder) CSV1CustomerUpdatePassword(ctx, requestTimeout, id, password interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerUpdatePassword", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerUpdatePassword), ctx, requestTimeout, id, password)
+}
+
+// CSV1CustomerUpdatePermissionIDs mocks base method.
+func (m *MockRequestHandler) CSV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CSV1CustomerUpdatePermissionIDs", ctx, id, permissionIDs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CSV1CustomerUpdatePermissionIDs indicates an expected call of CSV1CustomerUpdatePermissionIDs.
+func (mr *MockRequestHandlerMockRecorder) CSV1CustomerUpdatePermissionIDs(ctx, id, permissionIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerUpdatePermissionIDs", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerUpdatePermissionIDs), ctx, id, permissionIDs)
+}
+
+// CSV1Login mocks base method.
+func (m *MockRequestHandler) CSV1Login(ctx context.Context, timeout int, username, password string) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CSV1Login", ctx, timeout, username, password)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CSV1Login indicates an expected call of CSV1Login.
+func (mr *MockRequestHandlerMockRecorder) CSV1Login(ctx, timeout, username, password interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1Login", reflect.TypeOf((*MockRequestHandler)(nil).CSV1Login), ctx, timeout, username, password)
 }
 
 // FMV1ActionGet mocks base method.
