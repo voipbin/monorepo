@@ -4,7 +4,6 @@ package requesthandler
 
 import (
 	"context"
-	"net/url"
 	"strings"
 
 	uuid "github.com/gofrs/uuid"
@@ -60,6 +59,7 @@ const (
 )
 
 // list of queue names
+//nolint:deadcode,varcheck // this is ok
 const (
 	exchangeDelay = "bin-manager.delay"
 
@@ -67,6 +67,7 @@ const (
 	queueAPI        = "bin-manager.api-manager.request"
 	queueCall       = "bin-manager.call-manager.request"
 	queueConference = "bin-manager.conference-manager.request"
+	queueCustomer   = "bin-manager.customer-manager.request"
 	queueFlow       = "bin-manager.flow-manager.request"
 	queueNumber     = "bin-manager.number-manager.request"
 	queueQueue      = "bin-manager.queue-manager.request"
@@ -124,6 +125,10 @@ const (
 	resourceCFConferences resource = "cm/conferences"
 
 	resourceCallRecordings resource = "cm/recordings"
+
+	resourceCSCustomers resource = "cs/customers"
+
+	resourceCSLogin resource = "cs/login"
 
 	resourceFlowsActions  resource = "flows/actions"
 	resourceFMFlows       resource = "fm/flows"
@@ -379,22 +384,6 @@ type requestHandler struct {
 	sock rabbitmqhandler.Rabbit
 
 	publisher string
-
-	exchangeDelay string
-
-	queueAgent      string
-	queueAPI        string
-	queueCall       string
-	queueConference string
-	queueFlow       string
-	queueNumber     string
-	queueQueue      string
-	queueRegistrar  string
-	queueStorage    string
-	queueTranscribe string
-	queueTTS        string
-	queueUser       string
-	queueWebhook    string
 }
 
 // NewRequestHandler create RequesterHandler
@@ -403,36 +392,10 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher string) RequestHan
 		sock: sock,
 
 		publisher: publisher,
-
-		exchangeDelay: exchangeDelay,
-
-		queueAgent:      queueAgent,
-		queueAPI:        queueAPI,
-		queueCall:       queueCall,
-		queueConference: queueConference,
-		queueFlow:       queueFlow,
-		queueNumber:     queueNumber,
-		queueQueue:      queueQueue,
-		queueRegistrar:  queueRegistrar,
-		queueStorage:    queueStorage,
-		queueTranscribe: queueTranscribe,
-		queueTTS:        queueTTS,
-		queueUser:       queueUser,
-		queueWebhook:    queueWebhook,
 	}
 
 	namespace := strings.ReplaceAll(publisher, "-", "_")
 	initPrometheus(namespace)
 
 	return h
-}
-
-//nolint:deadcode,unused // this is ok
-func uriUnescape(u string) string {
-	res, err := url.QueryUnescape(u)
-	if err != nil {
-		return "could not unescape the url"
-	}
-
-	return res
 }

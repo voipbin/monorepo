@@ -7,8 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestCFV1ConferenceGet(t *testing.T) {
@@ -53,13 +54,7 @@ func TestCFV1ConferenceGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:            mockSock,
-		exchangeDelay:   "bin-manager.delay",
-		queueCall:       "bin-manager.call-manager.request",
-		queueFlow:       "bin-manager.flow-manager.request",
-		queueTTS:        "bin-manager.tts-manager.request",
-		queueRegistrar:  "bin-manager.registrar-manager.request",
-		queueConference: "bin-manager.conference-manager.request",
+		sock: mockSock,
 	}
 
 	for _, tt := range tests {
@@ -85,11 +80,7 @@ func TestCFV1ConferenceDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:            mockSock,
-		exchangeDelay:   "bin-manager.delay",
-		queueCall:       "bin-manager.call-manager.request",
-		queueFlow:       "bin-manager.flow-manager.request",
-		queueConference: "bin-manager.conference-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -136,11 +127,7 @@ func TestCFV1ConferenceCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:            mockSock,
-		exchangeDelay:   "bin-manager.delay",
-		queueCall:       "bin-manager.call-manager.request",
-		queueFlow:       "bin-manager.flow-manager.request",
-		queueConference: "bin-manager.conference-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {

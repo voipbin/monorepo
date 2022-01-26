@@ -7,8 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestQMV1QueuecallGets(t *testing.T) {
@@ -17,8 +18,7 @@ func TestQMV1QueuecallGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -109,8 +109,7 @@ func TestAMV1QueuecallGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -168,8 +167,7 @@ func TestQMQueuecallDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -219,8 +217,7 @@ func TestQMQueuecallDeleteByReferenceID(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -270,9 +267,7 @@ func TestQMV1QueuecallExecute(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueQueue:    queueQueue,
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -320,9 +315,7 @@ func TestQMV1QueuecallTimeoutWait(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueQueue:    queueQueue,
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -370,9 +363,7 @@ func TestQMV1QueuecallTimeoutService(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueQueue:    queueQueue,
+		sock: mockSock,
 	}
 
 	type test struct {

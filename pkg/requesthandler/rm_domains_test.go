@@ -9,8 +9,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestRMV1DomainCreate(t *testing.T) {
@@ -19,12 +20,7 @@ func TestRMV1DomainCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -97,12 +93,7 @@ func TestRMV1DomainUpdate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -172,12 +163,7 @@ func TestRMV1DomainGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -245,12 +231,7 @@ func TestRMV1DomainDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -300,12 +281,7 @@ func TestRMV1DomainsGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {

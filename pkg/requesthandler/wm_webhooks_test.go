@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -14,8 +15,7 @@ func TestWMV1WebhookSend(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:         mockSock,
-		queueWebhook: queueWebhook,
+		sock: mockSock,
 	}
 
 	tests := []struct {

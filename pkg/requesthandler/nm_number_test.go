@@ -9,8 +9,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestNMV1NumberFlowDelete(t *testing.T) {
@@ -19,11 +20,7 @@ func TestNMV1NumberFlowDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
-		queueNumber:   "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -75,12 +72,7 @@ func TestNMV1NumberCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -155,12 +147,7 @@ func TestNMV1NumberGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -239,12 +226,7 @@ func TestNMV1NumberGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -316,12 +298,7 @@ func TestNMV1NumberDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -393,12 +370,7 @@ func TestNMV1NumberUpdate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {

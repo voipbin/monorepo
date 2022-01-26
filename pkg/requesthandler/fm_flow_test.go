@@ -21,10 +21,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -105,13 +102,7 @@ func TestFMV1FlowUpdate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueStorage:   "bin-manager.storage-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -182,13 +173,7 @@ func TestFMV1FlowGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueStorage:   "bin-manager.storage-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -256,13 +241,7 @@ func TestFMV1FlowDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueStorage:   "bin-manager.storage-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -312,13 +291,7 @@ func TestFMV1FlowGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueStorage:   "bin-manager.storage-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
-		queueNumber:    "bin-manager.number-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
