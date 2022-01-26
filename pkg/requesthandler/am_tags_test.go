@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -17,8 +18,7 @@ func TestAMV1TagCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -81,8 +81,7 @@ func TestAMV1TagGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -140,8 +139,7 @@ func TestAMV1TagGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -232,8 +230,7 @@ func TestAMTagDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -283,8 +280,7 @@ func TestAMV1TagUpdate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {

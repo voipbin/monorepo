@@ -19,8 +19,7 @@ func TestAMV1AgentCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -185,8 +184,7 @@ func TestAMV1AgentGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -244,8 +242,7 @@ func TestAMV1AgentGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -336,8 +333,7 @@ func TestAMV1AgentGetsByTagIDs(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -430,8 +426,7 @@ func TestAMV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -527,8 +522,7 @@ func TestAMAgentDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -578,8 +572,7 @@ func TestAMV1AgentLogin(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -642,8 +635,7 @@ func TestAMV1AgentUpdateAddresses(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -699,8 +691,7 @@ func TestAMV1AgentUpdatePassword(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -751,8 +742,7 @@ func TestAMV1AgentUpdate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -807,8 +797,7 @@ func TestAMV1AgentUpdateTagIDs(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -861,8 +850,7 @@ func TestAMV1AgentUpdateStatus(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -913,8 +901,7 @@ func TestAMV1AgentDial(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueAgent: queueAgent,
+		sock: mockSock,
 	}
 
 	tests := []struct {

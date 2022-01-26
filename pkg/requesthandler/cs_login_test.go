@@ -7,12 +7,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	qmqueuecallreference "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestAMV1QueuecallReferenceGet(t *testing.T) {
+func TestCSV1Login(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -24,31 +24,39 @@ func TestAMV1QueuecallReferenceGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		username string
+		password string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
-		expectRes     *qmqueuecallreference.QueuecallReference
+
+		expectRes *cscustomer.Customer
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("a2764422-6159-11ec-8d87-975236f7d7b7"),
+			"test",
+			"testpassword",
 
-			"bin-manager.queue-manager.request",
+			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecallreferences/a2764422-6159-11ec-8d87-975236f7d7b7",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:      "/v1/login",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"username":"test","password":"testpassword"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a2764422-6159-11ec-8d87-975236f7d7b7"}`),
+				Data:       []byte(`{"id":"ed8088d8-7e41-11ec-958e-6b788edc7b1b","username":"test","name":"test user 1","detail":"test user 1 detail","permission_ids":[]}`),
 			},
-			&qmqueuecallreference.QueuecallReference{
-				ID: uuid.FromStringOrNil("a2764422-6159-11ec-8d87-975236f7d7b7"),
+			&cscustomer.Customer{
+				ID:            uuid.FromStringOrNil("ed8088d8-7e41-11ec-958e-6b788edc7b1b"),
+				Username:      "test",
+				Name:          "test user 1",
+				Detail:        "test user 1 detail",
+				PermissionIDs: []uuid.UUID{},
 			},
 		},
 	}
@@ -56,14 +64,15 @@ func TestAMV1QueuecallReferenceGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueuecallReferenceGet(ctx, tt.id)
+			res, err := reqHandler.CSV1Login(ctx, requestTimeoutDefault, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectRes) {
+			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})

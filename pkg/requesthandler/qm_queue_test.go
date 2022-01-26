@@ -7,10 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestQMV1QueueGets(t *testing.T) {
@@ -19,8 +20,7 @@ func TestQMV1QueueGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -111,8 +111,7 @@ func TestAMV1QueueGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -170,8 +169,7 @@ func TestQMVQueueCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -254,8 +252,7 @@ func TestAMV1QueueDelete(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -304,8 +301,7 @@ func TestQMVQueueUpdate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -362,8 +358,7 @@ func TestQMVQueueUpdateTagIDs(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -416,8 +411,7 @@ func TestQMVQueueUpdateRoutingMethod(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -468,8 +462,7 @@ func TestQMVQueueUpdateActions(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -529,8 +522,7 @@ func TestQMVQueueCreateQueuecall(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:       mockSock,
-		queueQueue: queueQueue,
+		sock: mockSock,
 	}
 
 	tests := []struct {

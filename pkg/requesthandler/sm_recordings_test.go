@@ -7,8 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestSMRecordingGet(t *testing.T) {
@@ -17,9 +18,7 @@ func TestSMRecordingGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueStorage:  "bin-manager.storage-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {

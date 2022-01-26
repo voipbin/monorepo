@@ -7,8 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestTSV1RecordingPost(t *testing.T) {
@@ -17,9 +18,7 @@ func TestTSV1RecordingPost(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:            mockSock,
-		exchangeDelay:   "bin-manager.delay",
-		queueTranscribe: "bin-manager.transcribe-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {

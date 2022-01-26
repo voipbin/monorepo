@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func TestAstChannelAnswer(t *testing.T) {
@@ -42,12 +42,7 @@ func TestAstChannelAnswer(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	for _, tt := range tests {
@@ -124,12 +119,7 @@ func TestAstChannelContinue(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	for _, tt := range tests {
@@ -202,12 +192,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	for _, tt := range tests {
@@ -265,12 +250,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	for _, tt := range tests {
@@ -301,12 +281,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -397,12 +372,7 @@ func TestAstChannelGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -476,12 +446,7 @@ func TestAstChannelDTMF(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -562,12 +527,7 @@ func TestAstChannelCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -650,12 +610,7 @@ func TestAstChannelDial(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -709,12 +664,7 @@ func TestAstChannelPlay(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -786,12 +736,7 @@ func TestAstChannelRecord(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -857,12 +802,7 @@ func TestAstChannelExternalMedia(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {

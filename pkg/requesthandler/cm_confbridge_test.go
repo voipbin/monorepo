@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -17,10 +18,7 @@ func TestCMV1ConfbridgeCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {

@@ -20,10 +20,7 @@ func TestCMV1CallHealth(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -79,10 +76,7 @@ func TestCMV1CallActionTimeout(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -142,10 +136,7 @@ func TestCMV1CallActionNext(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -217,10 +208,7 @@ func TestCMV1CallCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -293,10 +281,7 @@ func TestCMV1CallCreateWithID(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -371,10 +356,7 @@ func TestCMV1CallGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -434,10 +416,7 @@ func TestCMV1CallGets(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -530,10 +509,7 @@ func TestCMCallAddChainedCall(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {
@@ -588,10 +564,7 @@ func TestCMCallHangup(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:          mockSock,
-		exchangeDelay: "bin-manager.delay",
-		queueCall:     "bin-manager.call-manager.request",
-		queueFlow:     "bin-manager.flow-manager.request",
+		sock: mockSock,
 	}
 
 	type test struct {

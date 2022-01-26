@@ -2,16 +2,17 @@ package requesthandler
 
 import (
 	"context"
-	reflect "reflect"
+	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestUMV1UserGets(t *testing.T) {
+func TestCSV1CustomerGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -30,7 +31,7 @@ func TestUMV1UserGets(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 
-		expectRes []umuser.User
+		expectRes []cscustomer.Customer
 	}{
 		{
 			"normal",
@@ -38,39 +39,32 @@ func TestUMV1UserGets(t *testing.T) {
 			"2021-03-02 03:23:20.995000",
 			10,
 
-			"bin-manager.user-manager.request",
+			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/users?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/customers?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":1,"username":"test1","name":"test user 1","detail":"test user 1 detail","permission":1},{"id":2,"username":"test2","name":"test user 2","detail":"test user 2 detail","permission":1}]`),
+				Data:       []byte(`[{"id":"30071608-7e43-11ec-b04a-bb4270e3e223","username":"test1","name":"test user 1","detail":"test user 1 detail","permission_ids":[]},{"id":"5ca81a9a-7e43-11ec-b271-5b65823bfdd3","username":"test2","name":"test user 2","detail":"test user 2 detail","permission_ids":[]}]`),
 			},
-			[]umuser.User{
+			[]cscustomer.Customer{
 				{
-					ID:           1,
-					Username:     "test1",
-					PasswordHash: "",
-					Name:         "test user 1",
-					Detail:       "test user 1 detail",
-					Permission:   1,
-					TMCreate:     "",
-					TMUpdate:     "",
-					TMDelete:     "",
+					ID:            uuid.FromStringOrNil("30071608-7e43-11ec-b04a-bb4270e3e223"),
+					Username:      "test1",
+					Name:          "test user 1",
+					Detail:        "test user 1 detail",
+					PermissionIDs: []uuid.UUID{},
 				},
 				{
-					ID:           2,
-					Username:     "test2",
-					PasswordHash: "",
-					Name:         "test user 2",
-					Detail:       "test user 2 detail",
-					Permission:   1,
-					TMCreate:     "",
-					TMUpdate:     "",
-					TMDelete:     "",
+					ID:            uuid.FromStringOrNil("5ca81a9a-7e43-11ec-b271-5b65823bfdd3"),
+					Username:      "test2",
+					PasswordHash:  "",
+					Name:          "test user 2",
+					Detail:        "test user 2 detail",
+					PermissionIDs: []uuid.UUID{},
 				},
 			},
 		},
@@ -82,7 +76,7 @@ func TestUMV1UserGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.UMV1UserGets(ctx, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CSV1CustomerGets(ctx, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -94,7 +88,7 @@ func TestUMV1UserGets(t *testing.T) {
 	}
 }
 
-func TestUMV1UserGet(t *testing.T) {
+func TestCSV1CustomerGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -106,40 +100,36 @@ func TestUMV1UserGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID uint64
+		id uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 
-		expectRes *umuser.User
+		expectRes *cscustomer.Customer
 	}{
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("951a4038-7e43-11ec-bc59-4f1dc0de20b0"),
 
-			"bin-manager.user-manager.request",
+			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/users/1",
+				URI:      "/v1/customers/951a4038-7e43-11ec-bc59-4f1dc0de20b0",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":1,"username":"test1","name":"test user 1","detail":"test user 1 detail","permission":1}`),
+				Data:       []byte(`{"id":"951a4038-7e43-11ec-bc59-4f1dc0de20b0","username":"test1","name":"test user 1","detail":"test user 1 detail","permission_ids":[]}`),
 			},
-			&umuser.User{
-				ID:           1,
-				Username:     "test1",
-				PasswordHash: "",
-				Name:         "test user 1",
-				Detail:       "test user 1 detail",
-				Permission:   1,
-				TMCreate:     "",
-				TMUpdate:     "",
-				TMDelete:     "",
+			&cscustomer.Customer{
+				ID:            uuid.FromStringOrNil("951a4038-7e43-11ec-bc59-4f1dc0de20b0"),
+				Username:      "test1",
+				Name:          "test user 1",
+				Detail:        "test user 1 detail",
+				PermissionIDs: []uuid.UUID{},
 			},
 		},
 	}
@@ -150,7 +140,7 @@ func TestUMV1UserGet(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.UMV1UserGet(ctx, tt.userID)
+			res, err := reqHandler.CSV1CustomerGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -162,7 +152,7 @@ func TestUMV1UserGet(t *testing.T) {
 	}
 }
 
-func TestUMV1UserDelete(t *testing.T) {
+func TestCSV1CustomerDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -174,7 +164,7 @@ func TestUMV1UserDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID uint64
+		customerID uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -183,11 +173,11 @@ func TestUMV1UserDelete(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("d6afec8c-7e43-11ec-ab03-ff394ae04b39"),
 
-			"bin-manager.user-manager.request",
+			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/users/1",
+				URI:      "/v1/customers/d6afec8c-7e43-11ec-ab03-ff394ae04b39",
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
@@ -204,14 +194,14 @@ func TestUMV1UserDelete(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.UMV1UserDelete(ctx, tt.userID); err != nil {
+			if err := reqHandler.CSV1CustomerDelete(ctx, tt.customerID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func TestUMV1UserCreate(t *testing.T) {
+func TestCSV1CustomerCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -223,49 +213,55 @@ func TestUMV1UserCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		username   string
-		password   string
-		permission umuser.Permission
-		userName   string
-		detail     string
+		username      string
+		password      string
+		userName      string
+		detail        string
+		webhookMethod string
+		webhookURI    string
+		permissionIDs []uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 
-		expectRes *umuser.User
+		expectRes *cscustomer.Customer
 	}{
 		{
 			"normal",
 
 			"test1",
 			"testpassword",
-			1,
 			"test1",
 			"detail1",
+			"POST",
+			"test.com",
+			[]uuid.UUID{
+				uuid.FromStringOrNil("db0e2c52-7e44-11ec-811d-ab2fbb79302a"),
+			},
 
-			"bin-manager.user-manager.request",
+			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/users",
+				URI:      "/v1/customers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"username":"test1","password":"testpassword","name":"test1","detail":"detail1","permission":1}`),
+				Data:     []byte(`{"username":"test1","password":"testpassword","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":1,"username":"test1","name":"test user 1","detail":"test user 1 detail","permission":1}`),
+				Data:       []byte(`{"id":"e46cbfd4-7e44-11ec-b7de-a7cfacf1121f","username":"test1","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
 			},
-			&umuser.User{
-				ID:           1,
-				Username:     "test1",
-				PasswordHash: "",
-				Name:         "test user 1",
-				Detail:       "test user 1 detail",
-				Permission:   1,
-				TMCreate:     "",
-				TMUpdate:     "",
-				TMDelete:     "",
+			&cscustomer.Customer{
+				ID:            uuid.FromStringOrNil("e46cbfd4-7e44-11ec-b7de-a7cfacf1121f"),
+				Username:      "test1",
+				Name:          "test1",
+				Detail:        "detail1",
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+				PermissionIDs: []uuid.UUID{
+					uuid.FromStringOrNil("db0e2c52-7e44-11ec-811d-ab2fbb79302a"),
+				},
 			},
 		},
 	}
@@ -276,7 +272,7 @@ func TestUMV1UserCreate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.UMV1UserCreate(ctx, requestTimeoutDefault, tt.username, tt.password, tt.userName, tt.detail, tt.permission)
+			res, err := reqHandler.CSV1CustomerCreate(ctx, requestTimeoutDefault, tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -288,7 +284,7 @@ func TestUMV1UserCreate(t *testing.T) {
 	}
 }
 
-func TestUMV1UserLogin(t *testing.T) {
+func TestCSV1CustomerUpdateBasicInfo(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -300,80 +296,11 @@ func TestUMV1UserLogin(t *testing.T) {
 	tests := []struct {
 		name string
 
-		username string
-		password string
-
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
-
-		expectRes *umuser.User
-	}{
-		{
-			"normal",
-
-			"test1",
-			"testpassword",
-
-			"bin-manager.user-manager.request",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/users/test1/login",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: ContentTypeJSON,
-				Data:     []byte(`{"password":"testpassword"}`),
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":1,"username":"test1","name":"test user 1","detail":"test user 1 detail","permission":1}`),
-			},
-			&umuser.User{
-				ID:           1,
-				Username:     "test1",
-				PasswordHash: "",
-				Name:         "test user 1",
-				Detail:       "test user 1 detail",
-				Permission:   1,
-				TMCreate:     "",
-				TMUpdate:     "",
-				TMDelete:     "",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			res, err := reqHandler.UMV1UserLogin(ctx, requestTimeoutDefault, tt.username, tt.password)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func TestUMV1UserUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	tests := []struct {
-		name string
-
-		id       uint64
-		userName string
-		detail   string
+		id            uuid.UUID
+		userName      string
+		detail        string
+		webhookMethod string
+		webhookURI    string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -382,16 +309,18 @@ func TestUMV1UserUpdate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("eed8e316-7e45-11ec-bcac-97541487f2c1"),
 			"test1",
 			"detail1",
+			"POST",
+			"test.com",
 
-			"bin-manager.user-manager.request",
+			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/users/1",
+				URI:      "/v1/customers/eed8e316-7e45-11ec-bcac-97541487f2c1",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"test1","detail":"detail1"}`),
+				Data:     []byte(`{"name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -406,14 +335,14 @@ func TestUMV1UserUpdate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.UMV1UserUpdateBasicInfo(ctx, tt.id, tt.userName, tt.detail); err != nil {
+			if err := reqHandler.CSV1CustomerUpdate(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func TestUMV1UserUpdatePassword(t *testing.T) {
+func TestCSV1CustomerUpdatePassword(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -425,7 +354,7 @@ func TestUMV1UserUpdatePassword(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id       uint64
+		id       uuid.UUID
 		password string
 
 		expectTarget  string
@@ -435,12 +364,12 @@ func TestUMV1UserUpdatePassword(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("3f54d1ec-7e46-11ec-bc5a-8f233b20baaf"),
 			"password1",
 
-			"bin-manager.user-manager.request",
+			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/users/1/password",
+				URI:      "/v1/customers/3f54d1ec-7e46-11ec-bc5a-8f233b20baaf/password",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"password":"password1"}`),
@@ -458,14 +387,14 @@ func TestUMV1UserUpdatePassword(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.UMV1UserUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password); err != nil {
+			if err := reqHandler.CSV1CustomerUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func TestUMV1UserUpdatePermission(t *testing.T) {
+func TestCSV1CustomerUpdatePermission(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -477,8 +406,8 @@ func TestUMV1UserUpdatePermission(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id         uint64
-		permission umuser.Permission
+		id            uuid.UUID
+		permissionIDs []uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -487,15 +416,17 @@ func TestUMV1UserUpdatePermission(t *testing.T) {
 		{
 			"normal",
 
-			1,
-			umuser.PermissionNone,
+			uuid.FromStringOrNil("af7c2c04-7e46-11ec-845e-ebf1194dd77a"),
+			[]uuid.UUID{
+				uuid.FromStringOrNil("be48c440-7e46-11ec-82c9-2fac536f93e0"),
+			},
 
-			"bin-manager.user-manager.request",
+			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/users/1/permission",
+				URI:      "/v1/customers/af7c2c04-7e46-11ec-845e-ebf1194dd77a/permission_ids",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"permission":0}`),
+				Data:     []byte(`{"permission_ids":["be48c440-7e46-11ec-82c9-2fac536f93e0"]}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -510,7 +441,7 @@ func TestUMV1UserUpdatePermission(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.UMV1UserUpdatePermission(ctx, tt.id, tt.permission); err != nil {
+			if err := reqHandler.CSV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

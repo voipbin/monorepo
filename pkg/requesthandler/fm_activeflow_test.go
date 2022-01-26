@@ -19,12 +19,7 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -120,12 +115,7 @@ func TestFMV1ActvieFlowGetNextAction(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	tests := []struct {
@@ -189,12 +179,7 @@ func TestFMV1ActvieFlowUpdateForwardActionID(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	reqHandler := requestHandler{
-		sock:           mockSock,
-		exchangeDelay:  "bin-manager.delay",
-		queueCall:      "bin-manager.call-manager.request",
-		queueFlow:      "bin-manager.flow-manager.request",
-		queueTTS:       "bin-manager.tts-manager.request",
-		queueRegistrar: "bin-manager.registrar-manager.request",
+		sock: mockSock,
 	}
 
 	tests := []struct {
