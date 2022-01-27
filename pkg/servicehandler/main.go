@@ -60,6 +60,7 @@ type ServiceHandler interface {
 
 	// auth handlers
 	AuthLogin(username, password string) (string, error)
+	AuthLoginCustomer(username, password string) (string, error)
 
 	// available numbers
 	AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error)
@@ -171,4 +172,15 @@ func getCurTime() string {
 	res := strings.TrimSuffix(now, " +0000 UTC")
 
 	return res
+}
+
+// Find takes a slice and looks for an element in it. If found it will
+// return it's key, otherwise it will return -1 and a bool of false.
+func Find(slice []uuid.UUID, val uuid.UUID) (int, bool) {
+	for i, item := range slice {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
 }

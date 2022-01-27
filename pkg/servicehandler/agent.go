@@ -195,7 +195,7 @@ func (h *serviceHandler) AgentLogin(userID uint64, username, password string) (s
 	tmp := agent.ConvertToAgent(ag)
 
 	serialized := tmp.Serialize()
-	token, err := middleware.GenerateToken(serialized)
+	token, err := middleware.GenerateToken("agent", serialized)
 	if err != nil {
 		logrus.Errorf("Could not create a jwt token. err: %v", err)
 		return "", fmt.Errorf("could not create a jwt token. err: %v", err)
