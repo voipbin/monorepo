@@ -195,6 +195,21 @@ func (mr *MockServiceHandlerMockRecorder) AuthLogin(username, password interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthLogin", reflect.TypeOf((*MockServiceHandler)(nil).AuthLogin), username, password)
 }
 
+// AuthLoginCustomer mocks base method.
+func (m *MockServiceHandler) AuthLoginCustomer(username, password string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthLoginCustomer", username, password)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthLoginCustomer indicates an expected call of AuthLoginCustomer.
+func (mr *MockServiceHandlerMockRecorder) AuthLoginCustomer(username, password interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthLoginCustomer", reflect.TypeOf((*MockServiceHandler)(nil).AuthLoginCustomer), username, password)
+}
+
 // AvailableNumberGets mocks base method.
 func (m *MockServiceHandler) AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()
