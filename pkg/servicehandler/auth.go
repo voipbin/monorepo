@@ -27,7 +27,34 @@ func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
 	}
 
 	serialized := u.Serialize()
-	token, err := middleware.GenerateToken(serialized)
+	token, err := middleware.GenerateToken("user", serialized)
+	if err != nil {
+		log.Errorf("Could not create a jwt token. err: %v", err)
+		return "", fmt.Errorf("could not create a jwt token. err: %v", err)
+	}
+
+	return token, nil
+}
+
+// AuthCustomerLogin generate jwt token of a customer
+func (h *serviceHandler) AuthLoginCustomer(username, password string) (string, error) {
+	ctx := context.Background()
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":     "AuthCustomerLogin",
+			"username": username,
+			"password": len(password),
+		},
+	)
+
+	u, err := h.reqHandler.CSV1Login(ctx, 30000, username, password)
+	if err != nil {
+		log.Warningf("Could not get user info. err: %v", err)
+		return "", err
+	}
+
+	serialized := u.Serialize()
+	token, err := middleware.GenerateToken("customer", serialized)
 	if err != nil {
 		log.Errorf("Could not create a jwt token. err: %v", err)
 		return "", fmt.Errorf("could not create a jwt token. err: %v", err)
