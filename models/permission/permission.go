@@ -2,8 +2,6 @@ package permission
 
 import (
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
 )
 
 // Permission data model
@@ -24,8 +22,8 @@ var (
 		ID:       uuid.FromStringOrNil("03796e14-7cb4-11ec-9dba-e72023efd1c6"),
 		Name:     "admin",
 		Detail:   "reserved admin",
-		TMCreate: dbhandler.DefaultTimeStamp,
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
+		TMCreate: "9999-01-01 00:00:00.000000",
+		TMUpdate: "9999-01-01 00:00:00.000000",
+		TMDelete: "9999-01-01 00:00:00.000000",
 	}
 )
