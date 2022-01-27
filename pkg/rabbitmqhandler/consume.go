@@ -122,7 +122,7 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) er
 	// execute callback
 	res, err := cbConsume(&req)
 	if err != nil {
-		return fmt.Errorf("Message consumer returns error. err: %v", err)
+		return fmt.Errorf("message consumer returns error. err: %v", err)
 	} else if res == nil {
 		// nothing to return
 		return nil
@@ -136,13 +136,13 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) er
 
 	channel, err := r.connection.Channel()
 	if err != nil {
-		return fmt.Errorf("Could not create a channel. err: %v", err)
+		return fmt.Errorf("could not create a channel. err: %v", err)
 	}
 	defer channel.Close()
 
 	resMsg, err := json.Marshal(res)
 	if err != nil {
-		return fmt.Errorf("Could not marshal the response. res: %v, err: %v", res, err)
+		return fmt.Errorf("could not marshal the response. res: %v, err: %v", res, err)
 	}
 
 	if err := channel.Publish(
@@ -155,7 +155,7 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) er
 			CorrelationId: message.CorrelationId,
 			Body:          resMsg,
 		}); err != nil {
-		return fmt.Errorf("Could not reply the message. message: %v, err: %v", res, err)
+		return fmt.Errorf("could not reply the message. message: %v, err: %v", res, err)
 	}
 
 	return nil
