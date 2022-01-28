@@ -73,46 +73,46 @@ func TestTagGets(t *testing.T) {
 	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
-		name      string
-		userID    uint64
-		tag       []*tag.Tag
-		size      uint64
-		expectRes []*tag.Tag
+		name       string
+		customerID uuid.UUID
+		tag        []*tag.Tag
+		size       uint64
+		expectRes  []*tag.Tag
 	}{
 		{
 			"test normal",
-			11,
+			uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
 			[]*tag.Tag{
 				{
-					ID:       uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					UserID:   11,
-					Name:     "name1",
-					Detail:   "detail1",
-					TMCreate: "2020-04-18T03:22:17.995000",
+					ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
+					CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
+					Name:       "name1",
+					Detail:     "detail1",
+					TMCreate:   "2020-04-18T03:22:17.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					UserID:   11,
-					Name:     "name2",
-					Detail:   "detail2",
-					TMCreate: "2020-04-18T03:22:17.994000",
+					ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
+					CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
+					Name:       "name2",
+					Detail:     "detail2",
+					TMCreate:   "2020-04-18T03:22:17.994000",
 				},
 			},
 			2,
 			[]*tag.Tag{
 				{
-					ID:       uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					UserID:   11,
-					Name:     "name1",
-					Detail:   "detail1",
-					TMCreate: "2020-04-18T03:22:17.995000",
+					ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
+					CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
+					Name:       "name1",
+					Detail:     "detail1",
+					TMCreate:   "2020-04-18T03:22:17.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					UserID:   11,
-					Name:     "name2",
-					Detail:   "detail2",
-					TMCreate: "2020-04-18T03:22:17.994000",
+					ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
+					CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
+					Name:       "name2",
+					Detail:     "detail2",
+					TMCreate:   "2020-04-18T03:22:17.994000",
 				},
 			},
 		},
@@ -129,7 +129,7 @@ func TestTagGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.TagGets(ctx, tt.userID, tt.size, getCurTime())
+			res, err := h.TagGets(ctx, tt.customerID, tt.size, getCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
@@ -168,21 +168,21 @@ func TestTagSetBasicInfo(t *testing.T) {
 
 			[]*tag.Tag{
 				{
-					ID:       uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
-					UserID:   1,
-					Name:     "name1",
-					Detail:   "detail1",
-					TMCreate: "",
-					TMUpdate: "",
-					TMDelete: "",
+					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					CustomerID: uuid.FromStringOrNil("b7442490-7fe1-11ec-a66b-b7a03a06132f"),
+					Name:       "name1",
+					Detail:     "detail1",
+					TMCreate:   "",
+					TMUpdate:   "",
+					TMDelete:   "",
 				},
 			},
 
 			&tag.Tag{
-				ID:     uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
-				UserID: 1,
-				Name:   "name1",
-				Detail: "detail1",
+				ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+				CustomerID: uuid.FromStringOrNil("b7442490-7fe1-11ec-a66b-b7a03a06132f"),
+				Name:       "name1",
+				Detail:     "detail1",
 			},
 		},
 	}
@@ -242,20 +242,20 @@ func TestTagDelete(t *testing.T) {
 			uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
 
 			&tag.Tag{
-				ID:       uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
-				UserID:   1,
-				Name:     "name1",
-				Detail:   "detail1",
-				TMCreate: "",
-				TMUpdate: "",
-				TMDelete: "",
+				ID:         uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
+				CustomerID: uuid.FromStringOrNil("dd805a3e-7fe1-11ec-b37d-134362dec03c"),
+				Name:       "name1",
+				Detail:     "detail1",
+				TMCreate:   "",
+				TMUpdate:   "",
+				TMDelete:   "",
 			},
 
 			&tag.Tag{
-				ID:     uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
-				UserID: 1,
-				Name:   "name1",
-				Detail: "detail1",
+				ID:         uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
+				CustomerID: uuid.FromStringOrNil("dd805a3e-7fe1-11ec-b37d-134362dec03c"),
+				Name:       "name1",
+				Detail:     "detail1",
 			},
 		},
 	}

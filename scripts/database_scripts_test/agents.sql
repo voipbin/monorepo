@@ -1,7 +1,7 @@
 create table agents(
   -- identity
   id            binary(16),  -- id
-  user_id       integer,
+  customer_id   binary(16),
   username      varchar(255), -- username
   password_hash varchar(255), -- password hash
 
@@ -25,5 +25,5 @@ create table agents(
   primary key(id)
 );
 
-create index idx_agents_userid on agents(user_id);
+create index idx_agents_customerid on agents(customer_id);
 create index idx_agents_username on agents(username);

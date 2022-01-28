@@ -37,18 +37,18 @@ func (m *MockTagHandler) EXPECT() *MockTagHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockTagHandler) Create(ctx context.Context, userID uint64, name, detail string) (*tag.Tag, error) {
+func (m *MockTagHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, userID, name, detail)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail)
 	ret0, _ := ret[0].(*tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockTagHandlerMockRecorder) Create(ctx, userID, name, detail interface{}) *gomock.Call {
+func (mr *MockTagHandlerMockRecorder) Create(ctx, customerID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTagHandler)(nil).Create), ctx, userID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTagHandler)(nil).Create), ctx, customerID, name, detail)
 }
 
 // Delete mocks base method.
@@ -81,18 +81,18 @@ func (mr *MockTagHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockTagHandler) Gets(ctx context.Context, userID, size uint64, token string) ([]*tag.Tag, error) {
+func (m *MockTagHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, userID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockTagHandlerMockRecorder) Gets(ctx, userID, size, token interface{}) *gomock.Call {
+func (mr *MockTagHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockTagHandler)(nil).Gets), ctx, userID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockTagHandler)(nil).Gets), ctx, customerID, size, token)
 }
 
 // UpdateBasicInfo mocks base method.

@@ -1,7 +1,7 @@
 create table tags(
   -- identity
   id            binary(16),  -- id
-  user_id       integer,
+  customer_id   binary(16),
 
   -- basic info
   name        varchar(255),
@@ -14,5 +14,5 @@ create table tags(
   primary key(id)
 );
 
-create index idx_tags_userid on tags(user_id);
+create index idx_tags_customerid on tags(customer_id);
 create index idx_tags_name on tags(name);

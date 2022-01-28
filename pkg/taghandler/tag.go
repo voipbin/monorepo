@@ -10,10 +10,10 @@ import (
 )
 
 // Get returns tags
-func (h *tagHandler) Gets(ctx context.Context, userID, size uint64, token string) ([]*tag.Tag, error) {
+func (h *tagHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error) {
 	log := logrus.WithField("func", "Gets")
 
-	res, err := h.db.TagGets(ctx, userID, size, token)
+	res, err := h.db.TagGets(ctx, customerID, size, token)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
 		return nil, err
@@ -48,22 +48,22 @@ func (h *tagHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, de
 }
 
 // Create creates a new tag.
-func (h *tagHandler) Create(ctx context.Context, userID uint64, name, detail string) (*tag.Tag, error) {
+func (h *tagHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag.Tag, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":   "Create",
-		"userid": userID,
+		"func":        "Create",
+		"customer_id": customerID,
 	})
 	log.Debug("Creating a new tag.")
 
 	id := uuid.Must(uuid.NewV4())
 	a := &tag.Tag{
-		ID:       id,
-		UserID:   userID,
-		Name:     name,
-		Detail:   detail,
-		TMCreate: getCurTime(),
-		TMUpdate: defaultTimeStamp,
-		TMDelete: defaultTimeStamp,
+		ID:         id,
+		CustomerID: customerID,
+		Name:       name,
+		Detail:     detail,
+		TMCreate:   getCurTime(),
+		TMUpdate:   defaultTimeStamp,
+		TMDelete:   defaultTimeStamp,
 	}
 	log = log.WithField("tag_id", id)
 
@@ -98,7 +98,7 @@ func (h *tagHandler) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	// get all agents
-	ags, err := h.agentHandler.AgentGetsByTagIDs(ctx, t.UserID, []uuid.UUID{t.ID})
+	ags, err := h.agentHandler.AgentGetsByTagIDs(ctx, t.CustomerID, []uuid.UUID{t.ID})
 	if err != nil {
 		log.Errorf("Could not get agents. err: %v", err)
 		return err

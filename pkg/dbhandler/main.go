@@ -25,8 +25,8 @@ type DBHandler interface {
 	AgentDelete(ctx context.Context, id uuid.UUID) error
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
-	AgentGetByUsername(ctx context.Context, userID uint64, username string) (*agent.Agent, error)
-	AgentGets(ctx context.Context, userID uint64, size uint64, token string) ([]*agent.Agent, error)
+	AgentGetByUsername(ctx context.Context, customerID uuid.UUID, username string) (*agent.Agent, error)
+	AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
 	AgentSetToCache(ctx context.Context, u *agent.Agent) error
 	AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) error
 	AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error
@@ -50,7 +50,7 @@ type DBHandler interface {
 	TagSetToCache(ctx context.Context, u *tag.Tag) error
 	TagSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
-	TagGets(ctx context.Context, userID uint64, size uint64, token string) ([]*tag.Tag, error)
+	TagGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error)
 	TagGetFromCache(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
 	TagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
 }

@@ -29,9 +29,9 @@ func TestProcessV1TagsGet(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		userID    uint64
-		pageSize  uint64
-		pageToken string
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
 
 		tags      []*tag.Tag
 		expectRes *rabbitmqhandler.Response
@@ -39,68 +39,68 @@ func TestProcessV1TagsGet(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/tags?user_id=1&page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			10,
 			"2021-11-23 17:55:39.712000",
 
 			[]*tag.Tag{
 				{
-					ID:       uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					UserID:   1,
-					Name:     "test tag 1",
-					Detail:   "test tag 1 detail",
-					TMCreate: "2021-11-23 17:55:39.712000",
-					TMUpdate: "9999-01-01 00:00:00.000000",
-					TMDelete: "9999-01-01 00:00:00.000000",
+					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+					Name:       "test tag 1",
+					Detail:     "test tag 1 detail",
+					TMCreate:   "2021-11-23 17:55:39.712000",
+					TMUpdate:   "9999-01-01 00:00:00.000000",
+					TMDelete:   "9999-01-01 00:00:00.000000",
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 		{
 			"have 2 results",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/tags?user_id=1&page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			10,
 			"2021-11-23 17:55:39.712000",
 
 			[]*tag.Tag{
 				{
-					ID:       uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					UserID:   1,
-					Name:     "test tag 1",
-					Detail:   "test tag 1 detail",
-					TMCreate: "2021-11-23 17:55:39.712000",
-					TMUpdate: "9999-01-01 00:00:00.000000",
-					TMDelete: "9999-01-01 00:00:00.000000",
+					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+					Name:       "test tag 1",
+					Detail:     "test tag 1 detail",
+					TMCreate:   "2021-11-23 17:55:39.712000",
+					TMUpdate:   "9999-01-01 00:00:00.000000",
+					TMDelete:   "9999-01-01 00:00:00.000000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("7379c73c-4e69-11ec-b667-4313a9abe846"),
-					UserID:   1,
-					Name:     "test tag 2",
-					Detail:   "test tag 2 detail",
-					TMCreate: "2021-11-23 17:55:39.712000",
-					TMUpdate: "9999-01-01 00:00:00.000000",
-					TMDelete: "9999-01-01 00:00:00.000000",
+					ID:         uuid.FromStringOrNil("7379c73c-4e69-11ec-b667-4313a9abe846"),
+					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+					Name:       "test tag 2",
+					Detail:     "test tag 2 detail",
+					TMCreate:   "2021-11-23 17:55:39.712000",
+					TMUpdate:   "9999-01-01 00:00:00.000000",
+					TMDelete:   "9999-01-01 00:00:00.000000",
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"7379c73c-4e69-11ec-b667-4313a9abe846","user_id":1,"name":"test tag 2","detail":"test tag 2 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"7379c73c-4e69-11ec-b667-4313a9abe846","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 2","detail":"test tag 2 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 	}
@@ -108,7 +108,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTag.EXPECT().Gets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.tags, nil)
+			mockTag.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.tags, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -141,9 +141,9 @@ func TestProcessV1TagsPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		userID  uint64
-		tagName string
-		detail  string
+		customerID uuid.UUID
+		tagName    string
+		detail     string
 
 		tag       *tag.Tag
 		expectRes *rabbitmqhandler.Response
@@ -154,26 +154,26 @@ func TestProcessV1TagsPost(t *testing.T) {
 				URI:      "/v1/tags",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"name": "test tag1", "detail": "test tag1 detail"}`),
+				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name": "test tag1", "detail": "test tag1 detail"}`),
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			"test tag1",
 			"test tag1 detail",
 
 			&tag.Tag{
-				ID:       uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-				UserID:   1,
-				Name:     "test tag1",
-				Detail:   "test tag1 detail",
-				TMCreate: "2021-11-23 17:55:39.712000",
-				TMUpdate: "9999-01-01 00:00:00.000000",
-				TMDelete: "9999-01-01 00:00:00.000000",
+				ID:         uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+				CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+				Name:       "test tag1",
+				Detail:     "test tag1 detail",
+				TMCreate:   "2021-11-23 17:55:39.712000",
+				TMUpdate:   "9999-01-01 00:00:00.000000",
+				TMDelete:   "9999-01-01 00:00:00.000000",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","user_id":1,"name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -181,7 +181,7 @@ func TestProcessV1TagsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTag.EXPECT().Create(gomock.Any(), tt.userID, tt.tagName, tt.detail).Return(tt.tag, nil)
+			mockTag.EXPECT().Create(gomock.Any(), tt.customerID, tt.tagName, tt.detail).Return(tt.tag, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -230,18 +230,18 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
 
 			&tag.Tag{
-				ID:       uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-				UserID:   1,
-				Name:     "test tag1",
-				Detail:   "test tag1 detail",
-				TMCreate: "2021-11-23 17:55:39.712000",
-				TMUpdate: "9999-01-01 00:00:00.000000",
-				TMDelete: "9999-01-01 00:00:00.000000",
+				ID:         uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+				CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+				Name:       "test tag1",
+				Detail:     "test tag1 detail",
+				TMCreate:   "2021-11-23 17:55:39.712000",
+				TMUpdate:   "9999-01-01 00:00:00.000000",
+				TMDelete:   "9999-01-01 00:00:00.000000",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","user_id":1,"name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
