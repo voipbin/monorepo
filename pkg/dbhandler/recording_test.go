@@ -31,7 +31,7 @@ func TestRecordingCreate(t *testing.T) {
 			"normal",
 			&recording.Recording{
 				ID:          uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
-				UserID:      1,
+				CustomerID:  uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
 				Type:        recording.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:      recording.StatusRecording,
@@ -43,7 +43,7 @@ func TestRecordingCreate(t *testing.T) {
 			},
 			&recording.Recording{
 				ID:          uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
-				UserID:      1,
+				CustomerID:  uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
 				Type:        recording.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:      recording.StatusRecording,
@@ -58,7 +58,7 @@ func TestRecordingCreate(t *testing.T) {
 			"webhook_uri added",
 			&recording.Recording{
 				ID:          uuid.FromStringOrNil("91772434-8789-11eb-858b-2fe3aba71277"),
-				UserID:      1,
+				CustomerID:  uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
 				Type:        recording.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("91da4118-8789-11eb-b21d-4330f32c39d4"),
 				Status:      recording.StatusRecording,
@@ -71,7 +71,7 @@ func TestRecordingCreate(t *testing.T) {
 			},
 			&recording.Recording{
 				ID:          uuid.FromStringOrNil("91772434-8789-11eb-858b-2fe3aba71277"),
-				UserID:      1,
+				CustomerID:  uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
 				Type:        recording.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("91da4118-8789-11eb-b21d-4330f32c39d4"),
 				Status:      recording.StatusRecording,
@@ -118,18 +118,18 @@ func TestRecordingGets(t *testing.T) {
 	type test struct {
 		name string
 
-		userID     uint64
+		customerID uuid.UUID
 		recordings []*recording.Recording
 	}
 
 	tests := []test{
 		{
 			"normal",
-			2,
+			uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
 			[]*recording.Recording{
 				{
 					ID:          uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
-					UserID:      2,
+					CustomerID:  uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
 					Type:        recording.TypeCall,
 					ReferenceID: uuid.FromStringOrNil("77a43886-878d-11eb-b4d3-a373acdc4de4"),
 					Status:      recording.StatusRecording,
@@ -140,7 +140,7 @@ func TestRecordingGets(t *testing.T) {
 				},
 				{
 					ID:          uuid.FromStringOrNil("c9b4cb8a-878e-11eb-9855-7b5ad1e3392c"),
-					UserID:      2,
+					CustomerID:  uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
 					Type:        recording.TypeCall,
 					ReferenceID: uuid.FromStringOrNil("ccca16ea-878e-11eb-98ff-f3dd532a2331"),
 					Status:      recording.StatusRecording,
@@ -153,7 +153,7 @@ func TestRecordingGets(t *testing.T) {
 		},
 		{
 			"empty",
-			3,
+			uuid.FromStringOrNil("08cb92b0-7f44-11ec-8753-6f51eae532cc"),
 			[]*recording.Recording{},
 		},
 	}
@@ -167,7 +167,7 @@ func TestRecordingGets(t *testing.T) {
 				_ = h.RecordingCreate(ctx, recording)
 			}
 
-			res, err := h.RecordingGets(context.Background(), tt.userID, 10, getCurTime())
+			res, err := h.RecordingGets(context.Background(), tt.customerID, 10, getCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

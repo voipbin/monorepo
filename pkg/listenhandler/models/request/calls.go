@@ -12,7 +12,7 @@ import (
 // /v1/calls POST
 type V1DataCallsPost struct {
 	FlowID      uuid.UUID       `json:"flow_id"`
-	UserID      uint64          `json:"user_id"`
+	CustomerID  uuid.UUID       `json:"customer_id"`
 	Source      address.Address `json:"source"`
 	Destination address.Address `json:"destination"`
 }
@@ -22,7 +22,7 @@ type V1DataCallsPost struct {
 // /v1/calls/<id> POST
 type V1DataCallsIDPost struct {
 	FlowID      uuid.UUID       `json:"flow_id"`
-	UserID      uint64          `json:"user_id"`
+	CustomerID  uuid.UUID       `json:"customer_id"`
 	Source      address.Address `json:"source"`
 	Destination address.Address `json:"destination"`
 }

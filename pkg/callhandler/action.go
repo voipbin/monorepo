@@ -511,7 +511,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 	// create a recording
 	rec := &recording.Recording{
 		ID:          recordingID,
-		UserID:      c.UserID,
+		CustomerID:  c.CustomerID,
 		Type:        recording.TypeCall,
 		ReferenceID: c.ID,
 		Status:      recording.StatusInitiating,

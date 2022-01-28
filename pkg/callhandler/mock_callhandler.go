@@ -221,18 +221,18 @@ func (mr *MockCallHandlerMockRecorder) ChannelHealthCheck(ctx, asteriskID, chann
 }
 
 // CreateCallOutgoing mocks base method.
-func (m *MockCallHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, userID uint64, flowID uuid.UUID, source, destination address.Address) (*call.Call, error) {
+func (m *MockCallHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID uuid.UUID, source, destination address.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCallOutgoing", ctx, id, userID, flowID, source, destination)
+	ret := m.ctrl.Call(m, "CreateCallOutgoing", ctx, id, customerID, flowID, source, destination)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCallOutgoing indicates an expected call of CreateCallOutgoing.
-func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(ctx, id, userID, flowID, source, destination interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(ctx, id, customerID, flowID, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), ctx, id, userID, flowID, source, destination)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), ctx, id, customerID, flowID, source, destination)
 }
 
 // ExternalMediaStart mocks base method.
@@ -280,18 +280,18 @@ func (mr *MockCallHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockCallHandler) Gets(ctx context.Context, userID, size uint64, token string) ([]*call.Call, error) {
+func (m *MockCallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, userID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockCallHandlerMockRecorder) Gets(ctx, userID, size, token interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCallHandler)(nil).Gets), ctx, userID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCallHandler)(nil).Gets), ctx, customerID, size, token)
 }
 
 // HangingUp mocks base method.
@@ -352,18 +352,18 @@ func (mr *MockCallHandlerMockRecorder) RecordingGet(ctx, recordingID interface{}
 }
 
 // RecordingGets mocks base method.
-func (m *MockCallHandler) RecordingGets(ctx context.Context, userID, size uint64, token string) ([]*recording.Recording, error) {
+func (m *MockCallHandler) RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingGets", ctx, userID, size, token)
+	ret := m.ctrl.Call(m, "RecordingGets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RecordingGets indicates an expected call of RecordingGets.
-func (mr *MockCallHandlerMockRecorder) RecordingGets(ctx, userID, size, token interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) RecordingGets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockCallHandler)(nil).RecordingGets), ctx, userID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockCallHandler)(nil).RecordingGets), ctx, customerID, size, token)
 }
 
 // StartCallHandle mocks base method.

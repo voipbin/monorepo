@@ -25,18 +25,16 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, req *rabbitm
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
-
+	// get customer_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 	log := logrus.WithFields(logrus.Fields{
-		"user":  userID,
-		"size":  pageSize,
-		"token": pageToken,
+		"customer_id": customerID,
+		"size":        pageSize,
+		"token":       pageToken,
 	})
 
 	log.Debug("Getting recordings.")
-	recordings, err := h.callHandler.RecordingGets(context.Background(), userID, pageSize, pageToken)
+	recordings, err := h.callHandler.RecordingGets(context.Background(), customerID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil

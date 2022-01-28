@@ -48,7 +48,7 @@ type DBHandler interface {
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
 	CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
-	CallGets(ctx context.Context, userID uint64, size uint64, token string) ([]*call.Call, error)
+	CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error)
 	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
 	CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error
 	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
@@ -120,7 +120,7 @@ type DBHandler interface {
 	RecordingGetByFilename(ctx context.Context, filename string) (*recording.Recording, error)
 	RecordingGetFromCache(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordingGetFromDB(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
-	RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]*recording.Recording, error)
+	RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)
 	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status, timestamp string) error
 	RecordingSetToCache(ctx context.Context, r *recording.Recording) error
 	RecordingUpdateToCache(ctx context.Context, id uuid.UUID) error

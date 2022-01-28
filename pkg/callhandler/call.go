@@ -10,15 +10,15 @@ import (
 )
 
 // Gets returns list of calls.
-func (h *callHandler) Gets(ctx context.Context, userID uint64, size uint64, token string) ([]*call.Call, error) {
+func (h *callHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":    "Gets",
-			"user_id": userID,
+			"user_id": customerID,
 		},
 	)
 
-	res, err := h.db.CallGets(ctx, userID, size, token)
+	res, err := h.db.CallGets(ctx, customerID, size, token)
 	if err != nil {
 		log.Errorf("Could not get calls. err: %v", err)
 		return nil, err

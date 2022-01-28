@@ -31,17 +31,16 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, req *rabbitmqhand
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
+	// get customer_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	log := logrus.WithFields(logrus.Fields{
-		"user":  userID,
+		"user":  customerID,
 		"size":  pageSize,
 		"token": pageToken,
 	})
 
-	calls, err := h.callHandler.Gets(ctx, userID, pageSize, pageToken)
+	calls, err := h.callHandler.Gets(ctx, customerID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil
@@ -119,14 +118,14 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"user":        reqData.UserID,
+		"user":        reqData.CustomerID,
 		"flow":        reqData.FlowID,
 		"source":      reqData.Source,
 		"destination": reqData.Destination,
 	})
 
 	log.Debug("Creating outgoing call.")
-	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.CustomerID, reqData.FlowID, reqData.Source, reqData.Destination)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil
@@ -170,14 +169,14 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"user":        reqData.UserID,
+		"user":        reqData.CustomerID,
 		"flow":        reqData.FlowID,
 		"source":      reqData.Source,
 		"destination": reqData.Destination,
 	})
 
 	log.Debug("Creating outgoing call.")
-	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.UserID, reqData.FlowID, reqData.Source, reqData.Destination)
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.CustomerID, reqData.FlowID, reqData.Source, reqData.Destination)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", reqData.FlowID, reqData.Source, reqData.Destination, err)
 		return simpleResponse(500), nil
