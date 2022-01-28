@@ -5,7 +5,7 @@ import "github.com/gofrs/uuid"
 // Transcribe struct
 type Transcribe struct {
 	ID            uuid.UUID    `json:"id"`             // Transcribe id
-	UserID        int64        `json:"user_id"`        // user id
+	CustomerID    uuid.UUID    `json:"customer_id"`    // customer
 	Type          Type         `json:"type"`           // type
 	ReferenceID   uuid.UUID    `json:"reference_id"`   // call/conference/recording's id
 	HostID        uuid.UUID    `json:"host_id"`        // host id

@@ -30,7 +30,7 @@ const (
 
 func (h *transcribeHandler) StreamingTranscribeStart(
 	ctx context.Context,
-	userID int64,
+	customerID uuid.UUID,
 	referenceID uuid.UUID,
 	transType transcribe.Type,
 	language string,
@@ -50,7 +50,7 @@ func (h *transcribeHandler) StreamingTranscribeStart(
 
 	tr := &transcribe.Transcribe{
 		ID:            id,
-		UserID:        userID,
+		CustomerID:    customerID,
 		Type:          transType,
 		ReferenceID:   referenceID,
 		HostID:        h.hostID,

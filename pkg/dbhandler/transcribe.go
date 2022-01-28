@@ -16,7 +16,7 @@ const (
 	transcribeSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 		type,
 		reference_id,
 		host_id,
@@ -42,7 +42,7 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 	res := &transcribe.Transcribe{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 		&res.Type,
 		&res.ReferenceID,
 		&res.HostID,
@@ -68,6 +68,67 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 	}
 
 	return res, nil
+}
+
+// TranscribeCreate creates a new tanscribe
+func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe) error {
+	q := `insert into transcribes(
+		id,
+		customer_id,
+		type,
+		reference_id,
+		host_id,
+
+		language,
+		webhook_uri,
+		webhook_method,
+
+		transcripts,
+
+		tm_create,
+		tm_update,
+		tm_delete
+
+	) values(
+		?, ?, ?, ?, ?,
+		?, ?, ?,
+		?,
+		?, ?, ?
+		)`
+
+	if t.Transcripts == nil {
+		t.Transcripts = []transcribe.Transcript{}
+	}
+	tmpTranscripts, err := json.Marshal(t.Transcripts)
+	if err != nil {
+		return fmt.Errorf("could not marshal the transcripts. TranscribeCreate. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q,
+		t.ID.Bytes(),
+		t.CustomerID.Bytes(),
+		t.Type,
+		t.ReferenceID.Bytes(),
+		t.HostID.Bytes(),
+
+		t.Language,
+		t.WebhookURI,
+		t.WebhookMethod,
+
+		tmpTranscripts,
+
+		t.TMCreate,
+		t.TMUpdate,
+		t.TMDelete,
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. TranscribeCreate. err: %v", err)
+	}
+
+	// update the cache
+	h.TranscribeUpdateToCache(ctx, t.ID)
+
+	return nil
 }
 
 // TranscribeUpdateToCache gets the transcribe from the DB and update the cache.
@@ -104,67 +165,6 @@ func (h *handler) TranscribeGetFromCache(ctx context.Context, id uuid.UUID) (*tr
 	}
 
 	return res, nil
-}
-
-// TranscribeCreate creates a new tanscribe
-func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe) error {
-	q := `insert into transcribes(
-		id,
-		user_id,
-		type,
-		reference_id,
-		host_id,
-
-		language,
-		webhook_uri,
-		webhook_method,
-
-		transcripts,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	) values(
-		?, ?, ?, ?, ?,
-		?, ?, ?,
-		?,
-		?, ?, ?
-		)`
-
-	if t.Transcripts == nil {
-		t.Transcripts = []transcribe.Transcript{}
-	}
-	tmpTranscripts, err := json.Marshal(t.Transcripts)
-	if err != nil {
-		return fmt.Errorf("could not marshal the transcripts. TranscribeCreate. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q,
-		t.ID.Bytes(),
-		t.UserID,
-		t.Type,
-		t.ReferenceID.Bytes(),
-		t.HostID.Bytes(),
-
-		t.Language,
-		t.WebhookURI,
-		t.WebhookMethod,
-
-		tmpTranscripts,
-
-		t.TMCreate,
-		t.TMUpdate,
-		t.TMDelete,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. TranscribeCreate. err: %v", err)
-	}
-
-	// update the cache
-	h.TranscribeUpdateToCache(ctx, t.ID)
-
-	return nil
 }
 
 // TranscribeGet returns transcribe.

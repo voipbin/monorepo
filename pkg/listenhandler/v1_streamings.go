@@ -32,7 +32,7 @@ func (h *listenHandler) processV1StreamingsPost(m *rabbitmqhandler.Request) (*ra
 	// do transcribe
 	ctx := context.Background()
 	trans, err := h.transcribeHandler.StreamingTranscribeStart(
-		ctx, reqData.UserID, reqData.ReferenceID, transcribe.Type(reqData.Type), reqData.Language, reqData.WebhookURI, reqData.WebhookMethod)
+		ctx, reqData.CustomerID, reqData.ReferenceID, transcribe.Type(reqData.Type), reqData.Language, reqData.WebhookURI, reqData.WebhookMethod)
 	if err != nil {
 		return simpleResponse(400), nil
 	}
