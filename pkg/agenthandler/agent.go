@@ -17,10 +17,10 @@ import (
 )
 
 // AgentGets returns agents
-func (h *agentHandler) AgentGets(ctx context.Context, userID, size uint64, token string) ([]*agent.Agent, error) {
+func (h *agentHandler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error) {
 	log := logrus.WithField("func", "AgentGets")
 
-	res, err := h.db.AgentGets(ctx, userID, size, token)
+	res, err := h.db.AgentGets(ctx, customerID, size, token)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return nil, err
@@ -30,10 +30,10 @@ func (h *agentHandler) AgentGets(ctx context.Context, userID, size uint64, token
 }
 
 // AgentGetsByTagIDs returns agents
-func (h *agentHandler) AgentGetsByTagIDs(ctx context.Context, userID uint64, tags []uuid.UUID) ([]*agent.Agent, error) {
+func (h *agentHandler) AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error) {
 	log := logrus.WithField("func", "AgentGetsByTags")
 
-	agents, err := h.db.AgentGets(ctx, userID, maxAgentCount, getCurTime())
+	agents, err := h.db.AgentGets(ctx, customerID, maxAgentCount, getCurTime())
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return nil, err
@@ -53,10 +53,10 @@ func (h *agentHandler) AgentGetsByTagIDs(ctx context.Context, userID uint64, tag
 }
 
 // AgentGetsByTagIDsAndStatus returns agent with given condition.
-func (h *agentHandler) AgentGetsByTagIDsAndStatus(ctx context.Context, userID uint64, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
+func (h *agentHandler) AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
 	log := logrus.WithField("func", "AgentGetsByTagIDsAndStatus")
 
-	agents, err := h.db.AgentGets(ctx, userID, maxAgentCount, getCurTime())
+	agents, err := h.db.AgentGets(ctx, customerID, maxAgentCount, getCurTime())
 	if err != nil {
 		log.Errorf("Could not get agent info. err: %v", err)
 		return nil, err
@@ -93,17 +93,17 @@ func (h *agentHandler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent
 }
 
 // AgentCreate creates a new agent.
-func (h *agentHandler) AgentCreate(ctx context.Context, userID uint64, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error) {
+func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "AgentCreate",
-		"userid":     userID,
-		"username":   username,
-		"permission": permission,
+		"func":        "AgentCreate",
+		"customer_id": customerID,
+		"username":    username,
+		"permission":  permission,
 	})
 	log.Debug("Creating a new user.")
 
 	// get agent
-	tmpAgent, err := h.db.AgentGetByUsername(ctx, userID, username)
+	tmpAgent, err := h.db.AgentGetByUsername(ctx, customerID, username)
 	if err == nil {
 		log.WithField("agent", tmpAgent).Errorf("The agent is already exist.")
 		return nil, fmt.Errorf("already exist")
@@ -124,7 +124,7 @@ func (h *agentHandler) AgentCreate(ctx context.Context, userID uint64, username,
 	id := uuid.Must(uuid.NewV4())
 	a := &agent.Agent{
 		ID:            id,
-		UserID:        userID,
+		CustomerID:    customerID,
 		Username:      username,
 		PasswordHash:  hashPassword,
 		Name:          name,
@@ -183,15 +183,15 @@ func (h *agentHandler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // AgentLogin validate the username and password.
-func (h *agentHandler) AgentLogin(ctx context.Context, userID uint64, username, password string) (*agent.Agent, error) {
+func (h *agentHandler) AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "AgentLogin",
-		"user_id":        userID,
+		"customer_id":    customerID,
 		"agent_username": username,
 	})
 	log.Debug("Agent login.")
 
-	res, err := h.db.AgentGetByUsername(ctx, userID, username)
+	res, err := h.db.AgentGetByUsername(ctx, customerID, username)
 	if err != nil {
 		log.Errorf("Could not get agent info. err: %v", err)
 		return nil, fmt.Errorf("no agent info")
@@ -364,7 +364,7 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 		},
 	}
 
-	f, err := h.reqHandler.FMV1FlowCreate(ctx, ag.UserID, fmflow.TypeFlow, "agent dial", "", "", actions, false)
+	f, err := h.reqHandler.FMV1FlowCreate(ctx, ag.CustomerID, fmflow.TypeFlow, "agent dial", "", "", actions, false)
 	if err != nil {
 		log.Errorf("Could not create the flow. err: %v", err)
 		return err
@@ -403,7 +403,7 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 
 	// dial
 	for i, address := range ag.Addresses {
-		c, err := h.reqHandler.CMV1CallCreateWithID(ctx, callIDs[i], ag.UserID, f.ID, source, &address)
+		c, err := h.reqHandler.CMV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, f.ID, source, &address)
 		if err != nil {
 			log.Errorf("Could not create a call. err: %v", err)
 			continue

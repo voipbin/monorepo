@@ -67,18 +67,18 @@ func (mr *MockAgentHandlerMockRecorder) AgentCallHungup(ctx, c interface{}) *gom
 }
 
 // AgentCreate mocks base method.
-func (m *MockAgentHandler) AgentCreate(ctx context.Context, userID uint64, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockAgentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCreate", ctx, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
+	ret := m.ctrl.Call(m, "AgentCreate", ctx, customerID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentCreate indicates an expected call of AgentCreate.
-func (mr *MockAgentHandlerMockRecorder) AgentCreate(ctx, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) AgentCreate(ctx, customerID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockAgentHandler)(nil).AgentCreate), ctx, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockAgentHandler)(nil).AgentCreate), ctx, customerID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 }
 
 // AgentDelete mocks base method.
@@ -125,63 +125,63 @@ func (mr *MockAgentHandlerMockRecorder) AgentGet(ctx, id interface{}) *gomock.Ca
 }
 
 // AgentGets mocks base method.
-func (m *MockAgentHandler) AgentGets(ctx context.Context, userID, size uint64, token string) ([]*agent.Agent, error) {
+func (m *MockAgentHandler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentGets", ctx, userID, size, token)
+	ret := m.ctrl.Call(m, "AgentGets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentGets indicates an expected call of AgentGets.
-func (mr *MockAgentHandlerMockRecorder) AgentGets(ctx, userID, size, token interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) AgentGets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGets", reflect.TypeOf((*MockAgentHandler)(nil).AgentGets), ctx, userID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGets", reflect.TypeOf((*MockAgentHandler)(nil).AgentGets), ctx, customerID, size, token)
 }
 
 // AgentGetsByTagIDs mocks base method.
-func (m *MockAgentHandler) AgentGetsByTagIDs(ctx context.Context, userID uint64, tags []uuid.UUID) ([]*agent.Agent, error) {
+func (m *MockAgentHandler) AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentGetsByTagIDs", ctx, userID, tags)
+	ret := m.ctrl.Call(m, "AgentGetsByTagIDs", ctx, customerID, tags)
 	ret0, _ := ret[0].([]*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentGetsByTagIDs indicates an expected call of AgentGetsByTagIDs.
-func (mr *MockAgentHandlerMockRecorder) AgentGetsByTagIDs(ctx, userID, tags interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) AgentGetsByTagIDs(ctx, customerID, tags interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGetsByTagIDs", reflect.TypeOf((*MockAgentHandler)(nil).AgentGetsByTagIDs), ctx, userID, tags)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGetsByTagIDs", reflect.TypeOf((*MockAgentHandler)(nil).AgentGetsByTagIDs), ctx, customerID, tags)
 }
 
 // AgentGetsByTagIDsAndStatus mocks base method.
-func (m *MockAgentHandler) AgentGetsByTagIDsAndStatus(ctx context.Context, userID uint64, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
+func (m *MockAgentHandler) AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentGetsByTagIDsAndStatus", ctx, userID, tags, status)
+	ret := m.ctrl.Call(m, "AgentGetsByTagIDsAndStatus", ctx, customerID, tags, status)
 	ret0, _ := ret[0].([]*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentGetsByTagIDsAndStatus indicates an expected call of AgentGetsByTagIDsAndStatus.
-func (mr *MockAgentHandlerMockRecorder) AgentGetsByTagIDsAndStatus(ctx, userID, tags, status interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) AgentGetsByTagIDsAndStatus(ctx, customerID, tags, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGetsByTagIDsAndStatus", reflect.TypeOf((*MockAgentHandler)(nil).AgentGetsByTagIDsAndStatus), ctx, userID, tags, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGetsByTagIDsAndStatus", reflect.TypeOf((*MockAgentHandler)(nil).AgentGetsByTagIDsAndStatus), ctx, customerID, tags, status)
 }
 
 // AgentLogin mocks base method.
-func (m *MockAgentHandler) AgentLogin(ctx context.Context, userID uint64, username, password string) (*agent.Agent, error) {
+func (m *MockAgentHandler) AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentLogin", ctx, userID, username, password)
+	ret := m.ctrl.Call(m, "AgentLogin", ctx, customerID, username, password)
 	ret0, _ := ret[0].(*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentLogin indicates an expected call of AgentLogin.
-func (mr *MockAgentHandlerMockRecorder) AgentLogin(ctx, userID, username, password interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) AgentLogin(ctx, customerID, username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentLogin", reflect.TypeOf((*MockAgentHandler)(nil).AgentLogin), ctx, userID, username, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentLogin", reflect.TypeOf((*MockAgentHandler)(nil).AgentLogin), ctx, customerID, username, password)
 }
 
 // AgentUpdateAddresses mocks base method.

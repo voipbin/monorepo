@@ -35,14 +35,14 @@ func TestAgentGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID uint64
-		size   uint64
-		token  string
-		result []*agent.Agent
+		customerID uuid.UUID
+		size       uint64
+		token      string
+		result     []*agent.Agent
 	}{
 		{
 			"normal1",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			10,
 			"2021-11-23 17:55:39.712000",
 			[]*agent.Agent{},
@@ -53,8 +53,8 @@ func TestAgentGets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGets(gomock.Any(), tt.userID, tt.size, tt.token).Return(tt.result, nil)
-			_, err := h.AgentGets(ctx, tt.userID, tt.size, tt.token)
+			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, tt.size, tt.token).Return(tt.result, nil)
+			_, err := h.AgentGets(ctx, tt.customerID, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -80,23 +80,23 @@ func TestAgentGetsByTags(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID uint64
-		tags   []uuid.UUID
+		customerID uuid.UUID
+		tags       []uuid.UUID
 
 		result    []*agent.Agent
 		expectRes []*agent.Agent
 	}{
 		{
 			"normal",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("a38c68be-4c87-11ec-a77b-6b95e79bc1bb"),
 			},
 
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("c47a762e-4c87-11ec-b1d8-531dbb4ebcd2"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("c47a762e-4c87-11ec-b1d8-531dbb4ebcd2"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("a38c68be-4c87-11ec-a77b-6b95e79bc1bb"),
 					},
@@ -104,8 +104,8 @@ func TestAgentGetsByTags(t *testing.T) {
 			},
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("c47a762e-4c87-11ec-b1d8-531dbb4ebcd2"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("c47a762e-4c87-11ec-b1d8-531dbb4ebcd2"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("a38c68be-4c87-11ec-a77b-6b95e79bc1bb"),
 					},
@@ -114,29 +114,29 @@ func TestAgentGetsByTags(t *testing.T) {
 		},
 		{
 			"has 2 agents, 1 selected",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("5c395822-4c88-11ec-875e-af39deb0b571"),
 			},
 
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("5c61f98a-4c88-11ec-9181-43fb8e090ace"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("5c61f98a-4c88-11ec-9181-43fb8e090ace"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("5c395822-4c88-11ec-875e-af39deb0b571"),
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("5c7cf794-4c88-11ec-a55d-b3af0e75c8e1"),
-					UserID: 1,
-					TagIDs: []uuid.UUID{},
+					ID:         uuid.FromStringOrNil("5c7cf794-4c88-11ec-a55d-b3af0e75c8e1"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					TagIDs:     []uuid.UUID{},
 				},
 			},
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("5c61f98a-4c88-11ec-9181-43fb8e090ace"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("5c61f98a-4c88-11ec-9181-43fb8e090ace"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("5c395822-4c88-11ec-875e-af39deb0b571"),
 					},
@@ -145,22 +145,22 @@ func TestAgentGetsByTags(t *testing.T) {
 		},
 		{
 			"has 2 agents, all selected",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 			},
 
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("7f1d18e2-4c88-11ec-9f6b-4fad140d455c"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("7f1d18e2-4c88-11ec-9f6b-4fad140d455c"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("7f3bf4ba-4c88-11ec-ab26-675037d57999"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("7f3bf4ba-4c88-11ec-ab26-675037d57999"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 					},
@@ -168,15 +168,15 @@ func TestAgentGetsByTags(t *testing.T) {
 			},
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("7f1d18e2-4c88-11ec-9f6b-4fad140d455c"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("7f1d18e2-4c88-11ec-9f6b-4fad140d455c"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("7f3bf4ba-4c88-11ec-ab26-675037d57999"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("7f3bf4ba-4c88-11ec-ab26-675037d57999"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 					},
@@ -185,22 +185,22 @@ func TestAgentGetsByTags(t *testing.T) {
 		},
 		{
 			"has 2 agents, none selected",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("9f7746e4-4c88-11ec-9c3a-6b0e38bbc60f"),
 			},
 
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("9f9c03b2-4c88-11ec-ac69-7b00edc54e08"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("9f9c03b2-4c88-11ec-ac69-7b00edc54e08"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("9ffe117e-4c88-11ec-9188-4b98b647fe1d"),
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("9fd03d44-4c88-11ec-9ebe-3fc386a2a1e6"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("9fd03d44-4c88-11ec-9ebe-3fc386a2a1e6"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("a02c0a48-4c88-11ec-99da-bb9592c80bf8"),
 					},
@@ -214,8 +214,8 @@ func TestAgentGetsByTags(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGets(gomock.Any(), tt.userID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
-			res, err := h.AgentGetsByTagIDs(ctx, tt.userID, tt.tags)
+			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
+			res, err := h.AgentGetsByTagIDs(ctx, tt.customerID, tt.tags)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -244,16 +244,16 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID uint64
-		tags   []uuid.UUID
-		status agent.Status
+		customerID uuid.UUID
+		tags       []uuid.UUID
+		status     agent.Status
 
 		result    []*agent.Agent
 		expectRes []*agent.Agent
 	}{
 		{
 			"normal",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("a38c68be-4c87-11ec-a77b-6b95e79bc1bb"),
 			},
@@ -261,9 +261,9 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("c47a762e-4c87-11ec-b1d8-531dbb4ebcd2"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("c47a762e-4c87-11ec-b1d8-531dbb4ebcd2"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("a38c68be-4c87-11ec-a77b-6b95e79bc1bb"),
 					},
@@ -271,9 +271,9 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 			},
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("c47a762e-4c87-11ec-b1d8-531dbb4ebcd2"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("c47a762e-4c87-11ec-b1d8-531dbb4ebcd2"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("a38c68be-4c87-11ec-a77b-6b95e79bc1bb"),
 					},
@@ -282,7 +282,7 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 		},
 		{
 			"has 2 agents, 1 selected",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("5c395822-4c88-11ec-875e-af39deb0b571"),
 			},
@@ -290,25 +290,25 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("5c61f98a-4c88-11ec-9181-43fb8e090ace"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("5c61f98a-4c88-11ec-9181-43fb8e090ace"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("5c395822-4c88-11ec-875e-af39deb0b571"),
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("5c7cf794-4c88-11ec-a55d-b3af0e75c8e1"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
-					TagIDs: []uuid.UUID{},
+					ID:         uuid.FromStringOrNil("5c7cf794-4c88-11ec-a55d-b3af0e75c8e1"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
+					TagIDs:     []uuid.UUID{},
 				},
 			},
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("5c61f98a-4c88-11ec-9181-43fb8e090ace"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("5c61f98a-4c88-11ec-9181-43fb8e090ace"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("5c395822-4c88-11ec-875e-af39deb0b571"),
 					},
@@ -317,7 +317,7 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 		},
 		{
 			"has 2 agents, all selected",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 			},
@@ -325,17 +325,17 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("7f1d18e2-4c88-11ec-9f6b-4fad140d455c"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("7f1d18e2-4c88-11ec-9f6b-4fad140d455c"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("7f3bf4ba-4c88-11ec-ab26-675037d57999"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("7f3bf4ba-4c88-11ec-ab26-675037d57999"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 					},
@@ -343,17 +343,17 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 			},
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("7f1d18e2-4c88-11ec-9f6b-4fad140d455c"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("7f1d18e2-4c88-11ec-9f6b-4fad140d455c"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("7f3bf4ba-4c88-11ec-ab26-675037d57999"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("7f3bf4ba-4c88-11ec-ab26-675037d57999"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("7f00464a-4c88-11ec-8362-1f73a20620db"),
 					},
@@ -362,7 +362,7 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 		},
 		{
 			"has 2 agents, none selected",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("9f7746e4-4c88-11ec-9c3a-6b0e38bbc60f"),
 			},
@@ -370,17 +370,17 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("9f9c03b2-4c88-11ec-ac69-7b00edc54e08"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("9f9c03b2-4c88-11ec-ac69-7b00edc54e08"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("9ffe117e-4c88-11ec-9188-4b98b647fe1d"),
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("9fd03d44-4c88-11ec-9ebe-3fc386a2a1e6"),
-					UserID: 1,
-					Status: agent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("9fd03d44-4c88-11ec-9ebe-3fc386a2a1e6"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAvailable,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("a02c0a48-4c88-11ec-99da-bb9592c80bf8"),
 					},
@@ -390,7 +390,7 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 		},
 		{
 			"has 2 agents, none selected by wrong status",
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("9f7746e4-4c88-11ec-9c3a-6b0e38bbc60f"),
 			},
@@ -398,17 +398,17 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 
 			[]*agent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("9f9c03b2-4c88-11ec-ac69-7b00edc54e08"),
-					UserID: 1,
-					Status: agent.StatusOffline,
+					ID:         uuid.FromStringOrNil("9f9c03b2-4c88-11ec-ac69-7b00edc54e08"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusOffline,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("9ffe117e-4c88-11ec-9188-4b98b647fe1d"),
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("9fd03d44-4c88-11ec-9ebe-3fc386a2a1e6"),
-					UserID: 1,
-					Status: agent.StatusAway,
+					ID:         uuid.FromStringOrNil("9fd03d44-4c88-11ec-9ebe-3fc386a2a1e6"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					Status:     agent.StatusAway,
 					TagIDs: []uuid.UUID{
 						uuid.FromStringOrNil("a02c0a48-4c88-11ec-99da-bb9592c80bf8"),
 					},
@@ -422,8 +422,8 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGets(gomock.Any(), tt.userID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
-			res, err := h.AgentGetsByTagIDsAndStatus(ctx, tt.userID, tt.tags, tt.status)
+			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
+			res, err := h.AgentGetsByTagIDsAndStatus(ctx, tt.customerID, tt.tags, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -452,7 +452,7 @@ func TestAgentCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID        uint64
+		customerID    uuid.UUID
 		username      string
 		password      string
 		agentName     string
@@ -469,7 +469,7 @@ func TestAgentCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			"test1",
 			"test1password",
 			"test1 name",
@@ -483,7 +483,7 @@ func TestAgentCreate(t *testing.T) {
 
 			&agent.Agent{
 				ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				Username:   "test1",
 				Name:       "test1 name",
 				Detail:     "test1 detail",
@@ -495,7 +495,7 @@ func TestAgentCreate(t *testing.T) {
 		{
 			"have webhook",
 
-			1,
+			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			"test2",
 			"test2password",
 			"test2 name",
@@ -509,7 +509,7 @@ func TestAgentCreate(t *testing.T) {
 
 			&agent.Agent{
 				ID:            uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				Username:      "test2",
 				Name:          "test2 name",
 				Detail:        "test2 detail",
@@ -526,12 +526,12 @@ func TestAgentCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGetByUsername(gomock.Any(), tt.userID, tt.username).Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().AgentGetByUsername(gomock.Any(), tt.customerID, tt.username).Return(nil, fmt.Errorf("not found"))
 			mockDB.EXPECT().AgentCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().AgentGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, agent.EventTypeAgentCreated, tt.expectRes.WebhookURI, tt.expectRes)
 
-			res, err := h.AgentCreate(ctx, tt.userID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tags, tt.addresses)
+			res, err := h.AgentCreate(ctx, tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tags, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
@@ -576,7 +576,7 @@ func TestAgentDelete(t *testing.T) {
 
 			&agent.Agent{
 				ID:            uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				Username:      "test2",
 				Name:          "test2 name",
 				Detail:        "test2 detail",
@@ -633,7 +633,7 @@ func TestAgentUpdateStatus(t *testing.T) {
 
 			&agent.Agent{
 				ID:            uuid.FromStringOrNil("1f7e03de-79a5-11ec-ac0a-4f99eb1b36e8"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				Username:      "test2",
 				Name:          "test2 name",
 				Detail:        "test2 detail",
@@ -697,7 +697,7 @@ func TestAgentDial(t *testing.T) {
 
 			&agent.Agent{
 				ID:         uuid.FromStringOrNil("9b608bde-53df-11ec-9437-ab8a0e581104"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				Username:   "test1",
 				Name:       "test1 name",
 				Detail:     "test1 detail",
@@ -722,7 +722,7 @@ func TestAgentDial(t *testing.T) {
 
 			&agent.Agent{
 				ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				Username:   "test1",
 				Name:       "test1 name",
 				Detail:     "test1 detail",
@@ -739,7 +739,7 @@ func TestAgentDial(t *testing.T) {
 
 			mockDB.EXPECT().AgentGet(gomock.Any(), tt.id).Return(tt.agent, nil)
 			mockDB.EXPECT().AgentSetStatus(gomock.Any(), tt.id, agent.StatusRinging).Return(nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.agent.UserID, fmflow.TypeFlow, "agent dial", "", "", tt.actions, false).Return(tt.resFlowCreate, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.agent.CustomerID, fmflow.TypeFlow, "agent dial", "", "", tt.actions, false).Return(tt.resFlowCreate, nil)
 
 			for i := 0; i < len(tt.agent.Addresses); i++ {
 				mockDB.EXPECT().AgentCallCreate(gomock.Any(), gomock.Any()).Return(nil)
@@ -747,7 +747,7 @@ func TestAgentDial(t *testing.T) {
 
 			mockDB.EXPECT().AgentDialCreate(gomock.Any(), gomock.Any()).Return(nil)
 			for _, addr := range tt.agent.Addresses {
-				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.UserID, tt.resFlowCreate.ID, tt.source, &addr)
+				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.resFlowCreate.ID, tt.source, &addr)
 			}
 
 			if err := h.AgentDial(ctx, tt.id, tt.source, tt.confbridgeID); err != nil {

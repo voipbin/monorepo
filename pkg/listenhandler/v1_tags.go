@@ -27,19 +27,18 @@ func (h *listenHandler) processV1TagsGet(ctx context.Context, req *rabbitmqhandl
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
+	// get customer_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processV1TagsGet",
-		"user":  userID,
-		"size":  pageSize,
-		"token": pageToken,
+		"func":        "processV1TagsGet",
+		"customer_id": customerID,
+		"size":        pageSize,
+		"token":       pageToken,
 	})
 	log.WithField("request", req).Debug("Received request.")
 
-	tmp, err := h.tagHandler.Gets(ctx, userID, pageSize, pageToken)
+	tmp, err := h.tagHandler.Gets(ctx, customerID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get tags info. err:%v", err)
 		return simpleResponse(500), nil
@@ -147,14 +146,14 @@ func (h *listenHandler) processV1TagsPost(ctx context.Context, m *rabbitmqhandle
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"user_id": reqData.UserID,
+		"customer_id": reqData.CustomerID,
 	})
 	log.WithField("request", reqData).Debug("Creating a tag.")
 
 	// create an agent
 	tmp, err := h.tagHandler.Create(
 		ctx,
-		reqData.UserID,
+		reqData.CustomerID,
 		reqData.Name,
 		reqData.Detail,
 	)

@@ -29,9 +29,9 @@ func TestProcessV1AgentsGetNormal(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		userID    uint64
-		pageSize  uint64
-		pageToken string
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
 
 		agents    []*agent.Agent
 		expectRes *rabbitmqhandler.Response
@@ -39,19 +39,19 @@ func TestProcessV1AgentsGetNormal(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?user_id=1&page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			10,
 			"2021-11-23 17:55:39.712000",
 
 			[]*agent.Agent{
 				{
 					ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					UserID:       1,
+					CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 					Username:     "test1",
 					PasswordHash: "password",
 					Name:         "test agent1",
@@ -74,7 +74,7 @@ func TestProcessV1AgentsGetNormal(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 	}
@@ -82,7 +82,7 @@ func TestProcessV1AgentsGetNormal(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAgent.EXPECT().AgentGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.agents, nil)
+			mockAgent.EXPECT().AgentGets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.agents, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -113,8 +113,8 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		userID uint64
-		tagIDs []uuid.UUID
+		customerID uuid.UUID
+		tagIDs     []uuid.UUID
 
 		agents    []*agent.Agent
 		expectRes *rabbitmqhandler.Response
@@ -122,12 +122,12 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?user_id=1&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a",
+				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"),
 			},
@@ -135,7 +135,7 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 			[]*agent.Agent{
 				{
 					ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					UserID:       1,
+					CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 					Username:     "test1",
 					PasswordHash: "password",
 					Name:         "test agent1",
@@ -158,18 +158,18 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 		{
 			"have 2 tag ids",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?user_id=1&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,2e5705ea-4d90-11ec-9352-6326ee2dce20",
+				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,2e5705ea-4d90-11ec-9352-6326ee2dce20",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"),
 				uuid.FromStringOrNil("2e5705ea-4d90-11ec-9352-6326ee2dce20"),
@@ -178,7 +178,7 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 			[]*agent.Agent{
 				{
 					ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					UserID:       1,
+					CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 					Username:     "test1",
 					PasswordHash: "password",
 					Name:         "test agent1",
@@ -199,7 +199,7 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 				},
 				{
 					ID:           uuid.FromStringOrNil("473248a4-4d90-11ec-976a-172883175eb4"),
-					UserID:       1,
+					CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 					Username:     "test2",
 					PasswordHash: "password",
 					Name:         "test agent2",
@@ -222,7 +222,7 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","user_id":1,"username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 	}
@@ -230,7 +230,7 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAgent.EXPECT().AgentGetsByTagIDs(gomock.Any(), tt.userID, tt.tagIDs).Return(tt.agents, nil)
+			mockAgent.EXPECT().AgentGetsByTagIDs(gomock.Any(), tt.customerID, tt.tagIDs).Return(tt.agents, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -261,9 +261,9 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		userID uint64
-		tagIDs []uuid.UUID
-		status agent.Status
+		customerID uuid.UUID
+		tagIDs     []uuid.UUID
+		status     agent.Status
 
 		agents    []*agent.Agent
 		expectRes *rabbitmqhandler.Response
@@ -271,12 +271,12 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?user_id=1&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a&status=available",
+				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a&status=available",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"),
 			},
@@ -285,7 +285,7 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 			[]*agent.Agent{
 				{
 					ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					UserID:       1,
+					CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 					Username:     "test1",
 					PasswordHash: "password",
 					Name:         "test agent1",
@@ -308,18 +308,18 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 		{
 			"have 2 tag ids",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?user_id=1&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,2e5705ea-4d90-11ec-9352-6326ee2dce20&status=available",
+				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,2e5705ea-4d90-11ec-9352-6326ee2dce20&status=available",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"),
 				uuid.FromStringOrNil("2e5705ea-4d90-11ec-9352-6326ee2dce20"),
@@ -329,7 +329,7 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 			[]*agent.Agent{
 				{
 					ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					UserID:       1,
+					CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 					Username:     "test1",
 					PasswordHash: "password",
 					Name:         "test agent1",
@@ -350,7 +350,7 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 				},
 				{
 					ID:           uuid.FromStringOrNil("473248a4-4d90-11ec-976a-172883175eb4"),
-					UserID:       1,
+					CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 					Username:     "test2",
 					PasswordHash: "password",
 					Name:         "test agent2",
@@ -373,7 +373,7 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","user_id":1,"username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 	}
@@ -381,7 +381,7 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAgent.EXPECT().AgentGetsByTagIDsAndStatus(gomock.Any(), tt.userID, tt.tagIDs, tt.status).Return(tt.agents, nil)
+			mockAgent.EXPECT().AgentGetsByTagIDsAndStatus(gomock.Any(), tt.customerID, tt.tagIDs, tt.status).Return(tt.agents, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -412,7 +412,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		userID        uint64
+		customerID    uuid.UUID
 		username      string
 		password      string
 		agentName     string
@@ -433,10 +433,10 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				URI:      "/v1/agents",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["27d3bc3e-4d88-11ec-a61d-af78fdede455"], "addresses":[{"type": "tel", "target":"+821021656521"}]}`),
+				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["27d3bc3e-4d88-11ec-a61d-af78fdede455"], "addresses":[{"type": "tel", "target":"+821021656521"}]}`),
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			"test1",
 			"password",
 			"test agent1",
@@ -455,7 +455,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 				Username:     "test1",
 				PasswordHash: "password",
 				Name:         "test agent1",
@@ -477,7 +477,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 		{
@@ -486,10 +486,10 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				URI:      "/v1/agents",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["159623f0-4d8c-11ec-85da-432863b96d60", "15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"], "addresses":[{"type": "tel", "target":"+821021656521"}]}`),
+				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["159623f0-4d8c-11ec-85da-432863b96d60", "15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"], "addresses":[{"type": "tel", "target":"+821021656521"}]}`),
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			"test1",
 			"password",
 			"test agent1",
@@ -511,7 +511,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("28a63cc8-4d8c-11ec-959e-6bedf5864e94"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 				Username:     "test1",
 				PasswordHash: "password",
 				Name:         "test agent1",
@@ -536,7 +536,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"28a63cc8-4d8c-11ec-959e-6bedf5864e94","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["159623f0-4d8c-11ec-85da-432863b96d60","15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"28a63cc8-4d8c-11ec-959e-6bedf5864e94","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["159623f0-4d8c-11ec-85da-432863b96d60","15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 		{
@@ -545,10 +545,10 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				URI:      "/v1/agents",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["e7b166ec-4d8c-11ec-8c61-0b9e85603e10", "e82a311c-4d8c-11ec-9411-3382b1284325"], "addresses":[{"type": "tel", "target":"+821021656521"},{"type": "tel", "target":"+821021656522"}]}`),
+				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["e7b166ec-4d8c-11ec-8c61-0b9e85603e10", "e82a311c-4d8c-11ec-9411-3382b1284325"], "addresses":[{"type": "tel", "target":"+821021656521"},{"type": "tel", "target":"+821021656522"}]}`),
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			"test1",
 			"password",
 			"test agent1",
@@ -574,7 +574,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("e85d8d78-4d8c-11ec-8a91-1f780097ef8d"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 				Username:     "test1",
 				PasswordHash: "password",
 				Name:         "test agent1",
@@ -603,7 +603,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e85d8d78-4d8c-11ec-8a91-1f780097ef8d","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"e85d8d78-4d8c-11ec-8a91-1f780097ef8d","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 		{
@@ -612,10 +612,10 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				URI:      "/v1/agents",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "webhook_method": "POST", "webhook_uri": "test.com", "ring_method": "ringall", "permission": 1, "tag_ids": ["e7b166ec-4d8c-11ec-8c61-0b9e85603e10", "e82a311c-4d8c-11ec-9411-3382b1284325"], "addresses":[{"type": "tel", "target":"+821021656521"},{"type": "tel", "target":"+821021656522"}]}`),
+				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "webhook_method": "POST", "webhook_uri": "test.com", "ring_method": "ringall", "permission": 1, "tag_ids": ["e7b166ec-4d8c-11ec-8c61-0b9e85603e10", "e82a311c-4d8c-11ec-9411-3382b1284325"], "addresses":[{"type": "tel", "target":"+821021656521"},{"type": "tel", "target":"+821021656522"}]}`),
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			"test1",
 			"password",
 			"test agent1",
@@ -641,7 +641,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 
 			&agent.Agent{
 				ID:            uuid.FromStringOrNil("5c404128-79a1-11ec-a2f8-638f1aced246"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 				Username:      "test1",
 				PasswordHash:  "password",
 				Name:          "test agent1",
@@ -672,7 +672,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5c404128-79a1-11ec-a2f8-638f1aced246","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"POST","webhook_uri":"test.com","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"5c404128-79a1-11ec-a2f8-638f1aced246","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"POST","webhook_uri":"test.com","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -680,7 +680,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAgent.EXPECT().AgentCreate(gomock.Any(), tt.userID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, agent.RingMethod(tt.ringMethod), agent.Permission(tt.permission), tt.tagIDs, tt.addresses).Return(tt.agent, nil)
+			mockAgent.EXPECT().AgentCreate(gomock.Any(), tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, agent.RingMethod(tt.ringMethod), agent.Permission(tt.permission), tt.tagIDs, tt.addresses).Return(tt.agent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -711,9 +711,9 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		userID   uint64
-		username string
-		password string
+		customerID uuid.UUID
+		username   string
+		password   string
 
 		agent     *agent.Agent
 		expectRes *rabbitmqhandler.Response
@@ -724,16 +724,16 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 				URI:      "/v1/agents/test1/login",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"password":"password"}`),
+				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","password":"password"}`),
 			},
 
-			1,
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			"test1",
 			"password",
 
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 				Username:     "test1",
 				PasswordHash: "password",
 				Name:         "test agent1",
@@ -755,7 +755,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -763,7 +763,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAgent.EXPECT().AgentLogin(gomock.Any(), tt.userID, tt.username, tt.password).Return(tt.agent, nil)
+			mockAgent.EXPECT().AgentLogin(gomock.Any(), tt.customerID, tt.username, tt.password).Return(tt.agent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -810,7 +810,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 				Username:     "",
 				PasswordHash: "",
 				Name:         "",
@@ -828,7 +828,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"","password_hash":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":[],"addresses":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"","password_hash":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":[],"addresses":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -1193,7 +1193,7 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 				Username:     "test1",
 				PasswordHash: "password",
 				Name:         "test agent1",

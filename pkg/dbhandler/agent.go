@@ -17,7 +17,7 @@ const (
 	agentSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 		username,
 		password_hash,
 
@@ -50,7 +50,7 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 	res := &agent.Agent{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 		&res.Username,
 		&res.PasswordHash,
 
@@ -94,7 +94,7 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 	q := `insert into agents(
 		id,
-		user_id,
+		customer_id,
 		username,
 		password_hash,
 
@@ -133,7 +133,7 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 
 	_, err = h.db.Exec(q,
 		a.ID.Bytes(),
-		a.UserID,
+		a.CustomerID.Bytes(),
 		a.Username,
 		a.PasswordHash,
 
@@ -163,7 +163,7 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 	return nil
 }
 
-// UserUpdateToCache gets the agent from the DB and update the cache.
+// AgentUpdateToCache gets the agent from the DB and update the cache.
 func (h *handler) AgentUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
 	res, err := h.AgentGetFromDB(ctx, id)
@@ -242,11 +242,11 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 }
 
 // AgentGets returns agents.
-func (h *handler) AgentGets(ctx context.Context, userID uint64, size uint64, token string) ([]*agent.Agent, error) {
+func (h *handler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error) {
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", agentSelect)
+	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", agentSelect)
 
-	rows, err := h.db.Query(q, userID, token, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGets. err: %v", err)
 	}
@@ -266,11 +266,11 @@ func (h *handler) AgentGets(ctx context.Context, userID uint64, size uint64, tok
 }
 
 // AgentGetByUsername returns agent.
-func (h *handler) AgentGetByUsername(ctx context.Context, userID uint64, username string) (*agent.Agent, error) {
+func (h *handler) AgentGetByUsername(ctx context.Context, customerID uuid.UUID, username string) (*agent.Agent, error) {
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and username = ?", agentSelect)
+	q := fmt.Sprintf("%s where customer_id = ? and username = ?", agentSelect)
 
-	row, err := h.db.Query(q, userID, username)
+	row, err := h.db.Query(q, customerID.Bytes(), username)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGetByUsername. err: %v", err)
 	}

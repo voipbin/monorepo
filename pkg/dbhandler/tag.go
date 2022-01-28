@@ -15,7 +15,7 @@ const (
 	tagSelect = `
 		select
 			id,
-			user_id,
+			customer_id,
 
 			name,
 			detail,
@@ -27,6 +27,67 @@ const (
 			tags
 		`
 )
+
+// tagGetFromRow gets the tag from the row.
+func (h *handler) tagGetFromRow(row *sql.Rows) (*tag.Tag, error) {
+
+	res := &tag.Tag{}
+	if err := row.Scan(
+		&res.ID,
+		&res.CustomerID,
+
+		&res.Name,
+		&res.Detail,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+		&res.TMDelete,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. tagGetFromRow. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// TagCreate creates new tag record and returns the created tag record.
+func (h *handler) TagCreate(ctx context.Context, a *tag.Tag) error {
+	q := `insert into tags(
+		id,
+		customer_id,
+
+		name,
+		detail,
+
+		tm_create,
+		tm_update,
+		tm_delete
+	) values(
+		?, ?,
+		?, ?,
+		?, ?, ?
+	)
+	`
+
+	_, err := h.db.Exec(q,
+		a.ID.Bytes(),
+		a.CustomerID.Bytes(),
+
+		a.Name,
+		a.Detail,
+
+		a.TMCreate,
+		a.TMUpdate,
+		a.TMDelete,
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. TagCreate. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.TagUpdateToCache(ctx, a.ID)
+
+	return nil
+}
 
 // TagUpdateToCache gets the tag from the DB and update the cache.
 func (h *handler) TagUpdateToCache(ctx context.Context, id uuid.UUID) error {
@@ -88,27 +149,6 @@ func (h *handler) TagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, err
 	return res, nil
 }
 
-// tagGetFromRow gets the tag from the row.
-func (h *handler) tagGetFromRow(row *sql.Rows) (*tag.Tag, error) {
-
-	res := &tag.Tag{}
-	if err := row.Scan(
-		&res.ID,
-		&res.UserID,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. tagGetFromRow. err: %v", err)
-	}
-
-	return res, nil
-}
-
 // TagGet returns tag.
 func (h *handler) TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 	res, err := h.TagGetFromCache(ctx, id)
@@ -128,11 +168,11 @@ func (h *handler) TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 }
 
 // TagGets returns tags.
-func (h *handler) TagGets(ctx context.Context, userID uint64, size uint64, token string) ([]*tag.Tag, error) {
+func (h *handler) TagGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error) {
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", tagSelect)
+	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", tagSelect)
 
-	rows, err := h.db.Query(q, userID, token, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TagGets. err: %v", err)
 	}
@@ -149,46 +189,6 @@ func (h *handler) TagGets(ctx context.Context, userID uint64, size uint64, token
 	}
 
 	return res, nil
-}
-
-// TagCreate creates new tag record and returns the created tag record.
-func (h *handler) TagCreate(ctx context.Context, a *tag.Tag) error {
-	q := `insert into tags(
-		id,
-		user_id,
-
-		name,
-		detail,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, ?, ?
-	)
-	`
-
-	_, err := h.db.Exec(q,
-		a.ID.Bytes(),
-		a.UserID,
-
-		a.Name,
-		a.Detail,
-
-		a.TMCreate,
-		a.TMUpdate,
-		a.TMDelete,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. TagCreate. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.TagUpdateToCache(ctx, a.ID)
-
-	return nil
 }
 
 // TagSetBasicInfo sets the tag's basic info.

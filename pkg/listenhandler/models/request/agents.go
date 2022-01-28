@@ -9,7 +9,7 @@ import (
 // v1 data type request struct for
 // /v1/agents POST
 type V1DataAgentsPost struct {
-	UserID        uint64              `json:"user_id"`
+	CustomerID    uuid.UUID           `json:"customer_id"`
 	Username      string              `json:"username"`
 	Password      string              `json:"password"`
 	Name          string              `json:"name"`
@@ -26,8 +26,8 @@ type V1DataAgentsPost struct {
 // v1 data type request struct for
 // /v1/agents/<username>/login POST
 type V1DataAgentsUsernameLoginPost struct {
-	UserID   uint64 `json:"user_id"`
-	Password string `json:"password"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	Password   string    `json:"password"`
 }
 
 // V1DataAgentsIDPut is

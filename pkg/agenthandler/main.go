@@ -29,14 +29,14 @@ const (
 
 // AgentHandler interface
 type AgentHandler interface {
-	AgentCreate(ctx context.Context, userID uint64, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error)
+	AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error)
 	AgentDelete(ctx context.Context, id uuid.UUID) error
 	AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID uuid.UUID) error
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
-	AgentGets(ctx context.Context, userID, size uint64, token string) ([]*agent.Agent, error)
-	AgentGetsByTagIDs(ctx context.Context, userID uint64, tags []uuid.UUID) ([]*agent.Agent, error)
-	AgentGetsByTagIDsAndStatus(ctx context.Context, userID uint64, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error)
-	AgentLogin(ctx context.Context, userID uint64, username, password string) (*agent.Agent, error)
+	AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
+	AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error)
+	AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error)
+	AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error)
 	AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) error
 	AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error
 	AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) error

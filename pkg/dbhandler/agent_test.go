@@ -117,7 +117,7 @@ func TestAgentCreate(t *testing.T) {
 			"have tag",
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("48436342-4b4f-11ec-9fcb-0be19dd3beda"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("33f9ca84-7fde-11ec-a186-9f2e8c3a62aa"),
 				Username:     "test4",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
@@ -125,7 +125,7 @@ func TestAgentCreate(t *testing.T) {
 			},
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("48436342-4b4f-11ec-9fcb-0be19dd3beda"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("33f9ca84-7fde-11ec-a186-9f2e8c3a62aa"),
 				Username:     "test4",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
@@ -137,7 +137,7 @@ func TestAgentCreate(t *testing.T) {
 			"have webhook",
 			&agent.Agent{
 				ID:            uuid.FromStringOrNil("796ace40-79a0-11ec-9944-5bcaa66e32ac"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("3e11948e-7fde-11ec-b043-d7d13725e003"),
 				Username:      "test5",
 				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				WebhookMethod: "POST",
@@ -147,7 +147,7 @@ func TestAgentCreate(t *testing.T) {
 			},
 			&agent.Agent{
 				ID:            uuid.FromStringOrNil("796ace40-79a0-11ec-9944-5bcaa66e32ac"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("3e11948e-7fde-11ec-b043-d7d13725e003"),
 				Username:      "test5",
 				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				WebhookMethod: "POST",
@@ -249,26 +249,26 @@ func TestAgentGets(t *testing.T) {
 	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
-		name      string
-		userID    uint64
-		data      []*agent.Agent
-		size      uint64
-		expectRes []*agent.Agent
+		name       string
+		customerID uuid.UUID
+		data       []*agent.Agent
+		size       uint64
+		expectRes  []*agent.Agent
 	}{
 		{
 			"test normal",
-			11,
+			uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
 			[]*agent.Agent{
 				{
 					ID:           uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					UserID:       11,
+					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TMCreate:     "2020-04-18T03:22:17.995000",
 				},
 				{
 					ID:           uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					UserID:       11,
+					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TMCreate:     "2020-04-18T03:22:17.994000",
@@ -278,7 +278,7 @@ func TestAgentGets(t *testing.T) {
 			[]*agent.Agent{
 				{
 					ID:           uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					UserID:       11,
+					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
@@ -287,7 +287,7 @@ func TestAgentGets(t *testing.T) {
 				},
 				{
 					ID:           uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					UserID:       11,
+					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
@@ -309,7 +309,7 @@ func TestAgentGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AgentGets(ctx, tt.userID, tt.size, getCurTime())
+			res, err := h.AgentGets(ctx, tt.customerID, tt.size, getCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
@@ -352,7 +352,7 @@ func TestAgentSetAddresses(t *testing.T) {
 			[]*agent.Agent{
 				{
 					ID:           uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
-					UserID:       1,
+					CustomerID:   uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 					Username:     "test1",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					Name:         "test1name",
@@ -369,7 +369,7 @@ func TestAgentSetAddresses(t *testing.T) {
 
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 				Username:     "test1",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Name:         "test1name",

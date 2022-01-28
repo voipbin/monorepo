@@ -28,9 +28,8 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *rabbitmqhan
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
+	// get customer_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	// parse tagIDs
 	hasTagIDs := u.Query().Has("tag_ids")
@@ -44,21 +43,21 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *rabbitmqhan
 	tmpStatus := u.Query().Get("status")
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processV1AgentsGet",
-		"user":  userID,
-		"size":  pageSize,
-		"token": pageToken,
+		"func":        "processV1AgentsGet",
+		"customer_id": customerID,
+		"size":        pageSize,
+		"token":       pageToken,
 	})
 
 	var tmpRes []*agent.Agent
 	var tmpErr error
 
 	if hasTagIDs && hasStatus {
-		tmpRes, tmpErr = h.agentHandler.AgentGetsByTagIDsAndStatus(ctx, userID, tagIDs, agent.Status(tmpStatus))
+		tmpRes, tmpErr = h.agentHandler.AgentGetsByTagIDsAndStatus(ctx, customerID, tagIDs, agent.Status(tmpStatus))
 	} else if hasTagIDs {
-		tmpRes, tmpErr = h.agentHandler.AgentGetsByTagIDs(ctx, userID, tagIDs)
+		tmpRes, tmpErr = h.agentHandler.AgentGetsByTagIDs(ctx, customerID, tagIDs)
 	} else {
-		tmpRes, tmpErr = h.agentHandler.AgentGets(ctx, userID, pageSize, pageToken)
+		tmpRes, tmpErr = h.agentHandler.AgentGets(ctx, customerID, pageSize, pageToken)
 	}
 	if tmpErr != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
@@ -132,16 +131,16 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *rabbitmqhand
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"user_id":    reqData.UserID,
-		"username":   reqData.Username,
-		"permission": reqData.Permission,
+		"customer_id": reqData.CustomerID,
+		"username":    reqData.Username,
+		"permission":  reqData.Permission,
 	})
 	log.Debug("Creating an agent.")
 
 	// create an agent
 	tmp, err := h.agentHandler.AgentCreate(
 		ctx,
-		reqData.UserID,
+		reqData.CustomerID,
 		reqData.Username,
 		reqData.Password,
 		reqData.Name,
@@ -223,7 +222,7 @@ func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *rab
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.AgentLogin(ctx, reqData.UserID, username, reqData.Password)
+	tmp, err := h.agentHandler.AgentLogin(ctx, reqData.CustomerID, username, reqData.Password)
 	if err != nil {
 		log.Errorf("Could not login the agent info. err: %v", err)
 		return simpleResponse(400), nil

@@ -4,8 +4,8 @@ import "github.com/gofrs/uuid"
 
 // Tag data model
 type Tag struct {
-	ID     uuid.UUID `json:"id"`      // tag id
-	UserID uint64    `json:"user_id"` // owned user's id
+	ID         uuid.UUID `json:"id"`          // tag id
+	CustomerID uuid.UUID `json:"customer_id"` // owner's id
 
 	Name   string `json:"name"`   // tag's name
 	Detail string `json:"detail"` // tag's detail
