@@ -38,7 +38,7 @@ type TranscribeHandler interface {
 
 	StreamingTranscribeStart(
 		ctx context.Context,
-		userID int64,
+		customerID uuid.UUID,
 		referenceID uuid.UUID,
 		transType transcribe.Type,
 		language string,

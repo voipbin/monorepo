@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
@@ -63,7 +63,7 @@ func TestProcessV1TranscribesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"29254ec4-a32c-11eb-9123-eb204908f78c","user_id":0,"type":"recording","reference_id":"8c91343c-999f-11eb-a3f8-df8a947fe87e","host_id":"00000000-0000-0000-0000-000000000000","language":"en-US","webhook_uri":"","webhook_method":"","transcripts":[{"direction":"","message":"hello","tm_create":""}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"29254ec4-a32c-11eb-9123-eb204908f78c","customer_id":"00000000-0000-0000-0000-000000000000","type":"recording","reference_id":"8c91343c-999f-11eb-a3f8-df8a947fe87e","host_id":"00000000-0000-0000-0000-000000000000","language":"en-US","webhook_uri":"","webhook_method":"","transcripts":[{"direction":"","message":"hello","tm_create":""}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

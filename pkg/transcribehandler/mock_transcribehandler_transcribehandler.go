@@ -66,18 +66,18 @@ func (mr *MockTranscribeHandlerMockRecorder) Recording(recordingID, language int
 }
 
 // StreamingTranscribeStart mocks base method.
-func (m *MockTranscribeHandler) StreamingTranscribeStart(ctx context.Context, userID int64, referenceID uuid.UUID, transType transcribe.Type, language, webhookURI, webhookMethod string) (*transcribe.Transcribe, error) {
+func (m *MockTranscribeHandler) StreamingTranscribeStart(ctx context.Context, customerID, referenceID uuid.UUID, transType transcribe.Type, language, webhookURI, webhookMethod string) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StreamingTranscribeStart", ctx, userID, referenceID, transType, language, webhookURI, webhookMethod)
+	ret := m.ctrl.Call(m, "StreamingTranscribeStart", ctx, customerID, referenceID, transType, language, webhookURI, webhookMethod)
 	ret0, _ := ret[0].(*transcribe.Transcribe)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // StreamingTranscribeStart indicates an expected call of StreamingTranscribeStart.
-func (mr *MockTranscribeHandlerMockRecorder) StreamingTranscribeStart(ctx, userID, referenceID, transType, language, webhookURI, webhookMethod interface{}) *gomock.Call {
+func (mr *MockTranscribeHandlerMockRecorder) StreamingTranscribeStart(ctx, customerID, referenceID, transType, language, webhookURI, webhookMethod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingTranscribeStart", reflect.TypeOf((*MockTranscribeHandler)(nil).StreamingTranscribeStart), ctx, userID, referenceID, transType, language, webhookURI, webhookMethod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingTranscribeStart", reflect.TypeOf((*MockTranscribeHandler)(nil).StreamingTranscribeStart), ctx, customerID, referenceID, transType, language, webhookURI, webhookMethod)
 }
 
 // StreamingTranscribeStop mocks base method.

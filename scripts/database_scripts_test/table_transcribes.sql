@@ -1,7 +1,7 @@
 create table transcribes(
   -- identity
   id            binary(16),   -- id
-  user_id       integer,      -- user id
+  customer_id   binary(16),   -- customer id
   type          varchar(16),  -- type of transcribe
   reference_id  binary(16),   -- call/conference/recording's id
   host_id       binary(16),   -- host id
@@ -20,5 +20,5 @@ create table transcribes(
   primary key(id)
 );
 
-create index idx_transcribles_reference_id on channels(reference_id);
-create index idx_transcribles_user_id on channels(user_id);
+create index idx_transcribles_reference_id on transcribes(reference_id);
+create index idx_transcribles_customerid on transcribes(customer_id);
