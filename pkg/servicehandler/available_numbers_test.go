@@ -3,13 +3,13 @@ package servicehandler
 import (
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 )
 
 func TestAvailableNumberGets(t *testing.T) {
@@ -26,7 +26,7 @@ func TestAvailableNumberGets(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        *user.User
+		customer    *cscustomer.Customer
 		limit       uint64
 		countryCode string
 	}
@@ -34,8 +34,8 @@ func TestAvailableNumberGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			10,
 			"US",
@@ -44,9 +44,9 @@ func TestAvailableNumberGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().NMV1AvailableNumberGets(gomock.Any(), tt.user.ID, tt.limit, tt.countryCode).Return([]nmavailablenumber.AvailableNumber{}, nil)
+			mockReq.EXPECT().NMV1AvailableNumberGets(gomock.Any(), tt.customer.ID, tt.limit, tt.countryCode).Return([]nmavailablenumber.AvailableNumber{}, nil)
 
-			_, err := h.AvailableNumberGets(tt.user, tt.limit, tt.countryCode)
+			_, err := h.AvailableNumberGets(tt.customer, tt.limit, tt.countryCode)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

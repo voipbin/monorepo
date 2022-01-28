@@ -4,19 +4,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
 // queuesGET handles GET /queues request.
-// It returns list of queues of the given user.
+// It returns list of queues of the given customer.
 // @Summary List qeueus
-// @Description get queues of the user
+// @Description get queues of the customer
 // @Produce  json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
@@ -30,18 +30,18 @@ func queuesGET(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -103,18 +103,18 @@ func queuesPOST(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -166,18 +166,18 @@ func queuesIDDelete(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -219,18 +219,18 @@ func queuesIDGet(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -269,18 +269,18 @@ func queuesIDPUT(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -325,18 +325,18 @@ func queuesIDTagIDsPUT(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -380,18 +380,18 @@ func queuesIDRoutingMethodPUT(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -435,18 +435,18 @@ func queuesIDActionsPUT(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 

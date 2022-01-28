@@ -6,18 +6,19 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // tagGet validates the tag's ownership and returns the tag info.
-func (h *serviceHandler) tagGet(ctx context.Context, u *user.User, tagID uuid.UUID) (*tag.Tag, error) {
+func (h *serviceHandler) tagGet(ctx context.Context, u *cscustomer.Customer, tagID uuid.UUID) (*tag.Tag, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":    "tagGet",
-			"user_id": u.ID,
-			"tag_id":  tagID,
+			"func":        "tagGet",
+			"customer_id": u.ID,
+			"tag_id":      tagID,
 		},
 	)
 
@@ -29,7 +30,7 @@ func (h *serviceHandler) tagGet(ctx context.Context, u *user.User, tagID uuid.UU
 	}
 	log.WithField("tag", tmp).Debug("Received result.")
 
-	if u.Permission != user.PermissionAdmin && u.ID != tmp.UserID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
 		log.Info("The user has no permission for this agent.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -42,11 +43,11 @@ func (h *serviceHandler) tagGet(ctx context.Context, u *user.User, tagID uuid.UU
 // TagCreate sends a request to agent-manager
 // to creating a tag.
 // it returns created tag info if it succeed.
-func (h *serviceHandler) TagCreate(u *user.User, name string, detail string) (*tag.Tag, error) {
+func (h *serviceHandler) TagCreate(u *cscustomer.Customer, name string, detail string) (*tag.Tag, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	// send request
@@ -66,13 +67,13 @@ func (h *serviceHandler) TagCreate(u *user.User, name string, detail string) (*t
 
 // AgentGet sends a request to agent-manager
 // to getting a tag.
-func (h *serviceHandler) TagGet(u *user.User, id uuid.UUID) (*tag.Tag, error) {
+func (h *serviceHandler) TagGet(u *cscustomer.Customer, id uuid.UUID) (*tag.Tag, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "TagGet",
-		"user_id":  u.ID,
-		"username": u.Username,
-		"tag_id":   id,
+		"func":        "TagGet",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"tag_id":      id,
 	})
 
 	res, err := h.tagGet(ctx, u, id)
@@ -86,12 +87,12 @@ func (h *serviceHandler) TagGet(u *user.User, id uuid.UUID) (*tag.Tag, error) {
 
 // TagGets sends a request to agent-manager
 // to getting a list of tags.
-func (h *serviceHandler) TagGets(u *user.User, size uint64, token string) ([]*tag.Tag, error) {
+func (h *serviceHandler) TagGets(u *cscustomer.Customer, size uint64, token string) ([]*tag.Tag, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "TagGets",
-		"user_id":  u.ID,
-		"username": u.Username,
+		"func":        "TagGets",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	tmp, err := h.reqHandler.AMV1TagGets(ctx, u.ID, token, size)
@@ -111,13 +112,13 @@ func (h *serviceHandler) TagGets(u *user.User, size uint64, token string) ([]*ta
 
 // TagDelete sends a request to call-manager
 // to delete the tag.
-func (h *serviceHandler) TagDelete(u *user.User, id uuid.UUID) error {
+func (h *serviceHandler) TagDelete(u *cscustomer.Customer, id uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "TagDelete",
-		"user":     u.ID,
-		"username": u.Username,
-		"tag_id":   id,
+		"func":        "TagDelete",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"tag_id":      id,
 	})
 
 	_, err := h.tagGet(ctx, u, id)
@@ -137,13 +138,13 @@ func (h *serviceHandler) TagDelete(u *user.User, id uuid.UUID) error {
 
 // TagUpdate sends a request to call-manager
 // to update the tag.
-func (h *serviceHandler) TagUpdate(u *user.User, id uuid.UUID, name, detail string) error {
+func (h *serviceHandler) TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "TagUpdate",
-		"user":     u.ID,
-		"username": u.Username,
-		"tag_id":   id,
+		"func":        "TagUpdate",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"tag_id":      id,
 	})
 
 	_, err := h.tagGet(ctx, u, id)

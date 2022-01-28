@@ -9,10 +9,10 @@ import (
 
 // Agent data model
 type Agent struct {
-	ID           uuid.UUID `json:"id"`       // agent id
-	UserID       uint64    `json:"user_id"`  // owned user's id
-	Username     string    `json:"username"` // agent's username
-	PasswordHash string    `json:"-"`        // hashed Password
+	ID           uuid.UUID `json:"id"`          // agent id
+	CustomerID   uuid.UUID `json:"customer_id"` // owned customer's id
+	Username     string    `json:"username"`    // agent's username
+	PasswordHash string    `json:"-"`           // hashed Password
 
 	Name       string     `json:"name"`        // agent's name
 	Detail     string     `json:"detail"`      // agent's detail
@@ -67,17 +67,17 @@ const (
 // Used it for JWT generation.
 func (u *Agent) Serialize() map[string]interface{} {
 	return map[string]interface{}{
-		"id":         u.ID,
-		"user_id":    u.UserID,
-		"username":   u.Username,
-		"permission": u.Permission,
+		"id":          u.ID,
+		"customer_id": u.CustomerID,
+		"username":    u.Username,
+		"permission":  u.Permission,
 	}
 }
 
 // Read reads the user info
 func (u *Agent) Read(m map[string]interface{}) {
 	u.ID = uuid.FromStringOrNil(m["id"].(string))
-	u.UserID = m["user_id"].(uint64)
+	u.CustomerID = m["customer_id"].(uuid.UUID)
 	u.Username = m["username"].(string)
 	u.Permission = Permission(m["permission"].(float64))
 }
@@ -93,7 +93,7 @@ func ConvertToAgent(a *amagent.Agent) *Agent {
 
 	ag := &Agent{
 		ID:           a.ID,
-		UserID:       a.UserID,
+		CustomerID:   a.CustomerID,
 		Username:     a.Username,
 		PasswordHash: a.PasswordHash,
 		Name:         a.Name,

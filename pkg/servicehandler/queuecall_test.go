@@ -7,9 +7,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -27,7 +27,7 @@ func TestQueuecallGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
+		customer  *cscustomer.Customer
 		pageToken string
 		pageSize  uint64
 
@@ -38,8 +38,8 @@ func TestQueuecallGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			"2021-03-01 01:00:00.995000",
 			10,
@@ -59,9 +59,9 @@ func TestQueuecallGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().QMV1QueuecallGets(gomock.Any(), tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().QMV1QueuecallGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.QueuecallGets(tt.user, tt.pageSize, tt.pageToken)
+			res, err := h.QueuecallGets(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -92,9 +92,9 @@ func TestQueuecallGet(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		user *user.User
-		id   uuid.UUID
+		name     string
+		customer *cscustomer.Customer
+		id       uuid.UUID
 
 		response  *qmqueuecall.Queuecall
 		expectRes *qmqueuecall.WebhookMessage
@@ -103,14 +103,14 @@ func TestQueuecallGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("cd268152-6413-11ec-8e49-4bc7bcc6d465"),
 
 			&qmqueuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("cd268152-6413-11ec-8e49-4bc7bcc6d465"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("cd268152-6413-11ec-8e49-4bc7bcc6d465"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueuecall.WebhookMessage{
 				ID: uuid.FromStringOrNil("cd268152-6413-11ec-8e49-4bc7bcc6d465"),
@@ -123,7 +123,7 @@ func TestQueuecallGet(t *testing.T) {
 
 			mockReq.EXPECT().QMV1QueuecallGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
-			res, err := h.QueuecallGet(tt.user, tt.id)
+			res, err := h.QueuecallGet(tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -148,9 +148,9 @@ func TestQueuecallDelete(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		user *user.User
-		id   uuid.UUID
+		name     string
+		customer *cscustomer.Customer
+		id       uuid.UUID
 
 		response *qmqueuecall.Queuecall
 	}
@@ -158,14 +158,14 @@ func TestQueuecallDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
 
 			&qmqueuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -176,7 +176,7 @@ func TestQueuecallDelete(t *testing.T) {
 			mockReq.EXPECT().QMV1QueuecallGet(gomock.Any(), tt.id).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueuecallDelete(gomock.Any(), tt.id).Return(nil)
 
-			if err := h.QueuecallDelete(tt.user, tt.id); err != nil {
+			if err := h.QueuecallDelete(tt.customer, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -197,7 +197,7 @@ func TestQueuecallDeleteByReferenceID(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        *user.User
+		customer    *cscustomer.Customer
 		referenceID uuid.UUID
 
 		response *qmqueuecall.Queuecall
@@ -206,14 +206,14 @@ func TestQueuecallDeleteByReferenceID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("9b16e8ae-6414-11ec-a2b0-1f3fc925581e"),
 
 			&qmqueuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -224,7 +224,7 @@ func TestQueuecallDeleteByReferenceID(t *testing.T) {
 			mockReq.EXPECT().QMV1QueuecallGet(gomock.Any(), tt.referenceID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueuecallDelete(gomock.Any(), tt.referenceID).Return(nil)
 
-			if err := h.QueuecallDelete(tt.user, tt.referenceID); err != nil {
+			if err := h.QueuecallDelete(tt.customer, tt.referenceID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

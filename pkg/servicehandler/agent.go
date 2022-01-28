@@ -8,20 +8,21 @@ import (
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // agentGet validates the agent's ownership and returns the agent info.
-func (h *serviceHandler) agentGet(ctx context.Context, u *user.User, id uuid.UUID) (*agent.Agent, error) {
+func (h *serviceHandler) agentGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*agent.Agent, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":     "agentGet",
-			"user_id":  u.ID,
-			"agent_id": id,
+			"func":        "agentGet",
+			"customer_id": u.ID,
+			"agent_id":    id,
 		},
 	)
 
@@ -33,7 +34,7 @@ func (h *serviceHandler) agentGet(ctx context.Context, u *user.User, id uuid.UUI
 	}
 	log.WithField("agent", tmp).Debug("Received result.")
 
-	if u.Permission != user.PermissionAdmin && u.ID != tmp.UserID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
 		log.Info("The user has no permission for this agent.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -47,7 +48,7 @@ func (h *serviceHandler) agentGet(ctx context.Context, u *user.User, id uuid.UUI
 // to creating an agent.
 // it returns created agent info if it succeed.
 func (h *serviceHandler) AgentCreate(
-	u *user.User,
+	u *cscustomer.Customer,
 	username string,
 	password string,
 	name string,
@@ -61,9 +62,9 @@ func (h *serviceHandler) AgentCreate(
 ) (*agent.Agent, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentCreate",
-		"user":     u.ID,
-		"username": u.Username,
+		"func":        "AgentCreate",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	// convert addresses
@@ -89,13 +90,13 @@ func (h *serviceHandler) AgentCreate(
 
 // AgentGet sends a request to agent-manager
 // to getting an agent.
-func (h *serviceHandler) AgentGet(u *user.User, agentID uuid.UUID) (*agent.Agent, error) {
+func (h *serviceHandler) AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*agent.Agent, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentGet",
-		"user_id":  u.ID,
-		"username": u.Username,
-		"agent_id": agentID,
+		"func":        "AgentGet",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"agent_id":    agentID,
 	})
 
 	res, err := h.agentGet(ctx, u, agentID)
@@ -110,14 +111,14 @@ func (h *serviceHandler) AgentGet(u *user.User, agentID uuid.UUID) (*agent.Agent
 // AgentGet sends a request to agent-manager
 // to getting a list of agents.
 // it returns agent info if it succeed.
-func (h *serviceHandler) AgentGets(u *user.User, size uint64, token string, tagIDs []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
+func (h *serviceHandler) AgentGets(u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentGets",
-		"user":     u.ID,
-		"username": u.Username,
-		"size":     size,
-		"token":    token,
+		"func":        "AgentGets",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
 	})
 
 	if token == "" {
@@ -151,13 +152,13 @@ func (h *serviceHandler) AgentGets(u *user.User, size uint64, token string, tagI
 
 // AgentDelete sends a request to call-manager
 // to delete the agent.
-func (h *serviceHandler) AgentDelete(u *user.User, agentID uuid.UUID) error {
+func (h *serviceHandler) AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentDelete",
-		"user":     u.ID,
-		"username": u.Username,
-		"agent_id": agentID,
+		"func":        "AgentDelete",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"agent_id":    agentID,
 	})
 
 	_, err := h.agentGet(ctx, u, agentID)
@@ -177,17 +178,17 @@ func (h *serviceHandler) AgentDelete(u *user.User, agentID uuid.UUID) error {
 
 // AgentDelete sends a request to call-manager
 // to delete the agent.
-func (h *serviceHandler) AgentLogin(userID uint64, username, password string) (string, error) {
+func (h *serviceHandler) AgentLogin(customerID uuid.UUID, username, password string) (string, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentLogin",
-		"user_id":  userID,
-		"username": username,
-		"password": len(password),
+		"func":        "AgentLogin",
+		"customer_id": customerID,
+		"username":    username,
+		"password":    len(password),
 	})
 
 	// send request
-	ag, err := h.reqHandler.AMV1AgentLogin(ctx, 30, userID, username, password)
+	ag, err := h.reqHandler.AMV1AgentLogin(ctx, 30000, customerID, username, password)
 	if err != nil {
 		log.Warningf("Could not agent login. err: %v", err)
 		return "", err
@@ -206,13 +207,13 @@ func (h *serviceHandler) AgentLogin(userID uint64, username, password string) (s
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent info.
-func (h *serviceHandler) AgentUpdate(u *user.User, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
+func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdate",
-		"user":     u.ID,
-		"username": u.Username,
-		"agent_id": agentID,
+		"func":        "AgentUpdate",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"agent_id":    agentID,
 	})
 
 	_, err := h.agentGet(ctx, u, agentID)
@@ -232,13 +233,13 @@ func (h *serviceHandler) AgentUpdate(u *user.User, agentID uuid.UUID, name, deta
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent's addresses info.
-func (h *serviceHandler) AgentUpdateAddresses(u *user.User, agentID uuid.UUID, addresses []address.Address) error {
+func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []address.Address) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdateAddresses",
-		"user":     u.ID,
-		"username": u.Username,
-		"agent_id": agentID,
+		"func":        "AgentUpdateAddresses",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"agent_id":    agentID,
 	})
 
 	_, err := h.agentGet(ctx, u, agentID)
@@ -264,13 +265,13 @@ func (h *serviceHandler) AgentUpdateAddresses(u *user.User, agentID uuid.UUID, a
 
 // AgentUpdateTagIDs sends a request to agent-manager
 // to update the agent's tag_ids info.
-func (h *serviceHandler) AgentUpdateTagIDs(u *user.User, agentID uuid.UUID, tagIDs []uuid.UUID) error {
+func (h *serviceHandler) AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdateTagIDs",
-		"user":     u.ID,
-		"username": u.Username,
-		"agent_id": agentID,
+		"func":        "AgentUpdateTagIDs",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"agent_id":    agentID,
 	})
 
 	_, err := h.agentGet(ctx, u, agentID)
@@ -290,13 +291,13 @@ func (h *serviceHandler) AgentUpdateTagIDs(u *user.User, agentID uuid.UUID, tagI
 
 // AgentUpdateStatus sends a request to agent-manager
 // to update the agent status info.
-func (h *serviceHandler) AgentUpdateStatus(u *user.User, agentID uuid.UUID, status agent.Status) error {
+func (h *serviceHandler) AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status agent.Status) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdateStatus",
-		"user":     u.ID,
-		"username": u.Username,
-		"agent_id": agentID,
+		"func":        "AgentUpdateStatus",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"agent_id":    agentID,
 	})
 
 	_, err := h.agentGet(ctx, u, agentID)

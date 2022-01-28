@@ -11,14 +11,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
+	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
-	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
 func setupServer(app *gin.Engine) {
@@ -36,7 +37,7 @@ func TestExtensionsPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		customer    cscustomer.Customer
 		requestBody request.BodyExtensionsPOST
 		reqExt      *extension.Extension
 	}
@@ -44,9 +45,11 @@ func TestExtensionsPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID:         1,
-				Permission: user.PermissionAdmin,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
 			},
 			request.BodyExtensionsPOST{
 				Name:      "test name",
@@ -56,12 +59,12 @@ func TestExtensionsPOST(t *testing.T) {
 				Password:  "password",
 			},
 			&extension.Extension{
-				UserID:    1,
-				Name:      "test name",
-				Detail:    "test detail",
-				DomainID:  uuid.FromStringOrNil("7da5ed2e-6faf-11eb-92bd-bf4592baa4c4"),
-				Extension: "test",
-				Password:  "password",
+				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Name:       "test name",
+				Detail:     "test detail",
+				DomainID:   uuid.FromStringOrNil("7da5ed2e-6faf-11eb-92bd-bf4592baa4c4"),
+				Extension:  "test",
+				Password:   "password",
 			},
 		},
 	}
@@ -74,7 +77,7 @@ func TestExtensionsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
@@ -84,7 +87,7 @@ func TestExtensionsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().ExtensionCreate(&tt.user, tt.reqExt).Return(&extension.Extension{}, nil)
+			mockSvc.EXPECT().ExtensionCreate(&tt.customer, tt.reqExt).Return(&extension.Extension{}, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/extensions", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -106,7 +109,7 @@ func TestExtensionsGET(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		DomainID uuid.UUID
 
 		expectExt []*extension.Extension
@@ -115,19 +118,19 @@ func TestExtensionsGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("f92c19b2-6fb6-11eb-859c-0378f27fc22f"),
 			[]*extension.Extension{
 				{
-					ID:        uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
-					UserID:    1,
-					DomainID:  uuid.FromStringOrNil("f92c19b2-6fb6-11eb-859c-0378f27fc22f"),
-					Name:      "test name",
-					Detail:    "test detail",
-					Extension: "test",
-					Password:  "password",
+					ID:         uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+					CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+					DomainID:   uuid.FromStringOrNil("f92c19b2-6fb6-11eb-859c-0378f27fc22f"),
+					Name:       "test name",
+					Detail:     "test detail",
+					Extension:  "test",
+					Password:   "password",
 				},
 			},
 		},
@@ -141,11 +144,11 @@ func TestExtensionsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ExtensionGets(&tt.user, tt.DomainID, uint64(10), "").Return(tt.expectExt, nil)
+			mockSvc.EXPECT().ExtensionGets(&tt.customer, tt.DomainID, uint64(10), "").Return(tt.expectExt, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/extensions?domain_id=%s", tt.DomainID), nil)
 
 			r.ServeHTTP(w, req)
@@ -165,9 +168,9 @@ func TestExtensionsIDGET(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name string
-		user user.User
-		ext  *rmextension.Extension
+		name     string
+		customer cscustomer.Customer
+		ext      *rmextension.Extension
 
 		expectExt *extension.Extension
 	}
@@ -175,26 +178,26 @@ func TestExtensionsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			&rmextension.Extension{
-				ID:        uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
-				UserID:    1,
-				DomainID:  uuid.FromStringOrNil("2ff2b962-6fb0-11eb-a768-e3780d10e360"),
-				Name:      "test name",
-				Detail:    "test detail",
-				Extension: "test",
-				Password:  "password",
+				ID:         uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+				CustomerID: uuid.FromStringOrNil("580a7a44-7ff8-11ec-916e-d35fe5e74591"),
+				DomainID:   uuid.FromStringOrNil("2ff2b962-6fb0-11eb-a768-e3780d10e360"),
+				Name:       "test name",
+				Detail:     "test detail",
+				Extension:  "test",
+				Password:   "password",
 			},
 			&extension.Extension{
-				ID:        uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
-				UserID:    1,
-				DomainID:  uuid.FromStringOrNil("2ff2b962-6fb0-11eb-a768-e3780d10e360"),
-				Name:      "test name",
-				Detail:    "test detail",
-				Extension: "test",
-				Password:  "password",
+				ID:         uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				DomainID:   uuid.FromStringOrNil("2ff2b962-6fb0-11eb-a768-e3780d10e360"),
+				Name:       "test name",
+				Detail:     "test detail",
+				Extension:  "test",
+				Password:   "password",
 			},
 		},
 	}
@@ -207,11 +210,11 @@ func TestExtensionsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ExtensionGet(&tt.user, tt.ext.ID).Return(tt.expectExt, nil)
+			mockSvc.EXPECT().ExtensionGet(&tt.customer, tt.ext.ID).Return(tt.expectExt, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/extensions/%s", tt.ext.ID), nil)
 
 			r.ServeHTTP(w, req)
@@ -232,7 +235,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		customer    cscustomer.Customer
 		extID       uuid.UUID
 		requestBody request.BodyExtensionsIDPUT
 		expectExt   *extension.Extension
@@ -241,9 +244,11 @@ func TestExtensionsIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID:         1,
-				Permission: user.PermissionAdmin,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
 			},
 			uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
 			request.BodyExtensionsIDPUT{
@@ -268,7 +273,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
@@ -278,7 +283,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().ExtensionUpdate(&tt.user, tt.expectExt).Return(&extension.Extension{}, nil)
+			mockSvc.EXPECT().ExtensionUpdate(&tt.customer, tt.expectExt).Return(&extension.Extension{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/extensions/"+tt.extID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -299,16 +304,16 @@ func TestExtensionsIDDELETE(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name  string
-		user  user.User
-		extID uuid.UUID
+		name     string
+		customer cscustomer.Customer
+		extID    uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("be0c2b70-6fb0-11eb-849d-3f923b334d3b"),
 		},
@@ -322,11 +327,11 @@ func TestExtensionsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ExtensionDelete(&tt.user, tt.extID).Return(nil)
+			mockSvc.EXPECT().ExtensionDelete(&tt.customer, tt.extID).Return(nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/extensions/%s", tt.extID), nil)
 
 			r.ServeHTTP(w, req)

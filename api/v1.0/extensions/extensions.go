@@ -4,12 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -29,18 +29,18 @@ func extensionsPOST(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -53,10 +53,10 @@ func extensionsPOST(c *gin.Context) {
 
 	// create a extension
 	e := &extension.Extension{
-		UserID:   u.ID,
-		Name:     req.Name,
-		Detail:   req.Detail,
-		DomainID: req.DomainID,
+		CustomerID: u.ID,
+		Name:       req.Name,
+		Detail:     req.Detail,
+		DomainID:   req.DomainID,
 
 		Extension: req.Extension,
 		Password:  req.Password,
@@ -91,18 +91,18 @@ func extensionsGET(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -163,18 +163,18 @@ func extensionsIDGET(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -212,18 +212,18 @@ func extensionsIDPUT(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -274,18 +274,18 @@ func extensionsIDDELETE(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 

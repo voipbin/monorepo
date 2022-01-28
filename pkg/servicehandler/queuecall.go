@@ -6,18 +6,18 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // queuecallGet validates the queuecall's ownership and returns the queuecall info.
-func (h *serviceHandler) queuecallGet(ctx context.Context, u *user.User, id uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
+func (h *serviceHandler) queuecallGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":     "queuecallGet",
-			"user_id":  u.ID,
-			"agent_id": id,
+			"func":        "queuecallGet",
+			"customer_id": u.ID,
+			"agent_id":    id,
 		},
 	)
 
@@ -29,7 +29,7 @@ func (h *serviceHandler) queuecallGet(ctx context.Context, u *user.User, id uuid
 	}
 	log.WithField("queue", tmp).Debug("Received result.")
 
-	if u.Permission != user.PermissionAdmin && u.ID != tmp.UserID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
 		log.Info("The user has no permission for this agent.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -41,13 +41,13 @@ func (h *serviceHandler) queuecallGet(ctx context.Context, u *user.User, id uuid
 
 // QueuecallGet sends a request to queue-manager
 // to getting the queuecall.
-func (h *serviceHandler) QueuecallGet(u *user.User, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
+func (h *serviceHandler) QueuecallGet(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueueGet",
-		"user_id":  u.ID,
-		"username": u.Username,
-		"agent_id": queueID,
+		"func":        "QueueGet",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"agent_id":    queueID,
 	})
 
 	res, err := h.queuecallGet(ctx, u, queueID)
@@ -62,14 +62,14 @@ func (h *serviceHandler) QueuecallGet(u *user.User, queueID uuid.UUID) (*qmqueue
 // QueuecallGets sends a request to queue-manager
 // to getting a list of queuecalls.
 // it returns queuecall info if it succeed.
-func (h *serviceHandler) QueuecallGets(u *user.User, size uint64, token string) ([]*qmqueuecall.WebhookMessage, error) {
+func (h *serviceHandler) QueuecallGets(u *cscustomer.Customer, size uint64, token string) ([]*qmqueuecall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueuecallGets",
-		"user":     u.ID,
-		"username": u.Username,
-		"size":     size,
-		"token":    token,
+		"func":        "QueuecallGets",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
 	})
 
 	if token == "" {
@@ -93,12 +93,12 @@ func (h *serviceHandler) QueuecallGets(u *user.User, size uint64, token string) 
 
 // QueuecallDelete sends a request to the queue-manager
 // to kick out the given queuecall.
-func (h *serviceHandler) QueuecallDelete(u *user.User, queuecallID uuid.UUID) error {
+func (h *serviceHandler) QueuecallDelete(u *cscustomer.Customer, queuecallID uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueuecallDelete",
-		"user":     u.ID,
-		"username": u.Username,
+		"func":        "QueuecallDelete",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	_, err := h.queuecallGet(ctx, u, queuecallID)
@@ -117,12 +117,12 @@ func (h *serviceHandler) QueuecallDelete(u *user.User, queuecallID uuid.UUID) er
 
 // QueuecallDeleteByReferenceID sends a request to the queue-manager
 // to kick out the given reference id's queuecall.
-func (h *serviceHandler) QueuecallDeleteByReferenceID(u *user.User, referenceID uuid.UUID) error {
+func (h *serviceHandler) QueuecallDeleteByReferenceID(u *cscustomer.Customer, referenceID uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueuecallDeleteByReferenceID",
-		"user":     u.ID,
-		"username": u.Username,
+		"func":        "QueuecallDeleteByReferenceID",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	tmp, err := h.reqHandler.QMV1QueuecallReferenceGet(ctx, referenceID)
@@ -131,7 +131,7 @@ func (h *serviceHandler) QueuecallDeleteByReferenceID(u *user.User, referenceID 
 		return err
 	}
 
-	if u.Permission != user.PermissionAdmin && u.ID != tmp.UserID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
 		log.Info("The user has no permission for this agent.")
 		return fmt.Errorf("user has no permission")
 	}

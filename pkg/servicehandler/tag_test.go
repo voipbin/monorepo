@@ -8,9 +8,9 @@ import (
 	"github.com/golang/mock/gomock"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -28,17 +28,17 @@ func TestTagCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user    *user.User
-		tagName string
-		detail  string
+		customer *cscustomer.Customer
+		tagName  string
+		detail   string
 
 		response  *amtag.Tag
 		expectRes *tag.Tag
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			"test1 name",
 			"test1 detail",
@@ -54,9 +54,9 @@ func TestTagCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AMV1TagCreate(gomock.Any(), tt.user.ID, tt.tagName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1TagCreate(gomock.Any(), tt.customer.ID, tt.tagName, tt.detail).Return(tt.response, nil)
 
-			res, err := h.TagCreate(tt.user, tt.tagName, tt.detail)
+			res, err := h.TagCreate(tt.customer, tt.tagName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -82,17 +82,17 @@ func TestTagGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user  *user.User
-		size  uint64
-		token string
+		customer *cscustomer.Customer
+		size     uint64
+		token    string
 
 		response  []amtag.Tag
 		expectRes []*tag.Tag
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
@@ -110,8 +110,8 @@ func TestTagGets(t *testing.T) {
 		},
 		{
 			"2 results",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
@@ -138,9 +138,9 @@ func TestTagGets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AMV1TagGets(gomock.Any(), tt.user.ID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1TagGets(gomock.Any(), tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
 
-			res, err := h.TagGets(tt.user, tt.size, tt.token)
+			res, err := h.TagGets(tt.customer, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -166,26 +166,25 @@ func TestTagGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user  *user.User
-		tagID uuid.UUID
+		customer *cscustomer.Customer
+		tagID    uuid.UUID
 
 		response  *amtag.Tag
 		expectRes *tag.Tag
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 
 			&amtag.Tag{
-				ID:     uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&tag.Tag{
-				ID:     uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID: 1,
+				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 			},
 		},
 	}
@@ -195,7 +194,7 @@ func TestTagGet(t *testing.T) {
 
 			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.response, nil)
 
-			res, err := h.TagGet(tt.user, tt.tagID)
+			res, err := h.TagGet(tt.customer, tt.tagID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -221,26 +220,25 @@ func TestTagDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user  *user.User
-		tagID uuid.UUID
+		customer *cscustomer.Customer
+		tagID    uuid.UUID
 
 		resTagGet *amtag.Tag
 		expectRes *tag.Tag
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 
 			&amtag.Tag{
-				ID:     uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&tag.Tag{
-				ID:     uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
-				UserID: 1,
+				ID: uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 			},
 		},
 	}
@@ -251,7 +249,7 @@ func TestTagDelete(t *testing.T) {
 			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
 			mockReq.EXPECT().AMV1TagDelete(gomock.Any(), tt.tagID).Return(nil)
 
-			if err := h.TagDelete(tt.user, tt.tagID); err != nil {
+			if err := h.TagDelete(tt.customer, tt.tagID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -272,30 +270,29 @@ func TestTagUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user    *user.User
-		tagID   uuid.UUID
-		tagName string
-		detail  string
+		customer *cscustomer.Customer
+		tagID    uuid.UUID
+		tagName  string
+		detail   string
 
 		resTagGet *amtag.Tag
 		expectRes *tag.Tag
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 			"test1",
 			"detail",
 
 			&amtag.Tag{
-				ID:     uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&tag.Tag{
-				ID:     uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
-				UserID: 1,
+				ID: uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 			},
 		},
 	}
@@ -306,7 +303,7 @@ func TestTagUpdate(t *testing.T) {
 			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
 			mockReq.EXPECT().AMV1TagUpdate(gomock.Any(), tt.tagID, tt.tagName, tt.detail).Return(nil)
 
-			if err := h.TagUpdate(tt.user, tt.tagID, tt.tagName, tt.detail); err != nil {
+			if err := h.TagUpdate(tt.customer, tt.tagID, tt.tagName, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
