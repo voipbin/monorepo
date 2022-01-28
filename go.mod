@@ -12,10 +12,10 @@ require (
 	github.com/prometheus/client_golang v1.12.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220118182155-f59097f45747
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220119151652-39679b5fa43c
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220113054925-e64f9b21a70d
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220116074155-cb5c1352271e
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220127092610-7d5c827992db
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220128050051-b020b0c5120e
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220127085754-375cf37c6d7f
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220128054051-435c02f43a53
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20210926125509-0133dd6b7146
 )
 
@@ -29,9 +29,10 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220105125759-c8c04b8f27a9 // indirect
-	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20211018180403-4e3bcfe187ff // indirect
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20211221032228-f73ce135fa46 // indirect
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128030351-b09ba2ebff94 // indirect
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220125172215-6244f425bebe // indirect
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220128044746-5b1c59714700 // indirect
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220128040744-1da444546c76 // indirect
 	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20220103005331-229d07d977e5 // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20211221033736-1c9c086d3d00 // indirect

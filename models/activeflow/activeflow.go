@@ -13,7 +13,7 @@ import (
 type ActiveFlow struct {
 	CallID     uuid.UUID `json:"call_id"`
 	FlowID     uuid.UUID `json:"flow_id"`
-	UserID     uint64    `json:"user_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 	WebhookURI string    `json:"webhook_uri"`
 
 	CurrentAction   action.Action `json:"current_action"`

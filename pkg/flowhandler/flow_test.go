@@ -27,7 +27,7 @@ func TestFlowCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		userID     uint64
+		customerID uuid.UUID
 		flowType   flow.Type
 		flowName   string
 		detail     string
@@ -40,7 +40,7 @@ func TestFlowCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
 			flow.TypeFlow,
 			"test",
 			"test detail",
@@ -54,7 +54,7 @@ func TestFlowCreate(t *testing.T) {
 		},
 		{
 			"test empty",
-			1,
+			uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
 			flow.TypeFlow,
 			"test",
 			"test detail",
@@ -64,7 +64,7 @@ func TestFlowCreate(t *testing.T) {
 		},
 		{
 			"test empty with persist false",
-			1,
+			uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
 			flow.TypeFlow,
 			"test",
 			"test detail",
@@ -86,7 +86,7 @@ func TestFlowCreate(t *testing.T) {
 				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
 			}
 
-			_, err := h.FlowCreate(ctx, tt.userID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.webhookURI, tt.actions)
+			_, err := h.FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.webhookURI, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -247,7 +247,7 @@ func TestFlowDelete(t *testing.T) {
 // 	}
 // }
 
-func TestFlowGetByUserID(t *testing.T) {
+func TestFlowGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -257,16 +257,16 @@ func TestFlowGetByUserID(t *testing.T) {
 	}
 
 	type test struct {
-		name   string
-		userID uint64
-		token  string
-		limit  uint64
+		name       string
+		customerID uuid.UUID
+		token      string
+		limit      uint64
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			1,
+			uuid.FromStringOrNil("938cdf96-7f4c-11ec-94d3-8ba7d397d7fb"),
 			"2020-10-10T03:30:17.000000",
 			10,
 		},
@@ -275,9 +275,9 @@ func TestFlowGetByUserID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockDB.EXPECT().FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().FlowGets(ctx, tt.customerID, tt.token, tt.limit).Return(nil, nil)
 
-			_, err := h.FlowGetsByUserID(ctx, tt.userID, tt.token, tt.limit)
+			_, err := h.FlowGets(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

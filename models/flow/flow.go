@@ -11,9 +11,9 @@ import (
 
 // Flow struct
 type Flow struct {
-	ID     uuid.UUID `json:"id"`
-	UserID uint64    `json:"user_id"`
-	Type   Type      `json:"type"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	Type       Type      `json:"type"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`

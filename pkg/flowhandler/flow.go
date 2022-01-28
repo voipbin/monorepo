@@ -27,7 +27,7 @@ func (h *flowHandler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, er
 // FlowCreate creates a new flow
 func (h *flowHandler) FlowCreate(
 	ctx context.Context,
-	userID uint64,
+	customerID uuid.UUID,
 	flowType flow.Type,
 	name string,
 	detail string,
@@ -46,9 +46,9 @@ func (h *flowHandler) FlowCreate(
 
 	id := uuid.Must(uuid.NewV4())
 	f := &flow.Flow{
-		ID:     id,
-		UserID: userID,
-		Type:   flowType,
+		ID:         id,
+		CustomerID: customerID,
+		Type:       flowType,
 
 		Name:   name,
 		Detail: detail,
@@ -87,18 +87,18 @@ func (h *flowHandler) FlowCreate(
 	return res, nil
 }
 
-// FlowGetsByUserID returns list of flows
-func (h *flowHandler) FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error) {
+// FlowGets returns list of flows
+func (h *flowHandler) FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":    "FlowGetsByUserID",
-			"user_id": userID,
-			"token":   token,
-			"limit":   limit,
+			"func":        "FlowGets",
+			"customer_id": customerID,
+			"token":       token,
+			"limit":       limit,
 		})
 	log.Debug("Getting flows.")
 
-	flows, err := h.db.FlowGetsByUserID(ctx, userID, token, limit)
+	flows, err := h.db.FlowGets(ctx, customerID, token, limit)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err
@@ -107,18 +107,18 @@ func (h *flowHandler) FlowGetsByUserID(ctx context.Context, userID uint64, token
 	return flows, nil
 }
 
-// FlowGetsByUserIDAndType returns list of flows
-func (h *flowHandler) FlowGetsByUserIDAndType(ctx context.Context, userID uint64, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
+// FlowGetsByType returns list of flows
+func (h *flowHandler) FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":    "FlowGetsByUserIDAndType",
-			"user_id": userID,
-			"token":   token,
-			"limit":   limit,
+			"func":        "FlowGetsByType",
+			"customer_id": customerID,
+			"token":       token,
+			"limit":       limit,
 		})
 	log.Debug("Getting flows.")
 
-	flows, err := h.db.FlowGetsByUserIDAndType(ctx, userID, flowType, token, limit)
+	flows, err := h.db.FlowGetsByType(ctx, customerID, flowType, token, limit)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err

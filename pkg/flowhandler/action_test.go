@@ -126,8 +126,7 @@ func TestGetActionsFromFlow(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("9091d6aa-3cbe-11ec-9a9e-7f0d954e1f7a"),
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("9091d6aa-3cbe-11ec-9a9e-7f0d954e1f7a"),
-				UserID: 1,
+				ID: uuid.FromStringOrNil("9091d6aa-3cbe-11ec-9a9e-7f0d954e1f7a"),
 			},
 			uuid.FromStringOrNil("549d358a-fbfc-11ea-a625-43073fda56b9"),
 		},
@@ -137,10 +136,10 @@ func TestGetActionsFromFlow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flowID).Return(&flow.Flow{
-				UserID: uint64(tt.flow.UserID),
+				CustomerID: tt.flow.CustomerID,
 			}, nil)
 
-			_, err := h.getActionsFromFlow(tt.flowID, uint64(tt.flow.UserID))
+			_, err := h.getActionsFromFlow(tt.flowID, tt.flow.CustomerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

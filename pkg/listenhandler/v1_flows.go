@@ -142,7 +142,7 @@ func (h *listenHandler) v1FlowsPost(m *rabbitmqhandler.Request) (*rabbitmqhandle
 	// create flow
 	resFlow, err := h.flowHandler.FlowCreate(
 		ctx,
-		req.UserID,
+		req.CustomerID,
 		req.Type,
 		req.Name,
 		req.Detail,
@@ -191,22 +191,21 @@ func (h *listenHandler) v1FlowsGet(req *rabbitmqhandler.Request) (*rabbitmqhandl
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
+	// get customer_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	// get type
 	tmpType := flow.Type(u.Query().Get("type"))
 
 	var resFlows []*flow.Flow
 	if tmpType != flow.TypeNone {
-		resFlows, err = h.flowHandler.FlowGetsByUserIDAndType(ctx, userID, flow.Type(tmpType), pageToken, pageSize)
+		resFlows, err = h.flowHandler.FlowGetsByType(ctx, customerID, flow.Type(tmpType), pageToken, pageSize)
 		if err != nil {
 			log.Errorf("Could not get flows. err: %v", err)
 			return nil, err
 		}
 	} else {
-		resFlows, err = h.flowHandler.FlowGetsByUserID(ctx, userID, pageToken, pageSize)
+		resFlows, err = h.flowHandler.FlowGets(ctx, customerID, pageToken, pageSize)
 		if err != nil {
 			logrus.Errorf("Could not get flows. err: %v", err)
 			return nil, err

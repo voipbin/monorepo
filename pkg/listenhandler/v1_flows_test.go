@@ -29,7 +29,7 @@ func TestFlowsPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		userID     uint64
+		customerID uuid.UUID
 		flowType   flow.Type
 		flowName   string
 		detail     string
@@ -45,10 +45,10 @@ func TestFlowsPost(t *testing.T) {
 				URI:      "/v1/flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"type":"flow","name":"test","detail":"test detail","actions":[]}`),
+				Data:     []byte(`{"customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","type":"flow","name":"test","detail":"test detail","actions":[]}`),
 			},
 
-			1,
+			uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			flow.TypeFlow,
 			"test",
 			"test detail",
@@ -64,7 +64,7 @@ func TestFlowsPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","actions":[{"type":"echo"}]}`),
 			},
-			0,
+			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
 			flow.TypeFlow,
 			"test",
 			"test detail",
@@ -84,7 +84,7 @@ func TestFlowsPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
-			0,
+			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
 			flow.TypeFlow,
 			"test",
 			"test detail",
@@ -100,14 +100,14 @@ func TestFlowsPost(t *testing.T) {
 			},
 		},
 		{
-			"has 2 actions with user_id",
+			"has 2 actions with customer_id",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","user_id":1,"actions":[{"type":"answer"},{"type":"echo"}]}`),
+				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
-			1,
+			uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			flow.TypeFlow,
 			"test",
 			"test detail",
@@ -128,9 +128,9 @@ func TestFlowsPost(t *testing.T) {
 				URI:      "/v1/flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type":"conference","name":"test","detail":"test detail","user_id":1,"actions":[{"type":"answer"},{"type":"echo"}]}`),
+				Data:     []byte(`{"type":"conference","name":"test","detail":"test detail","customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
-			1,
+			uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			flow.TypeConference,
 			"test",
 			"test detail",
@@ -149,7 +149,7 @@ func TestFlowsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.userID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.webhookURI, tt.actions).Return(&flow.Flow{}, nil)
+			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.webhookURI, tt.actions).Return(&flow.Flow{}, nil)
 
 			if _, err := h.processRequest(tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -171,13 +171,13 @@ func TestV1FlowsGet(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		userID    uint64
-		flowType  flow.Type
-		pageToken string
-		pageSize  uint64
-		request   *rabbitmqhandler.Request
-		flows     []*flow.Flow
+		name       string
+		customerID uuid.UUID
+		flowType   flow.Type
+		pageToken  string
+		pageSize   uint64
+		request    *rabbitmqhandler.Request
+		flows      []*flow.Flow
 
 		expectRes *rabbitmqhandler.Response
 	}
@@ -185,20 +185,20 @@ func TestV1FlowsGet(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			1,
+			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&user_id=1",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 			[]*flow.Flow{
 				{
-					ID:     uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
-					UserID: 1,
-					Type:   flow.TypeFlow,
+					ID:         uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
+					CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+					Type:       flow.TypeFlow,
 					Actions: []action.Action{
 						{
 							Type: action.TypeAnswer,
@@ -209,25 +209,25 @@ func TestV1FlowsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","user_id":1,"type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
 			"2 items",
-			1,
+			uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&user_id=1",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 			[]*flow.Flow{
 				{
-					ID:     uuid.FromStringOrNil("13a7aeaa-0c4d-11eb-8210-073d8779e386"),
-					UserID: 1,
-					Type:   flow.TypeFlow,
+					ID:         uuid.FromStringOrNil("13a7aeaa-0c4d-11eb-8210-073d8779e386"),
+					CustomerID: uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
+					Type:       flow.TypeFlow,
 					Actions: []action.Action{
 						{
 							Type: action.TypeAnswer,
@@ -235,9 +235,9 @@ func TestV1FlowsGet(t *testing.T) {
 					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("3645134e-0c4d-11eb-a2da-4bb8abe75c48"),
-					UserID: 1,
-					Type:   flow.TypeFlow,
+					ID:         uuid.FromStringOrNil("3645134e-0c4d-11eb-a2da-4bb8abe75c48"),
+					CustomerID: uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
+					Type:       flow.TypeFlow,
 					Actions: []action.Action{
 						{
 							Type: action.TypeEcho,
@@ -248,17 +248,17 @@ func TestV1FlowsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"13a7aeaa-0c4d-11eb-8210-073d8779e386","user_id":1,"type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""},{"id":"3645134e-0c4d-11eb-a2da-4bb8abe75c48","user_id":1,"type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"13a7aeaa-0c4d-11eb-8210-073d8779e386","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""},{"id":"3645134e-0c4d-11eb-a2da-4bb8abe75c48","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
 			"empty",
-			1,
+			uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&user_id=1",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -271,20 +271,20 @@ func TestV1FlowsGet(t *testing.T) {
 		},
 		{
 			"type flow",
-			1,
+			uuid.FromStringOrNil("49e66560-7f4c-11ec-9d15-2396902a0309"),
 			flow.TypeFlow,
 			"2020-10-10T03:30:17.000000",
 			10,
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&user_id=1&type=flow",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=49e66560-7f4c-11ec-9d15-2396902a0309&type=flow",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 			[]*flow.Flow{
 				{
-					ID:     uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
-					UserID: 1,
-					Type:   flow.TypeFlow,
+					ID:         uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
+					CustomerID: uuid.FromStringOrNil("49e66560-7f4c-11ec-9d15-2396902a0309"),
+					Type:       flow.TypeFlow,
 					Actions: []action.Action{
 						{
 							Type: action.TypeAnswer,
@@ -295,7 +295,7 @@ func TestV1FlowsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","user_id":1,"type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"49e66560-7f4c-11ec-9d15-2396902a0309","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -303,9 +303,9 @@ func TestV1FlowsGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.flowType != flow.TypeNone {
-				mockFlowHandler.EXPECT().FlowGetsByUserIDAndType(gomock.Any(), tt.userID, tt.flowType, tt.pageToken, tt.pageSize).Return(tt.flows, nil)
+				mockFlowHandler.EXPECT().FlowGetsByType(gomock.Any(), tt.customerID, tt.flowType, tt.pageToken, tt.pageSize).Return(tt.flows, nil)
 			} else {
-				mockFlowHandler.EXPECT().FlowGetsByUserID(gomock.Any(), tt.userID, tt.pageToken, tt.pageSize).Return(tt.flows, nil)
+				mockFlowHandler.EXPECT().FlowGets(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.flows, nil)
 			}
 
 			res, err := h.processRequest(tt.request)
@@ -406,7 +406,7 @@ func TestV1FlowsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","user_id":0,"type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -430,7 +430,7 @@ func TestV1FlowsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","user_id":0,"type":"flow","name":"","detail":"","persist":true,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":true,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -455,7 +455,7 @@ func TestV1FlowsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","user_id":0,"type":"flow","name":"","detail":"","persist":true,"webhook_uri":"http://pchero21.com/test_webhook","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":true,"webhook_uri":"http://pchero21.com/test_webhook","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -536,7 +536,7 @@ func TestV1FlowsIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","user_id":0,"type":"","name":"update name","detail":"update detail","persist":false,"webhook_uri":"","actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"update name","detail":"update detail","persist":false,"webhook_uri":"","actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -573,7 +573,7 @@ func TestV1FlowsIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2fea2826-822d-11eb-8bcc-97bfc5739d38","user_id":0,"type":"","name":"update name","detail":"update detail","persist":false,"webhook_uri":"https://test.com/update_webhook","actions":[{"id":"3aa85b98-822d-11eb-9020-e7d103dc0571","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"2fea2826-822d-11eb-8bcc-97bfc5739d38","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"update name","detail":"update detail","persist":false,"webhook_uri":"https://test.com/update_webhook","actions":[{"id":"3aa85b98-822d-11eb-9020-e7d103dc0571","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
