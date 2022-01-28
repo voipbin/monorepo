@@ -11,7 +11,7 @@ import (
 // Conference type
 type Conference struct {
 	ID           uuid.UUID `json:"id"`
-	UserID       uint64    `json:"user_id"`
+	CustomerID   uuid.UUID `json:"customer_id"`
 	ConfbridgeID uuid.UUID `json:"confbridge_id"` // confbridge id(call-manager)
 	FlowID       uuid.UUID `json:"flow_id"`       // flow id(flow-manager)
 	Type         Type      `json:"type"`

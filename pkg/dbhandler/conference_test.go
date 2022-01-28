@@ -31,15 +31,15 @@ func TestConferenceCreate(t *testing.T) {
 		{
 			"type conference",
 			&conference.Conference{
-				ID:     uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
-				UserID: 1,
-				Type:   conference.TypeConference,
-				Name:   "test type conference",
-				Detail: "test type conference detail",
+				ID:         uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
+				CustomerID: uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
+				Type:       conference.TypeConference,
+				Name:       "test type conference",
+				Detail:     "test type conference detail",
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
@@ -52,15 +52,15 @@ func TestConferenceCreate(t *testing.T) {
 		{
 			"added user ID",
 			&conference.Conference{
-				ID:     uuid.FromStringOrNil("132d3c9e-f08f-11ea-8ed9-6f27c201eff3"),
-				UserID: 1,
-				Type:   conference.TypeConference,
-				Name:   "test type conference",
-				Detail: "test type conference detail",
+				ID:         uuid.FromStringOrNil("132d3c9e-f08f-11ea-8ed9-6f27c201eff3"),
+				CustomerID: uuid.FromStringOrNil("3fccf15e-7f45-11ec-bae1-7344ecec79bd"),
+				Type:       conference.TypeConference,
+				Name:       "test type conference",
+				Detail:     "test type conference detail",
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("132d3c9e-f08f-11ea-8ed9-6f27c201eff3"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("3fccf15e-7f45-11ec-bae1-7344ecec79bd"),
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
@@ -74,7 +74,7 @@ func TestConferenceCreate(t *testing.T) {
 			"added record id",
 			&conference.Conference{
 				ID:          uuid.FromStringOrNil("218aa220-2c19-11eb-905f-1b9d4d0da185"),
-				UserID:      1,
+				CustomerID:  uuid.FromStringOrNil("48974ac8-7f45-11ec-9ba9-1f3e79c1ba60"),
 				Type:        conference.TypeConference,
 				Name:        "test type conference",
 				Detail:      "test type conference detail",
@@ -82,7 +82,7 @@ func TestConferenceCreate(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("218aa220-2c19-11eb-905f-1b9d4d0da185"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("48974ac8-7f45-11ec-9ba9-1f3e79c1ba60"),
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
@@ -97,7 +97,7 @@ func TestConferenceCreate(t *testing.T) {
 			"added record ids",
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("21d33d64-2c19-11eb-be7d-1ff9387bed0e"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("50b72fca-7f45-11ec-8734-6749711ab0ed"),
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
@@ -105,7 +105,7 @@ func TestConferenceCreate(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("21d33d64-2c19-11eb-be7d-1ff9387bed0e"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("50b72fca-7f45-11ec-8734-6749711ab0ed"),
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
@@ -119,7 +119,7 @@ func TestConferenceCreate(t *testing.T) {
 			"set webhook uri",
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("6cbf3216-1ff6-11ec-874c-9fdc6af9a2e1"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("58fc0700-7f45-11ec-baf5-777d2c95c222"),
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
@@ -128,7 +128,7 @@ func TestConferenceCreate(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("6cbf3216-1ff6-11ec-874c-9fdc6af9a2e1"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("58fc0700-7f45-11ec-baf5-777d2c95c222"),
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
@@ -142,11 +142,11 @@ func TestConferenceCreate(t *testing.T) {
 		{
 			"set pre actions",
 			&conference.Conference{
-				ID:     uuid.FromStringOrNil("3824d0e4-3be7-11ec-b046-674e88e91f56"),
-				UserID: 1,
-				Type:   conference.TypeConference,
-				Name:   "test type conference",
-				Detail: "test type conference detail",
+				ID:         uuid.FromStringOrNil("3824d0e4-3be7-11ec-b046-674e88e91f56"),
+				CustomerID: uuid.FromStringOrNil("6342318a-7f45-11ec-b41d-af17676583fe"),
+				Type:       conference.TypeConference,
+				Name:       "test type conference",
+				Detail:     "test type conference detail",
 				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
@@ -154,11 +154,11 @@ func TestConferenceCreate(t *testing.T) {
 				},
 			},
 			&conference.Conference{
-				ID:     uuid.FromStringOrNil("3824d0e4-3be7-11ec-b046-674e88e91f56"),
-				UserID: 1,
-				Type:   conference.TypeConference,
-				Name:   "test type conference",
-				Detail: "test type conference detail",
+				ID:         uuid.FromStringOrNil("3824d0e4-3be7-11ec-b046-674e88e91f56"),
+				CustomerID: uuid.FromStringOrNil("6342318a-7f45-11ec-b41d-af17676583fe"),
+				Type:       conference.TypeConference,
+				Name:       "test type conference",
+				Detail:     "test type conference detail",
 				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
@@ -172,11 +172,11 @@ func TestConferenceCreate(t *testing.T) {
 		{
 			"set post actions",
 			&conference.Conference{
-				ID:     uuid.FromStringOrNil("e3d6c112-3bed-11ec-99be-5bc49af8efc2"),
-				UserID: 1,
-				Type:   conference.TypeConference,
-				Name:   "test type conference",
-				Detail: "test type conference detail",
+				ID:         uuid.FromStringOrNil("e3d6c112-3bed-11ec-99be-5bc49af8efc2"),
+				CustomerID: uuid.FromStringOrNil("6aa95b9c-7f45-11ec-b6fe-cbd78c2e625c"),
+				Type:       conference.TypeConference,
+				Name:       "test type conference",
+				Detail:     "test type conference detail",
 				PostActions: []fmaction.Action{
 					{
 						Type: "answer",
@@ -185,7 +185,7 @@ func TestConferenceCreate(t *testing.T) {
 			},
 			&conference.Conference{
 				ID:         uuid.FromStringOrNil("e3d6c112-3bed-11ec-99be-5bc49af8efc2"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("6aa95b9c-7f45-11ec-b6fe-cbd78c2e625c"),
 				Type:       conference.TypeConference,
 				Name:       "test type conference",
 				Detail:     "test type conference detail",
@@ -202,16 +202,16 @@ func TestConferenceCreate(t *testing.T) {
 		{
 			"set timeout",
 			&conference.Conference{
-				ID:      uuid.FromStringOrNil("05d6758c-3bee-11ec-a2f7-e78825f985e2"),
-				UserID:  1,
-				Type:    conference.TypeConference,
-				Name:    "test type conference",
-				Detail:  "test type conference detail",
-				Timeout: 86400,
+				ID:         uuid.FromStringOrNil("05d6758c-3bee-11ec-a2f7-e78825f985e2"),
+				CustomerID: uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
+				Type:       conference.TypeConference,
+				Name:       "test type conference",
+				Detail:     "test type conference detail",
+				Timeout:    86400,
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("05d6758c-3bee-11ec-a2f7-e78825f985e2"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
 				Type:         conference.TypeConference,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
@@ -429,17 +429,17 @@ func TestConferenceGetsWithType(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID uint64
-		count  int
+		customerID uuid.UUID
+		count      int
 	}{
 		{
 			"normal",
-			99,
+			uuid.FromStringOrNil("80a965e0-7f45-11ec-a078-7f296665fa3d"),
 			10,
 		},
 		{
 			"empty",
-			98,
+			uuid.FromStringOrNil("860fbab6-7f45-11ec-88e7-bbb3bd462acb"),
 			0,
 		},
 	}
@@ -451,17 +451,17 @@ func TestConferenceGetsWithType(t *testing.T) {
 
 			for i := 0; i < tt.count; i++ {
 				cf := &conference.Conference{
-					ID:       uuid.Must(uuid.NewV4()),
-					UserID:   tt.userID,
-					Type:     conference.TypeConference,
-					TMDelete: defaultTimeStamp,
+					ID:         uuid.Must(uuid.NewV4()),
+					CustomerID: tt.customerID,
+					Type:       conference.TypeConference,
+					TMDelete:   defaultTimeStamp,
 				}
 
 				mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
 				_ = h.ConferenceCreate(ctx, cf)
 			}
 
-			res, err := h.ConferenceGetsWithType(ctx, tt.userID, conference.TypeConference, 10, getCurTime())
+			res, err := h.ConferenceGetsWithType(ctx, tt.customerID, conference.TypeConference, 10, getCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -486,17 +486,17 @@ func TestConferenceGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID uint64
-		count  int
+		customerID uuid.UUID
+		count      int
 	}{
 		{
 			"normal",
-			97,
+			uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
 			10,
 		},
 		{
 			"empty",
-			96,
+			uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
 			0,
 		},
 	}
@@ -508,16 +508,16 @@ func TestConferenceGets(t *testing.T) {
 
 			for i := 0; i < tt.count; i++ {
 				cf := &conference.Conference{
-					ID:       uuid.Must(uuid.NewV4()),
-					UserID:   tt.userID,
-					TMDelete: defaultTimeStamp,
+					ID:         uuid.Must(uuid.NewV4()),
+					CustomerID: tt.customerID,
+					TMDelete:   defaultTimeStamp,
 				}
 
 				mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
 				_ = h.ConferenceCreate(ctx, cf)
 			}
 
-			res, err := h.ConferenceGets(ctx, tt.userID, 10, getCurTime())
+			res, err := h.ConferenceGets(ctx, tt.customerID, 10, getCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

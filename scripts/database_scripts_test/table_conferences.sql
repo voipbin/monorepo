@@ -1,7 +1,7 @@
 create table conferences(
   -- identity
   id            binary(16),   -- id
-  user_id       integer,      -- user id
+  customer_id   binary(16),   -- customer id
   type          varchar(255), -- type
   flow_id       binary(16),   -- flow id
   confbridge_id binary(16),   -- confbridge id
@@ -34,6 +34,6 @@ create table conferences(
 );
 
 create index idx_conferences_create on conferences(tm_create);
-create index idx_conferences_user_id on conferences(user_id);
+create index idx_conferences_customer_id on conferences(customer_id);
 create index idx_conferences_flow_id on conferences(flow_id);
 create index idx_conferences_confbridge_id on conferences(confbridge_id);

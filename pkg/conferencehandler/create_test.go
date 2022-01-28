@@ -38,7 +38,7 @@ func TestCreate(t *testing.T) {
 		name string
 
 		conferenceType conference.Type
-		userID         uint64
+		customerID     uuid.UUID
 		conferenceName string
 		detail         string
 		timeout        int
@@ -55,7 +55,7 @@ func TestCreate(t *testing.T) {
 			"normal",
 
 			conference.TypeConnect,
-			1,
+			uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
 			"test name",
 			"test detail",
 			86400,
@@ -102,7 +102,7 @@ func TestCreate(t *testing.T) {
 				mockReq.EXPECT().CFV1ConferenceDeleteDelay(gomock.Any(), gomock.Any(), tt.timeout*1000).Return(nil)
 			}
 
-			res, err := h.Create(ctx, tt.conferenceType, tt.userID, tt.conferenceName, tt.detail, tt.timeout, tt.webhookURI, tt.preActions, tt.postActions)
+			res, err := h.Create(ctx, tt.conferenceType, tt.customerID, tt.conferenceName, tt.detail, tt.timeout, tt.webhookURI, tt.preActions, tt.postActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -133,7 +133,7 @@ func TestCreateConferenceFlow(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID       uint64
+		customerID   uuid.UUID
 		conferenceID uuid.UUID
 		confbridgeID uuid.UUID
 		preActions   []fmaction.Action
@@ -145,7 +145,7 @@ func TestCreateConferenceFlow(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
 			uuid.FromStringOrNil("28d88218-5b89-11ec-afc1-f38e08436159"),
 			uuid.FromStringOrNil("2902463e-5b89-11ec-abcf-33e30ef231fb"),
 			[]fmaction.Action{
@@ -170,9 +170,9 @@ func TestCreateConferenceFlow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.userID, fmflow.TypeConference, tt.flowName, "generated for conference by conference-manager.", "", gomock.Any(), true).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customerID, fmflow.TypeConference, tt.flowName, "generated for conference by conference-manager.", "", gomock.Any(), true).Return(tt.responseFlow, nil)
 
-			_, err := h.createConferenceFlow(ctx, tt.userID, tt.conferenceID, tt.confbridgeID, tt.preActions, tt.postActions)
+			_, err := h.createConferenceFlow(ctx, tt.customerID, tt.conferenceID, tt.confbridgeID, tt.preActions, tt.postActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

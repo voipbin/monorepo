@@ -23,7 +23,7 @@ type ConferenceHandler interface {
 	Create(
 		ctx context.Context,
 		conferenceType conference.Type,
-		userID uint64,
+		customerID uuid.UUID,
 		name string,
 		detail string,
 		timeout int,
@@ -32,7 +32,7 @@ type ConferenceHandler interface {
 		postActions []action.Action,
 	) (*conference.Conference, error)
 	Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
-	Gets(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error)
+	Gets(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error)
 	Update(
 		ctx context.Context,
 		id uuid.UUID,

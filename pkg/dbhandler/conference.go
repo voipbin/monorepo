@@ -16,7 +16,7 @@ const (
 	conferenceSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 		type,
 		flow_id,
 		confbridge_id,
@@ -58,7 +58,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 	res := &conference.Conference{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 		&res.Type,
 		&res.FlowID,
 		&res.ConfbridgeID,
@@ -121,71 +121,11 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 	return res, nil
 }
 
-// ConferenceGetFromCache returns conference from the cache if possible.
-func (h *handler) ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
-
-	// get from cache
-	res, err := h.cache.ConferenceGet(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// ConferenceGet gets conference.
-func (h *handler) ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", conferenceSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ConferenceGet. err: %v", err)
-	}
-	defer row.Close()
-
-	if !row.Next() {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.conferenceGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not get call. ConferenceGet, err: %v", err)
-	}
-
-	return res, nil
-}
-
-// ConferenceUpdateToCache gets the conference from the DB and update the cache.
-func (h *handler) ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
-	res, err := h.ConferenceGetFromDB(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	if err := h.ConferenceSetToCache(ctx, res); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ConferenceSetToCache sets the given conference to the cache
-func (h *handler) ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error {
-	if err := h.cache.ConferenceSet(ctx, conference); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // ConferenceCreate creates a new conference record.
 func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
 	q := `insert into conferences(
 		id,
-		user_id,
+		customer_id,
 		type,
 		flow_id,
 		confbridge_id,
@@ -247,7 +187,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 	_, err = h.db.Exec(q,
 		cf.ID.Bytes(),
-		cf.UserID,
+		cf.CustomerID.Bytes(),
 		cf.Type,
 		cf.FlowID.Bytes(),
 		cf.ConfbridgeID.Bytes(),
@@ -282,6 +222,66 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 	return nil
 }
 
+// ConferenceGetFromCache returns conference from the cache if possible.
+func (h *handler) ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+
+	// get from cache
+	res, err := h.cache.ConferenceGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// ConferenceGet gets conference.
+func (h *handler) ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where id = ?", conferenceSelect)
+
+	row, err := h.db.Query(q, id.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ConferenceGet. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.conferenceGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get call. ConferenceGet, err: %v", err)
+	}
+
+	return res, nil
+}
+
+// ConferenceUpdateToCache gets the conference from the DB and update the cache.
+func (h *handler) ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error {
+
+	res, err := h.ConferenceGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.ConferenceSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ConferenceSetToCache sets the given conference to the cache
+func (h *handler) ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error {
+	if err := h.cache.ConferenceSet(ctx, conference); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ConferenceGet gets conference.
 func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 
@@ -302,21 +302,21 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 }
 
 // ConferenceGets returns a list of calls.
-func (h *handler) ConferenceGets(ctx context.Context, userID uint64, size uint64, token string) ([]*conference.Conference, error) {
+func (h *handler) ConferenceGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conference.Conference, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
 			tm_delete >= ?
-			and user_id = ?
+			and customer_id = ?
 			and tm_create < ?
 		order by
 			tm_create desc
 		limit ?
 	`, conferenceSelect)
 
-	rows, err := h.db.Query(q, defaultTimeStamp, userID, token, size)
+	rows, err := h.db.Query(q, defaultTimeStamp, customerID.Bytes(), token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferenceGets. err: %v", err)
 	}
@@ -336,14 +336,14 @@ func (h *handler) ConferenceGets(ctx context.Context, userID uint64, size uint64
 }
 
 // ConferenceGetsWithType returns a list of calls.
-func (h *handler) ConferenceGetsWithType(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
+func (h *handler) ConferenceGetsWithType(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
 			tm_delete >= ?
-			and user_id = ?
+			and customer_id = ?
 			and type = ?
 			and tm_create < ?
 		order by
@@ -351,7 +351,7 @@ func (h *handler) ConferenceGetsWithType(ctx context.Context, userID uint64, con
 		limit ?
 	`, conferenceSelect)
 
-	rows, err := h.db.Query(q, defaultTimeStamp, userID, confType, token, size)
+	rows, err := h.db.Query(q, defaultTimeStamp, customerID.Bytes(), confType, token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferenceGets. err: %v", err)
 	}

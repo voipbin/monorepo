@@ -29,19 +29,17 @@ func (h *listenHandler) processV1ConferencesGet(req *rabbitmqhandler.Request) (*
 	pageToken := u.Query().Get(PageToken)
 	conferenceType := u.Query().Get("type")
 
-	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
-
+	// get customer id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 	log := logrus.WithFields(logrus.Fields{
-		"user":  userID,
-		"size":  pageSize,
-		"token": pageToken,
+		"customer_id": customerID,
+		"size":        pageSize,
+		"token":       pageToken,
 	})
 
 	log.Debug("Getting conference info.")
 	ctx := context.Background()
-	confs, err := h.conferenceHandler.Gets(ctx, userID, conference.Type(conferenceType), pageSize, pageToken)
+	confs, err := h.conferenceHandler.Gets(ctx, customerID, conference.Type(conferenceType), pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
 		return simpleResponse(500), nil
@@ -80,7 +78,7 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmqhandler.Request) (*r
 	}
 
 	// create conference
-	cf, err := h.conferenceHandler.Create(ctx, conference.Type(data.Type), data.UserID, data.Name, data.Detail, data.Timeout, data.WebhookURI, data.PreActions, data.PostActions)
+	cf, err := h.conferenceHandler.Create(ctx, conference.Type(data.Type), data.CustomerID, data.Name, data.Detail, data.Timeout, data.WebhookURI, data.PreActions, data.PostActions)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
