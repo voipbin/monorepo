@@ -25,10 +25,10 @@ const (
 )
 
 // CreateCallOutgoing creates a call for outgoing
-func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, userID uint64, flowID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
+func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"id":          id,
-		"user":        userID,
+		"customer_id": customerID,
 		"flow":        flowID,
 		"source":      source,
 		"destination": destination,
@@ -46,7 +46,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, user
 	channelID := uuid.Must(uuid.NewV4()).String()
 	cTmp := &call.Call{
 		ID:          id,
-		UserID:      userID,
+		CustomerID:  customerID,
 		ChannelID:   channelID,
 		FlowID:      flowID,
 		Type:        call.TypeFlow,

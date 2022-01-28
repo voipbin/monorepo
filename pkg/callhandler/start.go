@@ -474,7 +474,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 	}
 
 	// generate call info
-	tmpCall := call.NewCallByChannel(cn, cf.UserID, call.TypeFlow, call.DirectionIncoming, data)
+	tmpCall := call.NewCallByChannel(cn, cf.CustomerID, call.TypeFlow, call.DirectionIncoming, data)
 	tmpCall.FlowID = cf.FlowID
 	log = log.WithFields(
 		logrus.Fields{
@@ -546,7 +546,8 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	}
 
 	// create a temp call info
-	tmpCall := call.NewCallByChannel(cn, call.UserIDAdmin, call.TypeSipService, call.DirectionIncoming, data)
+	// todo: need to be fixed to set to the number's customer id
+	tmpCall := call.NewCallByChannel(cn, uuid.Nil, call.TypeSipService, call.DirectionIncoming, data)
 	tmpCall.FlowID = numb.FlowID
 	log = log.WithFields(
 		logrus.Fields{
@@ -607,7 +608,7 @@ func (h *callHandler) typeSipServiceStart(ctx context.Context, cn *channel.Chann
 	}
 
 	// generate a call info
-	tmpCall := call.NewCallByChannel(cn, call.UserIDAdmin, call.TypeSipService, call.DirectionIncoming, data)
+	tmpCall := call.NewCallByChannel(cn, uuid.Nil, call.TypeSipService, call.DirectionIncoming, data)
 	tmpCall.FlowID = uuid.Nil
 
 	// create call bridge

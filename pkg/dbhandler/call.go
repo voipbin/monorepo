@@ -17,7 +17,7 @@ const (
 	callSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 		asterisk_id,
 		channel_id,
 		bridge_id,
@@ -64,7 +64,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	res := &call.Call{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 		&res.AsteriskID,
 		&res.ChannelID,
 		&res.BridgeID,
@@ -132,7 +132,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	q := `insert into calls(
 		id,
-		user_id,
+		customer_id,
 		asterisk_id,
 		channel_id,
 		bridge_id,
@@ -211,7 +211,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
-		c.UserID,
+		c.CustomerID.Bytes(),
 		c.AsteriskID,
 		c.ChannelID,
 		c.BridgeID,
@@ -298,12 +298,12 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 }
 
 // CallGets returns a list of calls.
-func (h *handler) CallGets(ctx context.Context, userID uint64, size uint64, token string) ([]*call.Call, error) {
+func (h *handler) CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", callSelect)
+	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", callSelect)
 
-	rows, err := h.db.Query(q, userID, token, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGets. err: %v", err)
 	}

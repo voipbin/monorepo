@@ -1,7 +1,7 @@
 create table recordings(
   -- identity
   id                binary(16),     -- recording's id(name)
-  user_id           integer,        -- user id
+  customer_id       binary(16),     -- customer id
   type              varchar(16),    -- type of record. call, conference
   reference_id      binary(16),     -- referenced id. call-id, conference-id
   status            varchar(255),   -- current status of record.
@@ -24,6 +24,6 @@ create table recordings(
   primary key(id)
 );
 
-create index idx_recordings_user_id on recordings(user_id);
 create index idx_recordings_tm_start on recordings(tm_start);
 create index idx_recordings_filename on recordings(filename);
+create index idx_recordings_customer_id on recordings(customer_id);

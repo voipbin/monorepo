@@ -1,7 +1,7 @@
 create table calls(
   -- identity
   id                binary(16),   -- id
-  user_id           integer,      -- user id
+  customer_id       binary(16),   -- customer id
   asterisk_id       varchar(255), -- Asterisk id
   channel_id        varchar(255), -- channel id
   bridge_id         varchar(255), -- call bridge id
@@ -50,4 +50,4 @@ create index idx_calls_create on calls(tm_create);
 create index idx_calls_hangup on calls(tm_hangup);
 create index idx_calls_source_target on calls(source_target);
 create index idx_calls_destination_target on calls(destination_target);
-create index idx_calls_user_id on calls(user_id);
+create index idx_calls_customer_id on calls(customer_id);

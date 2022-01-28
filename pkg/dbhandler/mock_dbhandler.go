@@ -379,18 +379,18 @@ func (mr *MockDBHandlerMockRecorder) CallGetFromDB(ctx, id interface{}) *gomock.
 }
 
 // CallGets mocks base method.
-func (m *MockDBHandler) CallGets(ctx context.Context, userID, size uint64, token string) ([]*call.Call, error) {
+func (m *MockDBHandler) CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallGets", ctx, userID, size, token)
+	ret := m.ctrl.Call(m, "CallGets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallGets indicates an expected call of CallGets.
-func (mr *MockDBHandlerMockRecorder) CallGets(ctx, userID, size, token interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CallGets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockDBHandler)(nil).CallGets), ctx, userID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockDBHandler)(nil).CallGets), ctx, customerID, size, token)
 }
 
 // CallRemoveChainedCallID mocks base method.
@@ -1220,18 +1220,18 @@ func (mr *MockDBHandlerMockRecorder) RecordingGetFromDB(ctx, id interface{}) *go
 }
 
 // RecordingGets mocks base method.
-func (m *MockDBHandler) RecordingGets(ctx context.Context, userID, size uint64, token string) ([]*recording.Recording, error) {
+func (m *MockDBHandler) RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingGets", ctx, userID, size, token)
+	ret := m.ctrl.Call(m, "RecordingGets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RecordingGets indicates an expected call of RecordingGets.
-func (mr *MockDBHandlerMockRecorder) RecordingGets(ctx, userID, size, token interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) RecordingGets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockDBHandler)(nil).RecordingGets), ctx, userID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockDBHandler)(nil).RecordingGets), ctx, customerID, size, token)
 }
 
 // RecordingSetStatus mocks base method.

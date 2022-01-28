@@ -16,7 +16,7 @@ import (
 type Call struct {
 	// identity
 	ID           uuid.UUID `json:"id"`
-	UserID       uint64    `json:"user_id"`
+	CustomerID   uuid.UUID `json:"customer_id"`
 	AsteriskID   string    `json:"asterisk_id"`
 	ChannelID    string    `json:"channel_id"`
 	BridgeID     string    `json:"bridge_id"`     // call bridge id
@@ -142,7 +142,7 @@ func (h *Call) String() string {
 // NewCall creates a call struct and return it.
 func NewCall(
 	id uuid.UUID,
-	userID uint64,
+	customerID uuid.UUID,
 	asteriskID string,
 	channelID string,
 	flowID uuid.UUID,
@@ -160,7 +160,7 @@ func NewCall(
 
 	c := &Call{
 		ID:         id,
-		UserID:     userID,
+		CustomerID: customerID,
 		AsteriskID: asteriskID,
 		ChannelID:  channelID,
 		FlowID:     flowID,
@@ -183,7 +183,7 @@ func NewCall(
 }
 
 // NewCallByChannel creates a Call and return it.
-func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction Direction, data map[string]string) *Call {
+func NewCallByChannel(cn *channel.Channel, customerID uuid.UUID, cType Type, direction Direction, data map[string]string) *Call {
 	// create a call
 	source := address.CreateAddressByChannelSource(cn)
 	destination := address.CreateAddressByChannelDestination(cn)
@@ -191,7 +191,7 @@ func NewCallByChannel(cn *channel.Channel, userID uint64, cType Type, direction 
 
 	c := &Call{
 		ID:         uuid.Must(uuid.NewV4()),
-		UserID:     userID,
+		CustomerID: customerID,
 		AsteriskID: cn.AsteriskID,
 		ChannelID:  cn.ID,
 		FlowID:     uuid.Nil,

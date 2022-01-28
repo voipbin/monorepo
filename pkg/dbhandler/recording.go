@@ -15,7 +15,7 @@ const (
 	recordingSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 		type,
 		reference_id,
 		status,
@@ -43,7 +43,7 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 	res := &recording.Recording{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 		&res.Type,
 		&res.ReferenceID,
 		&res.Status,
@@ -131,7 +131,7 @@ func (h *handler) RecordingSetToCache(ctx context.Context, r *recording.Recordin
 func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) error {
 	q := `insert into recordings(
 		id,
-		user_id,
+		customer_id,
 		type,
 		reference_id,
 		status,
@@ -158,7 +158,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 
 	_, err := h.db.Exec(q,
 		c.ID.Bytes(),
-		c.UserID,
+		c.CustomerID.Bytes(),
 		c.Type,
 		c.ReferenceID.Bytes(),
 		c.Status,
@@ -230,12 +230,12 @@ func (h *handler) RecordingGetByFilename(ctx context.Context, filename string) (
 }
 
 // RecordingGets returns a list of records.
-func (h *handler) RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]*recording.Recording, error) {
+func (h *handler) RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", recordingSelect)
+	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", recordingSelect)
 
-	rows, err := h.db.Query(q, userID, token, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RecordingGets. err: %v", err)
 	}

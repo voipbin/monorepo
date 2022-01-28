@@ -27,7 +27,7 @@ func TestProcessV1RecordingsGet(t *testing.T) {
 	type test struct {
 		name       string
 		request    *rabbitmqhandler.Request
-		userID     uint64
+		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
 		recordings []*recording.Recording
@@ -38,16 +38,16 @@ func TestProcessV1RecordingsGet(t *testing.T) {
 		{
 			"basic",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/recordings?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=0",
+				URI:    "/v1/recordings?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=c15af818-7f51-11ec-8eeb-f733ba8df393",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			0,
+			uuid.FromStringOrNil("c15af818-7f51-11ec-8eeb-f733ba8df393"),
 			10,
 			"2020-05-03 21:35:02.809",
 			[]*recording.Recording{
 				{
 					ID:          uuid.FromStringOrNil("cfa4d576-6128-11eb-b69b-9f7a738a1ad7"),
-					UserID:      0,
+					CustomerID:  uuid.FromStringOrNil("c15af818-7f51-11ec-8eeb-f733ba8df393"),
 					Type:        recording.TypeCall,
 					ReferenceID: uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 					Status:      recording.StatusEnd,
@@ -57,7 +57,7 @@ func TestProcessV1RecordingsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"cfa4d576-6128-11eb-b69b-9f7a738a1ad7","user_id":0,"type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","filename":"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav","webhook_uri":"","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"cfa4d576-6128-11eb-b69b-9f7a738a1ad7","customer_id":"c15af818-7f51-11ec-8eeb-f733ba8df393","type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","filename":"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav","webhook_uri":"","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -65,7 +65,7 @@ func TestProcessV1RecordingsGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().RecordingGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.recordings, nil)
+			mockCall.EXPECT().RecordingGets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.recordings, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -107,7 +107,7 @@ func TestProcessV1RecordingsIDGet(t *testing.T) {
 			},
 			&recording.Recording{
 				ID:          uuid.FromStringOrNil("00c711be-6129-11eb-9404-b73dcf512957"),
-				UserID:      0,
+				CustomerID:  uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
 				Type:        recording.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 				Status:      recording.StatusEnd,
@@ -116,7 +116,7 @@ func TestProcessV1RecordingsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"00c711be-6129-11eb-9404-b73dcf512957","user_id":0,"type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","filename":"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav","webhook_uri":"","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"00c711be-6129-11eb-9404-b73dcf512957","customer_id":"d063099a-7f51-11ec-adbd-cf15a2e7ae7d","type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","filename":"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav","webhook_uri":"","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

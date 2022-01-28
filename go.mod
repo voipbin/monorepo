@@ -10,14 +10,14 @@ require (
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/client_golang v1.12.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220113010014-8e2a6ea54901
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220113054925-e64f9b21a70d
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220117053102-0c8f8ce14dd9
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220127092312-58e1fe0a2d27
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220127085754-375cf37c6d7f
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220127083953-ef0331841884
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20211018180403-4e3bcfe187ff
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20211221032228-f73ce135fa46
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220121054555-980764932e87
 )
 
 require (
@@ -30,7 +30,8 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220105125759-c8c04b8f27a9 // indirect
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220120042352-26cebc070efc // indirect
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220125172215-6244f425bebe // indirect
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220116074155-cb5c1352271e // indirect
 	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20220103005331-229d07d977e5 // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6 // indirect
@@ -39,6 +40,6 @@ require (
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2 // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
-	google.golang.org/genproto v0.0.0-20220114231437-d2e6a121cae0 // indirect
+	google.golang.org/genproto v0.0.0-20220118154757-00ab72f36ad5 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )

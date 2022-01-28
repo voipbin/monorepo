@@ -36,7 +36,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 	type test struct {
 		name        string
 		id          uuid.UUID
-		userID      uint64
+		customerID  uuid.UUID
 		flowID      uuid.UUID
 		source      address.Address
 		destination address.Address
@@ -51,7 +51,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
-			1,
+			uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
 			uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
 			address.Address{
 				Type:       address.TypeSIP,
@@ -70,13 +70,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 				},
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
-				UserID:    1,
-				ChannelID: call.TestChannelID,
-				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
-				Type:      call.TypeFlow,
-				Status:    call.StatusDialing,
-				Direction: call.DirectionOutgoing,
+				ID:         uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+				CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				ChannelID:  call.TestChannelID,
+				FlowID:     uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+				Type:       call.TypeFlow,
+				Status:     call.StatusDialing,
+				Direction:  call.DirectionOutgoing,
 				Source: address.Address{
 					Type:       address.TypeSIP,
 					Target:     "testsrc@test.com",
@@ -100,7 +100,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 		{
 			"tel type destination",
 			uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
-			1,
+			uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
 			uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
 			address.Address{
 				Type:       address.TypeTel,
@@ -119,13 +119,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 				},
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
-				UserID:    1,
-				ChannelID: call.TestChannelID,
-				FlowID:    uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
-				Type:      call.TypeFlow,
-				Status:    call.StatusDialing,
-				Direction: call.DirectionOutgoing,
+				ID:         uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+				CustomerID: uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+				ChannelID:  call.TestChannelID,
+				FlowID:     uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+				Type:       call.TypeFlow,
+				Status:     call.StatusDialing,
+				Direction:  call.DirectionOutgoing,
 				Source: address.Address{
 					Type:       address.TypeTel,
 					Target:     "+99999888",
@@ -150,7 +150,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 		{
 			"callflow has an webhook",
 			uuid.FromStringOrNil("4347bd52-8304-11eb-b239-4bec34310838"),
-			1,
+			uuid.FromStringOrNil("74ac837c-7f44-11ec-98b8-23e41038f8dd"),
 			uuid.FromStringOrNil("4394ad24-8304-11eb-b397-ff7bf34c829f"),
 			address.Address{
 				Type:       address.TypeTel,
@@ -171,7 +171,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("4347bd52-8304-11eb-b239-4bec34310838"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("74ac837c-7f44-11ec-98b8-23e41038f8dd"),
 				ChannelID:  call.TestChannelID,
 				FlowID:     uuid.FromStringOrNil("4394ad24-8304-11eb-b397-ff7bf34c829f"),
 				Type:       call.TypeFlow,
@@ -210,7 +210,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.id, tt.flowID).Return(tt.af, nil)
 			mockReq.EXPECT().AstChannelCreate(gomock.Any(), requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
 
-			res, err := h.CreateCallOutgoing(context.Background(), tt.id, tt.userID, tt.flowID, tt.source, tt.destination)
+			res, err := h.CreateCallOutgoing(context.Background(), tt.id, tt.customerID, tt.flowID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

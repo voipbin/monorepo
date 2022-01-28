@@ -10,14 +10,14 @@ import (
 )
 
 // RecordingGets returns list of recordings
-func (h *callHandler) RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]*recording.Recording, error) {
+func (h *callHandler) RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "RecordingGets",
 		},
 	)
 
-	res, err := h.db.RecordingGets(ctx, userID, size, token)
+	res, err := h.db.RecordingGets(ctx, customerID, size, token)
 	if err != nil {
 		log.Errorf("Could not get reocordings. err: %v", err)
 		return nil, err

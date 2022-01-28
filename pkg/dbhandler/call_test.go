@@ -337,14 +337,14 @@ func TestCallCreate(t *testing.T) {
 			},
 		},
 		{
-			"with user id",
+			"with customer id",
 			call.Call{
 				ID:         uuid.FromStringOrNil("30607dac-620a-11eb-9b3e-b30fef1626e1"),
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "4f1aa3f8-620a-11eb-bd96-7fd2b868f199",
 				FlowID:     uuid.FromStringOrNil("539a82cc-620a-11eb-b09f-2f48e3c7a7e3"),
 				Type:       call.TypeFlow,
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("4b36334a-7f43-11ec-82ac-4ff789a055d8"),
 
 				Source: address.Address{
 					Type: address.TypeSIP,
@@ -362,7 +362,7 @@ func TestCallCreate(t *testing.T) {
 				ChannelID:  "4f1aa3f8-620a-11eb-bd96-7fd2b868f199",
 				FlowID:     uuid.FromStringOrNil("539a82cc-620a-11eb-b09f-2f48e3c7a7e3"),
 				Type:       call.TypeFlow,
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("4b36334a-7f43-11ec-82ac-4ff789a055d8"),
 
 				ChainedCallIDs: []uuid.UUID{},
 
@@ -387,7 +387,6 @@ func TestCallCreate(t *testing.T) {
 				ChannelID:  "2ea6097e-82d4-11eb-9b51-8321658856d9",
 				FlowID:     uuid.FromStringOrNil("0f2cea0e-82d4-11eb-8974-9ffb1acae327"),
 				Type:       call.TypeFlow,
-				UserID:     1,
 				WebhookURI: "https://test.com/webhook",
 
 				Source: address.Address{
@@ -406,7 +405,6 @@ func TestCallCreate(t *testing.T) {
 				ChannelID:  "2ea6097e-82d4-11eb-9b51-8321658856d9",
 				FlowID:     uuid.FromStringOrNil("0f2cea0e-82d4-11eb-8974-9ffb1acae327"),
 				Type:       call.TypeFlow,
-				UserID:     1,
 				WebhookURI: "https://test.com/webhook",
 
 				ChainedCallIDs: []uuid.UUID{},
@@ -459,19 +457,19 @@ func TestCallGets(t *testing.T) {
 	type test struct {
 		name string
 
-		userID uint64
-		minNum int
+		customerID uuid.UUID
+		minNum     int
 	}
 
 	tests := []test{
 		{
 			"normal",
-			1,
+			uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
 			1,
 		},
 		{
 			"empty",
-			2,
+			uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
 			0,
 		},
 	}
@@ -479,12 +477,12 @@ func TestCallGets(t *testing.T) {
 	// creates calls for test
 	h := NewHandler(dbTest, mockCache)
 	mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-	_ = h.CallCreate(context.Background(), &call.Call{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), UserID: 1})
+	_ = h.CallCreate(context.Background(), &call.Call{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295")})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.CallGets(context.Background(), tt.userID, 10, getCurTime())
+			res, err := h.CallGets(context.Background(), tt.customerID, 10, getCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
