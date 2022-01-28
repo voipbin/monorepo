@@ -30,8 +30,8 @@ func TestExtensionCreate(t *testing.T) {
 		{
 			"test normal",
 			&extension.Extension{
-				ID:     uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
+				CustomerID: uuid.FromStringOrNil("83db3318-7fec-11ec-a205-736ad70c9180"),
 
 				DomainID: uuid.FromStringOrNil("4dc1e430-6ebc-11eb-b355-b35fc1cfc5a1"),
 
@@ -43,8 +43,8 @@ func TestExtensionCreate(t *testing.T) {
 				Password:  "7818abce-6ebc-11eb-b4fe-e748480c228a",
 			},
 			&extension.Extension{
-				ID:     uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
+				CustomerID: uuid.FromStringOrNil("83db3318-7fec-11ec-a205-736ad70c9180"),
 
 				DomainID: uuid.FromStringOrNil("4dc1e430-6ebc-11eb-b355-b35fc1cfc5a1"),
 
@@ -97,8 +97,8 @@ func TestExtensionDelete(t *testing.T) {
 		{
 			"test normal",
 			&extension.Extension{
-				ID:     uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
+				CustomerID: uuid.FromStringOrNil("8cadaf5c-7fec-11ec-b004-53f79c2b8387"),
 
 				DomainID: uuid.FromStringOrNil("e22acb78-6ebc-11eb-848e-bfb26fcad363"),
 
@@ -161,30 +161,30 @@ func TestExtensionGetsByDomainID(t *testing.T) {
 			10,
 			[]extension.Extension{
 				{
-					ID:       uuid.FromStringOrNil("1d2cb402-6f49-11eb-a22c-5f2f23cba3a2"),
-					UserID:   1,
-					Name:     "test1",
-					DomainID: uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
+					ID:         uuid.FromStringOrNil("1d2cb402-6f49-11eb-a22c-5f2f23cba3a2"),
+					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
+					Name:       "test1",
+					DomainID:   uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
 				},
 				{
-					ID:       uuid.FromStringOrNil("1d792bb6-6f49-11eb-be2e-0ff2f1c87d93"),
-					UserID:   1,
-					Name:     "test2",
-					DomainID: uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
+					ID:         uuid.FromStringOrNil("1d792bb6-6f49-11eb-be2e-0ff2f1c87d93"),
+					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
+					Name:       "test2",
+					DomainID:   uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
 				},
 			},
 			[]*extension.Extension{
 				{
-					ID:       uuid.FromStringOrNil("1d792bb6-6f49-11eb-be2e-0ff2f1c87d93"),
-					UserID:   1,
-					Name:     "test2",
-					DomainID: uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
+					ID:         uuid.FromStringOrNil("1d792bb6-6f49-11eb-be2e-0ff2f1c87d93"),
+					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
+					Name:       "test2",
+					DomainID:   uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
 				},
 				{
-					ID:       uuid.FromStringOrNil("1d2cb402-6f49-11eb-a22c-5f2f23cba3a2"),
-					UserID:   1,
-					Name:     "test1",
-					DomainID: uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
+					ID:         uuid.FromStringOrNil("1d2cb402-6f49-11eb-a22c-5f2f23cba3a2"),
+					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
+					Name:       "test1",
+					DomainID:   uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
 				},
 			},
 		},
@@ -235,8 +235,8 @@ func TestExtensionUpdate(t *testing.T) {
 		{
 			"test normal",
 			&extension.Extension{
-				ID:     uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
+				CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
 
 				Name:     "test",
 				Detail:   "detail",
@@ -246,16 +246,16 @@ func TestExtensionUpdate(t *testing.T) {
 				Password:  "password",
 			},
 			&extension.Extension{
-				ID:     uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
-				UserID: 1,
-				Name:   "update name",
-				Detail: "update detail",
+				ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
+				CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
+				Name:       "update name",
+				Detail:     "update detail",
 
 				Password: "update password",
 			},
 			&extension.Extension{
-				ID:     uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
+				CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
 
 				Name:   "update name",
 				Detail: "update detail",

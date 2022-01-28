@@ -47,13 +47,3 @@ func TestMain(m *testing.M) {
 
 	os.Exit(m.Run())
 }
-
-// clean test database users
-func cleanTestDBUsers() error {
-	_, err := dbTest.Exec("delete from users")
-	if err != nil {
-		return err
-	}
-
-	return nil
-}

@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
@@ -42,14 +42,14 @@ func TestProcessV1ExtensionsPost(t *testing.T) {
 		{
 			"empty addresses",
 			&extension.Extension{
-				UserID:    1,
-				DomainID:  uuid.FromStringOrNil("42dd6424-6ebf-11eb-8630-6b91b6089dc4"),
-				Extension: "45eb6bac-6ebf-11eb-bcf3-3b9157826d22",
-				Password:  "4b1f7a6e-6ebf-11eb-a47e-5351700cd612",
+				CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+				DomainID:   uuid.FromStringOrNil("42dd6424-6ebf-11eb-8630-6b91b6089dc4"),
+				Extension:  "45eb6bac-6ebf-11eb-bcf3-3b9157826d22",
+				Password:   "4b1f7a6e-6ebf-11eb-a47e-5351700cd612",
 			},
 			&extension.Extension{
-				ID:     uuid.FromStringOrNil("3f4bc63e-6ebf-11eb-b7de-df47266bf559"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("3f4bc63e-6ebf-11eb-b7de-df47266bf559"),
+				CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
 
 				DomainID: uuid.FromStringOrNil("42dd6424-6ebf-11eb-8630-6b91b6089dc4"),
 
@@ -64,12 +64,12 @@ func TestProcessV1ExtensionsPost(t *testing.T) {
 				URI:      "/v1/extensions",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id": 1, "domain_id": "42dd6424-6ebf-11eb-8630-6b91b6089dc4", "extension": "45eb6bac-6ebf-11eb-bcf3-3b9157826d22", "password": "4b1f7a6e-6ebf-11eb-a47e-5351700cd612"}`),
+				Data:     []byte(`{"customer_id": "2e341ffa-7fed-11ec-9667-1357b91d745d", "domain_id": "42dd6424-6ebf-11eb-8630-6b91b6089dc4", "extension": "45eb6bac-6ebf-11eb-bcf3-3b9157826d22", "password": "4b1f7a6e-6ebf-11eb-a47e-5351700cd612"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3f4bc63e-6ebf-11eb-b7de-df47266bf559","user_id":1,"name":"","detail":"","domain_id":"42dd6424-6ebf-11eb-8630-6b91b6089dc4","endpoint_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","aor_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","auth_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","extension":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22","password":"4b1f7a6e-6ebf-11eb-a47e-5351700cd612","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3f4bc63e-6ebf-11eb-b7de-df47266bf559","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","domain_id":"42dd6424-6ebf-11eb-8630-6b91b6089dc4","endpoint_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","aor_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","auth_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","extension":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22","password":"4b1f7a6e-6ebf-11eb-a47e-5351700cd612","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -130,19 +130,19 @@ func TestV1ExtensionsGet(t *testing.T) {
 			},
 			[]*extension.Extension{
 				{
-					ID:       uuid.FromStringOrNil("c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec"),
-					UserID:   2,
-					DomainID: uuid.FromStringOrNil("a4b2db1e-6f4d-11eb-9df6-5793191d903c"),
+					ID:         uuid.FromStringOrNil("c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec"),
+					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+					DomainID:   uuid.FromStringOrNil("a4b2db1e-6f4d-11eb-9df6-5793191d903c"),
 				},
 				{
-					ID:       uuid.FromStringOrNil("c4fb2336-6f4d-11eb-b51d-b318fdb3e042"),
-					UserID:   2,
-					DomainID: uuid.FromStringOrNil("a4b2db1e-6f4d-11eb-9df6-5793191d903c"),
+					ID:         uuid.FromStringOrNil("c4fb2336-6f4d-11eb-b51d-b318fdb3e042"),
+					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+					DomainID:   uuid.FromStringOrNil("a4b2db1e-6f4d-11eb-9df6-5793191d903c"),
 				}},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec","user_id":2,"name":"","detail":"","domain_id":"a4b2db1e-6f4d-11eb-9df6-5793191d903c","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"c4fb2336-6f4d-11eb-b51d-b318fdb3e042","user_id":2,"name":"","detail":"","domain_id":"a4b2db1e-6f4d-11eb-9df6-5793191d903c","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","domain_id":"a4b2db1e-6f4d-11eb-9df6-5793191d903c","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"c4fb2336-6f4d-11eb-b51d-b318fdb3e042","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","domain_id":"a4b2db1e-6f4d-11eb-9df6-5793191d903c","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -214,11 +214,11 @@ func TestProcessV1ExtensionsPut(t *testing.T) {
 				Password: "update password",
 			},
 			&extension.Extension{
-				ID:       uuid.FromStringOrNil("6dc9dd22-6f4e-11eb-8059-2fe116db7a2b"),
-				UserID:   1,
-				Name:     "update name",
-				Detail:   "update detail",
-				Password: "update password",
+				ID:         uuid.FromStringOrNil("6dc9dd22-6f4e-11eb-8059-2fe116db7a2b"),
+				CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+				Name:       "update name",
+				Detail:     "update detail",
+				Password:   "update password",
 			},
 			&rabbitmqhandler.Request{
 				URI:      "/v1/extensions/6dc9dd22-6f4e-11eb-8059-2fe116db7a2b",
@@ -229,7 +229,7 @@ func TestProcessV1ExtensionsPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6dc9dd22-6f4e-11eb-8059-2fe116db7a2b","user_id":1,"name":"update name","detail":"update detail","domain_id":"00000000-0000-0000-0000-000000000000","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"update password","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"6dc9dd22-6f4e-11eb-8059-2fe116db7a2b","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"update name","detail":"update detail","domain_id":"00000000-0000-0000-0000-000000000000","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"update password","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

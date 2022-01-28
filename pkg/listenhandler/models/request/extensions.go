@@ -6,7 +6,7 @@ import "github.com/gofrs/uuid"
 // v1 data type request struct for
 // /v1/extensions POST
 type V1DataExtensionsPost struct {
-	UserID uint64 `json:"user_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
 	DomainID uuid.UUID `json:"domain_id"`
 

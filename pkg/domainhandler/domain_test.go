@@ -33,7 +33,7 @@ func TestDomainCreate(t *testing.T) {
 		{
 			"test normal",
 			&domain.Domain{
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("e2531ce4-7fec-11ec-ae7d-4fc565b03cba"),
 				DomainName: "test.sip.voipbin.net",
 			},
 		},
@@ -73,7 +73,7 @@ func TestDomainUpdate(t *testing.T) {
 			"test normal",
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("43b1c268-6eed-11eb-87ce-8f9d9ae03b04"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("ea7bf81e-7fec-11ec-ab22-bf62853d679c"),
 				Name:       "update name",
 				Detail:     "update detail",
 				DomainName: "43b1c268-6eed-11eb-87ce-8f9d9ae03b04.sip.voipbin.net",
