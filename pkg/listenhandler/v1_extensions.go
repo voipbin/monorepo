@@ -38,7 +38,7 @@ func (h *listenHandler) processV1ExtensionsPost(m *rabbitmqhandler.Request) (*ra
 
 	// create a new extension
 	e := &extension.Extension{
-		UserID: reqData.UserID,
+		CustomerID: reqData.CustomerID,
 
 		Name:     reqData.Name,
 		Detail:   reqData.Detail,

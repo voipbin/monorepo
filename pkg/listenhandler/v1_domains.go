@@ -9,8 +9,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 )
@@ -32,7 +32,7 @@ func (h *listenHandler) processV1DomainsPost(m *rabbitmqhandler.Request) (*rabbi
 
 	// create a new domain
 	tmpDomain := &domain.Domain{
-		UserID:     reqData.UserID,
+		CustomerID: reqData.CustomerID,
 		Name:       reqData.Name,
 		Detail:     reqData.Detail,
 		DomainName: reqData.DomainName,
@@ -180,10 +180,9 @@ func (h *listenHandler) processV1DomainsGet(req *rabbitmqhandler.Request) (*rabb
 	pageToken := u.Query().Get(PageToken)
 
 	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	resDomains, err := h.domainHandler.DomainGetsByUserID(ctx, userID, pageToken, pageSize)
+	resDomains, err := h.domainHandler.Gets(ctx, customerID, pageToken, pageSize)
 	if err != nil {
 		logrus.Errorf("Could not get domains. err: %v", err)
 		return nil, err

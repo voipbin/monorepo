@@ -61,10 +61,10 @@ func (h *domainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Do
 	return res, nil
 }
 
-// DomainGetsByUserID returns list of domains
-func (h *domainHandler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error) {
+// Gets returns list of domains
+func (h *domainHandler) Gets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error) {
 
-	domains, err := h.dbBin.DomainGetsByUserID(ctx, userID, token, limit)
+	domains, err := h.dbBin.DomainGetsByCustomerID(ctx, customerID, token, limit)
 	if err != nil {
 		logrus.Errorf("Could not get domains. err: %v", err)
 		return nil, err

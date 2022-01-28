@@ -14,7 +14,7 @@ const (
 	extensionSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 
 		name,
 		detail,
@@ -40,7 +40,7 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 	res := &extension.Extension{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 
 		&res.Name,
 		&res.Detail,
@@ -67,7 +67,7 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) error {
 	q := `insert into extensions(
 		id,
-		user_id,
+		customer_id,
 
 		name,
 		detail,
@@ -92,7 +92,7 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 
 	_, err := h.db.Exec(q,
 		b.ID.Bytes(),
-		b.UserID,
+		b.CustomerID.Bytes(),
 
 		b.Name,
 		b.Detail,

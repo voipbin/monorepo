@@ -51,7 +51,7 @@ func (h *handler) AstEndpointGetFromDB(ctx context.Context, id string) (*astendp
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 

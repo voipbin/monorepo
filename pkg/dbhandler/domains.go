@@ -14,7 +14,7 @@ const (
 	domainSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 
 		name,
 		detail,
@@ -33,7 +33,7 @@ func (h *handler) domainGetFromRow(row *sql.Rows) (*domain.Domain, error) {
 	res := &domain.Domain{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 
 		&res.Name,
 		&res.Detail,
@@ -49,6 +49,44 @@ func (h *handler) domainGetFromRow(row *sql.Rows) (*domain.Domain, error) {
 	return res, nil
 }
 
+// DomainCreate creates new Domain record.
+func (h *handler) DomainCreate(ctx context.Context, b *domain.Domain) error {
+	q := `insert into domains(
+		id,
+		customer_id,
+
+		name,
+		detail,
+		domain_name,
+
+		tm_create
+	) values(
+		?, ?,
+		?, ?, ?,
+		?
+	)
+	`
+
+	_, err := h.db.Exec(q,
+		b.ID.Bytes(),
+		b.CustomerID.Bytes(),
+
+		b.Name,
+		b.Detail,
+		b.DomainName,
+
+		getCurTime(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. DomainCreate. err: %v", err)
+	}
+
+	// update the cache
+	h.DomainUpdateToCache(ctx, b.ID)
+
+	return nil
+}
+
 // DomainGetFromDB returns Domain from the DB.
 func (h *handler) DomainGetFromDB(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
@@ -60,7 +98,7 @@ func (h *handler) DomainGetFromDB(ctx context.Context, id uuid.UUID) (*domain.Do
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -115,44 +153,6 @@ func (h *handler) DomainDeleteFromCache(ctx context.Context, id uuid.UUID) error
 	if err := h.cache.DomainDel(ctx, id); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-// DomainCreate creates new Domain record.
-func (h *handler) DomainCreate(ctx context.Context, b *domain.Domain) error {
-	q := `insert into domains(
-		id,
-		user_id,
-
-		name,
-		detail,
-		domain_name,
-
-		tm_create
-	) values(
-		?, ?,
-		?, ?, ?,
-		?
-	)
-	`
-
-	_, err := h.db.Exec(q,
-		b.ID.Bytes(),
-		b.UserID,
-
-		b.Name,
-		b.Detail,
-		b.DomainName,
-
-		getCurTime(),
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. DomainCreate. err: %v", err)
-	}
-
-	// update the cache
-	h.DomainUpdateToCache(ctx, b.ID)
 
 	return nil
 }
@@ -226,24 +226,24 @@ func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) 
 	return res, nil
 }
 
-// DomainGetsByUserID returns list of domains.
-func (h *handler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error) {
+// DomainGetsByCustomerID returns list of domains.
+func (h *handler) DomainGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
 			tm_delete is null
-			and user_id = ?
+			and customer_id = ?
 			and tm_create < ?
 		order by
 			tm_create desc, id desc
 		limit ?
 	`, domainSelect)
 
-	rows, err := h.db.Query(q, userID, token, limit)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, limit)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. DomainGetsByUserID. err: %v", err)
+		return nil, fmt.Errorf("could not query. DomainGetsByCustomerID. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -251,7 +251,7 @@ func (h *handler) DomainGetsByUserID(ctx context.Context, userID uint64, token s
 	for rows.Next() {
 		u, err := h.domainGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. DomainGetsByUserID. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. DomainGetsByCustomerID. err: %v", err)
 		}
 
 		res = append(res, u)

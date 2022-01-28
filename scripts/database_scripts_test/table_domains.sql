@@ -1,7 +1,7 @@
 create table domains(
   -- identity
-  id        binary(16), -- id
-  user_id   integer,      -- user id
+  id            binary(16), -- id
+  customer_id   binary(16), -- customer's id
 
   name    varchar(255),
   detail  varchar(255),
@@ -16,5 +16,5 @@ create table domains(
   primary key(id)
 );
 
-create index idx_domains_user_id on domains(user_id);
+create index idx_domains_customer_id on domains(customer_id);
 create index idx_domains_domain_name on domains(domain_name);

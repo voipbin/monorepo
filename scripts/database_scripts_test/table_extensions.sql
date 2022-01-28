@@ -1,7 +1,7 @@
 create table extensions (
   -- identity
   id            binary(16), -- id
-  user_id       integer, -- user id
+  customer_id   binary(16), -- owner's id
 
   name    varchar(255),
   detail  varchar(255),
@@ -23,5 +23,5 @@ create table extensions (
 
 );
 
-create index idx_extensions_user_id on extensions(user_id);
+create index idx_extensions_customerid on extensions(customer_id);
 create index idx_extensions_domain_id on extensions(domain_id);

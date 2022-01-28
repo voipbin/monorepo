@@ -80,21 +80,6 @@ func (mr *MockDomainHandlerMockRecorder) DomainGet(ctx, id interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGet", reflect.TypeOf((*MockDomainHandler)(nil).DomainGet), ctx, id)
 }
 
-// DomainGetsByUserID mocks base method.
-func (m *MockDomainHandler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainGetsByUserID", ctx, userID, token, limit)
-	ret0, _ := ret[0].([]*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainGetsByUserID indicates an expected call of DomainGetsByUserID.
-func (mr *MockDomainHandlerMockRecorder) DomainGetsByUserID(ctx, userID, token, limit interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetsByUserID", reflect.TypeOf((*MockDomainHandler)(nil).DomainGetsByUserID), ctx, userID, token, limit)
-}
-
 // DomainUpdate mocks base method.
 func (m *MockDomainHandler) DomainUpdate(ctx context.Context, d *domain.Domain) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
@@ -108,4 +93,19 @@ func (m *MockDomainHandler) DomainUpdate(ctx context.Context, d *domain.Domain) 
 func (mr *MockDomainHandlerMockRecorder) DomainUpdate(ctx, d interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdate", reflect.TypeOf((*MockDomainHandler)(nil).DomainUpdate), ctx, d)
+}
+
+// Gets mocks base method.
+func (m *MockDomainHandler) Gets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, token, limit)
+	ret0, _ := ret[0].([]*domain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockDomainHandlerMockRecorder) Gets(ctx, customerID, token, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockDomainHandler)(nil).Gets), ctx, customerID, token, limit)
 }

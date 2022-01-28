@@ -19,10 +19,10 @@ func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *extension.Ext
 
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user_id":   e.UserID,
-			"domain_id": e.DomainID,
-			"extension": e.Extension,
-			"password":  e.Password,
+			"customer_id": e.CustomerID,
+			"domain_id":   e.DomainID,
+			"extension":   e.Extension,
+			"password":    e.Password,
 		},
 	)
 
@@ -76,8 +76,8 @@ func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *extension.Ext
 
 	// create extension
 	ext := &extension.Extension{
-		ID:     uuid.Must(uuid.NewV4()),
-		UserID: e.UserID,
+		ID:         uuid.Must(uuid.NewV4()),
+		CustomerID: e.CustomerID,
 
 		Name:     e.Name,
 		Detail:   e.Detail,
@@ -113,10 +113,10 @@ func (h *extensionHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*ext
 func (h *extensionHandler) ExtensionUpdate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user_id":   e.UserID,
-			"domain_id": e.DomainID,
-			"extension": e.Extension,
-			"password":  e.Password,
+			"customer_id": e.CustomerID,
+			"domain_id":   e.DomainID,
+			"extension":   e.Extension,
+			"password":    e.Password,
 		},
 	)
 

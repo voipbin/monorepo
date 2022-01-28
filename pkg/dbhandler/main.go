@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -22,9 +22,6 @@ import (
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
-	// Domains
-	// DomainCreate(ctx context.Context)
-
 	// AstAOR
 	AstAORCreate(ctx context.Context, b *astaor.AstAOR) error
 	AstAORDelete(ctx context.Context, id string) error
@@ -68,7 +65,7 @@ type DBHandler interface {
 	DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error)
 	DomainGetFromCache(ctx context.Context, id uuid.UUID) (*domain.Domain, error)
 	DomainGetFromDB(ctx context.Context, id uuid.UUID) (*domain.Domain, error)
-	DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error)
+	DomainGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error)
 	DomainSetToCache(ctx context.Context, e *domain.Domain) error
 	DomainUpdate(ctx context.Context, b *domain.Domain) error
 	DomainUpdateToCache(ctx context.Context, id uuid.UUID) error

@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 )
@@ -39,24 +39,24 @@ func TestProcessV1DomainsPost(t *testing.T) {
 		{
 			"empty addresses",
 			&domain.Domain{
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 				DomainName: "0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net",
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("1744ccb4-6e13-11eb-b08d-bb42431b2fb3"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 				DomainName: "0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net",
 			},
 			&rabbitmqhandler.Request{
 				URI:      "/v1/domains",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id": 1, "domain_name": "0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net"}`),
+				Data:     []byte(`{"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c", "domain_name": "0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1744ccb4-6e13-11eb-b08d-bb42431b2fb3","user_id":1,"name":"","detail":"","domain_name":"0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"1744ccb4-6e13-11eb-b08d-bb42431b2fb3","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c","name":"","detail":"","domain_name":"0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -92,12 +92,12 @@ func TestV1DomainsGet(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		userID    uint64
-		pageToken string
-		pageSize  uint64
-		request   *rabbitmqhandler.Request
-		domains   []*domain.Domain
+		name       string
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+		request    *rabbitmqhandler.Request
+		domains    []*domain.Domain
 
 		expectRes *rabbitmqhandler.Response
 	}
@@ -105,38 +105,38 @@ func TestV1DomainsGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			2,
+			uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 			"2020-10-10T03:30:17.000000",
 			10,
 			&rabbitmqhandler.Request{
-				URI:      "/v1/domains?page_token=2020-10-10T03:30:17.000000&page_size=10&user_id=2",
+				URI:      "/v1/domains?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 			[]*domain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("abd3467a-6ee6-11eb-824f-c386fbaad128"),
-					UserID:     2,
+					CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 					DomainName: "abd3467a-6ee6-11eb-824f-c386fbaad128.sip.voipbin.net",
 				},
 				{
 					ID:         uuid.FromStringOrNil("af6488da-6ee6-11eb-8d4d-0f848f8e1aee"),
-					UserID:     2,
+					CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 					DomainName: "af6488da-6ee6-11eb-8d4d-0f848f8e1aee.sip.voipbin.net",
 				}},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"abd3467a-6ee6-11eb-824f-c386fbaad128","user_id":2,"name":"","detail":"","domain_name":"abd3467a-6ee6-11eb-824f-c386fbaad128.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""},{"id":"af6488da-6ee6-11eb-8d4d-0f848f8e1aee","user_id":2,"name":"","detail":"","domain_name":"af6488da-6ee6-11eb-8d4d-0f848f8e1aee.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"abd3467a-6ee6-11eb-824f-c386fbaad128","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c","name":"","detail":"","domain_name":"abd3467a-6ee6-11eb-824f-c386fbaad128.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""},{"id":"af6488da-6ee6-11eb-8d4d-0f848f8e1aee","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c","name":"","detail":"","domain_name":"af6488da-6ee6-11eb-8d4d-0f848f8e1aee.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
 			"empty",
-			3,
+			uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 			"2020-10-10T03:30:17.000000",
 			10,
 			&rabbitmqhandler.Request{
-				URI:      "/v1/domains?page_token=2020-10-10T03:30:17.000000&page_size=10&user_id=3",
+				URI:      "/v1/domains?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -151,7 +151,7 @@ func TestV1DomainsGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDomain.EXPECT().DomainGetsByUserID(gomock.Any(), tt.userID, tt.pageToken, tt.pageSize).Return(tt.domains, nil)
+			mockDomain.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.domains, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -197,7 +197,7 @@ func TestProcessV1DomainsPut(t *testing.T) {
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("f4f3c3f4-6eee-11eb-8463-cf5490689c2e"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 				Name:       "update name",
 				Detail:     "update detail",
 				DomainName: "f4f3c3f4-6eee-11eb-8463-cf5490689c2e.sip.voipbin.net",
@@ -211,7 +211,7 @@ func TestProcessV1DomainsPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"f4f3c3f4-6eee-11eb-8463-cf5490689c2e","user_id":1,"name":"update name","detail":"update detail","domain_name":"f4f3c3f4-6eee-11eb-8463-cf5490689c2e.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"f4f3c3f4-6eee-11eb-8463-cf5490689c2e","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c","name":"update name","detail":"update detail","domain_name":"f4f3c3f4-6eee-11eb-8463-cf5490689c2e.sip.voipbin.net","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

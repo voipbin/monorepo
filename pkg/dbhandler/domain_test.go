@@ -31,12 +31,12 @@ func TestDomainCreate(t *testing.T) {
 			"test normal",
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("f8f75f20-6e0c-11eb-8dba-435a87e89b48"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("5a58b664-7fec-11ec-81a8-eb20974bc536"),
 				DomainName: "test.sip.voipbin.net",
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("f8f75f20-6e0c-11eb-8dba-435a87e89b48"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("5a58b664-7fec-11ec-81a8-eb20974bc536"),
 				DomainName: "test.sip.voipbin.net",
 			},
 		},
@@ -44,14 +44,14 @@ func TestDomainCreate(t *testing.T) {
 			"with name detail",
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("d55f111a-6edf-11eb-b978-277f5400b4e8"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("62d63960-7fec-11ec-8e8b-7be1888fdeeb"),
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test1.sip.voipbin.net",
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("d55f111a-6edf-11eb-b978-277f5400b4e8"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("62d63960-7fec-11ec-8e8b-7be1888fdeeb"),
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test1.sip.voipbin.net",
@@ -99,7 +99,7 @@ func ExtensionCreate(t *testing.T) {
 			"test normal",
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("81b73c40-6e0d-11eb-9a4b-0fe8ac8ec4c3"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("6bffd686-7fec-11ec-9832-472e1c02cb5c"),
 				DomainName: "81b73c40-6e0d-11eb-9a4b-0fe8ac8ec4c3.sip.voipbin.net",
 			},
 		},
@@ -145,7 +145,7 @@ func TestDomainGetByDomainName(t *testing.T) {
 			"test normal",
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("3e765cc0-6ee1-11eb-b9e9-33589a46f50e"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("718fdf92-7fec-11ec-8408-dba09d1a7bd2"),
 				DomainName: "5140d1b4-6ee1-11eb-b35e-03eb172540ec.sip.voipbin.net",
 			},
 		},
@@ -174,7 +174,7 @@ func TestDomainGetByDomainName(t *testing.T) {
 	}
 }
 
-func TestDomainGetsByUserID(t *testing.T) {
+func TestDomainGetsByCustomerID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -182,7 +182,7 @@ func TestDomainGetsByUserID(t *testing.T) {
 
 	type test struct {
 		name          string
-		userID        uint64
+		customerID    uuid.UUID
 		limit         uint64
 		domains       []domain.Domain
 		expectDomains []*domain.Domain
@@ -191,18 +191,18 @@ func TestDomainGetsByUserID(t *testing.T) {
 	tests := []test{
 		{
 			"have no actions",
-			4,
+			uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
 			10,
 			[]domain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("ef2f65b8-6ee4-11eb-a688-dbb959113359"),
-					UserID:     4,
+					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
 					Name:       "test1",
 					DomainName: "ef2f65b8-6ee4-11eb-a688-dbb959113359.sip.voipbin.net",
 				},
 				{
 					ID:         uuid.FromStringOrNil("05c29e76-6ee5-11eb-bc50-6b162fbf37b3"),
-					UserID:     4,
+					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
 					Name:       "test2",
 					DomainName: "05c29e76-6ee5-11eb-bc50-6b162fbf37b3.sip.voipbin.net",
 				},
@@ -210,13 +210,13 @@ func TestDomainGetsByUserID(t *testing.T) {
 			[]*domain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("05c29e76-6ee5-11eb-bc50-6b162fbf37b3"),
-					UserID:     4,
+					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
 					Name:       "test2",
 					DomainName: "05c29e76-6ee5-11eb-bc50-6b162fbf37b3.sip.voipbin.net",
 				},
 				{
 					ID:         uuid.FromStringOrNil("ef2f65b8-6ee4-11eb-a688-dbb959113359"),
-					UserID:     4,
+					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
 					Name:       "test1",
 					DomainName: "ef2f65b8-6ee4-11eb-a688-dbb959113359.sip.voipbin.net",
 				},
@@ -236,7 +236,7 @@ func TestDomainGetsByUserID(t *testing.T) {
 				}
 			}
 
-			domains, err := h.DomainGetsByUserID(ctx, tt.userID, getCurTime(), tt.limit)
+			domains, err := h.DomainGetsByCustomerID(ctx, tt.customerID, getCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -270,19 +270,19 @@ func TestDomainUpdate(t *testing.T) {
 			"test normal",
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("77030aee-7fec-11ec-9fc4-0fa126e45204"),
 				DomainName: "8e11791c-6eec-11eb-9d29-835387182e69.sip.voipbin.net",
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("77030aee-7fec-11ec-9fc4-0fa126e45204"),
 				Name:       "update name",
 				Detail:     "update detail",
 				DomainName: "8e11791c-6eec-11eb-9d29-835387182e69.sip.voipbin.net",
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("77030aee-7fec-11ec-9fc4-0fa126e45204"),
 				Name:       "update name",
 				Detail:     "update detail",
 				DomainName: "8e11791c-6eec-11eb-9d29-835387182e69.sip.voipbin.net",

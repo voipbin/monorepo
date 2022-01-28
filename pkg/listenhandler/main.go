@@ -8,9 +8,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/contacthandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
@@ -170,57 +170,57 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////
 	// contacts
 	////////////
-	case regV1Contacts.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1Contacts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ContactsGet(m)
 		requestType = "/v1/contacts"
 
-	case regV1Contacts.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1Contacts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1ContactsPut(m)
 		requestType = "/v1/contacts"
 
 	////////////
 	// domains
 	////////////
-	case regV1DomainsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1DomainsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1DomainsIDGet(m)
 		requestType = "/v1/domains"
 
-	case regV1DomainsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1DomainsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1DomainsIDPut(m)
 		requestType = "/v1/domains"
 
-	case regV1DomainsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1DomainsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1DomainsIDDelete(m)
 		requestType = "/v1/domains"
 
-	case regV1Domains.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Domains.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1DomainsPost(m)
 		requestType = "/v1/domains"
 
-	case regV1Domains.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1Domains.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1DomainsGet(m)
 		requestType = "/v1/domains"
 
 	/////////////
 	// extensions
 	/////////////
-	case regV1ExtensionsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ExtensionsIDGet(m)
 		requestType = "/v1/extensions"
 
-	case regV1ExtensionsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1ExtensionsIDPut(m)
 		requestType = "/v1/extensions"
 
-	case regV1ExtensionsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ExtensionsIDDelete(m)
 		requestType = "/v1/extensions"
 
-	case regV1Extensions.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Extensions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ExtensionsPost(m)
 		requestType = "/v1/extensions"
 
-	case regV1Extensions.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1Extensions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ExtensionsGet(m)
 		requestType = "/v1/extensions"
 

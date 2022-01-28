@@ -55,17 +55,19 @@ func TestContactGetsByDomainID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := context.Background()
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
-		mockDBAst.EXPECT().AstContactGetsByEndpoint(gomock.Any(), tt.endpoint).Return(tt.contacts, nil)
-		res, err := h.ContactGetsByEndpoint(ctx, tt.endpoint)
-		if err != nil {
-			t.Errorf("Wrong match. expect: ok, got: %v", err)
-		}
+			mockDBAst.EXPECT().AstContactGetsByEndpoint(gomock.Any(), tt.endpoint).Return(tt.contacts, nil)
+			res, err := h.ContactGetsByEndpoint(ctx, tt.endpoint)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 
-		if reflect.DeepEqual(tt.contacts, res) == false {
-			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.contacts, res)
-		}
+			if reflect.DeepEqual(tt.contacts, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.contacts, res)
+			}
+		})
 
 	}
 }
@@ -94,11 +96,13 @@ func TestContactRefreshByEndpoint(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := context.Background()
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
-		mockDBAst.EXPECT().AstContactDeleteFromCache(gomock.Any(), tt.endpoint).Return(nil)
-		if err := h.ContactRefreshByEndpoint(ctx, tt.endpoint); err != nil {
-			t.Errorf("Wrong match. expect: ok, got: %v", err)
-		}
+			mockDBAst.EXPECT().AstContactDeleteFromCache(gomock.Any(), tt.endpoint).Return(nil)
+			if err := h.ContactRefreshByEndpoint(ctx, tt.endpoint); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
 	}
 }

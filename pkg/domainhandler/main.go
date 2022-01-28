@@ -1,6 +1,6 @@
 package domainhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package domainhandler -destination ./mock_domainhandler_domainhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package domainhandler -destination ./mock_domainhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
@@ -22,7 +22,7 @@ type DomainHandler interface {
 	DomainCreate(ctx context.Context, d *domain.Domain) (*domain.Domain, error)
 	DomainDelete(ctx context.Context, id uuid.UUID) error
 	DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error)
-	DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error)
+	Gets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error)
 	DomainUpdate(ctx context.Context, d *domain.Domain) (*domain.Domain, error)
 }
 

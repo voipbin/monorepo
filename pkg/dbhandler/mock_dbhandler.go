@@ -532,19 +532,19 @@ func (mr *MockDBHandlerMockRecorder) DomainGetFromDB(ctx, id interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).DomainGetFromDB), ctx, id)
 }
 
-// DomainGetsByUserID mocks base method.
-func (m *MockDBHandler) DomainGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*domain.Domain, error) {
+// DomainGetsByCustomerID mocks base method.
+func (m *MockDBHandler) DomainGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainGetsByUserID", ctx, userID, token, limit)
+	ret := m.ctrl.Call(m, "DomainGetsByCustomerID", ctx, customerID, token, limit)
 	ret0, _ := ret[0].([]*domain.Domain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DomainGetsByUserID indicates an expected call of DomainGetsByUserID.
-func (mr *MockDBHandlerMockRecorder) DomainGetsByUserID(ctx, userID, token, limit interface{}) *gomock.Call {
+// DomainGetsByCustomerID indicates an expected call of DomainGetsByCustomerID.
+func (mr *MockDBHandlerMockRecorder) DomainGetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetsByUserID", reflect.TypeOf((*MockDBHandler)(nil).DomainGetsByUserID), ctx, userID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).DomainGetsByCustomerID), ctx, customerID, token, limit)
 }
 
 // DomainSetToCache mocks base method.
