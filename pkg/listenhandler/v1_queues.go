@@ -30,16 +30,16 @@ func (h *listenHandler) processV1QueuesPost(ctx context.Context, m *rabbitmqhand
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"user_id": req.UserID,
-		"name":    req.Name,
-		"detail":  req.Detail,
+		"customer_id": req.CustomerID,
+		"name":        req.Name,
+		"detail":      req.Detail,
 	})
 	log.Debug("Creating a new queue.")
 
 	// create a new queue
 	tmp, err := h.queueHandler.Create(
 		ctx,
-		req.UserID,
+		req.CustomerID,
 		req.Name,
 		req.Detail,
 		req.WebhookURI,
@@ -83,18 +83,17 @@ func (h *listenHandler) processV1QueuesGet(ctx context.Context, m *rabbitmqhandl
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
+	// get customer id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processV1QueuesGet",
-		"user":  userID,
-		"size":  pageSize,
-		"token": pageToken,
+		"func":        "processV1QueuesGet",
+		"customer_id": customerID,
+		"size":        pageSize,
+		"token":       pageToken,
 	})
 
-	tmp, err := h.queueHandler.Gets(ctx, userID, pageSize, pageToken)
+	tmp, err := h.queueHandler.Gets(ctx, customerID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get queue info. err: %v", err)
 		return simpleResponse(500), nil

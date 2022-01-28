@@ -39,18 +39,18 @@ func (m *MockQueueHandler) EXPECT() *MockQueueHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockQueueHandler) Create(ctx context.Context, userID uint64, name, detail, webhookURI, webhookMethod string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
+func (m *MockQueueHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail, webhookURI, webhookMethod string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, userID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
 	ret0, _ := ret[0].(*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockQueueHandlerMockRecorder) Create(ctx, userID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout interface{}) *gomock.Call {
+func (mr *MockQueueHandlerMockRecorder) Create(ctx, customerID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueueHandler)(nil).Create), ctx, userID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueueHandler)(nil).Create), ctx, customerID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
 }
 
 // Delete mocks base method.
@@ -83,18 +83,18 @@ func (mr *MockQueueHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockQueueHandler) Gets(ctx context.Context, userID, size uint64, token string) ([]*queue.Queue, error) {
+func (m *MockQueueHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, userID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockQueueHandlerMockRecorder) Gets(ctx, userID, size, token interface{}) *gomock.Call {
+func (mr *MockQueueHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueueHandler)(nil).Gets), ctx, userID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueueHandler)(nil).Gets), ctx, customerID, size, token)
 }
 
 // Join mocks base method.

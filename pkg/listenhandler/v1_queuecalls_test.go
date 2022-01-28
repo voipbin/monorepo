@@ -30,9 +30,9 @@ func TestProcessV1QueuecallsGet(t *testing.T) {
 
 		request *rabbitmqhandler.Request
 
-		userID    uint64
-		pageSize  uint64
-		pageToken string
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
 
 		queuecalls []*queuecall.Queuecall
 
@@ -41,47 +41,47 @@ func TestProcessV1QueuecallsGet(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
+				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=f9f94078-7f54-11ec-8387-9fe49204286f",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			1,
+			uuid.FromStringOrNil("f9f94078-7f54-11ec-8387-9fe49204286f"),
 			10,
 			"2020-05-03 21:35:02.809",
 			[]*queuecall.Queuecall{
 				{
-					ID:     uuid.FromStringOrNil("4b46ad9c-6152-11ec-a4a6-7b3b226046a5"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("4b46ad9c-6152-11ec-a4a6-7b3b226046a5"),
+					CustomerID: uuid.FromStringOrNil("f9f94078-7f54-11ec-8387-9fe49204286f"),
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"4b46ad9c-6152-11ec-a4a6-7b3b226046a5","user_id":1,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"4b46ad9c-6152-11ec-a4a6-7b3b226046a5","customer_id":"f9f94078-7f54-11ec-8387-9fe49204286f","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
 			"2 items",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
+				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=13529ca4-7f55-11ec-b445-c3f90a718170",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			1,
+			uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
 			10,
 			"2020-05-03 21:35:02.809",
 			[]*queuecall.Queuecall{
 				{
-					ID:     uuid.FromStringOrNil("4ca0c722-6152-11ec-a0ad-1be04f100fff"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("4ca0c722-6152-11ec-a0ad-1be04f100fff"),
+					CustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
 				},
 				{
-					ID:     uuid.FromStringOrNil("4cc9430a-6152-11ec-9295-d783a3ffb68e"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("4cc9430a-6152-11ec-9295-d783a3ffb68e"),
+					CustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"4ca0c722-6152-11ec-a0ad-1be04f100fff","user_id":1,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""},{"id":"4cc9430a-6152-11ec-9295-d783a3ffb68e","user_id":1,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"4ca0c722-6152-11ec-a0ad-1be04f100fff","customer_id":"13529ca4-7f55-11ec-b445-c3f90a718170","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""},{"id":"4cc9430a-6152-11ec-9295-d783a3ffb68e","customer_id":"13529ca4-7f55-11ec-b445-c3f90a718170","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -89,7 +89,7 @@ func TestProcessV1QueuecallsGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockQueuecall.EXPECT().Gets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.queuecalls, nil)
+			mockQueuecall.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.queuecalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -135,13 +135,13 @@ func TestProcessV1QueuecallsIDGet(t *testing.T) {
 
 			uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
 			&queuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
+				CustomerID: uuid.FromStringOrNil("2ff5fe64-7f55-11ec-8c3c-83bef268c5ed"),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"0bc84788-6153-11ec-b08a-d74a5a04d995","user_id":1,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"0bc84788-6153-11ec-b08a-d74a5a04d995","customer_id":"2ff5fe64-7f55-11ec-8c3c-83bef268c5ed","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

@@ -7,8 +7,8 @@ import (
 
 // Queue defines
 type Queue struct {
-	ID     uuid.UUID `json:"id"`      // queue id
-	UserID uint64    `json:"user_id"` // owned user's id
+	ID         uuid.UUID `json:"id"`          // queue id
+	CustomerID uuid.UUID `json:"customer_id"` // owner id
 
 	// basic info
 	Name          string `json:"name"`           // queue's name

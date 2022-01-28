@@ -32,7 +32,7 @@ func TestProcessV1QueuesPost(t *testing.T) {
 
 		request *rabbitmqhandler.Request
 
-		userID         uint64
+		customerID     uuid.UUID
 		queueName      string
 		detail         string
 		webhookURI     string
@@ -53,10 +53,10 @@ func TestProcessV1QueuesPost(t *testing.T) {
 				URI:      "/v1/queues",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"wait_actions":[{"type":"answer"}],"wait_timeout":600000,"service_timeout":6000000}`),
+				Data:     []byte(`{"customer_id":"442f5d62-7f55-11ec-a2c0-0bcd3814d515","name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"wait_actions":[{"type":"answer"}],"wait_timeout":600000,"service_timeout":6000000}`),
 			},
 
-			1,
+			uuid.FromStringOrNil("442f5d62-7f55-11ec-a2c0-0bcd3814d515"),
 			"name",
 			"detail",
 			"test.com",
@@ -74,8 +74,8 @@ func TestProcessV1QueuesPost(t *testing.T) {
 			6000000,
 
 			&queue.Queue{
-				ID:     uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
+				CustomerID: uuid.FromStringOrNil("442f5d62-7f55-11ec-a2c0-0bcd3814d515"),
 
 				Name:          "name",
 				Detail:        "detail",
@@ -110,7 +110,7 @@ func TestProcessV1QueuesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","user_id":1,"name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","customer_id":"442f5d62-7f55-11ec-a2c0-0bcd3814d515","name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -120,7 +120,7 @@ func TestProcessV1QueuesPost(t *testing.T) {
 
 			mockQueue.EXPECT().Create(
 				gomock.Any(),
-				tt.userID,
+				tt.customerID,
 				tt.queueName,
 				tt.detail,
 				tt.webhookURI,
@@ -162,9 +162,9 @@ func TestProcessV1QueuesGet(t *testing.T) {
 
 		request *rabbitmqhandler.Request
 
-		userID    uint64
-		pageSize  uint64
-		pageToken string
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
 
 		queues []*queue.Queue
 
@@ -173,47 +173,47 @@ func TestProcessV1QueuesGet(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
+				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=570b5094-7f55-11ec-b5cd-1b925f9028af",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			1,
+			uuid.FromStringOrNil("570b5094-7f55-11ec-b5cd-1b925f9028af"),
 			10,
 			"2020-05-03 21:35:02.809",
 			[]*queue.Queue{
 				{
-					ID:     uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
+					CustomerID: uuid.FromStringOrNil("570b5094-7f55-11ec-b5cd-1b925f9028af"),
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","user_id":1,"name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"570b5094-7f55-11ec-b5cd-1b925f9028af","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
 			"2 items",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&user_id=1",
+				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=6a7ce2b4-7f55-11ec-a666-8b44aa06d0db",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			1,
+			uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
 			10,
 			"2020-05-03 21:35:02.809",
 			[]*queue.Queue{
 				{
-					ID:     uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
+					CustomerID: uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
 				},
 				{
-					ID:     uuid.FromStringOrNil("e218b154-5f6b-11ec-818d-633351f9e341"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("e218b154-5f6b-11ec-818d-633351f9e341"),
+					CustomerID: uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","user_id":1,"name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","user_id":1,"name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -221,7 +221,7 @@ func TestProcessV1QueuesGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockQueue.EXPECT().Gets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.queues, nil)
+			mockQueue.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.queues, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -269,7 +269,7 @@ func TestProcessV1QueuesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","user_id":0,"name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -464,7 +464,7 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a7261c56-5f6d-11ec-8d91-ff8f64486712","user_id":0,"queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a7261c56-5f6d-11ec-8d91-ff8f64486712","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","webhook_uri":"","webhook_method":"","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

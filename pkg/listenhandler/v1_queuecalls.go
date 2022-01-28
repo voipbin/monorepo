@@ -25,17 +25,16 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 	pageToken := u.Query().Get(PageToken)
 
 	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processV1QueuecallsGet",
-		"user":  userID,
-		"size":  pageSize,
-		"token": pageToken,
+		"func":        "processV1QueuecallsGet",
+		"customer_id": customerID,
+		"size":        pageSize,
+		"token":       pageToken,
 	})
 
-	tmp, err := h.queuecallHandler.Gets(ctx, userID, pageSize, pageToken)
+	tmp, err := h.queuecallHandler.Gets(ctx, customerID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
 		return simpleResponse(500), nil

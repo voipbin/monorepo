@@ -16,7 +16,7 @@ const (
 	queuecallReferenceSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 		type,
 
 		current_queuecall_id,
@@ -37,7 +37,7 @@ func (h *handler) queuecallReferenceGetFromRow(row *sql.Rows) (*queuecallreferen
 	res := &queuecallreference.QueuecallReference{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 		&res.Type,
 
 		&res.CurrentQueuecallID,
@@ -64,7 +64,7 @@ func (h *handler) queuecallReferenceGetFromRow(row *sql.Rows) (*queuecallreferen
 func (h *handler) QueuecallReferenceCreate(ctx context.Context, a *queuecallreference.QueuecallReference) error {
 	q := `insert into queuecallreferences(
 		id,
-		user_id,
+		customer_id,
 		type,
 
 		current_queuecall_id,
@@ -87,7 +87,7 @@ func (h *handler) QueuecallReferenceCreate(ctx context.Context, a *queuecallrefe
 
 	_, err = h.db.Exec(q,
 		a.ID.Bytes(),
-		a.UserID,
+		a.CustomerID,
 		a.Type,
 
 		a.CurrentQueuecallID.Bytes(),

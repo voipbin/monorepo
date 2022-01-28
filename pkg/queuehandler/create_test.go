@@ -34,7 +34,7 @@ func TestCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID         uint64
+		customerID     uuid.UUID
 		queueName      string
 		detail         string
 		webhookURI     string
@@ -53,7 +53,7 @@ func TestCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("1ed812a6-7f56-11ec-82c1-8bb47b0f9d98"),
 			"name",
 			"detail",
 			"test.com",
@@ -95,7 +95,7 @@ func TestCreate(t *testing.T) {
 
 			res, err := h.Create(
 				ctx,
-				tt.userID,
+				tt.customerID,
 				tt.queueName,
 				tt.detail,
 				tt.webhookURI,
@@ -134,7 +134,7 @@ func TestCreateQueueFlow(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID       uint64
+		customerID   uuid.UUID
 		queueID      uuid.UUID
 		confbridgeID uuid.UUID
 		waitActions  []fmaction.Action
@@ -148,7 +148,7 @@ func TestCreateQueueFlow(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("66f84114-7f56-11ec-8e9a-ff1aed535827"),
 			uuid.FromStringOrNil("61a4651c-60e3-11ec-86ff-efca21ef8707"),
 			uuid.FromStringOrNil("61d32f5a-60e3-11ec-943d-db1b16329a1c"),
 			[]fmaction.Action{
@@ -185,9 +185,9 @@ func TestCreateQueueFlow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.userID, fmflow.TypeQueue, tt.flowName, "generated for queue by queue-manager.", "", tt.flowActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customerID, fmflow.TypeQueue, tt.flowName, "generated for queue by queue-manager.", "", tt.flowActions, false).Return(tt.responseFlow, nil)
 
-			res, err := h.createQueueFlow(ctx, tt.userID, tt.queueID, tt.confbridgeID, tt.waitActions)
+			res, err := h.createQueueFlow(ctx, tt.customerID, tt.queueID, tt.confbridgeID, tt.waitActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -29,7 +29,7 @@ type DBHandler interface {
 	QueueCreate(ctx context.Context, a *queue.Queue) error
 	QueueDelete(ctx context.Context, id uuid.UUID) error
 	QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
-	QueueGets(ctx context.Context, userID uint64, size uint64, token string) ([]*queue.Queue, error)
+	QueueGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error)
 	QueueIncreaseTotalServicedCount(ctx context.Context, id, queueCallID uuid.UUID, waittime time.Duration) error
 	QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queueCallID uuid.UUID, waittime time.Duration) error
 	QueueRemoveServiceQueueCall(ctx context.Context, id, queueCallID uuid.UUID, serviceTime time.Duration) error
@@ -39,7 +39,7 @@ type DBHandler interface {
 	QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) error
 
 	QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
-	QueuecallGets(ctx context.Context, userID uint64, size uint64, token string) ([]*queuecall.Queuecall, error)
+	QueuecallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error)
 	QueuecallGetsByReferenceID(ctx context.Context, referenceID uuid.UUID) ([]*queuecall.Queuecall, error)
 	QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error
 	QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error

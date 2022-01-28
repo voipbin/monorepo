@@ -16,7 +16,7 @@ const (
 	queueCallSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 		queue_id,
 		reference_type,
 		reference_id,
@@ -57,7 +57,7 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 	res := &queuecall.Queuecall{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 		&res.QueueID,
 		&res.ReferenceType,
 		&res.ReferenceID,
@@ -106,7 +106,7 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error {
 	q := `insert into queuecalls(
 		id,
-		user_id,
+		customer_id,
 		queue_id,
 		reference_type,
 		reference_id,
@@ -156,7 +156,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 
 	_, err = h.db.Exec(q,
 		a.ID.Bytes(),
-		a.UserID,
+		a.CustomerID.Bytes(),
 		a.QueueID.Bytes(),
 		a.ReferenceType,
 		a.ReferenceID.Bytes(),
@@ -273,11 +273,11 @@ func (h *handler) QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Qu
 }
 
 // QueuecallGets returns QueueCalls.
-func (h *handler) QueuecallGets(ctx context.Context, userID uint64, size uint64, token string) ([]*queuecall.Queuecall, error) {
+func (h *handler) QueuecallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", queueCallSelect)
+	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", queueCallSelect)
 
-	rows, err := h.db.Query(q, userID, token, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueuecallGets. err: %v", err)
 	}

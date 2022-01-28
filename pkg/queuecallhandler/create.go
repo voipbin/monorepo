@@ -15,7 +15,7 @@ import (
 // QueueCreate creates a new queue.
 func (h *queuecallHandler) Create(
 	ctx context.Context,
-	userID uint64,
+	customerID uuid.UUID,
 	queueID uuid.UUID,
 	referenceType queuecall.ReferenceType,
 	referenceID uuid.UUID,
@@ -45,7 +45,7 @@ func (h *queuecallHandler) Create(
 
 	c := &queuecall.Queuecall{
 		ID:            id,
-		UserID:        userID,
+		CustomerID:    customerID,
 		QueueID:       queueID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,

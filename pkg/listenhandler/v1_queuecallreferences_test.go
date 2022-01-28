@@ -48,14 +48,14 @@ func TestProcessV1QueuescallreferencesIDGet(t *testing.T) {
 
 			uuid.FromStringOrNil("74a40c58-60ac-11ec-96c8-03b200835240"),
 			&queuecallreference.QueuecallReference{
-				ID:     uuid.FromStringOrNil("74a40c58-60ac-11ec-96c8-03b200835240"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("74a40c58-60ac-11ec-96c8-03b200835240"),
+				CustomerID: uuid.FromStringOrNil("53f3c696-7ffc-11ec-9184-6b98b2fa94fb"),
 			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"74a40c58-60ac-11ec-96c8-03b200835240","user_id":1,"type":"","current_queuecall_id":"00000000-0000-0000-0000-000000000000","queuecall_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"74a40c58-60ac-11ec-96c8-03b200835240","customer_id":"53f3c696-7ffc-11ec-9184-6b98b2fa94fb","type":"","current_queuecall_id":"00000000-0000-0000-0000-000000000000","queuecall_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

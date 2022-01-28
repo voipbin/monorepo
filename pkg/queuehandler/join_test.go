@@ -66,8 +66,8 @@ func TestJoin(t *testing.T) {
 			uuid.FromStringOrNil("8f29be1e-60e9-11ec-8032-977e00b8b523"),
 
 			&queue.Queue{
-				ID:     uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
+				CustomerID: uuid.FromStringOrNil("706be58e-7f56-11ec-9a12-7770b5d4d038"),
 			},
 			&cmcall.Call{
 				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
@@ -109,7 +109,7 @@ func TestJoin(t *testing.T) {
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.referenceID).Return(tt.call, nil)
 
 			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any()).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queue.UserID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), "", gomock.Any(), false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queue.CustomerID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), "", gomock.Any(), false).Return(tt.responseFlow, nil)
 
 			var source cmaddress.Address
 			if tt.call.Direction == cmcall.DirectionIncoming {
@@ -125,7 +125,7 @@ func TestJoin(t *testing.T) {
 
 			mockQueuecall.EXPECT().Create(
 				gomock.Any(),
-				tt.queue.UserID,
+				tt.queue.CustomerID,
 				tt.queue.ID,
 				tt.referenceType,
 				tt.referenceID,

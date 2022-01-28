@@ -10,7 +10,7 @@ import (
 // Queuecall defines
 type Queuecall struct {
 	ID            uuid.UUID     `json:"id"`
-	UserID        uint64        `json:"user_id"`
+	CustomerID    uuid.UUID     `json:"customer_id"`
 	QueueID       uuid.UUID     `json:"queue_id"`
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`

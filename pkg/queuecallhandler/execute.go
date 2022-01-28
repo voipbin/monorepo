@@ -37,7 +37,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID) {
 	}
 
 	// get agents
-	agents, err := h.reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, qc.UserID, qc.TagIDs, amagent.StatusAvailable)
+	agents, err := h.reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, qc.CustomerID, qc.TagIDs, amagent.StatusAvailable)
 	if err != nil {
 		log.Errorf("Could not get available agents. Send the request again with 1 sec delay. err: %v", err)
 		_ = h.reqHandler.QMV1QueuecallExecute(ctx, qc.ID, defaultDelayQueuecallExecute)
