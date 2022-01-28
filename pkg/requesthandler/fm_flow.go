@@ -7,19 +7,20 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	fmrequest "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // FMV1FlowCreate creates a new flow.
-func (r *requestHandler) FMV1FlowCreate(ctx context.Context, userID uint64, flowType fmflow.Type, name string, detail string, webhookURI string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
+func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, webhookURI string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
 
 	uri := "/v1/flows"
 
 	reqData := &fmrequest.V1DataFlowPost{
-		UserID:     userID,
+		CustomerID: customerID,
 		Type:       flowType,
 		Name:       name,
 		Detail:     detail,
@@ -133,8 +134,8 @@ func (r *requestHandler) FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*f
 // FMV1FlowGets sends a request to flow-manager
 // to getting a list of flow info.
 // it returns detail list of flow info if it succeed.
-func (r *requestHandler) FMV1FlowGets(ctx context.Context, userID uint64, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error) {
-	uri := fmt.Sprintf("/v1/flows?page_token=%s&page_size=%d&user_id=%d&type=%s", url.QueryEscape(pageToken), pageSize, userID, flowType)
+func (r *requestHandler) FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error) {
+	uri := fmt.Sprintf("/v1/flows?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, flowType)
 
 	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

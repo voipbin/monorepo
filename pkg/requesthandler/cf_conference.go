@@ -39,8 +39,8 @@ func (r *requestHandler) CFV1ConferenceGet(ctx context.Context, conferenceID uui
 // CFV1ConferenceGets sends a request to conference-manager
 // to getting a list of conference info.
 // it returns detail list of conference info if it succeed.
-func (r *requestHandler) CFV1ConferenceGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
-	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&user_id=%d&type=%s", url.QueryEscape(pageToken), pageSize, userID, conferenceType)
+func (r *requestHandler) CFV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, conferenceType)
 
 	res, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, 30000, 0, ContentTypeJSON, nil)
 	switch {
@@ -95,7 +95,7 @@ func (r *requestHandler) CFV1ConferenceDeleteDelay(ctx context.Context, conferen
 // it the timeout set to 0 means no timeout.
 func (r *requestHandler) CFV1ConferenceCreate(
 	ctx context.Context,
-	userID uint64,
+	customerID uuid.UUID,
 	conferenceType cfconference.Type,
 	name string,
 	detail string,
@@ -109,7 +109,7 @@ func (r *requestHandler) CFV1ConferenceCreate(
 
 	d := &cfrequest.V1DataConferencesPost{
 		Type:        conferenceType,
-		UserID:      userID,
+		CustomerID:  customerID,
 		Name:        name,
 		Detail:      detail,
 		Timeout:     timeout,

@@ -26,9 +26,9 @@ func TestQMV1QueueGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID    uint64
-		pageToken string
-		pageSize  uint64
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -38,13 +38,13 @@ func TestQMV1QueueGets(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("6cf22a94-7ff1-11ec-9254-5371564adf91"),
 			"2020-09-20T03:23:20.995000",
 			10,
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queues?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/queues?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=6cf22a94-7ff1-11ec-9254-5371564adf91",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -62,13 +62,13 @@ func TestQMV1QueueGets(t *testing.T) {
 		{
 			"2 results",
 
-			1,
+			uuid.FromStringOrNil("6cf22a94-7ff1-11ec-9254-5371564adf91"),
 			"2020-09-20T03:23:20.995000",
 			10,
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queues?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/queues?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=6cf22a94-7ff1-11ec-9254-5371564adf91",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -93,7 +93,7 @@ func TestQMV1QueueGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueGets(ctx, tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.QMV1QueueGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -175,7 +175,7 @@ func TestQMVQueueCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID         uint64
+		customerID     uuid.UUID
 		queueName      string
 		detail         string
 		webhookURI     string
@@ -194,7 +194,7 @@ func TestQMVQueueCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("6cf22a94-7ff1-11ec-9254-5371564adf91"),
 			"name",
 			"detail",
 			"test.com",
@@ -216,7 +216,7 @@ func TestQMVQueueCreate(t *testing.T) {
 				URI:      "/v1/queues",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST","routing_method":"random","tag_ids":["fdbf3fdc-6159-11ec-9263-734d393b9759"],"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
+				Data:     []byte(`{"customer_id":"6cf22a94-7ff1-11ec-9254-5371564adf91","name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST","routing_method":"random","tag_ids":["fdbf3fdc-6159-11ec-9263-734d393b9759"],"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -234,7 +234,7 @@ func TestQMVQueueCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueCreate(ctx, tt.userID, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod, tt.routingMethod, tt.tagIDs, tt.waitActions, tt.timeoutWait, tt.timeoutService)
+			res, err := reqHandler.QMV1QueueCreate(ctx, tt.customerID, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod, tt.routingMethod, tt.tagIDs, tt.waitActions, tt.timeoutWait, tt.timeoutService)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -7,18 +7,19 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	qmrequest "gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // QMV1QueueGets sends a request to queue-manager
 // to get a list of queues.
 // Returns list of queues
-func (r *requestHandler) QMV1QueueGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]qmqueue.Queue, error) {
-	uri := fmt.Sprintf("/v1/queues?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+func (r *requestHandler) QMV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueue.Queue, error) {
+	uri := fmt.Sprintf("/v1/queues?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	res, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodGet, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
@@ -64,11 +65,11 @@ func (r *requestHandler) QMV1QueueGet(ctx context.Context, queueID uuid.UUID) (*
 }
 
 // QMV1QueueCreate sends the request to create the queue.
-func (r *requestHandler) QMV1QueueCreate(ctx context.Context, userID uint64, name, detail, webhookURI, webhookMethod string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error) {
+func (r *requestHandler) QMV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail, webhookURI, webhookMethod string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error) {
 	uri := "/v1/queues"
 
 	data := &qmrequest.V1DataQueuesPost{
-		UserID:         userID,
+		CustomerID:     customerID,
 		Name:           name,
 		Detail:         detail,
 		WebhookURI:     webhookURI,

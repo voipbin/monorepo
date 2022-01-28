@@ -62,8 +62,8 @@ func (r *requestHandler) NMV1NumberGet(ctx context.Context, numberID uuid.UUID) 
 // NMV1NumberGets sends a request to number-manager
 // to get a list of numbers.
 // Returns list of numbers
-func (r *requestHandler) NMV1NumberGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
-	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+func (r *requestHandler) NMV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
@@ -105,12 +105,12 @@ func (r *requestHandler) NMV1NumberFlowDelete(ctx context.Context, flowID uuid.U
 // NMNumberCreate sends a request to the number-manager
 // to create an number.
 // Returns created number
-func (r *requestHandler) NMV1NumberCreate(ctx context.Context, userID uint64, numb string) (*nmnumber.Number, error) {
+func (r *requestHandler) NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, numb string) (*nmnumber.Number, error) {
 	uri := "/v1/numbers"
 
 	data := &nmrequest.V1DataNumbersPost{
-		UserID: userID,
-		Number: numb,
+		CustomerID: customerID,
+		Number:     numb,
 	}
 
 	m, err := json.Marshal(data)

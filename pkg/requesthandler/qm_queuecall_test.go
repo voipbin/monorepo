@@ -24,9 +24,9 @@ func TestQMV1QueuecallGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID    uint64
-		pageToken string
-		pageSize  uint64
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -36,13 +36,13 @@ func TestQMV1QueuecallGets(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("b24479ee-7ff1-11ec-a54e-6bf84d5eae5b"),
 			"2020-09-20T03:23:20.995000",
 			10,
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=b24479ee-7ff1-11ec-a54e-6bf84d5eae5b",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -60,13 +60,13 @@ func TestQMV1QueuecallGets(t *testing.T) {
 		{
 			"2 results",
 
-			1,
+			uuid.FromStringOrNil("b24479ee-7ff1-11ec-a54e-6bf84d5eae5b"),
 			"2020-09-20T03:23:20.995000",
 			10,
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=b24479ee-7ff1-11ec-a54e-6bf84d5eae5b",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -91,7 +91,7 @@ func TestQMV1QueuecallGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueuecallGets(ctx, tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.QMV1QueuecallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

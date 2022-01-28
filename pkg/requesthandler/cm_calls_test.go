@@ -214,7 +214,7 @@ func TestCMV1CallCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		userID      uint64
+		customerID  uuid.UUID
 		flowID      uuid.UUID
 		source      *cmaddress.Address
 		destination *cmaddress.Address
@@ -229,7 +229,7 @@ func TestCMV1CallCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("3a09efda-7f52-11ec-a775-cfd868cdc292"),
 			uuid.FromStringOrNil("0783c168-4c70-11ec-a613-bfcd98aaa6da"),
 			&cmaddress.Address{
 				Type:   cmaddress.TypeTel,
@@ -245,7 +245,7 @@ func TestCMV1CallCreate(t *testing.T) {
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"flow_id":"0783c168-4c70-11ec-a613-bfcd98aaa6da","user_id":1,"source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destination":{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}}`),
+				Data:     []byte(`{"flow_id":"0783c168-4c70-11ec-a613-bfcd98aaa6da","customer_id":"3a09efda-7f52-11ec-a775-cfd868cdc292","source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destination":{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -263,7 +263,7 @@ func TestCMV1CallCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallCreate(ctx, tt.userID, tt.flowID, tt.source, tt.destination)
+			res, err := reqHandler.CMV1CallCreate(ctx, tt.customerID, tt.flowID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -288,7 +288,7 @@ func TestCMV1CallCreateWithID(t *testing.T) {
 		name string
 
 		callID      uuid.UUID
-		userID      uint64
+		customerID  uuid.UUID
 		flowID      uuid.UUID
 		source      *cmaddress.Address
 		destination *cmaddress.Address
@@ -304,7 +304,7 @@ func TestCMV1CallCreateWithID(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("9dcdc9a0-4d1c-11ec-81cc-bf06212a283e"),
-			1,
+			uuid.FromStringOrNil("45a4dbac-7f52-11ec-98a8-7f1e6d2fae52"),
 			uuid.FromStringOrNil("9f4b89b6-4d1c-11ec-a565-af220567858d"),
 			&cmaddress.Address{
 				Type:   cmaddress.TypeTel,
@@ -320,7 +320,7 @@ func TestCMV1CallCreateWithID(t *testing.T) {
 				URI:      "/v1/calls/9dcdc9a0-4d1c-11ec-81cc-bf06212a283e",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"flow_id":"9f4b89b6-4d1c-11ec-a565-af220567858d","user_id":1,"source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destination":{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}}`),
+				Data:     []byte(`{"flow_id":"9f4b89b6-4d1c-11ec-a565-af220567858d","customer_id":"45a4dbac-7f52-11ec-98a8-7f1e6d2fae52","source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destination":{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -338,7 +338,7 @@ func TestCMV1CallCreateWithID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallCreateWithID(ctx, tt.callID, tt.userID, tt.flowID, tt.source, tt.destination)
+			res, err := reqHandler.CMV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -422,9 +422,9 @@ func TestCMV1CallGets(t *testing.T) {
 	type test struct {
 		name string
 
-		userID    uint64
-		pageToken string
-		pageSize  uint64
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -436,13 +436,13 @@ func TestCMV1CallGets(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("820f1436-7f52-11ec-a626-df15ba0fc033"),
 			"2020-09-20T03:23:20.995000",
 			10,
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=820f1436-7f52-11ec-a626-df15ba0fc033",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -460,13 +460,13 @@ func TestCMV1CallGets(t *testing.T) {
 		{
 			"2 calls",
 
-			1,
+			uuid.FromStringOrNil("8e553ff4-7f52-11ec-ab5a-7b43917ef4fb"),
 			"2020-09-20T03:23:20.995000",
 			10,
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=8e553ff4-7f52-11ec-ab5a-7b43917ef4fb",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -491,7 +491,7 @@ func TestCMV1CallGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallGets(ctx, tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CMV1CallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -588,7 +588,7 @@ func TestCMCallHangup(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"fa0ddb32-25cd-11eb-a604-8b239b305055","user_id":1,"asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
+				Data:       []byte(`{"id":"fa0ddb32-25cd-11eb-a604-8b239b305055","customer_id":"a789f1d6-7f52-11ec-b563-e3d43178d814","asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
 			},
 
 			"bin-manager.call-manager.request",
@@ -599,7 +599,7 @@ func TestCMCallHangup(t *testing.T) {
 			},
 			&cmcall.Call{
 				ID:          uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
-				UserID:      1,
+				CustomerID:  uuid.FromStringOrNil("a789f1d6-7f52-11ec-b563-e3d43178d814"),
 				FlowID:      uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
 				Source:      cmaddress.Address{},
 				Destination: cmaddress.Address{},

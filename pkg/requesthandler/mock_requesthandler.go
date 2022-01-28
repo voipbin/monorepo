@@ -61,18 +61,18 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // AMV1AgentCreate mocks base method.
-func (m *MockRequestHandler) AMV1AgentCreate(ctx context.Context, timeout int, userID uint64, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentCreate(ctx context.Context, timeout int, customerID uuid.UUID, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AMV1AgentCreate", ctx, timeout, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
+	ret := m.ctrl.Call(m, "AMV1AgentCreate", ctx, timeout, customerID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AMV1AgentCreate indicates an expected call of AMV1AgentCreate.
-func (mr *MockRequestHandlerMockRecorder) AMV1AgentCreate(ctx, timeout, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AMV1AgentCreate(ctx, timeout, customerID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentCreate", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentCreate), ctx, timeout, userID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentCreate", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentCreate), ctx, timeout, customerID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 }
 
 // AMV1AgentDelete mocks base method.
@@ -119,63 +119,63 @@ func (mr *MockRequestHandlerMockRecorder) AMV1AgentGet(ctx, agentID interface{})
 }
 
 // AMV1AgentGets mocks base method.
-func (m *MockRequestHandler) AMV1AgentGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AMV1AgentGets", ctx, userID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "AMV1AgentGets", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AMV1AgentGets indicates an expected call of AMV1AgentGets.
-func (mr *MockRequestHandlerMockRecorder) AMV1AgentGets(ctx, userID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AMV1AgentGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentGets", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentGets), ctx, userID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentGets", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentGets), ctx, customerID, pageToken, pageSize)
 }
 
 // AMV1AgentGetsByTagIDs mocks base method.
-func (m *MockRequestHandler) AMV1AgentGetsByTagIDs(ctx context.Context, userID uint64, tagIDs []uuid.UUID) ([]agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AMV1AgentGetsByTagIDs", ctx, userID, tagIDs)
+	ret := m.ctrl.Call(m, "AMV1AgentGetsByTagIDs", ctx, customerID, tagIDs)
 	ret0, _ := ret[0].([]agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AMV1AgentGetsByTagIDs indicates an expected call of AMV1AgentGetsByTagIDs.
-func (mr *MockRequestHandlerMockRecorder) AMV1AgentGetsByTagIDs(ctx, userID, tagIDs interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AMV1AgentGetsByTagIDs(ctx, customerID, tagIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentGetsByTagIDs", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentGetsByTagIDs), ctx, userID, tagIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentGetsByTagIDs", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentGetsByTagIDs), ctx, customerID, tagIDs)
 }
 
 // AMV1AgentGetsByTagIDsAndStatus mocks base method.
-func (m *MockRequestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, userID uint64, tagIDs []uuid.UUID, status agent.Status) ([]agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status agent.Status) ([]agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AMV1AgentGetsByTagIDsAndStatus", ctx, userID, tagIDs, status)
+	ret := m.ctrl.Call(m, "AMV1AgentGetsByTagIDsAndStatus", ctx, customerID, tagIDs, status)
 	ret0, _ := ret[0].([]agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AMV1AgentGetsByTagIDsAndStatus indicates an expected call of AMV1AgentGetsByTagIDsAndStatus.
-func (mr *MockRequestHandlerMockRecorder) AMV1AgentGetsByTagIDsAndStatus(ctx, userID, tagIDs, status interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AMV1AgentGetsByTagIDsAndStatus(ctx, customerID, tagIDs, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentGetsByTagIDsAndStatus", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentGetsByTagIDsAndStatus), ctx, userID, tagIDs, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentGetsByTagIDsAndStatus", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentGetsByTagIDsAndStatus), ctx, customerID, tagIDs, status)
 }
 
 // AMV1AgentLogin mocks base method.
-func (m *MockRequestHandler) AMV1AgentLogin(ctx context.Context, timeout int, userID uint64, username, password string) (*agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AMV1AgentLogin", ctx, timeout, userID, username, password)
+	ret := m.ctrl.Call(m, "AMV1AgentLogin", ctx, timeout, customerID, username, password)
 	ret0, _ := ret[0].(*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AMV1AgentLogin indicates an expected call of AMV1AgentLogin.
-func (mr *MockRequestHandlerMockRecorder) AMV1AgentLogin(ctx, timeout, userID, username, password interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AMV1AgentLogin(ctx, timeout, customerID, username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentLogin", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentLogin), ctx, timeout, userID, username, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentLogin", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentLogin), ctx, timeout, customerID, username, password)
 }
 
 // AMV1AgentUpdate mocks base method.
@@ -249,18 +249,18 @@ func (mr *MockRequestHandlerMockRecorder) AMV1AgentUpdateTagIDs(ctx, id, tagIDs 
 }
 
 // AMV1TagCreate mocks base method.
-func (m *MockRequestHandler) AMV1TagCreate(ctx context.Context, userID uint64, name, detail string) (*tag.Tag, error) {
+func (m *MockRequestHandler) AMV1TagCreate(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AMV1TagCreate", ctx, userID, name, detail)
+	ret := m.ctrl.Call(m, "AMV1TagCreate", ctx, customerID, name, detail)
 	ret0, _ := ret[0].(*tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AMV1TagCreate indicates an expected call of AMV1TagCreate.
-func (mr *MockRequestHandlerMockRecorder) AMV1TagCreate(ctx, userID, name, detail interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AMV1TagCreate(ctx, customerID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1TagCreate", reflect.TypeOf((*MockRequestHandler)(nil).AMV1TagCreate), ctx, userID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1TagCreate", reflect.TypeOf((*MockRequestHandler)(nil).AMV1TagCreate), ctx, customerID, name, detail)
 }
 
 // AMV1TagDelete mocks base method.
@@ -293,18 +293,18 @@ func (mr *MockRequestHandlerMockRecorder) AMV1TagGet(ctx, id interface{}) *gomoc
 }
 
 // AMV1TagGets mocks base method.
-func (m *MockRequestHandler) AMV1TagGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]tag.Tag, error) {
+func (m *MockRequestHandler) AMV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tag.Tag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AMV1TagGets", ctx, userID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "AMV1TagGets", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AMV1TagGets indicates an expected call of AMV1TagGets.
-func (mr *MockRequestHandlerMockRecorder) AMV1TagGets(ctx, userID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AMV1TagGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1TagGets", reflect.TypeOf((*MockRequestHandler)(nil).AMV1TagGets), ctx, userID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1TagGets", reflect.TypeOf((*MockRequestHandler)(nil).AMV1TagGets), ctx, customerID, pageToken, pageSize)
 }
 
 // AMV1TagUpdate mocks base method.
@@ -591,18 +591,18 @@ func (mr *MockRequestHandlerMockRecorder) AstPlaybackStop(ctx, asteriskID, playa
 }
 
 // CFV1ConferenceCreate mocks base method.
-func (m *MockRequestHandler) CFV1ConferenceCreate(ctx context.Context, userID uint64, conferenceType conference.Type, name, detail string, timeout int, webhookURI string, data map[string]interface{}, preActions, postActions []action.Action) (*conference.Conference, error) {
+func (m *MockRequestHandler) CFV1ConferenceCreate(ctx context.Context, customerID uuid.UUID, conferenceType conference.Type, name, detail string, timeout int, webhookURI string, data map[string]interface{}, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CFV1ConferenceCreate", ctx, userID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions)
+	ret := m.ctrl.Call(m, "CFV1ConferenceCreate", ctx, customerID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CFV1ConferenceCreate indicates an expected call of CFV1ConferenceCreate.
-func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceCreate(ctx, userID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceCreate(ctx, customerID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceCreate), ctx, userID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceCreate), ctx, customerID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions)
 }
 
 // CFV1ConferenceDelete mocks base method.
@@ -649,18 +649,18 @@ func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceGet(ctx, conferenceID in
 }
 
 // CFV1ConferenceGets mocks base method.
-func (m *MockRequestHandler) CFV1ConferenceGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64, conferenceType string) ([]conference.Conference, error) {
+func (m *MockRequestHandler) CFV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CFV1ConferenceGets", ctx, userID, pageToken, pageSize, conferenceType)
+	ret := m.ctrl.Call(m, "CFV1ConferenceGets", ctx, customerID, pageToken, pageSize, conferenceType)
 	ret0, _ := ret[0].([]conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CFV1ConferenceGets indicates an expected call of CFV1ConferenceGets.
-func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceGets(ctx, userID, pageToken, pageSize, conferenceType interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceGets(ctx, customerID, pageToken, pageSize, conferenceType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceGets", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceGets), ctx, userID, pageToken, pageSize, conferenceType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceGets", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceGets), ctx, customerID, pageToken, pageSize, conferenceType)
 }
 
 // CFV1ConferenceKick mocks base method.
@@ -735,33 +735,33 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallAddChainedCall(ctx, callID, ch
 }
 
 // CMV1CallCreate mocks base method.
-func (m *MockRequestHandler) CMV1CallCreate(ctx context.Context, userID uint64, flowID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
+func (m *MockRequestHandler) CMV1CallCreate(ctx context.Context, customerID, flowID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMV1CallCreate", ctx, userID, flowID, source, destination)
+	ret := m.ctrl.Call(m, "CMV1CallCreate", ctx, customerID, flowID, source, destination)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CMV1CallCreate indicates an expected call of CMV1CallCreate.
-func (mr *MockRequestHandlerMockRecorder) CMV1CallCreate(ctx, userID, flowID, source, destination interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CMV1CallCreate(ctx, customerID, flowID, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallCreate), ctx, userID, flowID, source, destination)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallCreate), ctx, customerID, flowID, source, destination)
 }
 
 // CMV1CallCreateWithID mocks base method.
-func (m *MockRequestHandler) CMV1CallCreateWithID(ctx context.Context, id uuid.UUID, userID uint64, flowID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
+func (m *MockRequestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMV1CallCreateWithID", ctx, id, userID, flowID, source, destination)
+	ret := m.ctrl.Call(m, "CMV1CallCreateWithID", ctx, id, customerID, flowID, source, destination)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CMV1CallCreateWithID indicates an expected call of CMV1CallCreateWithID.
-func (mr *MockRequestHandlerMockRecorder) CMV1CallCreateWithID(ctx, id, userID, flowID, source, destination interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CMV1CallCreateWithID(ctx, id, customerID, flowID, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallCreateWithID), ctx, id, userID, flowID, source, destination)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallCreateWithID), ctx, id, customerID, flowID, source, destination)
 }
 
 // CMV1CallGet mocks base method.
@@ -780,18 +780,18 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallGet(ctx, callID interface{}) *
 }
 
 // CMV1CallGets mocks base method.
-func (m *MockRequestHandler) CMV1CallGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]call.Call, error) {
+func (m *MockRequestHandler) CMV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMV1CallGets", ctx, userID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "CMV1CallGets", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CMV1CallGets indicates an expected call of CMV1CallGets.
-func (mr *MockRequestHandlerMockRecorder) CMV1CallGets(ctx, userID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CMV1CallGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallGets", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallGets), ctx, userID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallGets", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallGets), ctx, customerID, pageToken, pageSize)
 }
 
 // CMV1CallHangup mocks base method.
@@ -910,18 +910,18 @@ func (mr *MockRequestHandlerMockRecorder) CMV1RecordingGet(ctx, id interface{}) 
 }
 
 // CMV1RecordingGets mocks base method.
-func (m *MockRequestHandler) CMV1RecordingGets(ctx context.Context, userID, size uint64, token string) ([]recording.Recording, error) {
+func (m *MockRequestHandler) CMV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMV1RecordingGets", ctx, userID, size, token)
+	ret := m.ctrl.Call(m, "CMV1RecordingGets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CMV1RecordingGets indicates an expected call of CMV1RecordingGets.
-func (mr *MockRequestHandlerMockRecorder) CMV1RecordingGets(ctx, userID, size, token interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CMV1RecordingGets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1RecordingGets", reflect.TypeOf((*MockRequestHandler)(nil).CMV1RecordingGets), ctx, userID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1RecordingGets", reflect.TypeOf((*MockRequestHandler)(nil).CMV1RecordingGets), ctx, customerID, size, token)
 }
 
 // CSV1CustomerCreate mocks base method.
@@ -1100,18 +1100,18 @@ func (mr *MockRequestHandlerMockRecorder) FMV1ActvieFlowUpdateForwardActionID(ct
 }
 
 // FMV1FlowCreate mocks base method.
-func (m *MockRequestHandler) FMV1FlowCreate(ctx context.Context, userID uint64, flowType flow.Type, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (m *MockRequestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType flow.Type, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMV1FlowCreate", ctx, userID, flowType, name, detail, webhookURI, actions, persist)
+	ret := m.ctrl.Call(m, "FMV1FlowCreate", ctx, customerID, flowType, name, detail, webhookURI, actions, persist)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FMV1FlowCreate indicates an expected call of FMV1FlowCreate.
-func (mr *MockRequestHandlerMockRecorder) FMV1FlowCreate(ctx, userID, flowType, name, detail, webhookURI, actions, persist interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FMV1FlowCreate(ctx, customerID, flowType, name, detail, webhookURI, actions, persist interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowCreate), ctx, userID, flowType, name, detail, webhookURI, actions, persist)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowCreate), ctx, customerID, flowType, name, detail, webhookURI, actions, persist)
 }
 
 // FMV1FlowDelete mocks base method.
@@ -1144,18 +1144,18 @@ func (mr *MockRequestHandlerMockRecorder) FMV1FlowGet(ctx, flowID interface{}) *
 }
 
 // FMV1FlowGets mocks base method.
-func (m *MockRequestHandler) FMV1FlowGets(ctx context.Context, userID uint64, flowType flow.Type, pageToken string, pageSize uint64) ([]flow.Flow, error) {
+func (m *MockRequestHandler) FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType flow.Type, pageToken string, pageSize uint64) ([]flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMV1FlowGets", ctx, userID, flowType, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "FMV1FlowGets", ctx, customerID, flowType, pageToken, pageSize)
 	ret0, _ := ret[0].([]flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FMV1FlowGets indicates an expected call of FMV1FlowGets.
-func (mr *MockRequestHandlerMockRecorder) FMV1FlowGets(ctx, userID, flowType, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FMV1FlowGets(ctx, customerID, flowType, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowGets", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowGets), ctx, userID, flowType, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowGets", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowGets), ctx, customerID, flowType, pageToken, pageSize)
 }
 
 // FMV1FlowUpdate mocks base method.
@@ -1174,33 +1174,33 @@ func (mr *MockRequestHandlerMockRecorder) FMV1FlowUpdate(ctx, f interface{}) *go
 }
 
 // NMV1AvailableNumberGets mocks base method.
-func (m *MockRequestHandler) NMV1AvailableNumberGets(ctx context.Context, userID, pageSize uint64, countryCode string) ([]availablenumber.AvailableNumber, error) {
+func (m *MockRequestHandler) NMV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMV1AvailableNumberGets", ctx, userID, pageSize, countryCode)
+	ret := m.ctrl.Call(m, "NMV1AvailableNumberGets", ctx, customerID, pageSize, countryCode)
 	ret0, _ := ret[0].([]availablenumber.AvailableNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NMV1AvailableNumberGets indicates an expected call of NMV1AvailableNumberGets.
-func (mr *MockRequestHandlerMockRecorder) NMV1AvailableNumberGets(ctx, userID, pageSize, countryCode interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) NMV1AvailableNumberGets(ctx, customerID, pageSize, countryCode interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1AvailableNumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NMV1AvailableNumberGets), ctx, userID, pageSize, countryCode)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1AvailableNumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NMV1AvailableNumberGets), ctx, customerID, pageSize, countryCode)
 }
 
 // NMV1NumberCreate mocks base method.
-func (m *MockRequestHandler) NMV1NumberCreate(ctx context.Context, userID uint64, numb string) (*number.Number, error) {
+func (m *MockRequestHandler) NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, numb string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMV1NumberCreate", ctx, userID, numb)
+	ret := m.ctrl.Call(m, "NMV1NumberCreate", ctx, customerID, numb)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NMV1NumberCreate indicates an expected call of NMV1NumberCreate.
-func (mr *MockRequestHandlerMockRecorder) NMV1NumberCreate(ctx, userID, numb interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) NMV1NumberCreate(ctx, customerID, numb interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumberCreate), ctx, userID, numb)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumberCreate), ctx, customerID, numb)
 }
 
 // NMV1NumberDelete mocks base method.
@@ -1263,18 +1263,18 @@ func (mr *MockRequestHandlerMockRecorder) NMV1NumberGetByNumber(ctx, num interfa
 }
 
 // NMV1NumberGets mocks base method.
-func (m *MockRequestHandler) NMV1NumberGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]number.Number, error) {
+func (m *MockRequestHandler) NMV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMV1NumberGets", ctx, userID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "NMV1NumberGets", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NMV1NumberGets indicates an expected call of NMV1NumberGets.
-func (mr *MockRequestHandlerMockRecorder) NMV1NumberGets(ctx, userID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) NMV1NumberGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumberGets), ctx, userID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumberGets), ctx, customerID, pageToken, pageSize)
 }
 
 // NMV1NumberUpdate mocks base method.
@@ -1293,18 +1293,18 @@ func (mr *MockRequestHandlerMockRecorder) NMV1NumberUpdate(ctx, num interface{})
 }
 
 // QMV1QueueCreate mocks base method.
-func (m *MockRequestHandler) QMV1QueueCreate(ctx context.Context, userID uint64, name, detail, webhookURI, webhookMethod string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.Queue, error) {
+func (m *MockRequestHandler) QMV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail, webhookURI, webhookMethod string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QMV1QueueCreate", ctx, userID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
+	ret := m.ctrl.Call(m, "QMV1QueueCreate", ctx, customerID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QMV1QueueCreate indicates an expected call of QMV1QueueCreate.
-func (mr *MockRequestHandlerMockRecorder) QMV1QueueCreate(ctx, userID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) QMV1QueueCreate(ctx, customerID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueCreate", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueCreate), ctx, userID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueCreate", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueCreate), ctx, customerID, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
 }
 
 // QMV1QueueCreateQueuecall mocks base method.
@@ -1352,18 +1352,18 @@ func (mr *MockRequestHandlerMockRecorder) QMV1QueueGet(ctx, queueID interface{})
 }
 
 // QMV1QueueGets mocks base method.
-func (m *MockRequestHandler) QMV1QueueGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]queue.Queue, error) {
+func (m *MockRequestHandler) QMV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QMV1QueueGets", ctx, userID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "QMV1QueueGets", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QMV1QueueGets indicates an expected call of QMV1QueueGets.
-func (mr *MockRequestHandlerMockRecorder) QMV1QueueGets(ctx, userID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) QMV1QueueGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueGets", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueGets), ctx, userID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueGets", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueGets), ctx, customerID, pageToken, pageSize)
 }
 
 // QMV1QueueUpdate mocks base method.
@@ -1480,18 +1480,18 @@ func (mr *MockRequestHandlerMockRecorder) QMV1QueuecallGet(ctx, queuecallID inte
 }
 
 // QMV1QueuecallGets mocks base method.
-func (m *MockRequestHandler) QMV1QueuecallGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]queuecall.Queuecall, error) {
+func (m *MockRequestHandler) QMV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QMV1QueuecallGets", ctx, userID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "QMV1QueuecallGets", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QMV1QueuecallGets indicates an expected call of QMV1QueuecallGets.
-func (mr *MockRequestHandlerMockRecorder) QMV1QueuecallGets(ctx, userID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) QMV1QueuecallGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueuecallGets", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueuecallGets), ctx, userID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueuecallGets", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueuecallGets), ctx, customerID, pageToken, pageSize)
 }
 
 // QMV1QueuecallReferenceGet mocks base method.
@@ -1567,18 +1567,18 @@ func (mr *MockRequestHandlerMockRecorder) RMV1ContactUpdate(ctx, endpoint interf
 }
 
 // RMV1DomainCreate mocks base method.
-func (m *MockRequestHandler) RMV1DomainCreate(ctx context.Context, userID uint64, domainName, name, detail string) (*domain.Domain, error) {
+func (m *MockRequestHandler) RMV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RMV1DomainCreate", ctx, userID, domainName, name, detail)
+	ret := m.ctrl.Call(m, "RMV1DomainCreate", ctx, customerID, domainName, name, detail)
 	ret0, _ := ret[0].(*domain.Domain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RMV1DomainCreate indicates an expected call of RMV1DomainCreate.
-func (mr *MockRequestHandlerMockRecorder) RMV1DomainCreate(ctx, userID, domainName, name, detail interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RMV1DomainCreate(ctx, customerID, domainName, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1DomainCreate", reflect.TypeOf((*MockRequestHandler)(nil).RMV1DomainCreate), ctx, userID, domainName, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1DomainCreate", reflect.TypeOf((*MockRequestHandler)(nil).RMV1DomainCreate), ctx, customerID, domainName, name, detail)
 }
 
 // RMV1DomainDelete mocks base method.
@@ -1611,18 +1611,18 @@ func (mr *MockRequestHandlerMockRecorder) RMV1DomainGet(ctx, domainID interface{
 }
 
 // RMV1DomainGets mocks base method.
-func (m *MockRequestHandler) RMV1DomainGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]domain.Domain, error) {
+func (m *MockRequestHandler) RMV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]domain.Domain, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RMV1DomainGets", ctx, userID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "RMV1DomainGets", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]domain.Domain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RMV1DomainGets indicates an expected call of RMV1DomainGets.
-func (mr *MockRequestHandlerMockRecorder) RMV1DomainGets(ctx, userID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RMV1DomainGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1DomainGets", reflect.TypeOf((*MockRequestHandler)(nil).RMV1DomainGets), ctx, userID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1DomainGets", reflect.TypeOf((*MockRequestHandler)(nil).RMV1DomainGets), ctx, customerID, pageToken, pageSize)
 }
 
 // RMV1DomainUpdate mocks base method.

@@ -99,11 +99,11 @@ func (r *requestHandler) CMV1CallActionNext(ctx context.Context, callID uuid.UUI
 // CMV1CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallCreate(ctx context.Context, userID uint64, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CMV1CallCreate(ctx context.Context, customerID uuid.UUID, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
 	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsPost{
-		UserID:      userID,
+		CustomerID:  customerID,
 		FlowID:      flowID,
 		Source:      *source,
 		Destination: *destination,
@@ -136,11 +136,11 @@ func (r *requestHandler) CMV1CallCreate(ctx context.Context, userID uint64, flow
 // CMV1CallCreateWithID sends a request to call-manager
 // to creating a call with the given id.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id uuid.UUID, userID uint64, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
 	data := &cmrequest.V1DataCallsIDPost{
-		UserID:      userID,
+		CustomerID:  customerID,
 		FlowID:      flowID,
 		Source:      *source,
 		Destination: *destination,
@@ -198,8 +198,8 @@ func (r *requestHandler) CMV1CallGet(ctx context.Context, callID uuid.UUID) (*cm
 // CMV1CallGets sends a request to call-manager
 // to getting a list of call info.
 // it returns detail list of call info if it succeed.
-func (r *requestHandler) CMV1CallGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error) {
-	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+func (r *requestHandler) CMV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error) {
+	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, 30000, 0, ContentTypeJSON, nil)
 	switch {

@@ -18,16 +18,16 @@ import (
 // it returns created call if it succeed.
 func (r *requestHandler) AMV1TagCreate(
 	ctx context.Context,
-	userID uint64,
+	customerID uuid.UUID,
 	name string,
 	detail string,
 ) (*amtag.Tag, error) {
 	uri := "/v1/tags"
 
 	data := &amrequest.V1DataTagsPost{
-		UserID: userID,
-		Name:   name,
-		Detail: detail,
+		CustomerID: customerID,
+		Name:       name,
+		Detail:     detail,
 	}
 
 	m, err := json.Marshal(data)
@@ -82,8 +82,8 @@ func (r *requestHandler) AMV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.T
 // AMV1TagGets sends a request to agent-manager
 // to getting a list of tag info.
 // it returns detail list of tag info if it succeed.
-func (r *requestHandler) AMV1TagGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]amtag.Tag, error) {
-	uri := fmt.Sprintf("/v1/tags?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+func (r *requestHandler) AMV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error) {
+	uri := fmt.Sprintf("/v1/tags?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMTag, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

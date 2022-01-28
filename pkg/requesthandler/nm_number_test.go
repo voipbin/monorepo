@@ -78,8 +78,8 @@ func TestNMV1NumberCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		userID  uint64
-		numbers string
+		customerID uuid.UUID
+		numbers    string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -92,7 +92,7 @@ func TestNMV1NumberCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 			"+821021656521",
 
 			"bin-manager.number-manager.request",
@@ -100,17 +100,17 @@ func TestNMV1NumberCreate(t *testing.T) {
 				URI:      "/v1/numbers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"user_id":1,"number":"+821021656521"}`),
+				Data:     []byte(`{"customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","number":"+821021656521"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -129,7 +129,7 @@ func TestNMV1NumberCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberCreate(ctx, tt.userID, tt.numbers)
+			res, err := reqHandler.NMV1NumberCreate(ctx, tt.customerID, tt.numbers)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -153,9 +153,9 @@ func TestNMV1NumberGets(t *testing.T) {
 	type test struct {
 		name string
 
-		userID    uint64
-		pageToken string
-		pageSize  uint64
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -168,26 +168,26 @@ func TestNMV1NumberGets(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 			"2021-03-02 03:23:20.995000",
 			10,
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/numbers?page_token=%s&page_size=10&user_id=1", url.QueryEscape("2021-03-02 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/numbers?page_token=%s&page_size=10&customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096", url.QueryEscape("2021-03-02 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"0e00bb78-7b19-11eb-a238-9f1154b2c92e","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"0e00bb78-7b19-11eb-a238-9f1154b2c92e","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 			[]nmnumber.Number{
 				{
 					ID:                  uuid.FromStringOrNil("0e00bb78-7b19-11eb-a238-9f1154b2c92e"),
 					Number:              "+821021656521",
-					UserID:              1,
+					CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 					ProviderName:        "telnyx",
 					ProviderReferenceID: "",
 					Status:              nmnumber.StatusActive,
@@ -208,7 +208,7 @@ func TestNMV1NumberGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberGets(ctx, tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.NMV1NumberGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -256,12 +256,12 @@ func TestNMV1NumberGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"74a2f4bc-7be2-11eb-bb71-c767ac6ed931","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"74a2f4bc-7be2-11eb-bb71-c767ac6ed931","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("74a2f4bc-7be2-11eb-bb71-c767ac6ed931"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -328,12 +328,12 @@ func TestNMV1NumberDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusDeleted,
@@ -404,13 +404,13 @@ func TestNMV1NumberUpdate(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815","number":"+821021656521","flow_id":"d45aae76-7c5b-11eb-9542-eb46d11b1c1a","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815","number":"+821021656521","flow_id":"d45aae76-7c5b-11eb-9542-eb46d11b1c1a","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
 				FlowID:              uuid.FromStringOrNil("d45aae76-7c5b-11eb-9542-eb46d11b1c1a"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,

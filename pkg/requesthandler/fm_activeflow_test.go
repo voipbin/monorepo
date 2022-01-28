@@ -49,12 +49,12 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"call_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","user_id":0,"webhook_uri":"","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"call_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","webhook_uri":"","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&fmactiveflow.ActiveFlow{
-				CallID: uuid.FromStringOrNil("447e712e-82d8-11eb-8900-7b97c080ddd8"),
-				FlowID: uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"),
-				UserID: 0,
+				CallID:     uuid.FromStringOrNil("447e712e-82d8-11eb-8900-7b97c080ddd8"),
+				FlowID:     uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"),
+				CustomerID: uuid.FromStringOrNil("f42b33e2-7f4d-11ec-8c86-ebf558a4306c"),
 				CurrentAction: fmaction.Action{
 					ID: fmaction.IDStart,
 				},
@@ -77,12 +77,12 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"call_id":"ec603bf8-82dc-11eb-afe2-d7c97817ab6f","flow_id":"f2c8b826-82dc-11eb-a8f0-e7519b0418a6","user_id":0,"webhook_uri":"https://test.com/test_webhook","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"call_id":"ec603bf8-82dc-11eb-afe2-d7c97817ab6f","flow_id":"f2c8b826-82dc-11eb-a8f0-e7519b0418a6","customer_id":"fe8511e6-7f4d-11ec-8be7-2763f2c173f3","webhook_uri":"https://test.com/test_webhook","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&fmactiveflow.ActiveFlow{
 				CallID:     uuid.FromStringOrNil("ec603bf8-82dc-11eb-afe2-d7c97817ab6f"),
 				FlowID:     uuid.FromStringOrNil("f2c8b826-82dc-11eb-a8f0-e7519b0418a6"),
-				UserID:     0,
+				CustomerID: uuid.FromStringOrNil("fe8511e6-7f4d-11ec-8be7-2763f2c173f3"),
 				WebhookURI: "https://test.com/test_webhook",
 				CurrentAction: fmaction.Action{
 					ID: fmaction.IDStart,

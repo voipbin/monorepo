@@ -208,7 +208,7 @@ type RequestHandler interface {
 	AMV1AgentCreate(
 		ctx context.Context,
 		timeout int,
-		userID uint64,
+		customerID uuid.UUID,
 		username string,
 		password string,
 		name string,
@@ -221,12 +221,12 @@ type RequestHandler interface {
 		addresses []cmaddress.Address,
 	) (*amagent.Agent, error)
 	AMV1AgentGet(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error)
-	AMV1AgentGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]amagent.Agent, error)
-	AMV1AgentGetsByTagIDs(ctx context.Context, userID uint64, tagIDs []uuid.UUID) ([]amagent.Agent, error)
-	AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, userID uint64, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
+	AMV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amagent.Agent, error)
+	AMV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]amagent.Agent, error)
+	AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
 	AMV1AgentDelete(ctx context.Context, id uuid.UUID) error
 	AMV1AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID uuid.UUID) error
-	AMV1AgentLogin(ctx context.Context, timeout int, userID uint64, username, password string) (*amagent.Agent, error)
+	AMV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*amagent.Agent, error)
 	AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail, ringMethod string) error
 	AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) error
 	AMV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) error
@@ -235,12 +235,12 @@ type RequestHandler interface {
 
 	AMV1TagCreate(
 		ctx context.Context,
-		userID uint64,
+		customerID uuid.UUID,
 		name string,
 		detail string,
 	) (*amtag.Tag, error)
 	AMV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
-	AMV1TagGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]amtag.Tag, error)
+	AMV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error)
 	AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) error
 	AMV1TagDelete(ctx context.Context, id uuid.UUID) error
 
@@ -249,10 +249,10 @@ type RequestHandler interface {
 	CMV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) error
 	CMV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
 	CMV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
-	CMV1CallCreate(ctx context.Context, userID uint64, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error)
-	CMV1CallCreateWithID(ctx context.Context, id uuid.UUID, userID uint64, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error)
+	CMV1CallCreate(ctx context.Context, customerID uuid.UUID, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error)
+	CMV1CallCreateWithID(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error)
 	CMV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
-	CMV1CallGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]cmcall.Call, error)
+	CMV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
 	CMV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 
 	// call-manager channel
@@ -266,7 +266,7 @@ type RequestHandler interface {
 
 	// call-manager recordings
 	CMV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
-	CMV1RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]cmrecording.Recording, error)
+	CMV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error)
 
 	// customer-manager customer
 	CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.Customer, error)
@@ -282,10 +282,10 @@ type RequestHandler interface {
 
 	// conference-manager conference
 	CFV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
-	CFV1ConferenceGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error)
+	CFV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error)
 	CFV1ConferenceCreate(
 		ctx context.Context,
-		userID uint64,
+		customerID uuid.UUID,
 		conferenceType cfconference.Type,
 		name string,
 		detail string,
@@ -309,28 +309,28 @@ type RequestHandler interface {
 	FMV1ActvieFlowUpdateForwardActionID(ctx context.Context, callID, forwardActionID uuid.UUID, forwardNow bool) error
 
 	// flow-manager flow
-	FMV1FlowCreate(ctx context.Context, userID uint64, flowType fmflow.Type, name string, detail string, webhookURI string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error)
+	FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, webhookURI string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error)
 	FMV1FlowDelete(ctx context.Context, flowID uuid.UUID) error
 	FMV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
-	FMV1FlowGets(ctx context.Context, userID uint64, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
+	FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error)
 
 	// number-manager available-number
-	NMV1AvailableNumberGets(ctx context.Context, userID uint64, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)
+	NMV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)
 
 	// number-manager number
-	NMV1NumberCreate(ctx context.Context, userID uint64, numb string) (*nmnumber.Number, error)
+	NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, numb string) (*nmnumber.Number, error)
 	NMV1NumberDelete(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error)
 	NMV1NumberFlowDelete(ctx context.Context, flowID uuid.UUID) error
 	NMV1NumberGetByNumber(ctx context.Context, num string) (*nmnumber.Number, error)
 	NMV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error)
-	NMV1NumberGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
+	NMV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
 	NMV1NumberUpdate(ctx context.Context, num *nmnumber.Number) (*nmnumber.Number, error)
 
 	// queue-manager queue
-	QMV1QueueGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]qmqueue.Queue, error)
+	QMV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueue.Queue, error)
 	QMV1QueueGet(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error)
-	QMV1QueueCreate(ctx context.Context, userID uint64, name, detail, webhookURI, webhookMethod string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error)
+	QMV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail, webhookURI, webhookMethod string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error)
 	QMV1QueueDelete(ctx context.Context, queueID uuid.UUID) error
 	QMV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error
 	QMV1QueueUpdateTagIDs(ctx context.Context, queueID uuid.UUID, tagIDs []uuid.UUID) error
@@ -339,7 +339,7 @@ type RequestHandler interface {
 	QMV1QueueCreateQueuecall(ctx context.Context, queueID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID, exitActionID uuid.UUID) (*qmqueuecall.Queuecall, error)
 
 	// queue-manager queuecall
-	QMV1QueuecallGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error)
+	QMV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error)
 	QMV1QueuecallGet(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
 	QMV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) error
 	QMV1QueuecallDeleteByReferenceID(ctx context.Context, referenceID uuid.UUID) error
@@ -355,10 +355,10 @@ type RequestHandler interface {
 	RMV1ContactUpdate(ctx context.Context, endpoint string) error
 
 	// registrar-manager domain
-	RMV1DomainCreate(ctx context.Context, userID uint64, domainName, name, detail string) (*rmdomain.Domain, error)
+	RMV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*rmdomain.Domain, error)
 	RMV1DomainDelete(ctx context.Context, domainID uuid.UUID) error
 	RMV1DomainGet(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error)
-	RMV1DomainGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]rmdomain.Domain, error)
+	RMV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmdomain.Domain, error)
 	RMV1DomainUpdate(ctx context.Context, f *rmdomain.Domain) (*rmdomain.Domain, error)
 
 	// registrar-manager extension

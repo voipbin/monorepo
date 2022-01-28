@@ -26,7 +26,7 @@ func TestRMV1DomainCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		userID          uint64
+		customerID      uuid.UUID
 		domainName      string
 		domainTmpName   string
 		domainTmpDetail string
@@ -42,7 +42,7 @@ func TestRMV1DomainCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
 			"test.sip.voipbin.net",
 			"test name",
 			"test detail",
@@ -52,16 +52,16 @@ func TestRMV1DomainCreate(t *testing.T) {
 				URI:      "/v1/domains",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"user_id":1,"domain_name":"test.sip.voipbin.net","name":"test name","detail":"test detail"}`),
+				Data:     []byte(`{"customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_name":"test.sip.voipbin.net","name":"test name","detail":"test detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"68040bf2-6ed5-11eb-9924-9febe8425cbe","user_id":1,"domain_name":"test.sip.voipbin.net","name":"test name","detail":"test detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"68040bf2-6ed5-11eb-9924-9febe8425cbe","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_name":"test.sip.voipbin.net","name":"test name","detail":"test detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("68040bf2-6ed5-11eb-9924-9febe8425cbe"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test name",
 				Detail:     "test detail",
@@ -75,7 +75,7 @@ func TestRMV1DomainCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1DomainCreate(ctx, tt.userID, tt.domainName, tt.domainTmpName, tt.domainTmpDetail)
+			res, err := reqHandler.RMV1DomainCreate(ctx, tt.customerID, tt.domainName, tt.domainTmpName, tt.domainTmpDetail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -118,7 +118,7 @@ func TestRMV1DomainUpdate(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"f4063a6c-6ed5-11eb-8835-23f57d9e419c","user_id":1,"domain_name":"test.sip.voipbin.net","name":"update name","detail":"update detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"f4063a6c-6ed5-11eb-8835-23f57d9e419c","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_name":"test.sip.voipbin.net","name":"update name","detail":"update detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
@@ -129,7 +129,7 @@ func TestRMV1DomainUpdate(t *testing.T) {
 			},
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("f4063a6c-6ed5-11eb-8835-23f57d9e419c"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "update name",
 				Detail:     "update detail",
@@ -186,7 +186,7 @@ func TestRMV1DomainGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"eb0e485e-6ed6-11eb-81bd-9365803e5d9f","user_id":1,"domain_name":"test.sip.voipbin.net","name":"test domain","detail":"test domain detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"eb0e485e-6ed6-11eb-81bd-9365803e5d9f","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_name":"test.sip.voipbin.net","name":"test domain","detail":"test domain detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 
 			"bin-manager.registrar-manager.request",
@@ -197,7 +197,7 @@ func TestRMV1DomainGet(t *testing.T) {
 			},
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("eb0e485e-6ed6-11eb-81bd-9365803e5d9f"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test domain",
 				Detail:     "test domain detail",
@@ -287,9 +287,9 @@ func TestRMV1DomainsGets(t *testing.T) {
 	type test struct {
 		name string
 
-		userID    uint64
-		pageToken string
-		pageSize  uint64
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
 
 		response *rabbitmqhandler.Response
 
@@ -302,26 +302,26 @@ func TestRMV1DomainsGets(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
 			"2020-09-20 03:23:20.995000",
 			10,
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"d19c3956-6ed8-11eb-b971-fb12bc338aeb","user_id":1,"domain_name":"test.sip.voipbin.net","name":"test","detail":"test detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"d19c3956-6ed8-11eb-b971-fb12bc338aeb","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_name":"test.sip.voipbin.net","name":"test","detail":"test detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
 			},
 
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/domains?page_token=%s&page_size=10&user_id=1", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/domains?page_token=%s&page_size=10&customer_id=324cf776-7ff0-11ec-a0ea-e30825a4224f", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]rmdomain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("d19c3956-6ed8-11eb-b971-fb12bc338aeb"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
 					DomainName: "test.sip.voipbin.net",
 					Name:       "test",
 					Detail:     "test detail",
@@ -338,7 +338,7 @@ func TestRMV1DomainsGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1DomainGets(ctx, tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RMV1DomainGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
