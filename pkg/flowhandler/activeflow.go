@@ -35,7 +35,7 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 	tmpAF := &activeflow.ActiveFlow{
 		CallID:     callID,
 		FlowID:     flowID,
-		UserID:     f.UserID,
+		CustomerID:     f.CustomerID,
 		WebhookURI: f.WebhookURI,
 
 		CurrentAction: action.Action{

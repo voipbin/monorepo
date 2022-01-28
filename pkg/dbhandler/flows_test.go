@@ -131,7 +131,7 @@ func TestFlowCreate(t *testing.T) {
 	}
 }
 
-func TestFlowGetsByUserID(t *testing.T) {
+func TestFlowGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -143,7 +143,7 @@ func TestFlowGetsByUserID(t *testing.T) {
 
 	type test struct {
 		name       string
-		userID     uint64
+		customerID uuid.UUID
 		limit      uint64
 		flows      []flow.Flow
 		expectFlow []*flow.Flow
@@ -152,38 +152,38 @@ func TestFlowGetsByUserID(t *testing.T) {
 	tests := []test{
 		{
 			"have no actions",
-			1,
+			uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
 			10,
 			[]flow.Flow{
 				{
-					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
-					UserID:   1,
-					Name:     "test1",
-					Persist:  true,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					Name:       "test1",
+					Persist:    true,
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					UserID:   1,
-					Name:     "test2",
-					Persist:  true,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					Name:       "test2",
+					Persist:    true,
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 			[]*flow.Flow{
 				{
-					ID:       uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					UserID:   1,
-					Name:     "test2",
-					Persist:  true,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					Name:       "test2",
+					Persist:    true,
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
-					UserID:   1,
-					Name:     "test1",
-					Persist:  true,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					Name:       "test1",
+					Persist:    true,
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 		},
@@ -200,7 +200,7 @@ func TestFlowGetsByUserID(t *testing.T) {
 				}
 			}
 
-			flows, err := h.FlowGetsByUserID(ctx, tt.userID, GetCurTime(), tt.limit)
+			flows, err := h.FlowGets(ctx, tt.customerID, GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -216,7 +216,7 @@ func TestFlowGetsByUserID(t *testing.T) {
 	}
 }
 
-func TestFlowGetsByUserIDAndType(t *testing.T) {
+func TestFlowGetsByType(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -228,7 +228,7 @@ func TestFlowGetsByUserIDAndType(t *testing.T) {
 
 	type test struct {
 		name       string
-		userID     uint64
+		customerID uuid.UUID
 		flowType   flow.Type
 		limit      uint64
 		flows      []flow.Flow
@@ -238,43 +238,43 @@ func TestFlowGetsByUserIDAndType(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			1,
+			uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
 			flow.TypeFlow,
 			10,
 			[]flow.Flow{
 				{
-					ID:       uuid.FromStringOrNil("4f351e4c-6c0c-11ec-aeb7-63ef13f21b04"),
-					UserID:   1,
-					Type:     flow.TypeFlow,
-					Name:     "test1",
-					Persist:  true,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("4f351e4c-6c0c-11ec-aeb7-63ef13f21b04"),
+					CustomerID: uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
+					Type:       flow.TypeFlow,
+					Name:       "test1",
+					Persist:    true,
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("4fb2c612-6c0c-11ec-af63-832d2d72863f"),
-					UserID:   1,
-					Type:     flow.TypeFlow,
-					Name:     "test2",
-					Persist:  true,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("4fb2c612-6c0c-11ec-af63-832d2d72863f"),
+					CustomerID: uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
+					Type:       flow.TypeFlow,
+					Name:       "test2",
+					Persist:    true,
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 			[]*flow.Flow{
 				{
-					ID:       uuid.FromStringOrNil("4fb2c612-6c0c-11ec-af63-832d2d72863f"),
-					UserID:   1,
-					Type:     flow.TypeFlow,
-					Name:     "test2",
-					Persist:  true,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("4fb2c612-6c0c-11ec-af63-832d2d72863f"),
+					CustomerID: uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
+					Type:       flow.TypeFlow,
+					Name:       "test2",
+					Persist:    true,
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("4f351e4c-6c0c-11ec-aeb7-63ef13f21b04"),
-					UserID:   1,
-					Type:     flow.TypeFlow,
-					Name:     "test1",
-					Persist:  true,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("4f351e4c-6c0c-11ec-aeb7-63ef13f21b04"),
+					CustomerID: uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
+					Type:       flow.TypeFlow,
+					Name:       "test1",
+					Persist:    true,
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 		},
@@ -291,7 +291,7 @@ func TestFlowGetsByUserIDAndType(t *testing.T) {
 				}
 			}
 
-			flows, err := h.FlowGetsByUserIDAndType(ctx, tt.userID, tt.flowType, GetCurTime(), tt.limit)
+			flows, err := h.FlowGetsByType(ctx, tt.customerID, tt.flowType, GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -465,12 +465,12 @@ func TestFlowDelete(t *testing.T) {
 		{
 			"normal deletion",
 			&flow.Flow{
-				ID:       uuid.FromStringOrNil("9f59d11a-67c1-11eb-9cf4-1b8a94365c22"),
-				UserID:   3,
-				Name:     "test flow name",
-				Detail:   "test flow detail",
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				ID:         uuid.FromStringOrNil("9f59d11a-67c1-11eb-9cf4-1b8a94365c22"),
+				CustomerID: uuid.FromStringOrNil("cf304d36-7f46-11ec-9455-93fccf7c0fdf"),
+				Name:       "test flow name",
+				Detail:     "test flow detail",
+				TMCreate:   "2020-04-18T03:22:17.995000",
+				TMDelete:   DefaultTimeStamp,
 			},
 		},
 	}

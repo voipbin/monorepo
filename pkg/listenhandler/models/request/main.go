@@ -34,8 +34,8 @@ type V1DataActiveFlowsIDForwardActionIDPut struct {
 // v1 data type request struct for
 // /v1/flows POST
 type V1DataFlowPost struct {
-	UserID uint64    `json:"user_id"` // flow's owner
-	Type   flow.Type `json:"type"`    // flow's type
+	CustomerID uuid.UUID `json:"customer_id"` // flow's owner
+	Type       flow.Type `json:"type"`        // flow's type
 
 	Name       string `json:"name"`        // name
 	Detail     string `json:"detail"`      // detail

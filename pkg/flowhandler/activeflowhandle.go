@@ -73,7 +73,7 @@ func replaceActions(af *activeflow.ActiveFlow, targetActionID uuid.UUID, act []a
 }
 
 // getActionsFromFlow gets the actions from the flow.
-func (h *flowHandler) getActionsFromFlow(flowID uuid.UUID, userID uint64) ([]action.Action, error) {
+func (h *flowHandler) getActionsFromFlow(flowID uuid.UUID, customerID uuid.UUID) ([]action.Action, error) {
 	ctx := context.Background()
 
 	log := logrus.WithFields(
@@ -89,8 +89,8 @@ func (h *flowHandler) getActionsFromFlow(flowID uuid.UUID, userID uint64) ([]act
 		return nil, err
 	}
 
-	if f.UserID != userID {
-		log.Errorf("The user has no permission. user_id: %d", userID)
+	if f.CustomerID != customerID {
+		log.Errorf("The customer has no permission. customer_id: %d", customerID)
 		return nil, fmt.Errorf("no flow found")
 	}
 
@@ -226,7 +226,7 @@ func (h *flowHandler) activeFlowHandleActionPatchFlow(ctx context.Context, callI
 	}
 
 	// patch the actions from the remote
-	patchedActions, err := h.getActionsFromFlow(option.FlowID, af.UserID)
+	patchedActions, err := h.getActionsFromFlow(option.FlowID, af.CustomerID)
 	if err != nil {
 		log.Errorf("Could not patch the actions from the remote. err: %v", err)
 		return nil, err
@@ -328,7 +328,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	}
 
 	// create conference room for connect
-	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
+	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create conference for connect. err: %v", err)
 		return fmt.Errorf("could not create conference for connect. err: %v", err)
@@ -356,7 +356,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	}
 
 	// create a flow
-	connectCF, err := h.FlowCreate(ctx, cf.UserID, flow.TypeFlow, "", "", false, "", actions)
+	connectCF, err := h.FlowCreate(ctx, cf.CustomerID, flow.TypeFlow, "", "", false, "", actions)
 	if err != nil {
 		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 		return fmt.Errorf("could not create a call flow. err: %v", err)
@@ -384,7 +384,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 		}
 
 		// create a call
-		resCall, err := h.reqHandler.CMV1CallCreate(ctx, connectCF.UserID, connectCF.ID, source, destination)
+		resCall, err := h.reqHandler.CMV1CallCreate(ctx, connectCF.CustomerID, connectCF.ID, source, destination)
 		if err != nil {
 			log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 			continue
@@ -566,7 +566,7 @@ func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callI
 	}
 
 	// create conference room for agent_call
-	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
+	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create conference for agent_call. err: %v", err)
 		return fmt.Errorf("could not create conference for agent_call. err: %v", err)
@@ -673,7 +673,7 @@ func (h *flowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callI
 	log.WithField("queuecall", qc).Debug("Created the queuecall.")
 
 	// get flow's action
-	patchedActions, err := h.getActionsFromFlow(qc.FlowID, q.UserID)
+	patchedActions, err := h.getActionsFromFlow(qc.FlowID, q.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get queue flow's actions. err: %v", err)
 		return nil, err

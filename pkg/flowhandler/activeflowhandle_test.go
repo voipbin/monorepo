@@ -55,7 +55,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 				Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
 			},
 			activeflow.ActiveFlow{
-				UserID: 1,
+				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
 					Type:   action.TypeConnect,
@@ -70,12 +70,12 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 				},
 			},
 			&cfconference.Conference{
-				ID:     uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
+				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 			},
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
+				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 			},
 			&cmaddress.Address{
 				Type:   cmaddress.TypeTel,
@@ -99,7 +99,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 				Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
 			},
 			activeflow.ActiveFlow{
-				UserID: 1,
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
 					Type:   action.TypeConnect,
@@ -114,12 +114,12 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 				},
 			},
 			&cfconference.Conference{
-				ID:     uuid.FromStringOrNil("cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"),
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("cc480ff8-2710-11eb-8869-0fcf3d58fd6a"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("cc480ff8-2710-11eb-8869-0fcf3d58fd6a"),
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
 			&cmaddress.Address{
 				Type:   cmaddress.TypeTel,
@@ -147,7 +147,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 				Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
 			},
 			activeflow.ActiveFlow{
-				UserID: 1,
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
 					Type:   action.TypeConnect,
@@ -162,12 +162,12 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 				},
 			},
 			&cfconference.Conference{
-				ID:     uuid.FromStringOrNil("2266e688-2712-11eb-aab4-eb00b0a3efbe"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("2266e688-2712-11eb-aab4-eb00b0a3efbe"),
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("229ef410-2712-11eb-9dea-a737f7b6ef2b"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("229ef410-2712-11eb-9dea-a737f7b6ef2b"),
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
 			&cmaddress.Address{
 				Type:   cmaddress.TypeTel,
@@ -191,11 +191,11 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
-			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.af.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil).Return(tt.cf, nil)
+			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.af.CustomerID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil).Return(tt.cf, nil)
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
 			for i := range tt.destinations {
-				mockReq.EXPECT().CMV1CallCreate(ctx, tt.connectFlow.UserID, tt.connectFlow.ID, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
+				mockReq.EXPECT().CMV1CallCreate(ctx, tt.connectFlow.CustomerID, tt.connectFlow.ID, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
 				if tt.unchained == false {
 					mockReq.EXPECT().CMV1CallAddChainedCall(ctx, tt.callID, uuid.Nil).Return(nil)
 				}
@@ -231,7 +231,7 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 			"next action echo",
 			uuid.FromStringOrNil("f96b5730-0c24-11eb-89ff-af22fc6e8dce"),
 			activeflow.ActiveFlow{
-				UserID: 1,
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("005a71ac-0c25-11eb-b9ba-ffa78e01ffc9"),
 					Type:   action.TypeConnect,
@@ -259,7 +259,7 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 			"empty actions",
 			uuid.FromStringOrNil("44413184-0c26-11eb-83a9-974d19b06d35"),
 			activeflow.ActiveFlow{
-				UserID: 1,
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -275,7 +275,7 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 			"forwrad action id has set",
 			uuid.FromStringOrNil("44413184-0c26-11eb-83a9-974d19b06d35"),
 			activeflow.ActiveFlow{
-				UserID: 1,
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("15d7d942-574d-11ec-9e99-2fa8e28a2590"),
 				},
@@ -758,7 +758,7 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
-			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.activeFlow.UserID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil).Return(tt.conference, nil)
+			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.activeFlow.CustomerID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil).Return(tt.conference, nil)
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.callID).Return(tt.call, nil)
 			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.conference.ConfbridgeID).Return(nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)

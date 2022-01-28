@@ -16,7 +16,7 @@ const (
 	flowSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 		type,
 
 		name,
@@ -41,7 +41,7 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 	res := &flow.Flow{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 		&res.Type,
 
 		&res.Name,
@@ -70,7 +70,7 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
 	q := `insert into flows(
 		id,
-		user_id,
+		customer_id,
 		type,
 
 		name,
@@ -103,7 +103,7 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
 	_, err = stmt.ExecContext(ctx,
 		f.ID.Bytes(),
-		f.UserID,
+		f.CustomerID.Bytes(),
 		f.Type,
 
 		f.Name,
@@ -226,24 +226,24 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	return res, nil
 }
 
-// FlowGetsByUserID returns list of flows.
-func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error) {
+// FlowGetsBy returns list of flows.
+func (h *handler) FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
 			tm_delete >= ?
-			and user_id = ?
+			and customer_id = ?
 			and tm_create < ?
 		order by
 			tm_create desc, id desc
 		limit ?
 	`, flowSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, userID, token, limit)
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. FlowGetsByUserID. err: %v", err)
+		return nil, fmt.Errorf("could not query. FlowGets. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -251,7 +251,7 @@ func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token str
 	for rows.Next() {
 		u, err := h.flowGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. FlowGetsByUserID. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. FlowGets. err: %v", err)
 		}
 
 		res = append(res, u)
@@ -260,15 +260,15 @@ func (h *handler) FlowGetsByUserID(ctx context.Context, userID uint64, token str
 	return res, nil
 }
 
-// FlowGetsByUserIDAndType returns list of flows of the given userID and flowType.
-func (h *handler) FlowGetsByUserIDAndType(ctx context.Context, userID uint64, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
+// FlowGetsByType returns list of flows of the given customerID and flowType.
+func (h *handler) FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
 			tm_delete >= ?
-			and user_id = ?
+			and customer_id = ?
 			and type = ?
 			and tm_create < ?
 		order by
@@ -276,9 +276,9 @@ func (h *handler) FlowGetsByUserIDAndType(ctx context.Context, userID uint64, fl
 		limit ?
 	`, flowSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, userID, flowType, token, limit)
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), flowType, token, limit)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. FlowGetsByUserIDAndType. err: %v", err)
+		return nil, fmt.Errorf("could not query. FlowGetsByType. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -286,7 +286,7 @@ func (h *handler) FlowGetsByUserIDAndType(ctx context.Context, userID uint64, fl
 	for rows.Next() {
 		u, err := h.flowGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. FlowGetsByUserIDAndType. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. FlowGetsByType. err: %v", err)
 		}
 
 		res = append(res, u)

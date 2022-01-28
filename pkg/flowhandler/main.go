@@ -33,7 +33,7 @@ type FlowHandler interface {
 
 	FlowCreate(
 		ctx context.Context,
-		userID uint64,
+		customerID uuid.UUID,
 		flowType flow.Type,
 		name string,
 		detail string,
@@ -43,8 +43,8 @@ type FlowHandler interface {
 	) (*flow.Flow, error)
 	FlowDelete(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
-	FlowGetsByUserID(ctx context.Context, userID uint64, token string, limit uint64) ([]*flow.Flow, error)
-	FlowGetsByUserIDAndType(ctx context.Context, userID uint64, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
+	FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
+	FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
 	FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow, error)
 
 	ValidateActions(actions []action.Action) error
