@@ -48,7 +48,6 @@ func TestExecute(t *testing.T) {
 
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
-				UserID:          1,
 				QueueID:         uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("b658394e-5ee0-11ec-92ba-5f2f2eabf000"),
@@ -70,14 +69,13 @@ func TestExecute(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					ID:     uuid.FromStringOrNil("2e5a88c0-5ee1-11ec-b59f-cf1c32e0c3ea"),
-					UserID: 1,
-					Status: amagent.StatusAvailable,
+					ID:         uuid.FromStringOrNil("2e5a88c0-5ee1-11ec-b59f-cf1c32e0c3ea"),
+					CustomerID: uuid.FromStringOrNil("7d4f9060-7ffc-11ec-830b-3fbb58c43ac6"),
+					Status:     amagent.StatusAvailable,
 				},
 			},
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
-				UserID:          1,
 				QueueID:         uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("b658394e-5ee0-11ec-92ba-5f2f2eabf000"),
@@ -107,7 +105,7 @@ func TestExecute(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.queuecall, nil)
-			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.UserID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
+			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
 			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), gomock.Any(), &tt.queuecall.Source, tt.queuecall.ConfbridgeID).Return(nil)
 			mockReq.EXPECT().FMV1ActvieFlowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceID, tt.queuecall.ForwardActionID, true).Return(nil)
 			mockDB.EXPECT().QueuecallSetServiceAgentID(gomock.Any(), tt.queuecall.ID, gomock.Any()).Return(nil)
@@ -245,7 +243,7 @@ func TestExecuteWithWrongAgents(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.queuecall, nil)
-			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.UserID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, tt.agentError)
+			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, tt.agentError)
 			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.queueCallID, 1000)
 
 			h.Execute(ctx, tt.queueCallID)
@@ -299,7 +297,7 @@ func TestExecuteWithWrongRoutingMethod(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.queuecall, nil)
-			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.UserID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
+			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
 			mockReq.EXPECT().FMV1ActvieFlowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceID, tt.queuecall.ExitActionID, true).Return(nil)
 
 			h.Execute(ctx, tt.queueCallID)
@@ -353,7 +351,7 @@ func TestExecuteWithAgentDialFailure(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.queuecall, nil)
-			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.UserID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
+			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
 			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agents[0].ID, &tt.queuecall.Source, tt.queuecall.ConfbridgeID).Return(fmt.Errorf(""))
 
 			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.queuecall.ID, 1000)

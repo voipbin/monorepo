@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
@@ -28,7 +28,7 @@ const (
 type QueueHandler interface {
 	Create(
 		ctx context.Context,
-		userID uint64,
+		customerID uuid.UUID,
 		name string,
 		detail string,
 		webhookURI string,
@@ -41,7 +41,7 @@ type QueueHandler interface {
 	) (*queue.Queue, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
-	Gets(ctx context.Context, userID, size uint64, token string) ([]*queue.Queue, error)
+	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error)
 	Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID uuid.UUID, exitActionID uuid.UUID) (*queuecall.Queuecall, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookURI, webhookMethod string) error
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error

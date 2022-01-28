@@ -31,7 +31,7 @@ func TestQueueCreate(t *testing.T) {
 			"normal",
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("4fc7cef8-7f54-11ec-8e1f-6f6a91905190"),
 				Name:          "test name",
 				Detail:        "test detail",
 				WebhookURI:    "test.com",
@@ -54,7 +54,7 @@ func TestQueueCreate(t *testing.T) {
 			},
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("4fc7cef8-7f54-11ec-8e1f-6f6a91905190"),
 				Name:          "test name",
 				Detail:        "test detail",
 				WebhookURI:    "test.com",
@@ -80,7 +80,7 @@ func TestQueueCreate(t *testing.T) {
 			"have QueueCallID",
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("731e523e-59e1-11ec-9156-abd8ba26f843"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
 				Name:          "test name",
 				Detail:        "test detail",
 				WebhookURI:    "test.com",
@@ -105,7 +105,7 @@ func TestQueueCreate(t *testing.T) {
 			},
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("731e523e-59e1-11ec-9156-abd8ba26f843"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
 				Name:          "test name",
 				Detail:        "test detail",
 				WebhookURI:    "test.com",
@@ -133,7 +133,7 @@ func TestQueueCreate(t *testing.T) {
 			"have wait timeout, service timeout",
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("2c4c233c-5f67-11ec-8eea-bbf4408ec1d8"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
 				Name:          "test name",
 				Detail:        "test detail",
 				WebhookURI:    "test.com",
@@ -161,7 +161,7 @@ func TestQueueCreate(t *testing.T) {
 			},
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("2c4c233c-5f67-11ec-8eea-bbf4408ec1d8"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
 				Name:          "test name",
 				Detail:        "test detail",
 				WebhookURI:    "test.com",
@@ -221,8 +221,8 @@ func TestQueueGets(t *testing.T) {
 	h := NewHandler(dbTest, mockCache)
 
 	type test struct {
-		name   string
-		userID uint64
+		name       string
+		customerID uuid.UUID
 
 		data []*queue.Queue
 
@@ -234,11 +234,11 @@ func TestQueueGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			11,
+			uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 			[]*queue.Queue{
 				{
 					ID:                  uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					UserID:              11,
+					CustomerID:          uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 					Name:                "test name 1",
 					Detail:              "test detail 1",
 					TagIDs:              []uuid.UUID{},
@@ -249,7 +249,7 @@ func TestQueueGets(t *testing.T) {
 				},
 				{
 					ID:                  uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					UserID:              11,
+					CustomerID:          uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 					Name:                "test name 2",
 					Detail:              "test detail 2",
 					TagIDs:              []uuid.UUID{},
@@ -264,7 +264,7 @@ func TestQueueGets(t *testing.T) {
 			[]*queue.Queue{
 				{
 					ID:                  uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					UserID:              11,
+					CustomerID:          uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 					Name:                "test name 1",
 					Detail:              "test detail 1",
 					TagIDs:              []uuid.UUID{},
@@ -275,7 +275,7 @@ func TestQueueGets(t *testing.T) {
 				},
 				{
 					ID:                  uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					UserID:              11,
+					CustomerID:          uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 					Name:                "test name 2",
 					Detail:              "test detail 2",
 					TagIDs:              []uuid.UUID{},
@@ -299,7 +299,7 @@ func TestQueueGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueueGets(ctx, tt.userID, tt.size, tt.token)
+			res, err := h.QueueGets(ctx, tt.customerID, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

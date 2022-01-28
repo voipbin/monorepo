@@ -18,7 +18,7 @@ import (
 // serviceTimeout: service timeout(MS)
 func (h *queueHandler) Create(
 	ctx context.Context,
-	userID uint64,
+	customerID uuid.UUID,
 	name string,
 	detail string,
 	webhookURI string,
@@ -31,7 +31,7 @@ func (h *queueHandler) Create(
 ) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "Create",
-		"userid": userID,
+		"userid": customerID,
 	})
 	log.Debug("Creating a new user.")
 
@@ -46,8 +46,8 @@ func (h *queueHandler) Create(
 
 	// create a new queue
 	a := &queue.Queue{
-		ID:     id,
-		UserID: userID,
+		ID:         id,
+		CustomerID: customerID,
 
 		Name:          name,
 		Detail:        detail,
@@ -90,7 +90,7 @@ func (h *queueHandler) Create(
 }
 
 // createQueueFlow creates a queue flow and returns created flow.
-func (h *queueHandler) createQueueFlow(ctx context.Context, userID uint64, queueID uuid.UUID, confbridgeID uuid.UUID, waitActions []fmaction.Action) (*fmflow.Flow, error) {
+func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID, queueID uuid.UUID, confbridgeID uuid.UUID, waitActions []fmaction.Action) (*fmflow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":     "createQueueFlow",
@@ -109,7 +109,7 @@ func (h *queueHandler) createQueueFlow(ctx context.Context, userID uint64, queue
 	flowName := fmt.Sprintf("queue-%s", queueID.String())
 
 	// create flow
-	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", "", actions, false)
+	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", "", actions, false)
 	if err != nil {
 		log.Errorf("Could not create a queue flow. err: %v", err)
 		return nil, err

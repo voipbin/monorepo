@@ -9,7 +9,7 @@ import (
 // v1 data type request struct for
 // /v1/queues POST
 type V1DataQueuesPost struct {
-	UserID uint64 `json:"user_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`

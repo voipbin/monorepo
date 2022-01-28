@@ -18,7 +18,7 @@ const (
 	queueSelect = `
 	select
 		id,
-		user_id,
+		customer_id,
 
 		name,
 		detail,
@@ -59,7 +59,7 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 	res := &queue.Queue{}
 	if err := row.Scan(
 		&res.ID,
-		&res.UserID,
+		&res.CustomerID,
 
 		&res.Name,
 		&res.Detail,
@@ -123,7 +123,7 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 	q := `insert into queues(
 		id,
-		user_id,
+		customer_id,
 
 		name,
 		detail,
@@ -177,7 +177,7 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 
 	_, err = h.db.Exec(q,
 		a.ID.Bytes(),
-		a.UserID,
+		a.CustomerID.Bytes(),
 
 		a.Name,
 		a.Detail,
@@ -292,11 +292,11 @@ func (h *handler) QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, err
 }
 
 // QueueGets returns queues.
-func (h *handler) QueueGets(ctx context.Context, userID uint64, size uint64, token string) ([]*queue.Queue, error) {
+func (h *handler) QueueGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error) {
 	// prepare
-	q := fmt.Sprintf("%s where user_id = ? and tm_create < ? order by tm_create desc limit ?", queueSelect)
+	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", queueSelect)
 
-	rows, err := h.db.Query(q, userID, token, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueueGets. err: %v", err)
 	}

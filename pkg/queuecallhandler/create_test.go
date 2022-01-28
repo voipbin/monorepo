@@ -33,7 +33,7 @@ func TestCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID        uint64
+		customerID    uuid.UUID
 		queueID       uuid.UUID
 		referenceType queuecall.ReferenceType
 		referenceID   uuid.UUID
@@ -59,7 +59,7 @@ func TestCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("c910ccc8-7f55-11ec-9c6e-a356bdf34421"),
 			uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
 			queuecall.ReferenceTypeCall,
 			uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
@@ -106,7 +106,7 @@ func TestCreate(t *testing.T) {
 
 			res, err := h.Create(
 				ctx,
-				tt.userID,
+				tt.customerID,
 				tt.queueID,
 				tt.referenceType,
 				tt.referenceID,

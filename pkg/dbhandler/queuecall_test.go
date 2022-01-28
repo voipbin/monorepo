@@ -32,7 +32,7 @@ func TestQueuecallCreate(t *testing.T) {
 			"normal",
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("a90f81ba-5e5a-11ec-be17-5fbb9796c693"),
-				UserID:          1,
+				CustomerID:      uuid.FromStringOrNil("9a965e7c-7f54-11ec-941d-f3ea2575f0b4"),
 				QueueID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
@@ -60,7 +60,7 @@ func TestQueuecallCreate(t *testing.T) {
 			},
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("a90f81ba-5e5a-11ec-be17-5fbb9796c693"),
-				UserID:          1,
+				CustomerID:      uuid.FromStringOrNil("9a965e7c-7f54-11ec-941d-f3ea2575f0b4"),
 				QueueID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
@@ -91,7 +91,7 @@ func TestQueuecallCreate(t *testing.T) {
 			"added flow_id",
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("e09db874-7686-11ec-8245-27e9d4dad47d"),
-				UserID:          1,
+				CustomerID:      uuid.FromStringOrNil("a3aa4d8e-7f54-11ec-a892-e73fa57b7129"),
 				QueueID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
@@ -120,7 +120,7 @@ func TestQueuecallCreate(t *testing.T) {
 			},
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("e09db874-7686-11ec-8245-27e9d4dad47d"),
-				UserID:          1,
+				CustomerID:      uuid.FromStringOrNil("a3aa4d8e-7f54-11ec-a892-e73fa57b7129"),
 				QueueID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
@@ -181,26 +181,26 @@ func TestQueuecallGets(t *testing.T) {
 	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
-		name      string
-		userID    uint64
-		data      []*queuecall.Queuecall
-		size      uint64
-		expectRes []*queuecall.Queuecall
+		name       string
+		customerID uuid.UUID
+		data       []*queuecall.Queuecall
+		size       uint64
+		expectRes  []*queuecall.Queuecall
 	}{
 		{
 			"normal",
-			11,
+			uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 			[]*queuecall.Queuecall{
 				{
 					ID:            uuid.FromStringOrNil("a8818302-5a7b-11ec-b948-a3d1ac87eeea"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
 					TMCreate:      "2020-04-18T03:22:17.995000",
 				},
 				{
 					ID:            uuid.FromStringOrNil("a8d4bff4-5a7b-11ec-b7f7-a3905f3d70e9"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
 					TMCreate:      "2020-04-18T03:22:17.994000",
@@ -210,7 +210,7 @@ func TestQueuecallGets(t *testing.T) {
 			[]*queuecall.Queuecall{
 				{
 					ID:            uuid.FromStringOrNil("a8818302-5a7b-11ec-b948-a3d1ac87eeea"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
 					Source:        cmaddress.Address{},
@@ -220,7 +220,7 @@ func TestQueuecallGets(t *testing.T) {
 				},
 				{
 					ID:            uuid.FromStringOrNil("a8d4bff4-5a7b-11ec-b7f7-a3905f3d70e9"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
 					Source:        cmaddress.Address{},
@@ -243,7 +243,7 @@ func TestQueuecallGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueuecallGets(ctx, tt.userID, tt.size, GetCurTime())
+			res, err := h.QueuecallGets(ctx, tt.customerID, tt.size, GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
@@ -275,14 +275,14 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 			[]*queuecall.Queuecall{
 				{
 					ID:            uuid.FromStringOrNil("66efdcbe-5ab6-11ec-953e-37514d9c9cb6"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("66bb474c-5ab6-11ec-9636-0b7539c651ac"),
 					TMCreate:      "2020-04-18T03:22:17.995000",
 				},
 				{
 					ID:            uuid.FromStringOrNil("671bc14e-5ab6-11ec-9c00-6b261a1357c1"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("ee77af9c-5c85-11ec-bac4-d3a4e453df6e"),
 					TMCreate:      "2020-04-18T03:22:17.994000",
@@ -292,7 +292,7 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 			[]*queuecall.Queuecall{
 				{
 					ID:            uuid.FromStringOrNil("66efdcbe-5ab6-11ec-953e-37514d9c9cb6"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("66bb474c-5ab6-11ec-9636-0b7539c651ac"),
 					Source:        cmaddress.Address{},
@@ -307,14 +307,14 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 			[]*queuecall.Queuecall{
 				{
 					ID:            uuid.FromStringOrNil("2766dfd4-5ab6-11ec-afc2-f3a1937a9b34"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
 					TMCreate:      "2020-04-18T03:22:17.995000",
 				},
 				{
 					ID:            uuid.FromStringOrNil("279110b0-5ab6-11ec-afb8-e311840c5826"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
 					TMCreate:      "2020-04-18T03:22:17.994000",
@@ -324,7 +324,7 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 			[]*queuecall.Queuecall{
 				{
 					ID:            uuid.FromStringOrNil("2766dfd4-5ab6-11ec-afc2-f3a1937a9b34"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
 					Source:        cmaddress.Address{},
@@ -333,7 +333,7 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 				},
 				{
 					ID:            uuid.FromStringOrNil("279110b0-5ab6-11ec-afb8-e311840c5826"),
-					UserID:        11,
+					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
 					Source:        cmaddress.Address{},
@@ -388,13 +388,11 @@ func TestQueuecallDelete(t *testing.T) {
 			uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
 
 			&queuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
-				UserID: 1,
+				ID: uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
 			},
 
 			&queuecall.Queuecall{
 				ID:     uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
-				UserID: 1,
 				Source: cmaddress.Address{},
 				TagIDs: []uuid.UUID{},
 				Status: queuecall.StatusDone,
@@ -460,13 +458,11 @@ func TestQueuecallSetServiceAgentID(t *testing.T) {
 			uuid.FromStringOrNil("85b89f08-5ab8-11ec-94ea-5bed0069b7e9"),
 
 			&queuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
-				UserID: 1,
+				ID: uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
 			},
 
 			&queuecall.Queuecall{
 				ID:             uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
-				UserID:         1,
 				Status:         queuecall.StatusEntering,
 				Source:         cmaddress.Address{},
 				TagIDs:         []uuid.UUID{},
@@ -530,13 +526,11 @@ func TestQueuecallSetStatusService(t *testing.T) {
 			uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
 
 			&queuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
-				UserID: 1,
+				ID: uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
 			},
 
 			&queuecall.Queuecall{
 				ID:     uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
-				UserID: 1,
 				Status: queuecall.StatusService,
 				Source: cmaddress.Address{},
 				TagIDs: []uuid.UUID{},

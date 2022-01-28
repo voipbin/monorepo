@@ -31,7 +31,7 @@ func TestQueuecallReferenceCreate(t *testing.T) {
 			"normal",
 			&queuecallreference.QueuecallReference{
 				ID:           uuid.FromStringOrNil("93aeb602-6016-11ec-909b-d30e283ea6cb"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("2d2c0a14-7ffc-11ec-a6f5-ef525309e5e6"),
 				Type:         queuecall.ReferenceTypeCall,
 				QueuecallIDs: []uuid.UUID{},
 				TMCreate:     DefaultTimeStamp,
@@ -40,7 +40,7 @@ func TestQueuecallReferenceCreate(t *testing.T) {
 			},
 			&queuecallreference.QueuecallReference{
 				ID:           uuid.FromStringOrNil("93aeb602-6016-11ec-909b-d30e283ea6cb"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("2d2c0a14-7ffc-11ec-a6f5-ef525309e5e6"),
 				Type:         queuecall.ReferenceTypeCall,
 				QueuecallIDs: []uuid.UUID{},
 				TMCreate:     DefaultTimeStamp,
@@ -94,7 +94,7 @@ func TestQueuecallReferenceDelete(t *testing.T) {
 
 			&queuecallreference.QueuecallReference{
 				ID:           uuid.FromStringOrNil("447196b0-762b-11ec-9010-375c278aee23"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("378a2662-7ffc-11ec-8b4b-9b0bb8c4670a"),
 				Type:         queuecall.ReferenceTypeCall,
 				QueuecallIDs: []uuid.UUID{},
 				TMCreate:     DefaultTimeStamp,
@@ -103,7 +103,7 @@ func TestQueuecallReferenceDelete(t *testing.T) {
 			},
 			&queuecallreference.QueuecallReference{
 				ID:           uuid.FromStringOrNil("447196b0-762b-11ec-9010-375c278aee23"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("378a2662-7ffc-11ec-8b4b-9b0bb8c4670a"),
 				Type:         queuecall.ReferenceTypeCall,
 				QueuecallIDs: []uuid.UUID{},
 				TMCreate:     DefaultTimeStamp,

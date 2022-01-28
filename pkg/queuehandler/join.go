@@ -61,7 +61,7 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 	}
 
 	// create queue flow
-	f, err := h.createQueueFlow(ctx, q.UserID, q.ID, cb.ID, q.WaitActions)
+	f, err := h.createQueueFlow(ctx, q.CustomerID, q.ID, cb.ID, q.WaitActions)
 	if err != nil {
 		log.Errorf("Could not create the queue flow. err: %v", err)
 		return nil, err
@@ -77,7 +77,7 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 	// create a new queuecall
 	res, err := h.queuecallHandler.Create(
 		ctx,
-		q.UserID,
+		q.CustomerID,
 		q.ID,
 		referenceType,
 		referenceID,

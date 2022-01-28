@@ -1,7 +1,7 @@
 create table queuecallreferences(
   -- identity
   id        binary(16),   -- id
-  user_id   integer,
+  customer_id   integer,
   type      varchar(255),
 
   current_queuecall_id  binary(16),

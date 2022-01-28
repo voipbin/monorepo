@@ -11,10 +11,10 @@ import (
 )
 
 // Gets returns queuecalls
-func (h *queuecallHandler) Gets(ctx context.Context, userID, size uint64, token string) ([]*queuecall.Queuecall, error) {
+func (h *queuecallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
 	log := logrus.WithField("func", "Gets")
 
-	res, err := h.db.QueuecallGets(ctx, userID, size, token)
+	res, err := h.db.QueuecallGets(ctx, customerID, size, token)
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
 		return nil, err

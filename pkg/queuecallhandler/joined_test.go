@@ -58,7 +58,6 @@ func TestJoined(t *testing.T) {
 			},
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("b5bbd69e-5ef9-11ec-a39e-73a3a50a1e26"),
-				UserID:          1,
 				QueueID:         uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
@@ -80,7 +79,6 @@ func TestJoined(t *testing.T) {
 			},
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("b5bbd69e-5ef9-11ec-a39e-73a3a50a1e26"),
-				UserID:          1,
 				QueueID:         uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),

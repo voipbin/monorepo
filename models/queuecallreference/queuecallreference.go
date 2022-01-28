@@ -8,9 +8,9 @@ import (
 
 // QueuecallReference defines
 type QueuecallReference struct {
-	ID     uuid.UUID               `json:"id"` // reference's id
-	UserID uint64                  `json:"user_id"`
-	Type   queuecall.ReferenceType `json:"type"` // reference's type
+	ID         uuid.UUID               `json:"id"` // reference's id
+	CustomerID uuid.UUID               `json:"customer_id"`
+	Type       queuecall.ReferenceType `json:"type"` // reference's type
 
 	CurrentQueuecallID uuid.UUID   `json:"current_queuecall_id"`
 	QueuecallIDs       []uuid.UUID `json:"queuecall_ids"`

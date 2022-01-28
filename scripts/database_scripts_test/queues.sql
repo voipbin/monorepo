@@ -1,7 +1,7 @@
 create table queues(
   -- identity
-  id                binary(16),   -- id
-  user_id           integer,      -- user's id
+  id                binary(16),       -- id
+  customer_id           binary(16),   -- owner's id
   flow_id           binary(16),
   confbridge_id     binary(16),
   forward_action_id binary(16),
