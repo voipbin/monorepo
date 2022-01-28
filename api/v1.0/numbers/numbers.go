@@ -4,17 +4,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
 // numbersGET handles GET /numbers request.
-// It returns list of order numbers of the given user.
+// It returns list of order numbers of the given customer.
 // @Summary List order numbers
 // @Description get order numbers of the country
 // @Produce json
@@ -30,18 +30,18 @@ func numbersGET(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -101,18 +101,18 @@ func numbersIDGET(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -149,18 +149,18 @@ func numbersPOST(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -199,18 +199,18 @@ func numbersIDDELETE(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -247,18 +247,18 @@ func numbersIDPUT(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 

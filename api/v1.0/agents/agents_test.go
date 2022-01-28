@@ -10,13 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -34,9 +34,9 @@ func TestAgentsPOST(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name string
-		user user.User
-		req  request.BodyAgentsPOST
+		name     string
+		customer cscustomer.Customer
+		req      request.BodyAgentsPOST
 
 		username      string
 		password      string
@@ -55,8 +55,8 @@ func TestAgentsPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("580a7a44-7ff8-11ec-916e-d35fe5e74591"),
 			},
 			request.BodyAgentsPOST{
 				Username:   "test1",
@@ -86,8 +86,8 @@ func TestAgentsPOST(t *testing.T) {
 		},
 		{
 			"have webhook",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("580a7a44-7ff8-11ec-916e-d35fe5e74591"),
 			},
 			request.BodyAgentsPOST{
 				Username:      "test1",
@@ -126,7 +126,7 @@ func TestAgentsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
@@ -140,7 +140,7 @@ func TestAgentsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AgentCreate(&tt.user, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
+			mockSvc.EXPECT().AgentCreate(&tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -160,7 +160,7 @@ func TestAgentsGET(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		reqQuery string
 
 		pageSize  uint64
@@ -175,8 +175,8 @@ func TestAgentsGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("b045eb94-8002-11ec-a30e-ab41a9c5ed95"),
 			},
 			"/v1.0/agents?page_size=11&page_token=2020-09-20T03:23:20.995000",
 
@@ -191,12 +191,12 @@ func TestAgentsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","user_id":0,"username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"1 tag id and status",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("b045eb94-8002-11ec-a30e-ab41a9c5ed95"),
 			},
 			"/v1.0/agents?page_size=10&page_token=&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3&status=available",
 
@@ -213,12 +213,12 @@ func TestAgentsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","user_id":0,"username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 tag ids",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("b045eb94-8002-11ec-a30e-ab41a9c5ed95"),
 			},
 			"/v1.0/agents?tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c",
 
@@ -239,7 +239,7 @@ func TestAgentsGET(t *testing.T) {
 				},
 			},
 
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","user_id":0,"username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"39fa07ce-4fb8-11ec-8e5b-db7c7886455c","user_id":0,"username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"39fa07ce-4fb8-11ec-8e5b-db7c7886455c","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}
 
@@ -251,11 +251,11 @@ func TestAgentsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().AgentGets(&tt.user, tt.pageSize, tt.pageToken, tt.tagIDs, tt.status).Return(tt.resAgents, nil)
+			mockSvc.EXPECT().AgentGets(&tt.customer, tt.pageSize, tt.pageToken, tt.tagIDs, tt.status).Return(tt.resAgents, nil)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			r.ServeHTTP(w, req)
@@ -281,7 +281,7 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 	type test struct {
 		name string
 
-		user     user.User
+		customer cscustomer.Customer
 		reqQuery string
 		reqBody  []byte
 
@@ -292,8 +292,8 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("09e38a62-8003-11ec-8085-7f8bfbbc02de"),
 			},
 			"/v1.0/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/status",
 			[]byte(`{"status":"available"}`),
@@ -311,11 +311,11 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().AgentUpdateStatus(&tt.user, tt.agentID, tt.status).Return(nil)
+			mockSvc.EXPECT().AgentUpdateStatus(&tt.customer, tt.agentID, tt.status).Return(nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)

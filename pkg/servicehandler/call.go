@@ -8,18 +8,19 @@ import (
 	"github.com/sirupsen/logrus"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, source, destination *address.Address) (*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":        u.ID,
+		"customer_id": u.ID,
 		"username":    u.Username,
 		"flow_id":     flowID,
 		"source":      source,
@@ -54,12 +55,12 @@ func (h *serviceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, dest
 // CallGet sends a request to call-manager
 // to getting a call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallGet(u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"call_id":  callID,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"call_id":     callID,
 	})
 
 	// send request
@@ -70,7 +71,7 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*cmcall.Webhoo
 		return nil, err
 	}
 
-	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != c.CustomerID {
 		log.Info("The user has no permission for this call.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -84,13 +85,13 @@ func (h *serviceHandler) CallGet(u *user.User, callID uuid.UUID) (*cmcall.Webhoo
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallGets(u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"size":     size,
-		"token":    token,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
 	})
 
 	if token == "" {
@@ -117,12 +118,12 @@ func (h *serviceHandler) CallGets(u *user.User, size uint64, token string) ([]*c
 // CallDelete sends a request to call-manager
 // to hangup the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
+func (h *serviceHandler) CallDelete(u *cscustomer.Customer, callID uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"call_id":  callID,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"call_id":     callID,
 	})
 
 	// todo need to check the call's ownership
@@ -133,9 +134,9 @@ func (h *serviceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
 	}
 
 	// check call's ownership
-	if u.Permission != user.PermissionAdmin && u.ID != c.UserID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != c.CustomerID {
 		log.Info("The user has no permission for this call.")
-		return fmt.Errorf("user has no permission")
+		return fmt.Errorf("customer has no permission")
 	}
 
 	// send request

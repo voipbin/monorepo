@@ -3,11 +3,11 @@ package availablenumbers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -35,14 +35,14 @@ func availableNumbersGET(c *gin.Context) {
 	)
 	log.Debugf("availableNumbersGET. Received request detail. page_size: %d, country_code: %s", requestParam.PageSize, requestParam.CountyCode)
 
-	// get user
-	tmp, exists := c.Get("user")
+	// get customer
+	tmp, exists := c.Get("customer")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		logrus.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 
 	// set max page size
 	pageSize := requestParam.PageSize

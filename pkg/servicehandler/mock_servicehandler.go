@@ -20,9 +20,9 @@ import (
 	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	tag "gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 	transcribe "gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
-	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action0 "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
@@ -51,7 +51,7 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 }
 
 // AgentCreate mocks base method.
-func (m *MockServiceHandler) AgentCreate(u *user.User, username, password, name, detail, webhookMethod, webhookURI, ringMethod string, permission uint64, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockServiceHandler) AgentCreate(u *customer.Customer, username, password, name, detail, webhookMethod, webhookURI, ringMethod string, permission uint64, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentCreate", u, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
@@ -66,7 +66,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentCreate(u, username, password, nam
 }
 
 // AgentDelete mocks base method.
-func (m *MockServiceHandler) AgentDelete(u *user.User, agentID uuid.UUID) error {
+func (m *MockServiceHandler) AgentDelete(u *customer.Customer, agentID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentDelete", u, agentID)
 	ret0, _ := ret[0].(error)
@@ -80,7 +80,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentDelete(u, agentID interface{}) *g
 }
 
 // AgentGet mocks base method.
-func (m *MockServiceHandler) AgentGet(u *user.User, agentID uuid.UUID) (*agent.Agent, error) {
+func (m *MockServiceHandler) AgentGet(u *customer.Customer, agentID uuid.UUID) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentGet", u, agentID)
 	ret0, _ := ret[0].(*agent.Agent)
@@ -95,7 +95,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentGet(u, agentID interface{}) *gomo
 }
 
 // AgentGets mocks base method.
-func (m *MockServiceHandler) AgentGets(u *user.User, size uint64, token string, tagIDs []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
+func (m *MockServiceHandler) AgentGets(u *customer.Customer, size uint64, token string, tagIDs []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentGets", u, size, token, tagIDs, status)
 	ret0, _ := ret[0].([]*agent.Agent)
@@ -110,22 +110,22 @@ func (mr *MockServiceHandlerMockRecorder) AgentGets(u, size, token, tagIDs, stat
 }
 
 // AgentLogin mocks base method.
-func (m *MockServiceHandler) AgentLogin(userID uint64, username, password string) (string, error) {
+func (m *MockServiceHandler) AgentLogin(customerID uuid.UUID, username, password string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentLogin", userID, username, password)
+	ret := m.ctrl.Call(m, "AgentLogin", customerID, username, password)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentLogin indicates an expected call of AgentLogin.
-func (mr *MockServiceHandlerMockRecorder) AgentLogin(userID, username, password interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AgentLogin(customerID, username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentLogin", reflect.TypeOf((*MockServiceHandler)(nil).AgentLogin), userID, username, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentLogin", reflect.TypeOf((*MockServiceHandler)(nil).AgentLogin), customerID, username, password)
 }
 
 // AgentUpdate mocks base method.
-func (m *MockServiceHandler) AgentUpdate(u *user.User, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
+func (m *MockServiceHandler) AgentUpdate(u *customer.Customer, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdate", u, agentID, name, detail, ringMethod)
 	ret0, _ := ret[0].(error)
@@ -139,7 +139,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdate(u, agentID, name, detail, 
 }
 
 // AgentUpdateAddresses mocks base method.
-func (m *MockServiceHandler) AgentUpdateAddresses(u *user.User, agentID uuid.UUID, addresses []address.Address) error {
+func (m *MockServiceHandler) AgentUpdateAddresses(u *customer.Customer, agentID uuid.UUID, addresses []address.Address) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateAddresses", u, agentID, addresses)
 	ret0, _ := ret[0].(error)
@@ -153,7 +153,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdateAddresses(u, agentID, addre
 }
 
 // AgentUpdateStatus mocks base method.
-func (m *MockServiceHandler) AgentUpdateStatus(u *user.User, agentID uuid.UUID, status agent.Status) error {
+func (m *MockServiceHandler) AgentUpdateStatus(u *customer.Customer, agentID uuid.UUID, status agent.Status) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateStatus", u, agentID, status)
 	ret0, _ := ret[0].(error)
@@ -167,7 +167,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdateStatus(u, agentID, status i
 }
 
 // AgentUpdateTagIDs mocks base method.
-func (m *MockServiceHandler) AgentUpdateTagIDs(u *user.User, agentID uuid.UUID, tagIDs []uuid.UUID) error {
+func (m *MockServiceHandler) AgentUpdateTagIDs(u *customer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateTagIDs", u, agentID, tagIDs)
 	ret0, _ := ret[0].(error)
@@ -195,23 +195,8 @@ func (mr *MockServiceHandlerMockRecorder) AuthLogin(username, password interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthLogin", reflect.TypeOf((*MockServiceHandler)(nil).AuthLogin), username, password)
 }
 
-// AuthLoginCustomer mocks base method.
-func (m *MockServiceHandler) AuthLoginCustomer(username, password string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AuthLoginCustomer", username, password)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AuthLoginCustomer indicates an expected call of AuthLoginCustomer.
-func (mr *MockServiceHandlerMockRecorder) AuthLoginCustomer(username, password interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthLoginCustomer", reflect.TypeOf((*MockServiceHandler)(nil).AuthLoginCustomer), username, password)
-}
-
 // AvailableNumberGets mocks base method.
-func (m *MockServiceHandler) AvailableNumberGets(u *user.User, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error) {
+func (m *MockServiceHandler) AvailableNumberGets(u *customer.Customer, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AvailableNumberGets", u, size, countryCode)
 	ret0, _ := ret[0].([]*availablenumber.AvailableNumber)
@@ -226,7 +211,7 @@ func (mr *MockServiceHandlerMockRecorder) AvailableNumberGets(u, size, countryCo
 }
 
 // CallCreate mocks base method.
-func (m *MockServiceHandler) CallCreate(u *user.User, flowID uuid.UUID, source, destination *address.Address) (*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallCreate(u *customer.Customer, flowID uuid.UUID, source, destination *address.Address) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallCreate", u, flowID, source, destination)
 	ret0, _ := ret[0].(*call.WebhookMessage)
@@ -241,7 +226,7 @@ func (mr *MockServiceHandlerMockRecorder) CallCreate(u, flowID, source, destinat
 }
 
 // CallDelete mocks base method.
-func (m *MockServiceHandler) CallDelete(u *user.User, callID uuid.UUID) error {
+func (m *MockServiceHandler) CallDelete(u *customer.Customer, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallDelete", u, callID)
 	ret0, _ := ret[0].(error)
@@ -255,7 +240,7 @@ func (mr *MockServiceHandlerMockRecorder) CallDelete(u, callID interface{}) *gom
 }
 
 // CallGet mocks base method.
-func (m *MockServiceHandler) CallGet(u *user.User, callID uuid.UUID) (*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallGet(u *customer.Customer, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGet", u, callID)
 	ret0, _ := ret[0].(*call.WebhookMessage)
@@ -270,7 +255,7 @@ func (mr *MockServiceHandlerMockRecorder) CallGet(u, callID interface{}) *gomock
 }
 
 // CallGets mocks base method.
-func (m *MockServiceHandler) CallGets(u *user.User, size uint64, token string) ([]*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallGets(u *customer.Customer, size uint64, token string) ([]*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGets", u, size, token)
 	ret0, _ := ret[0].([]*call.WebhookMessage)
@@ -285,7 +270,7 @@ func (mr *MockServiceHandlerMockRecorder) CallGets(u, size, token interface{}) *
 }
 
 // ConferenceCreate mocks base method.
-func (m *MockServiceHandler) ConferenceCreate(u *user.User, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action0.Action) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceCreate(u *customer.Customer, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action0.Action) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceCreate", u, confType, name, detail, webhookURI, preActions, postActions)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -300,7 +285,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceCreate(u, confType, name, de
 }
 
 // ConferenceDelete mocks base method.
-func (m *MockServiceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error {
+func (m *MockServiceHandler) ConferenceDelete(u *customer.Customer, confID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceDelete", u, confID)
 	ret0, _ := ret[0].(error)
@@ -314,7 +299,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceDelete(u, confID interface{}
 }
 
 // ConferenceGet mocks base method.
-func (m *MockServiceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceGet(u *customer.Customer, id uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGet", u, id)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -329,7 +314,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceGet(u, id interface{}) *gomo
 }
 
 // ConferenceGets mocks base method.
-func (m *MockServiceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceGets(u *customer.Customer, size uint64, token string) ([]*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGets", u, size, token)
 	ret0, _ := ret[0].([]*conference.WebhookMessage)
@@ -344,7 +329,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceGets(u, size, token interfac
 }
 
 // ConferenceKick mocks base method.
-func (m *MockServiceHandler) ConferenceKick(u *user.User, confID, callID uuid.UUID) error {
+func (m *MockServiceHandler) ConferenceKick(u *customer.Customer, confID, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceKick", u, confID, callID)
 	ret0, _ := ret[0].(error)
@@ -358,7 +343,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceKick(u, confID, callID inter
 }
 
 // DomainCreate mocks base method.
-func (m *MockServiceHandler) DomainCreate(u *user.User, domainName, name, detail string) (*domain.Domain, error) {
+func (m *MockServiceHandler) DomainCreate(u *customer.Customer, domainName, name, detail string) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainCreate", u, domainName, name, detail)
 	ret0, _ := ret[0].(*domain.Domain)
@@ -373,7 +358,7 @@ func (mr *MockServiceHandlerMockRecorder) DomainCreate(u, domainName, name, deta
 }
 
 // DomainDelete mocks base method.
-func (m *MockServiceHandler) DomainDelete(u *user.User, id uuid.UUID) error {
+func (m *MockServiceHandler) DomainDelete(u *customer.Customer, id uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainDelete", u, id)
 	ret0, _ := ret[0].(error)
@@ -387,7 +372,7 @@ func (mr *MockServiceHandlerMockRecorder) DomainDelete(u, id interface{}) *gomoc
 }
 
 // DomainGet mocks base method.
-func (m *MockServiceHandler) DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, error) {
+func (m *MockServiceHandler) DomainGet(u *customer.Customer, id uuid.UUID) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGet", u, id)
 	ret0, _ := ret[0].(*domain.Domain)
@@ -402,7 +387,7 @@ func (mr *MockServiceHandlerMockRecorder) DomainGet(u, id interface{}) *gomock.C
 }
 
 // DomainGets mocks base method.
-func (m *MockServiceHandler) DomainGets(u *user.User, size uint64, token string) ([]*domain.Domain, error) {
+func (m *MockServiceHandler) DomainGets(u *customer.Customer, size uint64, token string) ([]*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGets", u, size, token)
 	ret0, _ := ret[0].([]*domain.Domain)
@@ -417,7 +402,7 @@ func (mr *MockServiceHandlerMockRecorder) DomainGets(u, size, token interface{})
 }
 
 // DomainUpdate mocks base method.
-func (m *MockServiceHandler) DomainUpdate(u *user.User, d *domain.Domain) (*domain.Domain, error) {
+func (m *MockServiceHandler) DomainUpdate(u *customer.Customer, d *domain.Domain) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainUpdate", u, d)
 	ret0, _ := ret[0].(*domain.Domain)
@@ -432,7 +417,7 @@ func (mr *MockServiceHandlerMockRecorder) DomainUpdate(u, d interface{}) *gomock
 }
 
 // ExtensionCreate mocks base method.
-func (m *MockServiceHandler) ExtensionCreate(u *user.User, e *extension.Extension) (*extension.Extension, error) {
+func (m *MockServiceHandler) ExtensionCreate(u *customer.Customer, e *extension.Extension) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionCreate", u, e)
 	ret0, _ := ret[0].(*extension.Extension)
@@ -447,7 +432,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionCreate(u, e interface{}) *gom
 }
 
 // ExtensionDelete mocks base method.
-func (m *MockServiceHandler) ExtensionDelete(u *user.User, id uuid.UUID) error {
+func (m *MockServiceHandler) ExtensionDelete(u *customer.Customer, id uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionDelete", u, id)
 	ret0, _ := ret[0].(error)
@@ -461,7 +446,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionDelete(u, id interface{}) *go
 }
 
 // ExtensionGet mocks base method.
-func (m *MockServiceHandler) ExtensionGet(u *user.User, id uuid.UUID) (*extension.Extension, error) {
+func (m *MockServiceHandler) ExtensionGet(u *customer.Customer, id uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGet", u, id)
 	ret0, _ := ret[0].(*extension.Extension)
@@ -476,7 +461,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionGet(u, id interface{}) *gomoc
 }
 
 // ExtensionGets mocks base method.
-func (m *MockServiceHandler) ExtensionGets(u *user.User, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error) {
+func (m *MockServiceHandler) ExtensionGets(u *customer.Customer, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGets", u, domainID, size, token)
 	ret0, _ := ret[0].([]*extension.Extension)
@@ -491,7 +476,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionGets(u, domainID, size, token
 }
 
 // ExtensionUpdate mocks base method.
-func (m *MockServiceHandler) ExtensionUpdate(u *user.User, d *extension.Extension) (*extension.Extension, error) {
+func (m *MockServiceHandler) ExtensionUpdate(u *customer.Customer, d *extension.Extension) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionUpdate", u, d)
 	ret0, _ := ret[0].(*extension.Extension)
@@ -506,7 +491,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(u, d interface{}) *gom
 }
 
 // FlowCreate mocks base method.
-func (m *MockServiceHandler) FlowCreate(u *user.User, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (m *MockServiceHandler) FlowCreate(u *customer.Customer, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowCreate", u, name, detail, webhookURI, actions, persist)
 	ret0, _ := ret[0].(*flow.Flow)
@@ -521,7 +506,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowCreate(u, name, detail, webhookURI
 }
 
 // FlowDelete mocks base method.
-func (m *MockServiceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
+func (m *MockServiceHandler) FlowDelete(u *customer.Customer, id uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowDelete", u, id)
 	ret0, _ := ret[0].(error)
@@ -535,7 +520,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowDelete(u, id interface{}) *gomock.
 }
 
 // FlowGet mocks base method.
-func (m *MockServiceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error) {
+func (m *MockServiceHandler) FlowGet(u *customer.Customer, id uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGet", u, id)
 	ret0, _ := ret[0].(*flow.Flow)
@@ -550,7 +535,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowGet(u, id interface{}) *gomock.Cal
 }
 
 // FlowGets mocks base method.
-func (m *MockServiceHandler) FlowGets(u *user.User, pageSize uint64, pageToken string) ([]*flow.Flow, error) {
+func (m *MockServiceHandler) FlowGets(u *customer.Customer, pageSize uint64, pageToken string) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGets", u, pageSize, pageToken)
 	ret0, _ := ret[0].([]*flow.Flow)
@@ -565,7 +550,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowGets(u, pageSize, pageToken interf
 }
 
 // FlowUpdate mocks base method.
-func (m *MockServiceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, error) {
+func (m *MockServiceHandler) FlowUpdate(u *customer.Customer, f *flow.Flow) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowUpdate", u, f)
 	ret0, _ := ret[0].(*flow.Flow)
@@ -580,7 +565,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowUpdate(u, f interface{}) *gomock.C
 }
 
 // NumberCreate mocks base method.
-func (m *MockServiceHandler) NumberCreate(u *user.User, num string) (*number.Number, error) {
+func (m *MockServiceHandler) NumberCreate(u *customer.Customer, num string) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberCreate", u, num)
 	ret0, _ := ret[0].(*number.Number)
@@ -595,7 +580,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberCreate(u, num interface{}) *gomo
 }
 
 // NumberDelete mocks base method.
-func (m *MockServiceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Number, error) {
+func (m *MockServiceHandler) NumberDelete(u *customer.Customer, id uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberDelete", u, id)
 	ret0, _ := ret[0].(*number.Number)
@@ -610,7 +595,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberDelete(u, id interface{}) *gomoc
 }
 
 // NumberGet mocks base method.
-func (m *MockServiceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, error) {
+func (m *MockServiceHandler) NumberGet(u *customer.Customer, id uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGet", u, id)
 	ret0, _ := ret[0].(*number.Number)
@@ -625,7 +610,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberGet(u, id interface{}) *gomock.C
 }
 
 // NumberGets mocks base method.
-func (m *MockServiceHandler) NumberGets(u *user.User, size uint64, token string) ([]*number.Number, error) {
+func (m *MockServiceHandler) NumberGets(u *customer.Customer, size uint64, token string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGets", u, size, token)
 	ret0, _ := ret[0].([]*number.Number)
@@ -640,7 +625,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberGets(u, size, token interface{})
 }
 
 // NumberUpdate mocks base method.
-func (m *MockServiceHandler) NumberUpdate(u *user.User, numb *number.Number) (*number.Number, error) {
+func (m *MockServiceHandler) NumberUpdate(u *customer.Customer, numb *number.Number) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberUpdate", u, numb)
 	ret0, _ := ret[0].(*number.Number)
@@ -655,7 +640,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberUpdate(u, numb interface{}) *gom
 }
 
 // QueueCreate mocks base method.
-func (m *MockServiceHandler) QueueCreate(u *user.User, name, detail, webhookURI, webhookMethod, routingMethod string, tagIDs []uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueCreate(u *customer.Customer, name, detail, webhookURI, webhookMethod, routingMethod string, tagIDs []uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueCreate", u, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -670,7 +655,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueCreate(u, name, detail, webhookUR
 }
 
 // QueueDelete mocks base method.
-func (m *MockServiceHandler) QueueDelete(u *user.User, queueID uuid.UUID) error {
+func (m *MockServiceHandler) QueueDelete(u *customer.Customer, queueID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueDelete", u, queueID)
 	ret0, _ := ret[0].(error)
@@ -684,7 +669,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueDelete(u, queueID interface{}) *g
 }
 
 // QueueGet mocks base method.
-func (m *MockServiceHandler) QueueGet(u *user.User, queueID uuid.UUID) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueGet(u *customer.Customer, queueID uuid.UUID) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueGet", u, queueID)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -699,7 +684,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueGet(u, queueID interface{}) *gomo
 }
 
 // QueueGets mocks base method.
-func (m *MockServiceHandler) QueueGets(u *user.User, size uint64, token string) ([]*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueGets(u *customer.Customer, size uint64, token string) ([]*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueGets", u, size, token)
 	ret0, _ := ret[0].([]*queue.WebhookMessage)
@@ -714,7 +699,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueGets(u, size, token interface{}) 
 }
 
 // QueueUpdate mocks base method.
-func (m *MockServiceHandler) QueueUpdate(u *user.User, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error {
+func (m *MockServiceHandler) QueueUpdate(u *customer.Customer, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUpdate", u, queueID, name, detail, webhookURI, webhookMethod)
 	ret0, _ := ret[0].(error)
@@ -728,7 +713,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueUpdate(u, queueID, name, detail, 
 }
 
 // QueueUpdateActions mocks base method.
-func (m *MockServiceHandler) QueueUpdateActions(u *user.User, queueID uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) error {
+func (m *MockServiceHandler) QueueUpdateActions(u *customer.Customer, queueID uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUpdateActions", u, queueID, waitActions, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(error)
@@ -742,7 +727,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueUpdateActions(u, queueID, waitAct
 }
 
 // QueueUpdateRoutingMethod mocks base method.
-func (m *MockServiceHandler) QueueUpdateRoutingMethod(u *user.User, queueID uuid.UUID, routingMethod queue.RoutingMethod) error {
+func (m *MockServiceHandler) QueueUpdateRoutingMethod(u *customer.Customer, queueID uuid.UUID, routingMethod queue.RoutingMethod) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUpdateRoutingMethod", u, queueID, routingMethod)
 	ret0, _ := ret[0].(error)
@@ -756,7 +741,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueUpdateRoutingMethod(u, queueID, r
 }
 
 // QueueUpdateTagIDs mocks base method.
-func (m *MockServiceHandler) QueueUpdateTagIDs(u *user.User, queueID uuid.UUID, tagIDs []uuid.UUID) error {
+func (m *MockServiceHandler) QueueUpdateTagIDs(u *customer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUpdateTagIDs", u, queueID, tagIDs)
 	ret0, _ := ret[0].(error)
@@ -770,7 +755,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueUpdateTagIDs(u, queueID, tagIDs i
 }
 
 // RecordingGet mocks base method.
-func (m *MockServiceHandler) RecordingGet(u *user.User, id uuid.UUID) (*recording.Recording, error) {
+func (m *MockServiceHandler) RecordingGet(u *customer.Customer, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGet", u, id)
 	ret0, _ := ret[0].(*recording.Recording)
@@ -785,7 +770,7 @@ func (mr *MockServiceHandlerMockRecorder) RecordingGet(u, id interface{}) *gomoc
 }
 
 // RecordingGets mocks base method.
-func (m *MockServiceHandler) RecordingGets(u *user.User, size uint64, token string) ([]*recording.Recording, error) {
+func (m *MockServiceHandler) RecordingGets(u *customer.Customer, size uint64, token string) ([]*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGets", u, size, token)
 	ret0, _ := ret[0].([]*recording.Recording)
@@ -800,7 +785,7 @@ func (mr *MockServiceHandlerMockRecorder) RecordingGets(u, size, token interface
 }
 
 // RecordingfileGet mocks base method.
-func (m *MockServiceHandler) RecordingfileGet(u *user.User, id uuid.UUID) (string, error) {
+func (m *MockServiceHandler) RecordingfileGet(u *customer.Customer, id uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingfileGet", u, id)
 	ret0, _ := ret[0].(string)
@@ -815,7 +800,7 @@ func (mr *MockServiceHandlerMockRecorder) RecordingfileGet(u, id interface{}) *g
 }
 
 // TagCreate mocks base method.
-func (m *MockServiceHandler) TagCreate(u *user.User, name, detail string) (*tag.Tag, error) {
+func (m *MockServiceHandler) TagCreate(u *customer.Customer, name, detail string) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagCreate", u, name, detail)
 	ret0, _ := ret[0].(*tag.Tag)
@@ -830,7 +815,7 @@ func (mr *MockServiceHandlerMockRecorder) TagCreate(u, name, detail interface{})
 }
 
 // TagDelete mocks base method.
-func (m *MockServiceHandler) TagDelete(u *user.User, id uuid.UUID) error {
+func (m *MockServiceHandler) TagDelete(u *customer.Customer, id uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagDelete", u, id)
 	ret0, _ := ret[0].(error)
@@ -844,7 +829,7 @@ func (mr *MockServiceHandlerMockRecorder) TagDelete(u, id interface{}) *gomock.C
 }
 
 // TagGet mocks base method.
-func (m *MockServiceHandler) TagGet(u *user.User, id uuid.UUID) (*tag.Tag, error) {
+func (m *MockServiceHandler) TagGet(u *customer.Customer, id uuid.UUID) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagGet", u, id)
 	ret0, _ := ret[0].(*tag.Tag)
@@ -859,7 +844,7 @@ func (mr *MockServiceHandlerMockRecorder) TagGet(u, id interface{}) *gomock.Call
 }
 
 // TagGets mocks base method.
-func (m *MockServiceHandler) TagGets(u *user.User, size uint64, token string) ([]*tag.Tag, error) {
+func (m *MockServiceHandler) TagGets(u *customer.Customer, size uint64, token string) ([]*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagGets", u, size, token)
 	ret0, _ := ret[0].([]*tag.Tag)
@@ -874,7 +859,7 @@ func (mr *MockServiceHandlerMockRecorder) TagGets(u, size, token interface{}) *g
 }
 
 // TagUpdate mocks base method.
-func (m *MockServiceHandler) TagUpdate(u *user.User, id uuid.UUID, name, detail string) error {
+func (m *MockServiceHandler) TagUpdate(u *customer.Customer, id uuid.UUID, name, detail string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagUpdate", u, id, name, detail)
 	ret0, _ := ret[0].(error)
@@ -888,7 +873,7 @@ func (mr *MockServiceHandlerMockRecorder) TagUpdate(u, id, name, detail interfac
 }
 
 // TranscribeCreate mocks base method.
-func (m *MockServiceHandler) TranscribeCreate(u *user.User, referencdID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+func (m *MockServiceHandler) TranscribeCreate(u *customer.Customer, referencdID uuid.UUID, language string) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeCreate", u, referencdID, language)
 	ret0, _ := ret[0].(*transcribe.Transcribe)
@@ -900,105 +885,4 @@ func (m *MockServiceHandler) TranscribeCreate(u *user.User, referencdID uuid.UUI
 func (mr *MockServiceHandlerMockRecorder) TranscribeCreate(u, referencdID, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeCreate", reflect.TypeOf((*MockServiceHandler)(nil).TranscribeCreate), u, referencdID, language)
-}
-
-// UserCreate mocks base method.
-func (m *MockServiceHandler) UserCreate(u *user.User, username, password, name, detail string, permission user.Permission) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserCreate", u, username, password, name, detail, permission)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserCreate indicates an expected call of UserCreate.
-func (mr *MockServiceHandlerMockRecorder) UserCreate(u, username, password, name, detail, permission interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserCreate", reflect.TypeOf((*MockServiceHandler)(nil).UserCreate), u, username, password, name, detail, permission)
-}
-
-// UserDelete mocks base method.
-func (m *MockServiceHandler) UserDelete(u *user.User, id uint64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserDelete", u, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserDelete indicates an expected call of UserDelete.
-func (mr *MockServiceHandlerMockRecorder) UserDelete(u, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserDelete", reflect.TypeOf((*MockServiceHandler)(nil).UserDelete), u, id)
-}
-
-// UserGet mocks base method.
-func (m *MockServiceHandler) UserGet(u *user.User, userID uint64) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserGet", u, userID)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserGet indicates an expected call of UserGet.
-func (mr *MockServiceHandlerMockRecorder) UserGet(u, userID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGet", reflect.TypeOf((*MockServiceHandler)(nil).UserGet), u, userID)
-}
-
-// UserGets mocks base method.
-func (m *MockServiceHandler) UserGets(u *user.User, size uint64, token string) ([]*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserGets", u, size, token)
-	ret0, _ := ret[0].([]*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserGets indicates an expected call of UserGets.
-func (mr *MockServiceHandlerMockRecorder) UserGets(u, size, token interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGets", reflect.TypeOf((*MockServiceHandler)(nil).UserGets), u, size, token)
-}
-
-// UserUpdate mocks base method.
-func (m *MockServiceHandler) UserUpdate(u *user.User, id uint64, name, detail string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserUpdate", u, id, name, detail)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserUpdate indicates an expected call of UserUpdate.
-func (mr *MockServiceHandlerMockRecorder) UserUpdate(u, id, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserUpdate", reflect.TypeOf((*MockServiceHandler)(nil).UserUpdate), u, id, name, detail)
-}
-
-// UserUpdatePassword mocks base method.
-func (m *MockServiceHandler) UserUpdatePassword(u *user.User, id uint64, password string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserUpdatePassword", u, id, password)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserUpdatePassword indicates an expected call of UserUpdatePassword.
-func (mr *MockServiceHandlerMockRecorder) UserUpdatePassword(u, id, password interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserUpdatePassword", reflect.TypeOf((*MockServiceHandler)(nil).UserUpdatePassword), u, id, password)
-}
-
-// UserUpdatePermission mocks base method.
-func (m *MockServiceHandler) UserUpdatePermission(u *user.User, id uint64, permission user.Permission) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserUpdatePermission", u, id, permission)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserUpdatePermission indicates an expected call of UserUpdatePermission.
-func (mr *MockServiceHandlerMockRecorder) UserUpdatePermission(u, id, permission interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserUpdatePermission", reflect.TypeOf((*MockServiceHandler)(nil).UserUpdatePermission), u, id, permission)
 }

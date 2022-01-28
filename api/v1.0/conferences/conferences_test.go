@@ -10,11 +10,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -32,9 +33,9 @@ func TestConferencesIDGET(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	tests := []struct {
-		name string
-		user user.User
-		id   uuid.UUID
+		name     string
+		customer cscustomer.Customer
+		id       uuid.UUID
 
 		requestURI string
 
@@ -42,9 +43,11 @@ func TestConferencesIDGET(t *testing.T) {
 	}{
 		{
 			"simple test",
-			user.User{
-				ID:         1,
-				Permission: user.PermissionAdmin,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
 			},
 			uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
 
@@ -63,11 +66,11 @@ func TestConferencesIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceGet(&tt.user, tt.id).Return(tt.conference, nil)
+			mockSvc.EXPECT().ConferenceGet(&tt.customer, tt.id).Return(tt.conference, nil)
 
 			req, _ := http.NewRequest("GET", tt.requestURI, nil)
 
@@ -89,8 +92,8 @@ func TestConferencesPOST(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	tests := []struct {
-		name string
-		user user.User
+		name     string
+		customer cscustomer.Customer
 
 		conferenceType cfconference.Type
 		conferenceName string
@@ -104,8 +107,8 @@ func TestConferencesPOST(t *testing.T) {
 	}{
 		{
 			"conference type",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
 			cfconference.TypeConference,
@@ -125,8 +128,8 @@ func TestConferencesPOST(t *testing.T) {
 		},
 		{
 			"webhook uri",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
 			cfconference.TypeConference,
@@ -147,8 +150,8 @@ func TestConferencesPOST(t *testing.T) {
 		},
 		{
 			"pre/post actions",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
 			cfconference.TypeConference,
@@ -194,11 +197,11 @@ func TestConferencesPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceCreate(&tt.user, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.WebhookURI, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
+			mockSvc.EXPECT().ConferenceCreate(&tt.customer, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.WebhookURI, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/conferences", bytes.NewBuffer(tt.request))
 
 			req.Header.Set("Content-Type", "application/json")
@@ -221,17 +224,19 @@ func TestConferencesIDDELETE(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	tests := []struct {
-		name string
-		user user.User
-		id   uuid.UUID
+		name     string
+		customer cscustomer.Customer
+		id       uuid.UUID
 
 		requestURI string
 	}{
 		{
 			"simple test",
-			user.User{
-				ID:         1,
-				Permission: user.PermissionAdmin,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
 			},
 			uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
 			"/v1.0/conferences/f49f8cc6-ac7f-11ea-91a3-e7103a41fa51",
@@ -246,11 +251,11 @@ func TestConferencesIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceDelete(&tt.user, tt.id).Return(nil)
+			mockSvc.EXPECT().ConferenceDelete(&tt.customer, tt.id).Return(nil)
 
 			req, _ := http.NewRequest("DELETE", tt.requestURI, nil)
 
@@ -273,7 +278,7 @@ func TestConferencesIDCallsIDDELETE(t *testing.T) {
 
 	type test struct {
 		name       string
-		user       user.User
+		customer   cscustomer.Customer
 		requestURI string
 
 		conferenceID uuid.UUID
@@ -283,9 +288,11 @@ func TestConferencesIDCallsIDDELETE(t *testing.T) {
 	tests := []test{
 		{
 			"simple test",
-			user.User{
-				ID:         1,
-				Permission: user.PermissionAdmin,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
 			},
 			"/v1.0/conferences/88f410a4-44aa-11ec-a648-ef1c8a8d5b49/calls/a5f77e0c-44aa-11ec-860c-0718d81c0e6b",
 			uuid.FromStringOrNil("88f410a4-44aa-11ec-a648-ef1c8a8d5b49"),
@@ -301,11 +308,11 @@ func TestConferencesIDCallsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceKick(&tt.user, tt.conferenceID, tt.callID).Return(nil)
+			mockSvc.EXPECT().ConferenceKick(&tt.customer, tt.conferenceID, tt.callID).Return(nil)
 
 			req, _ := http.NewRequest("DELETE", tt.requestURI, nil)
 

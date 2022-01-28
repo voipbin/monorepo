@@ -8,9 +8,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -23,7 +23,7 @@ func TestConferenceCreate(t *testing.T) {
 
 	type test struct {
 		name             string
-		user             *user.User
+		customer         *cscustomer.Customer
 		confType         cfconference.Type
 		confName         string
 		confDetail       string
@@ -37,8 +37,8 @@ func TestConferenceCreate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			cfconference.TypeConference,
 			"test name",
@@ -66,8 +66,8 @@ func TestConferenceCreate(t *testing.T) {
 		},
 		{
 			"have webhook",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			cfconference.TypeConference,
 			"test name",
@@ -99,8 +99,8 @@ func TestConferenceCreate(t *testing.T) {
 		},
 		{
 			"have pre/post actions",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			cfconference.TypeConference,
 			"test name",
@@ -169,8 +169,8 @@ func TestConferenceCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.user.ID, tt.confType, tt.confName, tt.confDetail, 0, tt.webhookURI, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
-			res, err := h.ConferenceCreate(tt.user, tt.confType, tt.confName, tt.confDetail, tt.webhookURI, tt.preActions, tt.postActions)
+			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.customer.ID, tt.confType, tt.confName, tt.confDetail, 0, tt.webhookURI, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
+			res, err := h.ConferenceCreate(tt.customer, tt.confType, tt.confName, tt.confDetail, tt.webhookURI, tt.preActions, tt.postActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -191,7 +191,7 @@ func TestConferenceDelete(t *testing.T) {
 
 	type test struct {
 		name         string
-		user         *user.User
+		customer     *cscustomer.Customer
 		confID       uuid.UUID
 		cfConference *cfconference.Conference
 	}
@@ -199,14 +199,14 @@ func TestConferenceDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
 			&cfconference.Conference{
-				ID:     uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
-				UserID: 1,
-				Type:   cfconference.TypeConference,
+				ID:         uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				Type:       cfconference.TypeConference,
 
 				Status: cfconference.StatusProgressing,
 				Name:   "test name",
@@ -228,7 +228,7 @@ func TestConferenceDelete(t *testing.T) {
 			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), tt.confID).Return(tt.cfConference, nil)
 			mockReq.EXPECT().CFV1ConferenceDelete(gomock.Any(), tt.confID).Return(nil)
 
-			err := h.ConferenceDelete(tt.user, tt.confID)
+			err := h.ConferenceDelete(tt.customer, tt.confID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -249,7 +249,7 @@ func TestConferenceGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
+		customer  *cscustomer.Customer
 		token     string
 		limit     uint64
 		response  []cfconference.Conference
@@ -259,15 +259,15 @@ func TestConferenceGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			"2020-09-20T03:23:20.995000",
 			10,
 			[]cfconference.Conference{
 				{
-					ID:     uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
-					UserID: 1,
+					ID:         uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 
 					PreActions:  []fmaction.Action{},
 					PostActions: []fmaction.Action{},
@@ -286,8 +286,8 @@ func TestConferenceGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().CFV1ConferenceGets(gomock.Any(), tt.user.ID, tt.token, tt.limit, "conference").Return(tt.response, nil)
-			res, err := h.ConferenceGets(tt.user, tt.limit, tt.token)
+			mockReq.EXPECT().CFV1ConferenceGets(gomock.Any(), tt.customer.ID, tt.token, tt.limit, "conference").Return(tt.response, nil)
+			res, err := h.ConferenceGets(tt.customer, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -312,7 +312,7 @@ func TestConferenceGet(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
+		customer  *cscustomer.Customer
 		id        uuid.UUID
 		response  *cfconference.Conference
 		expectRes *cfconference.WebhookMessage
@@ -321,13 +321,13 @@ func TestConferenceGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 			&cfconference.Conference{
-				ID:     uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 
 				PreActions:  []fmaction.Action{},
 				PostActions: []fmaction.Action{},
@@ -341,13 +341,13 @@ func TestConferenceGet(t *testing.T) {
 		},
 		{
 			"with webhook",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
 			&cfconference.Conference{
-				ID:     uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 
 				PreActions:  []fmaction.Action{},
 				PostActions: []fmaction.Action{},
@@ -368,7 +368,7 @@ func TestConferenceGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), tt.id).Return(tt.response, nil)
-			res, err := h.ConferenceGet(tt.user, tt.id)
+			res, err := h.ConferenceGet(tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

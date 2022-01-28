@@ -6,22 +6,23 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // FlowCreate is a service handler for flow creation.
-func (h *serviceHandler) FlowCreate(u *user.User, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (h *serviceHandler) FlowCreate(u *cscustomer.Customer, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":    u.ID,
-		"name":    name,
-		"persist": persist,
-		"webhook": webhookURI,
+		"customer_id": u.ID,
+		"name":        name,
+		"persist":     persist,
+		"webhook":     webhookURI,
 	})
 
 	flowActions := []fmaction.Action{}
@@ -42,26 +43,26 @@ func (h *serviceHandler) FlowCreate(u *user.User, name, detail, webhookURI strin
 }
 
 // FlowDelete deletes the flow of the given id.
-func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
+func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"flow_id":  id,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"flow_id":     id,
 	})
 	log.Debug("Deleting a flow.")
 
 	// get flow
-	flow, err := h.reqHandler.FMV1FlowGet(ctx, id)
+	f, err := h.reqHandler.FMV1FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
 		return fmt.Errorf("could not find flow info. err: %v", err)
 	}
 
 	// permission check
-	if !u.HasPermission(user.PermissionAdmin) && flow.UserID != u.ID {
-		log.Errorf("The user has no permission for this flow. user: %d, flow_user: %d", u.ID, flow.UserID)
-		return fmt.Errorf("user has no permission")
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != f.CustomerID {
+		log.Errorf("The customer has no permission for this flow. customer: %s, flow_customer: %s", u.ID, f.CustomerID)
+		return fmt.Errorf("customer has no permission")
 	}
 
 	if err := h.reqHandler.FMV1FlowDelete(ctx, id); err != nil {
@@ -73,12 +74,12 @@ func (h *serviceHandler) FlowDelete(u *user.User, id uuid.UUID) error {
 
 // FlowGet gets the flow of the given id.
 // It returns flow if it succeed.
-func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error) {
+func (h *serviceHandler) FlowGet(u *cscustomer.Customer, id uuid.UUID) (*flow.Flow, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"flow_id":  id,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"flow_id":     id,
 	})
 	log.Debug("Getting a flow.")
 
@@ -90,24 +91,24 @@ func (h *serviceHandler) FlowGet(u *user.User, id uuid.UUID) (*flow.Flow, error)
 	}
 
 	// permission check
-	if !u.HasPermission(user.PermissionAdmin) && f.UserID != u.ID {
-		log.Errorf("The user has no permission for this flow. user: %d, flow_user: %d", u.ID, f.UserID)
-		return nil, fmt.Errorf("user has no permission")
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != f.CustomerID {
+		log.Errorf("The customer has no permission for this flow. customer: %s, flow_customer: %s", u.ID, f.CustomerID)
+		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	res := flow.ConvertFlow(f)
 	return res, nil
 }
 
-// FlowGets gets the list of flow of the given user id.
+// FlowGets gets the list of flow of the given customer id.
 // It returns list of flows if it succeed.
-func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*flow.Flow, error) {
+func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token string) ([]*flow.Flow, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"size":     size,
-		"token":    token,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
 	})
 	log.Debug("Getting a flow.")
 
@@ -134,12 +135,12 @@ func (h *serviceHandler) FlowGets(u *user.User, size uint64, token string) ([]*f
 
 // FlowUpdate updates the flow info.
 // It returns updated flow if it succeed.
-func (h *serviceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, error) {
+func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *flow.Flow) (*flow.Flow, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"flow":     f.ID,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"flow":        f.ID,
 	})
 	log.Debug("Updating a flow.")
 
@@ -151,9 +152,9 @@ func (h *serviceHandler) FlowUpdate(u *user.User, f *flow.Flow) (*flow.Flow, err
 	}
 
 	// check the ownership
-	if u.Permission != user.PermissionAdmin && u.ID != tmpFlow.UserID {
-		log.Info("The user has no permission for this call.")
-		return nil, fmt.Errorf("user has no permission")
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpFlow.CustomerID {
+		log.Info("The customer has no permission for this call.")
+		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	reqFlow := flow.CreateFlow(f)

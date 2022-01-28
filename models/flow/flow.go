@@ -2,15 +2,16 @@ package flow
 
 import (
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 )
 
 // Flow struct for client show
 type Flow struct {
-	ID     uuid.UUID `json:"id"` // Flow's ID
-	UserID uint64    `json:"-"`  // Flow owner's User ID
+	ID         uuid.UUID `json:"id"` // Flow's ID
+	CustomerID uuid.UUID `json:"-"`  // Flow owner's customer ID
 
 	Name   string `json:"name"`   // Name
 	Detail string `json:"detail"` // Detail
@@ -36,8 +37,8 @@ func ConvertFlow(f *fmflow.Flow) *Flow {
 	}
 
 	res := &Flow{
-		ID:     f.ID,
-		UserID: f.UserID,
+		ID:         f.ID,
+		CustomerID: f.CustomerID,
 
 		Name:   f.Name,
 		Detail: f.Detail,
@@ -64,8 +65,8 @@ func CreateFlow(f *Flow) *fmflow.Flow {
 	}
 
 	res := &fmflow.Flow{
-		ID:     f.ID,
-		UserID: f.UserID,
+		ID:         f.ID,
+		CustomerID: f.CustomerID,
 
 		Name:   f.Name,
 		Detail: f.Detail,

@@ -6,18 +6,19 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // TranscribeCreate sends a request to transcribe-manager
 // to generate a recording-transcribe
 // it returns transcribe if it succeed.
-func (h *serviceHandler) TranscribeCreate(u *user.User, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+func (h *serviceHandler) TranscribeCreate(u *cscustomer.Customer, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":         u,
+		"customer_id":  u.ID,
 		"reference_id": recordingID,
 		"language":     language,
 	})
@@ -30,7 +31,7 @@ func (h *serviceHandler) TranscribeCreate(u *user.User, recordingID uuid.UUID, l
 	}
 
 	// check the recording ownership
-	if !u.HasPermission(user.PermissionAdmin) && u.ID != rec.UserID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != rec.CustomerID {
 		log.Error("The user has no permission for this recording.")
 		return nil, fmt.Errorf("user has no permission")
 	}

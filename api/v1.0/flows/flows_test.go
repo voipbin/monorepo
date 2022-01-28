@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
@@ -19,7 +21,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -38,7 +39,7 @@ func TestFlowsPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		customer    cscustomer.Customer
 		requestBody request.BodyFlowsPOST
 		reqFlow     *flow.Flow
 		resFlow     *flow.Flow
@@ -47,9 +48,11 @@ func TestFlowsPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID:         1,
-				Permission: user.PermissionAdmin,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
 			},
 			request.BodyFlowsPOST{
 				Name:   "test name",
@@ -84,9 +87,11 @@ func TestFlowsPOST(t *testing.T) {
 		},
 		{
 			"webhook",
-			user.User{
-				ID:         1,
-				Permission: user.PermissionAdmin,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
 			},
 			request.BodyFlowsPOST{
 				Name:       "test name",
@@ -132,7 +137,7 @@ func TestFlowsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
@@ -142,7 +147,7 @@ func TestFlowsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowCreate(&tt.user, tt.reqFlow.Name, tt.reqFlow.Detail, tt.requestBody.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.requestBody.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/flows", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -163,9 +168,9 @@ func TestFlowsIDGET(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name string
-		user user.User
-		flow *fmflow.Flow
+		name     string
+		customer cscustomer.Customer
+		flow     *fmflow.Flow
 
 		expectFlow *flow.Flow
 	}
@@ -173,14 +178,14 @@ func TestFlowsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			&fmflow.Flow{
-				ID:     uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-				Name:   "test name",
-				Detail: "test detail",
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
+				Name:       "test name",
+				Detail:     "test detail",
+				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				Actions: []fmaction.Action{
 					{
 						ID:   uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
@@ -189,10 +194,10 @@ func TestFlowsIDGET(t *testing.T) {
 				},
 			},
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-				Name:   "test name",
-				Detail: "test detail",
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
+				Name:       "test name",
+				Detail:     "test detail",
+				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				Actions: []action.Action{
 					{
 						Type: "answer",
@@ -210,11 +215,11 @@ func TestFlowsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().FlowGet(&tt.user, tt.flow.ID).Return(tt.expectFlow, nil)
+			mockSvc.EXPECT().FlowGet(&tt.customer, tt.flow.ID).Return(tt.expectFlow, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/flows/%s", tt.flow.ID), nil)
 
 			r.ServeHTTP(w, req)
@@ -235,7 +240,7 @@ func TestFlowsIDPUT(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		customer    cscustomer.Customer
 		flowID      uuid.UUID
 		requestBody request.BodyFlowsIDPUT
 		expectFlow  *flow.Flow
@@ -244,9 +249,11 @@ func TestFlowsIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID:         1,
-				Permission: user.PermissionAdmin,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
 			},
 			uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
 			request.BodyFlowsIDPUT{
@@ -279,7 +286,7 @@ func TestFlowsIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
@@ -289,7 +296,7 @@ func TestFlowsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowUpdate(&tt.user, tt.expectFlow).Return(&flow.Flow{}, nil)
+			mockSvc.EXPECT().FlowUpdate(&tt.customer, tt.expectFlow).Return(&flow.Flow{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/flows/"+tt.flowID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -310,16 +317,16 @@ func TestFlowsIDDELETE(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name   string
-		user   user.User
-		flowID uuid.UUID
+		name     string
+		customer cscustomer.Customer
+		flowID   uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("d466f900-67cb-11eb-b2ff-1f9adc48f842"),
 		},
@@ -333,11 +340,11 @@ func TestFlowsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().FlowDelete(&tt.user, tt.flowID).Return(nil)
+			mockSvc.EXPECT().FlowDelete(&tt.customer, tt.flowID).Return(nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/flows/%s", tt.flowID), nil)
 
 			r.ServeHTTP(w, req)

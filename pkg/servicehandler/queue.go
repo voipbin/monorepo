@@ -6,19 +6,19 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // queueGet validates the queue's ownership and returns the agent info.
-func (h *serviceHandler) queueGet(ctx context.Context, u *user.User, id uuid.UUID) (*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) queueGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":     "queueGet",
-			"user_id":  u.ID,
-			"agent_id": id,
+			"func":        "queueGet",
+			"customer_id": u.ID,
+			"agent_id":    id,
 		},
 	)
 
@@ -30,7 +30,7 @@ func (h *serviceHandler) queueGet(ctx context.Context, u *user.User, id uuid.UUI
 	}
 	log.WithField("queue", tmp).Debug("Received result.")
 
-	if u.Permission != user.PermissionAdmin && u.ID != tmp.UserID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
 		log.Info("The user has no permission for this agent.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -42,13 +42,13 @@ func (h *serviceHandler) queueGet(ctx context.Context, u *user.User, id uuid.UUI
 
 // QueueGet sends a request to queue-manager
 // to getting the queue.
-func (h *serviceHandler) QueueGet(u *user.User, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueGet(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueueGet",
-		"user_id":  u.ID,
-		"username": u.Username,
-		"agent_id": queueID,
+		"func":        "QueueGet",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"agent_id":    queueID,
 	})
 
 	res, err := h.queueGet(ctx, u, queueID)
@@ -63,14 +63,14 @@ func (h *serviceHandler) QueueGet(u *user.User, queueID uuid.UUID) (*qmqueue.Web
 // QueueGets sends a request to queue-manager
 // to getting a list of queues.
 // it returns queue info if it succeed.
-func (h *serviceHandler) QueueGets(u *user.User, size uint64, token string) ([]*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueGets(u *cscustomer.Customer, size uint64, token string) ([]*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueueGets",
-		"user":     u.ID,
-		"username": u.Username,
-		"size":     size,
-		"token":    token,
+		"func":        "QueueGets",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
 	})
 
 	if token == "" {
@@ -96,7 +96,7 @@ func (h *serviceHandler) QueueGets(u *user.User, size uint64, token string) ([]*
 // to creating an queue.
 // it returns created queue info if it succeed.
 func (h *serviceHandler) QueueCreate(
-	u *user.User,
+	u *cscustomer.Customer,
 	name string,
 	detail string,
 	webhookURI string,
@@ -109,9 +109,9 @@ func (h *serviceHandler) QueueCreate(
 ) (*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueueCreate",
-		"user":     u.ID,
-		"username": u.Username,
+		"func":        "QueueCreate",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	tmp, err := h.reqHandler.QMV1QueueCreate(
@@ -140,12 +140,12 @@ func (h *serviceHandler) QueueCreate(
 // QueueDelete sends a request to queue-manager
 // to deleting the queue.
 // it returns error if it failed.
-func (h *serviceHandler) QueueDelete(u *user.User, queueID uuid.UUID) error {
+func (h *serviceHandler) QueueDelete(u *cscustomer.Customer, queueID uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueueDelete",
-		"user":     u.ID,
-		"username": u.Username,
+		"func":        "QueueDelete",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	_, err := h.queueGet(ctx, u, queueID)
@@ -165,12 +165,12 @@ func (h *serviceHandler) QueueDelete(u *user.User, queueID uuid.UUID) error {
 // QueueUpdate sends a request to queue-manager
 // to updating the queue.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdate(u *user.User, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error {
+func (h *serviceHandler) QueueUpdate(u *cscustomer.Customer, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueueUpdate",
-		"user":     u.ID,
-		"username": u.Username,
+		"func":        "QueueUpdate",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	_, err := h.queueGet(ctx, u, queueID)
@@ -190,12 +190,12 @@ func (h *serviceHandler) QueueUpdate(u *user.User, queueID uuid.UUID, name, deta
 // QueueUpdateTagIDs sends a request to queue-manager
 // to updating the queue's tag_ids.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdateTagIDs(u *user.User, queueID uuid.UUID, tagIDs []uuid.UUID) error {
+func (h *serviceHandler) QueueUpdateTagIDs(u *cscustomer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueueUpdateTagIDs",
-		"user":     u.ID,
-		"username": u.Username,
+		"func":        "QueueUpdateTagIDs",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	_, err := h.queueGet(ctx, u, queueID)
@@ -215,12 +215,12 @@ func (h *serviceHandler) QueueUpdateTagIDs(u *user.User, queueID uuid.UUID, tagI
 // QueueUpdateRoutingMethod sends a request to queue-manager
 // to updating the queue's routing_method.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdateRoutingMethod(u *user.User, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) error {
+func (h *serviceHandler) QueueUpdateRoutingMethod(u *cscustomer.Customer, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueueUpdateRoutingMethod",
-		"user":     u.ID,
-		"username": u.Username,
+		"func":        "QueueUpdateRoutingMethod",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	_, err := h.queueGet(ctx, u, queueID)
@@ -240,12 +240,12 @@ func (h *serviceHandler) QueueUpdateRoutingMethod(u *user.User, queueID uuid.UUI
 // QueueUpdateActions sends a request to queue-manager
 // to updating the queue's action settings.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdateActions(u *user.User, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) error {
+func (h *serviceHandler) QueueUpdateActions(u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "QueueUpdateActions",
-		"user":     u.ID,
-		"username": u.Username,
+		"func":        "QueueUpdateActions",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	_, err := h.queueGet(ctx, u, queueID)

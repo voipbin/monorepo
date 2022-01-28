@@ -203,9 +203,9 @@ func (h *serviceHandler) CustomerUpdatePassword(u *cscustomer.Customer, customer
 func (h *serviceHandler) CustomerUpdatePermissionIDs(u *cscustomer.Customer, customerID uuid.UUID, permissionIDs []uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CustomerUpdatePermissionIDs",
-		"user_id":  u.ID,
-		"username": u.Username,
+		"func":        "CustomerUpdatePermissionIDs",
+		"customer_id": u.ID,
+		"username":    u.Username,
 	})
 
 	if _, found := Find(u.PermissionIDs, cspermission.PermissionAdmin.ID); !found {

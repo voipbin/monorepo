@@ -6,21 +6,22 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // NumberGets sends a request to getting a list of numbers
 // It sends a request to the number-manager to getting a list of numbers.
 // it returns list of numbers if it succeed.
-func (h *serviceHandler) NumberGets(u *user.User, size uint64, token string) ([]*number.Number, error) {
+func (h *serviceHandler) NumberGets(u *cscustomer.Customer, size uint64, token string) ([]*number.Number, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"size":     size,
-		"token":    "token",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       "token",
 	})
 
 	// get available numbers
@@ -43,12 +44,12 @@ func (h *serviceHandler) NumberGets(u *user.User, size uint64, token string) ([]
 // NumberCreate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberCreate(u *user.User, num string) (*number.Number, error) {
+func (h *serviceHandler) NumberCreate(u *cscustomer.Customer, num string) (*number.Number, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"numbers":  num,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"numbers":     num,
 	})
 
 	if num == "" {
@@ -70,12 +71,12 @@ func (h *serviceHandler) NumberCreate(u *user.User, num string) (*number.Number,
 // NumberGet handles number get request.
 // It sends a request to the number-manager to get a existed number.
 // it returns got number information if it succeed.
-func (h *serviceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, error) {
+func (h *serviceHandler) NumberGet(u *cscustomer.Customer, id uuid.UUID) (*number.Number, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"number":   id,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"number":      id,
 	})
 
 	// get number info
@@ -86,8 +87,8 @@ func (h *serviceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, 
 	}
 
 	// permission check
-	if !u.HasPermission(user.PermissionAdmin) && res.UserID != u.ID {
-		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, res.UserID)
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
+		log.Errorf("The user has no permission for this number. user: %s, number_user: %s", u.ID, res.CustomerID)
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -104,12 +105,12 @@ func (h *serviceHandler) NumberGet(u *user.User, id uuid.UUID) (*number.Number, 
 // NumberDelete handles number delete request.
 // It sends a request to the number-manager to delete a existed number.
 // it returns deleted number information if it succeed.
-func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Number, error) {
+func (h *serviceHandler) NumberDelete(u *cscustomer.Customer, id uuid.UUID) (*number.Number, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"number":   id,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"number":      id,
 	})
 
 	// get number info
@@ -120,8 +121,8 @@ func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Numbe
 	}
 
 	// permission check
-	if !u.HasPermission(user.PermissionAdmin) && tmp.UserID != u.ID {
-		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, tmp.UserID)
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
+		log.Errorf("The user has no permission for this number. user: %s, number_user: %s", u.ID, tmp.CustomerID)
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -144,12 +145,12 @@ func (h *serviceHandler) NumberDelete(u *user.User, id uuid.UUID) (*number.Numbe
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdate(u *user.User, numb *number.Number) (*number.Number, error) {
+func (h *serviceHandler) NumberUpdate(u *cscustomer.Customer, numb *number.Number) (*number.Number, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"number":   numb,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"number":      numb,
 	})
 
 	// get number
@@ -160,8 +161,8 @@ func (h *serviceHandler) NumberUpdate(u *user.User, numb *number.Number) (*numbe
 	}
 
 	// permission check
-	if !u.HasPermission(user.PermissionAdmin) && tmpNumb.UserID != u.ID {
-		log.Errorf("The user has no permission for this number. user: %d, number_user: %d", u.ID, tmpNumb.UserID)
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpNumb.CustomerID {
+		log.Errorf("The user has no permission for this number. user: %s, number_user: %s", u.ID, tmpNumb.CustomerID)
 		return nil, fmt.Errorf("user has no permission")
 	}
 
