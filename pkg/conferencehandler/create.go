@@ -21,7 +21,7 @@ const defaultConferenceTimeout = 86400
 func (h *conferenceHandler) Create(
 	ctx context.Context,
 	conferenceType conference.Type,
-	userID uint64,
+	customerID uuid.UUID,
 	name string,
 	detail string,
 	timeout int,
@@ -32,7 +32,7 @@ func (h *conferenceHandler) Create(
 	log := logrus.New().WithFields(
 		logrus.Fields{
 			"func":            "Create",
-			"user_id":         userID,
+			"customer_id":     customerID,
 			"conference_type": conferenceType,
 		},
 	)
@@ -49,7 +49,7 @@ func (h *conferenceHandler) Create(
 	log.Debugf("Created confbridge. confbridge_id: %s", cb.ID)
 
 	// create flow
-	f, err := h.createConferenceFlow(ctx, userID, id, cb.ID, preActions, postActions)
+	f, err := h.createConferenceFlow(ctx, customerID, id, cb.ID, preActions, postActions)
 	if err != nil {
 		log.Errorf("Could not create conference flow. err: %v", err)
 		return nil, err
@@ -63,7 +63,7 @@ func (h *conferenceHandler) Create(
 	// create a conference struct
 	newCf := &conference.Conference{
 		ID:           id,
-		UserID:       userID,
+		CustomerID:   customerID,
 		ConfbridgeID: cb.ID,
 		FlowID:       f.ID,
 		Type:         conferenceType,
@@ -156,7 +156,7 @@ func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, 
 }
 
 // createConferenceFlow creates a conference flow and returns created flow.
-func (h *conferenceHandler) createConferenceFlow(ctx context.Context, userID uint64, conferenceID uuid.UUID, confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) (*fmflow.Flow, error) {
+func (h *conferenceHandler) createConferenceFlow(ctx context.Context, customerID uuid.UUID, conferenceID uuid.UUID, confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) (*fmflow.Flow, error) {
 	log := logrus.WithField("func", "createConferenceFlow")
 
 	// create flow actions
@@ -171,7 +171,7 @@ func (h *conferenceHandler) createConferenceFlow(ctx context.Context, userID uin
 	flowName := fmt.Sprintf("conference-%s", conferenceID.String())
 
 	// create flow
-	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, userID, fmflow.TypeConference, flowName, "generated for conference by conference-manager.", "", actions, true)
+	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeConference, flowName, "generated for conference by conference-manager.", "", actions, true)
 	if err != nil {
 		log.Errorf("Could not create a conference flow. err: %v", err)
 		return nil, err
@@ -182,15 +182,15 @@ func (h *conferenceHandler) createConferenceFlow(ctx context.Context, userID uin
 }
 
 // Gets returns list of conferences.
-func (h *conferenceHandler) Gets(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
+func (h *conferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
 	log := logrus.WithField("func", "Gets")
 
 	var res []*conference.Conference
 	var err error
 	if confType == "" {
-		res, err = h.db.ConferenceGets(ctx, userID, size, token)
+		res, err = h.db.ConferenceGets(ctx, customerID, size, token)
 	} else {
-		res, err = h.db.ConferenceGetsWithType(ctx, userID, confType, size, token)
+		res, err = h.db.ConferenceGetsWithType(ctx, customerID, confType, size, token)
 	}
 
 	if err != nil {

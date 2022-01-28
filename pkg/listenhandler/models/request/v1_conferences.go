@@ -1,6 +1,7 @@
 package request
 
 import (
+	"github.com/gofrs/uuid"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
@@ -11,7 +12,7 @@ import (
 // /v1/conferences" POST
 type V1DataConferencesPost struct {
 	Type        conference.Type        `json:"type"`
-	UserID      uint64                 `json:"user_id"`
+	CustomerID  uuid.UUID              `json:"customer_id"`
 	Name        string                 `json:"name"`
 	Detail      string                 `json:"detail"`
 	Timeout     int                    `json:"timeout"`     // timeout. second

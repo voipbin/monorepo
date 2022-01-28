@@ -169,33 +169,33 @@ func (mr *MockDBHandlerMockRecorder) ConferenceGetFromDB(ctx, id interface{}) *g
 }
 
 // ConferenceGets mocks base method.
-func (m *MockDBHandler) ConferenceGets(ctx context.Context, userID, size uint64, token string) ([]*conference.Conference, error) {
+func (m *MockDBHandler) ConferenceGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceGets", ctx, userID, size, token)
+	ret := m.ctrl.Call(m, "ConferenceGets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConferenceGets indicates an expected call of ConferenceGets.
-func (mr *MockDBHandlerMockRecorder) ConferenceGets(ctx, userID, size, token interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ConferenceGets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGets), ctx, userID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGets), ctx, customerID, size, token)
 }
 
 // ConferenceGetsWithType mocks base method.
-func (m *MockDBHandler) ConferenceGetsWithType(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
+func (m *MockDBHandler) ConferenceGetsWithType(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceGetsWithType", ctx, userID, confType, size, token)
+	ret := m.ctrl.Call(m, "ConferenceGetsWithType", ctx, customerID, confType, size, token)
 	ret0, _ := ret[0].([]*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConferenceGetsWithType indicates an expected call of ConferenceGetsWithType.
-func (mr *MockDBHandlerMockRecorder) ConferenceGetsWithType(ctx, userID, confType, size, token interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ConferenceGetsWithType(ctx, customerID, confType, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetsWithType", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetsWithType), ctx, userID, confType, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetsWithType", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetsWithType), ctx, customerID, confType, size, token)
 }
 
 // ConferenceRemoveCallID mocks base method.

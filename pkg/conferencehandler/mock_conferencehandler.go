@@ -38,18 +38,18 @@ func (m *MockConferenceHandler) EXPECT() *MockConferenceHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockConferenceHandler) Create(ctx context.Context, conferenceType conference.Type, userID uint64, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error) {
+func (m *MockConferenceHandler) Create(ctx context.Context, conferenceType conference.Type, customerID uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, conferenceType, userID, name, detail, timeout, webhookURI, preActions, postActions)
+	ret := m.ctrl.Call(m, "Create", ctx, conferenceType, customerID, name, detail, timeout, webhookURI, preActions, postActions)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockConferenceHandlerMockRecorder) Create(ctx, conferenceType, userID, name, detail, timeout, webhookURI, preActions, postActions interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Create(ctx, conferenceType, customerID, name, detail, timeout, webhookURI, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferenceHandler)(nil).Create), ctx, conferenceType, userID, name, detail, timeout, webhookURI, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferenceHandler)(nil).Create), ctx, conferenceType, customerID, name, detail, timeout, webhookURI, preActions, postActions)
 }
 
 // Get mocks base method.
@@ -68,18 +68,18 @@ func (mr *MockConferenceHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Ca
 }
 
 // Gets mocks base method.
-func (m *MockConferenceHandler) Gets(ctx context.Context, userID uint64, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
+func (m *MockConferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, userID, confType, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, confType, size, token)
 	ret0, _ := ret[0].([]*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockConferenceHandlerMockRecorder) Gets(ctx, userID, confType, size, token interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Gets(ctx, customerID, confType, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConferenceHandler)(nil).Gets), ctx, userID, confType, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConferenceHandler)(nil).Gets), ctx, customerID, confType, size, token)
 }
 
 // Join mocks base method.
