@@ -6,18 +6,19 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // domainGet validates the domain's ownership and returns the domain info.
-func (h *serviceHandler) domainGet(ctx context.Context, u *user.User, id uuid.UUID) (*domain.Domain, error) {
+func (h *serviceHandler) domainGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*domain.Domain, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":      "domainGet",
-			"user_id":   u.ID,
-			"domain_id": id,
+			"func":        "domainGet",
+			"customer_id": u.ID,
+			"domain_id":   id,
 		},
 	)
 
@@ -29,7 +30,7 @@ func (h *serviceHandler) domainGet(ctx context.Context, u *user.User, id uuid.UU
 	}
 	log.WithField("domain", tmp).Debug("Received result.")
 
-	if u.Permission != user.PermissionAdmin && u.ID != tmp.UserID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
 		log.Info("The user has no permission for this domain.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -40,10 +41,10 @@ func (h *serviceHandler) domainGet(ctx context.Context, u *user.User, id uuid.UU
 }
 
 // DomainCreate is a service handler for flow creation.
-func (h *serviceHandler) DomainCreate(u *user.User, domainName, name, detail string) (*domain.Domain, error) {
+func (h *serviceHandler) DomainCreate(u *cscustomer.Customer, domainName, name, detail string) (*domain.Domain, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":        u.ID,
+		"customer_id": u.ID,
 		"domain_name": domainName,
 		"name":        name,
 	})
@@ -60,12 +61,12 @@ func (h *serviceHandler) DomainCreate(u *user.User, domainName, name, detail str
 }
 
 // DomainDelete deletes the domain of the given id.
-func (h *serviceHandler) DomainDelete(u *user.User, id uuid.UUID) error {
+func (h *serviceHandler) DomainDelete(u *cscustomer.Customer, id uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":      u.ID,
-		"username":  u.Username,
-		"domain_id": id,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"domain_id":   id,
 	})
 	log.Debug("Deleting the domain.")
 
@@ -85,12 +86,12 @@ func (h *serviceHandler) DomainDelete(u *user.User, id uuid.UUID) error {
 
 // DomainGet gets the domain of the given id.
 // It returns domain if it succeed.
-func (h *serviceHandler) DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, error) {
+func (h *serviceHandler) DomainGet(u *cscustomer.Customer, id uuid.UUID) (*domain.Domain, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":      u.ID,
-		"username":  u.Username,
-		"domain_id": id,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"domain_id":   id,
 	})
 	log.Debug("Getting a domain.")
 
@@ -104,15 +105,15 @@ func (h *serviceHandler) DomainGet(u *user.User, id uuid.UUID) (*domain.Domain, 
 	return res, nil
 }
 
-// DomainGets gets the list of domains of the given user id.
+// DomainGets gets the list of domains of the given customer id.
 // It returns list of domains if it succeed.
-func (h *serviceHandler) DomainGets(u *user.User, size uint64, token string) ([]*domain.Domain, error) {
+func (h *serviceHandler) DomainGets(u *cscustomer.Customer, size uint64, token string) ([]*domain.Domain, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"size":     size,
-		"token":    token,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
 	})
 	log.Debug("Getting a domains.")
 
@@ -139,12 +140,12 @@ func (h *serviceHandler) DomainGets(u *user.User, size uint64, token string) ([]
 
 // DomainUpdate updates the flow info.
 // It returns updated domain if it succeed.
-func (h *serviceHandler) DomainUpdate(u *user.User, d *domain.Domain) (*domain.Domain, error) {
+func (h *serviceHandler) DomainUpdate(u *cscustomer.Customer, d *domain.Domain) (*domain.Domain, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"domain":   d.ID,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"domain":      d.ID,
 	})
 	log.Debug("Updating a domain.")
 

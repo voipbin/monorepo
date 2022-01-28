@@ -7,10 +7,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -28,7 +28,7 @@ func TestQueueGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
+		customer  *cscustomer.Customer
 		pageToken string
 		pageSize  uint64
 
@@ -39,8 +39,8 @@ func TestQueueGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			"2021-03-01 01:00:00.995000",
 			10,
@@ -60,9 +60,9 @@ func TestQueueGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().QMV1QueueGets(gomock.Any(), tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().QMV1QueueGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.QueueGets(tt.user, tt.pageSize, tt.pageToken)
+			res, err := h.QueueGets(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -93,9 +93,9 @@ func TestQueueGet(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		user *user.User
-		id   uuid.UUID
+		name     string
+		customer *cscustomer.Customer
+		id       uuid.UUID
 
 		response  *qmqueue.Queue
 		expectRes *qmqueue.WebhookMessage
@@ -104,14 +104,14 @@ func TestQueueGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
 				ID: uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
@@ -124,7 +124,7 @@ func TestQueueGet(t *testing.T) {
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
-			res, err := h.QueueGet(tt.user, tt.id)
+			res, err := h.QueueGet(tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -151,7 +151,7 @@ func TestQueueCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		user           *user.User
+		customer       *cscustomer.Customer
 		queueName      string
 		detail         string
 		webhookURI     string
@@ -170,8 +170,8 @@ func TestQueueCreate(t *testing.T) {
 		{
 			"normal",
 
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			"name",
 			"detail",
@@ -190,8 +190,8 @@ func TestQueueCreate(t *testing.T) {
 			1000000,
 
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
 				ID: uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
@@ -204,7 +204,7 @@ func TestQueueCreate(t *testing.T) {
 
 			mockReq.EXPECT().QMV1QueueCreate(
 				gomock.Any(),
-				tt.user.ID,
+				tt.customer.ID,
 				tt.queueName,
 				tt.detail,
 				tt.webhookURI,
@@ -217,7 +217,7 @@ func TestQueueCreate(t *testing.T) {
 			).Return(tt.response, nil)
 
 			res, err := h.QueueCreate(
-				tt.user,
+				tt.customer,
 				tt.queueName,
 				tt.detail,
 				tt.webhookURI,
@@ -254,8 +254,8 @@ func TestQueueDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		user    *user.User
-		queueID uuid.UUID
+		customer *cscustomer.Customer
+		queueID  uuid.UUID
 
 		response *qmqueue.Queue
 	}
@@ -264,14 +264,14 @@ func TestQueueDelete(t *testing.T) {
 		{
 			"normal",
 
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("6aa878a2-6317-11ec-94b7-c7ba9436173f"),
 
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("6aa878a2-6317-11ec-94b7-c7ba9436173f"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("6aa878a2-6317-11ec-94b7-c7ba9436173f"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -282,7 +282,7 @@ func TestQueueDelete(t *testing.T) {
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueDelete(gomock.Any(), tt.queueID).Return(nil)
 
-			if err := h.QueueDelete(tt.user, tt.queueID); err != nil {
+			if err := h.QueueDelete(tt.customer, tt.queueID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -304,7 +304,7 @@ func TestQueueUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		user          *user.User
+		customer      *cscustomer.Customer
 		queueID       uuid.UUID
 		queueName     string
 		detail        string
@@ -318,8 +318,8 @@ func TestQueueUpdate(t *testing.T) {
 		{
 			"normal",
 
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
 			"name",
@@ -328,8 +328,8 @@ func TestQueueUpdate(t *testing.T) {
 			"POST",
 
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -340,7 +340,7 @@ func TestQueueUpdate(t *testing.T) {
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueUpdate(gomock.Any(), tt.queueID, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod).Return(nil)
 
-			if err := h.QueueUpdate(tt.user, tt.queueID, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod); err != nil {
+			if err := h.QueueUpdate(tt.customer, tt.queueID, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -362,9 +362,9 @@ func TestQueueUpdateTagIDs(t *testing.T) {
 	type test struct {
 		name string
 
-		user    *user.User
-		queueID uuid.UUID
-		tagIDs  []uuid.UUID
+		customer *cscustomer.Customer
+		queueID  uuid.UUID
+		tagIDs   []uuid.UUID
 
 		response *qmqueue.Queue
 	}
@@ -373,8 +373,8 @@ func TestQueueUpdateTagIDs(t *testing.T) {
 		{
 			"normal",
 
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("4f10fcca-6391-11ec-b1a8-cf59a893226a"),
 			[]uuid.UUID{
@@ -382,15 +382,15 @@ func TestQueueUpdateTagIDs(t *testing.T) {
 			},
 
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("4f10fcca-6391-11ec-b1a8-cf59a893226a"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("4f10fcca-6391-11ec-b1a8-cf59a893226a"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 		{
 			"2 items",
 
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("7472d542-6391-11ec-8e92-6f12cb507950"),
 			[]uuid.UUID{
@@ -399,8 +399,8 @@ func TestQueueUpdateTagIDs(t *testing.T) {
 			},
 
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("7472d542-6391-11ec-8e92-6f12cb507950"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("7472d542-6391-11ec-8e92-6f12cb507950"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -411,7 +411,7 @@ func TestQueueUpdateTagIDs(t *testing.T) {
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueUpdateTagIDs(gomock.Any(), tt.queueID, tt.tagIDs).Return(nil)
 
-			if err := h.QueueUpdateTagIDs(tt.user, tt.queueID, tt.tagIDs); err != nil {
+			if err := h.QueueUpdateTagIDs(tt.customer, tt.queueID, tt.tagIDs); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -433,7 +433,7 @@ func TestQueueUpdateRoutingMethod(t *testing.T) {
 	type test struct {
 		name string
 
-		user          *user.User
+		customer      *cscustomer.Customer
 		queueID       uuid.UUID
 		routingMethod qmqueue.RoutingMethod
 
@@ -444,29 +444,29 @@ func TestQueueUpdateRoutingMethod(t *testing.T) {
 		{
 			"routing method random",
 
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("af14400a-6391-11ec-baed-7fb98aebe61a"),
 			qmqueue.RoutingMethodRandom,
 
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("af14400a-6391-11ec-baed-7fb98aebe61a"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("af14400a-6391-11ec-baed-7fb98aebe61a"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 		{
 			"routing method none",
 
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("af2efe86-6391-11ec-8100-c3e8d3057916"),
 			qmqueue.RoutingMethodNone,
 
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("af2efe86-6391-11ec-8100-c3e8d3057916"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("af2efe86-6391-11ec-8100-c3e8d3057916"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -477,7 +477,7 @@ func TestQueueUpdateRoutingMethod(t *testing.T) {
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueUpdateRoutingMethod(gomock.Any(), tt.queueID, tt.routingMethod).Return(nil)
 
-			if err := h.QueueUpdateRoutingMethod(tt.user, tt.queueID, tt.routingMethod); err != nil {
+			if err := h.QueueUpdateRoutingMethod(tt.customer, tt.queueID, tt.routingMethod); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -499,7 +499,7 @@ func TestQueueUpdateActions(t *testing.T) {
 	type test struct {
 		name string
 
-		user           *user.User
+		customer       *cscustomer.Customer
 		queueID        uuid.UUID
 		waitActions    []fmaction.Action
 		timeoutWait    int
@@ -512,8 +512,8 @@ func TestQueueUpdateActions(t *testing.T) {
 		{
 			"routing method random",
 
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
 			[]fmaction.Action{
@@ -525,8 +525,8 @@ func TestQueueUpdateActions(t *testing.T) {
 			100000,
 
 			&qmqueue.Queue{
-				ID:     uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -537,7 +537,7 @@ func TestQueueUpdateActions(t *testing.T) {
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueUpdateActions(gomock.Any(), tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(nil)
 
-			if err := h.QueueUpdateActions(tt.user, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService); err != nil {
+			if err := h.QueueUpdateActions(tt.customer, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

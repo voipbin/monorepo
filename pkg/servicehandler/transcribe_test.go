@@ -6,13 +6,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
 func TestTranscribeCreate(t *testing.T) {
@@ -28,8 +28,8 @@ func TestTranscribeCreate(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		user *user.User
+		name     string
+		customer *cscustomer.Customer
 
 		referenceID uuid.UUID
 		language    string
@@ -42,16 +42,16 @@ func TestTranscribeCreate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 
 			uuid.FromStringOrNil("4a1b66dc-a3f3-11eb-bdef-bb62ebd98cdd"),
 			"en-US",
 
 			&cmrecording.Recording{
-				ID:     uuid.FromStringOrNil("4a1b66dc-a3f3-11eb-bdef-bb62ebd98cdd"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("4a1b66dc-a3f3-11eb-bdef-bb62ebd98cdd"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&tmtranscribe.Transcribe{
 				ID:            uuid.FromStringOrNil("77bd4574-a3f3-11eb-a790-c7e151065eb9"),
@@ -90,7 +90,7 @@ func TestTranscribeCreate(t *testing.T) {
 			mockReq.EXPECT().CMV1RecordingGet(gomock.Any(), tt.referenceID).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().TSV1RecordingCreate(gomock.Any(), tt.referenceID, tt.language).Return(tt.response, nil)
 
-			res, err := h.TranscribeCreate(tt.user, tt.referenceID, tt.language)
+			res, err := h.TranscribeCreate(tt.customer, tt.referenceID, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

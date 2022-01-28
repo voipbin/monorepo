@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 func TestOrderNumberGets(t *testing.T) {
@@ -28,7 +28,7 @@ func TestOrderNumberGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
+		customer  *cscustomer.Customer
 		pageToken string
 		pageSize  uint64
 
@@ -39,8 +39,8 @@ func TestOrderNumberGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			"2021-03-01 01:00:00.995000",
 			10,
@@ -49,7 +49,7 @@ func TestOrderNumberGets(t *testing.T) {
 				{
 					ID:                  uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 					Number:              "+821021656521",
-					UserID:              1,
+					CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 					ProviderName:        "telnyx",
 					ProviderReferenceID: "",
 					Status:              nmnumber.StatusActive,
@@ -61,7 +61,7 @@ func TestOrderNumberGets(t *testing.T) {
 				{
 					ID:               uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 					Number:           "+821021656521",
-					UserID:           1,
+					CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 					Status:           "active",
 					T38Enabled:       false,
 					EmergencyEnabled: false,
@@ -76,9 +76,9 @@ func TestOrderNumberGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().NMV1NumberGets(gomock.Any(), tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().NMV1NumberGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.NumberGets(tt.user, tt.pageSize, tt.pageToken)
+			res, err := h.NumberGets(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -109,9 +109,9 @@ func TestOrderNumberGet(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		user *user.User
-		id   uuid.UUID
+		name     string
+		customer *cscustomer.Customer
+		id       uuid.UUID
 
 		response  *nmnumber.Number
 		expectRes *number.Number
@@ -120,15 +120,15 @@ func TestOrderNumberGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -139,7 +139,7 @@ func TestOrderNumberGet(t *testing.T) {
 			&number.Number{
 				ID:               uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 				Number:           "+821021656521",
-				UserID:           1,
+				CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				Status:           "active",
 				T38Enabled:       false,
 				EmergencyEnabled: false,
@@ -156,7 +156,7 @@ func TestOrderNumberGet(t *testing.T) {
 
 			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
-			res, err := h.NumberGet(tt.user, tt.id)
+			res, err := h.NumberGet(tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -181,9 +181,9 @@ func TestOrderNumberGetError(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		user *user.User
-		id   uuid.UUID
+		name     string
+		customer *cscustomer.Customer
+		id       uuid.UUID
 
 		response *nmnumber.Number
 	}
@@ -191,15 +191,15 @@ func TestOrderNumberGetError(t *testing.T) {
 	tests := []test{
 		{
 			"deleted item",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
 
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -215,7 +215,7 @@ func TestOrderNumberGetError(t *testing.T) {
 
 			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
-			_, err := h.NumberGet(tt.user, tt.id)
+			_, err := h.NumberGet(tt.customer, tt.id)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
@@ -236,9 +236,9 @@ func TestNumberCreate(t *testing.T) {
 	}
 
 	type test struct {
-		name    string
-		user    *user.User
-		numbers string
+		name     string
+		customer *cscustomer.Customer
+		numbers  string
 
 		response  *nmnumber.Number
 		expectRes *number.Number
@@ -247,15 +247,15 @@ func TestNumberCreate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			"+821021656521",
 
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("f06c8c36-7b1d-11eb-8b01-83e94e91b409"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -265,7 +265,7 @@ func TestNumberCreate(t *testing.T) {
 			},
 			&number.Number{
 				Number:           "+821021656521",
-				UserID:           1,
+				CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				Status:           "active",
 				T38Enabled:       false,
 				EmergencyEnabled: false,
@@ -281,9 +281,9 @@ func TestNumberCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// ctx := context.Background()
 
-			mockReq.EXPECT().NMV1NumberCreate(gomock.Any(), tt.user.ID, tt.numbers).Return(tt.response, nil)
+			mockReq.EXPECT().NMV1NumberCreate(gomock.Any(), tt.customer.ID, tt.numbers).Return(tt.response, nil)
 
-			res, err := h.NumberCreate(tt.user, tt.numbers)
+			res, err := h.NumberCreate(tt.customer, tt.numbers)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -309,9 +309,9 @@ func TestNumberDelete(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		user *user.User
-		id   uuid.UUID
+		name     string
+		customer *cscustomer.Customer
+		id       uuid.UUID
 
 		responseGet    *nmnumber.Number
 		responseDelete *nmnumber.Number
@@ -321,15 +321,15 @@ func TestNumberDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
 
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -340,7 +340,7 @@ func TestNumberDelete(t *testing.T) {
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusDeleted,
@@ -353,7 +353,7 @@ func TestNumberDelete(t *testing.T) {
 			&number.Number{
 				ID:               uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
 				Number:           "+821021656521",
-				UserID:           1,
+				CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				Status:           "deleted",
 				T38Enabled:       false,
 				EmergencyEnabled: false,
@@ -371,7 +371,7 @@ func TestNumberDelete(t *testing.T) {
 			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
 			mockReq.EXPECT().NMV1NumberDelete(gomock.Any(), tt.id).Return(tt.responseDelete, nil)
 
-			res, err := h.NumberDelete(tt.user, tt.id)
+			res, err := h.NumberDelete(tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -397,7 +397,7 @@ func TestNumberUpdate(t *testing.T) {
 
 	type test struct {
 		name         string
-		user         *user.User
+		customer     *cscustomer.Customer
 		updateNumber *number.Number
 
 		updateNMNumber *nmnumber.Number
@@ -409,8 +409,8 @@ func TestNumberUpdate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&number.Number{
 				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
@@ -424,7 +424,7 @@ func TestNumberUpdate(t *testing.T) {
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -436,7 +436,7 @@ func TestNumberUpdate(t *testing.T) {
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 				FlowID:              uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -448,7 +448,7 @@ func TestNumberUpdate(t *testing.T) {
 				ID:               uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 				FlowID:           uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
 				Number:           "+821021656521",
-				UserID:           1,
+				CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				Status:           "active",
 				T38Enabled:       false,
 				EmergencyEnabled: false,
@@ -466,7 +466,7 @@ func TestNumberUpdate(t *testing.T) {
 			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.updateNumber.ID).Return(tt.responseGet, nil)
 			mockReq.EXPECT().NMV1NumberUpdate(gomock.Any(), tt.updateNMNumber).Return(tt.responseUpdate, nil)
 
-			res, err := h.NumberUpdate(tt.user, tt.updateNumber)
+			res, err := h.NumberUpdate(tt.customer, tt.updateNumber)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -492,7 +492,7 @@ func TestNumberUpdateError(t *testing.T) {
 
 	type test struct {
 		name         string
-		user         *user.User
+		customer     *cscustomer.Customer
 		updateNumber *number.Number
 
 		responseGet *nmnumber.Number
@@ -501,8 +501,8 @@ func TestNumberUpdateError(t *testing.T) {
 	tests := []test{
 		{
 			"deleted item",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&number.Number{
 				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
@@ -512,7 +512,7 @@ func TestNumberUpdateError(t *testing.T) {
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -528,7 +528,7 @@ func TestNumberUpdateError(t *testing.T) {
 
 			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.updateNumber.ID).Return(tt.responseGet, nil)
 
-			_, err := h.NumberUpdate(tt.user, tt.updateNumber)
+			_, err := h.NumberUpdate(tt.customer, tt.updateNumber)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}

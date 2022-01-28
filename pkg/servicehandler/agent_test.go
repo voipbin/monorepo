@@ -9,10 +9,10 @@ import (
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -30,7 +30,7 @@ func TestAgentCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user          *user.User
+		customer      *cscustomer.Customer
 		username      string
 		password      string
 		agentName     string
@@ -47,8 +47,8 @@ func TestAgentCreate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			"test1",
 			"password1",
@@ -72,8 +72,8 @@ func TestAgentCreate(t *testing.T) {
 		},
 		{
 			"have webhook",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			"test1",
 			"password1",
@@ -106,9 +106,9 @@ func TestAgentCreate(t *testing.T) {
 				addresses = append(addresses, *a)
 			}
 
-			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.user.ID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, amagent.RingMethod(tt.ringMethod), amagent.Permission(tt.permission), tt.tagIDs, addresses).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.customer.ID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, amagent.RingMethod(tt.ringMethod), amagent.Permission(tt.permission), tt.tagIDs, addresses).Return(tt.response, nil)
 
-			res, err := h.AgentCreate(tt.user, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
+			res, err := h.AgentCreate(tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -134,28 +134,28 @@ func TestAgentGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user    *user.User
-		agentID uuid.UUID
+		customer *cscustomer.Customer
+		agentID  uuid.UUID
 
 		response  *amagent.Agent
 		expectRes *agent.Agent
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			uuid.FromStringOrNil("450c8f6a-5067-11ec-bda4-039a4b9a1158"),
 
 			&amagent.Agent{
-				ID:     uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			&agent.Agent{
-				ID:        uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID:    1,
-				TagIDs:    nil,
-				Addresses: []address.Address{},
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
+				TagIDs:     nil,
+				Addresses:  []address.Address{},
 			},
 		},
 	}
@@ -165,7 +165,7 @@ func TestAgentGet(t *testing.T) {
 
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.response, nil)
 
-			res, err := h.AgentGet(tt.user, tt.agentID)
+			res, err := h.AgentGet(tt.customer, tt.agentID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -191,19 +191,19 @@ func TestAgentGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user   *user.User
-		size   uint64
-		token  string
-		tagIDs []uuid.UUID
-		status agent.Status
+		customer *cscustomer.Customer
+		size     uint64
+		token    string
+		tagIDs   []uuid.UUID
+		status   agent.Status
 
 		response  []amagent.Agent
 		expectRes []*agent.Agent
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
@@ -225,8 +225,8 @@ func TestAgentGets(t *testing.T) {
 		},
 		{
 			"2 agents",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
@@ -259,9 +259,9 @@ func TestAgentGets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AMV1AgentGets(gomock.Any(), tt.user.ID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentGets(gomock.Any(), tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
 
-			res, err := h.AgentGets(tt.user, tt.size, tt.token, tt.tagIDs, tt.status)
+			res, err := h.AgentGets(tt.customer, tt.size, tt.token, tt.tagIDs, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -287,19 +287,19 @@ func TestAgentGetsByTagIDs(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user   *user.User
-		size   uint64
-		token  string
-		tagIDs []uuid.UUID
-		status agent.Status
+		customer *cscustomer.Customer
+		size     uint64
+		token    string
+		tagIDs   []uuid.UUID
+		status   agent.Status
 
 		response  []amagent.Agent
 		expectRes []*agent.Agent
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
@@ -323,8 +323,8 @@ func TestAgentGetsByTagIDs(t *testing.T) {
 		},
 		{
 			"2 tag ids",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
@@ -352,9 +352,9 @@ func TestAgentGetsByTagIDs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AMV1AgentGetsByTagIDs(gomock.Any(), tt.user.ID, tt.tagIDs).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentGetsByTagIDs(gomock.Any(), tt.customer.ID, tt.tagIDs).Return(tt.response, nil)
 
-			res, err := h.AgentGets(tt.user, tt.size, tt.token, tt.tagIDs, tt.status)
+			res, err := h.AgentGets(tt.customer, tt.size, tt.token, tt.tagIDs, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -380,19 +380,19 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user   *user.User
-		size   uint64
-		token  string
-		tagIDs []uuid.UUID
-		status agent.Status
+		customer *cscustomer.Customer
+		size     uint64
+		token    string
+		tagIDs   []uuid.UUID
+		status   agent.Status
 
 		response  []amagent.Agent
 		expectRes []*agent.Agent
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			10,
 			"2020-09-20T03:23:20.995000",
@@ -416,8 +416,8 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 		},
 		{
 			"2 tag ids",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			10,
 			"2020-09-20T03:23:20.995000",
@@ -445,9 +445,9 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.user.ID, tt.tagIDs, amagent.Status(tt.status)).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.customer.ID, tt.tagIDs, amagent.Status(tt.status)).Return(tt.response, nil)
 
-			res, err := h.AgentGets(tt.user, tt.size, tt.token, tt.tagIDs, tt.status)
+			res, err := h.AgentGets(tt.customer, tt.size, tt.token, tt.tagIDs, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -473,21 +473,21 @@ func TestAgentDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user    *user.User
-		agentID uuid.UUID
+		customer *cscustomer.Customer
+		agentID  uuid.UUID
 
 		resAgentGet *amagent.Agent
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 
 			&amagent.Agent{
-				ID:     uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 		},
 	}
@@ -498,7 +498,7 @@ func TestAgentDelete(t *testing.T) {
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
 			mockReq.EXPECT().AMV1AgentDelete(gomock.Any(), tt.agentID).Return(nil)
 
-			if err := h.AgentDelete(tt.user, tt.agentID); err != nil {
+			if err := h.AgentDelete(tt.customer, tt.agentID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -520,7 +520,7 @@ func TestAgentLogin(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user     *user.User
+		customer *cscustomer.Customer
 		username string
 		password string
 
@@ -528,15 +528,15 @@ func TestAgentLogin(t *testing.T) {
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			"test1",
 			"password1",
 
 			&amagent.Agent{
-				ID:     uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 		},
 	}
@@ -544,9 +544,9 @@ func TestAgentLogin(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AMV1AgentLogin(gomock.Any(), 30, tt.user.ID, tt.username, tt.password).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentLogin(gomock.Any(), 30000, tt.customer.ID, tt.username, tt.password).Return(tt.response, nil)
 
-			_, err := h.AgentLogin(tt.user.ID, tt.username, tt.password)
+			_, err := h.AgentLogin(tt.customer.ID, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -568,7 +568,7 @@ func TestAgentUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user       *user.User
+		customer   *cscustomer.Customer
 		agentID    uuid.UUID
 		agentName  string
 		detail     string
@@ -578,8 +578,8 @@ func TestAgentUpdate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			"test1",
@@ -587,8 +587,8 @@ func TestAgentUpdate(t *testing.T) {
 			agent.RingMethodRingAll,
 
 			&amagent.Agent{
-				ID:     uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 		},
 	}
@@ -599,7 +599,7 @@ func TestAgentUpdate(t *testing.T) {
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
 			mockReq.EXPECT().AMV1AgentUpdate(gomock.Any(), tt.agentID, tt.agentName, tt.detail, string(tt.ringMethod)).Return(nil)
 
-			if err := h.AgentUpdate(tt.user, tt.agentID, tt.agentName, tt.detail, tt.ringMethod); err != nil {
+			if err := h.AgentUpdate(tt.customer, tt.agentID, tt.agentName, tt.detail, tt.ringMethod); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -620,7 +620,7 @@ func TestAgentUpdateAddresses(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user      *user.User
+		customer  *cscustomer.Customer
 		agentID   uuid.UUID
 		addresses []address.Address
 
@@ -628,8 +628,8 @@ func TestAgentUpdateAddresses(t *testing.T) {
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			[]address.Address{
@@ -640,8 +640,8 @@ func TestAgentUpdateAddresses(t *testing.T) {
 			},
 
 			&amagent.Agent{
-				ID:     uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 		},
 	}
@@ -658,7 +658,7 @@ func TestAgentUpdateAddresses(t *testing.T) {
 			}
 			mockReq.EXPECT().AMV1AgentUpdateAddresses(gomock.Any(), tt.agentID, addrs).Return(nil)
 
-			if err := h.AgentUpdateAddresses(tt.user, tt.agentID, tt.addresses); err != nil {
+			if err := h.AgentUpdateAddresses(tt.customer, tt.agentID, tt.addresses); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -679,16 +679,16 @@ func TestAgentUpdateTagIDs(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user    *user.User
-		agentID uuid.UUID
-		tagIDs  []uuid.UUID
+		customer *cscustomer.Customer
+		agentID  uuid.UUID
+		tagIDs   []uuid.UUID
 
 		resAgentGet *amagent.Agent
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			[]uuid.UUID{
@@ -696,8 +696,8 @@ func TestAgentUpdateTagIDs(t *testing.T) {
 			},
 
 			&amagent.Agent{
-				ID:     uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 		},
 	}
@@ -707,7 +707,7 @@ func TestAgentUpdateTagIDs(t *testing.T) {
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
 			mockReq.EXPECT().AMV1AgentUpdateTagIDs(gomock.Any(), tt.agentID, tt.tagIDs).Return(nil)
 
-			if err := h.AgentUpdateTagIDs(tt.user, tt.agentID, tt.tagIDs); err != nil {
+			if err := h.AgentUpdateTagIDs(tt.customer, tt.agentID, tt.tagIDs); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -728,23 +728,23 @@ func TestAgentUpdateStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		user    *user.User
-		agentID uuid.UUID
-		status  agent.Status
+		customer *cscustomer.Customer
+		agentID  uuid.UUID
+		status   agent.Status
 
 		resAgentGet *amagent.Agent
 	}{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			agent.StatusAvailable,
 
 			&amagent.Agent{
-				ID:     uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				UserID: 1,
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 		},
 	}
@@ -755,7 +755,7 @@ func TestAgentUpdateStatus(t *testing.T) {
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
 			mockReq.EXPECT().AMV1AgentUpdateStatus(gomock.Any(), tt.agentID, amagent.Status(tt.status)).Return(nil)
 
-			if err := h.AgentUpdateStatus(tt.user, tt.agentID, tt.status); err != nil {
+			if err := h.AgentUpdateStatus(tt.customer, tt.agentID, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

@@ -7,10 +7,10 @@ import (
 
 // Number struct represent order number information
 type Number struct {
-	ID     uuid.UUID `json:"id"`
-	Number string    `json:"number"`
-	FlowID uuid.UUID `json:"flow_id"`
-	UserID uint64    `json:"-"` // we don't expose this to the client.
+	ID         uuid.UUID `json:"id"`
+	Number     string    `json:"number"`
+	FlowID     uuid.UUID `json:"flow_id"`
+	CustomerID uuid.UUID `json:"-"` // we don't expose this to the client.
 
 	Status string `json:"status"`
 
@@ -29,10 +29,10 @@ type Number struct {
 func ConvertNumber(t *nmnumber.Number) *Number {
 
 	res := &Number{
-		ID:     t.ID,
-		Number: t.Number,
-		FlowID: t.FlowID,
-		UserID: t.UserID,
+		ID:         t.ID,
+		Number:     t.Number,
+		FlowID:     t.FlowID,
+		CustomerID: t.CustomerID,
 
 		Status:           string(t.Status),
 		T38Enabled:       t.T38Enabled,
@@ -50,10 +50,10 @@ func ConvertNumber(t *nmnumber.Number) *Number {
 func CreateNumber(f *Number) *nmnumber.Number {
 
 	res := &nmnumber.Number{
-		ID:     f.ID,
-		Number: f.Number,
-		UserID: f.UserID,
-		FlowID: f.FlowID,
+		ID:         f.ID,
+		Number:     f.Number,
+		CustomerID: f.CustomerID,
+		FlowID:     f.FlowID,
 
 		Status:           nmnumber.Status(f.Status),
 		T38Enabled:       f.T38Enabled,

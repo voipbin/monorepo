@@ -10,12 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -34,7 +34,7 @@ func TestTagsPOST(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		reqBody  request.BodyTagsPOST
 		reqQuery string
 
@@ -47,8 +47,8 @@ func TestTagsPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.BodyTagsPOST{
 				Name:   "test1 name",
@@ -73,7 +73,7 @@ func TestTagsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
@@ -85,7 +85,7 @@ func TestTagsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagCreate(&tt.user, tt.tagName, tt.detail).Return(tt.res, nil)
+			mockSvc.EXPECT().TagCreate(&tt.customer, tt.tagName, tt.detail).Return(tt.res, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -105,7 +105,7 @@ func TestAgentsGET(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		reqQuery string
 
 		pageSize  uint64
@@ -118,8 +118,8 @@ func TestAgentsGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/tags?page_size=11&page_token=2020-09-20T03:23:20.995000",
 
@@ -132,12 +132,12 @@ func TestAgentsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","user_id":0,"name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 results",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/tags?page_size=10&page_token=2020-09-20T03:23:20.995000",
 
@@ -155,7 +155,7 @@ func TestAgentsGET(t *testing.T) {
 				},
 			},
 
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","user_id":0,"name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"2c1abc5c-500d-11ec-8896-9bca824c5a63","user_id":0,"name":"","detail":"","tm_create":"2020-09-20T03:23:21.995002","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995002"}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"2c1abc5c-500d-11ec-8896-9bca824c5a63","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995002","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995002"}`,
 		},
 	}
 
@@ -167,11 +167,11 @@ func TestAgentsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().TagGets(&tt.user, tt.pageSize, tt.pageToken).Return(tt.resAgents, nil)
+			mockSvc.EXPECT().TagGets(&tt.customer, tt.pageSize, tt.pageToken).Return(tt.resAgents, nil)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			r.ServeHTTP(w, req)
@@ -196,7 +196,7 @@ func TestTagsDelete(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		agentID  uuid.UUID
 		reqQuery string
 	}
@@ -204,8 +204,8 @@ func TestTagsDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			"/v1.0/tags/c07ff34e-500d-11ec-8393-2bc7870b7eff",
@@ -220,14 +220,14 @@ func TestTagsDelete(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagDelete(&tt.user, tt.agentID).Return(nil)
+			mockSvc.EXPECT().TagDelete(&tt.customer, tt.agentID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -247,7 +247,7 @@ func TestTagsIDGet(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		agentID  uuid.UUID
 		reqQuery string
 
@@ -257,8 +257,8 @@ func TestTagsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			"/v1.0/tags/c07ff34e-500d-11ec-8393-2bc7870b7eff",
@@ -277,14 +277,14 @@ func TestTagsIDGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagGet(&tt.user, tt.agentID).Return(tt.response, nil)
+			mockSvc.EXPECT().TagGet(&tt.customer, tt.agentID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -304,7 +304,7 @@ func TestTagsIDPut(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		agentID  uuid.UUID
 		reqBody  []byte
 		reqQuery string
@@ -316,8 +316,8 @@ func TestTagsIDPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			[]byte(`{"name":"update name", "detail": "update detail"}`),
@@ -336,14 +336,14 @@ func TestTagsIDPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagUpdate(&tt.user, tt.agentID, tt.tagName, tt.detail).Return(nil)
+			mockSvc.EXPECT().TagUpdate(&tt.customer, tt.agentID, tt.tagName, tt.detail).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

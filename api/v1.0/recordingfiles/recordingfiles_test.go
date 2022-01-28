@@ -9,11 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -32,7 +32,7 @@ func TestRecordingfilesIDGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		customer    cscustomer.Customer
 		recording   recording.Recording
 		downloadURL string
 	}
@@ -40,8 +40,8 @@ func TestRecordingfilesIDGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			recording.Recording{
 				ID: uuid.FromStringOrNil("79bf1fee-61e2-11eb-b0e8-6b21f6734c33"),
@@ -58,11 +58,11 @@ func TestRecordingfilesIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().RecordingfileGet(&tt.user, tt.recording.ID).Return(tt.downloadURL, nil)
+			mockSvc.EXPECT().RecordingfileGet(&tt.customer, tt.recording.ID).Return(tt.downloadURL, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/recordingfiles/%s", tt.recording.ID), nil)
 
 			r.ServeHTTP(w, req)

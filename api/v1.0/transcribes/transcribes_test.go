@@ -10,12 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -33,8 +33,8 @@ func TestTranscribesPOST(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name string
-		user user.User
+		name     string
+		customer cscustomer.Customer
 
 		requestBody request.BodyTranscribesPOST
 		trans       *transcribe.Transcribe
@@ -43,8 +43,8 @@ func TestTranscribesPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.BodyTranscribesPOST{
 				RecordingID: uuid.FromStringOrNil("1c71e72e-a3f8-11eb-a402-7b13f5ec585d"),
@@ -75,7 +75,7 @@ func TestTranscribesPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
@@ -85,7 +85,7 @@ func TestTranscribesPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().TranscribeCreate(&tt.user, tt.requestBody.RecordingID, tt.requestBody.Language).Return(tt.trans, nil)
+			mockSvc.EXPECT().TranscribeCreate(&tt.customer, tt.requestBody.RecordingID, tt.requestBody.Language).Return(tt.trans, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/transcribes", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 

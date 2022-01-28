@@ -12,12 +12,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -35,10 +35,10 @@ func TestNumbersGET(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name string
-		user user.User
-		uri  string
-		req  request.ParamNumbersGET
+		name     string
+		customer cscustomer.Customer
+		uri      string
+		req      request.ParamNumbersGET
 
 		resNumbers []*number.Number
 	}
@@ -46,8 +46,8 @@ func TestNumbersGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/numbers?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
 			request.ParamNumbersGET{
@@ -60,7 +60,7 @@ func TestNumbersGET(t *testing.T) {
 				{
 					ID:               uuid.FromStringOrNil("31ee638c-7b23-11eb-858a-33e73c4f82f7"),
 					Number:           "+821021656521",
-					UserID:           1,
+					CustomerID:       uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					Status:           "active",
 					T38Enabled:       false,
 					EmergencyEnabled: false,
@@ -81,11 +81,11 @@ func TestNumbersGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberGets(&tt.user, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
+			mockSvc.EXPECT().NumberGets(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
 			req, _ := http.NewRequest("GET", tt.uri, nil)
 
 			r.ServeHTTP(w, req)
@@ -106,7 +106,7 @@ func TestNumbersIDGET(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		numberID uuid.UUID
 		uri      string
 
@@ -117,15 +117,15 @@ func TestNumbersIDGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 			"/v1.0/numbers/3ab6711c-7be6-11eb-8da6-d31a9f3d45a6",
 			&number.Number{
 				ID:               uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 				Number:           "+821021656521",
-				UserID:           1,
+				CustomerID:       uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				Status:           "active",
 				T38Enabled:       false,
 				EmergencyEnabled: false,
@@ -146,11 +146,11 @@ func TestNumbersIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberGet(&tt.user, tt.numberID).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberGet(&tt.customer, tt.numberID).Return(tt.resNumber, nil)
 			req, _ := http.NewRequest("GET", tt.uri, nil)
 
 			r.ServeHTTP(w, req)
@@ -180,7 +180,7 @@ func TestNumbersIDDELETE(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		numberID uuid.UUID
 		uri      string
 
@@ -190,15 +190,15 @@ func TestNumbersIDDELETE(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
 			"/v1.0/numbers/d905c26e-7be6-11eb-b92a-ab4802b4bde3",
 			&number.Number{
 				ID:               uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
 				Number:           "+821021656521",
-				UserID:           1,
+				CustomerID:       uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				Status:           "active",
 				T38Enabled:       false,
 				EmergencyEnabled: false,
@@ -218,11 +218,11 @@ func TestNumbersIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberDelete(&tt.user, tt.numberID).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberDelete(&tt.customer, tt.numberID).Return(tt.resNumber, nil)
 			req, _ := http.NewRequest("DELETE", tt.uri, nil)
 
 			r.ServeHTTP(w, req)
@@ -243,7 +243,7 @@ func TestNumbersPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		customer    cscustomer.Customer
 		uri         string
 		requestBody request.BodyNumbersPOST
 	}
@@ -251,8 +251,8 @@ func TestNumbersPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/numbers",
 			request.BodyNumbersPOST{
@@ -269,11 +269,11 @@ func TestNumbersPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberCreate(&tt.user, tt.requestBody.Number)
+			mockSvc.EXPECT().NumberCreate(&tt.customer, tt.requestBody.Number)
 
 			// create body
 			body, err := json.Marshal(tt.requestBody)
@@ -299,9 +299,9 @@ func TestNumbersIDPUT(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name string
-		user user.User
-		uri  string
+		name     string
+		customer cscustomer.Customer
+		uri      string
 
 		requestBody   request.BodyNumbersIDPUT
 		requestNumber *number.Number
@@ -311,8 +311,8 @@ func TestNumbersIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
 			request.BodyNumbersIDPUT{
@@ -326,7 +326,7 @@ func TestNumbersIDPUT(t *testing.T) {
 				ID:               uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
 				FlowID:           uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
 				Number:           "+821021656521",
-				UserID:           1,
+				CustomerID:       uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				Status:           "active",
 				T38Enabled:       false,
 				EmergencyEnabled: false,
@@ -346,11 +346,11 @@ func TestNumbersIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberUpdate(&tt.user, tt.requestNumber).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberUpdate(&tt.customer, tt.requestNumber).Return(tt.resNumber, nil)
 
 			// create body
 			body, err := json.Marshal(tt.requestBody)

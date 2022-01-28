@@ -11,7 +11,6 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 var secretKey []byte
@@ -93,13 +92,9 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		var u user.User
-		u.Read(tokenData["user"].(map[string]interface{}))
-
 		var cs cscustomer.Customer
 		cs.Read(tokenData["customer"].(map[string]interface{}))
 
-		c.Set("user", u)
 		c.Set("customer", cs)
 		c.Set("token_expire", tokenData["exp"])
 		c.Next()

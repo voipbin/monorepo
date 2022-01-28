@@ -4,15 +4,14 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
 func TestDomainCreate(t *testing.T) {
@@ -28,8 +27,8 @@ func TestDomainCreate(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		user *user.User
+		name     string
+		customer *cscustomer.Customer
 
 		DomainName      string
 		DomainTmpName   string
@@ -42,22 +41,22 @@ func TestDomainCreate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			"test.sip.voipbin.net",
 			"test name",
 			"test detail",
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("5b06161c-6ed9-11eb-85e4-f38ba2415baf"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("5b06161c-6ed9-11eb-85e4-f38ba2415baf"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
@@ -67,9 +66,9 @@ func TestDomainCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMV1DomainCreate(gomock.Any(), tt.user.ID, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1DomainCreate(gomock.Any(), tt.customer.ID, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail).Return(tt.response, nil)
 
-			res, err := h.DomainCreate(tt.user, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail)
+			res, err := h.DomainCreate(tt.customer, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -94,9 +93,9 @@ func TestDomainUpdate(t *testing.T) {
 	}
 
 	type test struct {
-		name   string
-		user   *user.User
-		domain *domain.Domain
+		name     string
+		customer *cscustomer.Customer
+		domain   *domain.Domain
 
 		requestDomain *rmdomain.Domain
 		response      *rmdomain.Domain
@@ -106,8 +105,8 @@ func TestDomainUpdate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
@@ -123,14 +122,14 @@ func TestDomainUpdate(t *testing.T) {
 			},
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "update name",
 				Detail:     "update detail",
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "update name",
 				Detail:     "update detail",
@@ -140,9 +139,9 @@ func TestDomainUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.domain.ID).Return(&rmdomain.Domain{UserID: 1}, nil)
+			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.domain.ID).Return(&rmdomain.Domain{CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3")}, nil)
 			mockReq.EXPECT().RMV1DomainUpdate(gomock.Any(), tt.requestDomain).Return(tt.response, nil)
-			res, err := h.DomainUpdate(tt.user, tt.domain)
+			res, err := h.DomainUpdate(tt.customer, tt.domain)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -168,7 +167,7 @@ func TestDomainDelete(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     *user.User
+		customer *cscustomer.Customer
 		domainID uuid.UUID
 
 		response *rmdomain.Domain
@@ -177,14 +176,14 @@ func TestDomainDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
 
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
@@ -197,7 +196,7 @@ func TestDomainDelete(t *testing.T) {
 			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.domainID).Return(tt.response, nil)
 			mockReq.EXPECT().RMV1DomainDelete(gomock.Any(), tt.domainID).Return(nil)
 
-			if err := h.DomainDelete(tt.user, tt.domainID); err != nil {
+			if err := h.DomainDelete(tt.customer, tt.domainID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -218,7 +217,7 @@ func TestDomainGet(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     *user.User
+		customer *cscustomer.Customer
 		DomainID uuid.UUID
 
 		response  *rmdomain.Domain
@@ -228,21 +227,21 @@ func TestDomainGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
 
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
 			},
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
-				UserID:     1,
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
@@ -254,7 +253,7 @@ func TestDomainGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.DomainID).Return(tt.response, nil)
 
-			res, err := h.DomainGet(tt.user, tt.DomainID)
+			res, err := h.DomainGet(tt.customer, tt.DomainID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -280,7 +279,7 @@ func TestDomainGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      *user.User
+		customer  *cscustomer.Customer
 		pageToken string
 		pageSize  uint64
 
@@ -291,8 +290,8 @@ func TestDomainGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&user.User{
-				ID: 1,
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
@@ -300,14 +299,14 @@ func TestDomainGets(t *testing.T) {
 			[]rmdomain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("cbd2f846-6eda-11eb-a1b5-c39b7ed749b1"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 					DomainName: "test.sip.voipbin.net",
 					Name:       "test1",
 					Detail:     "test detail1",
 				},
 				{
 					ID:         uuid.FromStringOrNil("cf9ee9a8-6eda-11eb-8961-3b8e36c03336"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 					DomainName: "test2.sip.voipbin.net",
 					Name:       "test2",
 					Detail:     "test detail2",
@@ -316,14 +315,14 @@ func TestDomainGets(t *testing.T) {
 			[]*domain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("cbd2f846-6eda-11eb-a1b5-c39b7ed749b1"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 					DomainName: "test.sip.voipbin.net",
 					Name:       "test1",
 					Detail:     "test detail1",
 				},
 				{
 					ID:         uuid.FromStringOrNil("cf9ee9a8-6eda-11eb-8961-3b8e36c03336"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 					DomainName: "test2.sip.voipbin.net",
 					Name:       "test2",
 					Detail:     "test detail2",
@@ -334,9 +333,9 @@ func TestDomainGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMV1DomainGets(gomock.Any(), tt.user.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RMV1DomainGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.DomainGets(tt.user, tt.pageSize, tt.pageToken)
+			res, err := h.DomainGets(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

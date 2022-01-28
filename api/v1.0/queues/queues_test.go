@@ -11,13 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -36,7 +36,7 @@ func TestQueuesGet(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      user.User
+		customer  cscustomer.Customer
 		req       request.ParamCallsGET
 		resCalls  []*qmqueue.WebhookMessage
 		expectRes string
@@ -45,8 +45,8 @@ func TestQueuesGet(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.ParamCallsGET{
 				Pagination: request.Pagination{
@@ -69,8 +69,8 @@ func TestQueuesGet(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.ParamCallsGET{
 				Pagination: request.Pagination{
@@ -119,14 +119,14 @@ func TestQueuesGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/queues?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().QueueGets(&tt.user, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
+			mockSvc.EXPECT().QueueGets(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -150,7 +150,7 @@ func TestQueuesPost(t *testing.T) {
 
 	type test struct {
 		name     string
-		user     user.User
+		customer cscustomer.Customer
 		req      request.BodyQueuesPOST
 		resQueue *qmqueue.WebhookMessage
 	}
@@ -158,8 +158,8 @@ func TestQueuesPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.BodyQueuesPOST{
 				Name:          "name",
@@ -192,7 +192,7 @@ func TestQueuesPost(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
@@ -207,7 +207,7 @@ func TestQueuesPost(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().QueueCreate(
-				&tt.user,
+				&tt.customer,
 				tt.req.Name,
 				tt.req.Detail,
 				tt.req.WebhookURI,
@@ -238,7 +238,7 @@ func TestQueuesIDGet(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      user.User
+		customer  cscustomer.Customer
 		resQueue  *qmqueue.WebhookMessage
 		expectRes string
 	}
@@ -246,8 +246,8 @@ func TestQueuesIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:          uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
@@ -262,8 +262,8 @@ func TestQueuesIDGet(t *testing.T) {
 		},
 		{
 			"webhook",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:          uuid.FromStringOrNil("9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353"),
@@ -287,14 +287,14 @@ func TestQueuesIDGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/queues/%s", tt.resQueue.ID)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().QueueGet(&tt.user, tt.resQueue.ID).Return(tt.resQueue, nil)
+			mockSvc.EXPECT().QueueGet(&tt.customer, tt.resQueue.ID).Return(tt.resQueue, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -316,16 +316,16 @@ func TestQueuesIDDelete(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name    string
-		user    user.User
-		queueID uuid.UUID
+		name     string
+		customer cscustomer.Customer
+		queueID  uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("5842d88a-6478-11ec-92cc-7fb5eb5d5e5a"),
 		},
@@ -339,14 +339,14 @@ func TestQueuesIDDelete(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/queues/%s", tt.queueID)
 			req, _ := http.NewRequest("DELETE", reqQuery, nil)
 
-			mockSvc.EXPECT().QueueDelete(&tt.user, tt.queueID).Return(nil)
+			mockSvc.EXPECT().QueueDelete(&tt.customer, tt.queueID).Return(nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -366,7 +366,7 @@ func TestQueuesIDPut(t *testing.T) {
 	type test struct {
 		name string
 
-		user     user.User
+		customer cscustomer.Customer
 		reqQuery string
 		reqBody  []byte
 
@@ -380,8 +380,8 @@ func TestQueuesIDPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/queues/39a61292-6479-11ec-8cee-d7ba44bf24ac",
 			[]byte(`{"name":"new name","detail":"new detail","webhook_uri":"test.com","webhook_method":"POST"}`),
@@ -402,11 +402,11 @@ func TestQueuesIDPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdate(&tt.user, tt.queueID, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod).Return(nil)
+			mockSvc.EXPECT().QueueUpdate(&tt.customer, tt.queueID, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod).Return(nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)
@@ -428,7 +428,7 @@ func TestQueuesIDTagIDsPut(t *testing.T) {
 	type test struct {
 		name string
 
-		user     user.User
+		customer cscustomer.Customer
 		reqQuery string
 		reqBody  []byte
 
@@ -439,8 +439,8 @@ func TestQueuesIDTagIDsPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/queues/9ec11e74-6479-11ec-8956-9b1c6c142f77/tag_ids",
 			[]byte(`{"tag_ids":["aa740178-6479-11ec-879d-ab827778d4dd"]}`),
@@ -460,11 +460,11 @@ func TestQueuesIDTagIDsPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdateTagIDs(&tt.user, tt.queueID, tt.tagIDs).Return(nil)
+			mockSvc.EXPECT().QueueUpdateTagIDs(&tt.customer, tt.queueID, tt.tagIDs).Return(nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)
@@ -486,7 +486,7 @@ func TestQueuesIDRoutingMethodPut(t *testing.T) {
 	type test struct {
 		name string
 
-		user     user.User
+		customer cscustomer.Customer
 		reqQuery string
 		reqBody  []byte
 
@@ -497,8 +497,8 @@ func TestQueuesIDRoutingMethodPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/queues/9ec11e74-6479-11ec-8956-9b1c6c142f77/routing_method",
 			[]byte(`{"routing_method":"random"}`),
@@ -516,11 +516,11 @@ func TestQueuesIDRoutingMethodPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdateRoutingMethod(&tt.user, tt.queueID, tt.routingMethod).Return(nil)
+			mockSvc.EXPECT().QueueUpdateRoutingMethod(&tt.customer, tt.queueID, tt.routingMethod).Return(nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)
@@ -542,7 +542,7 @@ func TestQueuesIDActionsPut(t *testing.T) {
 	type test struct {
 		name string
 
-		user     user.User
+		customer cscustomer.Customer
 		reqQuery string
 		reqBody  []byte
 
@@ -555,8 +555,8 @@ func TestQueuesIDActionsPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/queues/70665304-647a-11ec-a5ca-4746cc95b189/actions",
 			[]byte(`{"wait_actions":[{"type":"answer"}],"timeout_wait":10000,"timeout_service":100000}`),
@@ -580,11 +580,11 @@ func TestQueuesIDActionsPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdateActions(&tt.user, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(nil)
+			mockSvc.EXPECT().QueueUpdateActions(&tt.customer, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)

@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -20,7 +21,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -38,18 +38,18 @@ func TestCallsPOST(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name    string
-		user    user.User
-		req     request.BodyCallsPOST
-		reqFlow *flow.Flow
-		resFlow *flow.Flow
+		name     string
+		customer cscustomer.Customer
+		req      request.BodyCallsPOST
+		reqFlow  *flow.Flow
+		resFlow  *flow.Flow
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.BodyCallsPOST{
 				Source: address.Address{
@@ -77,8 +77,8 @@ func TestCallsPOST(t *testing.T) {
 		},
 		{
 			"with webhook",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.BodyCallsPOST{
 				WebhookURI: "https://test.com/webhook",
@@ -117,7 +117,7 @@ func TestCallsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
@@ -131,8 +131,8 @@ func TestCallsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().FlowCreate(&tt.user, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
-			mockSvc.EXPECT().CallCreate(&tt.user, tt.resFlow.ID, &tt.req.Source, &tt.req.Destination).Return(nil, nil)
+			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().CallCreate(&tt.customer, tt.resFlow.ID, &tt.req.Source, &tt.req.Destination).Return(nil, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -153,7 +153,7 @@ func TestCallsGET(t *testing.T) {
 
 	type test struct {
 		name      string
-		user      user.User
+		customer  cscustomer.Customer
 		req       request.ParamCallsGET
 		resCalls  []*cmcall.WebhookMessage
 		expectRes string
@@ -162,8 +162,8 @@ func TestCallsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.ParamCallsGET{
 				Pagination: request.Pagination{
@@ -181,8 +181,8 @@ func TestCallsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.ParamCallsGET{
 				Pagination: request.Pagination{
@@ -216,14 +216,14 @@ func TestCallsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/calls?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().CallGets(&tt.user, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
+			mockSvc.EXPECT().CallGets(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -246,16 +246,16 @@ func TestCallsIDGET(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name    string
-		user    user.User
-		resCall *cmcall.WebhookMessage
+		name     string
+		customer cscustomer.Customer
+		resCall  *cmcall.WebhookMessage
 	}
 
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			&cmcall.WebhookMessage{
 				ID:       uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
@@ -264,8 +264,8 @@ func TestCallsIDGET(t *testing.T) {
 		},
 		{
 			"webhook",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			&cmcall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353"),
@@ -283,14 +283,14 @@ func TestCallsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/calls/%s", tt.resCall.ID)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().CallGet(&tt.user, tt.resCall.ID).Return(tt.resCall, nil)
+			mockSvc.EXPECT().CallGet(&tt.customer, tt.resCall.ID).Return(tt.resCall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
