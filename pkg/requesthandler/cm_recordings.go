@@ -8,14 +8,15 @@ import (
 
 	"github.com/gofrs/uuid"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // CMV1RecordingGets sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1RecordingGets(ctx context.Context, userID uint64, size uint64, token string) ([]cmrecording.Recording, error) {
-	uri := fmt.Sprintf("/v1/recordings?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(token), size, userID)
+func (r *requestHandler) CMV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error) {
+	uri := fmt.Sprintf("/v1/recordings?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(token), size, customerID)
 
 	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

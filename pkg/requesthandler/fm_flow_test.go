@@ -27,7 +27,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		userID     uint64
+		customerID uuid.UUID
 		flowType   fmflow.Type
 		flowName   string
 		flowDetail string
@@ -45,7 +45,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("857f154e-7f4d-11ec-b669-a7aa025fbeaf"),
 			fmflow.TypeFlow,
 			"test flow",
 			"test flow detail",
@@ -54,7 +54,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","user_id":1,"type":"flow","name":"test flow","detail":"test flow detail","actions":[],"persist":true,"tm_create":"2020-09-20T03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","actions":[],"persist":true,"tm_create":"2020-09-20T03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 
 			"bin-manager.flow-manager.request",
@@ -62,19 +62,19 @@ func TestFMV1FlowCreate(t *testing.T) {
 				URI:      "/v1/flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"user_id":1,"type":"flow","name":"test flow","detail":"test flow detail","webhook_uri":"","actions":[],"persist":true}`),
+				Data:     []byte(`{"customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","webhook_uri":"","actions":[],"persist":true}`),
 			},
 			&fmflow.Flow{
-				ID:       uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
-				UserID:   1,
-				Type:     fmflow.TypeFlow,
-				Name:     "test flow",
-				Detail:   "test flow detail",
-				Actions:  []fmaction.Action{},
-				Persist:  true,
-				TMCreate: "2020-09-20T03:23:20.995000",
-				TMUpdate: "",
-				TMDelete: "",
+				ID:         uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
+				CustomerID: uuid.FromStringOrNil("857f154e-7f4d-11ec-b669-a7aa025fbeaf"),
+				Type:       fmflow.TypeFlow,
+				Name:       "test flow",
+				Detail:     "test flow detail",
+				Actions:    []fmaction.Action{},
+				Persist:    true,
+				TMCreate:   "2020-09-20T03:23:20.995000",
+				TMUpdate:   "",
+				TMDelete:   "",
 			},
 		},
 	}
@@ -84,7 +84,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMV1FlowCreate(ctx, tt.userID, tt.flowType, tt.flowName, tt.flowDetail, "", tt.actions, tt.persist)
+			res, err := reqHandler.FMV1FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.flowDetail, "", tt.actions, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -128,7 +128,7 @@ func TestFMV1FlowUpdate(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51","user_id":1,"name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
@@ -138,14 +138,14 @@ func TestFMV1FlowUpdate(t *testing.T) {
 				Data:     []byte(`{"name":"update name","detail":"update detail","webhook_uri":"","actions":[]}`),
 			},
 			&fmflow.Flow{
-				ID:       uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
-				UserID:   1,
-				Name:     "update name",
-				Detail:   "update detail",
-				Actions:  []fmaction.Action{},
-				TMCreate: "2020-09-20 03:23:20.995000",
-				TMUpdate: "",
-				TMDelete: "",
+				ID:         uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
+				CustomerID: uuid.FromStringOrNil("bb832464-7f4d-11ec-aab5-8f3e1e3958d5"),
+				Name:       "update name",
+				Detail:     "update detail",
+				Actions:    []fmaction.Action{},
+				TMCreate:   "2020-09-20 03:23:20.995000",
+				TMUpdate:   "",
+				TMDelete:   "",
 			},
 		},
 	}
@@ -196,7 +196,7 @@ func TestFMV1FlowGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"be66d9a6-6ed6-11eb-8152-0bb66bad7293","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"be66d9a6-6ed6-11eb-8152-0bb66bad7293","customer_id":"c36412ba-7f4d-11ec-a6ec-67db89124047","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 
 			"bin-manager.flow-manager.request",
@@ -206,14 +206,14 @@ func TestFMV1FlowGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&fmflow.Flow{
-				ID:       uuid.FromStringOrNil("be66d9a6-6ed6-11eb-8152-0bb66bad7293"),
-				UserID:   1,
-				Name:     "test flow",
-				Detail:   "test flow detail",
-				Actions:  []fmaction.Action{},
-				TMCreate: "2020-09-20 03:23:20.995000",
-				TMUpdate: "",
-				TMDelete: "",
+				ID:         uuid.FromStringOrNil("be66d9a6-6ed6-11eb-8152-0bb66bad7293"),
+				CustomerID: uuid.FromStringOrNil("c36412ba-7f4d-11ec-a6ec-67db89124047"),
+				Name:       "test flow",
+				Detail:     "test flow detail",
+				Actions:    []fmaction.Action{},
+				TMCreate:   "2020-09-20 03:23:20.995000",
+				TMUpdate:   "",
+				TMDelete:   "",
 			},
 		},
 	}
@@ -297,10 +297,10 @@ func TestFMV1FlowGets(t *testing.T) {
 	type test struct {
 		name string
 
-		userID    uint64
-		flowType  fmflow.Type
-		pageToken string
-		pageSize  uint64
+		customerID uuid.UUID
+		flowType   fmflow.Type
+		pageToken  string
+		pageSize   uint64
 
 		response *rabbitmqhandler.Response
 
@@ -313,7 +313,7 @@ func TestFMV1FlowGets(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("c971cc06-7f4d-11ec-b0dc-5ff21ea97f57"),
 			fmflow.TypeFlow,
 			"2020-09-20 03:23:20.995000",
 			10,
@@ -321,32 +321,32 @@ func TestFMV1FlowGets(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"c971cc06-7f4d-11ec-b0dc-5ff21ea97f57","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
 			},
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&user_id=1&type=flow", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=c971cc06-7f4d-11ec-b0dc-5ff21ea97f57&type=flow", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]fmflow.Flow{
 				{
-					ID:       uuid.FromStringOrNil("158e4b2c-0c55-11eb-b4f2-37c93a78a6a0"),
-					UserID:   1,
-					Name:     "test flow",
-					Detail:   "test flow detail",
-					Actions:  []fmaction.Action{},
-					TMCreate: "2020-09-20 03:23:20.995000",
-					TMUpdate: "",
-					TMDelete: "",
+					ID:         uuid.FromStringOrNil("158e4b2c-0c55-11eb-b4f2-37c93a78a6a0"),
+					CustomerID: uuid.FromStringOrNil("c971cc06-7f4d-11ec-b0dc-5ff21ea97f57"),
+					Name:       "test flow",
+					Detail:     "test flow detail",
+					Actions:    []fmaction.Action{},
+					TMCreate:   "2020-09-20 03:23:20.995000",
+					TMUpdate:   "",
+					TMDelete:   "",
 				},
 			},
 		},
 		{
 			"get type conference",
 
-			1,
+			uuid.FromStringOrNil("d9fceace-7f4d-11ec-8949-cf7a5dce40c9"),
 			fmflow.TypeConference,
 			"2020-09-20 03:23:20.995000",
 			10,
@@ -354,25 +354,25 @@ func TestFMV1FlowGets(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","user_id":1,"name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"d9fceace-7f4d-11ec-8949-cf7a5dce40c9","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
 			},
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&user_id=1&type=conference", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=d9fceace-7f4d-11ec-8949-cf7a5dce40c9&type=conference", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]fmflow.Flow{
 				{
-					ID:       uuid.FromStringOrNil("158e4b2c-0c55-11eb-b4f2-37c93a78a6a0"),
-					UserID:   1,
-					Name:     "test flow",
-					Detail:   "test flow detail",
-					Actions:  []fmaction.Action{},
-					TMCreate: "2020-09-20 03:23:20.995000",
-					TMUpdate: "",
-					TMDelete: "",
+					ID:         uuid.FromStringOrNil("158e4b2c-0c55-11eb-b4f2-37c93a78a6a0"),
+					CustomerID: uuid.FromStringOrNil("d9fceace-7f4d-11ec-8949-cf7a5dce40c9"),
+					Name:       "test flow",
+					Detail:     "test flow detail",
+					Actions:    []fmaction.Action{},
+					TMCreate:   "2020-09-20 03:23:20.995000",
+					TMUpdate:   "",
+					TMDelete:   "",
 				},
 			},
 		}}
@@ -382,7 +382,7 @@ func TestFMV1FlowGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMV1FlowGets(ctx, tt.userID, tt.flowType, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.FMV1FlowGets(ctx, tt.customerID, tt.flowType, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

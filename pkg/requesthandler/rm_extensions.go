@@ -7,9 +7,10 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	rmrequest "gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // RMExtensionCreate sends a request to registrar-manager
@@ -19,12 +20,12 @@ func (r *requestHandler) RMV1ExtensionCreate(ctx context.Context, e *rmextension
 	uri := "/v1/extensions"
 
 	data := &rmrequest.V1DataExtensionsPost{
-		UserID:    e.UserID,
-		Name:      e.Name,
-		Detail:    e.Detail,
-		DomainID:  e.DomainID,
-		Extension: e.Extension,
-		Password:  e.Password,
+		CustomerID: e.CustomerID,
+		Name:       e.Name,
+		Detail:     e.Detail,
+		DomainID:   e.DomainID,
+		Extension:  e.Extension,
+		Password:   e.Password,
 	}
 
 	m, err := json.Marshal(data)

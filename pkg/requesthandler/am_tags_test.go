@@ -24,9 +24,9 @@ func TestAMV1TagCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID  uint64
-		tagName string
-		deail   string
+		customerID uuid.UUID
+		tagName    string
+		deail      string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -36,7 +36,7 @@ func TestAMV1TagCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			"test tag1",
 			"test tag1 detail",
 
@@ -45,7 +45,7 @@ func TestAMV1TagCreate(t *testing.T) {
 				URI:      "/v1/tags",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"name":"test tag1","detail":"test tag1 detail"}`),
+				Data:     []byte(`{"customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","name":"test tag1","detail":"test tag1 detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -63,7 +63,7 @@ func TestAMV1TagCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1TagCreate(ctx, tt.userID, tt.tagName, tt.deail)
+			res, err := reqHandler.AMV1TagCreate(ctx, tt.customerID, tt.tagName, tt.deail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -145,9 +145,9 @@ func TestAMV1TagGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID    uint64
-		pageToken string
-		pageSize  uint64
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -157,13 +157,13 @@ func TestAMV1TagGets(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			"2020-09-20 03:23:20.995000",
 			10,
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/tags?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/tags?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -181,13 +181,13 @@ func TestAMV1TagGets(t *testing.T) {
 		{
 			"2 agents",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			"2020-09-20 03:23:20.995000",
 			10,
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/tags?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/tags?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -212,7 +212,7 @@ func TestAMV1TagGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1TagGets(ctx, tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.AMV1TagGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

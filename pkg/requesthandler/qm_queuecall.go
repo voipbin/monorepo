@@ -7,15 +7,16 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // QMV1QueuecallGets sends a request to queue-manager
 // to get a list of queuecalls.
 // Returns list of queuecalls
-func (r *requestHandler) QMV1QueuecallGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error) {
-	uri := fmt.Sprintf("/v1/queuecalls?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+func (r *requestHandler) QMV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error) {
+	uri := fmt.Sprintf("/v1/queuecalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	res, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodGet, resourceQMQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

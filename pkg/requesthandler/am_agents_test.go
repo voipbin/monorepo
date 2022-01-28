@@ -25,7 +25,7 @@ func TestAMV1AgentCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID        uint64
+		customerID    uuid.UUID
 		username      string
 		password      string
 		agentName     string
@@ -45,7 +45,7 @@ func TestAMV1AgentCreate(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			"test1",
 			"password1",
 			"test agent1",
@@ -69,17 +69,17 @@ func TestAMV1AgentCreate(t *testing.T) {
 				URI:      "/v1/agents",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"username":"test1","password":"password1","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","permission":0,"tag_ids":["ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}]}`),
+				Data:     []byte(`{"customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password":"password1","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","permission":0,"tag_ids":["ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}]}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"","webhook_uri":"","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 			&amagent.Agent{
 
 				ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-				UserID:       1,
+				CustomerID:   uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 				Username:     "test1",
 				PasswordHash: "password",
 				Name:         "test agent1",
@@ -102,7 +102,7 @@ func TestAMV1AgentCreate(t *testing.T) {
 		{
 			"have webhook",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			"test1",
 			"password1",
 			"test agent1",
@@ -126,17 +126,17 @@ func TestAMV1AgentCreate(t *testing.T) {
 				URI:      "/v1/agents",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"username":"test1","password":"password1","name":"test agent1","detail":"test agent1 detail","webhook_method":"POST","webhook_uri":"test.com","ring_method":"ringall","permission":0,"tag_ids":["ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}]}`),
+				Data:     []byte(`{"customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password":"password1","name":"test agent1","detail":"test agent1 detail","webhook_method":"POST","webhook_uri":"test.com","ring_method":"ringall","permission":0,"tag_ids":["ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}]}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"31709ba2-79a9-11ec-a18e-4f21d6d40baa","user_id":1,"username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"POST","webhook_uri":"test.com","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"31709ba2-79a9-11ec-a18e-4f21d6d40baa","customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","webhook_method":"POST","webhook_uri":"test.com","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 			&amagent.Agent{
 
 				ID:            uuid.FromStringOrNil("31709ba2-79a9-11ec-a18e-4f21d6d40baa"),
-				UserID:        1,
+				CustomerID:    uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 				Username:      "test1",
 				PasswordHash:  "password",
 				Name:          "test agent1",
@@ -166,7 +166,7 @@ func TestAMV1AgentCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentCreate(ctx, requestTimeoutDefault, tt.userID, tt.username, tt.password, tt.agentName, tt.deail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
+			res, err := reqHandler.AMV1AgentCreate(ctx, requestTimeoutDefault, tt.customerID, tt.username, tt.password, tt.agentName, tt.deail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -248,9 +248,9 @@ func TestAMV1AgentGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID    uint64
-		pageToken string
-		pageSize  uint64
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -260,13 +260,13 @@ func TestAMV1AgentGets(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			"2020-09-20T03:23:20.995000",
 			10,
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -284,13 +284,13 @@ func TestAMV1AgentGets(t *testing.T) {
 		{
 			"2 agents",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			"2020-09-20T03:23:20.995000",
 			10,
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&user_id=1",
+				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -315,7 +315,7 @@ func TestAMV1AgentGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentGets(ctx, tt.userID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.AMV1AgentGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -339,8 +339,8 @@ func TestAMV1AgentGetsByTagIDs(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID uint64
-		tagIDs []uuid.UUID
+		customerID uuid.UUID
+		tagIDs     []uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -350,14 +350,14 @@ func TestAMV1AgentGetsByTagIDs(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("ef626c46-4e78-11ec-bb14-6fbde14856d4"),
 			},
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?user_id=1&tag_ids=ef626c46-4e78-11ec-bb14-6fbde14856d4",
+				URI:      "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=ef626c46-4e78-11ec-bb14-6fbde14856d4",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -375,7 +375,7 @@ func TestAMV1AgentGetsByTagIDs(t *testing.T) {
 		{
 			"2 agents",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("36a057ee-4e79-11ec-a0c6-5fc332a14527"),
 				uuid.FromStringOrNil("36c77248-4e79-11ec-8aa9-93ecdefec6c9"),
@@ -383,7 +383,7 @@ func TestAMV1AgentGetsByTagIDs(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?user_id=1&tag_ids=36a057ee-4e79-11ec-a0c6-5fc332a14527,36c77248-4e79-11ec-8aa9-93ecdefec6c9",
+				URI:      "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=36a057ee-4e79-11ec-a0c6-5fc332a14527,36c77248-4e79-11ec-8aa9-93ecdefec6c9",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -408,7 +408,7 @@ func TestAMV1AgentGetsByTagIDs(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentGetsByTagIDs(ctx, tt.userID, tt.tagIDs)
+			res, err := reqHandler.AMV1AgentGetsByTagIDs(ctx, tt.customerID, tt.tagIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -432,9 +432,9 @@ func TestAMV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID uint64
-		tagIDs []uuid.UUID
-		status amagent.Status
+		customerID uuid.UUID
+		tagIDs     []uuid.UUID
+		status     amagent.Status
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -444,7 +444,7 @@ func TestAMV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("a23822ac-4e79-11ec-935d-335a1fd132e8"),
 			},
@@ -452,7 +452,7 @@ func TestAMV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?user_id=1&tag_ids=a23822ac-4e79-11ec-935d-335a1fd132e8&status=available",
+				URI:      "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=a23822ac-4e79-11ec-935d-335a1fd132e8&status=available",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -470,7 +470,7 @@ func TestAMV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 		{
 			"2 agents",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("bcde4bea-4e79-11ec-bbc2-4b92f6f04b6a"),
 				uuid.FromStringOrNil("bd0786ea-4e79-11ec-8ecc-3bc59c72be3b"),
@@ -479,7 +479,7 @@ func TestAMV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?user_id=1&tag_ids=bcde4bea-4e79-11ec-bbc2-4b92f6f04b6a,bd0786ea-4e79-11ec-8ecc-3bc59c72be3b&status=available",
+				URI:      "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=bcde4bea-4e79-11ec-bbc2-4b92f6f04b6a,bd0786ea-4e79-11ec-8ecc-3bc59c72be3b&status=available",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -504,7 +504,7 @@ func TestAMV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, tt.userID, tt.tagIDs, tt.status)
+			res, err := reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, tt.customerID, tt.tagIDs, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -578,9 +578,9 @@ func TestAMV1AgentLogin(t *testing.T) {
 	tests := []struct {
 		name string
 
-		userID   uint64
-		username string
-		password string
+		customerID uuid.UUID
+		username   string
+		password   string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -590,7 +590,7 @@ func TestAMV1AgentLogin(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 			"test1",
 			"password1",
 
@@ -599,7 +599,7 @@ func TestAMV1AgentLogin(t *testing.T) {
 				URI:      "/v1/agents/test1/login",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id":1,"password":"password1"}`),
+				Data:     []byte(`{"customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","password":"password1"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -617,7 +617,7 @@ func TestAMV1AgentLogin(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentLogin(ctx, requestTimeoutDefault, tt.userID, tt.username, tt.password)
+			res, err := reqHandler.AMV1AgentLogin(ctx, requestTimeoutDefault, tt.customerID, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

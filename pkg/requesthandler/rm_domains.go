@@ -7,19 +7,20 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmrequest "gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // RMDomainCreate sends a request to registrar-manager
 // to creating a domain.
 // it returns created domain if it succeed.
-func (r *requestHandler) RMV1DomainCreate(ctx context.Context, userID uint64, domainName, name, detail string) (*rmdomain.Domain, error) {
+func (r *requestHandler) RMV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*rmdomain.Domain, error) {
 	uri := "/v1/domains"
 
 	data := &rmrequest.V1DataDomainsPost{
-		UserID:     userID,
+		CustomerID: customerID,
 		DomainName: domainName,
 		Name:       name,
 		Detail:     detail,
@@ -131,8 +132,8 @@ func (r *requestHandler) RMV1DomainUpdate(ctx context.Context, f *rmdomain.Domai
 // RMDomainGets sends a request to registrar-manager
 // to getting a list of domain info.
 // it returns detail list of domain info if it succeed.
-func (r *requestHandler) RMV1DomainGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]rmdomain.Domain, error) {
-	uri := fmt.Sprintf("/v1/domains?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+func (r *requestHandler) RMV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmdomain.Domain, error) {
+	uri := fmt.Sprintf("/v1/domains?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	res, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

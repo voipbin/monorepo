@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 
@@ -23,7 +24,7 @@ func TestNMV1AvailableNumberGets(t *testing.T) {
 	type test struct {
 		name string
 
-		userID      uint64
+		customerID  uuid.UUID
 		pageSize    uint64
 		countryCode string
 
@@ -38,13 +39,13 @@ func TestNMV1AvailableNumberGets(t *testing.T) {
 		{
 			"normal",
 
-			1,
+			uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 			10,
 			"US",
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/available_numbers?page_size=10&user_id=1&country_code=US",
+				URI:      "/v1/available_numbers?page_size=10&customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096&country_code=US",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -70,7 +71,7 @@ func TestNMV1AvailableNumberGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1AvailableNumberGets(ctx, tt.userID, tt.pageSize, tt.countryCode)
+			res, err := reqHandler.NMV1AvailableNumberGets(ctx, tt.customerID, tt.pageSize, tt.countryCode)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

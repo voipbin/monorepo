@@ -21,7 +21,7 @@ import (
 func (r *requestHandler) AMV1AgentCreate(
 	ctx context.Context,
 	timeout int,
-	userID uint64,
+	customerID uuid.UUID,
 	username string,
 	password string,
 	name string,
@@ -36,7 +36,7 @@ func (r *requestHandler) AMV1AgentCreate(
 	uri := "/v1/agents"
 
 	data := &amrequest.V1DataAgentsPost{
-		UserID:        userID,
+		CustomerID:    customerID,
 		Username:      username,
 		Password:      password,
 		Name:          name,
@@ -101,8 +101,8 @@ func (r *requestHandler) AMV1AgentGet(ctx context.Context, agentID uuid.UUID) (*
 // CMV1AgentGets sends a request to agent-manager
 // to getting a list of agent info.
 // it returns detail list of agent info if it succeed.
-func (r *requestHandler) AMV1AgentGets(ctx context.Context, userID uint64, pageToken string, pageSize uint64) ([]amagent.Agent, error) {
-	uri := fmt.Sprintf("/v1/agents?page_token=%s&page_size=%d&user_id=%d", url.QueryEscape(pageToken), pageSize, userID)
+func (r *requestHandler) AMV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amagent.Agent, error) {
+	uri := fmt.Sprintf("/v1/agents?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
@@ -126,7 +126,7 @@ func (r *requestHandler) AMV1AgentGets(ctx context.Context, userID uint64, pageT
 // AMV1AgentGetsByTagIDs sends a request to agent-manager
 // to getting a list of agent info.
 // it returns detail list of agent info if it succeed.
-func (r *requestHandler) AMV1AgentGetsByTagIDs(ctx context.Context, userID uint64, tagIDs []uuid.UUID) ([]amagent.Agent, error) {
+func (r *requestHandler) AMV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]amagent.Agent, error) {
 
 	if len(tagIDs) == 0 {
 		return nil, fmt.Errorf("no tag id given")
@@ -137,7 +137,7 @@ func (r *requestHandler) AMV1AgentGetsByTagIDs(ctx context.Context, userID uint6
 		tagStr = fmt.Sprintf("%s,%s", tagStr, tag.String())
 	}
 
-	uri := fmt.Sprintf("/v1/agents?user_id=%d&tag_ids=%s", userID, tagStr)
+	uri := fmt.Sprintf("/v1/agents?customer_id=%s&tag_ids=%s", customerID, tagStr)
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
@@ -161,7 +161,7 @@ func (r *requestHandler) AMV1AgentGetsByTagIDs(ctx context.Context, userID uint6
 // AMV1AgentGetsByTagIDs sends a request to agent-manager
 // to getting a list of agent info.
 // it returns detail list of agent info if it succeed.
-func (r *requestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, userID uint64, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
+func (r *requestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
 
 	if len(tagIDs) == 0 {
 		return nil, fmt.Errorf("no tag id given")
@@ -172,7 +172,7 @@ func (r *requestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, use
 		tagStr = fmt.Sprintf("%s,%s", tagStr, tag.String())
 	}
 
-	uri := fmt.Sprintf("/v1/agents?user_id=%d&tag_ids=%s&status=%s", userID, tagStr, status)
+	uri := fmt.Sprintf("/v1/agents?customer_id=%s&tag_ids=%s&status=%s", customerID, tagStr, status)
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
@@ -217,12 +217,12 @@ func (r *requestHandler) AMV1AgentDelete(ctx context.Context, id uuid.UUID) erro
 // to login the agent
 // it returns error if something went wrong.
 // timeout: milliseconds
-func (r *requestHandler) AMV1AgentLogin(ctx context.Context, timeout int, userID uint64, username, password string) (*amagent.Agent, error) {
+func (r *requestHandler) AMV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/login", username)
 
 	data := &amrequest.V1DataAgentsUsernameLoginPost{
-		UserID:   userID,
-		Password: password,
+		CustomerID: customerID,
+		Password:   password,
 	}
 
 	m, err := json.Marshal(data)
