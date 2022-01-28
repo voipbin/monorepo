@@ -10,7 +10,7 @@ import (
 )
 
 // CreateOrderNumbers creates a new order numbers of given numbers from the telnyx
-func (h *numberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*number.Number, error) {
+func (h *numberHandler) CreateOrderNumbers(customerID uuid.UUID, numbers []string) ([]*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"numbers": numbers,
@@ -27,7 +27,7 @@ func (h *numberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*
 	// create db record for each ordered numbers
 	res := []*number.Number{}
 	for _, number := range numbers {
-		tmpNumber, err := h.createNumberByTelnyxOrderNumber(userID, number)
+		tmpNumber, err := h.createNumberByTelnyxOrderNumber(customerID, number)
 		if err != nil {
 			log.Errorf("Could not handle the ordered number to the telnyx. number: %s, err: %v", number, err)
 			continue
@@ -41,7 +41,7 @@ func (h *numberHandler) CreateOrderNumbers(userID uint64, numbers []string) ([]*
 }
 
 // createNumberByTelnyxOrderNumber creates a number by ordered number to the telnyx.
-func (h *numberHandler) createNumberByTelnyxOrderNumber(userID uint64, number string) (*number.Number, error) {
+func (h *numberHandler) createNumberByTelnyxOrderNumber(customerID uuid.UUID, number string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"number": number,
@@ -73,7 +73,7 @@ func (h *numberHandler) createNumberByTelnyxOrderNumber(userID uint64, number st
 
 	// add uuid
 	tmp.ID = uuid.Must(uuid.NewV4())
-	tmp.UserID = userID
+	tmp.CustomerID = customerID
 
 	tmp.TMCreate = getCurTime()
 	tmp.TMUpdate = defaultTimeStamp

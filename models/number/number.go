@@ -4,10 +4,10 @@ import "github.com/gofrs/uuid"
 
 // Number struct represent number information
 type Number struct {
-	ID     uuid.UUID `json:"id"`
-	Number string    `json:"number"`
-	FlowID uuid.UUID `json:"flow_id"`
-	UserID uint64    `json:"user_id"`
+	ID         uuid.UUID `json:"id"`
+	Number     string    `json:"number"`
+	FlowID     uuid.UUID `json:"flow_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
 	ProviderName        ProviderName `json:"provider_name"`
 	ProviderReferenceID string       `json:"provider_reference_id"`

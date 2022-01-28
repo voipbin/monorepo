@@ -16,7 +16,7 @@ const (
 		id,
 		number,
 		flow_id,
-		user_id,
+		customer_id,
 
 		provider_name,
 		provider_reference_id,
@@ -43,7 +43,7 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 		&res.ID,
 		&res.Number,
 		&res.FlowID,
-		&res.UserID,
+		&res.CustomerID,
 
 		&res.ProviderName,
 		&res.ProviderReferenceID,
@@ -62,6 +62,63 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 	}
 
 	return res, nil
+}
+
+// NumberCreate creates a new number record.
+func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
+	q := `insert into numbers(
+		id,
+		number,
+		flow_id,
+		customer_id,
+
+		provider_name,
+		provider_reference_id,
+
+		status,
+
+		t38_enabled,
+		emergency_enabled,
+
+		tm_purchase,
+		tm_create,
+		tm_update,
+		tm_delete
+	) values(
+		?, ?, ?, ?,
+		?, ?,
+		?,
+		?, ?,
+		?, ?, ?, ?
+		)`
+
+	_, err := h.db.Exec(q,
+		n.ID.Bytes(),
+		n.Number,
+		n.FlowID.Bytes(),
+		n.CustomerID.Bytes(),
+
+		n.ProviderName,
+		n.ProviderReferenceID,
+
+		n.Status,
+
+		n.T38Enabled,
+		n.EmergencyEnabled,
+
+		n.TMPurchase,
+		n.TMCreate,
+		n.TMUpdate,
+		n.TMDelete,
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. NumberCreate. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.NumberUpdateToCache(ctx, n.ID)
+
+	return nil
 }
 
 // NumberGetFromCacheByNumber returns number from the cache by number.
@@ -216,12 +273,12 @@ func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*number.N
 }
 
 // NumberGets returns a list of numbers.
-func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*number.Number, error) {
+func (h *handler) NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
 		where
-			user_id = ?
+			customer_id = ?
 			and tm_create < ?
 			and tm_delete >= ?
 		order by
@@ -229,7 +286,7 @@ func (h *handler) NumberGets(ctx context.Context, userID uint64, size uint64, to
 		desc limit ?
 		`, numberSelect)
 
-	rows, err := h.db.Query(q, userID, token, defaultTimeStamp, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, defaultTimeStamp, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGets. err: %v", err)
 	}
@@ -280,63 +337,6 @@ func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size
 	}
 
 	return res, nil
-}
-
-// NumberCreate creates a new number record.
-func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
-	q := `insert into numbers(
-		id,
-		number,
-		flow_id,
-		user_id,
-
-		provider_name,
-		provider_reference_id,
-
-		status,
-
-		t38_enabled,
-		emergency_enabled,
-
-		tm_purchase,
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?, ?,
-		?, ?,
-		?,
-		?, ?,
-		?, ?, ?, ?
-		)`
-
-	_, err := h.db.Exec(q,
-		n.ID.Bytes(),
-		n.Number,
-		n.FlowID.Bytes(),
-		n.UserID,
-
-		n.ProviderName,
-		n.ProviderReferenceID,
-
-		n.Status,
-
-		n.T38Enabled,
-		n.EmergencyEnabled,
-
-		n.TMPurchase,
-		n.TMCreate,
-		n.TMUpdate,
-		n.TMDelete,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. NumberCreate. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.NumberUpdateToCache(ctx, n.ID)
-
-	return nil
 }
 
 // NumberDelete sets the delte timestamp.

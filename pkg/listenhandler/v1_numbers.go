@@ -9,8 +9,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
 )
@@ -26,12 +26,12 @@ func (h *listenHandler) processV1NumbersPost(req *rabbitmqhandler.Request) (*rab
 	}
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user":   reqData.UserID,
+			"user":   reqData.CustomerID,
 			"number": reqData.Number,
 		},
 	)
 
-	numb, err := h.numberHandler.CreateNumber(reqData.UserID, reqData.Number)
+	numb, err := h.numberHandler.CreateNumber(reqData.CustomerID, reqData.Number)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil
@@ -223,17 +223,16 @@ func (h *listenHandler) processV1NumbersGet(req *rabbitmqhandler.Request) (*rabb
 	pageToken := u.Query().Get(PageToken)
 
 	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	log := logrus.WithFields(logrus.Fields{
-		"user":  userID,
+		"user":  customerID,
 		"size":  pageSize,
 		"token": pageToken,
 	})
 
 	ctx := context.Background()
-	numbers, err := h.numberHandler.GetNumbers(ctx, userID, pageSize, pageToken)
+	numbers, err := h.numberHandler.GetNumbers(ctx, customerID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get numbers. err: %v", err)
 		return simpleResponse(500), nil

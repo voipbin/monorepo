@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
@@ -32,7 +32,7 @@ func TestProcessV1NumbersPost(t *testing.T) {
 
 	type test struct {
 		name          string
-		userID        uint64
+		customerID    uuid.UUID
 		number        string
 		createdNumber *number.Number
 
@@ -43,13 +43,13 @@ func TestProcessV1NumbersPost(t *testing.T) {
 	tests := []test{
 		{
 			"1 number",
-			1,
+			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 			"+821021656521",
 			&number.Number{
 
 				ID:                  uuid.FromStringOrNil("3a379dce-792a-11eb-a8e1-9f51cab620f8"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusActive,
@@ -60,12 +60,12 @@ func TestProcessV1NumbersPost(t *testing.T) {
 				URI:      "/v1/numbers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"user_id": 1, "number": "+821021656521"}`),
+				Data:     []byte(`{"customer_id": "72f3b054-7ff4-11ec-9af9-0b8c5dbee258", "number": "+821021656521"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3a379dce-792a-11eb-a8e1-9f51cab620f8","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3a379dce-792a-11eb-a8e1-9f51cab620f8","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -73,7 +73,7 @@ func TestProcessV1NumbersPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().CreateNumber(tt.userID, tt.number).Return(tt.createdNumber, nil)
+			mockNumber.EXPECT().CreateNumber(tt.customerID, tt.number).Return(tt.createdNumber, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -119,7 +119,7 @@ func TestProcessV1NumbersIDDelete(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusDeleted,
@@ -133,7 +133,7 @@ func TestProcessV1NumbersIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -187,7 +187,7 @@ func TestProcessV1NumbersIDGet(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusActive,
@@ -201,7 +201,7 @@ func TestProcessV1NumbersIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -255,7 +255,7 @@ func TestProcessV1NumbersNumberGet(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("52f48d94-7a57-11eb-bda1-57eb6d071e62"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusActive,
@@ -269,7 +269,7 @@ func TestProcessV1NumbersNumberGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"52f48d94-7a57-11eb-bda1-57eb6d071e62","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"52f48d94-7a57-11eb-bda1-57eb6d071e62","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -309,7 +309,7 @@ func TestProcessV1NumbersGet(t *testing.T) {
 
 	type test struct {
 		name       string
-		userID     uint64
+		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
 		resultData []*number.Number
@@ -321,14 +321,14 @@ func TestProcessV1NumbersGet(t *testing.T) {
 	tests := []test{
 		{
 			"1 number",
-			1,
+			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 			10,
 			"2021-03-01 03:30:17.000000",
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("eeafd418-7a4e-11eb-8750-9bb0ca1d7926"),
 					Number:              "+821021656521",
-					UserID:              1,
+					CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 					ProviderName:        number.ProviderNameTelnyx,
 					ProviderReferenceID: "",
 					Status:              number.StatusActive,
@@ -337,13 +337,13 @@ func TestProcessV1NumbersGet(t *testing.T) {
 				},
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/numbers?user_id=1&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/numbers?customer_id=72f3b054-7ff4-11ec-9af9-0b8c5dbee258&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -351,7 +351,7 @@ func TestProcessV1NumbersGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().GetNumbers(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
+			mockNumber.EXPECT().GetNumbers(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -401,7 +401,7 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 				ID:                  uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
 				FlowID:              uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusActive,
@@ -417,7 +417,7 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","number":"+821021656521","flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","user_id":1,"provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","number":"+821021656521","flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
