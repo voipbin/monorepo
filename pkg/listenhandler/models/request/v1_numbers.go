@@ -6,8 +6,8 @@ import "github.com/gofrs/uuid"
 // v1 data type request struct for
 // /v1/numbers POST
 type V1DataNumbersPost struct {
-	UserID uint64 `json:"user_id"`
-	Number string `json:"number"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	Number     string    `json:"number"`
 }
 
 // V1DataNumbersIDPut is

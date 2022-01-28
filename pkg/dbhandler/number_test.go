@@ -32,7 +32,7 @@ func TestNumberCreate(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("8290e0be-7905-11eb-90c7-d3d5addc947a"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("31a1ca10-7ff3-11ec-80f5-83db3c8e951b"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -43,7 +43,7 @@ func TestNumberCreate(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("8290e0be-7905-11eb-90c7-d3d5addc947a"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("31a1ca10-7ff3-11ec-80f5-83db3c8e951b"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -90,7 +90,7 @@ func TestNumberGets(t *testing.T) {
 	type test struct {
 		name string
 
-		userID      uint64
+		customerID  uuid.UUID
 		expectCount int
 		numbers     []*number.Number
 	}
@@ -98,12 +98,12 @@ func TestNumberGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			1,
+			uuid.FromStringOrNil("3b0bfcce-7ff3-11ec-b5cd-f3669cd35916"),
 			1,
 			[]*number.Number{
 				{
 					ID:         uuid.FromStringOrNil("10f04e98-95bd-11eb-a2c3-1ba7aeb1cd61"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("3b0bfcce-7ff3-11ec-b5cd-f3669cd35916"),
 					Number:     "+1234567890",
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
@@ -114,7 +114,7 @@ func TestNumberGets(t *testing.T) {
 		},
 		{
 			"empty",
-			2,
+			uuid.FromStringOrNil("4c1150be-7ff3-11ec-adb5-771b9c899a73"),
 			0,
 			[]*number.Number{},
 		},
@@ -130,7 +130,7 @@ func TestNumberGets(t *testing.T) {
 				_ = h.NumberCreate(context.Background(), tt.numbers[i])
 			}
 
-			res, err := h.NumberGets(context.Background(), tt.userID, 10, getCurTime())
+			res, err := h.NumberGets(context.Background(), tt.customerID, 10, getCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -165,7 +165,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 			[]*number.Number{
 				{
 					ID:         uuid.FromStringOrNil("5d73b940-7d20-11eb-8335-97856a00f2c6"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("57115e32-7ff3-11ec-850e-afd53272231d"),
 					FlowID:     uuid.FromStringOrNil("66beabfe-7d20-11eb-9b69-375c485b40fa"),
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
@@ -181,7 +181,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 			[]*number.Number{
 				{
 					ID:         uuid.FromStringOrNil("109347b6-7d21-11eb-bdd4-c7226a0e1c81"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("5c6ea31c-7ff3-11ec-a028-b345c3f8ab55"),
 					FlowID:     uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
@@ -190,7 +190,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 				},
 				{
 					ID:         uuid.FromStringOrNil("10b60706-7d21-11eb-90ae-2305526adf47"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("5c6ea31c-7ff3-11ec-a028-b345c3f8ab55"),
 					FlowID:     uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
@@ -199,7 +199,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 				},
 				{
 					ID:         uuid.FromStringOrNil("10cf5ee0-7d21-11eb-9733-b73b63288625"),
-					UserID:     1,
+					CustomerID: uuid.FromStringOrNil("5c6ea31c-7ff3-11ec-a028-b345c3f8ab55"),
 					FlowID:     uuid.FromStringOrNil("10eff100-7d21-11eb-b275-6ff5cde65beb"),
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
@@ -252,7 +252,7 @@ func TestNumberDelete(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("6884d8f6-7ff3-11ec-8b5c-d3aa777ad672"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -264,7 +264,7 @@ func TestNumberDelete(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("6884d8f6-7ff3-11ec-8b5c-d3aa777ad672"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusDeleted,
@@ -333,7 +333,7 @@ func TestNumberUpdate(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -349,7 +349,7 @@ func TestNumberUpdate(t *testing.T) {
 				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
 				Number:              "+821021656521",
 				FlowID:              uuid.FromStringOrNil("9496e31a-7c54-11eb-915d-3f8ab244a929"),
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -424,7 +424,7 @@ func TestNumberGetFromDBByNumber(t *testing.T) {
 				{
 					ID:                  uuid.FromStringOrNil("41401778-95c6-11eb-ba94-3f9e9f4fcab2"),
 					Number:              "+821021656521",
-					UserID:              1,
+					CustomerID:          uuid.FromStringOrNil("82914798-7ff3-11ec-b5d5-1fc07ae57c63"),
 					ProviderName:        "telnyx",
 					ProviderReferenceID: "1580568175064384684",
 					Status:              number.StatusActive,
@@ -439,7 +439,7 @@ func TestNumberGetFromDBByNumber(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("41401778-95c6-11eb-ba94-3f9e9f4fcab2"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("82914798-7ff3-11ec-b5d5-1fc07ae57c63"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -458,7 +458,7 @@ func TestNumberGetFromDBByNumber(t *testing.T) {
 				{
 					ID:                  uuid.FromStringOrNil("a97fca22-95c6-11eb-bac1-1bda92edcfd9"),
 					Number:              "+821021656522",
-					UserID:              1,
+					CustomerID:          uuid.FromStringOrNil("8e754ff0-7ff3-11ec-829d-1bf1eb0c57ff"),
 					ProviderName:        "telnyx",
 					ProviderReferenceID: "1580568175064384684",
 					Status:              number.StatusActive,
@@ -472,7 +472,7 @@ func TestNumberGetFromDBByNumber(t *testing.T) {
 				{
 					ID:                  uuid.FromStringOrNil("0d590ee6-95c7-11eb-a038-db90335f3a7d"),
 					Number:              "+821021656522",
-					UserID:              1,
+					CustomerID:          uuid.FromStringOrNil("8e754ff0-7ff3-11ec-829d-1bf1eb0c57ff"),
 					ProviderName:        "telnyx",
 					ProviderReferenceID: "1580568175064384684",
 					Status:              number.StatusActive,
@@ -482,11 +482,12 @@ func TestNumberGetFromDBByNumber(t *testing.T) {
 					TMCreate:            "2021-02-26 18:26:49.000",
 					TMUpdate:            defaultTimeStamp,
 					TMDelete:            defaultTimeStamp,
-				}},
+				},
+			},
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("0d590ee6-95c7-11eb-a038-db90335f3a7d"),
 				Number:              "+821021656522",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("8e754ff0-7ff3-11ec-829d-1bf1eb0c57ff"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,

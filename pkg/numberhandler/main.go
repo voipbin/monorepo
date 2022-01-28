@@ -22,11 +22,11 @@ import (
 type NumberHandler interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
 
-	CreateNumbers(userID uint64, numbs []string) ([]*number.Number, error)
-	CreateNumber(userID uint64, numb string) (*number.Number, error)
+	CreateNumbers(customerID uuid.UUID, numbs []string) ([]*number.Number, error)
+	CreateNumber(customerID uuid.UUID, numb string) (*number.Number, error)
 	GetNumber(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	GetNumberByNumber(ctx context.Context, num string) (*number.Number, error)
-	GetNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*number.Number, error)
+	GetNumbers(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error)
 
 	ReleaseNumber(ctx context.Context, id uuid.UUID) (*number.Number, error)
 

@@ -27,7 +27,7 @@ type DBHandler interface {
 	NumberGetFromCacheByNumber(ctx context.Context, numb string) (*number.Number, error)
 	NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error)
-	NumberGets(ctx context.Context, userID uint64, size uint64, token string) ([]*number.Number, error)
+	NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*number.Number, error)
 	NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error)
 	NumberSetToCache(ctx context.Context, num *number.Number) error
 	NumberSetToCacheByNumber(ctx context.Context, num *number.Number) error

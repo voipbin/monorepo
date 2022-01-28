@@ -11,20 +11,20 @@ import (
 )
 
 // CreateNumbers creates a new order numbers of given numbers
-func (h *numberHandler) CreateNumbers(userID uint64, numbers []string) ([]*number.Number, error) {
-	logrus.Debugf("CreateNumbers. user_id: %d, numbers: %v", userID, numbers)
+func (h *numberHandler) CreateNumbers(customerID uuid.UUID, numbers []string) ([]*number.Number, error) {
+	logrus.Debugf("CreateNumbers. customer_id: %s, numbers: %v", customerID, numbers)
 
 	// use telnyx as a default
-	return h.numHandlerTelnyx.CreateOrderNumbers(userID, numbers)
+	return h.numHandlerTelnyx.CreateOrderNumbers(customerID, numbers)
 }
 
 // CreateNumber creates a new order numbers of given numbers
-func (h *numberHandler) CreateNumber(userID uint64, number string) (*number.Number, error) {
-	logrus.Debugf("CreateNumber. user_id: %d, number: %v", userID, number)
+func (h *numberHandler) CreateNumber(customerID uuid.UUID, number string) (*number.Number, error) {
+	logrus.Debugf("CreateNumber. customer_id: %s, number: %v", customerID, number)
 
 	// use telnyx as a default
 	numbers := []string{number}
-	tmpRes, err := h.numHandlerTelnyx.CreateOrderNumbers(userID, numbers)
+	tmpRes, err := h.numHandlerTelnyx.CreateOrderNumbers(customerID, numbers)
 	if err != nil || len(tmpRes) == 0 {
 		return nil, fmt.Errorf("could not create a number from the telnyx. err: %v", err)
 	}
@@ -81,22 +81,22 @@ func (h *numberHandler) GetNumber(ctx context.Context, id uuid.UUID) (*number.Nu
 	return number, nil
 }
 
-// GetNumbers returns list of numbers info of the given user_id
-func (h *numberHandler) GetNumbers(ctx context.Context, userID uint64, pageSize uint64, pageToken string) ([]*number.Number, error) {
+// GetNumbers returns list of numbers info of the given customer_id
+func (h *numberHandler) GetNumbers(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user_id": userID,
+			"customer_id": customerID,
 		},
 	)
-	log.Debugf("GetNumbers. user_id: %d", userID)
+	log.Debugf("GetNumbers. customer_id: %s", customerID)
 
 	if pageToken == "" {
 		pageToken = getCurTime()
 	}
 
-	numbers, err := h.db.NumberGets(ctx, userID, pageSize, pageToken)
+	numbers, err := h.db.NumberGets(ctx, customerID, pageSize, pageToken)
 	if err != nil {
-		log.Errorf("Could not get numbers. user_id: %d, err:%v", userID, err)
+		log.Errorf("Could not get numbers. customer_id: %s, err:%v", customerID, err)
 		return nil, err
 	}
 	log.WithField("numbers", numbers).Debugf("Found numbers info. count: %d", len(numbers))

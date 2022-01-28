@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
@@ -19,7 +20,7 @@ import (
 // NumberHandler is interface for service handle
 type NumberHandler interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
-	CreateOrderNumbers(userID uint64, numbs []string) ([]*number.Number, error)
+	CreateOrderNumbers(customerID uuid.UUID, numbs []string) ([]*number.Number, error)
 	ReleaseOrderNumber(ctx context.Context, numb *number.Number) (*number.Number, error)
 }
 

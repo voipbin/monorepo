@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/telnyx"
 )
 
@@ -83,7 +83,7 @@ func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
 				PhoneNumber:           "+14703298699",
 				Status:                "active",
 				Tags:                  []string{},
-				ConnectionID:          "1749650875783055057",
+				ConnectionID:          "1762151958791063062",
 				CustomerReference:     "",
 				ExternalPin:           "",
 				T38FaxGatewayEnabled:  true,

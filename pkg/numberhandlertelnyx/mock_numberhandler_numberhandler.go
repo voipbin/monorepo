@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -37,18 +38,18 @@ func (m *MockNumberHandler) EXPECT() *MockNumberHandlerMockRecorder {
 }
 
 // CreateOrderNumbers mocks base method.
-func (m *MockNumberHandler) CreateOrderNumbers(userID uint64, numbs []string) ([]*number.Number, error) {
+func (m *MockNumberHandler) CreateOrderNumbers(customerID uuid.UUID, numbs []string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrderNumbers", userID, numbs)
+	ret := m.ctrl.Call(m, "CreateOrderNumbers", customerID, numbs)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateOrderNumbers indicates an expected call of CreateOrderNumbers.
-func (mr *MockNumberHandlerMockRecorder) CreateOrderNumbers(userID, numbs interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) CreateOrderNumbers(customerID, numbs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrderNumbers", reflect.TypeOf((*MockNumberHandler)(nil).CreateOrderNumbers), userID, numbs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrderNumbers", reflect.TypeOf((*MockNumberHandler)(nil).CreateOrderNumbers), customerID, numbs)
 }
 
 // GetAvailableNumbers mocks base method.

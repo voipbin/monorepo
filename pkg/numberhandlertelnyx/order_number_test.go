@@ -29,9 +29,9 @@ func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
 	}
 
 	type test struct {
-		name   string
-		userID uint64
-		number string
+		name       string
+		customerID uuid.UUID
+		number     string
 
 		phoneNumbers []*telnyx.PhoneNumber
 	}
@@ -39,7 +39,7 @@ func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			1,
+			uuid.FromStringOrNil("42975e92-7ff4-11ec-a6f9-0b55edda8dc3"),
 			"+821021656521",
 			[]*telnyx.PhoneNumber{
 				{
@@ -69,7 +69,7 @@ func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
 			mockReq.EXPECT().TelnyxPhoneNumbersIDUpdateConnectionID(tt.phoneNumbers[0].ID, ConnectionID).Return(tt.phoneNumbers[0], nil)
 			mockDB.EXPECT().NumberCreate(gomock.Any(), gomock.Any())
 			mockDB.EXPECT().NumberGet(gomock.Any(), gomock.Any())
-			_, err := h.createNumberByTelnyxOrderNumber(tt.userID, tt.number)
+			_, err := h.createNumberByTelnyxOrderNumber(tt.customerID, tt.number)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

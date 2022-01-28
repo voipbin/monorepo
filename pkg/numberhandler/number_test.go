@@ -32,9 +32,9 @@ func TestCreateNumbersTelnyx(t *testing.T) {
 	}
 
 	type test struct {
-		name    string
-		userID  uint64
-		numbers []string
+		name       string
+		customerID uuid.UUID
+		numbers    []string
 
 		expectRes []*number.Number
 	}
@@ -42,7 +42,7 @@ func TestCreateNumbersTelnyx(t *testing.T) {
 	tests := []test{
 		{
 			"normal us",
-			1,
+			uuid.FromStringOrNil("ed1601ee-7ff3-11ec-926b-4352f35f23ab"),
 			[]string{"+821021656521"},
 			[]*number.Number{
 				{
@@ -57,9 +57,9 @@ func TestCreateNumbersTelnyx(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTelnyx.EXPECT().CreateOrderNumbers(tt.userID, tt.numbers).Return(tt.expectRes, nil)
+			mockTelnyx.EXPECT().CreateOrderNumbers(tt.customerID, tt.numbers).Return(tt.expectRes, nil)
 
-			res, err := h.CreateNumbers(tt.userID, tt.numbers)
+			res, err := h.CreateNumbers(tt.customerID, tt.numbers)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -88,9 +88,9 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 	}
 
 	type test struct {
-		name   string
-		userID uint64
-		number string
+		name       string
+		customerID uuid.UUID
+		number     string
 
 		expectRes *number.Number
 	}
@@ -98,7 +98,7 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 	tests := []test{
 		{
 			"normal us",
-			1,
+			uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
 			"+821021656521",
 			&number.Number{
 				ID:           uuid.FromStringOrNil("61afc712-7b25-11eb-b31f-5357d050c809"),
@@ -113,9 +113,9 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 
 			tmpNumbers := []string{tt.number}
 			tmpExpRes := []*number.Number{tt.expectRes}
-			mockTelnyx.EXPECT().CreateOrderNumbers(tt.userID, tmpNumbers).Return(tmpExpRes, nil)
+			mockTelnyx.EXPECT().CreateOrderNumbers(tt.customerID, tmpNumbers).Return(tmpExpRes, nil)
 
-			res, err := h.CreateNumber(tt.userID, tt.number)
+			res, err := h.CreateNumber(tt.customerID, tt.number)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -156,7 +156,7 @@ func TestGetNumber(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -202,10 +202,10 @@ func TestGetNumbers(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		userID    uint64
-		pageSize  uint64
-		pageToken string
+		name       string
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
 
 		numbers []*number.Number
 	}
@@ -213,14 +213,14 @@ func TestGetNumbers(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			1,
+			uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 			10,
 			"2021-02-26 18:26:49.000",
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("da535752-7a4d-11eb-aec4-5bac74c24370"),
 					Number:              "+821021656521",
-					UserID:              1,
+					CustomerID:          uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 					ProviderName:        number.ProviderNameTelnyx,
 					ProviderReferenceID: "1580568175064384684",
 					Status:              number.StatusActive,
@@ -233,14 +233,14 @@ func TestGetNumbers(t *testing.T) {
 		},
 		{
 			"empty token",
-			1,
+			uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 			10,
 			"",
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("b72d1844-7bdd-11eb-a2bb-4370f115b44c"),
 					Number:              "+821021656521",
-					UserID:              1,
+					CustomerID:          uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 					ProviderName:        number.ProviderNameTelnyx,
 					ProviderReferenceID: "1580568175064384684",
 					Status:              number.StatusActive,
@@ -258,12 +258,12 @@ func TestGetNumbers(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.pageToken == "" {
-				mockDB.EXPECT().NumberGets(gomock.Any(), tt.userID, tt.pageSize, gomock.Any()).Return(tt.numbers, nil)
+				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, gomock.Any()).Return(tt.numbers, nil)
 			} else {
-				mockDB.EXPECT().NumberGets(gomock.Any(), tt.userID, tt.pageSize, tt.pageToken).Return(tt.numbers, nil)
+				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.numbers, nil)
 			}
 
-			res, err := h.GetNumbers(ctx, tt.userID, tt.pageSize, tt.pageToken)
+			res, err := h.GetNumbers(ctx, tt.customerID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -300,7 +300,6 @@ func TestUpdateNumber(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			// uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
 			&number.Number{
 				ID:     uuid.FromStringOrNil("1e5f4238-7c58-11eb-a6aa-fb7278bbb0bc"),
 				FlowID: uuid.FromStringOrNil("1f71c61e-7c58-11eb-8d07-6f618f90475f"),
@@ -309,7 +308,7 @@ func TestUpdateNumber(t *testing.T) {
 				ID:                  uuid.FromStringOrNil("1e5f4238-7c58-11eb-a6aa-fb7278bbb0bc"),
 				FlowID:              uuid.FromStringOrNil("1f71c61e-7c58-11eb-8d07-6f618f90475f"),
 				Number:              "+821021656521",
-				UserID:              1,
+				CustomerID:          uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,

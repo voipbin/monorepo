@@ -38,33 +38,33 @@ func (m *MockNumberHandler) EXPECT() *MockNumberHandlerMockRecorder {
 }
 
 // CreateNumber mocks base method.
-func (m *MockNumberHandler) CreateNumber(userID uint64, numb string) (*number.Number, error) {
+func (m *MockNumberHandler) CreateNumber(customerID uuid.UUID, numb string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNumber", userID, numb)
+	ret := m.ctrl.Call(m, "CreateNumber", customerID, numb)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateNumber indicates an expected call of CreateNumber.
-func (mr *MockNumberHandlerMockRecorder) CreateNumber(userID, numb interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) CreateNumber(customerID, numb interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumber", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumber), userID, numb)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumber", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumber), customerID, numb)
 }
 
 // CreateNumbers mocks base method.
-func (m *MockNumberHandler) CreateNumbers(userID uint64, numbs []string) ([]*number.Number, error) {
+func (m *MockNumberHandler) CreateNumbers(customerID uuid.UUID, numbs []string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNumbers", userID, numbs)
+	ret := m.ctrl.Call(m, "CreateNumbers", customerID, numbs)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateNumbers indicates an expected call of CreateNumbers.
-func (mr *MockNumberHandlerMockRecorder) CreateNumbers(userID, numbs interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) CreateNumbers(customerID, numbs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumbers", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumbers), userID, numbs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumbers", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumbers), customerID, numbs)
 }
 
 // GetAvailableNumbers mocks base method.
@@ -113,18 +113,18 @@ func (mr *MockNumberHandlerMockRecorder) GetNumberByNumber(ctx, num interface{})
 }
 
 // GetNumbers mocks base method.
-func (m *MockNumberHandler) GetNumbers(ctx context.Context, userID, pageSize uint64, pageToken string) ([]*number.Number, error) {
+func (m *MockNumberHandler) GetNumbers(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNumbers", ctx, userID, pageSize, pageToken)
+	ret := m.ctrl.Call(m, "GetNumbers", ctx, customerID, pageSize, pageToken)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNumbers indicates an expected call of GetNumbers.
-func (mr *MockNumberHandlerMockRecorder) GetNumbers(ctx, userID, pageSize, pageToken interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) GetNumbers(ctx, customerID, pageSize, pageToken interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetNumbers), ctx, userID, pageSize, pageToken)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetNumbers), ctx, customerID, pageSize, pageToken)
 }
 
 // ReleaseNumber mocks base method.
