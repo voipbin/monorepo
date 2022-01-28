@@ -7,8 +7,7 @@ import (
 
 // Tag data model
 type Tag struct {
-	ID     uuid.UUID `json:"id"`      // tag id
-	UserID uint64    `json:"user_id"` // owned user's id
+	ID uuid.UUID `json:"id"` // tag id
 
 	Name   string `json:"name"`   // tag's name
 	Detail string `json:"detail"` // tag's detail
@@ -21,8 +20,7 @@ type Tag struct {
 // ConvertToTag define
 func ConvertToTag(t *amtag.Tag) *Tag {
 	return &Tag{
-		ID:     t.ID,
-		UserID: t.UserID,
+		ID: t.ID,
 
 		Name:   t.Name,
 		Detail: t.Detail,
@@ -36,8 +34,7 @@ func ConvertToTag(t *amtag.Tag) *Tag {
 // ConvertToAMTag define
 func ConvertToAMTag(t *Tag) *amtag.Tag {
 	return &amtag.Tag{
-		ID:     t.ID,
-		UserID: t.UserID,
+		ID: t.ID,
 
 		Name:   t.Name,
 		Detail: t.Detail,

@@ -4,11 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -28,18 +28,18 @@ func tagsPOST(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
-	u := tmp.(user.User)
+	tmp, exists := c.Get("customer")
+	u := tmp.(cscustomer.Customer)
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -80,18 +80,18 @@ func tagsIDDelete(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -133,18 +133,18 @@ func tagsIDGet(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -171,9 +171,9 @@ func tagsIDGet(c *gin.Context) {
 }
 
 // tagsGET handles GET /tags request.
-// It returns list of tags of the given user.
+// It returns list of tags of the given customer.
 // @Summary List tags
-// @Description get tags of the user
+// @Description get tags of the customer
 // @Produce  json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
@@ -187,18 +187,18 @@ func tagsGET(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 
@@ -262,19 +262,19 @@ func tagsIDPUT(c *gin.Context) {
 		},
 	)
 
-	// get user info
-	tmp, exists := c.Get("user")
+	// get customer info
+	tmp, exists := c.Get("customer")
 	if !exists {
-		logrus.Errorf("Could not find user info.")
+		logrus.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 

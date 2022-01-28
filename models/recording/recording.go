@@ -8,7 +8,7 @@ import (
 // Recording struct represent record information
 type Recording struct {
 	ID          uuid.UUID `json:"id"`
-	UserID      uint64    `json:"user_id"`
+	CustomerID  uuid.UUID `json:"customer_id"`
 	Type        Type      `json:"type"`
 	ReferenceID uuid.UUID `json:"reference_id"`
 	Status      Status    `json:"status"`
@@ -45,9 +45,9 @@ const (
 // Convert returns conference.Conference from cmconference.Conference
 func Convert(h *cmrecording.Recording) *Recording {
 	res := &Recording{
-		ID:     h.ID,
-		UserID: h.UserID,
-		Type:   Type(h.Type),
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
+		Type:       Type(h.Type),
 
 		ReferenceID: h.ReferenceID,
 		Status:      Status(h.Status),

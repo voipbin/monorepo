@@ -6,9 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -28,18 +28,18 @@ func recordingfilesIDGET(c *gin.Context) {
 		},
 	)
 
-	tmp, exists := c.Get("user")
+	tmp, exists := c.Get("customer")
 	if !exists {
-		log.Errorf("Could not find user info.")
+		log.Errorf("Could not find customer info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(user.User)
+	u := tmp.(cscustomer.Customer)
 	log = log.WithFields(
 		logrus.Fields{
-			"user_id":    u.ID,
-			"username":   u.Username,
-			"permission": u.Permission,
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
 		},
 	)
 

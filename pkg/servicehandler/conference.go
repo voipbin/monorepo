@@ -7,17 +7,17 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
-// conferenceGet vaildates the user's ownership and returns the conference info.
-func (h *serviceHandler) conferenceGet(ctx context.Context, u *user.User, id uuid.UUID) (*cfconference.WebhookMessage, error) {
+// conferenceGet vaildates the customer's ownership and returns the conference info.
+func (h *serviceHandler) conferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "conferenceGet",
-			"user_id":       u.ID,
+			"customer_id":   u.ID,
 			"conference_id": id,
 		},
 	)
@@ -30,9 +30,9 @@ func (h *serviceHandler) conferenceGet(ctx context.Context, u *user.User, id uui
 	}
 	log.WithField("conference", tmp).Debug("Received result.")
 
-	if u.Permission != user.PermissionAdmin && u.ID != tmp.UserID {
-		log.Info("The user has no permission for this conference.")
-		return nil, fmt.Errorf("user has no permission")
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
+		log.Info("The customer has no permission for this conference.")
+		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	// create result
@@ -42,12 +42,12 @@ func (h *serviceHandler) conferenceGet(ctx context.Context, u *user.User, id uui
 
 // ConferenceGet gets the conference.
 // It returns conference info if it succeed.
-func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceGet(u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":       u.ID,
-		"username":   u.Username,
-		"conference": id,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"conference":  id,
 	})
 	log.Debugf("Get conference. conference: %s", id)
 
@@ -63,13 +63,13 @@ func (h *serviceHandler) ConferenceGet(u *user.User, id uuid.UUID) (*cfconferenc
 
 // ConferenceGets gets the list of conference.
 // It returns list of calls if it succeed.
-func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceGets(u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"user":     u.ID,
-		"username": u.Username,
-		"size":     size,
-		"token":    token,
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
 	})
 
 	if token == "" {
@@ -95,7 +95,7 @@ func (h *serviceHandler) ConferenceGets(u *user.User, size uint64, token string)
 
 // ConferenceCreate is a service handler for conference creating.
 func (h *serviceHandler) ConferenceCreate(
-	u *user.User,
+	u *cscustomer.Customer,
 	confType cfconference.Type,
 	name string,
 	detail string,
@@ -106,7 +106,7 @@ func (h *serviceHandler) ConferenceCreate(
 	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user":         u.ID,
+			"customer_id":  u.ID,
 			"username":     u.Username,
 			"type":         confType,
 			"name":         name,
@@ -129,13 +129,13 @@ func (h *serviceHandler) ConferenceCreate(
 }
 
 // ConferenceDelete is a service handler for conference creating.
-func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error {
+func (h *serviceHandler) ConferenceDelete(u *cscustomer.Customer, confID uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user":       u.ID,
-			"username":   u.Username,
-			"conference": confID,
+			"customer_id": u.ID,
+			"username":    u.Username,
+			"conference":  confID,
 		},
 	)
 
@@ -157,11 +157,11 @@ func (h *serviceHandler) ConferenceDelete(u *user.User, confID uuid.UUID) error 
 }
 
 // ConferenceDelete is a service handler for conference creating.
-func (h *serviceHandler) ConferenceKick(u *user.User, confID uuid.UUID, callID uuid.UUID) error {
+func (h *serviceHandler) ConferenceKick(u *cscustomer.Customer, confID uuid.UUID, callID uuid.UUID) error {
 	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
-			"user":          u.ID,
+			"customer_id":   u.ID,
 			"username":      u.Username,
 			"conference_id": confID,
 			"call_id":       callID,

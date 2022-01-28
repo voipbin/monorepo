@@ -6,14 +6,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -32,7 +32,7 @@ func TestAvailableNumbersGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		user        user.User
+		customer    cscustomer.Customer
 		pageSize    uint64
 		countryCode string
 
@@ -42,8 +42,8 @@ func TestAvailableNumbersGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			user.User{
-				ID: 1,
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("09e38a62-8003-11ec-8085-7f8bfbbc02de"),
 			},
 			10,
 			"US",
@@ -66,12 +66,12 @@ func TestAvailableNumbersGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("user", tt.user)
+				c.Set("customer", tt.customer)
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().AvailableNumberGets(&tt.user, tt.pageSize, tt.countryCode).Return(tt.resAvailableNumbers, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/available_numbers?page_size=%d&user_id=%d&country_code=%s", tt.pageSize, tt.user.ID, tt.countryCode), nil)
+			mockSvc.EXPECT().AvailableNumberGets(&tt.customer, tt.pageSize, tt.countryCode).Return(tt.resAvailableNumbers, nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/available_numbers?page_size=%d&customer_id=%s&country_code=%s", tt.pageSize, tt.customer.ID, tt.countryCode), nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

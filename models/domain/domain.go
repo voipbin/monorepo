@@ -7,8 +7,8 @@ import (
 
 // Domain struct for client show
 type Domain struct {
-	ID     uuid.UUID `json:"id"`
-	UserID uint64    `json:"user_id"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
 	DomainName string `json:"domain_name"`
 
@@ -25,8 +25,8 @@ type Domain struct {
 func ConvertToDomain(f *rmdomain.Domain) *Domain {
 
 	res := &Domain{
-		ID:     f.ID,
-		UserID: f.UserID,
+		ID:         f.ID,
+		CustomerID: f.CustomerID,
 
 		DomainName: f.DomainName,
 
@@ -45,8 +45,8 @@ func ConvertToDomain(f *rmdomain.Domain) *Domain {
 func CreateDomain(f *Domain) *rmdomain.Domain {
 
 	res := &rmdomain.Domain{
-		ID:     f.ID,
-		UserID: f.UserID,
+		ID:         f.ID,
+		CustomerID: f.CustomerID,
 
 		DomainName: f.DomainName,
 

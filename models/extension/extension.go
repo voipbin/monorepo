@@ -7,8 +7,8 @@ import (
 
 // Extension struct
 type Extension struct {
-	ID     uuid.UUID `json:"id"`
-	UserID uint64    `json:"user_id"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
 	Name     string    `json:"name"`
 	Detail   string    `json:"detail"`
@@ -26,8 +26,8 @@ type Extension struct {
 func ConvertExtension(f *rmextension.Extension) *Extension {
 
 	res := &Extension{
-		ID:     f.ID,
-		UserID: f.UserID,
+		ID:         f.ID,
+		CustomerID: f.CustomerID,
 
 		Name:     f.Name,
 		Detail:   f.Detail,
@@ -49,7 +49,7 @@ func CreateDomain(f *Extension) *rmextension.Extension {
 
 	res := &rmextension.Extension{
 		ID:     f.ID,
-		UserID: f.UserID,
+		CustomerID: f.CustomerID,
 
 		Name:     f.Name,
 		Detail:   f.Detail,
