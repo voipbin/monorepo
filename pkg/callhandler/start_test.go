@@ -568,7 +568,6 @@ func TestTypeFlowStart(t *testing.T) {
 			&number.Number{
 				ID:     uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
 				FlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
-				UserID: 1,
 			},
 			&activeflow.ActiveFlow{
 				CallID: uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
@@ -608,7 +607,6 @@ func TestTypeFlowStart(t *testing.T) {
 			&number.Number{
 				ID:     uuid.FromStringOrNil("f06df84e-82e0-11eb-9ca5-7f84ada50218"),
 				FlowID: uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
-				UserID: 1,
 			},
 			&activeflow.ActiveFlow{
 				CallID:     uuid.FromStringOrNil("f0ae2504-82e0-11eb-8981-5752f356cf57"),
