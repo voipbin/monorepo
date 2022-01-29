@@ -21,25 +21,25 @@ require (
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.4.0
 	github.com/swaggo/swag v1.7.8
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220127092610-7d5c827992db
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220128055559-44244f803405
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220127083953-ef0331841884
-	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220128044746-5b1c59714700
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220128040744-1da444546c76
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220128165204-799f7a93e462
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220128171352-5e375e34cc75
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220129073757-8b16b0bb6f7b
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220128165234-e1585705548c
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220128172756-b3561f5b2c80
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6
-	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220128055248-837e7e1f0a79
-	golang.org/x/crypto v0.0.0-20220126234351-aa10faf2a1f8 // indirect
-	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220128165154-0988e150ced8
+	golang.org/x/crypto v0.0.0-20220128200615-198e4374d7ed // indirect
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
+	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.9 // indirect
 )
 
 require (
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128030351-b09ba2ebff94
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220127085754-375cf37c6d7f
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128174941-c4d811bdc7c8
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220129071825-44f3b25d509f
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220127020659-07e0a18cc4f7
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220128054051-435c02f43a53
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220128165202-dc1ef8f5c98d
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
 )
 
