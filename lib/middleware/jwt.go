@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,7 +23,7 @@ func Init(key string) {
 }
 
 // GenerateToken generates jwt token
-func GenerateToken(key string, data []byte) (string, error) {
+func GenerateToken(key string, data string) (string, error) {
 	logrus.Debugf("Generating the token. key: %s, data: %v", key, data)
 	// token is valid for 7 days
 	date := time.Now().Add(time.Hour * 24 * 7)
@@ -39,6 +38,7 @@ func GenerateToken(key string, data []byte) (string, error) {
 	return tokenString, err
 }
 
+// validateToken validates the token and return the parsed data.
 func validateToken(tokenString string) (common.JSON, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// don't forget to validate the alg is what you expect
@@ -96,16 +96,8 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		csDec, err := base64.URLEncoding.DecodeString(tokenData["customer"].(string))
-		if err != nil {
-			logrus.Errorf("Could not decode the customer string. err: %v", err)
-			c.Next()
-			return
-		}
-		logrus.Debugf("Check data. csDec. %s", string(csDec[:]))
-
 		cs := cscustomer.Customer{}
-		if err := json.Unmarshal(csDec, &cs); err != nil {
+		if err := json.Unmarshal([]byte(tokenData["customer"].(string)), &cs); err != nil {
 			logrus.Errorf("Could not marshal the customer. err: %v", err)
 			c.Next()
 			return

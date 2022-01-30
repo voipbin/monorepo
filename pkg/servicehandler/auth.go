@@ -27,14 +27,15 @@ func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
 		return "", err
 	}
 
-	// serialized := middleware.Serialize(c)
-	serialized, err := json.Marshal(c)
+	// tmp := middleware.Serialize(c)
+	tmp, err := json.Marshal(c)
 	if err != nil {
 		log.Errorf("Could not marshal the customer info. err: %v", err)
 		return "", err
 	}
+	serialize := string(tmp[:])
 
-	token, err := middleware.GenerateToken("customer", serialized)
+	token, err := middleware.GenerateToken("customer", serialize)
 	if err != nil {
 		log.Errorf("Could not create a jwt token. err: %v", err)
 		return "", fmt.Errorf("could not create a jwt token. err: %v", err)
