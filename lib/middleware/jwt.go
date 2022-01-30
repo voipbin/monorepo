@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -8,6 +10,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/common"
@@ -21,7 +24,8 @@ func Init(key string) {
 }
 
 // GenerateToken generates jwt token
-func GenerateToken(key string, data map[string]interface{}) (string, error) {
+func GenerateToken(key string, data []byte) (string, error) {
+	logrus.Debugf("Generating the token. key: %s, data: %v", key, data)
 	// token is valid for 7 days
 	date := time.Now().Add(time.Hour * 24 * 7)
 
@@ -92,8 +96,20 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		var cs cscustomer.Customer
-		cs.Read(tokenData["customer"].(map[string]interface{}))
+		csDec, err := base64.URLEncoding.DecodeString(tokenData["customer"].(string))
+		if err != nil {
+			logrus.Errorf("Could not decode the customer string. err: %v", err)
+			c.Next()
+			return
+		}
+		logrus.Debugf("Check data. csDec. %s", string(csDec[:]))
+
+		cs := cscustomer.Customer{}
+		if err := json.Unmarshal(csDec, &cs); err != nil {
+			logrus.Errorf("Could not marshal the customer. err: %v", err)
+			c.Next()
+			return
+		}
 
 		c.Set("customer", cs)
 		c.Set("token_expire", tokenData["exp"])
