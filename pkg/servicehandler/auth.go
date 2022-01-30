@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -20,13 +21,19 @@ func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
 		},
 	)
 
-	u, err := h.reqHandler.CSV1Login(ctx, 30000, username, password)
+	c, err := h.reqHandler.CSV1Login(ctx, 30000, username, password)
 	if err != nil {
 		log.Warningf("Could not get customer info. err: %v", err)
 		return "", err
 	}
 
-	serialized := u.Serialize()
+	// serialized := middleware.Serialize(c)
+	serialized, err := json.Marshal(c)
+	if err != nil {
+		log.Errorf("Could not marshal the customer info. err: %v", err)
+		return "", err
+	}
+
 	token, err := middleware.GenerateToken("customer", serialized)
 	if err != nil {
 		log.Errorf("Could not create a jwt token. err: %v", err)

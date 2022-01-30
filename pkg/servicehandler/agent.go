@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -195,7 +196,13 @@ func (h *serviceHandler) AgentLogin(customerID uuid.UUID, username, password str
 	}
 	tmp := agent.ConvertToAgent(ag)
 
-	serialized := tmp.Serialize()
+	// serialized := tmp.Serialize()
+	serialized, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return "", err
+	}
+
 	token, err := middleware.GenerateToken("agent", serialized)
 	if err != nil {
 		logrus.Errorf("Could not create a jwt token. err: %v", err)

@@ -46,6 +46,7 @@ func loginPost(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
+	log.Debugf("Created token string. token: %v", token)
 
 	// 1 week
 	c.SetCookie("token", token, 60*60*24*7, "/", "", false, true)
