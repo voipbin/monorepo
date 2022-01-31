@@ -6,25 +6,25 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
 )
 
 require (
 	github.com/gofrs/uuid v4.2.0+incompatible
-	github.com/prometheus/client_golang v1.12.0
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128165202-c0b38ff02b30
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220128165204-799f7a93e462
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220128165221-3b2dc17bf305
+	github.com/prometheus/client_golang v1.12.1
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220131015406-68c5d0a1a790
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220129114754-16a5f2f6812f
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220129071825-44f3b25d509f
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220127020659-07e0a18cc4f7
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220128165215-5f5f89258ffa
-	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220128165234-e1585705548c
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220128165202-dc1ef8f5c98d
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220128165715-59c08e0b4271
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220129073757-8b16b0bb6f7b
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220129111655-419853d35f8c
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220129111440-7128c74e331c
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220128172756-b3561f5b2c80
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6
-	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220128165154-0988e150ced8
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220129091806-b8d5c0eb6df5
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20211221033736-1c9c086d3d00
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
-	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220131055855-db615a133f71
 )
 
 require (

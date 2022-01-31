@@ -6,40 +6,41 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // PublishWebhookEvent publishs the given event type of notification to the webhook and event queue.
-func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, eventType string, webhookURI string, message WebhookMessage) {
+func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, message WebhookMessage) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "PublishWebhookEvent",
 			"evnet_type":  eventType,
 			"event":       message,
-			"webhook_uri": webhookURI,
+			"customer_id": customerID,
 		},
 	)
 	log.Debugf("publishing the event to the webhook and event queue.. event_type: %s", eventType)
 
 	go h.PublishEvent(ctx, eventType, message)
-	go h.PublishWebhook(ctx, eventType, webhookURI, message)
+	go h.PublishWebhook(ctx, customerID, eventType, message)
 }
 
 // PublishWebhook publishes the webhook to the given destination.
-func (h *notifyHandler) PublishWebhook(ctx context.Context, t string, webhookURI string, c WebhookMessage) {
+func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, c WebhookMessage) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":       "PublishWebhook",
 			"call":       c,
-			"evnet_type": t,
+			"evnet_type": eventType,
 		},
 	)
-	log.Debugf("Sending webhook event. event_type: %s, message: %s", t, c)
+	log.Debugf("Sending webhook event. event_type: %s, message: %s", eventType, c)
 
-	if webhookURI == "" {
-		// no webhook uri
+	if customerID == uuid.Nil {
+		// no customer id given
 		return
 	}
 
@@ -50,7 +51,7 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, t string, webhookURI
 		return
 	}
 
-	if err := h.reqHandler.WMV1WebhookSend(ctx, "POST", webhookURI, dataTypeJSON, string(t), m); err != nil {
+	if err := h.reqHandler.WMV1WebhookSend(ctx, customerID, dataTypeJSON, string(eventType), m); err != nil {
 		log.Errorf("Could not publish the webhook. err: %v", err)
 		return
 	}

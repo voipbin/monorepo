@@ -5,19 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // WMV1WebhookSend sends the webhook.
-func (r *requestHandler) WMV1WebhookSend(ctx context.Context, webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error {
+func (r *requestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType, messageType string, messageData []byte) error {
 
 	uri := "/v1/webhooks"
 
 	m, err := json.Marshal(request.V1DataWebhooksPost{
-		Method:     webhook.MethodType(webhookMethod),
-		WebhookURI: webhookURI,
+		CustomerID: customerID,
 		DataType:   webhook.DataType(dataType),
 		Data: request.WebhookData{
 			Type: messageType,

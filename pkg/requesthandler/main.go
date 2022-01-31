@@ -390,7 +390,7 @@ type RequestHandler interface {
 	UMV1UserUpdatePermission(ctx context.Context, userID uint64, permission umuser.Permission) error
 
 	// webhook-manager webhooks
-	WMV1WebhookSend(ctx context.Context, webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error
+	WMV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType, messageType string, messageData []byte) error
 }
 
 type requestHandler struct {

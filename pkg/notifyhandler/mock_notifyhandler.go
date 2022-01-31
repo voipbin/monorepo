@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -85,25 +86,25 @@ func (mr *MockNotifyHandlerMockRecorder) PublishEvent(ctx, t, c interface{}) *go
 }
 
 // PublishWebhook mocks base method.
-func (m *MockNotifyHandler) PublishWebhook(ctx context.Context, t, webhookURI string, c WebhookMessage) {
+func (m *MockNotifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, c WebhookMessage) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "PublishWebhook", ctx, t, webhookURI, c)
+	m.ctrl.Call(m, "PublishWebhook", ctx, customerID, eventType, c)
 }
 
 // PublishWebhook indicates an expected call of PublishWebhook.
-func (mr *MockNotifyHandlerMockRecorder) PublishWebhook(ctx, t, webhookURI, c interface{}) *gomock.Call {
+func (mr *MockNotifyHandlerMockRecorder) PublishWebhook(ctx, customerID, eventType, c interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWebhook", reflect.TypeOf((*MockNotifyHandler)(nil).PublishWebhook), ctx, t, webhookURI, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWebhook", reflect.TypeOf((*MockNotifyHandler)(nil).PublishWebhook), ctx, customerID, eventType, c)
 }
 
 // PublishWebhookEvent mocks base method.
-func (m *MockNotifyHandler) PublishWebhookEvent(ctx context.Context, eventType, webhookURI string, message WebhookMessage) {
+func (m *MockNotifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, message WebhookMessage) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "PublishWebhookEvent", ctx, eventType, webhookURI, message)
+	m.ctrl.Call(m, "PublishWebhookEvent", ctx, customerID, eventType, message)
 }
 
 // PublishWebhookEvent indicates an expected call of PublishWebhookEvent.
-func (mr *MockNotifyHandlerMockRecorder) PublishWebhookEvent(ctx, eventType, webhookURI, message interface{}) *gomock.Call {
+func (mr *MockNotifyHandlerMockRecorder) PublishWebhookEvent(ctx, customerID, eventType, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWebhookEvent", reflect.TypeOf((*MockNotifyHandler)(nil).PublishWebhookEvent), ctx, eventType, webhookURI, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWebhookEvent", reflect.TypeOf((*MockNotifyHandler)(nil).PublishWebhookEvent), ctx, customerID, eventType, message)
 }

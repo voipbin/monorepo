@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -21,11 +22,10 @@ func TestWMV1WebhookSend(t *testing.T) {
 	tests := []struct {
 		name string
 
-		webhookMethod string
-		webhookURI    string
-		dataType      string
-		messageType   string
-		messageData   []byte
+		customerID  uuid.UUID
+		dataType    string
+		messageType string
+		messageData []byte
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -34,8 +34,7 @@ func TestWMV1WebhookSend(t *testing.T) {
 		{
 			"normal",
 
-			"POST",
-			"test.com",
+			uuid.FromStringOrNil("d2c2ffe8-825c-11ec-8688-2bebcc3d0013"),
 			"application/json",
 			"application/json",
 			[]byte(`{}`),
@@ -45,7 +44,7 @@ func TestWMV1WebhookSend(t *testing.T) {
 				URI:      "/v1/webhooks",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"method":"POST","webhook_uri":"test.com","data_type":"application/json","data":{"type":"application/json","data":{}}}`),
+				Data:     []byte(`{"customer_id":"d2c2ffe8-825c-11ec-8688-2bebcc3d0013","Method":"","WebhookURI":"","data_type":"application/json","data":{"type":"application/json","data":{}}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -60,7 +59,7 @@ func TestWMV1WebhookSend(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.WMV1WebhookSend(ctx, tt.webhookMethod, tt.webhookURI, tt.dataType, tt.messageType, tt.messageData)
+			err := reqHandler.WMV1WebhookSend(ctx, tt.customerID, tt.dataType, tt.messageType, tt.messageData)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
