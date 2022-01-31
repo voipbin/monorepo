@@ -10,13 +10,10 @@ import (
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 )
 
 // FlowCreate is a service handler for flow creation.
-func (h *serviceHandler) FlowCreate(u *cscustomer.Customer, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (h *serviceHandler) FlowCreate(u *cscustomer.Customer, name, detail, webhookURI string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
@@ -25,20 +22,14 @@ func (h *serviceHandler) FlowCreate(u *cscustomer.Customer, name, detail, webhoo
 		"webhook":     webhookURI,
 	})
 
-	flowActions := []fmaction.Action{}
-	for _, a := range actions {
-		flowActions = append(flowActions, *action.CreateAction(&a))
-	}
-
-	log.WithField("flow_actions", flowActions).Debug("Creating a new flow.")
-	tmp, err := h.reqHandler.FMV1FlowCreate(ctx, u.ID, fmflow.TypeFlow, name, detail, webhookURI, flowActions, persist)
+	log.WithField("actions", actions).Debug("Creating a new flow.")
+	tmp, err := h.reqHandler.FMV1FlowCreate(ctx, u.ID, fmflow.TypeFlow, name, detail, webhookURI, actions, persist)
 	if err != nil {
 		log.Errorf("Could not create a new flow. err: %v", err)
 		return nil, err
 	}
 
-	res := flow.ConvertFlow(tmp)
-
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -74,7 +65,7 @@ func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) error 
 
 // FlowGet gets the flow of the given id.
 // It returns flow if it succeed.
-func (h *serviceHandler) FlowGet(u *cscustomer.Customer, id uuid.UUID) (*flow.Flow, error) {
+func (h *serviceHandler) FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
@@ -84,25 +75,25 @@ func (h *serviceHandler) FlowGet(u *cscustomer.Customer, id uuid.UUID) (*flow.Fl
 	log.Debug("Getting a flow.")
 
 	// get flow
-	f, err := h.reqHandler.FMV1FlowGet(ctx, id)
+	tmp, err := h.reqHandler.FMV1FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flow info. err: %v", err)
 	}
 
 	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != f.CustomerID {
-		log.Errorf("The customer has no permission for this flow. customer: %s, flow_customer: %s", u.ID, f.CustomerID)
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
+		log.Errorf("The customer has no permission for this flow. customer: %s, flow_customer: %s", u.ID, tmp.CustomerID)
 		return nil, fmt.Errorf("customer has no permission")
 	}
 
-	res := flow.ConvertFlow(f)
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // FlowGets gets the list of flow of the given customer id.
 // It returns list of flows if it succeed.
-func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token string) ([]*flow.Flow, error) {
+func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token string) ([]*fmflow.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
@@ -124,9 +115,9 @@ func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token str
 	}
 
 	// create result
-	res := []*flow.Flow{}
+	res := []*fmflow.WebhookMessage{}
 	for _, f := range flows {
-		tmp := flow.ConvertFlow(&f)
+		tmp := f.ConvertWebhookMessage()
 		res = append(res, tmp)
 	}
 
@@ -135,7 +126,7 @@ func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token str
 
 // FlowUpdate updates the flow info.
 // It returns updated flow if it succeed.
-func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *flow.Flow) (*flow.Flow, error) {
+func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
@@ -157,13 +148,12 @@ func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *flow.Flow) (*flow
 		return nil, fmt.Errorf("customer has no permission")
 	}
 
-	reqFlow := flow.CreateFlow(f)
-	res, err := h.reqHandler.FMV1FlowUpdate(ctx, reqFlow)
+	tmp, err := h.reqHandler.FMV1FlowUpdate(ctx, f)
 	if err != nil {
 		logrus.Errorf("Could not update the flow. err: %v", err)
 		return nil, err
 	}
 
-	resFlow := flow.ConvertFlow(res)
-	return resFlow, nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }

@@ -1,17 +1,16 @@
 package request
 
 import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // BodyCallsPOST is rquest body define for POST /calls
 type BodyCallsPOST struct {
-	Source      address.Address `json:"source" binding:"required"`
-	Destination address.Address `json:"destination" binding:"required"`
-	WebhookURI  string          `json:"webhook_uri"`
-	Actions     []action.Action `json:"actions"`
-	// MachineDetection string          `json:"machine_detection"`
+	Source      cmaddress.Address `json:"source" binding:"required"`
+	Destination cmaddress.Address `json:"destination" binding:"required"`
+	WebhookURI  string            `json:"webhook_uri"`
+	Actions     []fmaction.Action `json:"actions"`
 }
 
 // ParamCallsGET is rquest param define for GET /calls

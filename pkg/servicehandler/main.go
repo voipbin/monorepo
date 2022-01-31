@@ -7,20 +7,19 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
@@ -44,18 +43,18 @@ type ServiceHandler interface {
 		detail string,
 		webhookMethod string,
 		webhookURI string,
-		ringMethod string,
+		ringMethod amagent.RingMethod,
 		permission uint64,
 		tagIDs []uuid.UUID,
-		addresses []address.Address,
-	) (*agent.Agent, error)
-	AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*agent.Agent, error)
-	AgentGets(u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status agent.Status) ([]*agent.Agent, error)
+		addresses []cmaddress.Address,
+	) (*amagent.WebhookMessage, error)
+	AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
+	AgentGets(u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error)
 	AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) error
 	AgentLogin(customerID uuid.UUID, username, password string) (string, error)
-	AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) error
-	AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []address.Address) error
-	AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status agent.Status) error
+	AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) error
+	AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []cmaddress.Address) error
+	AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) error
 	AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) error
 
 	// auth handlers
@@ -65,7 +64,7 @@ type ServiceHandler interface {
 	AvailableNumberGets(u *cscustomer.Customer, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error)
 
 	// call handlers
-	CallCreate(u *cscustomer.Customer, flowID uuid.UUID, source, destination *address.Address) (*cmcall.WebhookMessage, error)
+	CallCreate(u *cscustomer.Customer, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.WebhookMessage, error)
 	CallGet(u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallGets(u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	CallDelete(u *cscustomer.Customer, callID uuid.UUID) error
@@ -92,11 +91,11 @@ type ServiceHandler interface {
 	ExtensionUpdate(u *cscustomer.Customer, d *extension.Extension) (*extension.Extension, error)
 
 	// flow handlers
-	FlowCreate(u *cscustomer.Customer, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error)
+	FlowCreate(u *cscustomer.Customer, name, detail, webhookURI string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
 	FlowDelete(u *cscustomer.Customer, id uuid.UUID) error
-	FlowGet(u *cscustomer.Customer, id uuid.UUID) (*flow.Flow, error)
-	FlowGets(u *cscustomer.Customer, pageSize uint64, pageToken string) ([]*flow.Flow, error)
-	FlowUpdate(u *cscustomer.Customer, f *flow.Flow) (*flow.Flow, error)
+	FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
+	FlowGets(u *cscustomer.Customer, pageSize uint64, pageToken string) ([]*fmflow.WebhookMessage, error)
+	FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error)
 
 	// order numbers handler
 	NumberCreate(u *cscustomer.Customer, num string) (*number.Number, error)

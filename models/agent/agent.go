@@ -3,8 +3,7 @@ package agent
 import (
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
 // Agent data model
@@ -18,10 +17,10 @@ type Agent struct {
 	Detail     string     `json:"detail"`      // agent's detail
 	RingMethod RingMethod `json:"ring_method"` // agent's ring method
 
-	Status     Status            `json:"status"`     // agent's status
-	Permission Permission        `json:"permission"` // agent's permission.
-	TagIDs     []uuid.UUID       `json:"tag_ids"`    // agent's tag ids
-	Addresses  []address.Address `json:"addresses"`  // agent's endpoint addresses
+	Status     Status              `json:"status"`     // agent's status
+	Permission Permission          `json:"permission"` // agent's permission.
+	TagIDs     []uuid.UUID         `json:"tag_ids"`    // agent's tag ids
+	Addresses  []cmaddress.Address `json:"addresses"`  // agent's endpoint addresses
 
 	TMCreate string `json:"tm_create"` // Created timestamp.
 	TMUpdate string `json:"tm_update"` // Updated timestamp.
@@ -85,12 +84,6 @@ func (u *Agent) Read(m map[string]interface{}) {
 // ConvertToAgent define
 func ConvertToAgent(a *amagent.Agent) *Agent {
 
-	addresses := []address.Address{}
-	for _, addr := range a.Addresses {
-		tmpAddr := address.ConvertToAddress(addr)
-		addresses = append(addresses, *tmpAddr)
-	}
-
 	ag := &Agent{
 		ID:           a.ID,
 		CustomerID:   a.CustomerID,
@@ -102,7 +95,7 @@ func ConvertToAgent(a *amagent.Agent) *Agent {
 		Status:       Status(a.Status),
 		Permission:   Permission(a.Permission),
 		TagIDs:       a.TagIDs,
-		Addresses:    addresses,
+		Addresses:    a.Addresses,
 		TMCreate:     a.TMCreate,
 		TMUpdate:     a.TMUpdate,
 		TMDelete:     a.TMDelete,
