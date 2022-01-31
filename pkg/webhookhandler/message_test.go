@@ -5,7 +5,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
 )
 
@@ -14,11 +13,9 @@ func TestSendMessage(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	h := &webhookHandler{
-		db:    mockDB,
-		cache: mockCache,
+		db: mockDB,
 	}
 
 	type test struct {

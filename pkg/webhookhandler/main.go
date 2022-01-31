@@ -1,6 +1,6 @@
 package webhookhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package webhookhandler -destination ./mock_webhookhandler_webhookhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package webhookhandler -destination ./mock_webhookhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"net/http"
@@ -10,21 +10,21 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/messagetargethandler"
 )
 
 // WebhookHandler is interface for webhook handle
 type WebhookHandler interface {
 	SendMessage(uri string, method string, dataType string, data []byte) (*http.Response, error)
-
 	SendWebhook(wh *webhook.Webhook) error
 }
 
 // webhookHandler structure for service handle
 type webhookHandler struct {
-	db    dbhandler.DBHandler
-	cache cachehandler.CacheHandler
+	db dbhandler.DBHandler
+
+	messageTargetHandler messagetargethandler.MessageTargetHandler
 }
 
 var (
@@ -36,11 +36,11 @@ func init() {
 }
 
 // NewWebhookHandler returns new webhook handler
-func NewWebhookHandler(db dbhandler.DBHandler, cache cachehandler.CacheHandler) WebhookHandler {
+func NewWebhookHandler(db dbhandler.DBHandler, messageTargetHandler messagetargethandler.MessageTargetHandler) WebhookHandler {
 
 	h := &webhookHandler{
-		db:    db,
-		cache: cache,
+		db:                   db,
+		messageTargetHandler: messageTargetHandler,
 	}
 
 	return h

@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler/models/request"
 )
@@ -31,8 +31,7 @@ func (h *listenHandler) processV1WebhooksPost(m *rabbitmqhandler.Request) (*rabb
 	}
 
 	wh := &webhook.Webhook{
-		Method:     reqData.Method,
-		WebhookURI: reqData.WebhookURI,
+		CustomerID: reqData.CustomerID,
 		DataType:   reqData.DataType,
 		Data:       d,
 	}

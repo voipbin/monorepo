@@ -3,7 +3,12 @@ package cachehandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
+
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
 )
 
 // getSerialize returns cached serialized info.
@@ -30,4 +35,27 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 		return err
 	}
 	return nil
+}
+
+// AgentDialSet sets the agentdial info into the cache.
+func (h *handler) MessageTargetSet(ctx context.Context, u *messagetarget.MessageTarget) error {
+	key := fmt.Sprintf("messagetarget:%d", u.ID)
+
+	if err := h.setSerialize(ctx, key, u); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AgentCallGet returns cached agentcall info
+func (h *handler) MessageTargetGet(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error) {
+	key := fmt.Sprintf("messagetarget:%d", id)
+
+	var res messagetarget.MessageTarget
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
