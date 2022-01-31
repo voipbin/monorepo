@@ -13,13 +13,17 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/messagetargethandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
 )
+
+const serviceName = "webhook-manager"
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -66,10 +70,12 @@ func main() {
 		return
 	}
 
-	run(sqlDB, cache)
-	<-chDone
+	if errRun := run(sqlDB, cache); errRun != nil {
+		logrus.Errorf("Could not run correctly. err: %v", errRun)
+		return
+	}
 
-	return
+	<-chDone
 }
 
 // proces init
@@ -103,7 +109,7 @@ func initLog() {
 
 // initSignal inits sinal settings.
 func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 }
 
@@ -143,7 +149,10 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
-	whHandler := webhookhandler.NewWebhookHandler(db, cache)
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	messagetargetHandler := messagetargethandler.NewMessageTargetHandler(db, reqHandler)
+	whHandler := webhookhandler.NewWebhookHandler(db, messagetargetHandler)
+
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, whHandler)
 
 	// run

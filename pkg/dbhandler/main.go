@@ -1,18 +1,22 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"database/sql"
 	"errors"
-	"strings"
-	"time"
 
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
 )
 
 // DBHandler interface for webhook_manager database handle
 type DBHandler interface {
+	MessageTargetGet(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error)
+	MessageTargetSet(ctx context.Context, u *messagetarget.MessageTarget) error
 }
 
 // handler database handler
@@ -26,8 +30,6 @@ var (
 	ErrNotFound = errors.New("Record not found")
 )
 
-const defaultDelayTimeout = time.Millisecond * 150
-
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
@@ -35,12 +37,4 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 		cache: cache,
 	}
 	return h
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

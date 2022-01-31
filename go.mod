@@ -3,36 +3,43 @@ module gitlab.com/voipbin/bin-manager/webhook-manager.git
 go 1.17
 
 require (
-	github.com/go-redis/redis/v8 v8.7.1
-	github.com/go-sql-driver/mysql v1.5.0
-	github.com/golang/mock v1.5.0
-	github.com/golang/protobuf v1.5.1 // indirect
+	github.com/go-redis/redis/v8 v8.11.4
+	github.com/go-sql-driver/mysql v1.6.0
+	github.com/golang/mock v1.6.0
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
-	github.com/mattn/go-sqlite3 v1.14.6
-	github.com/onsi/ginkgo v1.15.2 // indirect
-	github.com/onsi/gomega v1.11.0 // indirect
-	github.com/prometheus/client_golang v1.10.0
-	github.com/prometheus/common v0.19.0 // indirect
+	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/common v0.32.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210926122419-921971295918
-	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4 // indirect
-	golang.org/x/sys v0.0.0-20210317225723-c4fcb01b228e // indirect
-	golang.org/x/text v0.3.5 // indirect
-	google.golang.org/genproto v0.0.0-20210318145829-90b20ab00860 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220128171352-5e375e34cc75
+	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
+	google.golang.org/genproto v0.0.0-20220126215142-9970aeb2e350 // indirect
 )
+
+require github.com/gofrs/uuid v4.2.0+incompatible
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/procfs v0.6.0 // indirect
+	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
-	go.opentelemetry.io/otel v0.18.0 // indirect
-	go.opentelemetry.io/otel/metric v0.18.0 // indirect
-	go.opentelemetry.io/otel/trace v0.18.0 // indirect
-	google.golang.org/protobuf v1.26.0 // indirect
+	github.com/stretchr/testify v1.7.0 // indirect
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128165202-c0b38ff02b30 // indirect
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220128165204-799f7a93e462 // indirect
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220128165221-3b2dc17bf305 // indirect
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220127020659-07e0a18cc4f7 // indirect
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220128165215-5f5f89258ffa // indirect
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220128165234-e1585705548c // indirect
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220128165202-dc1ef8f5c98d // indirect
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220128165715-59c08e0b4271 // indirect
+	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6 // indirect
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220128165154-0988e150ced8 // indirect
+	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20211221033736-1c9c086d3d00 // indirect
+	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 )

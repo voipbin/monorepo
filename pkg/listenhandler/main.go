@@ -1,5 +1,6 @@
 package listenhandler
 
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_listenhandler.go -source main.go -build_flags=-mod=mod
 import (
 	"fmt"
 	"net/url"
@@ -8,8 +9,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
 )
 
@@ -35,11 +36,7 @@ type listenHandler struct {
 }
 
 var (
-	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-	regAny  = "(.*)"
-
 	// v1
-
 	// webhooks
 	regV1Webhooks = regexp.MustCompile("/v1/webhooks")
 )
@@ -155,7 +152,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// webhooks
 	////////////////////
 	// POST /webhooks
-	case regV1Webhooks.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Webhooks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1WebhooksPost(m)
 		requestType = "/v1/webhooks"
 

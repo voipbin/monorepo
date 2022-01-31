@@ -1,11 +1,14 @@
 package cachehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_cachehandler_cachehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_cachehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
 )
 
 type handler struct {
@@ -19,6 +22,9 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
+
+	MessageTargetGet(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error)
+	MessageTargetSet(ctx context.Context, u *messagetarget.MessageTarget) error
 }
 
 // NewHandler creates DBHandler
