@@ -57,6 +57,7 @@ type Status string
 
 // List of Status types
 const (
+	StatusNone      Status = ""          // none
 	StatusAvailable Status = "available" // available
 	StatusAway      Status = "away"      // away
 	StatusBusy      Status = "busy"      // busy
