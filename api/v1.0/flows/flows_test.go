@@ -19,8 +19,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -41,8 +39,8 @@ func TestFlowsPOST(t *testing.T) {
 		name        string
 		customer    cscustomer.Customer
 		requestBody request.BodyFlowsPOST
-		reqFlow     *flow.Flow
-		resFlow     *flow.Flow
+		reqFlow     *fmflow.Flow
+		resFlow     *fmflow.WebhookMessage
 	}
 
 	tests := []test{
@@ -57,28 +55,27 @@ func TestFlowsPOST(t *testing.T) {
 			request.BodyFlowsPOST{
 				Name:   "test name",
 				Detail: "test detail",
-				Actions: []action.Action{
+				Actions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
 			},
-			&flow.Flow{
+			&fmflow.Flow{
 				Name:    "test name",
 				Detail:  "test detail",
 				Persist: true,
-				Actions: []action.Action{
+				Actions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
 			},
-			&flow.Flow{
-				ID:      uuid.FromStringOrNil("264b18d4-82fa-11eb-919b-9f55a7f6ace1"),
-				Name:    "test name",
-				Detail:  "test detail",
-				Persist: true,
-				Actions: []action.Action{
+			&fmflow.WebhookMessage{
+				ID:     uuid.FromStringOrNil("264b18d4-82fa-11eb-919b-9f55a7f6ace1"),
+				Name:   "test name",
+				Detail: "test detail",
+				Actions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
@@ -97,30 +94,29 @@ func TestFlowsPOST(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				WebhookURI: "https://test.com/webhook",
-				Actions: []action.Action{
+				Actions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
 			},
-			&flow.Flow{
+			&fmflow.Flow{
 				Name:       "test name",
 				Detail:     "test detail",
 				Persist:    true,
 				WebhookURI: "https://test.com/webhook",
-				Actions: []action.Action{
+				Actions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
 			},
-			&flow.Flow{
+			&fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("7413ccc8-82fa-11eb-9826-3b9adf174ed9"),
 				Name:       "test name",
 				Detail:     "test detail",
-				Persist:    true,
 				WebhookURI: "https://test.com/webhook",
-				Actions: []action.Action{
+				Actions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
@@ -172,7 +168,7 @@ func TestFlowsIDGET(t *testing.T) {
 		customer cscustomer.Customer
 		flow     *fmflow.Flow
 
-		expectFlow *flow.Flow
+		expectFlow *fmflow.WebhookMessage
 	}
 
 	tests := []test{
@@ -193,12 +189,11 @@ func TestFlowsIDGET(t *testing.T) {
 					},
 				},
 			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-				Name:       "test name",
-				Detail:     "test detail",
-				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				Actions: []action.Action{
+			&fmflow.WebhookMessage{
+				ID:     uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
+				Name:   "test name",
+				Detail: "test detail",
+				Actions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
@@ -243,7 +238,7 @@ func TestFlowsIDPUT(t *testing.T) {
 		customer    cscustomer.Customer
 		flowID      uuid.UUID
 		requestBody request.BodyFlowsIDPUT
-		expectFlow  *flow.Flow
+		requestFlow *fmflow.Flow
 	}
 
 	tests := []test{
@@ -259,17 +254,17 @@ func TestFlowsIDPUT(t *testing.T) {
 			request.BodyFlowsIDPUT{
 				Name:   "test name",
 				Detail: "test detail",
-				Actions: []action.Action{
+				Actions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
 				},
 			},
-			&flow.Flow{
+			&fmflow.Flow{
 				ID:     uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
 				Name:   "test name",
 				Detail: "test detail",
-				Actions: []action.Action{
+				Actions: []fmaction.Action{
 					{
 						Type: "answer",
 					},
@@ -296,7 +291,7 @@ func TestFlowsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowUpdate(&tt.customer, tt.expectFlow).Return(&flow.Flow{}, nil)
+			mockSvc.EXPECT().FlowUpdate(&tt.customer, tt.requestFlow).Return(&fmflow.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/flows/"+tt.flowID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 

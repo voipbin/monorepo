@@ -12,15 +12,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -41,8 +41,8 @@ func TestCallsPOST(t *testing.T) {
 		name     string
 		customer cscustomer.Customer
 		req      request.BodyCallsPOST
-		reqFlow  *flow.Flow
-		resFlow  *flow.Flow
+		reqFlow  *fmflow.Flow
+		resFlow  *fmflow.WebhookMessage
 	}
 
 	tests := []test{
@@ -52,27 +52,27 @@ func TestCallsPOST(t *testing.T) {
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.BodyCallsPOST{
-				Source: address.Address{
-					Type:   address.TypeSIP,
+				Source: cmaddress.Address{
+					Type:   cmaddress.TypeSIP,
 					Target: "source@test.voipbin.net",
 				},
-				Destination: address.Address{
-					Type:   address.TypeSIP,
+				Destination: cmaddress.Address{
+					Type:   cmaddress.TypeSIP,
 					Target: "destination@test.voipbin.net",
 				},
-				Actions: []action.Action{},
+				Actions: []fmaction.Action{},
 			},
-			&flow.Flow{
+			&fmflow.Flow{
 				Name:    "tmp",
 				Detail:  "tmp outbound flow",
-				Actions: []action.Action{},
+				Actions: []fmaction.Action{},
 				Persist: false,
 			},
-			&flow.Flow{
+			&fmflow.WebhookMessage{
 				ID:      uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
 				Name:    "temp",
 				Detail:  "tmp outbound flow",
-				Actions: []action.Action{},
+				Actions: []fmaction.Action{},
 			},
 		},
 		{
@@ -82,29 +82,29 @@ func TestCallsPOST(t *testing.T) {
 			},
 			request.BodyCallsPOST{
 				WebhookURI: "https://test.com/webhook",
-				Source: address.Address{
-					Type:   address.TypeSIP,
+				Source: cmaddress.Address{
+					Type:   cmaddress.TypeSIP,
 					Target: "source@test.voipbin.net",
 				},
-				Destination: address.Address{
-					Type:   address.TypeSIP,
+				Destination: cmaddress.Address{
+					Type:   cmaddress.TypeSIP,
 					Target: "destination@test.voipbin.net",
 				},
-				Actions: []action.Action{},
+				Actions: []fmaction.Action{},
 			},
-			&flow.Flow{
+			&fmflow.Flow{
 				Name:       "tmp",
 				Detail:     "tmp outbound flow",
 				WebhookURI: "https://test.com/webhook",
-				Actions:    []action.Action{},
+				Actions:    []fmaction.Action{},
 				Persist:    false,
 			},
-			&flow.Flow{
+			&fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
 				Name:       "temp",
 				Detail:     "tmp outbound flow",
 				WebhookURI: "https://test.com/webhook",
-				Actions:    []action.Action{},
+				Actions:    []fmaction.Action{},
 			},
 		},
 	}

@@ -1,9 +1,9 @@
 package response
 
-import "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
+import fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 // BodyFlowsGET is rquest body define for GET /flows
 type BodyFlowsGET struct {
-	Result []*flow.Flow `json:"result"`
+	Result []*fmflow.WebhookMessage `json:"result"`
 	Pagination
 }

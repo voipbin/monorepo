@@ -16,7 +16,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/prometheus/client_golang v1.12.0 // indirect
+	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.4.0
@@ -36,7 +36,7 @@ require (
 )
 
 require (
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128174941-c4d811bdc7c8
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220131015406-68c5d0a1a790
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220129071825-44f3b25d509f
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220127020659-07e0a18cc4f7
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220129111440-7128c74e331c
