@@ -44,7 +44,7 @@ func TestWMV1WebhookSend(t *testing.T) {
 				URI:      "/v1/webhooks",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"d2c2ffe8-825c-11ec-8688-2bebcc3d0013","Method":"","WebhookURI":"","data_type":"application/json","data":{"type":"application/json","data":{}}}`),
+				Data:     []byte(`{"customer_id":"d2c2ffe8-825c-11ec-8688-2bebcc3d0013","data_type":"application/json","data":{"type":"application/json","data":{}}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
