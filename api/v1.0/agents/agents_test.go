@@ -10,12 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -44,12 +45,12 @@ func TestAgentsPOST(t *testing.T) {
 		detail        string
 		webhookMethod string
 		webhookURI    string
-		ringMethod    string
+		ringMethod    amagent.RingMethod
 		permission    uint64
 		tagIDs        []uuid.UUID
-		addresses     []address.Address
+		addresses     []cmaddress.Address
 
-		res *agent.Agent
+		res *amagent.WebhookMessage
 	}
 
 	tests := []test{
@@ -66,7 +67,7 @@ func TestAgentsPOST(t *testing.T) {
 				RingMethod: "ringall",
 				Permission: 0,
 				TagIDs:     []uuid.UUID{},
-				Addresses:  []address.Address{},
+				Addresses:  []cmaddress.Address{},
 			},
 
 			"test1",
@@ -78,9 +79,9 @@ func TestAgentsPOST(t *testing.T) {
 			agent.RingMethodRingAll,
 			0,
 			[]uuid.UUID{},
-			[]address.Address{},
+			[]cmaddress.Address{},
 
-			&agent.Agent{
+			&amagent.WebhookMessage{
 				ID: uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
 			},
 		},
@@ -99,7 +100,7 @@ func TestAgentsPOST(t *testing.T) {
 				RingMethod:    "ringall",
 				Permission:    0,
 				TagIDs:        []uuid.UUID{},
-				Addresses:     []address.Address{},
+				Addresses:     []cmaddress.Address{},
 			},
 
 			"test1",
@@ -111,9 +112,9 @@ func TestAgentsPOST(t *testing.T) {
 			agent.RingMethodRingAll,
 			0,
 			[]uuid.UUID{},
-			[]address.Address{},
+			[]cmaddress.Address{},
 
-			&agent.Agent{
+			&amagent.WebhookMessage{
 				ID: uuid.FromStringOrNil("3071bee2-79af-11ec-9f30-83b56e9d88b5"),
 			},
 		}}
@@ -166,9 +167,9 @@ func TestAgentsGET(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 		tagIDs    []uuid.UUID
-		status    agent.Status
+		status    amagent.Status
 
-		resAgents []*agent.Agent
+		resAgents []*amagent.WebhookMessage
 		expectRes string
 	}
 
@@ -183,15 +184,15 @@ func TestAgentsGET(t *testing.T) {
 			11,
 			"2020-09-20T03:23:20.995000",
 			[]uuid.UUID{},
-			agent.StatusNone,
+			amagent.StatusNone,
 
-			[]*agent.Agent{
+			[]*amagent.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"1 tag id and status",
@@ -205,15 +206,15 @@ func TestAgentsGET(t *testing.T) {
 			[]uuid.UUID{
 				uuid.FromStringOrNil("b79599f2-4f2a-11ec-b49d-df70a67f68d3"),
 			},
-			agent.StatusAvailable,
+			amagent.StatusAvailable,
 
-			[]*agent.Agent{
+			[]*amagent.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 tag ids",
@@ -228,9 +229,9 @@ func TestAgentsGET(t *testing.T) {
 				uuid.FromStringOrNil("b79599f2-4f2a-11ec-b49d-df70a67f68d3"),
 				uuid.FromStringOrNil("39fa07ce-4fb8-11ec-8e5b-db7c7886455c"),
 			},
-			agent.StatusNone,
+			"",
 
-			[]*agent.Agent{
+			[]*amagent.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 				},
@@ -239,7 +240,7 @@ func TestAgentsGET(t *testing.T) {
 				},
 			},
 
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"39fa07ce-4fb8-11ec-8e5b-db7c7886455c","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"39fa07ce-4fb8-11ec-8e5b-db7c7886455c","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}
 
@@ -286,7 +287,7 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 		reqBody  []byte
 
 		agentID uuid.UUID
-		status  agent.Status
+		status  amagent.Status
 	}
 
 	tests := []test{
@@ -299,7 +300,7 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 			[]byte(`{"status":"available"}`),
 
 			uuid.FromStringOrNil("a8ba6662-540a-11ec-9a9f-b31de1a77615"),
-			agent.StatusAvailable,
+			amagent.StatusAvailable,
 		},
 	}
 

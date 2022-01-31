@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -232,7 +231,7 @@ func agentsGET(c *gin.Context) {
 	}
 
 	// get tmps
-	tmps, err := serviceHandler.AgentGets(&u, pageSize, req.PageToken, tagIDs, agent.Status(req.Status))
+	tmps, err := serviceHandler.AgentGets(&u, pageSize, req.PageToken, tagIDs, req.Status)
 	if err != nil {
 		logrus.Errorf("Could not get agents info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -298,7 +297,7 @@ func agentsIDPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.AgentUpdate(&u, id, req.Name, req.Detail, agent.RingMethod(req.RingMethod)); err != nil {
+	if err := serviceHandler.AgentUpdate(&u, id, req.Name, req.Detail, req.RingMethod); err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -460,7 +459,7 @@ func agentsIDStatusPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.AgentUpdateStatus(&u, id, agent.Status(req.Status)); err != nil {
+	if err := serviceHandler.AgentUpdateStatus(&u, id, req.Status); err != nil {
 		log.Errorf("Could not update the agent's status. err: %v", err)
 		c.AbortWithStatus(400)
 		return

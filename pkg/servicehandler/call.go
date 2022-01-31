@@ -10,14 +10,12 @@ import (
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 )
 
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, source, destination *address.Address) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,

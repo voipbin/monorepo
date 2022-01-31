@@ -11,8 +11,6 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -31,11 +29,11 @@ func TestFlowCreate(t *testing.T) {
 	type test struct {
 		name     string
 		customer *cscustomer.Customer
-		flow     *flow.Flow
+		flow     *fmflow.Flow
 		reqFlow  *fmflow.Flow
 
 		response  *fmflow.Flow
-		expectRes *flow.Flow
+		expectRes *fmflow.WebhookMessage
 	}
 
 	tests := []test{
@@ -44,11 +42,11 @@ func TestFlowCreate(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&flow.Flow{
+			&fmflow.Flow{
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				Name:       "test",
 				Detail:     "test detail",
-				Actions:    []action.Action{},
+				Actions:    []fmaction.Action{},
 				Persist:    true,
 			},
 			&fmflow.Flow{
@@ -66,13 +64,11 @@ func TestFlowCreate(t *testing.T) {
 				Actions:    []fmaction.Action{},
 				Persist:    true,
 			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions:    []action.Action{},
-				Persist:    true,
+			&fmflow.WebhookMessage{
+				ID:      uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
+				Name:    "test",
+				Detail:  "test detail",
+				Actions: []fmaction.Action{},
 			},
 		},
 		{
@@ -80,11 +76,11 @@ func TestFlowCreate(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&flow.Flow{
+			&fmflow.Flow{
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				Name:       "test",
 				Detail:     "test detail",
-				Actions:    []action.Action{},
+				Actions:    []fmaction.Action{},
 				Persist:    true,
 				WebhookURI: "https://test.com/webhook",
 			},
@@ -105,13 +101,11 @@ func TestFlowCreate(t *testing.T) {
 				Persist:    true,
 				WebhookURI: "https://test.com/webhook",
 			},
-			&flow.Flow{
+			&fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("5d70b47c-82f5-11eb-9d41-53331f170b23"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				Name:       "test",
 				Detail:     "test detail",
-				Actions:    []action.Action{},
-				Persist:    true,
+				Actions:    []fmaction.Action{},
 				WebhookURI: "https://test.com/webhook",
 			},
 		},
@@ -148,11 +142,11 @@ func TestFlowUpdate(t *testing.T) {
 	type test struct {
 		name     string
 		customer *cscustomer.Customer
-		flow     *flow.Flow
+		flow     *fmflow.Flow
 
 		requestFlow *fmflow.Flow
 		response    *fmflow.Flow
-		expectRes   *flow.Flow
+		expectRes   *fmflow.WebhookMessage
 	}
 
 	tests := []test{
@@ -161,11 +155,11 @@ func TestFlowUpdate(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&flow.Flow{
+			&fmflow.Flow{
 				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
 				Name:    "update name",
 				Detail:  "update detail",
-				Actions: []action.Action{},
+				Actions: []fmaction.Action{},
 			},
 			&fmflow.Flow{
 				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
@@ -181,13 +175,11 @@ func TestFlowUpdate(t *testing.T) {
 				Actions:    []fmaction.Action{},
 				Persist:    true,
 			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "update name",
-				Detail:     "update detail",
-				Actions:    []action.Action{},
-				Persist:    true,
+			&fmflow.WebhookMessage{
+				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
+				Name:    "update name",
+				Detail:  "update detail",
+				Actions: []fmaction.Action{},
 			},
 		},
 	}
@@ -276,7 +268,7 @@ func TestFlowGet(t *testing.T) {
 		flowID   uuid.UUID
 
 		response  *fmflow.Flow
-		expectRes *flow.Flow
+		expectRes *fmflow.WebhookMessage
 	}
 
 	tests := []test{
@@ -294,12 +286,11 @@ func TestFlowGet(t *testing.T) {
 				Detail:     "test detail",
 				Actions:    []fmaction.Action{},
 			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions:    []action.Action{},
+			&fmflow.WebhookMessage{
+				ID:      uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
+				Name:    "test",
+				Detail:  "test detail",
+				Actions: []fmaction.Action{},
 			},
 		},
 		{
@@ -321,13 +312,13 @@ func TestFlowGet(t *testing.T) {
 					},
 				},
 			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions: []action.Action{
+			&fmflow.WebhookMessage{
+				ID:     uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
+				Name:   "test",
+				Detail: "test detail",
+				Actions: []fmaction.Action{
 					{
+						ID:   uuid.FromStringOrNil("61f86f60-66af-11eb-917f-838fd6836e1f"),
 						Type: "answer",
 					},
 				},
@@ -370,7 +361,7 @@ func TestFlowGets(t *testing.T) {
 		pageSize  uint64
 
 		response  []fmflow.Flow
-		expectRes []*flow.Flow
+		expectRes []*fmflow.WebhookMessage
 	}
 
 	tests := []test{
@@ -398,20 +389,18 @@ func TestFlowGets(t *testing.T) {
 					Actions:    []fmaction.Action{},
 				},
 			},
-			[]*flow.Flow{
+			[]*fmflow.WebhookMessage{
 				{
-					ID:         uuid.FromStringOrNil("ccda6eb2-0c5c-11eb-ae7e-a3ae4bcd3975"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					Name:       "test1",
-					Detail:     "test detail1",
-					Actions:    []action.Action{},
+					ID:      uuid.FromStringOrNil("ccda6eb2-0c5c-11eb-ae7e-a3ae4bcd3975"),
+					Name:    "test1",
+					Detail:  "test detail1",
+					Actions: []fmaction.Action{},
 				},
 				{
-					ID:         uuid.FromStringOrNil("d950aef4-0c5c-11eb-82dd-3b31d4ba2ea4"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					Name:       "test2",
-					Detail:     "test detail2",
-					Actions:    []action.Action{},
+					ID:      uuid.FromStringOrNil("d950aef4-0c5c-11eb-82dd-3b31d4ba2ea4"),
+					Name:    "test2",
+					Detail:  "test detail2",
+					Actions: []fmaction.Action{},
 				},
 			},
 		},
@@ -437,14 +426,14 @@ func TestFlowGets(t *testing.T) {
 					},
 				},
 			},
-			[]*flow.Flow{
+			[]*fmflow.WebhookMessage{
 				{
-					ID:         uuid.FromStringOrNil("5a109d00-66ae-11eb-ad00-bbcf73569888"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					Name:       "test1",
-					Detail:     "test detail1",
-					Actions: []action.Action{
+					ID:     uuid.FromStringOrNil("5a109d00-66ae-11eb-ad00-bbcf73569888"),
+					Name:   "test1",
+					Detail: "test detail1",
+					Actions: []fmaction.Action{
 						{
+							ID:   uuid.FromStringOrNil("775f5cde-66ae-11eb-9626-0f488d332e1e"),
 							Type: "answer",
 						},
 					},

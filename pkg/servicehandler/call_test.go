@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -26,8 +25,8 @@ func TestCallCreate(t *testing.T) {
 		name        string
 		customer    *cscustomer.Customer
 		flowID      uuid.UUID
-		source      *address.Address
-		destination *address.Address
+		source      *cmaddress.Address
+		destination *cmaddress.Address
 		cmCall      *cmcall.Call
 	}
 
@@ -38,12 +37,12 @@ func TestCallCreate(t *testing.T) {
 				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-			&address.Address{
-				Type:   address.TypeSIP,
+			&cmaddress.Address{
+				Type:   cmaddress.TypeSIP,
 				Target: "testsource@test.com",
 			},
-			&address.Address{
-				Type:   address.TypeSIP,
+			&cmaddress.Address{
+				Type:   cmaddress.TypeSIP,
 				Target: "testdestination@test.com",
 			},
 			&cmcall.Call{

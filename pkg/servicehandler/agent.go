@@ -13,12 +13,11 @@ import (
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 )
 
 // agentGet validates the agent's ownership and returns the agent info.
-func (h *serviceHandler) agentGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*agent.Agent, error) {
+func (h *serviceHandler) agentGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "agentGet",
@@ -40,8 +39,7 @@ func (h *serviceHandler) agentGet(ctx context.Context, u *cscustomer.Customer, i
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	// create result
-	res := agent.ConvertToAgent(tmp)
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -56,11 +54,11 @@ func (h *serviceHandler) AgentCreate(
 	detail string,
 	webhookMethod string,
 	webhookURI string,
-	ringMethod string,
+	ringMethod amagent.RingMethod,
 	permission uint64,
 	tagIDs []uuid.UUID,
-	addresses []address.Address,
-) (*agent.Agent, error) {
+	addresses []cmaddress.Address,
+) (*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentCreate",
@@ -68,30 +66,22 @@ func (h *serviceHandler) AgentCreate(
 		"username":    u.Username,
 	})
 
-	// convert addresses
-	cmAddresses := []cmaddress.Address{}
-	for _, addr := range addresses {
-		cmAddresses = append(cmAddresses, *address.ConvertToCMAddress(&addr))
-	}
-
 	// send request
 	log.Debug("Creating a new agent.")
-	tmp, err := h.reqHandler.AMV1AgentCreate(ctx, 30, u.ID, username, password, name, detail, webhookMethod, webhookURI, amagent.RingMethod(ringMethod), amagent.Permission(permission), tagIDs, cmAddresses)
+	tmp, err := h.reqHandler.AMV1AgentCreate(ctx, 30, u.ID, username, password, name, detail, webhookMethod, webhookURI, amagent.RingMethod(ringMethod), amagent.Permission(permission), tagIDs, addresses)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
 	}
 	log.WithField("agent", tmp).Debug("Received result.")
 
-	// create result
-	res := agent.ConvertToAgent(tmp)
-
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // AgentGet sends a request to agent-manager
 // to getting an agent.
-func (h *serviceHandler) AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*agent.Agent, error) {
+func (h *serviceHandler) AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentGet",
@@ -112,7 +102,7 @@ func (h *serviceHandler) AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*a
 // AgentGet sends a request to agent-manager
 // to getting a list of agents.
 // it returns agent info if it succeed.
-func (h *serviceHandler) AgentGets(u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
+func (h *serviceHandler) AgentGets(u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentGets",
@@ -129,7 +119,7 @@ func (h *serviceHandler) AgentGets(u *cscustomer.Customer, size uint64, token st
 	// get agents
 	var tmps []amagent.Agent
 	var err error
-	if len(tagIDs) > 0 && status != agent.StatusNone {
+	if len(tagIDs) > 0 && status != "" {
 		tmps, err = h.reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, u.ID, tagIDs, amagent.Status(status))
 	} else if len(tagIDs) > 0 {
 		tmps, err = h.reqHandler.AMV1AgentGetsByTagIDs(ctx, u.ID, tagIDs)
@@ -142,9 +132,9 @@ func (h *serviceHandler) AgentGets(u *cscustomer.Customer, size uint64, token st
 	}
 
 	// create result
-	res := []*agent.Agent{}
+	res := []*amagent.WebhookMessage{}
 	for _, tmp := range tmps {
-		c := agent.ConvertToAgent(&tmp)
+		c := tmp.ConvertWebhookMessage()
 		res = append(res, c)
 	}
 
@@ -214,7 +204,7 @@ func (h *serviceHandler) AgentLogin(customerID uuid.UUID, username, password str
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent info.
-func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
+func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdate",
@@ -240,7 +230,7 @@ func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, 
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent's addresses info.
-func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []address.Address) error {
+func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []cmaddress.Address) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateAddresses",
@@ -255,14 +245,8 @@ func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uu
 		return err
 	}
 
-	addrs := []cmaddress.Address{}
-	for _, tmp := range addresses {
-		addr := address.ConvertToCMAddress(&tmp)
-		addrs = append(addrs, *addr)
-	}
-
 	// send request
-	if err := h.reqHandler.AMV1AgentUpdateAddresses(ctx, agentID, addrs); err != nil {
+	if err := h.reqHandler.AMV1AgentUpdateAddresses(ctx, agentID, addresses); err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
 		return err
 	}
@@ -289,7 +273,7 @@ func (h *serviceHandler) AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.
 
 	// send request
 	if err := h.reqHandler.AMV1AgentUpdateTagIDs(ctx, agentID, tagIDs); err != nil {
-		log.Infof("Could not update the agent addresses. err: %v", err)
+		log.Infof("Could not update the agent tag ids. err: %v", err)
 		return err
 	}
 
@@ -298,7 +282,7 @@ func (h *serviceHandler) AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.
 
 // AgentUpdateStatus sends a request to agent-manager
 // to update the agent status info.
-func (h *serviceHandler) AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status agent.Status) error {
+func (h *serviceHandler) AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) error {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateStatus",
@@ -314,7 +298,7 @@ func (h *serviceHandler) AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.
 	}
 
 	// send request
-	if err := h.reqHandler.AMV1AgentUpdateStatus(ctx, agentID, amagent.Status(status)); err != nil {
+	if err := h.reqHandler.AMV1AgentUpdateStatus(ctx, agentID, status); err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
 		return err
 	}
