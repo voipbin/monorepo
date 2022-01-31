@@ -712,6 +712,8 @@ gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20e
 gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20210926125524-0e0a20ea02b2/go.mod h1:qLDIbs7lqKP4M0ANMXZv8LZ0RKkOja3edr83e6nlip0=
 gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220131055855-db615a133f71 h1:JU8CFrpcScIojYwygCyEEyova1h1VtxWNolUNSb4w68=
 gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220131055855-db615a133f71/go.mod h1:dpaoFNlb5y9IWFLBGfFyoIUTIK8KhJ7DkGkZPQVvh8E=
+gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220131065332-0a1fc39693c0 h1:dnnocdv07ctPlp16e4TGlzQrR3zyIM/OW+bTAAXAiB8=
+gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220131065332-0a1fc39693c0/go.mod h1:9MSIXBuEJAVJIWuoKCrCSUp80ZlkSKkFoJ5c23uTPow=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738/go.mod h1:dnLIgRNXwCJa5e+c6mIZCrds/GIG4ncV9HhK5PX7jPg=
 go.opencensus.io v0.20.1/go.mod h1:6WKK9ahsWS3RSO+PY9ZHZUfv2irvY6gN279GOPZjmmk=

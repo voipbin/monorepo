@@ -24,7 +24,7 @@ require (
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220129091806-b8d5c0eb6df5
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20211221033736-1c9c086d3d00
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
-	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220131055855-db615a133f71
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220131065332-0a1fc39693c0
 )
 
 require (
