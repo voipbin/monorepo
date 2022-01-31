@@ -5,11 +5,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -228,7 +228,7 @@ func flowsIDPUT(c *gin.Context) {
 	}
 	log.WithField("request", req).Debug("Executing flowsIDPUT.")
 
-	f := &flow.Flow{
+	f := &fmflow.Flow{
 		ID:      id,
 		Name:    req.Name,
 		Detail:  req.Detail,

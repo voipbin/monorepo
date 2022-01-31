@@ -489,6 +489,8 @@ github.com/prometheus/client_golang v1.10.0/go.mod h1:WJM3cc3yu7XKBKa/I8WeZm+V3e
 github.com/prometheus/client_golang v1.11.0/go.mod h1:Z6t4BnS23TR94PD6BsDNk8yVqroYurpAkEiz0P2BEV0=
 github.com/prometheus/client_golang v1.12.0 h1:C+UIj/QWtmqY13Arb8kwMt5j34/0Z2iKamrJ+ryC0Gg=
 github.com/prometheus/client_golang v1.12.0/go.mod h1:3Z9XVyYiZYEO+YQWt3RD2R3jrbd179Rt297l4aS6nDY=
+github.com/prometheus/client_golang v1.12.1 h1:ZiaPsmm9uiBeaSMRznKsCDNtPCS0T3JVDGF+06gjBzk=
+github.com/prometheus/client_golang v1.12.1/go.mod h1:3Z9XVyYiZYEO+YQWt3RD2R3jrbd179Rt297l4aS6nDY=
 github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910/go.mod h1:MbSGuTsp3dbXC40dX6PRTWyKYBIrTGTE9sqQNg2J8bo=
 github.com/prometheus/client_model v0.0.0-20190115171406-56726106282f/go.mod h1:MbSGuTsp3dbXC40dX6PRTWyKYBIrTGTE9sqQNg2J8bo=
 github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
@@ -607,6 +609,8 @@ gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128030351-b09ba2ebf
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128165202-c0b38ff02b30/go.mod h1:0cxeHdL8jAFkUOke7+NDme0rNquZ2L87pQohZiOI+bU=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128174941-c4d811bdc7c8 h1:K4ToGnJW12h+HMh7LvBNOT7GzzlMTtmDvgYopNHMStQ=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220128174941-c4d811bdc7c8/go.mod h1:eeTiB4xEq9gXIq3nQj80MYsYVaCdUngmN0Yh7pmxJWc=
+gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220131015406-68c5d0a1a790 h1:zKhK7+EhOjp4P3dhdp7ePSwWEDoyfd6VwvuuJyOGbcs=
+gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220131015406-68c5d0a1a790/go.mod h1:7Ru9O8isku5tJ/Uv94evoy8RvsK50Qz9XbFEslS7104=
 gitlab.com/voipbin/bin-manager/api-manager.git v0.0.0-20210402144932-b009a9fdec61/go.mod h1:XE6VmmxD4AchDPJOeYpXQ4hwU/F5NkvLEAL8s1sO9jI=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210318185928-279c054cd811/go.mod h1:Skj2uyFiCLVSs6wveSE5HMELruhBm2AlqAMvyZ7ykMo=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210322014347-b91defb4fa6f/go.mod h1:rFueUC5a6Ak/hZejGBLaZ8PEsKoH0kXnvHFAF0If0a0=

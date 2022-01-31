@@ -2,8 +2,6 @@ package flow
 
 import (
 	"github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
 )
@@ -26,60 +24,60 @@ type Flow struct {
 	TMDelete string `json:"tm_delete"` // Deleted timestamp.
 }
 
-// ConvertFlow returns converted data from fmflow.Flow to flow.Flow
-func ConvertFlow(f *fmflow.Flow) *Flow {
+// // ConvertFlow returns converted data from fmflow.Flow to flow.Flow
+// func ConvertFlow(f *fmflow.Flow) *Flow {
 
-	actions := []action.Action{}
-	for _, a := range f.Actions {
-		tmp := action.ConvertAction(&a)
+// 	actions := []action.Action{}
+// 	for _, a := range f.Actions {
+// 		tmp := action.ConvertAction(&a)
 
-		actions = append(actions, *tmp)
-	}
+// 		actions = append(actions, *tmp)
+// 	}
 
-	res := &Flow{
-		ID:         f.ID,
-		CustomerID: f.CustomerID,
+// 	res := &Flow{
+// 		ID:         f.ID,
+// 		CustomerID: f.CustomerID,
 
-		Name:   f.Name,
-		Detail: f.Detail,
+// 		Name:   f.Name,
+// 		Detail: f.Detail,
 
-		Persist:    f.Persist,
-		WebhookURI: f.WebhookURI,
+// 		Persist:    f.Persist,
+// 		WebhookURI: f.WebhookURI,
 
-		Actions: actions,
+// 		Actions: actions,
 
-		TMCreate: f.TMCreate,
-		TMUpdate: f.TMUpdate,
-		TMDelete: f.TMDelete,
-	}
+// 		TMCreate: f.TMCreate,
+// 		TMUpdate: f.TMUpdate,
+// 		TMDelete: f.TMDelete,
+// 	}
 
-	return res
-}
+// 	return res
+// }
 
-// CreateFlow returns converted data from flow.Flow to fmflow.Flow
-func CreateFlow(f *Flow) *fmflow.Flow {
+// // CreateFlow returns converted data from flow.Flow to fmflow.Flow
+// func CreateFlow(f *Flow) *fmflow.Flow {
 
-	actions := []fmaction.Action{}
-	for _, a := range f.Actions {
-		actions = append(actions, *action.CreateAction(&a))
-	}
+// 	actions := []fmaction.Action{}
+// 	for _, a := range f.Actions {
+// 		actions = append(actions, *action.CreateAction(&a))
+// 	}
 
-	res := &fmflow.Flow{
-		ID:         f.ID,
-		CustomerID: f.CustomerID,
+// 	res := &fmflow.Flow{
+// 		ID:         f.ID,
+// 		CustomerID: f.CustomerID,
 
-		Name:   f.Name,
-		Detail: f.Detail,
+// 		Name:   f.Name,
+// 		Detail: f.Detail,
 
-		Persist:    f.Persist,
-		WebhookURI: f.WebhookURI,
+// 		Persist:    f.Persist,
+// 		WebhookURI: f.WebhookURI,
 
-		Actions: actions,
+// 		Actions: actions,
 
-		TMCreate: f.TMCreate,
-		TMUpdate: f.TMUpdate,
-		TMDelete: f.TMDelete,
-	}
+// 		TMCreate: f.TMCreate,
+// 		TMUpdate: f.TMUpdate,
+// 		TMDelete: f.TMDelete,
+// 	}
 
-	return res
-}
+// 	return res
+// }

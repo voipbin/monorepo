@@ -1,11 +1,9 @@
 package response
 
-import (
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
-)
+import amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 // BodyAgentsGET is rquest body define for GET /agents
 type BodyAgentsGET struct {
-	Result []*agent.Agent `json:"result"`
+	Result []*amagent.WebhookMessage `json:"result"`
 	Pagination
 }

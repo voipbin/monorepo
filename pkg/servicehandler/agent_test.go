@@ -11,8 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -37,13 +35,13 @@ func TestAgentCreate(t *testing.T) {
 		detail        string
 		webhookMethod string
 		webhookURI    string
-		ringMethod    string
+		ringMethod    amagent.RingMethod
 		permission    uint64
 		tagIDs        []uuid.UUID
-		addresses     []address.Address
+		addresses     []cmaddress.Address
 
 		response  *amagent.Agent
-		expectRes *agent.Agent
+		expectRes *amagent.WebhookMessage
 	}{
 		{
 			"normal",
@@ -59,15 +57,13 @@ func TestAgentCreate(t *testing.T) {
 			"ringall",
 			0,
 			[]uuid.UUID{},
-			[]address.Address{},
+			[]cmaddress.Address{},
 
 			&amagent.Agent{
 				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 			},
-			&agent.Agent{
-				ID:        uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				TagIDs:    nil,
-				Addresses: []address.Address{},
+			&amagent.WebhookMessage{
+				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 			},
 		},
 		{
@@ -84,15 +80,13 @@ func TestAgentCreate(t *testing.T) {
 			"ringall",
 			0,
 			[]uuid.UUID{},
-			[]address.Address{},
+			[]cmaddress.Address{},
 
 			&amagent.Agent{
 				ID: uuid.FromStringOrNil("3d39a6c2-79ae-11ec-8f44-6bc6091af769"),
 			},
-			&agent.Agent{
-				ID:        uuid.FromStringOrNil("3d39a6c2-79ae-11ec-8f44-6bc6091af769"),
-				TagIDs:    nil,
-				Addresses: []address.Address{},
+			&amagent.WebhookMessage{
+				ID: uuid.FromStringOrNil("3d39a6c2-79ae-11ec-8f44-6bc6091af769"),
 			},
 		},
 	}
@@ -100,13 +94,7 @@ func TestAgentCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			addresses := []cmaddress.Address{}
-			for _, addr := range tt.addresses {
-				a := address.ConvertToCMAddress(&addr)
-				addresses = append(addresses, *a)
-			}
-
-			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.customer.ID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, amagent.RingMethod(tt.ringMethod), amagent.Permission(tt.permission), tt.tagIDs, addresses).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.customer.ID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, amagent.RingMethod(tt.ringMethod), amagent.Permission(tt.permission), tt.tagIDs, tt.addresses).Return(tt.response, nil)
 
 			res, err := h.AgentCreate(tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
@@ -138,7 +126,7 @@ func TestAgentGet(t *testing.T) {
 		agentID  uuid.UUID
 
 		response  *amagent.Agent
-		expectRes *agent.Agent
+		expectRes *amagent.WebhookMessage
 	}{
 		{
 			"normal",
@@ -151,11 +139,8 @@ func TestAgentGet(t *testing.T) {
 				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
-			&agent.Agent{
-				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
-				TagIDs:     nil,
-				Addresses:  []address.Address{},
+			&amagent.WebhookMessage{
+				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 			},
 		},
 	}
@@ -195,10 +180,10 @@ func TestAgentGets(t *testing.T) {
 		size     uint64
 		token    string
 		tagIDs   []uuid.UUID
-		status   agent.Status
+		status   amagent.Status
 
 		response  []amagent.Agent
-		expectRes []*agent.Agent
+		expectRes []*amagent.WebhookMessage
 	}{
 		{
 			"normal",
@@ -208,18 +193,16 @@ func TestAgentGets(t *testing.T) {
 			10,
 			"2020-09-20 03:23:20.995000",
 			[]uuid.UUID{},
-			agent.StatusNone,
+			"",
 
 			[]amagent.Agent{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
-			[]*agent.Agent{
+			[]*amagent.WebhookMessage{
 				{
-					ID:        uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-					TagIDs:    nil,
-					Addresses: []address.Address{},
+					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
 		},
@@ -231,7 +214,7 @@ func TestAgentGets(t *testing.T) {
 			10,
 			"2020-09-20 03:23:20.995000",
 			[]uuid.UUID{},
-			agent.StatusNone,
+			"",
 
 			[]amagent.Agent{
 				{
@@ -241,16 +224,12 @@ func TestAgentGets(t *testing.T) {
 					ID: uuid.FromStringOrNil("c0f620ee-4fbf-11ec-87b2-7372cbac1bb0"),
 				},
 			},
-			[]*agent.Agent{
+			[]*amagent.WebhookMessage{
 				{
-					ID:        uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-					TagIDs:    nil,
-					Addresses: []address.Address{},
+					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 				{
-					ID:        uuid.FromStringOrNil("c0f620ee-4fbf-11ec-87b2-7372cbac1bb0"),
-					TagIDs:    nil,
-					Addresses: []address.Address{},
+					ID: uuid.FromStringOrNil("c0f620ee-4fbf-11ec-87b2-7372cbac1bb0"),
 				},
 			},
 		},
@@ -291,10 +270,10 @@ func TestAgentGetsByTagIDs(t *testing.T) {
 		size     uint64
 		token    string
 		tagIDs   []uuid.UUID
-		status   agent.Status
+		status   amagent.Status
 
 		response  []amagent.Agent
-		expectRes []*agent.Agent
+		expectRes []*amagent.WebhookMessage
 	}{
 		{
 			"normal",
@@ -306,18 +285,16 @@ func TestAgentGetsByTagIDs(t *testing.T) {
 			[]uuid.UUID{
 				uuid.FromStringOrNil("ed33fa28-4fbf-11ec-9aab-efb29082f61d"),
 			},
-			agent.StatusNone,
+			"",
 
 			[]amagent.Agent{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
-			[]*agent.Agent{
+			[]*amagent.WebhookMessage{
 				{
-					ID:        uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-					TagIDs:    nil,
-					Addresses: []address.Address{},
+					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
 		},
@@ -332,18 +309,16 @@ func TestAgentGetsByTagIDs(t *testing.T) {
 				uuid.FromStringOrNil("ed33fa28-4fbf-11ec-9aab-efb29082f61d"),
 				uuid.FromStringOrNil("07eec5dc-4fc0-11ec-adfb-dbfffb9e6dc5"),
 			},
-			agent.StatusNone,
+			"",
 
 			[]amagent.Agent{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
-			[]*agent.Agent{
+			[]*amagent.WebhookMessage{
 				{
-					ID:        uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-					TagIDs:    nil,
-					Addresses: []address.Address{},
+					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
 		},
@@ -384,10 +359,10 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 		size     uint64
 		token    string
 		tagIDs   []uuid.UUID
-		status   agent.Status
+		status   amagent.Status
 
 		response  []amagent.Agent
-		expectRes []*agent.Agent
+		expectRes []*amagent.WebhookMessage
 	}{
 		{
 			"normal",
@@ -399,18 +374,16 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 			[]uuid.UUID{
 				uuid.FromStringOrNil("ed33fa28-4fbf-11ec-9aab-efb29082f61d"),
 			},
-			agent.StatusAvailable,
+			amagent.StatusAvailable,
 
 			[]amagent.Agent{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
-			[]*agent.Agent{
+			[]*amagent.WebhookMessage{
 				{
-					ID:        uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-					TagIDs:    nil,
-					Addresses: []address.Address{},
+					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
 		},
@@ -425,18 +398,16 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 				uuid.FromStringOrNil("ed33fa28-4fbf-11ec-9aab-efb29082f61d"),
 				uuid.FromStringOrNil("07eec5dc-4fc0-11ec-adfb-dbfffb9e6dc5"),
 			},
-			agent.StatusAvailable,
+			amagent.StatusAvailable,
 
 			[]amagent.Agent{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
-			[]*agent.Agent{
+			[]*amagent.WebhookMessage{
 				{
-					ID:        uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-					TagIDs:    nil,
-					Addresses: []address.Address{},
+					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
 		},
@@ -572,7 +543,7 @@ func TestAgentUpdate(t *testing.T) {
 		agentID    uuid.UUID
 		agentName  string
 		detail     string
-		ringMethod agent.RingMethod
+		ringMethod amagent.RingMethod
 
 		resAgentGet *amagent.Agent
 	}{
@@ -584,7 +555,7 @@ func TestAgentUpdate(t *testing.T) {
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			"test1",
 			"detail",
-			agent.RingMethodRingAll,
+			amagent.RingMethodRingAll,
 
 			&amagent.Agent{
 				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
@@ -622,7 +593,7 @@ func TestAgentUpdateAddresses(t *testing.T) {
 
 		customer  *cscustomer.Customer
 		agentID   uuid.UUID
-		addresses []address.Address
+		addresses []cmaddress.Address
 
 		resAgentGet *amagent.Agent
 	}{
@@ -632,9 +603,9 @@ func TestAgentUpdateAddresses(t *testing.T) {
 				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
-			[]address.Address{
+			[]cmaddress.Address{
 				{
-					Type:   address.TypeTel,
+					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -650,13 +621,7 @@ func TestAgentUpdateAddresses(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-
-			addrs := []cmaddress.Address{}
-			for _, tmp := range tt.addresses {
-				addr := address.ConvertToCMAddress(&tmp)
-				addrs = append(addrs, *addr)
-			}
-			mockReq.EXPECT().AMV1AgentUpdateAddresses(gomock.Any(), tt.agentID, addrs).Return(nil)
+			mockReq.EXPECT().AMV1AgentUpdateAddresses(gomock.Any(), tt.agentID, tt.addresses).Return(nil)
 
 			if err := h.AgentUpdateAddresses(tt.customer, tt.agentID, tt.addresses); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -730,7 +695,7 @@ func TestAgentUpdateStatus(t *testing.T) {
 
 		customer *cscustomer.Customer
 		agentID  uuid.UUID
-		status   agent.Status
+		status   amagent.Status
 
 		resAgentGet *amagent.Agent
 	}{
@@ -740,7 +705,7 @@ func TestAgentUpdateStatus(t *testing.T) {
 				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
-			agent.StatusAvailable,
+			amagent.StatusAvailable,
 
 			&amagent.Agent{
 				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),

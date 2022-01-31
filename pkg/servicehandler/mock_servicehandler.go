@@ -9,21 +9,20 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "gitlab.com/voipbin/bin-manager/api-manager.git/models/action"
-	address "gitlab.com/voipbin/bin-manager/api-manager.git/models/address"
-	agent "gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
+	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	availablenumber "gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	domain "gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	flow "gitlab.com/voipbin/bin-manager/api-manager.git/models/flow"
 	number "gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	tag "gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 	transcribe "gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
+	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	action0 "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
 
@@ -51,10 +50,10 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 }
 
 // AgentCreate mocks base method.
-func (m *MockServiceHandler) AgentCreate(u *customer.Customer, username, password, name, detail, webhookMethod, webhookURI, ringMethod string, permission uint64, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockServiceHandler) AgentCreate(u *customer.Customer, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission uint64, tagIDs []uuid.UUID, addresses []address.Address) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentCreate", u, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
-	ret0, _ := ret[0].(*agent.Agent)
+	ret0, _ := ret[0].(*agent.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -80,10 +79,10 @@ func (mr *MockServiceHandlerMockRecorder) AgentDelete(u, agentID interface{}) *g
 }
 
 // AgentGet mocks base method.
-func (m *MockServiceHandler) AgentGet(u *customer.Customer, agentID uuid.UUID) (*agent.Agent, error) {
+func (m *MockServiceHandler) AgentGet(u *customer.Customer, agentID uuid.UUID) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentGet", u, agentID)
-	ret0, _ := ret[0].(*agent.Agent)
+	ret0, _ := ret[0].(*agent.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -95,10 +94,10 @@ func (mr *MockServiceHandlerMockRecorder) AgentGet(u, agentID interface{}) *gomo
 }
 
 // AgentGets mocks base method.
-func (m *MockServiceHandler) AgentGets(u *customer.Customer, size uint64, token string, tagIDs []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
+func (m *MockServiceHandler) AgentGets(u *customer.Customer, size uint64, token string, tagIDs []uuid.UUID, status agent.Status) ([]*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentGets", u, size, token, tagIDs, status)
-	ret0, _ := ret[0].([]*agent.Agent)
+	ret0, _ := ret[0].([]*agent.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -270,7 +269,7 @@ func (mr *MockServiceHandlerMockRecorder) CallGets(u, size, token interface{}) *
 }
 
 // ConferenceCreate mocks base method.
-func (m *MockServiceHandler) ConferenceCreate(u *customer.Customer, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action0.Action) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceCreate(u *customer.Customer, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action.Action) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceCreate", u, confType, name, detail, webhookURI, preActions, postActions)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -491,10 +490,10 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(u, d interface{}) *gom
 }
 
 // FlowCreate mocks base method.
-func (m *MockServiceHandler) FlowCreate(u *customer.Customer, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (m *MockServiceHandler) FlowCreate(u *customer.Customer, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowCreate", u, name, detail, webhookURI, actions, persist)
-	ret0, _ := ret[0].(*flow.Flow)
+	ret0, _ := ret[0].(*flow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -520,10 +519,10 @@ func (mr *MockServiceHandlerMockRecorder) FlowDelete(u, id interface{}) *gomock.
 }
 
 // FlowGet mocks base method.
-func (m *MockServiceHandler) FlowGet(u *customer.Customer, id uuid.UUID) (*flow.Flow, error) {
+func (m *MockServiceHandler) FlowGet(u *customer.Customer, id uuid.UUID) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGet", u, id)
-	ret0, _ := ret[0].(*flow.Flow)
+	ret0, _ := ret[0].(*flow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -535,10 +534,10 @@ func (mr *MockServiceHandlerMockRecorder) FlowGet(u, id interface{}) *gomock.Cal
 }
 
 // FlowGets mocks base method.
-func (m *MockServiceHandler) FlowGets(u *customer.Customer, pageSize uint64, pageToken string) ([]*flow.Flow, error) {
+func (m *MockServiceHandler) FlowGets(u *customer.Customer, pageSize uint64, pageToken string) ([]*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGets", u, pageSize, pageToken)
-	ret0, _ := ret[0].([]*flow.Flow)
+	ret0, _ := ret[0].([]*flow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -550,10 +549,10 @@ func (mr *MockServiceHandlerMockRecorder) FlowGets(u, pageSize, pageToken interf
 }
 
 // FlowUpdate mocks base method.
-func (m *MockServiceHandler) FlowUpdate(u *customer.Customer, f *flow.Flow) (*flow.Flow, error) {
+func (m *MockServiceHandler) FlowUpdate(u *customer.Customer, f *flow.Flow) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowUpdate", u, f)
-	ret0, _ := ret[0].(*flow.Flow)
+	ret0, _ := ret[0].(*flow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -640,7 +639,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberUpdate(u, numb interface{}) *gom
 }
 
 // QueueCreate mocks base method.
-func (m *MockServiceHandler) QueueCreate(u *customer.Customer, name, detail, webhookURI, webhookMethod, routingMethod string, tagIDs []uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueCreate(u *customer.Customer, name, detail, webhookURI, webhookMethod, routingMethod string, tagIDs []uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueCreate", u, name, detail, webhookURI, webhookMethod, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -713,7 +712,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueUpdate(u, queueID, name, detail, 
 }
 
 // QueueUpdateActions mocks base method.
-func (m *MockServiceHandler) QueueUpdateActions(u *customer.Customer, queueID uuid.UUID, waitActions []action0.Action, timeoutWait, timeoutService int) error {
+func (m *MockServiceHandler) QueueUpdateActions(u *customer.Customer, queueID uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUpdateActions", u, queueID, waitActions, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(error)
