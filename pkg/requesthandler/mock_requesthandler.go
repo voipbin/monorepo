@@ -1905,15 +1905,15 @@ func (mr *MockRequestHandlerMockRecorder) UMV1UserUpdatePermission(ctx, userID, 
 }
 
 // WMV1WebhookSend mocks base method.
-func (m *MockRequestHandler) WMV1WebhookSend(ctx context.Context, webhookMethod, webhookURI, dataType, messageType string, messageData []byte) error {
+func (m *MockRequestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType, messageType string, messageData []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WMV1WebhookSend", ctx, webhookMethod, webhookURI, dataType, messageType, messageData)
+	ret := m.ctrl.Call(m, "WMV1WebhookSend", ctx, customerID, dataType, messageType, messageData)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WMV1WebhookSend indicates an expected call of WMV1WebhookSend.
-func (mr *MockRequestHandlerMockRecorder) WMV1WebhookSend(ctx, webhookMethod, webhookURI, dataType, messageType, messageData interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) WMV1WebhookSend(ctx, customerID, dataType, messageType, messageData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMV1WebhookSend", reflect.TypeOf((*MockRequestHandler)(nil).WMV1WebhookSend), ctx, webhookMethod, webhookURI, dataType, messageType, messageData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMV1WebhookSend", reflect.TypeOf((*MockRequestHandler)(nil).WMV1WebhookSend), ctx, customerID, dataType, messageType, messageData)
 }

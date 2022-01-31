@@ -6,6 +6,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
@@ -71,8 +72,8 @@ func initPrometheus(namespace string) {
 // NotifyHandler intreface
 type NotifyHandler interface {
 	PublishEvent(ctx context.Context, t string, c interface{})
-	PublishWebhook(ctx context.Context, t string, webhookURI string, c WebhookMessage)
-	PublishWebhookEvent(ctx context.Context, eventType string, webhookURI string, message WebhookMessage)
+	PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, c WebhookMessage)
+	PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, message WebhookMessage)
 }
 
 type notifyHandler struct {

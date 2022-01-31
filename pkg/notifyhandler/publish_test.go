@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -19,7 +20,7 @@ func TestPublishWebhookEvent(t *testing.T) {
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	exchangeDelay := ""
-	exchangeNotify := "bin-manager.call-manager.event"
+	exchangeNotify := "bin-manager.notify-manager.event"
 
 	h := &notifyHandler{
 		sock:           mockSock,
@@ -31,37 +32,21 @@ func TestPublishWebhookEvent(t *testing.T) {
 
 	tests := []struct {
 		name       string
+		customerID uuid.UUID
 		eventType  string
 		event      *testEvent
-		webhookURI string
 
 		expectEvent   *rabbitmqhandler.Event
 		expectWebhook []byte
 	}{
-
 		{
 			"normal",
+			uuid.FromStringOrNil("419841c6-825d-11ec-823f-13ee3d677a1b"),
 			"test_created",
 			&testEvent{
 				Name:   "test name",
 				Detail: "test detail",
 			},
-			"",
-			&rabbitmqhandler.Event{
-				Type:      "test_created",
-				Publisher: testPublisher,
-				DataType:  dataTypeJSON,
-			},
-			[]byte{},
-		},
-		{
-			"webhook uri",
-			"test_created",
-			&testEvent{
-				Name:   "test name",
-				Detail: "test detail",
-			},
-			"test.com",
 			&rabbitmqhandler.Event{
 				Type:      "test_created",
 				Publisher: testPublisher,
@@ -69,17 +54,34 @@ func TestPublishWebhookEvent(t *testing.T) {
 			},
 			[]byte(`{"name":"test name","detail":"test detail"}`),
 		},
+		{
+			"customer id is empty",
+			uuid.Nil,
+			"test_created",
+			&testEvent{
+				Name:   "test name",
+				Detail: "test detail",
+			},
+			&rabbitmqhandler.Event{
+				Type:      "test_created",
+				Publisher: testPublisher,
+				DataType:  dataTypeJSON,
+			},
+			[]byte{},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
 			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
-			if tt.webhookURI != "" {
-				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), "POST", tt.webhookURI, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
+			if tt.customerID != uuid.Nil {
+				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), tt.customerID, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
-			h.PublishWebhookEvent(context.Background(), tt.eventType, tt.webhookURI, tt.event)
+
+			h.PublishWebhookEvent(ctx, tt.customerID, tt.eventType, tt.event)
 
 			time.Sleep(time.Millisecond * 1000)
 		})
@@ -105,9 +107,9 @@ func TestPublishWebhook(t *testing.T) {
 
 	tests := []struct {
 		name       string
+		customerID uuid.UUID
 		eventType  string
 		event      *testEvent
-		webhookURI string
 
 		expectEvent   *rabbitmqhandler.Event
 		expectWebhook []byte
@@ -115,27 +117,12 @@ func TestPublishWebhook(t *testing.T) {
 
 		{
 			"normal",
+			uuid.FromStringOrNil("8225c952-825d-11ec-a03a-afa5f50337e1"),
 			"test_created",
 			&testEvent{
 				Name:   "test name",
 				Detail: "test detail",
 			},
-			"",
-			&rabbitmqhandler.Event{
-				Type:      "test_created",
-				Publisher: testPublisher,
-				DataType:  dataTypeJSON,
-			},
-			[]byte{},
-		},
-		{
-			"webhook uri",
-			"test_created",
-			&testEvent{
-				Name:   "test name",
-				Detail: "test detail",
-			},
-			"test.com",
 			&rabbitmqhandler.Event{
 				Type:      "test_created",
 				Publisher: testPublisher,
@@ -143,16 +130,32 @@ func TestPublishWebhook(t *testing.T) {
 			},
 			[]byte(`{"name":"test name","detail":"test detail"}`),
 		},
+		{
+			"customer id is empty",
+			uuid.Nil,
+			"test_created",
+			&testEvent{
+				Name:   "test name",
+				Detail: "test detail",
+			},
+			&rabbitmqhandler.Event{
+				Type:      "test_created",
+				Publisher: testPublisher,
+				DataType:  dataTypeJSON,
+			},
+			[]byte(``),
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
-			if tt.webhookURI != "" {
-				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), "POST", tt.webhookURI, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
+			if tt.customerID != uuid.Nil {
+				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), tt.customerID, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
-			h.PublishWebhook(context.Background(), tt.eventType, tt.webhookURI, tt.event)
+			h.PublishWebhook(ctx, tt.customerID, tt.eventType, tt.event)
 
 			time.Sleep(time.Millisecond * 1000)
 		})
