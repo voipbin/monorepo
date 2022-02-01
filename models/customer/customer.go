@@ -21,23 +21,6 @@ type Customer struct {
 	TMDelete string `json:"tm_delete"` // Deleted timestamp.
 }
 
-// Serialize serializes customer data
-// Used it for JWT generation.
-func (h *Customer) Serialize() map[string]interface{} {
-	return map[string]interface{}{
-		"id":             h.ID,
-		"username":       h.Username,
-		"permission_ids": h.PermissionIDs,
-	}
-}
-
-// Read reads the customer info
-func (h *Customer) Read(m map[string]interface{}) {
-	h.ID = (m["id"].(uuid.UUID))
-	h.Username = m["username"].(string)
-	h.PermissionIDs = m["permission_ids"].([]uuid.UUID)
-}
-
 // HasPermission returns true if the customer has the given permission
 func (h *Customer) HasPermission(perm uuid.UUID) bool {
 	for _, item := range h.PermissionIDs {
