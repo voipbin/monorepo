@@ -13,31 +13,31 @@ import (
 )
 
 // PublishWebhookEvent publishs the given event type of notification to the webhook and event queue.
-func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, message WebhookMessage) {
+func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "PublishWebhookEvent",
 			"evnet_type":  eventType,
-			"event":       message,
+			"event":       data,
 			"customer_id": customerID,
 		},
 	)
 	log.Debugf("publishing the event to the webhook and event queue.. event_type: %s", eventType)
 
-	go h.PublishEvent(ctx, eventType, message)
-	go h.PublishWebhook(ctx, customerID, eventType, message)
+	go h.PublishEvent(ctx, eventType, data)
+	go h.PublishWebhook(ctx, customerID, eventType, data)
 }
 
 // PublishWebhook publishes the webhook to the given destination.
-func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, c WebhookMessage) {
+func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":       "PublishWebhook",
-			"call":       c,
+			"call":       data,
 			"evnet_type": eventType,
 		},
 	)
-	log.Debugf("Sending webhook event. event_type: %s, message: %s", eventType, c)
+	log.Debugf("Sending webhook event. event_type: %s, message: %s", eventType, data)
 
 	if customerID == uuid.Nil {
 		// no customer id given
@@ -45,7 +45,7 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 	}
 
 	// create webhook event
-	m, err := c.CreateWebhookEvent()
+	m, err := data.CreateWebhookEvent()
 	if err != nil {
 		log.Errorf("Could not marshal the message. err: %v", err)
 		return
@@ -58,22 +58,22 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 }
 
 // PublishEvent publishes event to the event queue.
-func (h *notifyHandler) PublishEvent(ctx context.Context, t string, c interface{}) {
+func (h *notifyHandler) PublishEvent(ctx context.Context, eventType string, data interface{}) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":       "PublishEvent",
-			"evnet_type": t,
+			"evnet_type": eventType,
 		},
 	)
 
 	// create event
-	m, err := json.Marshal(c)
+	m, err := json.Marshal(data)
 	if err != nil {
 		log.Errorf("Could not marshal the message. err: %v", err)
 		return
 	}
 
-	if err := h.publishEvent(string(t), dataTypeJSON, m, requestTimeoutDefault, 0); err != nil {
+	if err := h.publishEvent(string(eventType), dataTypeJSON, m, requestTimeoutDefault, 0); err != nil {
 		log.Errorf("Could not publish the call event. err: %v", err)
 		return
 	}
