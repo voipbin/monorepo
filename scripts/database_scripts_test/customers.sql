@@ -2,8 +2,8 @@ create table customers(
   -- identity
   id            binary(16) primary key,  -- id
 
-  username      varchar(255), -- username
-  password_hash varchar(255), -- password hash
+  username      varchar(255),   -- username
+  password_hash varchar(1023),  -- password hash
 
   name            varchar(255),
   detail          text,

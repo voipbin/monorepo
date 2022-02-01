@@ -198,7 +198,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////
 	// login
 	////////////
-	// POST /customers
+	// POST /login
 	case regV1Login.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1Login(ctx, m)
 		requestType = "/v1/login"
