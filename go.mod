@@ -15,7 +15,7 @@ require (
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220131015406-68c5d0a1a790
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220129114754-16a5f2f6812f
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220129071825-44f3b25d509f
-	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220201072900-0bbfac04ac3b
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220201162245-1ab2a8d084c6
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220129073757-8b16b0bb6f7b
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220129111655-419853d35f8c
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220129111440-7128c74e331c
@@ -24,7 +24,7 @@ require (
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220129091806-b8d5c0eb6df5
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20211221033736-1c9c086d3d00
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
-	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220131065332-0a1fc39693c0
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220201120043-a1f8c833dfa0
 )
 
 require (

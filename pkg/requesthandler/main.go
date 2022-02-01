@@ -269,11 +269,11 @@ type RequestHandler interface {
 	CMV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error)
 
 	// customer-manager customer
-	CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.Customer, error)
+	CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.Customer, error)
 	CSV1CustomerDelete(ctx context.Context, id uuid.UUID) error
 	CSV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error)
 	CSV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64) ([]cscustomer.Customer, error)
-	CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error
+	CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) error
 	CSV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) error
 	CSV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error
 

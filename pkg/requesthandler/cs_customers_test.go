@@ -217,7 +217,7 @@ func TestCSV1CustomerCreate(t *testing.T) {
 		password      string
 		userName      string
 		detail        string
-		webhookMethod string
+		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
 		permissionIDs []uuid.UUID
 
@@ -234,7 +234,7 @@ func TestCSV1CustomerCreate(t *testing.T) {
 			"testpassword",
 			"test1",
 			"detail1",
-			"POST",
+			cscustomer.WebhookMethodPost,
 			"test.com",
 			[]uuid.UUID{
 				uuid.FromStringOrNil("db0e2c52-7e44-11ec-811d-ab2fbb79302a"),
@@ -257,7 +257,7 @@ func TestCSV1CustomerCreate(t *testing.T) {
 				Username:      "test1",
 				Name:          "test1",
 				Detail:        "detail1",
-				WebhookMethod: "POST",
+				WebhookMethod: cscustomer.WebhookMethodPost,
 				WebhookURI:    "test.com",
 				PermissionIDs: []uuid.UUID{
 					uuid.FromStringOrNil("db0e2c52-7e44-11ec-811d-ab2fbb79302a"),
@@ -299,7 +299,7 @@ func TestCSV1CustomerUpdateBasicInfo(t *testing.T) {
 		id            uuid.UUID
 		userName      string
 		detail        string
-		webhookMethod string
+		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
 
 		expectTarget  string
@@ -312,7 +312,7 @@ func TestCSV1CustomerUpdateBasicInfo(t *testing.T) {
 			uuid.FromStringOrNil("eed8e316-7e45-11ec-bcac-97541487f2c1"),
 			"test1",
 			"detail1",
-			"POST",
+			cscustomer.WebhookMethodPost,
 			"test.com",
 
 			"bin-manager.customer-manager.request",

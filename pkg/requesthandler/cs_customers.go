@@ -65,7 +65,7 @@ func (r *requestHandler) CSV1CustomerGets(ctx context.Context, pageToken string,
 
 // CSV1CustomerCreate sends the request to create the customer
 // requestTimeout: milliseconds
-func (r *requestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.Customer, error) {
+func (r *requestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.Customer, error) {
 	uri := "/v1/customers"
 
 	reqData := csrequest.V1DataCustomersPost{
@@ -120,7 +120,7 @@ func (r *requestHandler) CSV1CustomerDelete(ctx context.Context, id uuid.UUID) e
 
 // CSV1CustomerUpdate sends a request to customer-manager
 // to update the detail customer info.
-func (r *requestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
+func (r *requestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) error {
 	uri := fmt.Sprintf("/v1/customers/%s", id)
 
 	data := &csrequest.V1DataCustomersIDPut{
