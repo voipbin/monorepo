@@ -78,7 +78,7 @@ func TestCreate(t *testing.T) {
 		password      string
 		userName      string
 		detail        string
-		webhookMethod string
+		webhookMethod customer.Method
 		webhookURI    string
 		permissionIDs []uuid.UUID
 	}{
@@ -88,7 +88,7 @@ func TestCreate(t *testing.T) {
 			"test userpass",
 			"test1",
 			"detail1",
-			"POST",
+			customer.MethodPost,
 			"test.com",
 			[]uuid.UUID{
 				permission.PermissionAdmin.ID,

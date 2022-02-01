@@ -16,7 +16,16 @@ import (
 
 // CustomerHandler interface
 type CustomerHandler interface {
-	Create(ctx context.Context, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error)
+	Create(
+		ctx context.Context,
+		username string,
+		password string,
+		name string,
+		detail string,
+		webhookMethod customer.Method,
+		webhookURI string,
+		permissionIDs []uuid.UUID,
+	) (*customer.Customer, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error)
