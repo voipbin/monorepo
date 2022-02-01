@@ -1,6 +1,10 @@
 package request
 
-import "github.com/gofrs/uuid"
+import (
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+)
 
 // V1DataCustomersPost is
 // v1 data type request struct for
@@ -9,10 +13,10 @@ type V1DataCustomersPost struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 
-	Name          string `json:"name"`
-	Detail        string `json:"detail"`
-	WebhookMethod string `json:"webhook_method"`
-	WebhookURI    string `json:"webhook_uri"`
+	Name          string          `json:"name"`
+	Detail        string          `json:"detail"`
+	WebhookMethod customer.Method `json:"webhook_method"`
+	WebhookURI    string          `json:"webhook_uri"`
 
 	PermissionIDs []uuid.UUID `json:"permission_ids"`
 }
