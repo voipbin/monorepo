@@ -17,7 +17,7 @@ func TestSendWebhook(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockMessageTargethandler := messagetargethandler.NewMockMessageTargetHandler(mc)
+	mockMessageTargethandler := messagetargethandler.NewMockMessagetargetHandler(mc)
 
 	h := &webhookHandler{
 		db:                   mockDB,

@@ -8,19 +8,21 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
 )
 
-// MessageTargetHandler is interface for MessageTarget handle
-type MessageTargetHandler interface {
+// MessagetargetHandler is interface for MessageTarget handle
+type MessagetargetHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error)
 	Update(ctx context.Context, m *messagetarget.MessageTarget) error
+	UpdateByCustomer(ctx context.Context, m *cscustomer.Customer) (*messagetarget.MessageTarget, error)
 }
 
 // webhookHandler structure for service handle
-type messageTargetHandler struct {
+type messagetargetHandler struct {
 	db dbhandler.DBHandler
 
 	reqHandler requesthandler.RequestHandler
@@ -35,9 +37,9 @@ func init() {
 }
 
 // NewMessageTargetHandler returns new message target handler
-func NewMessageTargetHandler(db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler) MessageTargetHandler {
+func NewMessageTargetHandler(db dbhandler.DBHandler, reqHandler requesthandler.RequestHandler) MessagetargetHandler {
 
-	h := &messageTargetHandler{
+	h := &messagetargetHandler{
 		db:         db,
 		reqHandler: reqHandler,
 	}
