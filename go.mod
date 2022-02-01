@@ -12,7 +12,7 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220201074816-069f3f686ab2
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220201163155-79d7026ddf10
 	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
 )
 
@@ -37,7 +37,7 @@ require (
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220129091806-b8d5c0eb6df5 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20211221033736-1c9c086d3d00 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
-	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220131065332-0a1fc39693c0 // indirect
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220201120043-a1f8c833dfa0 // indirect
 	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
 	google.golang.org/genproto v0.0.0-20220126215142-9970aeb2e350 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect

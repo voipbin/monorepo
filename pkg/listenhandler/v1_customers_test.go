@@ -134,7 +134,7 @@ func TestProcessV1CustomersPost(t *testing.T) {
 		password      string
 		userName      string
 		detail        string
-		webhookMethod string
+		webhookMethod customer.WebhookMethod
 		webhookURI    string
 		permissionIDs []uuid.UUID
 
@@ -154,7 +154,7 @@ func TestProcessV1CustomersPost(t *testing.T) {
 			"password",
 			"name test",
 			"detail test",
-			"POST",
+			customer.WebhookMethodPost,
 			"test.com",
 			[]uuid.UUID{
 				permission.PermissionAdmin.ID,
@@ -340,7 +340,7 @@ func TestProcessV1UsersIDPut(t *testing.T) {
 		id            uuid.UUID
 		userName      string
 		detail        string
-		webhookMethod string
+		webhookMethod customer.WebhookMethod
 		webhookURI    string
 
 		expectRes *rabbitmqhandler.Response
@@ -357,7 +357,7 @@ func TestProcessV1UsersIDPut(t *testing.T) {
 			uuid.FromStringOrNil("5a8fac06-7dd4-11ec-b4e7-ab52242f6b29"),
 			"test2",
 			"detail2",
-			"POST",
+			customer.WebhookMethodPost,
 			"test.com",
 
 			&rabbitmqhandler.Response{
