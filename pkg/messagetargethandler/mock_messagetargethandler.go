@@ -10,34 +10,35 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	messagetarget "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
 )
 
-// MockMessageTargetHandler is a mock of MessageTargetHandler interface.
-type MockMessageTargetHandler struct {
+// MockMessagetargetHandler is a mock of MessagetargetHandler interface.
+type MockMessagetargetHandler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMessageTargetHandlerMockRecorder
+	recorder *MockMessagetargetHandlerMockRecorder
 }
 
-// MockMessageTargetHandlerMockRecorder is the mock recorder for MockMessageTargetHandler.
-type MockMessageTargetHandlerMockRecorder struct {
-	mock *MockMessageTargetHandler
+// MockMessagetargetHandlerMockRecorder is the mock recorder for MockMessagetargetHandler.
+type MockMessagetargetHandlerMockRecorder struct {
+	mock *MockMessagetargetHandler
 }
 
-// NewMockMessageTargetHandler creates a new mock instance.
-func NewMockMessageTargetHandler(ctrl *gomock.Controller) *MockMessageTargetHandler {
-	mock := &MockMessageTargetHandler{ctrl: ctrl}
-	mock.recorder = &MockMessageTargetHandlerMockRecorder{mock}
+// NewMockMessagetargetHandler creates a new mock instance.
+func NewMockMessagetargetHandler(ctrl *gomock.Controller) *MockMessagetargetHandler {
+	mock := &MockMessagetargetHandler{ctrl: ctrl}
+	mock.recorder = &MockMessagetargetHandlerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMessageTargetHandler) EXPECT() *MockMessageTargetHandlerMockRecorder {
+func (m *MockMessagetargetHandler) EXPECT() *MockMessagetargetHandlerMockRecorder {
 	return m.recorder
 }
 
 // Get mocks base method.
-func (m *MockMessageTargetHandler) Get(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error) {
+func (m *MockMessagetargetHandler) Get(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, id)
 	ret0, _ := ret[0].(*messagetarget.MessageTarget)
@@ -46,13 +47,13 @@ func (m *MockMessageTargetHandler) Get(ctx context.Context, id uuid.UUID) (*mess
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockMessageTargetHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+func (mr *MockMessagetargetHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMessageTargetHandler)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMessagetargetHandler)(nil).Get), ctx, id)
 }
 
 // Update mocks base method.
-func (m_2 *MockMessageTargetHandler) Update(ctx context.Context, m *messagetarget.MessageTarget) error {
+func (m_2 *MockMessagetargetHandler) Update(ctx context.Context, m *messagetarget.MessageTarget) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "Update", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -60,7 +61,22 @@ func (m_2 *MockMessageTargetHandler) Update(ctx context.Context, m *messagetarge
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockMessageTargetHandlerMockRecorder) Update(ctx, m interface{}) *gomock.Call {
+func (mr *MockMessagetargetHandlerMockRecorder) Update(ctx, m interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMessageTargetHandler)(nil).Update), ctx, m)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMessagetargetHandler)(nil).Update), ctx, m)
+}
+
+// UpdateByCustomer mocks base method.
+func (m_2 *MockMessagetargetHandler) UpdateByCustomer(ctx context.Context, m *customer.Customer) (*messagetarget.MessageTarget, error) {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "UpdateByCustomer", ctx, m)
+	ret0, _ := ret[0].(*messagetarget.MessageTarget)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateByCustomer indicates an expected call of UpdateByCustomer.
+func (mr *MockMessagetargetHandlerMockRecorder) UpdateByCustomer(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateByCustomer", reflect.TypeOf((*MockMessagetargetHandler)(nil).UpdateByCustomer), ctx, m)
 }

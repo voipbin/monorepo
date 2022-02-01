@@ -24,7 +24,7 @@ type WebhookHandler interface {
 type webhookHandler struct {
 	db dbhandler.DBHandler
 
-	messageTargetHandler messagetargethandler.MessageTargetHandler
+	messageTargetHandler messagetargethandler.MessagetargetHandler
 }
 
 var (
@@ -36,7 +36,7 @@ func init() {
 }
 
 // NewWebhookHandler returns new webhook handler
-func NewWebhookHandler(db dbhandler.DBHandler, messageTargetHandler messagetargethandler.MessageTargetHandler) WebhookHandler {
+func NewWebhookHandler(db dbhandler.DBHandler, messageTargetHandler messagetargethandler.MessagetargetHandler) WebhookHandler {
 
 	h := &webhookHandler{
 		db:                   db,
