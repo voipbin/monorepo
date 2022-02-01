@@ -925,7 +925,7 @@ func (mr *MockRequestHandlerMockRecorder) CMV1RecordingGets(ctx, customerID, siz
 }
 
 // CSV1CustomerCreate mocks base method.
-func (m *MockRequestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+func (m *MockRequestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CSV1CustomerCreate", ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -984,7 +984,7 @@ func (mr *MockRequestHandlerMockRecorder) CSV1CustomerGets(ctx, pageToken, pageS
 }
 
 // CSV1CustomerUpdate mocks base method.
-func (m *MockRequestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
+func (m *MockRequestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CSV1CustomerUpdate", ctx, id, name, detail, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(error)
