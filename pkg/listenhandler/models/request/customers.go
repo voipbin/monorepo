@@ -13,10 +13,10 @@ type V1DataCustomersPost struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 
-	Name          string          `json:"name"`
-	Detail        string          `json:"detail"`
-	WebhookMethod customer.Method `json:"webhook_method"`
-	WebhookURI    string          `json:"webhook_uri"`
+	Name          string                 `json:"name"`
+	Detail        string                 `json:"detail"`
+	WebhookMethod customer.WebhookMethod `json:"webhook_method"`
+	WebhookURI    string                 `json:"webhook_uri"`
 
 	PermissionIDs []uuid.UUID `json:"permission_ids"`
 }
@@ -32,10 +32,10 @@ type V1DataCustomersUsernameLoginPost struct {
 // v1 data type request struct for
 // /v1/customers/<customer-id> PUT
 type V1DataCustomersIDPut struct {
-	Name          string `json:"name"`
-	Detail        string `json:"detail"`
-	WebhookMethod string `json:"webhook_method"`
-	WebhookURI    string `json:"webhook_uri"`
+	Name          string                 `json:"name"`
+	Detail        string                 `json:"detail"`
+	WebhookMethod customer.WebhookMethod `json:"webhook_method"`
+	WebhookURI    string                 `json:"webhook_uri"`
 }
 
 // V1DataCustomersIDPasswordPut is

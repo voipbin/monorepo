@@ -14,7 +14,7 @@ type WebhookMessage struct {
 
 	Name          string `json:"name"`           // name
 	Detail        string `json:"detail"`         // detail
-	WebhookMethod Method `json:"webhook_method"` // webhook method
+	WebhookMethod WebhookMethod `json:"webhook_method"` // webhook method
 	WebhookURI    string `json:"webhook_uri"`    // webhook uri
 
 	PermissionIDs []uuid.UUID `json:"permission_ids"` // customer's permission ids

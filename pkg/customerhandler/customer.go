@@ -38,7 +38,7 @@ func (h *customerHandler) Get(ctx context.Context, id uuid.UUID) (*customer.Cust
 }
 
 // Create creates a new customer.
-func (h *customerHandler) Create(ctx context.Context, username, password, name, detail string, webhookMethod customer.Method, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+func (h *customerHandler) Create(ctx context.Context, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
 		"username":       username,
@@ -127,7 +127,7 @@ func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 // UpdateBasicInfo updates the customer's basic info.
-func (h *customerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
+func (h *customerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "UpdateBasicInfo",
 		"customer_id": id,

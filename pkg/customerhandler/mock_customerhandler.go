@@ -37,7 +37,7 @@ func (m *MockCustomerHandler) EXPECT() *MockCustomerHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockCustomerHandler) Create(ctx context.Context, username, password, name, detail string, webhookMethod customer.Method, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+func (m *MockCustomerHandler) Create(ctx context.Context, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -111,7 +111,7 @@ func (mr *MockCustomerHandlerMockRecorder) Login(ctx, username, password interfa
 }
 
 // UpdateBasicInfo mocks base method.
-func (m *MockCustomerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
+func (m *MockCustomerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(error)

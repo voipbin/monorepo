@@ -273,7 +273,7 @@ func TestCustomerSetBasicInfo(t *testing.T) {
 
 		userName      string
 		detail        string
-		webhookMethod string
+		webhookMethod customer.WebhookMethod
 		webhookURI    string
 
 		expectRes *customer.Customer
