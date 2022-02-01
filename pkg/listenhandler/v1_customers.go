@@ -32,7 +32,7 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, req *rabbitmq
 		"token": pageToken,
 	})
 
-	tmp, err := h.customerHandler.CustomerGets(ctx, pageSize, pageToken)
+	tmp, err := h.customerHandler.Gets(ctx, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get customers info. err: %v", err)
 		return simpleResponse(500), nil
@@ -73,7 +73,7 @@ func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *rabbitmqh
 	})
 	log.Debug("Creating a customer.")
 
-	tmp, err := h.customerHandler.CustomerCreate(ctx, reqData.Username, reqData.Password, reqData.Name, reqData.Detail, reqData.WebhookMethod, reqData.WebhookURI, reqData.PermissionIDs)
+	tmp, err := h.customerHandler.Create(ctx, reqData.Username, reqData.Password, reqData.Name, reqData.Detail, reqData.WebhookMethod, reqData.WebhookURI, reqData.PermissionIDs)
 	if err != nil {
 		log.Errorf("Could not create the customer info. err: %v", err)
 		return simpleResponse(500), nil
@@ -110,7 +110,7 @@ func (h *listenHandler) processV1CustomersIDGet(ctx context.Context, m *rabbitmq
 		})
 	log.Debug("Executing processV1CustomersIDGet.")
 
-	tmp, err := h.customerHandler.CustomerGet(ctx, id)
+	tmp, err := h.customerHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not update the customer info. err: %v", err)
 		return simpleResponse(400), nil
@@ -147,7 +147,7 @@ func (h *listenHandler) processV1CustomersIDDelete(ctx context.Context, m *rabbi
 		})
 	log.Debug("Executing processV1CustomersIDDelete.")
 
-	if err := h.customerHandler.CustomerDelete(ctx, id); err != nil {
+	if err := h.customerHandler.Delete(ctx, id); err != nil {
 		log.Errorf("Could not delete the customer info. err: %v", err)
 		return simpleResponse(400), nil
 	}
@@ -183,7 +183,7 @@ func (h *listenHandler) processV1CustomersIDPut(ctx context.Context, m *rabbitmq
 		return simpleResponse(400), nil
 	}
 
-	if err := h.customerHandler.CustomerUpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, reqData.WebhookMethod, reqData.WebhookURI); err != nil {
+	if err := h.customerHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, reqData.WebhookMethod, reqData.WebhookURI); err != nil {
 		log.Errorf("Could not update the user info. err: %v", err)
 		return simpleResponse(400), nil
 	}
@@ -217,7 +217,7 @@ func (h *listenHandler) processV1CustomersIDPasswordPut(ctx context.Context, m *
 		return simpleResponse(400), nil
 	}
 
-	if err := h.customerHandler.CustomerUpdatePassword(ctx, id, req.Password); err != nil {
+	if err := h.customerHandler.UpdatePassword(ctx, id, req.Password); err != nil {
 		log.Errorf("Could not update the customer's password. err: %v", err)
 		return simpleResponse(400), nil
 	}
@@ -251,7 +251,7 @@ func (h *listenHandler) processV1CustomersIDPermissionIDsPut(ctx context.Context
 		return simpleResponse(400), nil
 	}
 
-	if err := h.customerHandler.CustomerUpdatePermissionIDs(ctx, id, req.PermissionIDs); err != nil {
+	if err := h.customerHandler.UpdatePermissionIDs(ctx, id, req.PermissionIDs); err != nil {
 		log.Errorf("Could not update the customer's permission ids. err: %v", err)
 		return simpleResponse(400), nil
 	}

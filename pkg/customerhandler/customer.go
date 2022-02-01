@@ -11,9 +11,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
 )
 
-// CustomerGets returns list of customers
-func (h *customerHandler) CustomerGets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error) {
-	log := logrus.WithField("func", "CustomerGets")
+// Gets returns list of customers
+func (h *customerHandler) Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error) {
+	log := logrus.WithField("func", "Gets")
 
 	res, err := h.db.CustomerGets(ctx, size, token)
 	if err != nil {
@@ -24,9 +24,9 @@ func (h *customerHandler) CustomerGets(ctx context.Context, size uint64, token s
 	return res, nil
 }
 
-// CustomerGet returns customer info.
-func (h *customerHandler) CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
-	log := logrus.WithField("func", "CustomerGet")
+// Get returns customer info.
+func (h *customerHandler) Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
+	log := logrus.WithField("func", "Get")
 
 	res, err := h.db.CustomerGet(ctx, id)
 	if err != nil {
@@ -37,10 +37,10 @@ func (h *customerHandler) CustomerGet(ctx context.Context, id uuid.UUID) (*custo
 	return res, nil
 }
 
-// CustomerCreate creates a new customer.
-func (h *customerHandler) CustomerCreate(ctx context.Context, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+// Create creates a new customer.
+func (h *customerHandler) Create(ctx context.Context, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "CustomerCreate",
+		"func":           "Create",
 		"username":       username,
 		"name":           name,
 		"detail":         detail,
@@ -93,13 +93,16 @@ func (h *customerHandler) CustomerCreate(ctx context.Context, username, password
 		return nil, err
 	}
 
+	// notify
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, res)
+
 	return res, nil
 }
 
-// CustomerDelete deletes the customer.
-func (h *customerHandler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
+// Delete deletes the customer.
+func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "CustomerDelete",
+		"func":        "Delete",
 		"customer_id": id,
 	})
 	log.Debug("Deleteing the customer.")
@@ -109,13 +112,24 @@ func (h *customerHandler) CustomerDelete(ctx context.Context, id uuid.UUID) erro
 		return err
 	}
 
+	// get deleted customer
+	tmp, err := h.db.CustomerGet(ctx, id)
+	if err != nil {
+		// we couldn't get deleted item. but we've delete the customer already, just return here.
+		log.Errorf("Could not get deleted customer. err: %v", err)
+		return nil
+	}
+
+	// notify
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerDeleted, tmp)
+
 	return nil
 }
 
-// CustomerUpdateBasicInfo updates the customer's basic info.
-func (h *customerHandler) CustomerUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
+// UpdateBasicInfo updates the customer's basic info.
+func (h *customerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "CustomerUpdateBasicInfo",
+		"func":        "UpdateBasicInfo",
 		"customer_id": id,
 	})
 	log.Debug("Updating the customer's basic info.")
@@ -125,13 +139,24 @@ func (h *customerHandler) CustomerUpdateBasicInfo(ctx context.Context, id uuid.U
 		return err
 	}
 
+	// get updated customer
+	tmp, err := h.db.CustomerGet(ctx, id)
+	if err != nil {
+		// we couldn't get updated item. but we've updated the customer already, just return here.
+		log.Errorf("Could not get updated customer. err: %v", err)
+		return nil
+	}
+
+	// notify
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, tmp)
+
 	return nil
 }
 
-// CustomerUpdatePassword updates the customer's password.
-func (h *customerHandler) CustomerUpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
+// UpdatePassword updates the customer's password.
+func (h *customerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "CustomerUpdatePassword",
+		"func":        "UpdatePassword",
 		"customer_id": id,
 	})
 	log.Debug("Updating the customer's password.")
@@ -148,13 +173,23 @@ func (h *customerHandler) CustomerUpdatePassword(ctx context.Context, id uuid.UU
 		return err
 	}
 
+	tmp, err := h.db.CustomerGet(ctx, id)
+	if err != nil {
+		// we couldn't get updated item. but we've updated the customer already, just return here.
+		log.Errorf("Could not get updated customer. err: %v", err)
+		return nil
+	}
+
+	// notify
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, tmp)
+
 	return nil
 }
 
-// CustomerUpdatePermissionIDs updates the customer's permission ids.
-func (h *customerHandler) CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
+// UpdatePermissionIDs updates the customer's permission ids.
+func (h *customerHandler) UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "CustomerUpdatePermissionIDs",
+		"func":    "UpdatePermissionIDs",
 		"user_id": id,
 	})
 	log.Debug("Updating the customer's permission ids.")
@@ -164,13 +199,23 @@ func (h *customerHandler) CustomerUpdatePermissionIDs(ctx context.Context, id uu
 		return err
 	}
 
+	tmp, err := h.db.CustomerGet(ctx, id)
+	if err != nil {
+		// we couldn't get updated item. but we've updated the customer already, just return here.
+		log.Errorf("Could not get updated customer. err: %v", err)
+		return nil
+	}
+
+	// notify
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, tmp)
+
 	return nil
 }
 
-// CustomerLogin validate the customer's username and password.
-func (h *customerHandler) CustomerLogin(ctx context.Context, username, password string) (*customer.Customer, error) {
+// Login validate the customer's username and password.
+func (h *customerHandler) Login(ctx context.Context, username, password string) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CustomerLogin",
+		"func":     "Login",
 		"username": username,
 	})
 	log.Debug("Customer login.")

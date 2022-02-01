@@ -36,118 +36,118 @@ func (m *MockCustomerHandler) EXPECT() *MockCustomerHandlerMockRecorder {
 	return m.recorder
 }
 
-// CustomerCreate mocks base method.
-func (m *MockCustomerHandler) CustomerCreate(ctx context.Context, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+// Create mocks base method.
+func (m *MockCustomerHandler) Create(ctx context.Context, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerCreate", ctx, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
+	ret := m.ctrl.Call(m, "Create", ctx, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
 	ret0, _ := ret[0].(*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CustomerCreate indicates an expected call of CustomerCreate.
-func (mr *MockCustomerHandlerMockRecorder) CustomerCreate(ctx, username, password, name, detail, webhookMethod, webhookURI, permissionIDs interface{}) *gomock.Call {
+// Create indicates an expected call of Create.
+func (mr *MockCustomerHandlerMockRecorder) Create(ctx, username, password, name, detail, webhookMethod, webhookURI, permissionIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerCreate", reflect.TypeOf((*MockCustomerHandler)(nil).CustomerCreate), ctx, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCustomerHandler)(nil).Create), ctx, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
 }
 
-// CustomerDelete mocks base method.
-func (m *MockCustomerHandler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
+// Delete mocks base method.
+func (m *MockCustomerHandler) Delete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerDelete", ctx, id)
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CustomerDelete indicates an expected call of CustomerDelete.
-func (mr *MockCustomerHandlerMockRecorder) CustomerDelete(ctx, id interface{}) *gomock.Call {
+// Delete indicates an expected call of Delete.
+func (mr *MockCustomerHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDelete", reflect.TypeOf((*MockCustomerHandler)(nil).CustomerDelete), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCustomerHandler)(nil).Delete), ctx, id)
 }
 
-// CustomerGet mocks base method.
-func (m *MockCustomerHandler) CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
+// Get mocks base method.
+func (m *MockCustomerHandler) Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerGet", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, id)
 	ret0, _ := ret[0].(*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CustomerGet indicates an expected call of CustomerGet.
-func (mr *MockCustomerHandlerMockRecorder) CustomerGet(ctx, id interface{}) *gomock.Call {
+// Get indicates an expected call of Get.
+func (mr *MockCustomerHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGet", reflect.TypeOf((*MockCustomerHandler)(nil).CustomerGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCustomerHandler)(nil).Get), ctx, id)
 }
 
-// CustomerGets mocks base method.
-func (m *MockCustomerHandler) CustomerGets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error) {
+// Gets mocks base method.
+func (m *MockCustomerHandler) Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerGets", ctx, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token)
 	ret0, _ := ret[0].([]*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CustomerGets indicates an expected call of CustomerGets.
-func (mr *MockCustomerHandlerMockRecorder) CustomerGets(ctx, size, token interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockCustomerHandlerMockRecorder) Gets(ctx, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGets", reflect.TypeOf((*MockCustomerHandler)(nil).CustomerGets), ctx, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCustomerHandler)(nil).Gets), ctx, size, token)
 }
 
-// CustomerLogin mocks base method.
-func (m *MockCustomerHandler) CustomerLogin(ctx context.Context, username, password string) (*customer.Customer, error) {
+// Login mocks base method.
+func (m *MockCustomerHandler) Login(ctx context.Context, username, password string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerLogin", ctx, username, password)
+	ret := m.ctrl.Call(m, "Login", ctx, username, password)
 	ret0, _ := ret[0].(*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CustomerLogin indicates an expected call of CustomerLogin.
-func (mr *MockCustomerHandlerMockRecorder) CustomerLogin(ctx, username, password interface{}) *gomock.Call {
+// Login indicates an expected call of Login.
+func (mr *MockCustomerHandlerMockRecorder) Login(ctx, username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerLogin", reflect.TypeOf((*MockCustomerHandler)(nil).CustomerLogin), ctx, username, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockCustomerHandler)(nil).Login), ctx, username, password)
 }
 
-// CustomerUpdateBasicInfo mocks base method.
-func (m *MockCustomerHandler) CustomerUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
+// UpdateBasicInfo mocks base method.
+func (m *MockCustomerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerUpdateBasicInfo", ctx, id, name, detail, webhookMethod, webhookURI)
+	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CustomerUpdateBasicInfo indicates an expected call of CustomerUpdateBasicInfo.
-func (mr *MockCustomerHandlerMockRecorder) CustomerUpdateBasicInfo(ctx, id, name, detail, webhookMethod, webhookURI interface{}) *gomock.Call {
+// UpdateBasicInfo indicates an expected call of UpdateBasicInfo.
+func (mr *MockCustomerHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail, webhookMethod, webhookURI interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateBasicInfo", reflect.TypeOf((*MockCustomerHandler)(nil).CustomerUpdateBasicInfo), ctx, id, name, detail, webhookMethod, webhookURI)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockCustomerHandler)(nil).UpdateBasicInfo), ctx, id, name, detail, webhookMethod, webhookURI)
 }
 
-// CustomerUpdatePassword mocks base method.
-func (m *MockCustomerHandler) CustomerUpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
+// UpdatePassword mocks base method.
+func (m *MockCustomerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerUpdatePassword", ctx, id, password)
+	ret := m.ctrl.Call(m, "UpdatePassword", ctx, id, password)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CustomerUpdatePassword indicates an expected call of CustomerUpdatePassword.
-func (mr *MockCustomerHandlerMockRecorder) CustomerUpdatePassword(ctx, id, password interface{}) *gomock.Call {
+// UpdatePassword indicates an expected call of UpdatePassword.
+func (mr *MockCustomerHandlerMockRecorder) UpdatePassword(ctx, id, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdatePassword", reflect.TypeOf((*MockCustomerHandler)(nil).CustomerUpdatePassword), ctx, id, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockCustomerHandler)(nil).UpdatePassword), ctx, id, password)
 }
 
-// CustomerUpdatePermissionIDs mocks base method.
-func (m *MockCustomerHandler) CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
+// UpdatePermissionIDs mocks base method.
+func (m *MockCustomerHandler) UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerUpdatePermissionIDs", ctx, id, permissionIDs)
+	ret := m.ctrl.Call(m, "UpdatePermissionIDs", ctx, id, permissionIDs)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CustomerUpdatePermissionIDs indicates an expected call of CustomerUpdatePermissionIDs.
-func (mr *MockCustomerHandlerMockRecorder) CustomerUpdatePermissionIDs(ctx, id, permissionIDs interface{}) *gomock.Call {
+// UpdatePermissionIDs indicates an expected call of UpdatePermissionIDs.
+func (mr *MockCustomerHandlerMockRecorder) UpdatePermissionIDs(ctx, id, permissionIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdatePermissionIDs", reflect.TypeOf((*MockCustomerHandler)(nil).CustomerUpdatePermissionIDs), ctx, id, permissionIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePermissionIDs", reflect.TypeOf((*MockCustomerHandler)(nil).UpdatePermissionIDs), ctx, id, permissionIDs)
 }

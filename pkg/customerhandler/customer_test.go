@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
 )
 
-func TestCustomerGets(t *testing.T) {
+func TestGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -48,7 +48,7 @@ func TestCustomerGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerGets(gomock.Any(), tt.size, tt.token).Return(tt.result, nil)
-			_, err := h.CustomerGets(ctx, tt.size, tt.token)
+			_, err := h.Gets(ctx, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -57,16 +57,18 @@ func TestCustomerGets(t *testing.T) {
 	}
 }
 
-func TestCustomerCreate(t *testing.T) {
+func TestCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &customerHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyhandler: mockNotify,
 	}
 
 	tests := []struct {
@@ -101,8 +103,9 @@ func TestCustomerCreate(t *testing.T) {
 			mockDB.EXPECT().CustomerGetByUsername(gomock.Any(), tt.username).Return(nil, fmt.Errorf("not found"))
 			mockDB.EXPECT().CustomerCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
-			_, err := h.CustomerCreate(ctx, tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
+			_, err := h.Create(ctx, tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
@@ -111,7 +114,7 @@ func TestCustomerCreate(t *testing.T) {
 	}
 }
 
-func TestCustomerDelete(t *testing.T) {
+func TestDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -140,7 +143,10 @@ func TestCustomerDelete(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerDelete(gomock.Any(), tt.id).Return(nil)
-			if err := h.CustomerDelete(ctx, tt.id); err != nil {
+			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, gomock.Any()).Return()
+
+			if err := h.Delete(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -148,16 +154,18 @@ func TestCustomerDelete(t *testing.T) {
 	}
 }
 
-func TestUserUpdateBasicInfo(t *testing.T) {
+func TestUpdateBasicInfo(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &customerHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyhandler: mockNotify,
 	}
 
 	tests := []struct {
@@ -184,7 +192,10 @@ func TestUserUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerSetBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(nil)
-			if err := h.CustomerUpdateBasicInfo(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI); err != nil {
+			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
+
+			if err := h.UpdateBasicInfo(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI); err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 
@@ -192,16 +203,18 @@ func TestUserUpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func TestCustomerUpdatePassword(t *testing.T) {
+func TestUpdatePassword(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &customerHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyhandler: mockNotify,
 	}
 
 	tests := []struct {
@@ -221,8 +234,11 @@ func TestCustomerUpdatePassword(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerSetPasswordHash(gomock.Any(), tt.id, gomock.Any())
-			if err := h.CustomerUpdatePassword(ctx, tt.id, tt.password); err != nil {
+			mockDB.EXPECT().CustomerSetPasswordHash(gomock.Any(), tt.id, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
+
+			if err := h.UpdatePassword(ctx, tt.id, tt.password); err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 
@@ -230,16 +246,18 @@ func TestCustomerUpdatePassword(t *testing.T) {
 	}
 }
 
-func TestCustomerUpdatePermissionIDs(t *testing.T) {
+func TestUpdatePermissionIDs(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &customerHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyhandler: mockNotify,
 	}
 
 	tests := []struct {
@@ -275,7 +293,10 @@ func TestCustomerUpdatePermissionIDs(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerSetPermissionIDs(gomock.Any(), tt.id, tt.permissionIDs)
-			if err := h.CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs); err != nil {
+			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
+
+			if err := h.UpdatePermissionIDs(ctx, tt.id, tt.permissionIDs); err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 
@@ -283,7 +304,7 @@ func TestCustomerUpdatePermissionIDs(t *testing.T) {
 	}
 }
 
-func TestUserLogin(t *testing.T) {
+func TestLogin(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -322,7 +343,7 @@ func TestUserLogin(t *testing.T) {
 
 			mockDB.EXPECT().CustomerGetByUsername(gomock.Any(), tt.username).Return(tt.responseGet, nil)
 
-			_, err := h.CustomerLogin(ctx, tt.username, tt.password)
+			_, err := h.Login(ctx, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

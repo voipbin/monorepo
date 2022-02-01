@@ -12,7 +12,7 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220131070316-0e6d28c73967
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220201074816-069f3f686ab2
 	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
 )
 

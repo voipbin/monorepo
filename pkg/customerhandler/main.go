@@ -16,14 +16,14 @@ import (
 
 // CustomerHandler interface
 type CustomerHandler interface {
-	CustomerCreate(ctx context.Context, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error)
-	CustomerDelete(ctx context.Context, id uuid.UUID) error
-	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
-	CustomerGets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error)
-	CustomerLogin(ctx context.Context, username, password string) (*customer.Customer, error)
-	CustomerUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error
-	CustomerUpdatePassword(ctx context.Context, id uuid.UUID, password string) error
-	CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error
+	Create(ctx context.Context, username, password, name, detail, webhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
+	Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error)
+	Login(ctx context.Context, username, password string) (*customer.Customer, error)
+	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error
+	UpdatePassword(ctx context.Context, id uuid.UUID, password string) error
+	UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error
 }
 
 type customerHandler struct {
