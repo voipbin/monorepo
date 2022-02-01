@@ -110,7 +110,7 @@ func (mr *MockDBHandlerMockRecorder) CustomerGets(ctx, size, token interface{}) 
 }
 
 // CustomerSetBasicInfo mocks base method.
-func (m *MockDBHandler) CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
+func (m *MockDBHandler) CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSetBasicInfo", ctx, id, name, detail, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(error)

@@ -78,7 +78,7 @@ func TestCreate(t *testing.T) {
 		password      string
 		userName      string
 		detail        string
-		webhookMethod customer.Method
+		webhookMethod customer.WebhookMethod
 		webhookURI    string
 		permissionIDs []uuid.UUID
 	}{
@@ -88,7 +88,7 @@ func TestCreate(t *testing.T) {
 			"test userpass",
 			"test1",
 			"detail1",
-			customer.MethodPost,
+			customer.WebhookMethodPost,
 			"test.com",
 			[]uuid.UUID{
 				permission.PermissionAdmin.ID,
@@ -174,7 +174,7 @@ func TestUpdateBasicInfo(t *testing.T) {
 		id            uuid.UUID
 		userName      string
 		detail        string
-		webhookMethod string
+		webhookMethod customer.WebhookMethod
 		webhookURI    string
 	}{
 		{
@@ -182,7 +182,7 @@ func TestUpdateBasicInfo(t *testing.T) {
 			uuid.FromStringOrNil("c106fa66-7cb7-11ec-b438-1320d9493dee"),
 			"name new",
 			"detail new",
-			"POST",
+			customer.WebhookMethodPost,
 			"test.com",
 		},
 	}

@@ -275,7 +275,7 @@ func (h *handler) CustomerGetByUsername(ctx context.Context, username string) (*
 }
 
 // CustomerSetBasicInfo sets the customer's basic info.
-func (h *handler) CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookMethod, webhookURI string) error {
+func (h *handler) CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error {
 	// prepare
 	q := `
 	update

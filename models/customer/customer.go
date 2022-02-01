@@ -9,10 +9,10 @@ type Customer struct {
 	Username     string `json:"username"` // Customer's username
 	PasswordHash string `json:"-"`        // Hashed Password
 
-	Name          string `json:"name"`           //  name
-	Detail        string `json:"detail"`         //  detail
-	WebhookMethod Method `json:"webhook_method"` // webhook method
-	WebhookURI    string `json:"webhook_uri"`    // webhook uri
+	Name          string        `json:"name"`           //  name
+	Detail        string        `json:"detail"`         //  detail
+	WebhookMethod WebhookMethod `json:"webhook_method"` // webhook method
+	WebhookURI    string        `json:"webhook_uri"`    // webhook uri
 
 	PermissionIDs []uuid.UUID `json:"permission_ids"` // customer's permission ids
 
@@ -21,15 +21,16 @@ type Customer struct {
 	TMDelete string `json:"tm_delete"` // Deleted timestamp.
 }
 
-// Method defines
-type Method string
+// WebhookMethod defines
+type WebhookMethod string
 
 // list of methods
 const (
-	MethodPost   = "POST"
-	MethodGet    = "GET"
-	MethodPut    = "PUT"
-	MethodDelete = "Delete"
+	WebhookMethodNone   = ""
+	WebhookMethodPost   = "POST"
+	WebhookMethodGet    = "GET"
+	WebhookMethodPut    = "PUT"
+	WebhookMethodDelete = "Delete"
 )
 
 // HasPermission returns true if the customer has the given permission
