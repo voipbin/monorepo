@@ -30,7 +30,7 @@ func (h *listenHandler) processV1Login(ctx context.Context, m *rabbitmqhandler.R
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.customerHandler.CustomerLogin(ctx, reqData.Username, reqData.Password)
+	tmp, err := h.customerHandler.Login(ctx, reqData.Username, reqData.Password)
 	if err != nil {
 		log.Errorf("Could not login the customer info. err: %v", err)
 		return simpleResponse(400), nil

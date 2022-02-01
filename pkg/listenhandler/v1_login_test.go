@@ -63,7 +63,7 @@ func TestProcessV1LoginPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().CustomerLogin(gomock.Any(), tt.username, tt.password).Return(tt.customer, nil)
+			mockCustomer.EXPECT().Login(gomock.Any(), tt.username, tt.password).Return(tt.customer, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

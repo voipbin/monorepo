@@ -97,7 +97,7 @@ func TestProcessV1CustomersGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().CustomerGets(gomock.Any(), tt.size, tt.token).Return(tt.users, nil)
+			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token).Return(tt.users, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -184,7 +184,7 @@ func TestProcessV1CustomersPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().CustomerCreate(gomock.Any(), tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.customer, nil)
+			mockCustomer.EXPECT().Create(gomock.Any(), tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.customer, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -248,7 +248,7 @@ func TestProcessV1CustomersIDGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(tt.customer, nil)
+			mockCustomer.EXPECT().Get(gomock.Any(), tt.id).Return(tt.customer, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -305,7 +305,7 @@ func TestProcessV1UsersIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().CustomerDelete(gomock.Any(), tt.customerID).Return(nil)
+			mockCustomer.EXPECT().Delete(gomock.Any(), tt.customerID).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -370,7 +370,7 @@ func TestProcessV1UsersIDPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().CustomerUpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(nil)
+			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -429,7 +429,7 @@ func TestProcessV1UsersIDPasswordPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().CustomerUpdatePassword(gomock.Any(), tt.id, tt.password).Return(nil)
+			mockCustomer.EXPECT().UpdatePassword(gomock.Any(), tt.id, tt.password).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -490,7 +490,7 @@ func TestProcessV1CustomersIDPermissionIDsPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().CustomerUpdatePermissionIDs(gomock.Any(), tt.id, tt.permissionIDs).Return(nil)
+			mockCustomer.EXPECT().UpdatePermissionIDs(gomock.Any(), tt.id, tt.permissionIDs).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
