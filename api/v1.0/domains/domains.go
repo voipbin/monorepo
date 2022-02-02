@@ -137,7 +137,7 @@ func domainsGET(c *gin.Context) {
 // domainsIDGET handles GET /domains/{id} request.
 // It returns detail domain info.
 // @Summary Returns detail domain info.
-// @Description Returns detail flow info of the given domain id.
+// @Description Returns detail domain info of the given domain id.
 // @Produce json
 // @Param id path string true "The ID of the domain"
 // @Success 200 {object} domain.Domain
