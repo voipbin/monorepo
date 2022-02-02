@@ -20,8 +20,12 @@ func TestConferenceCreate(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
 
-	type test struct {
+	tests := []struct {
 		name             string
 		customer         *cscustomer.Customer
 		confType         cfconference.Type
@@ -32,9 +36,7 @@ func TestConferenceCreate(t *testing.T) {
 		postActions      []fmaction.Action
 		cfConference     *cfconference.Conference
 		expectConference *cfconference.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -164,10 +166,6 @@ func TestConferenceCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
 
 			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.customer.ID, tt.confType, tt.confName, tt.confDetail, 0, tt.webhookURI, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
 			res, err := h.ConferenceCreate(tt.customer, tt.confType, tt.confName, tt.confDetail, tt.webhookURI, tt.preActions, tt.postActions)
@@ -188,15 +186,17 @@ func TestConferenceDelete(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
 
-	type test struct {
+	tests := []struct {
 		name         string
 		customer     *cscustomer.Customer
 		confID       uuid.UUID
 		cfConference *cfconference.Conference
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -220,10 +220,6 @@ func TestConferenceDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
 
 			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), tt.confID).Return(tt.cfConference, nil)
 			mockReq.EXPECT().CFV1ConferenceDelete(gomock.Any(), tt.confID).Return(nil)
@@ -247,16 +243,14 @@ func TestConferenceGets(t *testing.T) {
 		dbHandler:  mockDB,
 	}
 
-	type test struct {
+	tests := []struct {
 		name      string
 		customer  *cscustomer.Customer
 		token     string
 		limit     uint64
 		response  []cfconference.Conference
 		expectRes []*cfconference.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -310,15 +304,13 @@ func TestConferenceGet(t *testing.T) {
 		dbHandler:  mockDB,
 	}
 
-	type test struct {
+	tests := []struct {
 		name      string
 		customer  *cscustomer.Customer
 		id        uuid.UUID
 		response  *cfconference.Conference
 		expectRes *cfconference.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
