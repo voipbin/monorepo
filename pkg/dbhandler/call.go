@@ -39,7 +39,6 @@ const (
 		direction,
 		hangup_by,
 		hangup_reason,
-		webhook_uri,
 
 		tm_create,
 		tm_update,
@@ -86,7 +85,6 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.Direction,
 		&res.HangupBy,
 		&res.HangupReason,
-		&res.WebhookURI,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -156,7 +154,6 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		direction,
 		hangup_by,
 		hangup_reason,
-		webhook_uri,
 
 		tm_create,
 		tm_update,
@@ -168,7 +165,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		?, ?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?,
 		?, ?,
 		?, ?, ?
 		)`
@@ -235,7 +232,6 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.Direction,
 		c.HangupBy,
 		c.HangupReason,
-		c.WebhookURI,
 
 		c.TMCreate,
 		c.TMUpdate,

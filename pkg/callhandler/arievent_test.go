@@ -76,7 +76,7 @@ func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil).AnyTimes()
 
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallAnswered, tt.call.WebhookURI, tt.call)
+			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallAnswered, tt.call)
 
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any())
 			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -133,7 +133,7 @@ func TestARIChannelStateChangeStatusRinging(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusRinging, tt.channel.TMRinging)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallRinging, tt.call.WebhookURI, tt.call)
+			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallRinging, tt.call)
 
 			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

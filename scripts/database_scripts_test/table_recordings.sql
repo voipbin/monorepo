@@ -7,7 +7,6 @@ create table recordings(
   status            varchar(255),   -- current status of record.
   format            varchar(16),    -- recording's format. wav, ...
   filename          varchar(255),   -- recording's filename.
-  webhook_uri       varchar(1023),  -- destination webhook uri
 
   -- asterisk info
   asterisk_id       varchar(255), -- Asterisk id

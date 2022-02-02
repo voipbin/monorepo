@@ -31,7 +31,6 @@ create table calls(
   direction         varchar(16),    -- direction of call. incoming/outgoing
   hangup_by         varchar(16),    -- local/remote/empty for not sure.
   hangup_reason     varchar(16),    -- reason
-  webhook_uri       varchar(1023),  -- webhook uri
 
   -- timestamps
   tm_create datetime(6),  --

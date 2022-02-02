@@ -93,7 +93,7 @@ func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call,
 	if err != nil {
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, call.EventTypeCallCreated, res.WebhookURI, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallCreated, res)
 
 	return res, nil
 }
@@ -499,7 +499,6 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 		return errors.Wrap(err, "could not create an active flow")
 	}
 	log.Debugf("Created an active flow. active-flow: %v", af)
-	tmpCall.WebhookURI = af.WebhookURI
 	tmpCall.Action = af.CurrentAction
 
 	// create a call
@@ -572,7 +571,6 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 		log.Errorf("Could not get an active flow info. Created dummy active flow. This call will be hungup. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)
 	}
 	log.Debugf("Created an active flow. active-flow: %v", af)
-	tmpCall.WebhookURI = af.WebhookURI
 	tmpCall.Action = af.CurrentAction
 
 	c, err := h.createCall(ctx, tmpCall)

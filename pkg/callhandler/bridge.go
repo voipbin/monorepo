@@ -39,7 +39,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	}
 
 	// send call notification
-	h.notifyHandler.PublishWebhookEvent(ctx, call.EventTypeCallUpdated, c.WebhookURI, c)
+	h.notifyHandler.PublishWebhookEvent(ctx, c.CustomerID, call.EventTypeCallUpdated, c)
 
 	// check the call status
 	if c.Status != call.StatusProgressing && c.Status != call.StatusDialing && c.Status != call.StatusRinging {

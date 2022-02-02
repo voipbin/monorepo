@@ -62,8 +62,7 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 				},
 			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("e31efb5e-1f3c-11ec-beea-af98446e3b8e"),
-				WebhookURI: "test.com/webhook",
+				ID: uuid.FromStringOrNil("e31efb5e-1f3c-11ec-beea-af98446e3b8e"),
 			},
 			&recording.Recording{
 				ID:          uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
@@ -83,7 +82,7 @@ func TestEventHandlerRecordingStarted(t *testing.T) {
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusRecording, tt.timestamp).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), EventTypeRecordingStarted, tt.call.WebhookURI, tt.recording)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, EventTypeRecordingStarted, tt.recording)
 
 			if err := h.EventHandlerRecordingStarted(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -137,8 +136,7 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 				},
 			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
-				WebhookURI: "test.com/webhook",
+				ID: uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
 			},
 			&recording.Recording{
 				ID:          uuid.FromStringOrNil("4f367e2c-612c-11eb-b063-676ca5ee546a"),
@@ -160,7 +158,7 @@ func TestEventHandlerRecordingFinishedCall(t *testing.T) {
 			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), EventTypeRecordingFinished, tt.call.WebhookURI, tt.recording)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, EventTypeRecordingFinished, tt.recording)
 
 			if err := h.EventHandlerRecordingFinished(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -235,7 +233,7 @@ func TestEventHandlerRecordingFinishedConference(t *testing.T) {
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), EventTypeRecordingFinished, tt.call.WebhookURI, tt.recording)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, EventTypeRecordingFinished, tt.recording)
 			mockDB.EXPECT().ConfbridgeSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
 
 			if err := h.EventHandlerRecordingFinished(ctx, tt.event); err != nil {

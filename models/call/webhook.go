@@ -33,7 +33,6 @@ type WebhookMessage struct {
 	Direction    Direction     `json:"direction"`
 	HangupBy     HangupBy      `json:"hangup_by"`
 	HangupReason HangupReason  `json:"hangup_reason"`
-	WebhookURI   string        `json:"webhook_uri"`
 
 	// timestamp
 	TMCreate string `json:"tm_create"`
@@ -63,9 +62,9 @@ func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 		Action:      h.Action,
 		Direction:   h.Direction,
 
-		HangupBy:      h.HangupBy,
-		HangupReason:  h.HangupReason,
-		WebhookURI:    h.WebhookURI,
+		HangupBy:     h.HangupBy,
+		HangupReason: h.HangupReason,
+
 		TMCreate:      h.TMCreate,
 		TMUpdate:      h.TMUpdate,
 		TMProgressing: h.TMProgressing,

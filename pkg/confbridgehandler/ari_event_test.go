@@ -192,7 +192,7 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.callID, uuid.Nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), confbridge.EventTypeConfbridgeLeaved, tt.event)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallUpdated, "", gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 
 			err := h.ARIChannelLeftBridge(context.Background(), tt.channel, tt.bridge)
 			if err != nil {

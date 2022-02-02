@@ -517,7 +517,6 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		Status:      recording.StatusInitiating,
 		Format:      format,
 		Filename:    filename,
-		WebhookURI:  c.WebhookURI,
 
 		AsteriskID: c.AsteriskID,
 		ChannelID:  channelID,

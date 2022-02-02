@@ -147,58 +147,6 @@ func TestCreateCallOutgoing(t *testing.T) {
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
 			},
 		},
-		{
-			"callflow has an webhook",
-			uuid.FromStringOrNil("4347bd52-8304-11eb-b239-4bec34310838"),
-			uuid.FromStringOrNil("74ac837c-7f44-11ec-98b8-23e41038f8dd"),
-			uuid.FromStringOrNil("4394ad24-8304-11eb-b397-ff7bf34c829f"),
-			address.Address{
-				Type:       address.TypeTel,
-				Target:     "+99999888",
-				TargetName: "test",
-			},
-			address.Address{
-				Type:       address.TypeTel,
-				Target:     "+123456789",
-				TargetName: "test target",
-			},
-
-			&activeflow.ActiveFlow{
-				WebhookURI: "https://test.com/wwasdd",
-				CurrentAction: action.Action{
-					ID: action.IDStart,
-				},
-			},
-			&call.Call{
-				ID:         uuid.FromStringOrNil("4347bd52-8304-11eb-b239-4bec34310838"),
-				CustomerID: uuid.FromStringOrNil("74ac837c-7f44-11ec-98b8-23e41038f8dd"),
-				ChannelID:  call.TestChannelID,
-				FlowID:     uuid.FromStringOrNil("4394ad24-8304-11eb-b397-ff7bf34c829f"),
-				Type:       call.TypeFlow,
-				Status:     call.StatusDialing,
-				Direction:  call.DirectionOutgoing,
-				WebhookURI: "https://test.com/wwasdd",
-				Source: address.Address{
-					Type:       address.TypeTel,
-					Target:     "+99999888",
-					TargetName: "test",
-				},
-				Destination: address.Address{
-					Type:       address.TypeTel,
-					Target:     "+123456789",
-					TargetName: "test target",
-				},
-				Action: action.Action{
-					ID: action.IDStart,
-				},
-			},
-			// "pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
-			"pjsip/call-out/sip:+123456789@sip.telnyx.com;transport=udp",
-			map[string]string{
-				"CALLERID(all)":                         "+99999888",
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -206,7 +154,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallCreated, tt.expectCall.WebhookURI, tt.expectCall)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
 			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.id, tt.flowID).Return(tt.af, nil)
 			mockReq.EXPECT().AstChannelCreate(gomock.Any(), requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
 

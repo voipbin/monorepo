@@ -53,7 +53,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 	if err != nil {
 		log.Errorf("Could not get updated call info. But we are keep moving. err: %v", err)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, call.EventTypeCallUpdated, c.WebhookURI, c)
+	h.notifyHandler.PublishWebhookEvent(ctx, c.CustomerID, call.EventTypeCallUpdated, c)
 
 	return nil
 }

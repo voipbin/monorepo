@@ -52,7 +52,6 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, cust
 		Type:        call.TypeFlow,
 		Status:      call.StatusDialing,
 		Direction:   call.DirectionOutgoing,
-		WebhookURI:  af.WebhookURI,
 		Source:      source,
 		Destination: destination,
 		Action:      af.CurrentAction,

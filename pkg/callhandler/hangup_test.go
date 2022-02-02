@@ -83,7 +83,7 @@ func TestHangup(t *testing.T) {
 			mockReq.EXPECT().AstBridgeDelete(gomock.Any(), tt.call.AsteriskID, tt.call.BridgeID).Return(nil)
 			mockDB.EXPECT().CallSetHangup(gomock.Any(), tt.call.ID, call.HangupReasonNormal, call.HangupByRemote, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallHungup, tt.call.WebhookURI, gomock.Any())
+			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallHungup, gomock.Any())
 
 			for _, chainedCallID := range tt.call.ChainedCallIDs {
 				tmpCall := &call.Call{
@@ -146,7 +146,7 @@ func TestHangupWithReason(t *testing.T) {
 
 			mockDB.EXPECT().CallSetHangup(gomock.Any(), tt.call.ID, tt.reason, tt.hangupBy, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallHungup, tt.call.WebhookURI, tt.call)
+			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallHungup, tt.call)
 
 			if err := h.HangupWithReason(context.Background(), tt.call, tt.reason, tt.hangupBy, getCurTime()); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
