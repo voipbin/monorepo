@@ -7,6 +7,7 @@ import (
 	availablenumbers "gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/available_numbers"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/calls"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/conferences"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/customers"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/domains"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/extensions"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/flows"
@@ -28,6 +29,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	availablenumbers.ApplyRoutes(v1)
 	calls.ApplyRoutes(v1)
 	conferences.ApplyRoutes(v1)
+	customers.ApplyRoutes(v1)
 	domains.ApplyRoutes(v1)
 	extensions.ApplyRoutes(v1)
 	flows.ApplyRoutes(v1)

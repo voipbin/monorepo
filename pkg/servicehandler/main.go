@@ -76,6 +76,15 @@ type ServiceHandler interface {
 	ConferenceGets(u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
 	ConferenceKick(u *cscustomer.Customer, confID uuid.UUID, callID uuid.UUID) error
 
+	// customer handlers
+	CustomerCreate(u *cscustomer.Customer, username, password, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerGet(u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerGets(u *cscustomer.Customer, size uint64, token string) ([]*cscustomer.WebhookMessage, error)
+	CustomerUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) (*cscustomer.WebhookMessage, error)
+	CustomerDelete(u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerUpdatePassword(u *cscustomer.Customer, customerID uuid.UUID, password string) (*cscustomer.WebhookMessage, error)
+	CustomerUpdatePermissionIDs(u *cscustomer.Customer, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error)
+
 	// domain handlers
 	DomainCreate(u *cscustomer.Customer, domainName, name, detail string) (*domain.Domain, error)
 	DomainDelete(u *cscustomer.Customer, id uuid.UUID) error
