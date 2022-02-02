@@ -281,7 +281,8 @@ func TestProcessV1UsersIDDelete(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		customerID uuid.UUID
+		customerID       uuid.UUID
+		responseCustomer *customer.Customer
 
 		expectRes *rabbitmqhandler.Response
 	}{
@@ -294,10 +295,14 @@ func TestProcessV1UsersIDDelete(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("5071b05e-7dc8-11ec-9746-5f318f662852"),
+			&customer.Customer{
+				ID: uuid.FromStringOrNil("5071b05e-7dc8-11ec-9746-5f318f662852"),
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"5071b05e-7dc8-11ec-9746-5f318f662852","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","permission_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -305,7 +310,7 @@ func TestProcessV1UsersIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().Delete(gomock.Any(), tt.customerID).Return(nil)
+			mockCustomer.EXPECT().Delete(gomock.Any(), tt.customerID).Return(tt.responseCustomer, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -343,6 +348,8 @@ func TestProcessV1UsersIDPut(t *testing.T) {
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
 
+		responseCustomer *customer.Customer
+
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
@@ -360,9 +367,13 @@ func TestProcessV1UsersIDPut(t *testing.T) {
 			customer.WebhookMethodPost,
 			"test.com",
 
+			&customer.Customer{
+				ID: uuid.FromStringOrNil("5a8fac06-7dd4-11ec-b4e7-ab52242f6b29"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"5a8fac06-7dd4-11ec-b4e7-ab52242f6b29","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","permission_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -370,7 +381,7 @@ func TestProcessV1UsersIDPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(nil)
+			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -405,7 +416,8 @@ func TestProcessV1UsersIDPasswordPut(t *testing.T) {
 		id       uuid.UUID
 		password string
 
-		expectRes *rabbitmqhandler.Response
+		responseCustomer *customer.Customer
+		expectRes        *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -419,9 +431,13 @@ func TestProcessV1UsersIDPasswordPut(t *testing.T) {
 			uuid.FromStringOrNil("1887f2d6-7dd5-11ec-9141-f7f46aaf294c"),
 			"password2",
 
+			&customer.Customer{
+				ID: uuid.FromStringOrNil("1887f2d6-7dd5-11ec-9141-f7f46aaf294c"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"1887f2d6-7dd5-11ec-9141-f7f46aaf294c","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","permission_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -429,7 +445,7 @@ func TestProcessV1UsersIDPasswordPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().UpdatePassword(gomock.Any(), tt.id, tt.password).Return(nil)
+			mockCustomer.EXPECT().UpdatePassword(gomock.Any(), tt.id, tt.password).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -464,7 +480,8 @@ func TestProcessV1CustomersIDPermissionIDsPut(t *testing.T) {
 		id            uuid.UUID
 		permissionIDs []uuid.UUID
 
-		expectRes *rabbitmqhandler.Response
+		responseCustomer *customer.Customer
+		expectRes        *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -480,9 +497,13 @@ func TestProcessV1CustomersIDPermissionIDsPut(t *testing.T) {
 				permission.PermissionAdmin.ID,
 			},
 
+			&customer.Customer{
+				ID: uuid.FromStringOrNil("e00b4e98-7dd5-11ec-82c1-8b583557f04d"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"e00b4e98-7dd5-11ec-82c1-8b583557f04d","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","permission_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -490,7 +511,7 @@ func TestProcessV1CustomersIDPermissionIDsPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCustomer.EXPECT().UpdatePermissionIDs(gomock.Any(), tt.id, tt.permissionIDs).Return(nil)
+			mockCustomer.EXPECT().UpdatePermissionIDs(gomock.Any(), tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
