@@ -169,6 +169,8 @@ func TestCSV1CustomerDelete(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
+
+		expectRes *cscustomer.Customer
 	}{
 		{
 			"normal",
@@ -184,6 +186,11 @@ func TestCSV1CustomerDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"d6afec8c-7e43-11ec-ab03-ff394ae04b39"}`),
+			},
+
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("d6afec8c-7e43-11ec-ab03-ff394ae04b39"),
 			},
 		},
 	}
@@ -194,8 +201,13 @@ func TestCSV1CustomerDelete(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CSV1CustomerDelete(ctx, tt.customerID); err != nil {
+			res, err := reqHandler.CSV1CustomerDelete(ctx, tt.customerID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -305,6 +317,7 @@ func TestCSV1CustomerUpdateBasicInfo(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
+		expectRes     *cscustomer.Customer
 	}{
 		{
 			"normal",
@@ -325,6 +338,10 @@ func TestCSV1CustomerUpdateBasicInfo(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"eed8e316-7e45-11ec-bcac-97541487f2c1"}`),
+			},
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("eed8e316-7e45-11ec-bcac-97541487f2c1"),
 			},
 		},
 	}
@@ -335,8 +352,13 @@ func TestCSV1CustomerUpdateBasicInfo(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CSV1CustomerUpdate(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI); err != nil {
+			res, err := reqHandler.CSV1CustomerUpdate(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}
@@ -360,6 +382,7 @@ func TestCSV1CustomerUpdatePassword(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
+		expectRes     *cscustomer.Customer
 	}{
 		{
 			"normal",
@@ -377,6 +400,10 @@ func TestCSV1CustomerUpdatePassword(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"3f54d1ec-7e46-11ec-bc5a-8f233b20baaf"}`),
+			},
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("3f54d1ec-7e46-11ec-bc5a-8f233b20baaf"),
 			},
 		},
 	}
@@ -387,8 +414,13 @@ func TestCSV1CustomerUpdatePassword(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CSV1CustomerUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password); err != nil {
+			res, err := reqHandler.CSV1CustomerUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}
@@ -412,6 +444,7 @@ func TestCSV1CustomerUpdatePermission(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
+		expectRes     *cscustomer.Customer
 	}{
 		{
 			"normal",
@@ -431,6 +464,10 @@ func TestCSV1CustomerUpdatePermission(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"af7c2c04-7e46-11ec-845e-ebf1194dd77a"}`),
+			},
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("af7c2c04-7e46-11ec-845e-ebf1194dd77a"),
 			},
 		},
 	}
@@ -441,9 +478,15 @@ func TestCSV1CustomerUpdatePermission(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CSV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs); err != nil {
+			res, err := reqHandler.CSV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+
 		})
 	}
 }

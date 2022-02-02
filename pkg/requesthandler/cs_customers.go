@@ -102,25 +102,30 @@ func (r *requestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout 
 }
 
 // CSV1CustomerDelete sends the request to delete the customer
-func (r *requestHandler) CSV1CustomerDelete(ctx context.Context, id uuid.UUID) error {
+func (r *requestHandler) CSV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", id)
 
 	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodDelete, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case res == nil:
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	return nil
+	var resData cscustomer.Customer
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
 }
 
 // CSV1CustomerUpdate sends a request to customer-manager
 // to update the detail customer info.
-func (r *requestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) error {
+func (r *requestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", id)
 
 	data := &csrequest.V1DataCustomersIDPut{
@@ -132,27 +137,31 @@ func (r *requestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, n
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case res == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	return nil
+	var resData cscustomer.Customer
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
 }
 
 // CSV1CustomerUpdate sends a request to customer-manager
 // to update the detail customer info.
 // requestTimeout: milliseconds
-func (r *requestHandler) CSV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) error {
+func (r *requestHandler) CSV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s/password", id)
 
 	data := &csrequest.V1DataCustomersIDPasswordPut{
@@ -161,26 +170,30 @@ func (r *requestHandler) CSV1CustomerUpdatePassword(ctx context.Context, request
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case res == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	return nil
+	var resData cscustomer.Customer
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
 }
 
 // CSV1CustomerUpdate sends a request to customer-manager
 // to update the detail customer info.
-func (r *requestHandler) CSV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
+func (r *requestHandler) CSV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s/permission_ids", id)
 
 	data := &csrequest.V1DataCustomersIDPermissionIDsPut{
@@ -189,19 +202,23 @@ func (r *requestHandler) CSV1CustomerUpdatePermissionIDs(ctx context.Context, id
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case res == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	return nil
+	var resData cscustomer.Customer
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
 }
