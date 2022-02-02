@@ -11,7 +11,6 @@ type Recording struct {
 	Status      Status    `json:"status"`
 	Format      string    `json:"format"`
 	Filename    string    `json:"filename"`
-	WebhookURI  string    `json:"webhook_uri"`
 
 	AsteriskID string `json:"asterisk_id"`
 	ChannelID  string `json:"channel_id"`

@@ -13,7 +13,6 @@ type Event struct {
 	ReferenceID uuid.UUID `json:"reference_id"`
 	Status      string    `json:"status"`
 	Format      string    `json:"format"`
-	WebhookURI  string    `json:"webhook_uri"`
 
 	TMStart string `json:"tm_start"`
 	TMEnd   string `json:"tm_end"`
@@ -31,7 +30,6 @@ func (h *Recording) ConvertEvent() *Event {
 		ReferenceID: h.ReferenceID,
 		Status:      string(h.Status),
 		Format:      h.Format,
-		WebhookURI:  h.WebhookURI,
 		TMStart:     h.TMStart,
 		TMEnd:       h.TMEnd,
 		TMCreate:    h.TMCreate,

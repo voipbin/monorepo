@@ -54,35 +54,7 @@ func TestRecordingCreate(t *testing.T) {
 				ChannelID:  "b10c2e84-2b59-11eb-b963-db658ca2c824",
 			},
 		},
-		{
-			"webhook_uri added",
-			&recording.Recording{
-				ID:          uuid.FromStringOrNil("91772434-8789-11eb-858b-2fe3aba71277"),
-				CustomerID:  uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
-				Type:        recording.TypeCall,
-				ReferenceID: uuid.FromStringOrNil("91da4118-8789-11eb-b21d-4330f32c39d4"),
-				Status:      recording.StatusRecording,
-				Format:      "wav",
-				Filename:    "call_91da4118-8789-11eb-b21d-4330f32c39d4_2020-04-18T03:22:17.995000.wav",
-				WebhookURI:  "http://test.com/webhook_test",
-
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "91fc2bde-8789-11eb-956a-7b07892c2e11",
-			},
-			&recording.Recording{
-				ID:          uuid.FromStringOrNil("91772434-8789-11eb-858b-2fe3aba71277"),
-				CustomerID:  uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
-				Type:        recording.TypeCall,
-				ReferenceID: uuid.FromStringOrNil("91da4118-8789-11eb-b21d-4330f32c39d4"),
-				Status:      recording.StatusRecording,
-				Format:      "wav",
-				Filename:    "call_91da4118-8789-11eb-b21d-4330f32c39d4_2020-04-18T03:22:17.995000.wav",
-				WebhookURI:  "http://test.com/webhook_test",
-
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "91fc2bde-8789-11eb-956a-7b07892c2e11",
-			},
-		}}
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

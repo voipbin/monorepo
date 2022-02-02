@@ -41,7 +41,6 @@ type Call struct {
 	Direction    Direction         `json:"direction"`
 	HangupBy     HangupBy          `json:"hangup_by"`
 	HangupReason HangupReason      `json:"hangup_reason"`
-	WebhookURI   string            `json:"webhook_uri"`
 
 	// timestamp
 	TMCreate string `json:"tm_create"`

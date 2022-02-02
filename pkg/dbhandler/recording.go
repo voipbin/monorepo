@@ -21,7 +21,6 @@ const (
 		status,
 		format,
 		filename,
-		webhook_uri,
 
 		asterisk_id,
 		channel_id,
@@ -49,7 +48,6 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 		&res.Status,
 		&res.Format,
 		&res.Filename,
-		&res.WebhookURI,
 
 		&res.AsteriskID,
 		&res.ChannelID,
@@ -65,6 +63,63 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 	}
 
 	return res, nil
+}
+
+// RecordingCreate creates new record.
+func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) error {
+	q := `insert into recordings(
+		id,
+		customer_id,
+		type,
+		reference_id,
+		status,
+		format,
+		filename,
+
+		asterisk_id,
+		channel_id,
+
+		tm_start,
+		tm_end,
+
+		tm_create,
+		tm_update,
+		tm_delete
+
+	) values(
+		?, ?, ?, ?, ?, ?, ?,
+		?, ?,
+		?, ?,
+		?, ?, ?
+	)`
+
+	_, err := h.db.Exec(q,
+		c.ID.Bytes(),
+		c.CustomerID.Bytes(),
+		c.Type,
+		c.ReferenceID.Bytes(),
+		c.Status,
+		c.Format,
+		c.Filename,
+
+		c.AsteriskID,
+		c.ChannelID,
+
+		c.TMStart,
+		c.TMEnd,
+
+		getCurTime(),
+		c.TMUpdate,
+		c.TMDelete,
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. RecordingCreate. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.RecordingUpdateToCache(ctx, c.ID)
+
+	return nil
 }
 
 // RecordingGetFromCache returns record from the cache.
@@ -123,65 +178,6 @@ func (h *handler) RecordingSetToCache(ctx context.Context, r *recording.Recordin
 	if err := h.cache.RecordingSet(ctx, r); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-// RecordingCreate creates new record.
-func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) error {
-	q := `insert into recordings(
-		id,
-		customer_id,
-		type,
-		reference_id,
-		status,
-		format,
-		filename,
-		webhook_uri,
-
-		asterisk_id,
-		channel_id,
-
-		tm_start,
-		tm_end,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	) values(
-		?, ?, ?, ?, ?, ?, ?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?
-	)`
-
-	_, err := h.db.Exec(q,
-		c.ID.Bytes(),
-		c.CustomerID.Bytes(),
-		c.Type,
-		c.ReferenceID.Bytes(),
-		c.Status,
-		c.Format,
-		c.Filename,
-		c.WebhookURI,
-
-		c.AsteriskID,
-		c.ChannelID,
-
-		c.TMStart,
-		c.TMEnd,
-
-		getCurTime(),
-		c.TMUpdate,
-		c.TMDelete,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. RecordingCreate. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.RecordingUpdateToCache(ctx, c.ID)
 
 	return nil
 }

@@ -120,7 +120,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -205,7 +205,7 @@ func TestTypeConferenceStart(t *testing.T) {
 
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
 
 			// action next part.
 			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), gomock.Any(), action.IDStart).Return(&action.Action{Type: action.TypeHangup}, nil)
@@ -288,7 +288,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.All()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), action).Return(nil)
 			mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
@@ -362,7 +362,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -444,7 +444,7 @@ func TestTypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockConfbridge.EXPECT().Join(gomock.Any(), gomock.Any(), tt.call.ID).Return(nil)
@@ -518,7 +518,7 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelPlay(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.expectAction.ID, gomock.Any(), "").Return(nil)
 
@@ -593,7 +593,7 @@ func TestTypeFlowStart(t *testing.T) {
 			},
 		},
 		{
-			"webhook",
+			"customer id",
 			&channel.Channel{
 				ID:                "f0426396-82e0-11eb-a230-c32d9b79e36a",
 				AsteriskID:        "80:fa:5b:5e:da:81",
@@ -609,21 +609,20 @@ func TestTypeFlowStart(t *testing.T) {
 				FlowID: uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
 			},
 			&activeflow.ActiveFlow{
-				CallID:     uuid.FromStringOrNil("f0ae2504-82e0-11eb-8981-5752f356cf57"),
-				FlowID:     uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
-				WebhookURI: "https://test.com/webhook",
+				CallID: uuid.FromStringOrNil("f0ae2504-82e0-11eb-8981-5752f356cf57"),
+				FlowID: uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
 				},
 			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("f0ae2504-82e0-11eb-8981-5752f356cf57"),
+				CustomerID: uuid.FromStringOrNil("01dec012-8449-11ec-9076-37b10adf565e"),
 				AsteriskID: "80:fa:5b:5e:da:81",
 				ChannelID:  "f0426396-82e0-11eb-a230-c32d9b79e36a",
 				FlowID:     uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				WebhookURI: "https://test.com/webhook",
 				Destination: address.Address{
 					Type:   address.TypeTel,
 					Target: "+123456789",
@@ -645,7 +644,7 @@ func TestTypeFlowStart(t *testing.T) {
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), call.EventTypeCallCreated, tt.call.WebhookURI, tt.call)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
 
 			// action next part.
 			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), gomock.Any(), action.IDStart).Return(&action.Action{Type: action.TypeHangup}, nil)
