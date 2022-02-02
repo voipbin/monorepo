@@ -940,11 +940,12 @@ func (mr *MockRequestHandlerMockRecorder) CSV1CustomerCreate(ctx, requestTimeout
 }
 
 // CSV1CustomerDelete mocks base method.
-func (m *MockRequestHandler) CSV1CustomerDelete(ctx context.Context, id uuid.UUID) error {
+func (m *MockRequestHandler) CSV1CustomerDelete(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CSV1CustomerDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CSV1CustomerDelete indicates an expected call of CSV1CustomerDelete.
@@ -984,11 +985,12 @@ func (mr *MockRequestHandlerMockRecorder) CSV1CustomerGets(ctx, pageToken, pageS
 }
 
 // CSV1CustomerUpdate mocks base method.
-func (m *MockRequestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error {
+func (m *MockRequestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CSV1CustomerUpdate", ctx, id, name, detail, webhookMethod, webhookURI)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CSV1CustomerUpdate indicates an expected call of CSV1CustomerUpdate.
@@ -998,11 +1000,12 @@ func (mr *MockRequestHandlerMockRecorder) CSV1CustomerUpdate(ctx, id, name, deta
 }
 
 // CSV1CustomerUpdatePassword mocks base method.
-func (m *MockRequestHandler) CSV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) error {
+func (m *MockRequestHandler) CSV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CSV1CustomerUpdatePassword", ctx, requestTimeout, id, password)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CSV1CustomerUpdatePassword indicates an expected call of CSV1CustomerUpdatePassword.
@@ -1012,11 +1015,12 @@ func (mr *MockRequestHandlerMockRecorder) CSV1CustomerUpdatePassword(ctx, reques
 }
 
 // CSV1CustomerUpdatePermissionIDs mocks base method.
-func (m *MockRequestHandler) CSV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
+func (m *MockRequestHandler) CSV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CSV1CustomerUpdatePermissionIDs", ctx, id, permissionIDs)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CSV1CustomerUpdatePermissionIDs indicates an expected call of CSV1CustomerUpdatePermissionIDs.
