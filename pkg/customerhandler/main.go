@@ -26,13 +26,13 @@ type CustomerHandler interface {
 		webhookURI string,
 		permissionIDs []uuid.UUID,
 	) (*customer.Customer, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error)
 	Login(ctx context.Context, username, password string) (*customer.Customer, error)
-	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error
-	UpdatePassword(ctx context.Context, id uuid.UUID, password string) error
-	UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error
+	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error)
+	UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*customer.Customer, error)
+	UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error)
 }
 
 type customerHandler struct {

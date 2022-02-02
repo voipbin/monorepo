@@ -81,7 +81,7 @@ func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *rabbitmqh
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 	log.Debugf("Sending result: %v", data)
@@ -118,7 +118,7 @@ func (h *listenHandler) processV1CustomersIDGet(ctx context.Context, m *rabbitmq
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 	log.Debugf("Sending result: %v", data)
@@ -147,14 +147,23 @@ func (h *listenHandler) processV1CustomersIDDelete(ctx context.Context, m *rabbi
 		})
 	log.Debug("Executing processV1CustomersIDDelete.")
 
-	if err := h.customerHandler.Delete(ctx, id); err != nil {
+	tmp, err := h.customerHandler.Delete(ctx, id)
+	if err != nil {
 		log.Errorf("Could not delete the customer info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -183,14 +192,23 @@ func (h *listenHandler) processV1CustomersIDPut(ctx context.Context, m *rabbitmq
 		return simpleResponse(400), nil
 	}
 
-	if err := h.customerHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, reqData.WebhookMethod, reqData.WebhookURI); err != nil {
+	tmp, err := h.customerHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, reqData.WebhookMethod, reqData.WebhookURI)
+	if err != nil {
 		log.Errorf("Could not update the user info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -217,14 +235,23 @@ func (h *listenHandler) processV1CustomersIDPasswordPut(ctx context.Context, m *
 		return simpleResponse(400), nil
 	}
 
-	if err := h.customerHandler.UpdatePassword(ctx, id, req.Password); err != nil {
+	tmp, err := h.customerHandler.UpdatePassword(ctx, id, req.Password)
+	if err != nil {
 		log.Errorf("Could not update the customer's password. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -251,14 +278,23 @@ func (h *listenHandler) processV1CustomersIDPermissionIDsPut(ctx context.Context
 		return simpleResponse(400), nil
 	}
 
-	if err := h.customerHandler.UpdatePermissionIDs(ctx, id, req.PermissionIDs); err != nil {
+	tmp, err := h.customerHandler.UpdatePermissionIDs(ctx, id, req.PermissionIDs)
+	if err != nil {
 		log.Errorf("Could not update the customer's permission ids. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

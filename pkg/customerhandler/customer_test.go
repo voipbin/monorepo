@@ -146,7 +146,8 @@ func TestDelete(t *testing.T) {
 			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, gomock.Any()).Return()
 
-			if err := h.Delete(ctx, tt.id); err != nil {
+			_, err := h.Delete(ctx, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -195,7 +196,8 @@ func TestUpdateBasicInfo(t *testing.T) {
 			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
 
-			if err := h.UpdateBasicInfo(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI); err != nil {
+			_, err := h.UpdateBasicInfo(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI)
+			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 
@@ -238,7 +240,8 @@ func TestUpdatePassword(t *testing.T) {
 			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
 
-			if err := h.UpdatePassword(ctx, tt.id, tt.password); err != nil {
+			_, err := h.UpdatePassword(ctx, tt.id, tt.password)
+			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 
@@ -296,7 +299,8 @@ func TestUpdatePermissionIDs(t *testing.T) {
 			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
 
-			if err := h.UpdatePermissionIDs(ctx, tt.id, tt.permissionIDs); err != nil {
+			_, err := h.UpdatePermissionIDs(ctx, tt.id, tt.permissionIDs)
+			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 

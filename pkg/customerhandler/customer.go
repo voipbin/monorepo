@@ -100,7 +100,7 @@ func (h *customerHandler) Create(ctx context.Context, username, password, name, 
 }
 
 // Delete deletes the customer.
-func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) error {
+func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Delete",
 		"customer_id": id,
@@ -109,25 +109,25 @@ func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) error {
 
 	if err := h.db.CustomerDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the customer. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// get deleted customer
-	tmp, err := h.db.CustomerGet(ctx, id)
+	res, err := h.db.CustomerGet(ctx, id)
 	if err != nil {
 		// we couldn't get deleted item. but we've delete the customer already, just return here.
 		log.Errorf("Could not get deleted customer. err: %v", err)
-		return nil
+		return nil, fmt.Errorf("could not get deleted customer")
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerDeleted, tmp)
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerDeleted, res)
 
-	return nil
+	return res, nil
 }
 
 // UpdateBasicInfo updates the customer's basic info.
-func (h *customerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error {
+func (h *customerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "UpdateBasicInfo",
 		"customer_id": id,
@@ -136,25 +136,25 @@ func (h *customerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, nam
 
 	if err := h.db.CustomerSetBasicInfo(ctx, id, name, detail, webhookMethod, webhookURI); err != nil {
 		log.Errorf("Could not update the basic info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// get updated customer
-	tmp, err := h.db.CustomerGet(ctx, id)
+	res, err := h.db.CustomerGet(ctx, id)
 	if err != nil {
 		// we couldn't get updated item. but we've updated the customer already, just return here.
 		log.Errorf("Could not get updated customer. err: %v", err)
-		return nil
+		return nil, fmt.Errorf("could not get updated customer")
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, tmp)
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
 
-	return nil
+	return res, nil
 }
 
 // UpdatePassword updates the customer's password.
-func (h *customerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
+func (h *customerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "UpdatePassword",
 		"customer_id": id,
@@ -165,29 +165,29 @@ func (h *customerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, pass
 	hashPassword, err := generateHash(password)
 	if err != nil {
 		log.Errorf("Could not generate hash. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	if err := h.db.CustomerSetPasswordHash(ctx, id, hashPassword); err != nil {
 		log.Errorf("Could not update the password. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	tmp, err := h.db.CustomerGet(ctx, id)
+	res, err := h.db.CustomerGet(ctx, id)
 	if err != nil {
 		// we couldn't get updated item. but we've updated the customer already, just return here.
 		log.Errorf("Could not get updated customer. err: %v", err)
-		return nil
+		return nil, fmt.Errorf("could not get updated customer")
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, tmp)
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
 
-	return nil
+	return res, nil
 }
 
 // UpdatePermissionIDs updates the customer's permission ids.
-func (h *customerHandler) UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
+func (h *customerHandler) UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "UpdatePermissionIDs",
 		"user_id": id,
@@ -196,20 +196,20 @@ func (h *customerHandler) UpdatePermissionIDs(ctx context.Context, id uuid.UUID,
 
 	if err := h.db.CustomerSetPermissionIDs(ctx, id, permissionIDs); err != nil {
 		log.Errorf("Could not update the permission. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	tmp, err := h.db.CustomerGet(ctx, id)
+	res, err := h.db.CustomerGet(ctx, id)
 	if err != nil {
 		// we couldn't get updated item. but we've updated the customer already, just return here.
 		log.Errorf("Could not get updated customer. err: %v", err)
-		return nil
+		return nil, fmt.Errorf("could not get updated customer")
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, tmp)
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
 
-	return nil
+	return res, nil
 }
 
 // Login validate the customer's username and password.

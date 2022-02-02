@@ -52,11 +52,12 @@ func (mr *MockCustomerHandlerMockRecorder) Create(ctx, username, password, name,
 }
 
 // Delete mocks base method.
-func (m *MockCustomerHandler) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockCustomerHandler) Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Delete indicates an expected call of Delete.
@@ -111,11 +112,12 @@ func (mr *MockCustomerHandlerMockRecorder) Login(ctx, username, password interfa
 }
 
 // UpdateBasicInfo mocks base method.
-func (m *MockCustomerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error {
+func (m *MockCustomerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail, webhookMethod, webhookURI)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UpdateBasicInfo indicates an expected call of UpdateBasicInfo.
@@ -125,11 +127,12 @@ func (mr *MockCustomerHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail
 }
 
 // UpdatePassword mocks base method.
-func (m *MockCustomerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
+func (m *MockCustomerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePassword", ctx, id, password)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UpdatePassword indicates an expected call of UpdatePassword.
@@ -139,11 +142,12 @@ func (mr *MockCustomerHandlerMockRecorder) UpdatePassword(ctx, id, password inte
 }
 
 // UpdatePermissionIDs mocks base method.
-func (m *MockCustomerHandler) UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
+func (m *MockCustomerHandler) UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePermissionIDs", ctx, id, permissionIDs)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UpdatePermissionIDs indicates an expected call of UpdatePermissionIDs.
