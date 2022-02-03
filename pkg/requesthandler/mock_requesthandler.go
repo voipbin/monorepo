@@ -591,18 +591,18 @@ func (mr *MockRequestHandlerMockRecorder) AstPlaybackStop(ctx, asteriskID, playa
 }
 
 // CFV1ConferenceCreate mocks base method.
-func (m *MockRequestHandler) CFV1ConferenceCreate(ctx context.Context, customerID uuid.UUID, conferenceType conference.Type, name, detail string, timeout int, webhookURI string, data map[string]interface{}, preActions, postActions []action.Action) (*conference.Conference, error) {
+func (m *MockRequestHandler) CFV1ConferenceCreate(ctx context.Context, customerID uuid.UUID, conferenceType conference.Type, name, detail string, timeout int, data map[string]interface{}, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CFV1ConferenceCreate", ctx, customerID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions)
+	ret := m.ctrl.Call(m, "CFV1ConferenceCreate", ctx, customerID, conferenceType, name, detail, timeout, data, preActions, postActions)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CFV1ConferenceCreate indicates an expected call of CFV1ConferenceCreate.
-func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceCreate(ctx, customerID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceCreate(ctx, customerID, conferenceType, name, detail, timeout, data, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceCreate), ctx, customerID, conferenceType, name, detail, timeout, webhookURI, data, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceCreate", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceCreate), ctx, customerID, conferenceType, name, detail, timeout, data, preActions, postActions)
 }
 
 // CFV1ConferenceDelete mocks base method.
@@ -678,18 +678,18 @@ func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceKick(ctx, conferenceID, 
 }
 
 // CFV1ConferenceUpdate mocks base method.
-func (m *MockRequestHandler) CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error) {
+func (m *MockRequestHandler) CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CFV1ConferenceUpdate", ctx, id, name, detail, timeout, webhookURI, preActions, postActions)
+	ret := m.ctrl.Call(m, "CFV1ConferenceUpdate", ctx, id, name, detail, timeout, preActions, postActions)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CFV1ConferenceUpdate indicates an expected call of CFV1ConferenceUpdate.
-func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceUpdate(ctx, id, name, detail, timeout, webhookURI, preActions, postActions interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceUpdate(ctx, id, name, detail, timeout, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceUpdate", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceUpdate), ctx, id, name, detail, timeout, webhookURI, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceUpdate", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceUpdate), ctx, id, name, detail, timeout, preActions, postActions)
 }
 
 // CMV1CallActionNext mocks base method.

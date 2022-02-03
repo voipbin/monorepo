@@ -14,9 +14,9 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220131015406-68c5d0a1a790
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220203012553-7a6af2df4d9e
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220129071825-44f3b25d509f
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220203051250-eb0cbf31d1d0
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220202153105-5b9ba1f13450
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220203025404-188117e07ea3
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220203040003-c3e12fd9785e
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220129111655-419853d35f8c
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220129111440-7128c74e331c
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220128172756-b3561f5b2c80

@@ -290,7 +290,6 @@ type RequestHandler interface {
 		name string,
 		detail string,
 		timeout int,
-		webhookURI string,
 		data map[string]interface{},
 		preActions []fmaction.Action,
 		postActions []fmaction.Action,
@@ -298,7 +297,7 @@ type RequestHandler interface {
 	CFV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) error
 	CFV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error
 	CFV1ConferenceKick(ctx context.Context, conferenceID, callID uuid.UUID) error
-	CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, webhookURI string, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
+	CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
 
 	// flow-manager action
 	FMV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*fmaction.Action, error)

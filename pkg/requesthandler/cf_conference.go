@@ -100,7 +100,6 @@ func (r *requestHandler) CFV1ConferenceCreate(
 	name string,
 	detail string,
 	timeout int,
-	webhookURI string,
 	data map[string]interface{},
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
@@ -113,7 +112,6 @@ func (r *requestHandler) CFV1ConferenceCreate(
 		Name:        name,
 		Detail:      detail,
 		Timeout:     timeout,
-		WebhookURI:  webhookURI,
 		Data:        data,
 		PreActions:  preActions,
 		PostActions: postActions,
@@ -146,14 +144,13 @@ func (r *requestHandler) CFV1ConferenceCreate(
 // CFV1ConferenceUpdate sends a request to conference-manager
 // to update the conference.
 // it returns updated conference if it succeed.
-func (r *requestHandler) CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, webhookURI string, preActions, postActions []fmaction.Action) (*cfconference.Conference, error) {
+func (r *requestHandler) CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", id.String())
 
 	data := &cfrequest.V1DataConferencesIDPut{
 		Name:        name,
 		Detail:      detail,
 		Timeout:     timeout,
-		WebhookURI:  webhookURI,
 		PreActions:  preActions,
 		PostActions: postActions,
 	}
