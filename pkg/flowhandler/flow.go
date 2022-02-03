@@ -3,6 +3,7 @@ package flowhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -32,7 +33,6 @@ func (h *flowHandler) FlowCreate(
 	name string,
 	detail string,
 	persist bool,
-	webhookURI string,
 	actions []action.Action,
 ) (*flow.Flow, error) {
 	log := logrus.WithField("func", "FlowCreate")
@@ -53,8 +53,7 @@ func (h *flowHandler) FlowCreate(
 		Name:   name,
 		Detail: detail,
 
-		Persist:    persist,
-		WebhookURI: webhookURI,
+		Persist: persist,
 
 		Actions: a,
 
@@ -128,41 +127,46 @@ func (h *flowHandler) FlowGetsByType(ctx context.Context, customerID uuid.UUID, 
 }
 
 // FlowUpdate updates the flow info and return the updated flow
-func (h *flowHandler) FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow, error) {
+func (h *flowHandler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":    "FlowUpdate",
-			"flow_id": f.ID,
+			"flow_id": id,
 		})
-	log.WithField("flow", f).Debug("Update flow request.")
+	log.WithFields(
+		logrus.Fields{
+			"name":    name,
+			"detail":  detail,
+			"actions": actions,
+		},
+	).Debug("Updating the flow.")
 
-	// generates the actions
-	actions, err := h.generateFlowActions(ctx, f.Actions)
+	// generates the tmpActions
+	tmpActions, err := h.generateFlowActions(ctx, actions)
 	if err != nil {
 		log.Errorf("Could not generate the flow actions. err: %v", err)
 		return nil, err
 	}
-	f.Actions = actions
-	log.WithField("flow", f).Debug("Updating the flow.")
+	log.WithField("new_actions", tmpActions).Debug("Created the new actions tmp.")
 
-	if err := h.db.FlowUpdate(ctx, f); err != nil {
+	if err := h.db.FlowUpdate(ctx, id, name, detail, tmpActions); err != nil {
 		log.Errorf("Could not update the flow info. err: %v", err)
 		return nil, err
 	}
 
-	res, err := h.db.FlowGet(ctx, f.ID)
+	res, err := h.db.FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated flow. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, flow.EventTypeFlowUpdated, res.WebhookURI, res)
+	h.notifyHandler.PublishEvent(ctx, flow.EventTypeFlowUpdated, res)
 
 	return res, nil
 }
 
-// FlowDelete delets the given flow
+// FlowDelete deletes the flow
 // And it also removes the related flow_id from the number-manager
-func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) error {
+func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":    "FlowDelete",
@@ -174,7 +178,7 @@ func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 	err := h.db.FlowDelete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the flow. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// send related flow-id clean up request to the number-manager
@@ -185,14 +189,14 @@ func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 		// when the call-manager request the flow, that request will be failed too.
 	}
 
-	tmp, err := h.db.FlowGet(ctx, id)
+	res, err := h.db.FlowGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated flow. err: %v", err)
-		return nil
+		log.Errorf("Could not get deleted flow. err: %v", err)
+		return nil, fmt.Errorf("could not get deleted flow")
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, flow.EventTypeFlowDeleted, tmp.WebhookURI, tmp)
+	h.notifyHandler.PublishEvent(ctx, flow.EventTypeFlowDeleted, res)
 
-	return nil
+	return res, nil
 }
 
 // generateFlowActions generates actions for flow.

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
@@ -21,8 +22,6 @@ const (
 
 		name,
 		detail,
-
-		webhook_uri,
 
 		actions,
 
@@ -46,8 +45,6 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 
 		&res.Name,
 		&res.Detail,
-
-		&res.WebhookURI,
 
 		&actions,
 
@@ -76,8 +73,6 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 		name,
 		detail,
 
-		webhook_uri,
-
 		actions,
 
 		tm_create,
@@ -86,7 +81,6 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 	) values(
 		?, ?, ?,
 		?, ?,
-		?,
 		?,
 		?, ?, ?
 		)`
@@ -108,8 +102,6 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
 		f.Name,
 		f.Detail,
-
-		f.WebhookURI,
 
 		tmpActions,
 
@@ -297,29 +289,28 @@ func (h *handler) FlowGetsByType(ctx context.Context, customerID uuid.UUID, flow
 
 // FlowUpdate updates the most of flow information.
 // except permenant info(i.e. id, timestamp, etc)
-func (h *handler) FlowUpdate(ctx context.Context, f *flow.Flow) error {
+func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error {
 	q := `
 	update flows set
 		name = ?,
 		detail = ?,
-		webhook_uri = ?,
 		actions = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	tmpActions, err := json.Marshal(f.Actions)
+	tmpActions, err := json.Marshal(actions)
 	if err != nil {
 		return fmt.Errorf("could not marshal actions. FlowUpdate. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, f.Name, f.Detail, f.WebhookURI, tmpActions, GetCurTime(), f.ID.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, name, detail, tmpActions, GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. FlowUpdate. err: %v", err)
 	}
 
 	// set to the cache
-	_ = h.FlowUpdateToCache(ctx, f.ID)
+	_ = h.FlowUpdateToCache(ctx, id)
 
 	return nil
 }

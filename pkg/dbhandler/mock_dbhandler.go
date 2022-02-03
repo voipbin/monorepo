@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
@@ -227,17 +228,17 @@ func (mr *MockDBHandlerMockRecorder) FlowSetToCache(ctx, f interface{}) *gomock.
 }
 
 // FlowUpdate mocks base method.
-func (m *MockDBHandler) FlowUpdate(ctx context.Context, f *flow.Flow) error {
+func (m *MockDBHandler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdate", ctx, f)
+	ret := m.ctrl.Call(m, "FlowUpdate", ctx, id, name, detail, actions)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FlowUpdate indicates an expected call of FlowUpdate.
-func (mr *MockDBHandlerMockRecorder) FlowUpdate(ctx, f interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) FlowUpdate(ctx, id, name, detail, actions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), ctx, f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), ctx, id, name, detail, actions)
 }
 
 // FlowUpdateToCache mocks base method.

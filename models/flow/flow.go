@@ -19,7 +19,6 @@ type Flow struct {
 	Detail string `json:"detail"`
 
 	Persist    bool   `json:"persist"`
-	WebhookURI string `json:"webhook_uri"`
 
 	Actions []action.Action `json:"actions"`
 

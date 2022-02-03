@@ -16,8 +16,6 @@ type WebhookMessage struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
-	WebhookURI string `json:"webhook_uri"`
-
 	Actions []action.Action `json:"actions"`
 
 	TMCreate string `json:"tm_create"`
@@ -31,9 +29,8 @@ func (h *Flow) ConvertWebhookMessage() *WebhookMessage {
 		ID:   h.ID,
 		Type: h.Type,
 
-		Name:       h.Name,
-		Detail:     h.Detail,
-		WebhookURI: h.WebhookURI,
+		Name:   h.Name,
+		Detail: h.Detail,
 
 		Actions: h.Actions,
 

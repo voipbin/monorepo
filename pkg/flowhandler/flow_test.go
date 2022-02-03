@@ -32,7 +32,6 @@ func TestFlowCreate(t *testing.T) {
 		flowName   string
 		detail     string
 		persist    bool
-		webhookURI string
 		actions    []action.Action
 	}
 
@@ -45,7 +44,6 @@ func TestFlowCreate(t *testing.T) {
 			"test",
 			"test detail",
 			true,
-			"test.com",
 			[]action.Action{
 				{
 					Type: action.TypeAnswer,
@@ -59,7 +57,6 @@ func TestFlowCreate(t *testing.T) {
 			"test",
 			"test detail",
 			true,
-			"test.com",
 			[]action.Action{},
 		},
 		{
@@ -69,7 +66,6 @@ func TestFlowCreate(t *testing.T) {
 			"test",
 			"test detail",
 			false,
-			"test.com",
 			[]action.Action{},
 		},
 	}
@@ -86,7 +82,7 @@ func TestFlowCreate(t *testing.T) {
 				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
 			}
 
-			_, err := h.FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.webhookURI, tt.actions)
+			_, err := h.FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -145,10 +141,15 @@ func TestFlowDelete(t *testing.T) {
 	tests := []struct {
 		name   string
 		flowID uuid.UUID
+
+		expectRes *flow.Flow
 	}{
 		{
 			"test normal",
 			uuid.FromStringOrNil("acb2d07e-67c5-11eb-a39d-6f0133ff0559"),
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("acb2d07e-67c5-11eb-a39d-6f0133ff0559"),
+			},
 		},
 	}
 
@@ -156,13 +157,18 @@ func TestFlowDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(nil)
-			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flowID).Return(&flow.Flow{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), flow.EventTypeFlowDeleted, gomock.Any(), gomock.Any())
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flowID).Return(tt.expectRes, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), flow.EventTypeFlowDeleted, gomock.Any())
 
 			mockReq.EXPECT().NMV1NumberFlowDelete(ctx, tt.flowID).Return(nil)
 
-			if err := h.FlowDelete(context.Background(), tt.flowID); err != nil {
+			res, err := h.FlowDelete(context.Background(), tt.flowID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -297,23 +303,28 @@ func TestFlowUpdate(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		updateFlow   *flow.Flow
+		name string
+
+		id       uuid.UUID
+		flowName string
+		detail   string
+		actions  []action.Action
+
 		responseFlow *flow.Flow
 		expectRes    *flow.Flow
 	}{
 		{
 			"test normal",
-			&flow.Flow{
-				ID:     uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
-				Name:   "changed name",
-				Detail: "changed detail",
-				Actions: []action.Action{
-					{
-						Type: action.TypeAnswer,
-					},
+
+			uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
+			"changed name",
+			"changed detail",
+			[]action.Action{
+				{
+					Type: action.TypeAnswer,
 				},
 			},
+
 			&flow.Flow{
 				ID:     uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
 				Name:   "changed name",
@@ -344,11 +355,11 @@ func TestFlowUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowUpdate(ctx, tt.updateFlow).Return(nil)
-			mockDB.EXPECT().FlowGet(ctx, tt.updateFlow.ID).Return(tt.responseFlow, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow.WebhookURI, tt.responseFlow)
+			mockDB.EXPECT().FlowUpdate(ctx, tt.id, tt.flowName, tt.detail, gomock.Any()).Return(nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.id).Return(tt.responseFlow, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow)
 
-			res, err := h.FlowUpdate(ctx, tt.updateFlow)
+			res, err := h.FlowUpdate(ctx, tt.id, tt.flowName, tt.detail, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

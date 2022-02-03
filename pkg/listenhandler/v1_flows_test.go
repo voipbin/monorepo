@@ -34,7 +34,6 @@ func TestFlowsPost(t *testing.T) {
 		flowName   string
 		detail     string
 		persist    bool
-		webhookURI string
 		actions    []action.Action
 	}
 
@@ -53,7 +52,6 @@ func TestFlowsPost(t *testing.T) {
 			"test",
 			"test detail",
 			false,
-			"",
 			[]action.Action{},
 		},
 		{
@@ -69,7 +67,6 @@ func TestFlowsPost(t *testing.T) {
 			"test",
 			"test detail",
 			false,
-			"",
 			[]action.Action{
 				{
 					Type: action.TypeEcho,
@@ -89,7 +86,6 @@ func TestFlowsPost(t *testing.T) {
 			"test",
 			"test detail",
 			false,
-			"",
 			[]action.Action{
 				{
 					Type: action.TypeAnswer,
@@ -112,7 +108,6 @@ func TestFlowsPost(t *testing.T) {
 			"test",
 			"test detail",
 			false,
-			"",
 			[]action.Action{
 				{
 					Type: action.TypeAnswer,
@@ -135,7 +130,6 @@ func TestFlowsPost(t *testing.T) {
 			"test",
 			"test detail",
 			false,
-			"",
 			[]action.Action{
 				{
 					Type: action.TypeAnswer,
@@ -149,7 +143,7 @@ func TestFlowsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.webhookURI, tt.actions).Return(&flow.Flow{}, nil)
+			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions).Return(&flow.Flow{}, nil)
 
 			if _, err := h.processRequest(tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -209,7 +203,7 @@ func TestV1FlowsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -248,7 +242,7 @@ func TestV1FlowsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"13a7aeaa-0c4d-11eb-8210-073d8779e386","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""},{"id":"3645134e-0c4d-11eb-a2da-4bb8abe75c48","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"13a7aeaa-0c4d-11eb-8210-073d8779e386","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""},{"id":"3645134e-0c4d-11eb-a2da-4bb8abe75c48","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -295,7 +289,7 @@ func TestV1FlowsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"49e66560-7f4c-11ec-9d15-2396902a0309","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"49e66560-7f4c-11ec-9d15-2396902a0309","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -406,7 +400,7 @@ func TestV1FlowsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":false,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -430,32 +424,7 @@ func TestV1FlowsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":true,"webhook_uri":"","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
-			},
-		},
-		{
-			"webhook uri set",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/flows/53b8aeb4-822b-11eb-82fe-a3c14b4e38de",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
-				Data:     nil,
-			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("53b8aeb4-822b-11eb-82fe-a3c14b4e38de"),
-				Type:       flow.TypeFlow,
-				Persist:    true,
-				WebhookURI: "http://pchero21.com/test_webhook",
-				Actions: []action.Action{
-					{
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":true,"webhook_uri":"http://pchero21.com/test_webhook","actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":true,"actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -489,9 +458,14 @@ func TestV1FlowsIDPut(t *testing.T) {
 	}
 
 	type test struct {
-		name         string
-		request      *rabbitmqhandler.Request
-		requestFlow  *flow.Flow
+		name    string
+		request *rabbitmqhandler.Request
+
+		id       uuid.UUID
+		flowName string
+		detail   string
+		actions  []action.Action
+
 		responseFlow *flow.Flow
 		expectRes    *rabbitmqhandler.Response
 	}
@@ -505,19 +479,19 @@ func TestV1FlowsIDPut(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
-			&flow.Flow{
-				ID:     uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
-				Name:   "update name",
-				Detail: "update detail",
-				Actions: []action.Action{
-					{
-						Type: action.TypeAnswer,
-					},
-					{
-						Type: action.TypeEcho,
-					},
+
+			uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
+			"update name",
+			"update detail",
+			[]action.Action{
+				{
+					Type: action.TypeAnswer,
+				},
+				{
+					Type: action.TypeEcho,
 				},
 			},
+
 			&flow.Flow{
 				ID:     uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
 				Name:   "update name",
@@ -536,51 +510,14 @@ func TestV1FlowsIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"update name","detail":"update detail","persist":false,"webhook_uri":"","actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}`),
-			},
-		},
-		{
-			"webhook uri update",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/flows/2fea2826-822d-11eb-8bcc-97bfc5739d38",
-				Method:   rabbitmqhandler.RequestMethodPut,
-				DataType: "application/json",
-				Data:     []byte(`{"name":"update name","detail":"update detail","webhook_uri":"https://test.com/update_webhook","actions":[{"type":"answer"}]}`),
-			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("2fea2826-822d-11eb-8bcc-97bfc5739d38"),
-				Name:       "update name",
-				Detail:     "update detail",
-				WebhookURI: "https://test.com/update_webhook",
-				Actions: []action.Action{
-					{
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("2fea2826-822d-11eb-8bcc-97bfc5739d38"),
-				Name:       "update name",
-				Detail:     "update detail",
-				WebhookURI: "https://test.com/update_webhook",
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("3aa85b98-822d-11eb-9020-e7d103dc0571"),
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"2fea2826-822d-11eb-8bcc-97bfc5739d38","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"update name","detail":"update detail","persist":false,"webhook_uri":"https://test.com/update_webhook","actions":[{"id":"3aa85b98-822d-11eb-9020-e7d103dc0571","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"update name","detail":"update detail","persist":false,"actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().FlowUpdate(gomock.Any(), tt.requestFlow).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().FlowUpdate(gomock.Any(), tt.id, tt.flowName, tt.detail, tt.actions).Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -607,10 +544,12 @@ func TestV1FlowsIDDelete(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		flowID    uuid.UUID
-		request   *rabbitmqhandler.Request
-		expectRes *rabbitmqhandler.Response
+		name    string
+		flowID  uuid.UUID
+		request *rabbitmqhandler.Request
+
+		responseFlow *flow.Flow
+		expectRes    *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -623,15 +562,21 @@ func TestV1FlowsIDDelete(t *testing.T) {
 				DataType: "application/json",
 				Data:     nil,
 			},
+
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"89ecd1f6-67c6-11eb-815a-a75d4cc3df3e","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","persist":false,"actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(nil)
+			mockFlowHandler.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

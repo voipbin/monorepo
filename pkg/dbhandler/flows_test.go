@@ -314,10 +314,13 @@ func TestFlowUpdate(t *testing.T) {
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	type test struct {
-		name       string
-		flow       *flow.Flow
-		updateFlow *flow.Flow
-		expectFlow *flow.Flow
+		name string
+		flow *flow.Flow
+
+		flowName  string
+		detail    string
+		actions   []action.Action
+		expectRes *flow.Flow
 	}
 
 	tests := []test{
@@ -326,17 +329,16 @@ func TestFlowUpdate(t *testing.T) {
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
 			},
-			&flow.Flow{
-				ID:     uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
-				Name:   "test name",
-				Detail: "test detail",
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("a915c10c-6760-11eb-86c1-530dc1cd7cc9"),
-						Type: action.TypeAnswer,
-					},
+
+			"test name",
+			"test detail",
+			[]action.Action{
+				{
+					ID:   uuid.FromStringOrNil("a915c10c-6760-11eb-86c1-530dc1cd7cc9"),
+					Type: action.TypeAnswer,
 				},
 			},
+
 			&flow.Flow{
 				ID:      uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
 				Name:    "test name",
@@ -355,21 +357,20 @@ func TestFlowUpdate(t *testing.T) {
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
 			},
-			&flow.Flow{
-				ID:     uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
-				Name:   "test name",
-				Detail: "test detail",
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("c642ab68-6761-11eb-942e-4fa4f2851c63"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("d158cc12-6761-11eb-b60e-23b7402d1c55"),
-						Type: action.TypeEcho,
-					},
+
+			"test name",
+			"test detail",
+			[]action.Action{
+				{
+					ID:   uuid.FromStringOrNil("c642ab68-6761-11eb-942e-4fa4f2851c63"),
+					Type: action.TypeAnswer,
+				},
+				{
+					ID:   uuid.FromStringOrNil("d158cc12-6761-11eb-b60e-23b7402d1c55"),
+					Type: action.TypeEcho,
 				},
 			},
+
 			&flow.Flow{
 				ID:      uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
 				Name:    "test name",
@@ -387,37 +388,6 @@ func TestFlowUpdate(t *testing.T) {
 				},
 			},
 		},
-		{
-			"webhook uri update",
-			&flow.Flow{
-				ID: uuid.FromStringOrNil("6c756dba-822c-11eb-89a4-b34c6cca8de3"),
-			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("6c756dba-822c-11eb-89a4-b34c6cca8de3"),
-				Name:       "test name",
-				Detail:     "test detail",
-				WebhookURI: "https://test.com/webhook_uri",
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("7189632e-822c-11eb-8dd1-037145055acf"),
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-			&flow.Flow{
-				ID:         uuid.FromStringOrNil("6c756dba-822c-11eb-89a4-b34c6cca8de3"),
-				Name:       "test name",
-				Detail:     "test detail",
-				Persist:    true,
-				WebhookURI: "https://test.com/webhook_uri",
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("7189632e-822c-11eb-8dd1-037145055acf"),
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -430,7 +400,7 @@ func TestFlowUpdate(t *testing.T) {
 			}
 
 			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
-			if err := h.FlowUpdate(context.Background(), tt.updateFlow); err != nil {
+			if err := h.FlowUpdate(context.Background(), tt.flow.ID, tt.flowName, tt.detail, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -443,8 +413,8 @@ func TestFlowUpdate(t *testing.T) {
 
 			res.TMUpdate = ""
 			res.TMCreate = ""
-			if reflect.DeepEqual(tt.expectFlow, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectFlow, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

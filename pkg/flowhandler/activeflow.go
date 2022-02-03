@@ -35,8 +35,7 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 	tmpAF := &activeflow.ActiveFlow{
 		CallID:     callID,
 		FlowID:     flowID,
-		CustomerID:     f.CustomerID,
-		WebhookURI: f.WebhookURI,
+		CustomerID: f.CustomerID,
 
 		CurrentAction: action.Action{
 			ID: action.IDStart,
@@ -60,7 +59,7 @@ func (h *flowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.
 		log.Errorf("Could not get created active flow. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, activeflow.EventTypeActiveFlowCreated, af.WebhookURI, af)
+	h.notifyHandler.PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveFlowCreated, af)
 
 	return af, nil
 }
@@ -287,7 +286,7 @@ func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID 
 		log.Errorf("Could not get updated active flow. err: %v", err)
 		return nil
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, activeflow.EventTypeActiveFlowUpdated, tmp.WebhookURI, tmp)
+	h.notifyHandler.PublishWebhookEvent(ctx, tmp.CustomerID, activeflow.EventTypeActiveFlowUpdated, tmp)
 
 	return nil
 }

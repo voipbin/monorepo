@@ -356,7 +356,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	}
 
 	// create a flow
-	connectCF, err := h.FlowCreate(ctx, cf.CustomerID, flow.TypeFlow, "", "", false, "", actions)
+	connectCF, err := h.FlowCreate(ctx, cf.CustomerID, flow.TypeFlow, "", "", false, actions)
 	if err != nil {
 		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 		return fmt.Errorf("could not create a call flow. err: %v", err)

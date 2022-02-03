@@ -3,7 +3,6 @@ package listenhandler
 import (
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -105,12 +104,12 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// create a exchange for delayed message
 	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
 	}
 
 	// bind a queue with delayed exchange
 	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// process the received request
@@ -212,13 +211,4 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
-}
-
-// getCurTime return current utc time string
-//nolint:deadcode,unused // reserved
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
