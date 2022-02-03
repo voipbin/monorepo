@@ -1104,18 +1104,18 @@ func (mr *MockRequestHandlerMockRecorder) FMV1ActvieFlowUpdateForwardActionID(ct
 }
 
 // FMV1FlowCreate mocks base method.
-func (m *MockRequestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType flow.Type, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.Flow, error) {
+func (m *MockRequestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType flow.Type, name, detail string, actions []action.Action, persist bool) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMV1FlowCreate", ctx, customerID, flowType, name, detail, webhookURI, actions, persist)
+	ret := m.ctrl.Call(m, "FMV1FlowCreate", ctx, customerID, flowType, name, detail, actions, persist)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FMV1FlowCreate indicates an expected call of FMV1FlowCreate.
-func (mr *MockRequestHandlerMockRecorder) FMV1FlowCreate(ctx, customerID, flowType, name, detail, webhookURI, actions, persist interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FMV1FlowCreate(ctx, customerID, flowType, name, detail, actions, persist interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowCreate), ctx, customerID, flowType, name, detail, webhookURI, actions, persist)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowCreate), ctx, customerID, flowType, name, detail, actions, persist)
 }
 
 // FMV1FlowDelete mocks base method.

@@ -15,7 +15,7 @@ import (
 )
 
 // FMV1FlowCreate creates a new flow.
-func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, webhookURI string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
+func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
 
 	uri := "/v1/flows"
 
@@ -25,7 +25,6 @@ func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUI
 		Name:       name,
 		Detail:     detail,
 		Actions:    actions,
-		WebhookURI: webhookURI,
 		Persist:    persist,
 	}
 

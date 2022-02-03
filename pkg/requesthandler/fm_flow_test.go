@@ -62,7 +62,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 				URI:      "/v1/flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","webhook_uri":"","actions":[],"persist":true}`),
+				Data:     []byte(`{"customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","actions":[],"persist":true}`),
 			},
 			&fmflow.Flow{
 				ID:         uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
@@ -84,7 +84,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMV1FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.flowDetail, "", tt.actions, tt.persist)
+			res, err := reqHandler.FMV1FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.flowDetail, tt.actions, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -135,7 +135,7 @@ func TestFMV1FlowUpdate(t *testing.T) {
 				URI:      "/v1/flows/7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"update name","detail":"update detail","webhook_uri":"","actions":[]}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[]}`),
 			},
 			&fmflow.Flow{
 				ID:         uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
