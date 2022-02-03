@@ -30,7 +30,7 @@ const (
 	WebhookMethodPost   = "POST"
 	WebhookMethodGet    = "GET"
 	WebhookMethodPut    = "PUT"
-	WebhookMethodDelete = "Delete"
+	WebhookMethodDelete = "DELETE"
 )
 
 // HasPermission returns true if the customer has the given permission
