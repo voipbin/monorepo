@@ -30,6 +30,7 @@ func (h *conferenceHandler) Leaved(ctx context.Context, id uuid.UUID, callID uui
 		log.Errorf("Could not get conference. err: %v", err)
 		return err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, cf.CustomerID, conference.EventTypeConferenceUpdated, cf)
 
 	switch cf.Type {
 	case conference.TypeConnect:
