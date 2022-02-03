@@ -280,7 +280,7 @@ func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call, a *
 
 	// send next action request
 	if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID, false); err != nil {
-		return fmt.Errorf("Could not send the next action request. err: %v", err)
+		return fmt.Errorf("could not send the next action request. err: %v", err)
 	}
 
 	return nil
@@ -639,7 +639,7 @@ func (h *callHandler) actionExecuteDTMFReceive(ctx context.Context, c *call.Call
 		// the stored dtmf has already qualified finish condition.
 		log.Debugf("The stored dtmfs are already qualified the finish condition. dtmfs: %s", dtmfs)
 		if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID, false); err != nil {
-			return fmt.Errorf("Could not send the next action request. err: %v", err)
+			return fmt.Errorf("could not send the next action request. err: %v", err)
 		}
 		return nil
 	}
@@ -672,7 +672,7 @@ func (h *callHandler) actionExecuteDTMFSend(ctx context.Context, c *call.Call, a
 
 	// send dtmfs
 	if err := h.reqHandler.AstChannelDTMF(ctx, c.AsteriskID, c.ChannelID, option.DTMFs, option.Duration, 0, option.Interval, 0); err != nil {
-		return fmt.Errorf("Could not send the dtmfs. err: %v", err)
+		return fmt.Errorf("could not send the dtmfs. err: %v", err)
 	}
 
 	// caculate timeout
