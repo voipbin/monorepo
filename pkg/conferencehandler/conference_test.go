@@ -42,7 +42,6 @@ func TestCreate(t *testing.T) {
 		conferenceName string
 		detail         string
 		timeout        int
-		webhookURI     string
 		preActions     []fmaction.Action
 		postActions    []fmaction.Action
 
@@ -59,7 +58,6 @@ func TestCreate(t *testing.T) {
 			"test name",
 			"test detail",
 			86400,
-			"test.com",
 			[]fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
@@ -93,16 +91,16 @@ func TestCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any()).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), gomock.Any(), fmflow.TypeConference, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), gomock.Any(), fmflow.TypeConference, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceConfbridgeSet(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), conference.EventTypeConferenceCreated, gomock.Any(), gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectRes.CustomerID, conference.EventTypeConferenceCreated, gomock.Any())
 			if tt.timeout > 0 {
 				mockReq.EXPECT().CFV1ConferenceDeleteDelay(gomock.Any(), gomock.Any(), tt.timeout*1000).Return(nil)
 			}
 
-			res, err := h.Create(ctx, tt.conferenceType, tt.customerID, tt.conferenceName, tt.detail, tt.timeout, tt.webhookURI, tt.preActions, tt.postActions)
+			res, err := h.Create(ctx, tt.conferenceType, tt.customerID, tt.conferenceName, tt.detail, tt.timeout, tt.preActions, tt.postActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -170,7 +168,7 @@ func TestCreateConferenceFlow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customerID, fmflow.TypeConference, tt.flowName, "generated for conference by conference-manager.", "", gomock.Any(), true).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customerID, fmflow.TypeConference, tt.flowName, "generated for conference by conference-manager.", gomock.Any(), true).Return(tt.responseFlow, nil)
 
 			_, err := h.createConferenceFlow(ctx, tt.customerID, tt.conferenceID, tt.confbridgeID, tt.preActions, tt.postActions)
 			if err != nil {

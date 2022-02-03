@@ -213,17 +213,17 @@ func (mr *MockDBHandlerMockRecorder) ConferenceRemoveCallID(ctx, id, callID inte
 }
 
 // ConferenceSet mocks base method.
-func (m *MockDBHandler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) error {
+func (m *MockDBHandler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []action.Action) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceSet", ctx, id, name, detail, timeout, webhookURI, preActions, postActions)
+	ret := m.ctrl.Call(m, "ConferenceSet", ctx, id, name, detail, timeout, preActions, postActions)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConferenceSet indicates an expected call of ConferenceSet.
-func (mr *MockDBHandlerMockRecorder) ConferenceSet(ctx, id, name, detail, timeout, webhookURI, preActions, postActions interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ConferenceSet(ctx, id, name, detail, timeout, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSet), ctx, id, name, detail, timeout, webhookURI, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSet), ctx, id, name, detail, timeout, preActions, postActions)
 }
 
 // ConferenceSetData mocks base method.

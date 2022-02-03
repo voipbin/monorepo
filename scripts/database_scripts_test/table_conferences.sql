@@ -22,9 +22,6 @@ create table conferences(
   recording_id   binary(16),  -- current record id
   recording_ids  json,        -- record ids
 
-  -- other info
-  webhook_uri   varchar(1023),  -- webhook uri
-
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --

@@ -54,7 +54,7 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"0addf332-9312-11eb-95e8-9b90e44428a0","customer_id":"24676972-7f49-11ec-bc89-b7d33e9d3ea8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"webhook_uri":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"0addf332-9312-11eb-95e8-9b90e44428a0","customer_id":"24676972-7f49-11ec-bc89-b7d33e9d3ea8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -85,7 +85,7 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"33b1138a-3bef-11ec-a187-f77a455f3ced","customer_id":"3be94c82-7f49-11ec-814e-ff2a9d84a806","confbridge_id":"343ae074-3bef-11ec-b657-db12d3135e42","flow_id":"49da6378-3bef-11ec-88b6-f31f8c97b61b","type":"","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"webhook_uri":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"33b1138a-3bef-11ec-a187-f77a455f3ced","customer_id":"3be94c82-7f49-11ec-814e-ff2a9d84a806","confbridge_id":"343ae074-3bef-11ec-b657-db12d3135e42","flow_id":"49da6378-3bef-11ec-88b6-f31f8c97b61b","type":"","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -117,7 +117,7 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c1e0a078-3de6-11ec-ae88-13052faf6ad7","customer_id":"4d4d8ce0-7f49-11ec-a61f-1358990ed631","confbridge_id":"c21b98ea-3de6-11ec-ab1e-4bcde9e784af","flow_id":"c234ce0a-3de6-11ec-8807-0b3f00d6e280","type":"conference","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"webhook_uri":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"c1e0a078-3de6-11ec-ae88-13052faf6ad7","customer_id":"4d4d8ce0-7f49-11ec-a61f-1358990ed631","confbridge_id":"c21b98ea-3de6-11ec-ab1e-4bcde9e784af","flow_id":"c234ce0a-3de6-11ec-8807-0b3f00d6e280","type":"conference","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -163,7 +163,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 				URI:      "/v1/conferences",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type": "conference", "customer_id": "2375a978-7f4b-11ec-81ed-73f63efd9dd8", "name": "test", "detail": "test detail", "webhook_uri": "test.com", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"answer"}], "timeout": 86400}`),
+				Data:     []byte(`{"type": "conference", "customer_id": "2375a978-7f4b-11ec-81ed-73f63efd9dd8", "name": "test", "detail": "test detail", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"answer"}], "timeout": 86400}`),
 			},
 			&conference.Conference{
 				ID:         uuid.FromStringOrNil("5e0d6cb0-4003-11ec-a7f9-f72079d71f10"),
@@ -182,12 +182,11 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 						Type: "answer",
 					},
 				},
-				WebhookURI: "test.com",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","customer_id":"2375a978-7f4b-11ec-81ed-73f63efd9dd8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"webhook_uri":"test.com","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","customer_id":"2375a978-7f4b-11ec-81ed-73f63efd9dd8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -195,7 +194,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConf.EXPECT().Create(gomock.Any(), tt.expectConference.Type, tt.expectConference.CustomerID, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, tt.expectConference.WebhookURI, tt.expectConference.PreActions, tt.expectConference.PostActions).Return(tt.expectConference, nil)
+			mockConf.EXPECT().Create(gomock.Any(), tt.expectConference.Type, tt.expectConference.CustomerID, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, tt.expectConference.PreActions, tt.expectConference.PostActions).Return(tt.expectConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -281,7 +280,7 @@ func TestProcessV1ConferencesIDPut(t *testing.T) {
 				URI:      "/v1/conferences/a07e574a-4002-11ec-9c73-a31093777cf0",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name": "test update", "detail": "test detail update", "webhook_uri": "test.com", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"hangup"}], "timeout": 86400}`),
+				Data:     []byte(`{"name": "test update", "detail": "test detail update", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"hangup"}], "timeout": 86400}`),
 			},
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("a07e574a-4002-11ec-9c73-a31093777cf0"),
@@ -306,12 +305,11 @@ func TestProcessV1ConferencesIDPut(t *testing.T) {
 				},
 				CallIDs:      []uuid.UUID{},
 				RecordingIDs: []uuid.UUID{},
-				WebhookURI:   "test.com",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"webhook_uri":"test.com","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -319,7 +317,7 @@ func TestProcessV1ConferencesIDPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConf.EXPECT().Update(gomock.Any(), tt.conference.ID, tt.conference.Name, tt.conference.Detail, tt.conference.Timeout, tt.conference.WebhookURI, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
+			mockConf.EXPECT().Update(gomock.Any(), tt.conference.ID, tt.conference.Name, tt.conference.Detail, tt.conference.Timeout, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -374,12 +372,11 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 						Type: "answer",
 					},
 				},
-				WebhookURI: "test.com",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"11f067f6-3bf3-11ec-9bca-877deb76639d","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"webhook_uri":"test.com","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"11f067f6-3bf3-11ec-9bca-877deb76639d","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -444,7 +441,6 @@ func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
 						Type: "answer",
 					},
 				},
-				WebhookURI: "test.com",
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("8a1fd900-3bf3-11ec-bd15-eb0c54c84612"),
 				},

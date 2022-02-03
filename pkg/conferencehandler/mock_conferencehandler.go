@@ -38,18 +38,18 @@ func (m *MockConferenceHandler) EXPECT() *MockConferenceHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockConferenceHandler) Create(ctx context.Context, conferenceType conference.Type, customerID uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error) {
+func (m *MockConferenceHandler) Create(ctx context.Context, conferenceType conference.Type, customerID uuid.UUID, name, detail string, timeout int, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, conferenceType, customerID, name, detail, timeout, webhookURI, preActions, postActions)
+	ret := m.ctrl.Call(m, "Create", ctx, conferenceType, customerID, name, detail, timeout, preActions, postActions)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockConferenceHandlerMockRecorder) Create(ctx, conferenceType, customerID, name, detail, timeout, webhookURI, preActions, postActions interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Create(ctx, conferenceType, customerID, name, detail, timeout, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferenceHandler)(nil).Create), ctx, conferenceType, customerID, name, detail, timeout, webhookURI, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferenceHandler)(nil).Create), ctx, conferenceType, customerID, name, detail, timeout, preActions, postActions)
 }
 
 // Get mocks base method.
@@ -153,16 +153,16 @@ func (mr *MockConferenceHandlerMockRecorder) Terminate(ctx, id interface{}) *gom
 }
 
 // Update mocks base method.
-func (m *MockConferenceHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []action.Action) (*conference.Conference, error) {
+func (m *MockConferenceHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, timeout, webhookURI, preActions, postActions)
+	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, timeout, preActions, postActions)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockConferenceHandlerMockRecorder) Update(ctx, id, name, detail, timeout, webhookURI, preActions, postActions interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Update(ctx, id, name, detail, timeout, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConferenceHandler)(nil).Update), ctx, id, name, detail, timeout, webhookURI, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConferenceHandler)(nil).Update), ctx, id, name, detail, timeout, preActions, postActions)
 }

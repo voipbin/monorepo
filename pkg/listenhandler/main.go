@@ -8,9 +8,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
@@ -111,12 +111,12 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// create a exchange for delayed message
 	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
 	}
 
 	// bind a queue with delayed exchange
 	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// receive requests

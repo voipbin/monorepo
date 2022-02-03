@@ -25,7 +25,6 @@ func (h *conferenceHandler) Create(
 	name string,
 	detail string,
 	timeout int,
-	webhookURI string,
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
 ) (*conference.Conference, error) {
@@ -78,7 +77,6 @@ func (h *conferenceHandler) Create(
 
 		CallIDs:      []uuid.UUID{},
 		RecordingIDs: []uuid.UUID{},
-		WebhookURI:   webhookURI,
 
 		TMCreate: getCurTime(),
 		TMUpdate: defaultTimeStamp,
@@ -113,7 +111,7 @@ func (h *conferenceHandler) Create(
 		log.Errorf("Could not get created conference. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, conference.EventTypeConferenceCreated, cf.WebhookURI, cf)
+	h.notifyHandler.PublishWebhookEvent(ctx, cf.CustomerID, conference.EventTypeConferenceCreated, cf)
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {
@@ -171,7 +169,7 @@ func (h *conferenceHandler) createConferenceFlow(ctx context.Context, customerID
 	flowName := fmt.Sprintf("conference-%s", conferenceID.String())
 
 	// create flow
-	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeConference, flowName, "generated for conference by conference-manager.", "", actions, true)
+	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeConference, flowName, "generated for conference by conference-manager.", actions, true)
 	if err != nil {
 		log.Errorf("Could not create a conference flow. err: %v", err)
 		return nil, err
@@ -212,4 +210,83 @@ func (h *conferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.
 	}
 
 	return res, nil
+}
+
+// Create is handy function for creating a conference.
+// it increases corresponded counter
+func (h *conferenceHandler) Update(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	timeout int,
+	preActions []fmaction.Action,
+	postActions []fmaction.Action,
+) (*conference.Conference, error) {
+	log := logrus.New().WithFields(
+		logrus.Fields{
+			"func":          "Update",
+			"conference_id": id,
+		},
+	)
+	log.Debugf("Updating the conference. name: %s, detail: %s, timeout: %d, pre_actions: %v, post_actions: %v",
+		name, detail, timeout, preActions, postActions)
+
+	// get conference
+	cf, err := h.db.ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		return nil, err
+	}
+
+	// create flow actions
+	actions, err := h.createConferenceFlowActions(cf.ConfbridgeID, preActions, postActions)
+	if err != nil {
+		log.Errorf("Could not create actions. err: %v", err)
+		return nil, err
+	}
+	log.Debugf("Created flow actions. actions: %v", actions)
+
+	// get flow
+	f, err := h.reqHandler.FMV1FlowGet(ctx, cf.FlowID)
+	if err != nil {
+		log.Errorf("Could not get flow. err: %v", err)
+		return nil, err
+	}
+	f.Actions = actions
+
+	// update flow
+	newFlow, err := h.reqHandler.FMV1FlowUpdate(ctx, f)
+	if err != nil {
+		log.Errorf("Could not update the flow. err: %v", err)
+		return nil, err
+	}
+	log.WithField("flow", newFlow).Debugf("Updated the flow.")
+
+	if timeout > 0 && timeout < 60 {
+		timeout = defaultConferenceTimeout
+	}
+
+	// update conference
+	if errSet := h.db.ConferenceSet(ctx, id, name, detail, timeout, preActions, postActions); errSet != nil {
+		log.Errorf("Could not update the conference. err: %v", errSet)
+		return nil, err
+	}
+
+	// get updated conference and notify
+	newConf, err := h.db.ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated conference. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, newConf.CustomerID, conference.EventTypeConferenceUpdated, newConf)
+
+	// set the timeout if it was set
+	if cf.Timeout > 0 {
+		if err := h.reqHandler.CFV1ConferenceDeleteDelay(ctx, id, cf.Timeout*1000); err != nil {
+			log.Errorf("Could not start conference timeout. err: %v", err)
+		}
+	}
+
+	return newConf, nil
 }

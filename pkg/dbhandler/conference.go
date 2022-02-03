@@ -35,8 +35,6 @@ const (
 		recording_id,
 		recording_ids,
 
-		webhook_uri,
-
 		tm_create,
 		tm_update,
 		tm_delete
@@ -76,8 +74,6 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 
 		&res.RecordingID,
 		&RecordingIDs,
-
-		&res.WebhookURI,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -144,8 +140,6 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		recording_id,
 		recording_ids,
 
-		webhook_uri,
-
 		tm_create,
 		tm_update,
 		tm_delete
@@ -155,7 +149,6 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		?, ?,
 		?,
 		?, ?,
-		?,
 		?, ?, ?
 		)
 	`
@@ -205,8 +198,6 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 		cf.RecordingID.Bytes(),
 		recordingIDs,
-
-		cf.WebhookURI,
 
 		cf.TMCreate,
 		cf.TMUpdate,
@@ -429,14 +420,13 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 }
 
 // ConferenceSet sets the status
-func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, webhookURI string, preActions, postActions []fmaction.Action) error {
+func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []fmaction.Action) error {
 	//prepare
 	q := `
 	update conferences set
 		name = ?,
 		detail = ?,
 		timeout = ?,
-		webhook_uri = ?,
 		pre_actions = ?,
 		post_actions = ?,
 		tm_update = ?
@@ -454,7 +444,7 @@ func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail 
 		return fmt.Errorf("could not marshal the postActions. ConferenceSet. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, name, detail, timeout, webhookURI, tmpPreActions, tmpPostActions, getCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, name, detail, timeout, tmpPreActions, tmpPostActions, getCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSet. err: %v", err)
 	}
