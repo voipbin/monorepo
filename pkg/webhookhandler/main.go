@@ -3,7 +3,6 @@ package webhookhandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package webhookhandler -destination ./mock_webhookhandler.go -source main.go -build_flags=-mod=mod
 
 import (
-	"net/http"
 	"strings"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 
 // WebhookHandler is interface for webhook handle
 type WebhookHandler interface {
-	SendMessage(uri string, method string, dataType string, data []byte) (*http.Response, error)
 	SendWebhook(wh *webhook.Webhook) error
 }
 

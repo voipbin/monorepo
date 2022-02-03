@@ -5,7 +5,6 @@
 package webhookhandler
 
 import (
-	http "net/http"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -33,21 +32,6 @@ func NewMockWebhookHandler(ctrl *gomock.Controller) *MockWebhookHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockWebhookHandler) EXPECT() *MockWebhookHandlerMockRecorder {
 	return m.recorder
-}
-
-// SendMessage mocks base method.
-func (m *MockWebhookHandler) SendMessage(uri, method, dataType string, data []byte) (*http.Response, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendMessage", uri, method, dataType, data)
-	ret0, _ := ret[0].(*http.Response)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SendMessage indicates an expected call of SendMessage.
-func (mr *MockWebhookHandlerMockRecorder) SendMessage(uri, method, dataType, data interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockWebhookHandler)(nil).SendMessage), uri, method, dataType, data)
 }
 
 // SendWebhook mocks base method.
