@@ -7,8 +7,6 @@ create table flows(
   name      varchar(255),
   detail    text,
 
-  webhook_uri   varchar(1023),
-
   actions json,
 
   -- timestamps

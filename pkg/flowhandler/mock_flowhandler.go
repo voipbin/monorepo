@@ -98,26 +98,27 @@ func (mr *MockFlowHandlerMockRecorder) ActiveFlowSetForwardActionID(ctx, callID,
 }
 
 // FlowCreate mocks base method.
-func (m *MockFlowHandler) FlowCreate(ctx context.Context, customerID uuid.UUID, flowType flow.Type, name, detail string, persist bool, webhookURI string, actions []action.Action) (*flow.Flow, error) {
+func (m *MockFlowHandler) FlowCreate(ctx context.Context, customerID uuid.UUID, flowType flow.Type, name, detail string, persist bool, actions []action.Action) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowCreate", ctx, customerID, flowType, name, detail, persist, webhookURI, actions)
+	ret := m.ctrl.Call(m, "FlowCreate", ctx, customerID, flowType, name, detail, persist, actions)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowCreate indicates an expected call of FlowCreate.
-func (mr *MockFlowHandlerMockRecorder) FlowCreate(ctx, customerID, flowType, name, detail, persist, webhookURI, actions interface{}) *gomock.Call {
+func (mr *MockFlowHandlerMockRecorder) FlowCreate(ctx, customerID, flowType, name, detail, persist, actions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockFlowHandler)(nil).FlowCreate), ctx, customerID, flowType, name, detail, persist, webhookURI, actions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockFlowHandler)(nil).FlowCreate), ctx, customerID, flowType, name, detail, persist, actions)
 }
 
 // FlowDelete mocks base method.
-func (m *MockFlowHandler) FlowDelete(ctx context.Context, id uuid.UUID) error {
+func (m *MockFlowHandler) FlowDelete(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FlowDelete indicates an expected call of FlowDelete.
@@ -172,18 +173,18 @@ func (mr *MockFlowHandlerMockRecorder) FlowGetsByType(ctx, customerID, flowType,
 }
 
 // FlowUpdate mocks base method.
-func (m *MockFlowHandler) FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow, error) {
+func (m *MockFlowHandler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdate", ctx, f)
+	ret := m.ctrl.Call(m, "FlowUpdate", ctx, id, name, detail, actions)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowUpdate indicates an expected call of FlowUpdate.
-func (mr *MockFlowHandlerMockRecorder) FlowUpdate(ctx, f interface{}) *gomock.Call {
+func (mr *MockFlowHandlerMockRecorder) FlowUpdate(ctx, id, name, detail, actions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockFlowHandler)(nil).FlowUpdate), ctx, f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockFlowHandler)(nil).FlowUpdate), ctx, id, name, detail, actions)
 }
 
 // ValidateActions mocks base method.

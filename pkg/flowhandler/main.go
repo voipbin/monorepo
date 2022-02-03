@@ -1,6 +1,6 @@
 package flowhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package flowhandler -destination ./mock_flowhandler_flowhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package flowhandler -destination ./mock_flowhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -38,14 +38,13 @@ type FlowHandler interface {
 		name string,
 		detail string,
 		persist bool,
-		webhookURI string,
 		actions []action.Action,
 	) (*flow.Flow, error)
-	FlowDelete(ctx context.Context, id uuid.UUID) error
+	FlowDelete(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
 	FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
-	FlowUpdate(ctx context.Context, f *flow.Flow) (*flow.Flow, error)
+	FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error)
 
 	ValidateActions(actions []action.Action) error
 }

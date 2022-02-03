@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
@@ -32,7 +33,7 @@ type DBHandler interface {
 	FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
 	FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
 	FlowSetToCache(ctx context.Context, f *flow.Flow) error
-	FlowUpdate(ctx context.Context, f *flow.Flow) error
+	FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error
 	FlowUpdateToCache(ctx context.Context, id uuid.UUID) error
 }
 

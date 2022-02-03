@@ -28,13 +28,13 @@ func (h *listenHandler) v1FlowsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhan
 	tmpVals := strings.Split(u.Path, "/")
 	flowID := uuid.FromStringOrNil(tmpVals[3])
 
-	flow, err := h.flowHandler.FlowGet(ctx, flowID)
+	tmp, err := h.flowHandler.FlowGet(ctx, flowID)
 	if err != nil {
 		logrus.Errorf("Could not get flow info. err: %v", err)
 		return nil, err
 	}
 
-	data, err := json.Marshal(flow)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		logrus.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
@@ -50,10 +50,10 @@ func (h *listenHandler) v1FlowsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhan
 }
 
 // v1FlowsIDPut handles /v1/flows/{id} PUT request
-func (h *listenHandler) v1FlowsIDPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FlowsIDPut(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -62,28 +62,19 @@ func (h *listenHandler) v1FlowsIDPut(req *rabbitmqhandler.Request) (*rabbitmqhan
 	tmpVals := strings.Split(u.Path, "/")
 	flowID := uuid.FromStringOrNil(tmpVals[3])
 
-	var reqData request.V1DataFlowIDPut
-	if err := json.Unmarshal(req.Data, &reqData); err != nil {
+	var req request.V1DataFlowIDPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
 		logrus.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
 
-	// create a update flow
-	f := &flow.Flow{
-		ID:         flowID,
-		Name:       reqData.Name,
-		Detail:     reqData.Detail,
-		WebhookURI: reqData.WebhookURI,
-		Actions:    reqData.Actions,
-	}
-
-	flow, err := h.flowHandler.FlowUpdate(ctx, f)
+	tmp, err := h.flowHandler.FlowUpdate(ctx, flowID, req.Name, req.Detail, req.Actions)
 	if err != nil {
 		logrus.Errorf("Could not update the flow info. err: %v", err)
 		return nil, err
 	}
 
-	data, err := json.Marshal(flow)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		logrus.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
@@ -111,12 +102,21 @@ func (h *listenHandler) v1FlowsIDDelete(req *rabbitmqhandler.Request) (*rabbitmq
 	tmpVals := strings.Split(u.Path, "/")
 	flowID := uuid.FromStringOrNil(tmpVals[3])
 
-	if err := h.flowHandler.FlowDelete(ctx, flowID); err != nil {
+	tmp, err := h.flowHandler.FlowDelete(ctx, flowID)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -147,7 +147,6 @@ func (h *listenHandler) v1FlowsPost(m *rabbitmqhandler.Request) (*rabbitmqhandle
 		req.Name,
 		req.Detail,
 		req.Persist,
-		req.WebhookURI,
 		req.Actions,
 	)
 	if err != nil {
