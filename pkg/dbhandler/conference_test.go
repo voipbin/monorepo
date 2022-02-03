@@ -116,30 +116,6 @@ func TestConferenceCreate(t *testing.T) {
 			},
 		},
 		{
-			"set webhook uri",
-			&conference.Conference{
-				ID:           uuid.FromStringOrNil("6cbf3216-1ff6-11ec-874c-9fdc6af9a2e1"),
-				CustomerID:   uuid.FromStringOrNil("58fc0700-7f45-11ec-baf5-777d2c95c222"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("71aac0ec-1ff6-11ec-bfd0-af46a0a99821")},
-				WebhookURI:   "test.com/webhook",
-			},
-			&conference.Conference{
-				ID:           uuid.FromStringOrNil("6cbf3216-1ff6-11ec-874c-9fdc6af9a2e1"),
-				CustomerID:   uuid.FromStringOrNil("58fc0700-7f45-11ec-baf5-777d2c95c222"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("71aac0ec-1ff6-11ec-bfd0-af46a0a99821")},
-				WebhookURI:   "test.com/webhook",
-			},
-		},
-		{
 			"set pre actions",
 			&conference.Conference{
 				ID:         uuid.FromStringOrNil("3824d0e4-3be7-11ec-b046-674e88e91f56"),

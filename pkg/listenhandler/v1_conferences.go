@@ -78,7 +78,7 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmqhandler.Request) (*r
 	}
 
 	// create conference
-	cf, err := h.conferenceHandler.Create(ctx, conference.Type(data.Type), data.CustomerID, data.Name, data.Detail, data.Timeout, data.WebhookURI, data.PreActions, data.PostActions)
+	cf, err := h.conferenceHandler.Create(ctx, conference.Type(data.Type), data.CustomerID, data.Name, data.Detail, data.Timeout, data.PreActions, data.PostActions)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
@@ -147,7 +147,7 @@ func (h *listenHandler) processV1ConferencesIDPut(m *rabbitmqhandler.Request) (*
 		return nil, err
 	}
 
-	cf, err := h.conferenceHandler.Update(ctx, id, data.Name, data.Detail, data.Timeout, data.WebhookURI, data.PreActions, data.PostActions)
+	cf, err := h.conferenceHandler.Update(ctx, id, data.Name, data.Detail, data.Timeout, data.PreActions, data.PostActions)
 	if err != nil {
 		log.Errorf("Could not update the conference. err: %v", err)
 		return simpleResponse(400), nil

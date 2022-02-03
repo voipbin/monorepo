@@ -16,7 +16,6 @@ type V1DataConferencesPost struct {
 	Name        string                 `json:"name"`
 	Detail      string                 `json:"detail"`
 	Timeout     int                    `json:"timeout"`     // timeout. second
-	WebhookURI  string                 `json:"webhook_uri"` // webhook uri
 	Data        map[string]interface{} `json:"data"`
 	PreActions  []fmaction.Action      `json:"pre_actions"`  // actions before enter the conference.
 	PostActions []fmaction.Action      `json:"post_actions"` // actions after leave the conference.
@@ -29,7 +28,6 @@ type V1DataConferencesIDPut struct {
 	Name        string            `json:"name"`
 	Detail      string            `json:"detail"`
 	Timeout     int               `json:"timeout"`      // timeout. second
-	WebhookURI  string            `json:"webhook_uri"`  // webhook uri
 	PreActions  []fmaction.Action `json:"pre_actions"`  // actions before enter the conference.
 	PostActions []fmaction.Action `json:"post_actions"` // actions after leave the conference.
 }

@@ -85,7 +85,7 @@ func TestTerminateConference(t *testing.T) {
 				mockReq.EXPECT().CMV1ConfbridgeDelete(gomock.Any(), tt.conference.ConfbridgeID).Return(nil)
 				mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
 				mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), conference.EventTypeConferenceDeleted, tt.conference.WebhookURI, tt.conference)
+				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)
 			}
 
 			if err := h.Terminate(ctx, tt.conference.ID); err != nil {

@@ -27,7 +27,6 @@ type ConferenceHandler interface {
 		name string,
 		detail string,
 		timeout int,
-		webhookURI string,
 		preActions []action.Action,
 		postActions []action.Action,
 	) (*conference.Conference, error)
@@ -39,7 +38,6 @@ type ConferenceHandler interface {
 		name string,
 		detail string,
 		timeout int,
-		webhookURI string,
 		preActions []action.Action,
 		postActions []action.Action,
 	) (*conference.Conference, error)

@@ -37,7 +37,7 @@ func (h *conferenceHandler) Joined(ctx context.Context, conferenceID, callID uui
 	if err != nil {
 		log.Errorf("Could not get updated conference info. err: %v", err)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, conference.EventTypeConferenceUpdated, tmpCf.WebhookURI, tmpCf)
+	h.notifyHandler.PublishWebhookEvent(ctx, tmpCf.CustomerID, conference.EventTypeConferenceUpdated, tmpCf)
 
 	return nil
 }

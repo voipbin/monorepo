@@ -91,7 +91,7 @@ func (h *conferenceHandler) Destroy(ctx context.Context, cf *conference.Conferen
 		log.Errorf("Could not get updated conference info. err: %v", err)
 		return nil
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, conference.EventTypeConferenceDeleted, tmpConf.WebhookURI, tmpConf)
+	h.notifyHandler.PublishWebhookEvent(ctx, tmpConf.CustomerID, conference.EventTypeConferenceDeleted, tmpConf)
 
 	return nil
 }
