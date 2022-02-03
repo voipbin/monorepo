@@ -9,7 +9,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
@@ -405,7 +404,7 @@ func (h *callHandler) startHandlerContextApplication(ctx context.Context, cn *ch
 
 // addCallBridge creates a join bridge and put the channel into the join bridge.
 func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, referenceType bridge.ReferenceType, referenceID uuid.UUID) (string, error) {
-	log := logrus.WithFields(log.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func":    "addJoinBridge",
 		"channel": cn,
 	})
@@ -451,8 +450,8 @@ func getDomainTypeIncomingCall(domain string) string {
 func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
 	cfID := uuid.FromStringOrNil(cn.DestinationNumber)
 
-	log := log.WithFields(
-		log.Fields{
+	log := logrus.WithFields(
+		logrus.Fields{
 			"channel":    cn.ID,
 			"asterisk":   cn.AsteriskID,
 			"conference": cfID,
@@ -507,7 +506,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 		log.Errorf("Could not create a call info. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		_ = h.reqHandler.AstBridgeDelete(ctx, cn.AsteriskID, callBridgeID)
-		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+		return fmt.Errorf("could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 	log = log.WithFields(
 		logrus.Fields{
@@ -522,8 +521,8 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 
 // typeFlowStart handles flow calltype start.
 func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
-	log := log.WithFields(
-		log.Fields{
+	log := logrus.WithFields(
+		logrus.Fields{
 			"channel":  cn.ID,
 			"asterisk": cn.AsteriskID,
 		})
@@ -546,7 +545,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 
 	// create a temp call info
 	// todo: need to be fixed to set to the number's customer id
-	tmpCall := call.NewCallByChannel(cn, uuid.Nil, call.TypeSipService, call.DirectionIncoming, data)
+	tmpCall := call.NewCallByChannel(cn, numb.CustomerID, call.TypeFlow, call.DirectionIncoming, data)
 	tmpCall.FlowID = numb.FlowID
 	log = log.WithFields(
 		logrus.Fields{
@@ -578,7 +577,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 		log.Errorf("Could not create a call info. Hangup the call. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		_ = h.reqHandler.AstBridgeDelete(ctx, cn.AsteriskID, callBridgeID)
-		return fmt.Errorf("Could not create a call. call: %s, err: %v", c.ID, err)
+		return fmt.Errorf("could not create a call. call: %s, err: %v", c.ID, err)
 	}
 	log = log.WithFields(
 		logrus.Fields{
@@ -591,8 +590,8 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 
 // typeSipServiceStart handles sip-service calltype request.
 func (h *callHandler) typeSipServiceStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
-	log := log.WithFields(
-		log.Fields{
+	log := logrus.WithFields(
+		logrus.Fields{
 			"channel":  cn.ID,
 			"asterisk": cn.AsteriskID,
 		})
@@ -624,7 +623,7 @@ func (h *callHandler) typeSipServiceStart(ctx context.Context, cn *channel.Chann
 		log.Errorf("Could not create a call info. Hangup the call. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
 		_ = h.reqHandler.AstBridgeDelete(ctx, cn.AsteriskID, callBridgeID)
-		return fmt.Errorf("Could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+		return fmt.Errorf("could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 	log = log.WithFields(
 		logrus.Fields{
@@ -638,14 +637,14 @@ func (h *callHandler) typeSipServiceStart(ctx context.Context, cn *channel.Chann
 	act, err := h.getSipServiceAction(ctx, c, cn)
 	if err != nil {
 		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not get action handle for sip-service. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
+		return fmt.Errorf("could not get action handle for sip-service. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
 	// execute action
 	if err := h.ActionExecute(ctx, c, act); err != nil {
 		log.Errorf("Could not execte the action. Hanging up the call. action: %s", act.Type)
 		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("Could not get execute the action. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
+		return fmt.Errorf("could not get execute the action. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
 	}
 
 	return nil
@@ -664,7 +663,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		option := action.OptionAnswer{}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeAnswer, err)
+			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", action.TypeAnswer, err)
 		}
 
 		// create an action
@@ -681,7 +680,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeConferenceJoin, err)
+			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", action.TypeConferenceJoin, err)
 		}
 
 		// create an action
@@ -704,7 +703,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("Could not marshal the option echo. action: %s, err: %v", action.TypeEcho, err)
+			return nil, fmt.Errorf("could not marshal the option echo. action: %s, err: %v", action.TypeEcho, err)
 		}
 
 		// create an action
@@ -726,7 +725,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypePlay, err)
+			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", action.TypePlay, err)
 		}
 
 		// create an action
@@ -743,7 +742,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("Could not marshal the option. action: %s, err: %v", action.TypeStreamEcho, err)
+			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", action.TypeStreamEcho, err)
 		}
 
 		// create an action
