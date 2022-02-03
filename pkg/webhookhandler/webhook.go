@@ -32,7 +32,7 @@ func (h *webhookHandler) SendWebhook(w *webhook.Webhook) error {
 
 	// send message
 	go func() {
-		res, err := h.SendMessage(m.WebhookURI, m.WebhookMethod, string(w.DataType), []byte(w.Data))
+		res, err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(w.DataType), []byte(w.Data))
 		if err != nil {
 			log.Errorf("Could not send a request. err: %v", err)
 			return

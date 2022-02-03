@@ -8,8 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// SendMessage sends the message to the given uri with the given method and data.
-func (h *webhookHandler) SendMessage(uri string, method string, dataType string, data []byte) (*http.Response, error) {
+// sendMessage sends the message to the given uri with the given method and data.
+func (h *webhookHandler) sendMessage(uri string, method string, dataType string, data []byte) (*http.Response, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{

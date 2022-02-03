@@ -53,7 +53,7 @@ func TestSendMessage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			resp, err := h.SendMessage(tt.uri, tt.method, tt.dataType, tt.data)
+			resp, err := h.sendMessage(tt.uri, tt.method, tt.dataType, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
