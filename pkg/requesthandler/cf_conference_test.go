@@ -152,7 +152,7 @@ func TestCFV1ConferenceCreate(t *testing.T) {
 				URI:      "/v1/conferences",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type":"connect","customer_id":"9d27750e-7f4f-11ec-b98f-839769cdfb25","name":"test","detail":"test detail","timeout":86400000,"webhook_uri":"","data":null,"pre_actions":null,"post_actions":null}`),
+				Data:     []byte(`{"type":"connect","customer_id":"9d27750e-7f4f-11ec-b98f-839769cdfb25","name":"test","detail":"test detail","timeout":86400000,"data":null,"pre_actions":null,"post_actions":null}`),
 			},
 			&cfconference.Conference{
 				ID:         uuid.FromStringOrNil("04432fd6-3d19-11ec-8ad9-43e6162f0953"),
@@ -170,7 +170,7 @@ func TestCFV1ConferenceCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.CFV1ConferenceCreate(ctx, tt.expectConference.CustomerID, tt.expectConference.Type, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, "", nil, nil, nil)
+			cf, err := reqHandler.CFV1ConferenceCreate(ctx, tt.expectConference.CustomerID, tt.expectConference.Type, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, nil, nil, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
