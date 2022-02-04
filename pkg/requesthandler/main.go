@@ -17,6 +17,7 @@ import (
 	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -247,6 +248,7 @@ type RequestHandler interface {
 	// call-manager call
 	CMV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
 	CMV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) error
+	CMV1CallAddExternalMedia(ctx context.Context, callID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmresponse.V1ResponseCallsIDExternalMediaPost, error)
 	CMV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
 	CMV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
 	CMV1CallCreate(ctx context.Context, customerID uuid.UUID, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error)

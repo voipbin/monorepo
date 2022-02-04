@@ -19,6 +19,7 @@ import (
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	response "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -732,6 +733,21 @@ func (m *MockRequestHandler) CMV1CallAddChainedCall(ctx context.Context, callID,
 func (mr *MockRequestHandlerMockRecorder) CMV1CallAddChainedCall(ctx, callID, chainedCallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallAddChainedCall", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallAddChainedCall), ctx, callID, chainedCallID)
+}
+
+// CMV1CallAddExternalMedia mocks base method.
+func (m *MockRequestHandler) CMV1CallAddExternalMedia(ctx context.Context, callID uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*response.V1ResponseCallsIDExternalMediaPost, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMV1CallAddExternalMedia", ctx, callID, externalHost, encapsulation, transport, connectionType, format, direction)
+	ret0, _ := ret[0].(*response.V1ResponseCallsIDExternalMediaPost)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMV1CallAddExternalMedia indicates an expected call of CMV1CallAddExternalMedia.
+func (mr *MockRequestHandlerMockRecorder) CMV1CallAddExternalMedia(ctx, callID, externalHost, encapsulation, transport, connectionType, format, direction interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallAddExternalMedia", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallAddExternalMedia), ctx, callID, externalHost, encapsulation, transport, connectionType, format, direction)
 }
 
 // CMV1CallCreate mocks base method.
