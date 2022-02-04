@@ -14,8 +14,8 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220131015406-68c5d0a1a790
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220203012553-7a6af2df4d9e
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220203051250-eb0cbf31d1d0
-	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220202153105-5b9ba1f13450
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220203063008-305be30288a4
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220203044108-296babaad5c9
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220203040003-c3e12fd9785e
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220129111655-419853d35f8c
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220129111440-7128c74e331c
@@ -24,7 +24,7 @@ require (
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220129091806-b8d5c0eb6df5
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20211221033736-1c9c086d3d00
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
-	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220201120043-a1f8c833dfa0
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220203062028-e58cb4d7c71e
 )
 
 require (

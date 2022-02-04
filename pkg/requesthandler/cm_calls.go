@@ -10,6 +10,7 @@ import (
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
+	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -272,4 +273,53 @@ func (r *requestHandler) CMV1CallAddChainedCall(ctx context.Context, callID uuid
 	}
 
 	return nil
+}
+
+// CMV1CallAddChainedCall sends a request to call-manager
+// to add the chained call to the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CMV1CallAddExternalMedia(
+	ctx context.Context,
+	callID uuid.UUID,
+	externalHost string, // external host:port
+	encapsulation string, // rtp
+	transport string, // udp
+	connectionType string, // client,server
+	format string, // ulaw
+	direction string, // in,out,both
+) (*cmresponse.V1ResponseCallsIDExternalMediaPost, error) {
+	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
+
+	reqData := &cmrequest.V1DataCallsIDExternalMediaPost{
+		ExternalHost:   externalHost,
+		Encapsulation:  encapsulation,
+		Transport:      transport,
+		ConnectionType: connectionType,
+		Format:         format,
+		Direction:      direction,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData cmresponse.V1ResponseCallsIDExternalMediaPost
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
+
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -619,6 +620,81 @@ func TestCMCallHangup(t *testing.T) {
 
 			if reflect.DeepEqual(*tt.expectResult, *res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			}
+		})
+	}
+}
+
+func TestCMV1CallAddExternalMedia(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	type test struct {
+		name string
+
+		callID         uuid.UUID
+		externalHost   string
+		encapsulation  string
+		transport      string
+		connectionType string
+		format         string
+		direction      string
+
+		response *rabbitmqhandler.Response
+
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cmresponse.V1ResponseCallsIDExternalMediaPost
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"),
+			"localhost:5060",
+			"rtp",
+			"udp",
+			"client",
+			"ulaw",
+			"both",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"media_addr_ip":"127.0.0.1","media_addr_port":9999}`),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb/external-media",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+			},
+			&cmresponse.V1ResponseCallsIDExternalMediaPost{
+				MediaAddrIP:   "127.0.0.1",
+				MediaAddrPort: 9999,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CMV1CallAddExternalMedia(ctx, tt.callID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
