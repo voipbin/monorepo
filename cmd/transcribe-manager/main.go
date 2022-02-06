@@ -15,14 +15,17 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 )
+
+const serviceName = "transcribe-manager"
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -31,12 +34,8 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.transcribe-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.transcribe-manager.event", "rabbitmq queue name for event notify")
 
-var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for call-manager request")
-var rabbitQueueStorageRequest = flag.String("rabbit_queue_storage", "bin-manager.storage-manager.request", "rabbitmq queue name for storage-manager request")
-var rabbitQueueWebhookRequest = flag.String("rabbit_queue_webhook", "bin-manager.webhook-manager.request", "rabbitmq queue name for webhook-manager request")
-
+var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.transcribe-manager.event", "rabbitmq exchange name for event notify")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -53,8 +52,6 @@ var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 // gcp info
 var gcpCredential = flag.String("gcp_credential", "./google_service_account.json", "the GCP credential file path")
-var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
-var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name to use")
 
 func main() {
 	fmt.Printf("Starting transcribe-manager.\n")
@@ -74,10 +71,8 @@ func main() {
 		return
 	}
 
-	run(sqlDB, cache)
+	_ = run(sqlDB, cache)
 	<-chDone
-
-	return
 }
 
 // proces init
@@ -111,7 +106,7 @@ func initLog() {
 
 // initSignal inits sinal settings.
 func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 }
 
@@ -150,16 +145,11 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock.Connect()
 
 	// request handler
-	reqHandler := requesthandler.NewRequestHandler(
-		rabbitSock,
-		*rabbitExchangeDelay,
-		*rabbitQueueCallRequest,
-		*rabbitQueueStorageRequest,
-		*rabbitQueueWebhookRequest,
-	)
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 
 	hostID := uuid.Must(uuid.NewV4())
-	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, cache, *gcpCredential, *gcpProjectID, *gcpBucketName, hostID)
+	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, *gcpCredential, hostID)
 	listenHandler := listenhandler.NewListenHandler(hostID, rabbitSock, reqHandler, transcribeHandler)
 
 	// run

@@ -5,110 +5,39 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/text/language"
-	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
 
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 // Recording transcribe the recoring and send the webhook
-func (h *transcribeHandler) Recording(recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
-
-	// do transcribe recording
-	tmp, err := h.transcribeRecording(recordingID, language)
-	if err != nil {
-		logrus.Errorf("Coudl not convert to text. err: %v", err)
-		return nil, err
-	}
-
-	s := &transcribe.Transcribe{
-		ID:            uuid.Must(uuid.NewV4()),
-		Type:          transcribe.TypeRecording,
-		ReferenceID:   recordingID,
-		HostID:        h.hostID,
-		Language:      language,
-		WebhookURI:    "",
-		WebhookMethod: "",
-		Transcripts:   []transcribe.Transcript{*tmp},
-	}
-
-	return s, nil
-}
-
-// transcribeRecording transcribe the recording
-func (h *transcribeHandler) transcribeRecording(recordingID uuid.UUID, language string) (*transcribe.Transcript, error) {
-
-	// validate language
-	lang := h.getBCP47LanguageCode(language)
-
-	// send a request to storage-handler to get a media link
-	rec, err := h.reqHandler.SMRecordingGet(recordingID)
-	if err != nil {
-		return nil, err
-	}
-
-	message, err := h.transcribeFromBucket(rec.BucketURI, lang)
-	if err != nil {
-		return nil, err
-	}
-
-	ts := "0000-00-00 00:00:00.00000"
-	res := &transcribe.Transcript{
-		Direction: transcribe.TranscriptDirectionBoth,
-		Message:   message,
-		TMCreate:  ts,
-	}
-
-	return res, nil
-}
-
-// getBCP47LanguageCode returns BCP47 type of language code
-func (h *transcribeHandler) getBCP47LanguageCode(lang string) string {
-	tag := language.BCP47.Make(lang)
-
-	if tag.String() == "und" {
-		return "en-US"
-	}
-
-	return tag.String()
-}
-
-// transcribeFromBucket does transcribe from the bucket file
-func (h *transcribeHandler) transcribeFromBucket(mediaLink string, language string) (string, error) {
-
-	ctx := context.Background()
-
-	// Send the contents of the audio file with the encoding and
-	// and sample rate information to be transcripted.
-	req := &speechpb.LongRunningRecognizeRequest{
-		Config: &speechpb.RecognitionConfig{
-			Encoding:        speechpb.RecognitionConfig_LINEAR16,
-			SampleRateHertz: 8000,
-			LanguageCode:    language,
+func (h *transcribeHandler) Recording(ctx context.Context, customerID uuid.UUID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":         "Recording",
+			"recording_id": recordingID,
 		},
-		Audio: &speechpb.RecognitionAudio{
-			AudioSource: &speechpb.RecognitionAudio_Uri{
-				Uri: mediaLink,
-			},
-		},
-	}
+	)
 
-	op, err := h.clientSpeech.LongRunningRecognize(ctx, req)
+	lang := getBCP47LanguageCode(language)
+	log.Debugf("Parsed BCP47 language code. lang: %s", lang)
+
+	// transcribe the recording
+	tmp, err := h.sttGoogle.Recording(ctx, recordingID, lang)
 	if err != nil {
-		return "", err
+		log.Errorf("Coudl not transcribe the recording. err: %v", err)
+		return nil, err
 	}
-	resp, err := op.Wait(ctx)
+	transcripts := []transcript.Transcript{*tmp}
+
+	// create the transcribe
+	res, err := h.Create(ctx, customerID, recordingID, transcribe.TypeRecording, lang, common.DirectionBoth, transcripts)
 	if err != nil {
-		return "", err
+		log.Errorf("Could not create the transcribe. err: %v", err)
+		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, transcribe.EventTypeTranscribeCreated, res)
 
-	// Print the results.
-	for _, result := range resp.Results {
-		for _, alt := range result.Alternatives {
-			logrus.Debugf("\"%v\" (confidence=%3f)\n", alt.Transcript, alt.Confidence)
-		}
-	}
-
-	res := resp.Results[0].Alternatives[0].Transcript
 	return res, nil
 }

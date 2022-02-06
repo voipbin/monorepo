@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 const (
@@ -19,11 +20,10 @@ const (
 		customer_id,
 		type,
 		reference_id,
-		host_id,
 
+		host_id,
 		language,
-		webhook_uri,
-		webhook_method,
+		direction,
 
 		transcripts,
 
@@ -45,11 +45,10 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 		&res.CustomerID,
 		&res.Type,
 		&res.ReferenceID,
-		&res.HostID,
 
+		&res.HostID,
 		&res.Language,
-		&res.WebhookURI,
-		&res.WebhookMethod,
+		&res.Direction,
 
 		&transcripts,
 
@@ -64,7 +63,7 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 		return nil, fmt.Errorf("could not unmarshal the transcripts. transcribeGetFromRow. err: %v", err)
 	}
 	if res.Transcripts == nil {
-		res.Transcripts = []transcribe.Transcript{}
+		res.Transcripts = []transcript.Transcript{}
 	}
 
 	return res, nil
@@ -77,11 +76,10 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 		customer_id,
 		type,
 		reference_id,
-		host_id,
 
+		host_id,
 		language,
-		webhook_uri,
-		webhook_method,
+		direction,
 
 		transcripts,
 
@@ -90,14 +88,14 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 		tm_delete
 
 	) values(
-		?, ?, ?, ?, ?,
+		?, ?, ?, ?,
 		?, ?, ?,
 		?,
 		?, ?, ?
 		)`
 
 	if t.Transcripts == nil {
-		t.Transcripts = []transcribe.Transcript{}
+		t.Transcripts = []transcript.Transcript{}
 	}
 	tmpTranscripts, err := json.Marshal(t.Transcripts)
 	if err != nil {
@@ -109,11 +107,10 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 		t.CustomerID.Bytes(),
 		t.Type,
 		t.ReferenceID.Bytes(),
-		t.HostID.Bytes(),
 
+		t.HostID.Bytes(),
 		t.Language,
-		t.WebhookURI,
-		t.WebhookMethod,
+		t.Direction,
 
 		tmpTranscripts,
 
@@ -126,28 +123,28 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 	}
 
 	// update the cache
-	h.TranscribeUpdateToCache(ctx, t.ID)
+	_ = h.transcribeUpdateToCache(ctx, t.ID)
 
 	return nil
 }
 
-// TranscribeUpdateToCache gets the transcribe from the DB and update the cache.
-func (h *handler) TranscribeUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// transcribeUpdateToCache gets the transcribe from the DB and update the cache.
+func (h *handler) transcribeUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
 	res, err := h.TranscribeGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.TranscribeSetToCache(ctx, res); err != nil {
+	if err := h.transcribeSetToCache(ctx, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// TranscribeSetToCache sets the transcribe to the cache.
-func (h *handler) TranscribeSetToCache(ctx context.Context, t *transcribe.Transcribe) error {
+// transcribeSetToCache sets the transcribe to the cache.
+func (h *handler) transcribeSetToCache(ctx context.Context, t *transcribe.Transcribe) error {
 
 	if err := h.cache.TranscribeSet(ctx, t); err != nil {
 		return err
@@ -156,8 +153,8 @@ func (h *handler) TranscribeSetToCache(ctx context.Context, t *transcribe.Transc
 	return nil
 }
 
-// TranscribeGetFromCache gets the transcribe from the cache.
-func (h *handler) TranscribeGetFromCache(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
+// transcribeGetFromCache gets the transcribe from the cache.
+func (h *handler) transcribeGetFromCache(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
 
 	res, err := h.cache.TranscribeGet(ctx, id)
 	if err != nil {
@@ -170,7 +167,7 @@ func (h *handler) TranscribeGetFromCache(ctx context.Context, id uuid.UUID) (*tr
 // TranscribeGet returns transcribe.
 func (h *handler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
 
-	res, err := h.TranscribeGetFromCache(ctx, id)
+	res, err := h.transcribeGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
@@ -181,7 +178,7 @@ func (h *handler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.
 	}
 
 	// set to the cache
-	h.TranscribeSetToCache(ctx, res)
+	_ = h.transcribeSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -198,7 +195,7 @@ func (h *handler) TranscribeGetFromDB(ctx context.Context, id uuid.UUID) (*trans
 	}
 	defer row.Close()
 
-	if row.Next() == false {
+	if !row.Next() {
 		return nil, ErrNotFound
 	}
 
@@ -210,8 +207,30 @@ func (h *handler) TranscribeGetFromDB(ctx context.Context, id uuid.UUID) (*trans
 	return res, nil
 }
 
+// CustomerDelete deletes the customer.
+func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		transcribes
+	set
+		tm_delete = ?
+	where
+		id = ?
+	`
+	_, err := h.db.Exec(q, GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CustomerDelete. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.transcribeUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // TranscribeAddTranscript adds the transcript to the transcribe.
-func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *transcribe.Transcript) error {
+func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *transcript.Transcript) error {
 	// prepare
 	q := `
 	update transcribes set
@@ -230,13 +249,13 @@ func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *
 		return fmt.Errorf("could not marshal the transcripts. TranscribeAddTranscript. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, m, getCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, m, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. TranscribeAddTranscript. err: %v", err)
 	}
 
 	// update the cache
-	h.TranscribeUpdateToCache(ctx, id)
+	_ = h.transcribeUpdateToCache(ctx, id)
 
 	return nil
 }
