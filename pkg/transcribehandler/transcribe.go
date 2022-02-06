@@ -78,7 +78,7 @@ func (h *transcribeHandler) Create(
 		log.Errorf("Could not get created transcribe. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishEvent(ctx, transcribe.EventTypeTranscribeCreated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, transcribe.EventTypeTranscribeCreated, res)
 
 	return res, nil
 }

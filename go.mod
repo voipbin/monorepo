@@ -20,7 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220203012553-7a6af2df4d9e // indirect
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220204075237-265d126f3c81
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220206183531-32219d88ed20
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220203062028-e58cb4d7c71e // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect

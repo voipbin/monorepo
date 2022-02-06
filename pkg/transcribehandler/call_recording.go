@@ -49,8 +49,6 @@ func (h *transcribeHandler) CallRecording(ctx context.Context, customerID, callI
 		}
 		log.WithField("transcribe", tr).Debugf("Created the transcribe. transcribe_id: %s", tr.ID)
 
-		h.notifyHandler.PublishWebhookEvent(ctx, tr.CustomerID, transcribe.EventTypeTranscribeCreated, tr)
-
 		res = append(res, tr)
 	}
 

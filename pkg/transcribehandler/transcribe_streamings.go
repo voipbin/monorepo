@@ -22,7 +22,7 @@ func (h *transcribeHandler) deleteTranscribeStreamings(transcribeID uuid.UUID) {
 	delete(h.transcribeStreamingsMap, transcribeID)
 }
 
-// getServiceStreaming returns streaming
+// getTranscribeStreamings returns streaming
 func (h *transcribeHandler) getTranscribeStreamings(transcribeID uuid.UUID) []*streaming.Streaming {
 	defer h.transcribeStreamingsMu.Unlock()
 
