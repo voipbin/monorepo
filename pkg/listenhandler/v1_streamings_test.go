@@ -32,7 +32,7 @@ func TestProcessV1StreamingsPost(t *testing.T) {
 
 		customerID     uuid.UUID
 		referenceID    uuid.UUID
-		transcribeType transcribe.Type
+		referrenceType transcribe.Type
 		language       string
 
 		request       *rabbitmqhandler.Request
@@ -47,14 +47,14 @@ func TestProcessV1StreamingsPost(t *testing.T) {
 
 			uuid.FromStringOrNil("45afd578-7ffe-11ec-9430-3bdf65368563"),
 			uuid.FromStringOrNil("02c7a132-0be1-11ec-ba15-ebb66c983fba"),
-			"call",
+			transcribe.TypeCall,
 			"en-US",
 
 			&rabbitmqhandler.Request{
 				URI:      "/v1/streamings",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_id":"02c7a132-0be1-11ec-ba15-ebb66c983fba","customer_id":"45afd578-7ffe-11ec-9430-3bdf65368563","type":"call","language":"en-US"}`),
+				Data:     []byte(`{"reference_id":"02c7a132-0be1-11ec-ba15-ebb66c983fba","customer_id":"45afd578-7ffe-11ec-9430-3bdf65368563","reference_type":"call","language":"en-US"}`),
 			},
 			&transcribe.Transcribe{
 				ID:          uuid.FromStringOrNil("5f8cbc4e-0be2-11ec-8cf2-7f5531d8f428"),
@@ -75,9 +75,8 @@ func TestProcessV1StreamingsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTranscribe.EXPECT().StreamingTranscribeStart(gomock.Any(), tt.customerID, tt.referenceID, tt.transcribeType, tt.language).Return(tt.transcribeRes, nil)
+			mockTranscribe.EXPECT().StreamingTranscribeStart(gomock.Any(), tt.customerID, tt.referenceID, tt.referrenceType, tt.language).Return(tt.transcribeRes, nil)
 
-			// mockTranscribe.EXPECT().Recording(tt.referenceID, tt.language).Return(tt.transcribe, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
