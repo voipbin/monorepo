@@ -30,12 +30,10 @@ func TestProcessV1CallRecordingsPost(t *testing.T) {
 	type test struct {
 		name string
 
-		customerID    uuid.UUID
-		referenceID   uuid.UUID
-		language      string
-		webhookURI    string
-		webhookMethod string
-		request       *rabbitmqhandler.Request
+		customerID  uuid.UUID
+		referenceID uuid.UUID
+		language    string
+		request     *rabbitmqhandler.Request
 
 		responseRecording []*transcribe.Transcribe
 		expectRes         *rabbitmqhandler.Response
@@ -48,8 +46,6 @@ func TestProcessV1CallRecordingsPost(t *testing.T) {
 			uuid.FromStringOrNil("2f5a3352-85c8-11ec-a223-a394e8ca795b"),
 			uuid.FromStringOrNil("e3677524-9b38-11eb-8acb-c3e7da47b5e6"),
 			"en-US",
-			"http://test.com/webhook",
-			"POST",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/call_recordings",
 				Method:   rabbitmqhandler.RequestMethodPost,

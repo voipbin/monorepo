@@ -30,7 +30,7 @@ func (h *transcribeHandler) StreamingTranscribeStart(ctx context.Context, custom
 	}
 	log.WithField("transcribe", tr).Debugf("Created transcribe. transcribe_id: %s", tr.ID)
 
-	h.notifyHandler.PublishWebhookEvent(ctx, customerID, transcribe.EventTypeTranscribeStarted, tr)
+	h.notifyHandler.PublishWebhookEvent(ctx, tr.CustomerID, transcribe.EventTypeTranscribeStarted, tr)
 
 	// create streamings
 	streamings := []*streaming.Streaming{}
