@@ -376,9 +376,9 @@ type RequestHandler interface {
 	TMV1SpeecheCreate(ctx context.Context, text, gender, language string) (string, error)
 
 	// transcribe-manager
-	TSV1CallRecordingCreate(ctx context.Context, callID uuid.UUID, language, webhookURI, webhookMethod string, timeout, delay int) error
-	TSV1StreamingCreate(ctx context.Context, callID uuid.UUID, language, webhookURI, webhookMethod string) (*tstranscribe.Transcribe, error)
-	TSV1RecordingCreate(ctx context.Context, id uuid.UUID, language string) (*tstranscribe.Transcribe, error)
+	TSV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]tstranscribe.Transcribe, error)
+	TSV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType tstranscribe.Type, language string) (*tstranscribe.Transcribe, error)
+	TSV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*tstranscribe.Transcribe, error)
 
 	// user-manager
 	UMV1UserCreate(ctx context.Context, timeout int, username, password, name, detail string, permission umuser.Permission) (*umuser.User, error)

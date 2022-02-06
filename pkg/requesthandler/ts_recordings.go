@@ -15,11 +15,12 @@ import (
 // TSV1RecordingCreate sends a request to transcribe-manager
 // to transcode the exist recording.
 // it returns transcoded text if it succeed.
-func (r *requestHandler) TSV1RecordingCreate(ctx context.Context, id uuid.UUID, language string) (*tstranscribe.Transcribe, error) {
+func (r *requestHandler) TSV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*tstranscribe.Transcribe, error) {
 	uri := "/v1/recordings"
 
 	req := &tsrequest.V1DataRecordingsPost{
-		ReferenceID: id,
+		CustomerID:  customerID,
+		ReferenceID: recordingID,
 		Language:    language,
 	}
 
