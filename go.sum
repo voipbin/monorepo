@@ -706,6 +706,14 @@ gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220128055248-837e
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220128165154-0988e150ced8/go.mod h1:E6+PcOmr5XcovKvBLmWU28QykvDe7cq+wEmW7ex1uhY=
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220129091806-b8d5c0eb6df5 h1:nuDMA1z4NdHxFs6c5EmAscorI9N9CzlgpfyKYzNvlpg=
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220129091806-b8d5c0eb6df5/go.mod h1:a6H+xWE3wes8StUzuR7Dfn6OWrfxHLpRDYOhlWAAXrU=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206095709-e3616c7dc7c7 h1:BLCg7iVTmg4ruT6yXDXJgOgzX6RdOJafN1b2+BikkrI=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206095709-e3616c7dc7c7/go.mod h1:aArorOzU4MSYEq/YO6X16pyLVV0Oln4o4DziJHKAaGg=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206113141-dc56b0d5aa59 h1:SpDonJVJIylhD/LvpcLKx2c69nvc0+uEXQgRRAXpRVs=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206113141-dc56b0d5aa59/go.mod h1:aArorOzU4MSYEq/YO6X16pyLVV0Oln4o4DziJHKAaGg=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206180825-dac2bc9537e4 h1:tX2sMC5yqsXIHaxTYKuocmgtP1UlfLXkqMHYrZwcc3A=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206180825-dac2bc9537e4/go.mod h1:aArorOzU4MSYEq/YO6X16pyLVV0Oln4o4DziJHKAaGg=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206182758-bc66f5d62064 h1:PgM20YaDEt6Wx6BJnDgjIJOmqSeY/f0omYkCUXekUs0=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206182758-bc66f5d62064/go.mod h1:aArorOzU4MSYEq/YO6X16pyLVV0Oln4o4DziJHKAaGg=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210317181219-9039fab1cff3/go.mod h1:Ch6XLOR5rU+yI4Afq7daYwB519TaBtltBP7f1j6O3wA=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210323024756-a7b0838b069d/go.mod h1:Ch6XLOR5rU+yI4Afq7daYwB519TaBtltBP7f1j6O3wA=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20210926124840-54f19990bf19/go.mod h1:eSW41SzfQxb+UXE/K2Zh5mXif5OWaLRWjyhieFkU/sM=
@@ -990,6 +998,8 @@ golang.org/x/sys v0.0.0-20220111092808-5a964db01320/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20220114195835-da31bd327af9/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 h1:XDXtA5hveEEV8JB2l7nhMTp3t3cHp9ZpwcdjqyEWLlo=
 golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a h1:ppl5mZgokTT8uPkmYOyEUmPTr3ypaKkg5eFOGrAmxxE=
+golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=

@@ -6,22 +6,22 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmrequest "gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // TMStreamingsPost sends a request to transcribe-manager
 // to start the streaming transcribe
-func (r *requestHandler) TSV1StreamingCreate(ctx context.Context, callID uuid.UUID, language, webhookURI, webhookMethod string) (*transcribe.Transcribe, error) {
+func (r *requestHandler) TSV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType tstranscribe.Type, language string) (*tstranscribe.Transcribe, error) {
 	uri := "/v1/streamings"
 
 	data := &tmrequest.V1DataStreamingsPost{
-		ReferenceID:   callID,
-		Type:          string(transcribe.TypeCall),
+		CustomerID:    customerID,
+		ReferenceID:   referenceID,
+		ReferenceType: referenceType,
 		Language:      language,
-		WebhookURI:    webhookURI,
-		WebhookMethod: webhookMethod,
 	}
 
 	m, err := json.Marshal(data)
@@ -40,7 +40,7 @@ func (r *requestHandler) TSV1StreamingCreate(ctx context.Context, callID uuid.UU
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res transcribe.Transcribe
+	var res tstranscribe.Transcribe
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

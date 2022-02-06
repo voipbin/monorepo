@@ -6,37 +6,45 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmrequest "gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // TSV1CallRecordingCreate sends a request to transcribe-manager
 // to transcribe call-recording.
-func (r *requestHandler) TSV1CallRecordingCreate(ctx context.Context, callID uuid.UUID, language, webhookURI, webhookMethod string, timeout, delay int) error {
+func (r *requestHandler) TSV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]transcribe.Transcribe, error) {
 	uri := "/v1/call_recordings"
 
-	data := &tmrequest.V1DataCallRecordingsPost{
-		ReferenceID:   callID,
-		Language:      language,
-		WebhookURI:    webhookURI,
-		WebhookMethod: webhookMethod,
+	req := &tmrequest.V1DataCallRecordingsPost{
+		CustomerID:  customerID,
+		ReferenceID: callID,
+		Language:    language,
 	}
 
-	m, err := json.Marshal(data)
+	m, err := json.Marshal(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	tmp, err := r.sendRequestTS(uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeCallRecordings, timeout, delay, ContentTypeJSON, m)
+	res, err := r.sendRequestTS(uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeCallRecordings, timeout, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
-	case tmp == nil:
+		return nil, err
+	case res == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	return nil
+	var data []tstranscribe.Transcribe
+	if err := json.Unmarshal([]byte(res.Data), &data); err != nil {
+		return nil, err
+	}
+
+	return data, nil
+
 }

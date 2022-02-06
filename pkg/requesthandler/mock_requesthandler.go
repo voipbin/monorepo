@@ -1765,47 +1765,48 @@ func (mr *MockRequestHandlerMockRecorder) TMV1SpeecheCreate(ctx, text, gender, l
 }
 
 // TSV1CallRecordingCreate mocks base method.
-func (m *MockRequestHandler) TSV1CallRecordingCreate(ctx context.Context, callID uuid.UUID, language, webhookURI, webhookMethod string, timeout, delay int) error {
+func (m *MockRequestHandler) TSV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TSV1CallRecordingCreate", ctx, callID, language, webhookURI, webhookMethod, timeout, delay)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "TSV1CallRecordingCreate", ctx, customerID, callID, language, timeout, delay)
+	ret0, _ := ret[0].([]transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // TSV1CallRecordingCreate indicates an expected call of TSV1CallRecordingCreate.
-func (mr *MockRequestHandlerMockRecorder) TSV1CallRecordingCreate(ctx, callID, language, webhookURI, webhookMethod, timeout, delay interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TSV1CallRecordingCreate(ctx, customerID, callID, language, timeout, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TSV1CallRecordingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TSV1CallRecordingCreate), ctx, callID, language, webhookURI, webhookMethod, timeout, delay)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TSV1CallRecordingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TSV1CallRecordingCreate), ctx, customerID, callID, language, timeout, delay)
 }
 
 // TSV1RecordingCreate mocks base method.
-func (m *MockRequestHandler) TSV1RecordingCreate(ctx context.Context, id uuid.UUID, language string) (*transcribe.Transcribe, error) {
+func (m *MockRequestHandler) TSV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TSV1RecordingCreate", ctx, id, language)
+	ret := m.ctrl.Call(m, "TSV1RecordingCreate", ctx, customerID, recordingID, language)
 	ret0, _ := ret[0].(*transcribe.Transcribe)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TSV1RecordingCreate indicates an expected call of TSV1RecordingCreate.
-func (mr *MockRequestHandlerMockRecorder) TSV1RecordingCreate(ctx, id, language interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TSV1RecordingCreate(ctx, customerID, recordingID, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TSV1RecordingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TSV1RecordingCreate), ctx, id, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TSV1RecordingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TSV1RecordingCreate), ctx, customerID, recordingID, language)
 }
 
 // TSV1StreamingCreate mocks base method.
-func (m *MockRequestHandler) TSV1StreamingCreate(ctx context.Context, callID uuid.UUID, language, webhookURI, webhookMethod string) (*transcribe.Transcribe, error) {
+func (m *MockRequestHandler) TSV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType transcribe.Type, language string) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TSV1StreamingCreate", ctx, callID, language, webhookURI, webhookMethod)
+	ret := m.ctrl.Call(m, "TSV1StreamingCreate", ctx, customerID, referenceID, referenceType, language)
 	ret0, _ := ret[0].(*transcribe.Transcribe)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TSV1StreamingCreate indicates an expected call of TSV1StreamingCreate.
-func (mr *MockRequestHandlerMockRecorder) TSV1StreamingCreate(ctx, callID, language, webhookURI, webhookMethod interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TSV1StreamingCreate(ctx, customerID, referenceID, referenceType, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TSV1StreamingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TSV1StreamingCreate), ctx, callID, language, webhookURI, webhookMethod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TSV1StreamingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TSV1StreamingCreate), ctx, customerID, referenceID, referenceType, language)
 }
 
 // UMV1UserCreate mocks base method.
