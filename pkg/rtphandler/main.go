@@ -1,5 +1,7 @@
 package rtphandler
 
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package rtphandler -destination ./mock_rtphandler.go -source main.go -build_flags=-mod=mod
+
 import "net"
 
 type rtpHandler struct {
@@ -9,7 +11,7 @@ type rtpHandler struct {
 
 // RTPHandler interface for rtp handle
 type RTPHandler interface {
-	Serve() error
+	Serve()
 }
 
 // NewRTPHandler returns rtphandler

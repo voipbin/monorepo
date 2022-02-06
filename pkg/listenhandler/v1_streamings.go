@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/response"
@@ -24,24 +24,22 @@ func (h *listenHandler) processV1StreamingsPost(m *rabbitmqhandler.Request) (*ra
 
 	var reqData request.V1DataStreamingsPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		// same call-id is already exsit
 		logrus.Errorf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 
 	// do transcribe
 	ctx := context.Background()
-	trans, err := h.transcribeHandler.StreamingTranscribeStart(
-		ctx, reqData.CustomerID, reqData.ReferenceID, transcribe.Type(reqData.Type), reqData.Language, reqData.WebhookURI, reqData.WebhookMethod)
+	tr, err := h.transcribeHandler.StreamingTranscribeStart(ctx, reqData.CustomerID, reqData.ReferenceID, transcribe.Type(reqData.Type), reqData.Language)
 	if err != nil {
 		return simpleResponse(400), nil
 	}
 
-	s := &response.V1ResponseStreamingsPost{
-		Transcribe: trans,
+	tmp := &response.V1ResponseStreamingsPost{
+		Transcribe: tr,
 	}
 
-	d, err := json.Marshal(s)
+	d, err := json.Marshal(tmp)
 	if err != nil {
 		logrus.Errorf("Could not marshal the data. err: %v", err)
 		return simpleResponse(500), nil
@@ -74,13 +72,6 @@ func (h *listenHandler) processV1StreamingsIDDelete(m *rabbitmqhandler.Request) 
 	ctx := context.Background()
 	if err := h.transcribeHandler.StreamingTranscribeStop(ctx, id); err != nil {
 		log.Errorf("Could not stop the transcribe. err: %v", err)
-		return simpleResponse(400), nil
-	}
-
-	var reqData request.V1DataStreamingsPost
-	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		// same call-id is already exsit
-		logrus.Errorf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 

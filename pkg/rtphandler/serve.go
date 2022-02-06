@@ -5,7 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *rtpHandler) Serve() error {
+func (h *rtpHandler) Serve() {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "Serve",
@@ -16,10 +16,8 @@ func (h *rtpHandler) Serve() error {
 	// receive rtp
 	if err := h.recvRTP(); err != nil {
 		log.Errorf("Could not receive the RTP. err: %v", err)
-		return err
+		return
 	}
-
-	return nil
 }
 
 // recvRTP receives the RTP from the UDP connect and forward it to the target channel.
@@ -29,6 +27,7 @@ func (h *rtpHandler) recvRTP() error {
 			"func": "recvRTP",
 		},
 	)
+	defer close(h.chanRTP)
 
 	b := make([]byte, 2000)
 	rtpPacket := &rtp.Packet{}

@@ -4,11 +4,10 @@ create table transcribes(
   customer_id   binary(16),   -- customer id
   type          varchar(16),  -- type of transcribe
   reference_id  binary(16),   -- call/conference/recording's id
-  host_id       binary(16),   -- host id
 
-  language          varchar(16),    -- BCP47 type's language code. en-US
-  webhook_uri       varchar(1023),  -- webhook uri
-  webhook_method    varchar(16),    -- webhook method
+  host_id       binary(16),   -- host id
+  language      varchar(16),  -- BCP47 type's language code. en-US
+  direction     varchar(255),
 
   transcripts json, -- transcripts
 

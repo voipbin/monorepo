@@ -9,10 +9,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 )
 
-func TestProcessV1CallRecordingsPost(t *testing.T) {
+func TestProcessV1TranscribesIDDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -26,36 +27,34 @@ func TestProcessV1CallRecordingsPost(t *testing.T) {
 		transcribeHandler: mockTranscribe,
 	}
 
-	type test struct {
+	tests := []struct {
 		name string
 
-		customerID    uuid.UUID
-		referenceID   uuid.UUID
-		language      string
-		webhookURI    string
-		webhookMethod string
-		request       *rabbitmqhandler.Request
-		expectRes     *rabbitmqhandler.Response
-	}
+		id         uuid.UUID
+		customerID uuid.UUID
 
-	tests := []test{
+		request            *rabbitmqhandler.Request
+		responseTranscribe *transcribe.Transcribe
+
+		expectRes *rabbitmqhandler.Response
+	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("2f5a3352-85c8-11ec-a223-a394e8ca795b"),
-			uuid.FromStringOrNil("e3677524-9b38-11eb-8acb-c3e7da47b5e6"),
-			"en-US",
-			"http://test.com/webhook",
-			"POST",
+			uuid.FromStringOrNil("a4f388dc-86ab-11ec-8d14-9bd962288757"),
+			uuid.FromStringOrNil("45afd578-7ffe-11ec-9430-3bdf65368563"),
+
 			&rabbitmqhandler.Request{
-				URI:      "/v1/call_recordings",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"2f5a3352-85c8-11ec-a223-a394e8ca795b","reference_id":"e3677524-9b38-11eb-8acb-c3e7da47b5e6","language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
+				URI:    "/v1/transcribes/a4f388dc-86ab-11ec-8d14-9bd962288757",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+			&transcribe.Transcribe{
+				ID: uuid.FromStringOrNil("a4f388dc-86ab-11ec-8d14-9bd962288757"),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"a4f388dc-86ab-11ec-8d14-9bd962288757","customer_id":"00000000-0000-0000-0000-000000000000","type":"","reference_id":"00000000-0000-0000-0000-000000000000","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","transcripts":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -63,7 +62,8 @@ func TestProcessV1CallRecordingsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTranscribe.EXPECT().CallRecording(gomock.Any(), tt.customerID, tt.referenceID, tt.language, tt.webhookURI, tt.webhookMethod).Return(nil)
+			mockTranscribe.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTranscribe, nil)
+
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

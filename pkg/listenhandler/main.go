@@ -9,9 +9,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 )
 
@@ -40,7 +40,6 @@ type listenHandler struct {
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-	regAny  = "(.*)"
 
 	// v1
 
@@ -51,7 +50,11 @@ var (
 	regV1Recordings = regexp.MustCompile("/v1/recordings")
 
 	// streamings
-	regV1Streamings = regexp.MustCompile("/v1/streamings")
+	regV1Streamings   = regexp.MustCompile("/v1/streamings$")
+	regV1StreamingsID = regexp.MustCompile("/v1/streamings/" + regUUID + "$")
+
+	// transcribes
+	regV1TranscribesID = regexp.MustCompile("/v1/transcribes/" + regUUID + "$")
 )
 
 var (
@@ -238,7 +241,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// recordings
 	////////////////////
 	// POST /recordings
-	case regV1Recordings.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Recordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1RecordingsPost(m)
 		requestType = "/v1/recordings"
 
@@ -246,7 +249,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// call-recordings
 	////////////////////
 	// POST /call-recordings
-	case regV1CallRecordings.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1CallRecordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallRecordingsPost(m)
 		requestType = "/v1/call_recordings"
 
@@ -254,9 +257,22 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// streamings
 	////////////////////
 	// POST /streamings
-	case regV1Streamings.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Streamings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1StreamingsPost(m)
 		requestType = "/v1/streamings"
+
+	// DELETE /streamings/<id>
+	case regV1StreamingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1StreamingsIDDelete(m)
+		requestType = "/v1/streamings"
+
+	////////////////////
+	// transcribes
+	////////////////////
+	// DELETE /streamings/<id>
+	case regV1TranscribesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1TranscribesIDDelete(m)
+		requestType = "/v1/tyranscribes"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
@@ -284,7 +300,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 			}).Errorf("Could not process the request correctly. data: %s", m.Data)
 		response = simpleResponse(400)
 		err = nil
-		requestType = "notfound"
 	}
 
 	logrus.WithFields(
