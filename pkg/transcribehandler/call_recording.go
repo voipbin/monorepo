@@ -12,7 +12,7 @@ import (
 )
 
 // CallRecording transcribe the call's recordings
-func (h *transcribeHandler) CallRecording(ctx context.Context, customerID, callID uuid.UUID, language, webhookURI, webhookMethod string) error {
+func (h *transcribeHandler) CallRecording(ctx context.Context, customerID, callID uuid.UUID, language string) ([]*transcribe.Transcribe, error) {
 	log := logrus.New().WithFields(
 		logrus.Fields{
 			"func":        "CallRecording",
@@ -27,9 +27,10 @@ func (h *transcribeHandler) CallRecording(ctx context.Context, customerID, callI
 	// get call info
 	c, err := h.reqHandler.CMV1CallGet(ctx, callID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	res := []*transcribe.Transcribe{}
 	for _, recordingID := range c.RecordingIDs {
 
 		// do transcribe recording
@@ -41,15 +42,17 @@ func (h *transcribeHandler) CallRecording(ctx context.Context, customerID, callI
 		transcripts := []transcript.Transcript{*tmp}
 
 		// create transcribe
-		res, err := h.Create(ctx, customerID, recordingID, transcribe.TypeRecording, lang, common.DirectionBoth, transcripts)
+		tr, err := h.Create(ctx, customerID, recordingID, transcribe.TypeRecording, lang, common.DirectionBoth, transcripts)
 		if err != nil {
 			log.Errorf("Could not create the transcribe. err: %v", err)
 			continue
 		}
-		log.WithField("transcribe", res).Debugf("Created the transcribe. transcribe_id: %s", res.ID)
+		log.WithField("transcribe", tr).Debugf("Created the transcribe. transcribe_id: %s", tr.ID)
 
-		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, transcribe.EventTypeTranscribeCreated, res)
+		h.notifyHandler.PublishWebhookEvent(ctx, tr.CustomerID, transcribe.EventTypeTranscribeCreated, tr)
+
+		res = append(res, tr)
 	}
 
-	return nil
+	return res, nil
 }
