@@ -39,17 +39,18 @@ func (m *MockTranscribeHandler) EXPECT() *MockTranscribeHandlerMockRecorder {
 }
 
 // CallRecording mocks base method.
-func (m *MockTranscribeHandler) CallRecording(ctx context.Context, customerID, callID uuid.UUID, language, webhookURI, webhookMethod string) error {
+func (m *MockTranscribeHandler) CallRecording(ctx context.Context, customerID, callID uuid.UUID, language string) ([]*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallRecording", ctx, customerID, callID, language, webhookURI, webhookMethod)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "CallRecording", ctx, customerID, callID, language)
+	ret0, _ := ret[0].([]*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CallRecording indicates an expected call of CallRecording.
-func (mr *MockTranscribeHandlerMockRecorder) CallRecording(ctx, customerID, callID, language, webhookURI, webhookMethod interface{}) *gomock.Call {
+func (mr *MockTranscribeHandlerMockRecorder) CallRecording(ctx, customerID, callID, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallRecording", reflect.TypeOf((*MockTranscribeHandler)(nil).CallRecording), ctx, customerID, callID, language, webhookURI, webhookMethod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallRecording", reflect.TypeOf((*MockTranscribeHandler)(nil).CallRecording), ctx, customerID, callID, language)
 }
 
 // Create mocks base method.

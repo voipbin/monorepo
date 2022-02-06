@@ -34,7 +34,7 @@ type TranscribeHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	Get(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 
-	CallRecording(ctx context.Context, customerID, callID uuid.UUID, language, webhookURI, webhookMethod string) error
+	CallRecording(ctx context.Context, customerID, callID uuid.UUID, language string) ([]*transcribe.Transcribe, error)
 
 	Recording(ctx context.Context, customerID uuid.UUID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error)
 

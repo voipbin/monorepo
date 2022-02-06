@@ -28,14 +28,22 @@ func (h *listenHandler) processV1CallRecordingsPost(m *rabbitmqhandler.Request) 
 	}
 
 	// do transcribe
-	if err := h.transcribeHandler.CallRecording(ctx, reqData.CustomerID, reqData.ReferenceID, reqData.Language, reqData.WebhookURI, reqData.WebhookMethod); err != nil {
+	tmp, err := h.transcribeHandler.CallRecording(ctx, reqData.CustomerID, reqData.ReferenceID, reqData.Language)
+	if err != nil {
 		logrus.Debugf("Could not create transcribe. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	d, err := json.Marshal(tmp)
+	if err != nil {
+		logrus.Errorf("Could not marshal the data. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       d,
 	}
 
 	return res, nil
