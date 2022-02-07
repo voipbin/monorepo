@@ -79,7 +79,10 @@ func TestNMV1NumberCreate(t *testing.T) {
 		name string
 
 		customerID uuid.UUID
-		numbers    string
+		flowID     uuid.UUID
+		num        string
+		numberName string
+		detail     string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -93,24 +96,28 @@ func TestNMV1NumberCreate(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
+			uuid.FromStringOrNil("55b69e86-881c-11ec-8901-3b828e31a38d"),
 			"+821021656521",
+			"test name",
+			"test detail",
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/numbers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","number":"+821021656521"}`),
+				Data:     []byte(`{"customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","flow_id":"55b69e86-881c-11ec-8901-3b828e31a38d","number":"+821021656521","name":"test name","detail":"test detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20","number":"+821021656521","flow_id":"55b69e86-881c-11ec-8901-3b828e31a38d","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20"),
 				Number:              "+821021656521",
 				CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
+				FlowID:              uuid.FromStringOrNil("55b69e86-881c-11ec-8901-3b828e31a38d"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -129,7 +136,7 @@ func TestNMV1NumberCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberCreate(ctx, tt.customerID, tt.numbers)
+			res, err := reqHandler.NMV1NumberCreate(ctx, tt.customerID, tt.flowID, tt.num, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -364,7 +371,7 @@ func TestNMV1NumberDelete(t *testing.T) {
 	}
 }
 
-func TestNMV1NumberUpdate(t *testing.T) {
+func TestNMV1NumberUpdateBasicInfo(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -376,7 +383,9 @@ func TestNMV1NumberUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		number *nmnumber.Number
+		id         uuid.UUID
+		numberName string
+		detail     string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -389,17 +398,16 @@ func TestNMV1NumberUpdate(t *testing.T) {
 		{
 			"normal",
 
-			&nmnumber.Number{
-				ID:     uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
-				FlowID: uuid.FromStringOrNil("d45aae76-7c5b-11eb-9542-eb46d11b1c1a"),
-			},
+			uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
+			"test name",
+			"test detail",
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/numbers/d3877fec-7c5b-11eb-bb46-07fe08c74815",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"flow_id":"d45aae76-7c5b-11eb-9542-eb46d11b1c1a"}`),
+				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -429,7 +437,71 @@ func TestNMV1NumberUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberUpdate(ctx, tt.number)
+			res, err := reqHandler.NMV1NumberUpdateBasicInfo(ctx, tt.id, tt.numberName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectResult, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+			}
+		})
+	}
+}
+
+func TestNMV1NumberUpdateFlowID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	type test struct {
+		name string
+
+		id     uuid.UUID
+		flowID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectResult *nmnumber.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
+			uuid.FromStringOrNil("5f69889c-881e-11ec-b32e-93104f30aa92"),
+
+			"bin-manager.number-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/numbers/d3877fec-7c5b-11eb-bb46-07fe08c74815",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"flow_id":"5f69889c-881e-11ec-b32e-93104f30aa92"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815"}`),
+			},
+			&nmnumber.Number{
+				ID: uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.NMV1NumberUpdateFlowID(ctx, tt.id, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
