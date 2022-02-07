@@ -2,16 +2,17 @@ package numberhandlertelnyx
 
 import (
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 )
 
 // GetAvailableNumbers gets the numbers from the number providers
-func (h *numberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
+func (h *numberHandlerTelnyx) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
 
 	// send a request number providers
 
 	// telnyx
-	tmpNumbers, err := h.reqHandler.TelnyxAvailableNumberGets(countyCode, "", "", limit)
+	tmpNumbers, err := h.requestExternal.TelnyxAvailableNumberGets(countyCode, "", "", limit)
 	if err != nil {
 		logrus.Errorf("Could not get available numbers from the telnyx. err: %v", err)
 		return nil, err

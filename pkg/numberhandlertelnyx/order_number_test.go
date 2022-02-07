@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/telnyx"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 )
 
 func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
@@ -20,18 +20,22 @@ func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockExternal := requestexternal.NewMockRequestExternal(mc)
 
-	h := numberHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-		cache:      mockCache,
+	h := numberHandlerTelnyx{
+		reqHandler:      mockReq,
+		db:              mockDB,
+		requestExternal: mockExternal,
 	}
 
 	type test struct {
-		name       string
+		name string
+
 		customerID uuid.UUID
+		flowID     uuid.UUID
 		number     string
+		numberName string
+		detail     string
 
 		phoneNumbers []*telnyx.PhoneNumber
 	}
@@ -39,8 +43,13 @@ func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
+
 			uuid.FromStringOrNil("42975e92-7ff4-11ec-a6f9-0b55edda8dc3"),
+			uuid.FromStringOrNil("039bb60e-8821-11ec-86b3-8f80fcaf5d9f"),
 			"+821021656521",
+			"test name",
+			"test detail",
+
 			[]*telnyx.PhoneNumber{
 				{
 					ID:                    "1580568175064384684",
@@ -65,11 +74,11 @@ func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().TelnyxPhoneNumbersGet(uint(1), "", tt.number).Return(tt.phoneNumbers, nil)
-			mockReq.EXPECT().TelnyxPhoneNumbersIDUpdateConnectionID(tt.phoneNumbers[0].ID, ConnectionID).Return(tt.phoneNumbers[0], nil)
+			mockExternal.EXPECT().TelnyxPhoneNumbersGet(uint(1), "", tt.number).Return(tt.phoneNumbers, nil)
+			mockExternal.EXPECT().TelnyxPhoneNumbersIDUpdateConnectionID(tt.phoneNumbers[0].ID, ConnectionID).Return(tt.phoneNumbers[0], nil)
 			mockDB.EXPECT().NumberCreate(gomock.Any(), gomock.Any())
 			mockDB.EXPECT().NumberGet(gomock.Any(), gomock.Any())
-			_, err := h.createNumberByTelnyxOrderNumber(tt.customerID, tt.number)
+			_, err := h.createNumberByTelnyxOrderNumber(tt.customerID, tt.flowID, tt.number, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -83,12 +92,12 @@ func TestReleaseNumber(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockExternal := requestexternal.NewMockRequestExternal(mc)
 
-	h := numberHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-		cache:      mockCache,
+	h := numberHandlerTelnyx{
+		reqHandler:      mockReq,
+		db:              mockDB,
+		requestExternal: mockExternal,
 	}
 
 	type test struct {
@@ -110,7 +119,7 @@ func TestReleaseNumber(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().TelnyxPhoneNumbersIDDelete(tt.number.ProviderReferenceID)
+			mockExternal.EXPECT().TelnyxPhoneNumbersIDDelete(tt.number.ProviderReferenceID)
 			mockDB.EXPECT().NumberDelete(gomock.Any(), tt.number.ID)
 			mockDB.EXPECT().NumberGet(gomock.Any(), tt.number.ID)
 			_, err := h.ReleaseOrderNumber(ctx, tt.number)

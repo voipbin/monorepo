@@ -9,9 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
 )
 
 func TestProcessV1NumbersPost(t *testing.T) {
@@ -19,21 +17,22 @@ func TestProcessV1NumbersPost(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:    mockSock,
-		db:            mockDB,
-		reqHandler:    mockReq,
 		numberHandler: mockNumber,
 	}
 
 	type test struct {
-		name          string
-		customerID    uuid.UUID
-		number        string
+		name string
+
+		customerID uuid.UUID
+		flowID     uuid.UUID
+		num        string
+		numberName string
+		detail     string
+
 		createdNumber *number.Number
 
 		request  *rabbitmqhandler.Request
@@ -43,13 +42,20 @@ func TestProcessV1NumbersPost(t *testing.T) {
 	tests := []test{
 		{
 			"1 number",
-			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
-			"+821021656521",
-			&number.Number{
 
+			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+			uuid.FromStringOrNil("7051e796-8821-11ec-9b7d-d322b1036e7d"),
+			"+821021656521",
+			"test name",
+			"test detail",
+
+			&number.Number{
 				ID:                  uuid.FromStringOrNil("3a379dce-792a-11eb-a8e1-9f51cab620f8"),
 				Number:              "+821021656521",
 				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+				FlowID:              uuid.FromStringOrNil("7051e796-8821-11ec-9b7d-d322b1036e7d"),
+				Name:                "test name",
+				Detail:              "test detail",
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusActive,
@@ -60,12 +66,12 @@ func TestProcessV1NumbersPost(t *testing.T) {
 				URI:      "/v1/numbers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "72f3b054-7ff4-11ec-9af9-0b8c5dbee258", "number": "+821021656521"}`),
+				Data:     []byte(`{"customer_id": "72f3b054-7ff4-11ec-9af9-0b8c5dbee258", "flow_id": "7051e796-8821-11ec-9b7d-d322b1036e7d", "number": "+821021656521", "name": "test name", "detail": "test detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3a379dce-792a-11eb-a8e1-9f51cab620f8","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3a379dce-792a-11eb-a8e1-9f51cab620f8","number":"+821021656521","flow_id":"7051e796-8821-11ec-9b7d-d322b1036e7d","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -73,7 +79,7 @@ func TestProcessV1NumbersPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().CreateNumber(tt.customerID, tt.number).Return(tt.createdNumber, nil)
+			mockNumber.EXPECT().CreateNumber(tt.customerID, tt.flowID, tt.num, tt.numberName, tt.detail).Return(tt.createdNumber, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -92,14 +98,10 @@ func TestProcessV1NumbersIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:    mockSock,
-		db:            mockDB,
-		reqHandler:    mockReq,
 		numberHandler: mockNumber,
 	}
 
@@ -120,6 +122,8 @@ func TestProcessV1NumbersIDDelete(t *testing.T) {
 				ID:                  uuid.FromStringOrNil("9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f"),
 				Number:              "+821021656521",
 				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+				Name:                "test name",
+				Detail:              "test detail",
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusDeleted,
@@ -133,7 +137,7 @@ func TestProcessV1NumbersIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -160,14 +164,10 @@ func TestProcessV1NumbersIDGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:    mockSock,
-		db:            mockDB,
-		reqHandler:    mockReq,
 		numberHandler: mockNumber,
 	}
 
@@ -188,6 +188,8 @@ func TestProcessV1NumbersIDGet(t *testing.T) {
 				ID:                  uuid.FromStringOrNil("7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad"),
 				Number:              "+821021656521",
 				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+				Name:                "test name",
+				Detail:              "test detail",
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusActive,
@@ -201,7 +203,7 @@ func TestProcessV1NumbersIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -228,14 +230,10 @@ func TestProcessV1NumbersNumberGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:    mockSock,
-		db:            mockDB,
-		reqHandler:    mockReq,
 		numberHandler: mockNumber,
 	}
 
@@ -250,12 +248,14 @@ func TestProcessV1NumbersNumberGet(t *testing.T) {
 
 	tests := []test{
 		{
-			"1 number",
+			"normal",
 			"+821021656521",
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("52f48d94-7a57-11eb-bda1-57eb6d071e62"),
 				Number:              "+821021656521",
 				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+				Name:                "test name",
+				Detail:              "test detail",
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusActive,
@@ -269,7 +269,7 @@ func TestProcessV1NumbersNumberGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"52f48d94-7a57-11eb-bda1-57eb6d071e62","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"52f48d94-7a57-11eb-bda1-57eb6d071e62","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -296,19 +296,16 @@ func TestProcessV1NumbersGet(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:    mockSock,
-		db:            mockDB,
-		reqHandler:    mockReq,
 		numberHandler: mockNumber,
 	}
 
 	type test struct {
-		name       string
+		name string
+
 		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
@@ -320,7 +317,8 @@ func TestProcessV1NumbersGet(t *testing.T) {
 
 	tests := []test{
 		{
-			"1 number",
+			"normal",
+
 			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 			10,
 			"2021-03-01 03:30:17.000000",
@@ -329,6 +327,8 @@ func TestProcessV1NumbersGet(t *testing.T) {
 					ID:                  uuid.FromStringOrNil("eeafd418-7a4e-11eb-8750-9bb0ca1d7926"),
 					Number:              "+821021656521",
 					CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+					Name:                "test name",
+					Detail:              "test detail",
 					ProviderName:        number.ProviderNameTelnyx,
 					ProviderReferenceID: "",
 					Status:              number.StatusActive,
@@ -343,7 +343,49 @@ func TestProcessV1NumbersGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
+			"2 results",
+
+			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+			10,
+			"2021-03-01 03:30:17.000000",
+			[]*number.Number{
+				{
+					ID:                  uuid.FromStringOrNil("5c18ee62-8800-11ec-bb8b-b74be365ebf2"),
+					Number:              "+821100000001",
+					CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+					Name:                "test name",
+					Detail:              "test detail",
+					ProviderName:        number.ProviderNameTelnyx,
+					ProviderReferenceID: "",
+					Status:              number.StatusActive,
+					T38Enabled:          false,
+					EmergencyEnabled:    false,
+				},
+				{
+					ID:                  uuid.FromStringOrNil("69dc1916-8800-11ec-8e68-e74880ae3121"),
+					Number:              "+821100000002",
+					CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+					Name:                "test name",
+					Detail:              "test detail",
+					ProviderName:        number.ProviderNameTelnyx,
+					ProviderReferenceID: "",
+					Status:              number.StatusActive,
+					T38Enabled:          false,
+					EmergencyEnabled:    false,
+				},
+			},
+			&rabbitmqhandler.Request{
+				URI:    "/v1/numbers?customer_id=72f3b054-7ff4-11ec-9af9-0b8c5dbee258&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"5c18ee62-8800-11ec-bb8b-b74be365ebf2","number":"+821100000001","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"69dc1916-8800-11ec-8e68-e74880ae3121","number":"+821100000002","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -370,20 +412,20 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:    mockSock,
-		db:            mockDB,
-		reqHandler:    mockReq,
 		numberHandler: mockNumber,
 	}
 
 	type test struct {
-		name       string
-		updateInfo *number.Number
+		name string
+
+		id         uuid.UUID
+		numberName string
+		detail     string
+
 		resultData *number.Number
 
 		request  *rabbitmqhandler.Request
@@ -393,15 +435,18 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&number.Number{
-				ID:     uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
-				FlowID: uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
-			},
+
+			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+			"update name",
+			"update detail",
+
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
 				FlowID:              uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
 				Number:              "+821021656521",
 				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+				Name:                "update name",
+				Detail:              "update detail",
 				ProviderName:        number.ProviderNameTelnyx,
 				ProviderReferenceID: "",
 				Status:              number.StatusActive,
@@ -412,12 +457,12 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6"}`),
+				Data:     []byte(`{"flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6", "name": "update name", "detail": "update detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","number":"+821021656521","flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","number":"+821021656521","flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -425,7 +470,82 @@ func TestProcessV1NumbersIDPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().UpdateNumber(gomock.Any(), tt.updateInfo).Return(tt.resultData, nil)
+			mockNumber.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.numberName, tt.detail).Return(tt.resultData, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+
+		})
+	}
+}
+
+func TestProcessV1NumbersIDFlowIDPut(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:    mockSock,
+		numberHandler: mockNumber,
+	}
+
+	type test struct {
+		name string
+
+		id     uuid.UUID
+		flowID uuid.UUID
+
+		resultData *number.Number
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+			uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
+
+			&number.Number{
+				ID:                  uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+				FlowID:              uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
+				Number:              "+821021656521",
+				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+				Name:                "update name",
+				Detail:              "update detail",
+				ProviderName:        number.ProviderNameTelnyx,
+				ProviderReferenceID: "",
+				Status:              number.StatusActive,
+				T38Enabled:          false,
+				EmergencyEnabled:    false,
+			},
+			&rabbitmqhandler.Request{
+				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f/flow_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","number":"+821021656521","flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockNumber.EXPECT().UpdateFlowID(gomock.Any(), tt.id, tt.flowID).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -18,6 +18,9 @@ const (
 		flow_id,
 		customer_id,
 
+		name,
+		detail,
+
 		provider_name,
 		provider_reference_id,
 
@@ -44,6 +47,9 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 		&res.Number,
 		&res.FlowID,
 		&res.CustomerID,
+
+		&res.Name,
+		&res.Detail,
 
 		&res.ProviderName,
 		&res.ProviderReferenceID,
@@ -72,6 +78,9 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		flow_id,
 		customer_id,
 
+		name,
+		detail,
+
 		provider_name,
 		provider_reference_id,
 
@@ -87,6 +96,7 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 	) values(
 		?, ?, ?, ?,
 		?, ?,
+		?, ?,
 		?,
 		?, ?,
 		?, ?, ?, ?
@@ -97,6 +107,9 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		n.Number,
 		n.FlowID.Bytes(),
 		n.CustomerID.Bytes(),
+
+		n.Name,
+		n.Detail,
 
 		n.ProviderName,
 		n.ProviderReferenceID,
@@ -116,7 +129,7 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 	}
 
 	// update the cache
-	_ = h.NumberUpdateToCache(ctx, n.ID)
+	_ = h.numberUpdateToCache(ctx, n.ID)
 
 	return nil
 }
@@ -133,8 +146,8 @@ func (h *handler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (
 	return res, nil
 }
 
-// NumberSetToCacheByNumber sets the given number to the cache
-func (h *handler) NumberSetToCacheByNumber(ctx context.Context, num *number.Number) error {
+// numberSetToCacheByNumber sets the given number to the cache
+func (h *handler) numberSetToCacheByNumber(ctx context.Context, num *number.Number) error {
 	if err := h.cache.NumberSetByNumber(ctx, num); err != nil {
 		return err
 	}
@@ -142,8 +155,8 @@ func (h *handler) NumberSetToCacheByNumber(ctx context.Context, num *number.Numb
 	return nil
 }
 
-// NumberGetFromCache returns number from the cache.
-func (h *handler) NumberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error) {
+// numberGetFromCache returns number from the cache.
+func (h *handler) numberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 
 	// get from cache
 	res, err := h.cache.NumberGet(ctx, id)
@@ -154,43 +167,43 @@ func (h *handler) NumberGetFromCache(ctx context.Context, id uuid.UUID) (*number
 	return res, nil
 }
 
-// NumberSetToCache sets the given number to the cache
-func (h *handler) NumberSetToCache(ctx context.Context, num *number.Number) error {
+// numberSetToCache sets the given number to the cache
+func (h *handler) numberSetToCache(ctx context.Context, num *number.Number) error {
 	if err := h.cache.NumberSet(ctx, num); err != nil {
 		return err
 	}
 
-	if err := h.NumberSetToCacheByNumber(ctx, num); err != nil {
+	if err := h.numberSetToCacheByNumber(ctx, num); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// NumberUpdateToCache gets the number from the DB and update the cache.
-func (h *handler) NumberUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// numberUpdateToCache gets the number from the DB and update the cache.
+func (h *handler) numberUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.NumberGetFromDB(ctx, id)
+	res, err := h.numberGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.NumberSetToCache(ctx, res); err != nil {
+	if err := h.numberSetToCache(ctx, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// NumberGetFromDB returns number info from the DB.
-func (h *handler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error) {
+// numberGetFromDB returns number info from the DB.
+func (h *handler) numberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", numberSelect)
 
 	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. numberGetFromDB. err: %v", err)
 	}
 	defer row.Close()
 
@@ -200,14 +213,14 @@ func (h *handler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Nu
 
 	res, err := h.numberGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get number. NumberGetFromDB, err: %v", err)
+		return nil, fmt.Errorf("could not get number. numberGetFromDB, err: %v", err)
 	}
 
 	return res, nil
 }
 
-// NumberGetFromDBByNumber returns number info from the DB by number.
-func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error) {
+// numberGetFromDBByNumber returns number info from the DB by number.
+func (h *handler) numberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
@@ -216,9 +229,9 @@ func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*nu
 			and tm_delete >= ?
 	`, numberSelect)
 
-	row, err := h.db.Query(q, numb, defaultTimeStamp)
+	row, err := h.db.Query(q, numb, DefaultTimeStamp)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGetFromDBByNumber. err: %v", err)
+		return nil, fmt.Errorf("could not query. numberGetFromDBByNumber. err: %v", err)
 	}
 	defer row.Close()
 
@@ -228,7 +241,7 @@ func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*nu
 
 	res, err := h.numberGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get number. NumberGetFromDBByNumber, err: %v", err)
+		return nil, fmt.Errorf("could not get number. numberGetFromDBByNumber, err: %v", err)
 	}
 
 	return res, nil
@@ -237,18 +250,18 @@ func (h *handler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*nu
 // NumberGet returns number.
 func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 
-	res, err := h.NumberGetFromCache(ctx, id)
+	res, err := h.numberGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.NumberGetFromDB(ctx, id)
+	res, err = h.numberGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	_ = h.NumberSetToCache(ctx, res)
+	_ = h.numberSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -261,13 +274,13 @@ func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*number.N
 		return res, nil
 	}
 
-	res, err = h.NumberGetFromDBByNumber(ctx, numb)
+	res, err = h.numberGetFromDBByNumber(ctx, numb)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	_ = h.NumberSetToCacheByNumber(ctx, res)
+	_ = h.numberSetToCacheByNumber(ctx, res)
 
 	return res, nil
 }
@@ -286,7 +299,7 @@ func (h *handler) NumberGets(ctx context.Context, customerID uuid.UUID, size uin
 		desc limit ?
 		`, numberSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, defaultTimeStamp, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGets. err: %v", err)
 	}
@@ -320,7 +333,7 @@ func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size
 		`,
 		numberSelect)
 
-	rows, err := h.db.Query(q, flowID.Bytes(), token, defaultTimeStamp, size)
+	rows, err := h.db.Query(q, flowID.Bytes(), token, DefaultTimeStamp, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGetsByFlowID. err: %v", err)
 	}
@@ -353,20 +366,47 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 			id = ?
 		`
 
-	curTime := getCurTime()
+	curTime := GetCurTime()
 	_, err := h.db.Exec(q, string(number.StatusDeleted), curTime, curTime, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. NumberDelete. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.NumberUpdateToCache(ctx, id)
+	_ = h.numberUpdateToCache(ctx, id)
 
 	return nil
 }
 
-// NumberUpdate updates number.
-func (h *handler) NumberUpdate(ctx context.Context, numb *number.Number) error {
+// NumberUpdateBasicInfo updates basic number information.
+func (h *handler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+	q := `
+	update numbers set
+		name = ?,
+		detail = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q,
+		name,
+		detail,
+		GetCurTime(),
+		id.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. NumberUpdateBasicInfo. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.numberUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// NumberUpdateBasicInfo updates flow id.
+func (h *handler) NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) error {
 	q := `
 	update numbers set
 		flow_id = ?,
@@ -376,16 +416,16 @@ func (h *handler) NumberUpdate(ctx context.Context, numb *number.Number) error {
 	`
 
 	_, err := h.db.Exec(q,
-		numb.FlowID.Bytes(),
-		getCurTime(),
-		numb.ID.Bytes(),
+		flowID.Bytes(),
+		GetCurTime(),
+		id.Bytes(),
 	)
 	if err != nil {
-		return fmt.Errorf("could not execute. NumberUpdate. err: %v", err)
+		return fmt.Errorf("could not execute. NumberUpdateFlowID. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.NumberUpdateToCache(ctx, numb.ID)
+	_ = h.numberUpdateToCache(ctx, id)
 
 	return nil
 }

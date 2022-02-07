@@ -1,4 +1,4 @@
-package requesthandler
+package requestexternal
 
 import (
 	"reflect"
@@ -6,27 +6,23 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/telnyx"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 )
 
 func TestTelnyxAvailableNumberGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay")
+	h := requestExternal{}
 
-	type test struct {
+	tests := []struct {
 		name               string
 		country            string
 		locality           string
 		administrativeArea string
 		limit              int
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal us",
 			"us",
@@ -46,7 +42,7 @@ func TestTelnyxAvailableNumberGets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := reqHandler.TelnyxAvailableNumberGets(tt.country, tt.locality, tt.administrativeArea, uint(tt.limit))
+			res, err := h.TelnyxAvailableNumberGets(tt.country, tt.locality, tt.administrativeArea, uint(tt.limit))
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -64,16 +60,13 @@ func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := NewRequestHandler(mockSock, "bin-manager.delay")
+	h := requestExternal{}
 
-	type test struct {
+	tests := []struct {
 		name      string
 		id        string
 		expectRes *telnyx.PhoneNumber
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal us number",
 			"1748688147379652251",
@@ -105,7 +98,7 @@ func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := reqHandler.TelnyxPhoneNumbersIDGet(tt.id)
+			res, err := h.TelnyxPhoneNumbersIDGet(tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

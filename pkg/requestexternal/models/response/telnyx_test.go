@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/telnyx"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 )
 
 func TestTelnyxV2ResponsePhoneNumbersIDGet(t *testing.T) {

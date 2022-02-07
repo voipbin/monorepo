@@ -6,11 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
+
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
 )
 
 func TestProcessV1NumberFlowsDelete(t *testing.T) {
@@ -18,14 +16,10 @@ func TestProcessV1NumberFlowsDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock:    mockSock,
-		db:            mockDB,
-		reqHandler:    mockReq,
 		numberHandler: mockNumber,
 	}
 

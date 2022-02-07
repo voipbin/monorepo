@@ -6,12 +6,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
 )
 
 func TestRemoveNumbersFlowID(t *testing.T) {
@@ -20,13 +19,11 @@ func TestRemoveNumbersFlowID(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockTelnyx := numberhandlertelnyx.NewMockNumberHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
 
 	h := numberHandler{
 		reqHandler:       mockReq,
 		db:               mockDB,
-		cache:            mockCache,
 		numHandlerTelnyx: mockTelnyx,
 	}
 
@@ -72,9 +69,9 @@ func TestRemoveNumbersFlowID(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().NumberGetsByFlowID(gomock.Any(), tt.flowID, gomock.Any(), gomock.Any()).Return(tt.numbers, nil)
+
 			for _, num := range tt.numbers {
-				num.FlowID = uuid.Nil
-				mockDB.EXPECT().NumberUpdate(gomock.Any(), num)
+				mockDB.EXPECT().NumberUpdateFlowID(gomock.Any(), num.ID, uuid.Nil)
 			}
 
 			if err := h.RemoveNumbersFlowID(ctx, tt.flowID); err != nil {

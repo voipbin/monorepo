@@ -1,4 +1,4 @@
-package requesthandler
+package requestexternal
 
 import (
 	"bytes"
@@ -7,12 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/request"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/response"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/telnyx"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/request"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/response"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 )
 
-func (h *requestHandler) TelnyxAvailableNumberGets(countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error) {
+func (h *requestExternal) TelnyxAvailableNumberGets(countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error) {
 
 	// create a request uri
 	uri := "https://api.telnyx.com/v2/available_phone_numbers"
@@ -76,7 +76,7 @@ func (h *requestHandler) TelnyxAvailableNumberGets(countryCode, locality, admini
 }
 
 // TelnyxNumberOrdersPost sends the post request to the telnyx number_orders
-func (h *requestHandler) TelnyxNumberOrdersPost(numbers []string) (*telnyx.OrderNumber, error) {
+func (h *requestExternal) TelnyxNumberOrdersPost(numbers []string) (*telnyx.OrderNumber, error) {
 
 	// create a request uri
 	uri := "https://api.telnyx.com/v2/number_orders"
@@ -130,7 +130,7 @@ func (h *requestHandler) TelnyxNumberOrdersPost(numbers []string) (*telnyx.Order
 }
 
 // TelnyxPhoneNumbersIDGet gets the phone number info from the telnyx and return
-func (h *requestHandler) TelnyxPhoneNumbersIDGet(id string) (*telnyx.PhoneNumber, error) {
+func (h *requestExternal) TelnyxPhoneNumbersIDGet(id string) (*telnyx.PhoneNumber, error) {
 	// create a request uri
 	uri := fmt.Sprintf("https://api.telnyx.com/v2/phone_numbers/%s", id)
 
@@ -170,7 +170,7 @@ func (h *requestHandler) TelnyxPhoneNumbersIDGet(id string) (*telnyx.PhoneNumber
 }
 
 // TelnyxPhoneNumbersIDUpdateConnectionID sends the connectionID update request to the telnyx
-func (h *requestHandler) TelnyxPhoneNumbersIDUpdateConnectionID(id string, connectionID string) (*telnyx.PhoneNumber, error) {
+func (h *requestExternal) TelnyxPhoneNumbersIDUpdateConnectionID(id string, connectionID string) (*telnyx.PhoneNumber, error) {
 	// create a request uri
 	uri := fmt.Sprintf("https://api.telnyx.com/v2/phone_numbers/%s", id)
 
@@ -219,7 +219,7 @@ func (h *requestHandler) TelnyxPhoneNumbersIDUpdateConnectionID(id string, conne
 }
 
 // TelnyxPhoneNumbersIDDelete delets the phone number of the given id
-func (h *requestHandler) TelnyxPhoneNumbersIDDelete(id string) (*telnyx.PhoneNumber, error) {
+func (h *requestExternal) TelnyxPhoneNumbersIDDelete(id string) (*telnyx.PhoneNumber, error) {
 	// create a request uri
 	uri := fmt.Sprintf("https://api.telnyx.com/v2/phone_numbers/%s", id)
 
@@ -259,7 +259,7 @@ func (h *requestHandler) TelnyxPhoneNumbersIDDelete(id string) (*telnyx.PhoneNum
 }
 
 // TelnyxPhoneNumbersIDGet gets the phone number info from the telnyx and return
-func (h *requestHandler) TelnyxPhoneNumbersGet(size uint, tag, number string) ([]*telnyx.PhoneNumber, error) {
+func (h *requestExternal) TelnyxPhoneNumbersGet(size uint, tag, number string) ([]*telnyx.PhoneNumber, error) {
 	// create a request uri
 	if size <= 0 {
 		size = 10

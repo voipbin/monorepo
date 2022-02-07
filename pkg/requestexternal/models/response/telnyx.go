@@ -1,6 +1,6 @@
 package response
 
-import "gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/telnyx"
+import "gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 
 // TelnyxV2ResponsePhoneNumbersGet struct
 type TelnyxV2ResponsePhoneNumbersGet struct {

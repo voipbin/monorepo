@@ -10,26 +10,26 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
-// CreateNumbers creates a new order numbers of given numbers
-func (h *numberHandler) CreateNumbers(customerID uuid.UUID, numbers []string) ([]*number.Number, error) {
-	logrus.Debugf("CreateNumbers. customer_id: %s, numbers: %v", customerID, numbers)
-
-	// use telnyx as a default
-	return h.numHandlerTelnyx.CreateOrderNumbers(customerID, numbers)
-}
-
 // CreateNumber creates a new order numbers of given numbers
-func (h *numberHandler) CreateNumber(customerID uuid.UUID, number string) (*number.Number, error) {
-	logrus.Debugf("CreateNumber. customer_id: %s, number: %v", customerID, number)
+func (h *numberHandler) CreateNumber(customerID, flowID uuid.UUID, num, name, detail string) (*number.Number, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "CreateNumber",
+			"customer_id": customerID,
+			"flow_id":     flowID,
+			"number":      num,
+		},
+	)
+	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
 
 	// use telnyx as a default
-	numbers := []string{number}
-	tmpRes, err := h.numHandlerTelnyx.CreateOrderNumbers(customerID, numbers)
-	if err != nil || len(tmpRes) == 0 {
+	res, err := h.numHandlerTelnyx.CreateOrderNumber(customerID, flowID, num, name, detail)
+	if err != nil {
+		log.Errorf("Could not create a number from the telnyx. err: %v", err)
 		return nil, fmt.Errorf("could not create a number from the telnyx. err: %v", err)
 	}
 
-	return tmpRes[0], err
+	return res, err
 }
 
 // ReleaseNumber release/deleted an existed ordered number
@@ -104,23 +104,49 @@ func (h *numberHandler) GetNumbers(ctx context.Context, customerID uuid.UUID, pa
 	return numbers, nil
 }
 
-// UpdateNumber updates the number
-func (h *numberHandler) UpdateNumber(ctx context.Context, numb *number.Number) (*number.Number, error) {
+// UpdateBasicInfo updates the number
+func (h *numberHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"number": numb,
+			"func":      "UpdateBasicInfo",
+			"number_id": id,
 		},
 	)
-	log.Debugf("UpdateNumber. number: %d", numb.ID)
+	log.Debugf("UpdateBasicInfo. number_id: %s", id)
 
-	if err := h.db.NumberUpdate(ctx, numb); err != nil {
-		log.Errorf("Could not set flow_id to number. number: %s, err:%v", numb.ID, err)
+	if err := h.db.NumberUpdateBasicInfo(ctx, id, name, detail); err != nil {
+		log.Errorf("Could not set flow_id to number. number_id: %s, err:%v", id, err)
 		return nil, err
 	}
 
-	res, err := h.db.NumberGet(ctx, numb.ID)
+	res, err := h.db.NumberGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get the updated number. number: %s, err: %v", numb.ID, err)
+		log.Errorf("Could not get the updated number. number_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateFlowID updates the number's flow_id
+func (h *numberHandler) UpdateFlowID(ctx context.Context, id, flowID uuid.UUID) (*number.Number, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":      "UpdateFlowID",
+			"number_id": id,
+			"flow_id":   flowID,
+		},
+	)
+	log.Debugf("UpdateFlowID. number_id: %s", id)
+
+	if err := h.db.NumberUpdateFlowID(ctx, id, flowID); err != nil {
+		log.Errorf("Could not update the flow_id. number_id: %s, err:%v", id, err)
+		return nil, err
+	}
+
+	res, err := h.db.NumberGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get the updated number. number_id: %s, err: %v", id, err)
 		return nil, err
 	}
 

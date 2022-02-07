@@ -94,66 +94,6 @@ func (mr *MockDBHandlerMockRecorder) NumberGetByNumber(ctx, numb interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetByNumber", reflect.TypeOf((*MockDBHandler)(nil).NumberGetByNumber), ctx, numb)
 }
 
-// NumberGetFromCache mocks base method.
-func (m *MockDBHandler) NumberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetFromCache", ctx, id)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberGetFromCache indicates an expected call of NumberGetFromCache.
-func (mr *MockDBHandlerMockRecorder) NumberGetFromCache(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).NumberGetFromCache), ctx, id)
-}
-
-// NumberGetFromCacheByNumber mocks base method.
-func (m *MockDBHandler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetFromCacheByNumber", ctx, numb)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberGetFromCacheByNumber indicates an expected call of NumberGetFromCacheByNumber.
-func (mr *MockDBHandlerMockRecorder) NumberGetFromCacheByNumber(ctx, numb interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetFromCacheByNumber", reflect.TypeOf((*MockDBHandler)(nil).NumberGetFromCacheByNumber), ctx, numb)
-}
-
-// NumberGetFromDB mocks base method.
-func (m *MockDBHandler) NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetFromDB", ctx, id)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberGetFromDB indicates an expected call of NumberGetFromDB.
-func (mr *MockDBHandlerMockRecorder) NumberGetFromDB(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).NumberGetFromDB), ctx, id)
-}
-
-// NumberGetFromDBByNumber mocks base method.
-func (m *MockDBHandler) NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetFromDBByNumber", ctx, numb)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberGetFromDBByNumber indicates an expected call of NumberGetFromDBByNumber.
-func (mr *MockDBHandlerMockRecorder) NumberGetFromDBByNumber(ctx, numb interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetFromDBByNumber", reflect.TypeOf((*MockDBHandler)(nil).NumberGetFromDBByNumber), ctx, numb)
-}
-
 // NumberGets mocks base method.
 func (m *MockDBHandler) NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
@@ -184,58 +124,30 @@ func (mr *MockDBHandlerMockRecorder) NumberGetsByFlowID(ctx, flowID, size, token
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByFlowID), ctx, flowID, size, token)
 }
 
-// NumberSetToCache mocks base method.
-func (m *MockDBHandler) NumberSetToCache(ctx context.Context, num *number.Number) error {
+// NumberUpdateBasicInfo mocks base method.
+func (m *MockDBHandler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberSetToCache", ctx, num)
+	ret := m.ctrl.Call(m, "NumberUpdateBasicInfo", ctx, id, name, detail)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// NumberSetToCache indicates an expected call of NumberSetToCache.
-func (mr *MockDBHandlerMockRecorder) NumberSetToCache(ctx, num interface{}) *gomock.Call {
+// NumberUpdateBasicInfo indicates an expected call of NumberUpdateBasicInfo.
+func (mr *MockDBHandlerMockRecorder) NumberUpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberSetToCache", reflect.TypeOf((*MockDBHandler)(nil).NumberSetToCache), ctx, num)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateBasicInfo), ctx, id, name, detail)
 }
 
-// NumberSetToCacheByNumber mocks base method.
-func (m *MockDBHandler) NumberSetToCacheByNumber(ctx context.Context, num *number.Number) error {
+// NumberUpdateFlowID mocks base method.
+func (m *MockDBHandler) NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberSetToCacheByNumber", ctx, num)
+	ret := m.ctrl.Call(m, "NumberUpdateFlowID", ctx, id, flowID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// NumberSetToCacheByNumber indicates an expected call of NumberSetToCacheByNumber.
-func (mr *MockDBHandlerMockRecorder) NumberSetToCacheByNumber(ctx, num interface{}) *gomock.Call {
+// NumberUpdateFlowID indicates an expected call of NumberUpdateFlowID.
+func (mr *MockDBHandlerMockRecorder) NumberUpdateFlowID(ctx, id, flowID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberSetToCacheByNumber", reflect.TypeOf((*MockDBHandler)(nil).NumberSetToCacheByNumber), ctx, num)
-}
-
-// NumberUpdate mocks base method.
-func (m *MockDBHandler) NumberUpdate(ctx context.Context, numb *number.Number) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberUpdate", ctx, numb)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// NumberUpdate indicates an expected call of NumberUpdate.
-func (mr *MockDBHandlerMockRecorder) NumberUpdate(ctx, numb interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdate", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdate), ctx, numb)
-}
-
-// NumberUpdateToCache mocks base method.
-func (m *MockDBHandler) NumberUpdateToCache(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberUpdateToCache", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// NumberUpdateToCache indicates an expected call of NumberUpdateToCache.
-func (mr *MockDBHandlerMockRecorder) NumberUpdateToCache(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateToCache), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateFlowID), ctx, id, flowID)
 }

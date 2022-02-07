@@ -5,6 +5,9 @@ create table numbers(
   flow_id       binary(16),     -- flow id
   customer_id   binary(16),     -- customer id
 
+  name    varchar(255),
+  detail  text,
+
   provider_name         varchar(255), -- number provider's name
   provider_reference_id varchar(255), -- reference id for searching the number info from the provider
 

@@ -38,33 +38,18 @@ func (m *MockNumberHandler) EXPECT() *MockNumberHandlerMockRecorder {
 }
 
 // CreateNumber mocks base method.
-func (m *MockNumberHandler) CreateNumber(customerID uuid.UUID, numb string) (*number.Number, error) {
+func (m *MockNumberHandler) CreateNumber(customerID, flowID uuid.UUID, num, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNumber", customerID, numb)
+	ret := m.ctrl.Call(m, "CreateNumber", customerID, flowID, num, name, detail)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateNumber indicates an expected call of CreateNumber.
-func (mr *MockNumberHandlerMockRecorder) CreateNumber(customerID, numb interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) CreateNumber(customerID, flowID, num, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumber", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumber), customerID, numb)
-}
-
-// CreateNumbers mocks base method.
-func (m *MockNumberHandler) CreateNumbers(customerID uuid.UUID, numbs []string) ([]*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNumbers", customerID, numbs)
-	ret0, _ := ret[0].([]*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateNumbers indicates an expected call of CreateNumbers.
-func (mr *MockNumberHandlerMockRecorder) CreateNumbers(customerID, numbs interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumbers", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumbers), customerID, numbs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumber", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumber), customerID, flowID, num, name, detail)
 }
 
 // GetAvailableNumbers mocks base method.
@@ -156,17 +141,32 @@ func (mr *MockNumberHandlerMockRecorder) RemoveNumbersFlowID(ctx, flowID interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveNumbersFlowID", reflect.TypeOf((*MockNumberHandler)(nil).RemoveNumbersFlowID), ctx, flowID)
 }
 
-// UpdateNumber mocks base method.
-func (m *MockNumberHandler) UpdateNumber(ctx context.Context, numb *number.Number) (*number.Number, error) {
+// UpdateBasicInfo mocks base method.
+func (m *MockNumberHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateNumber", ctx, numb)
+	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// UpdateNumber indicates an expected call of UpdateNumber.
-func (mr *MockNumberHandlerMockRecorder) UpdateNumber(ctx, numb interface{}) *gomock.Call {
+// UpdateBasicInfo indicates an expected call of UpdateBasicInfo.
+func (mr *MockNumberHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNumber", reflect.TypeOf((*MockNumberHandler)(nil).UpdateNumber), ctx, numb)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockNumberHandler)(nil).UpdateBasicInfo), ctx, id, name, detail)
+}
+
+// UpdateFlowID mocks base method.
+func (m *MockNumberHandler) UpdateFlowID(ctx context.Context, id, flowID uuid.UUID) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateFlowID", ctx, id, flowID)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateFlowID indicates an expected call of UpdateFlowID.
+func (mr *MockNumberHandlerMockRecorder) UpdateFlowID(ctx, id, flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFlowID", reflect.TypeOf((*MockNumberHandler)(nil).UpdateFlowID), ctx, id, flowID)
 }
