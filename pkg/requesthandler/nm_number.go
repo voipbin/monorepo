@@ -105,12 +105,15 @@ func (r *requestHandler) NMV1NumberFlowDelete(ctx context.Context, flowID uuid.U
 // NMNumberCreate sends a request to the number-manager
 // to create an number.
 // Returns created number
-func (r *requestHandler) NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, numb string) (*nmnumber.Number, error) {
+func (r *requestHandler) NMV1NumberCreate(ctx context.Context, customerID, flowID uuid.UUID, num, name, detail string) (*nmnumber.Number, error) {
 	uri := "/v1/numbers"
 
 	data := &nmrequest.V1DataNumbersPost{
 		CustomerID: customerID,
-		Number:     numb,
+		FlowID:     flowID,
+		Number:     num,
+		Name:       name,
+		Detail:     detail,
 	}
 
 	m, err := json.Marshal(data)
@@ -163,11 +166,12 @@ func (r *requestHandler) NMV1NumberDelete(ctx context.Context, id uuid.UUID) (*n
 // NMV1NumberUpdate sends a request to the number-manager
 // to update a number.
 // Returns updated number info
-func (r *requestHandler) NMV1NumberUpdate(ctx context.Context, num *nmnumber.Number) (*nmnumber.Number, error) {
-	uri := fmt.Sprintf("/v1/numbers/%s", num.ID)
+func (r *requestHandler) NMV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/%s", id)
 
 	data := &nmrequest.V1DataNumbersIDPut{
-		FlowID: num.FlowID,
+		Name:   name,
+		Detail: detail,
 	}
 
 	m, err := json.Marshal(data)
@@ -175,7 +179,40 @@ func (r *requestHandler) NMV1NumberUpdate(ctx context.Context, num *nmnumber.Num
 		return nil, err
 	}
 
-	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, 15000, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData nmnumber.Number
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
+}
+
+// NMV1NumberUpdate sends a request to the number-manager
+// to update a number.
+// Returns updated number info
+func (r *requestHandler) NMV1NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/%s", id)
+
+	data := &nmrequest.V1DataNumbersIDFlowIDPut{
+		FlowID: flowID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

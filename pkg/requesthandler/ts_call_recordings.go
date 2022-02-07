@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmrequest "gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
 
@@ -15,7 +14,7 @@ import (
 
 // TSV1CallRecordingCreate sends a request to transcribe-manager
 // to transcribe call-recording.
-func (r *requestHandler) TSV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]transcribe.Transcribe, error) {
+func (r *requestHandler) TSV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]tstranscribe.Transcribe, error) {
 	uri := "/v1/call_recordings"
 
 	req := &tmrequest.V1DataCallRecordingsPost{
