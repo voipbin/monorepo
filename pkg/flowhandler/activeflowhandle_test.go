@@ -14,6 +14,7 @@ import (
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -191,7 +192,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
-			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.af.CustomerID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil).Return(tt.cf, nil)
+			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.cf, nil)
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
 			for i := range tt.destinations {
@@ -333,25 +334,30 @@ func TestActiveFlowNextActionGetTypeTranscribeRecording(t *testing.T) {
 	}
 
 	type test struct {
-		name          string
-		callID        uuid.UUID
-		language      string
-		webhookURI    string
-		WebhookMethod string
-		act           *action.Action
+		name       string
+		activeflow *activeflow.ActiveFlow
+
+		callID     uuid.UUID
+		customerID uuid.UUID
+		language   string
+		act        *action.Action
 	}
 
 	tests := []test{
 		{
 			"normal",
+
+			&activeflow.ActiveFlow{
+				CustomerID: uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
+			},
+
 			uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
+			uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
 			"en-US",
-			"http://test.com/webhook",
-			"POST",
 			&action.Action{
 				ID:     uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
 				Type:   action.TypeTranscribeRecording,
-				Option: []byte(`{"language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
+				Option: []byte(`{"language":"en-US"}`),
 			},
 		},
 	}
@@ -359,8 +365,8 @@ func TestActiveFlowNextActionGetTypeTranscribeRecording(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockReq.EXPECT().TSV1CallRecordingCreate(ctx, tt.callID, tt.language, tt.webhookURI, tt.WebhookMethod, 120, 30).Return(nil)
-			if err := h.activeFlowHandleActionTranscribeRecording(ctx, tt.callID, tt.act); err != nil {
+			mockReq.EXPECT().TSV1CallRecordingCreate(ctx, tt.customerID, tt.callID, tt.language, 120000, 30).Return([]transcribe.Transcribe{}, nil)
+			if err := h.activeFlowHandleActionTranscribeRecording(ctx, tt.activeflow, tt.callID, tt.act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -380,12 +386,13 @@ func TestActiveFlowNextActionGetTypeTranscribeStart(t *testing.T) {
 	}
 
 	type test struct {
-		name string
+		name       string
+		activeFlow *activeflow.ActiveFlow
 
-		callID        uuid.UUID
+		customerID    uuid.UUID
+		referenceID   uuid.UUID
+		referenceType tstranscribe.Type
 		language      string
-		webhookURI    string
-		WebhookMethod string
 		act           *action.Action
 
 		response *transcribe.Transcribe
@@ -394,10 +401,14 @@ func TestActiveFlowNextActionGetTypeTranscribeStart(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
+			&activeflow.ActiveFlow{
+				CustomerID: uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
+			},
+
+			uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+			tstranscribe.TypeCall,
 			"en-US",
-			"http://test.com/webhook",
-			"POST",
 			&action.Action{
 				ID:     uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
 				Type:   action.TypeTranscribeStart,
@@ -405,13 +416,11 @@ func TestActiveFlowNextActionGetTypeTranscribeStart(t *testing.T) {
 			},
 
 			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
-				Type:          transcribe.TypeCall,
-				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-				HostID:        uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
-				Language:      "en-US",
-				WebhookURI:    "http://test.com/webhook",
-				WebhookMethod: "POST",
+				ID:          uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
+				Type:        transcribe.TypeCall,
+				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+				HostID:      uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
+				Language:    "en-US",
 			},
 		},
 	}
@@ -419,8 +428,8 @@ func TestActiveFlowNextActionGetTypeTranscribeStart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockReq.EXPECT().TSV1StreamingCreate(ctx, tt.callID, tt.language, tt.webhookURI, tt.WebhookMethod).Return(tt.response, nil)
-			if err := h.activeFlowHandleActionTranscribeStart(ctx, tt.callID, tt.act); err != nil {
+			mockReq.EXPECT().TSV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language).Return(tt.response, nil)
+			if err := h.activeFlowHandleActionTranscribeStart(ctx, tt.activeFlow, tt.referenceID, tt.act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -758,7 +767,7 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
-			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.activeFlow.CustomerID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil).Return(tt.conference, nil)
+			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.activeFlow.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.conference, nil)
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.callID).Return(tt.call, nil)
 			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.conference.ConfbridgeID).Return(nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
