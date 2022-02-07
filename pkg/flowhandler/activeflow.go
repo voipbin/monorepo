@@ -151,7 +151,8 @@ func (h *flowHandler) executeActiveAction(ctx context.Context, callID uuid.UUID,
 	)
 
 	// update current action in active-flow
-	if err := h.activeFlowUpdateCurrentAction(ctx, callID, act); err != nil {
+	af, err := h.activeFlowUpdateCurrentAction(ctx, callID, act)
+	if err != nil {
 		log.Errorf("Could not update the current action. err: %v", err)
 		return nil, fmt.Errorf("could not update the current action. err: %v", err)
 	}
@@ -230,7 +231,7 @@ func (h *flowHandler) executeActiveAction(ctx context.Context, callID uuid.UUID,
 		return h.executeActiveAction(ctx, callID, execAct)
 
 	case action.TypeTranscribeRecording:
-		if err := h.activeFlowHandleActionTranscribeRecording(ctx, callID, act); err != nil {
+		if err := h.activeFlowHandleActionTranscribeRecording(ctx, af, callID, act); err != nil {
 			log.Errorf("Could not handle the recording_to_text action correctly. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
@@ -239,7 +240,7 @@ func (h *flowHandler) executeActiveAction(ctx context.Context, callID uuid.UUID,
 		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeTranscribeStart:
-		if err := h.activeFlowHandleActionTranscribeStart(ctx, callID, act); err != nil {
+		if err := h.activeFlowHandleActionTranscribeStart(ctx, af, callID, act); err != nil {
 			log.Errorf("Could not start the transcribe. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
@@ -252,7 +253,8 @@ func (h *flowHandler) executeActiveAction(ctx context.Context, callID uuid.UUID,
 }
 
 // activeFlowUpdateCurrentAction updates the current action in active-flow.
-func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+// returns updated active flow
+func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID uuid.UUID, act *action.Action) (*activeflow.ActiveFlow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":      "activeFlowUpdateCurrentAction",
@@ -265,7 +267,7 @@ func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID 
 	af, err := h.db.ActiveFlowGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get active-flow. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// update active flow
@@ -276,19 +278,19 @@ func (h *flowHandler) activeFlowUpdateCurrentAction(ctx context.Context, callID 
 
 	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
 		log.Errorf("Could not update the active-flow's current action. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// get updated activeflow
-	tmp, err := h.db.ActiveFlowGet(ctx, callID)
+	res, err := h.db.ActiveFlowGet(ctx, callID)
 	if err != nil {
 		// because we
 		log.Errorf("Could not get updated active flow. err: %v", err)
-		return nil
+		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, tmp.CustomerID, activeflow.EventTypeActiveFlowUpdated, tmp)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveFlowUpdated, res)
 
-	return nil
+	return res, err
 }
 
 // activeFlowGetNextAction returns next action from the active-flow

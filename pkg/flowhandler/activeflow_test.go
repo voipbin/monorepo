@@ -111,7 +111,8 @@ func TestActiveFlowUpdateCurrentAction(t *testing.T) {
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&activeflow.ActiveFlow{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), activeflow.EventTypeActiveFlowUpdated, gomock.Any())
-			if err := h.activeFlowUpdateCurrentAction(ctx, tt.callID, tt.act); err != nil {
+			_, err := h.activeFlowUpdateCurrentAction(ctx, tt.callID, tt.act)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

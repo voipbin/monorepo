@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -328,7 +329,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 	}
 
 	// create conference room for connect
-	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
+	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create conference for connect. err: %v", err)
 		return fmt.Errorf("could not create conference for connect. err: %v", err)
@@ -495,7 +496,7 @@ func (h *flowHandler) activeFlowHandleActionGoto(ctx context.Context, callID uui
 }
 
 // activeFlowHandleActionTranscribeRecording handles transcribe_recording
-func (h *flowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+func (h *flowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Context, af *activeflow.ActiveFlow, callID uuid.UUID, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "activeFlowHandleActionTranscribeRecording",
 		"call_id":   callID,
@@ -509,16 +510,18 @@ func (h *flowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Cont
 	}
 
 	// transcribe-recording
-	if err := h.reqHandler.TSV1CallRecordingCreate(ctx, callID, optRecordingToText.Language, optRecordingToText.WebhookURI, optRecordingToText.WebhookMethod, 120, 30); err != nil {
+	res, err := h.reqHandler.TSV1CallRecordingCreate(ctx, af.CustomerID, callID, optRecordingToText.Language, 120000, 30)
+	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
 	}
+	log.WithField("transcribes", res).Debugf("Received transcribes.")
 
 	return nil
 }
 
 // activeFlowHandleActionTranscribeStart handles transcribe_start
-func (h *flowHandler) activeFlowHandleActionTranscribeStart(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+func (h *flowHandler) activeFlowHandleActionTranscribeStart(ctx context.Context, af *activeflow.ActiveFlow, callID uuid.UUID, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "activeFlowHandleActionTranscribeStart",
 		"call_id":   callID,
@@ -532,7 +535,7 @@ func (h *flowHandler) activeFlowHandleActionTranscribeStart(ctx context.Context,
 	}
 
 	// transcribe-recording
-	trans, err := h.reqHandler.TSV1StreamingCreate(ctx, callID, opt.Language, opt.WebhookURI, opt.WebhookMethod)
+	trans, err := h.reqHandler.TSV1StreamingCreate(ctx, af.CustomerID, callID, tstranscribe.TypeCall, opt.Language)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
@@ -566,7 +569,7 @@ func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callI
 	}
 
 	// create conference room for agent_call
-	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, "", nil, nil, nil)
+	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create conference for agent_call. err: %v", err)
 		return fmt.Errorf("could not create conference for agent_call. err: %v", err)
