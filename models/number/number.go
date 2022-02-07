@@ -9,6 +9,9 @@ type Number struct {
 	FlowID     uuid.UUID `json:"flow_id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+
 	ProviderName        ProviderName `json:"provider_name"`
 	ProviderReferenceID string       `json:"provider_reference_id"`
 

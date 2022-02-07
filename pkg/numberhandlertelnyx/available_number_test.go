@@ -8,21 +8,19 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/telnyx"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 )
 
 func TestGetAvailableNumbers(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockExternal := requestexternal.NewMockRequestExternal(mc)
 
-	h := NewNumberHandler(mockReq, mockDB, mockCache)
+	h := numberHandlerTelnyx{
+		requestExternal: mockExternal,
+	}
 
 	type test struct {
 		name    string
@@ -98,7 +96,7 @@ func TestGetAvailableNumbers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().TelnyxAvailableNumberGets(tt.country, "", "", tt.limit).Return(tt.numbers, nil)
+			mockExternal.EXPECT().TelnyxAvailableNumberGets(tt.country, "", "", tt.limit).Return(tt.numbers, nil)
 
 			res, err := h.GetAvailableNumbers(tt.country, tt.limit)
 			if err != nil {

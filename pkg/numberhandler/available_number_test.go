@@ -5,13 +5,12 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
 )
 
 func TestGetAvailableNumbersTelnyx(t *testing.T) {
@@ -20,13 +19,11 @@ func TestGetAvailableNumbersTelnyx(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockTelnyx := numberhandlertelnyx.NewMockNumberHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
 
 	h := numberHandler{
 		reqHandler:       mockReq,
 		db:               mockDB,
-		cache:            mockCache,
 		numHandlerTelnyx: mockTelnyx,
 	}
 

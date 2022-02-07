@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -23,16 +23,10 @@ type DBHandler interface {
 	NumberDelete(ctx context.Context, id uuid.UUID) error
 	NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error)
-	NumberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error)
-	NumberGetFromCacheByNumber(ctx context.Context, numb string) (*number.Number, error)
-	NumberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error)
-	NumberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error)
 	NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*number.Number, error)
 	NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error)
-	NumberSetToCache(ctx context.Context, num *number.Number) error
-	NumberSetToCacheByNumber(ctx context.Context, num *number.Number) error
-	NumberUpdate(ctx context.Context, numb *number.Number) error
-	NumberUpdateToCache(ctx context.Context, id uuid.UUID) error
+	NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
+	NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) error
 }
 
 // handler database handler
@@ -43,7 +37,7 @@ type handler struct {
 
 // List of default values
 const (
-	defaultTimeStamp = "9999-01-01 00:00:00.000000"
+	DefaultTimeStamp = "9999-01-01 00:00:00.000000"
 )
 
 // handler errors
@@ -60,8 +54,8 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	return h
 }
 
-// getCurTime return current utc time string
-func getCurTime() string {
+// GetCurTime return current utc time string
+func GetCurTime() string {
 	now := time.Now().UTC().String()
 	res := strings.TrimSuffix(now, " +0000 UTC")
 

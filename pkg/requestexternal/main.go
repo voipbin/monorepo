@@ -1,32 +1,11 @@
-package requesthandler
+package requestexternal
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package requesthandler -destination ./mock_requesthandler_requesthandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package requestexternal -destination ./mock_requestexternal.go -source main.go -build_flags=-mod=mod
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler/models/telnyx"
-)
-
-// contents type
-var (
-	ContentTypeText = "text/plain"
-	ContentTypeJSON = "application/json"
-)
-
-// group asterisk id
-var (
-	AsteriskIDCall       = "call"       // asterisk-call
-	AsteriskIDConference = "conference" // asterisk-conference
-)
-
-// delay units
-const (
-	DelayNow    int = 0
-	DelaySecond int = 1000
-	DelayMinute int = DelaySecond * 60
-	DelayHour   int = DelayMinute * 60
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 )
 
 // telnyx
@@ -46,7 +25,7 @@ var (
 	promRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
-			Name:      "request_process_time",
+			Name:      "request_external_process_time",
 			Help:      "Process time of send/receiv requests",
 			Buckets: []float64{
 				50, 100, 500, 1000, 3000,
@@ -62,8 +41,8 @@ func init() {
 	)
 }
 
-// RequestHandler intreface for ARI request handler
-type RequestHandler interface {
+// RequestExternal intreface for ARI request handler
+type RequestExternal interface {
 
 	// telnyx
 	TelnyxAvailableNumberGets(countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error)
@@ -76,19 +55,11 @@ type RequestHandler interface {
 	TelnyxPhoneNumbersIDUpdateConnectionID(id string, connectionID string) (*telnyx.PhoneNumber, error)
 }
 
-type requestHandler struct {
-	sock rabbitmqhandler.Rabbit
+type requestExternal struct{}
 
-	exchangeDelay string
-}
-
-// NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, exchangeDelay string) RequestHandler {
-	h := &requestHandler{
-		sock: sock,
-
-		exchangeDelay: exchangeDelay,
-	}
+// NewRequestExternal create RequestExternal
+func NewRequestExternal() RequestExternal {
+	h := &requestExternal{}
 
 	return h
 }

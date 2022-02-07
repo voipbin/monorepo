@@ -23,8 +23,8 @@ func (h *numberHandler) RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUI
 		}
 
 		for _, numb := range numbs {
-			numb.FlowID = uuid.Nil
-			if err := h.db.NumberUpdate(ctx, numb); err != nil {
+			log.WithField("number", numb).Debugf("Removing flowid from the number. number_id: %s, number_number: %s", numb.ID, numb.Number)
+			if err := h.db.NumberUpdateFlowID(ctx, numb.ID, uuid.Nil); err != nil {
 				log.Errorf("Could not remove flow_id. err: %v", err)
 			}
 		}

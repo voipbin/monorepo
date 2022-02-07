@@ -13,14 +13,17 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
 )
+
+const serviceName = "number-manager"
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -29,7 +32,7 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.number-manager.request", "rabbitmq queue name for request listen")
-
+var rabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.number-manager.event", "rabbitmq queue name for event notify")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -138,14 +141,11 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
-	// request handler
-	reqHandler := requesthandler.NewRequestHandler(
-		rabbitSock,
-		*rabbitExchangeDelay,
-	)
-
-	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, cache, reqHandler, numberHandler)
+	// create handlers
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, *rabbitExchangeDelay)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, numberHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

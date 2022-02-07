@@ -8,12 +8,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
+
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
 )
 
 // pagination parameters
@@ -33,10 +30,7 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
-	db         dbhandler.DBHandler
-	cache      cachehandler.CacheHandler
 
-	reqHandler    requesthandler.RequestHandler
 	numberHandler numberhandler.NumberHandler
 }
 
@@ -50,9 +44,11 @@ var (
 	regV1AvailableNumbers = regexp.MustCompile("/v1/available_numbers")
 
 	// numbers
-	regV1Numbers       = regexp.MustCompile("/v1/numbers")
-	regV1NumbersID     = regexp.MustCompile("/v1/numbers/" + regUUID)
-	regV1NumbersNumber = regexp.MustCompile("/v1/numbers/+" + regAny)
+	regV1NumbersGet      = regexp.MustCompile(`/v1/numbers\?`)
+	regV1Numbers         = regexp.MustCompile(`/v1/numbers$`)
+	regV1NumbersID       = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
+	regV1NumbersNumber   = regexp.MustCompile("/v1/numbers/+" + regAny + "$")
+	regV1NumbersIDFlowID = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_id$")
 
 	// numberflows
 	regV1NumberFlowsID = regexp.MustCompile("/v1/number_flows/" + regUUID)
@@ -88,18 +84,9 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(
-	rabbitSock rabbitmqhandler.Rabbit,
-	db dbhandler.DBHandler,
-	cache cachehandler.CacheHandler,
-	reqHandler requesthandler.RequestHandler,
-	numberHandler numberhandler.NumberHandler,
-) ListenHandler {
+func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler.NumberHandler) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:    rabbitSock,
-		db:            db,
-		cache:         cache,
-		reqHandler:    reqHandler,
 		numberHandler: numberHandler,
 	}
 
@@ -118,18 +105,18 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// Set QoS
 	if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
-		logrus.Errorf("Could not set the queue's qos. err: %v", err)
+		logrus.Errorf("could not set the queue's qos. err: %v", err)
 		return err
 	}
 
 	// create a exchange for delayed message
 	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
 	}
 
 	// bind a queue with delayed exchange
 	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// receive requests
@@ -196,8 +183,13 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/v1/numbers"
 
 	// PUT /numbers/<id>
-	case regV1NumbersNumber.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1NumbersIDPut(m)
+		requestType = "/v1/numbers"
+
+	// PUT /numbers/<id>/flow_id
+	case regV1NumbersIDFlowID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1NumbersIDFlowIDPut(m)
 		requestType = "/v1/numbers"
 
 	// GET /numbers/<number>
@@ -211,7 +203,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/v1/numbers"
 
 	// GET /numbers
-	case regV1Numbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1NumbersGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1NumbersGet(m)
 		requestType = "/v1/numbers"
 

@@ -1,34 +1,33 @@
 package numberhandlertelnyx
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package numberhandlertelnyx -destination ./mock_numberhandler_numberhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package numberhandlertelnyx -destination ./mock_numberhandlertelnyx.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal"
 )
 
-// NumberHandler is interface for service handle
-type NumberHandler interface {
+// NumberHandlerTelnyx is interface for service handle
+type NumberHandlerTelnyx interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
-	CreateOrderNumbers(customerID uuid.UUID, numbs []string) ([]*number.Number, error)
-	ReleaseOrderNumber(ctx context.Context, numb *number.Number) (*number.Number, error)
+	CreateOrderNumber(customerID, flowID uuid.UUID, num, name, detail string) (*number.Number, error)
+	ReleaseOrderNumber(ctx context.Context, num *number.Number) (*number.Number, error)
 }
 
-// numberHandler structure for service handle
-type numberHandler struct {
+// numberHandlerTelnyx structure for service handle
+type numberHandlerTelnyx struct {
 	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
-	cache      cachehandler.CacheHandler
+
+	requestExternal requestexternal.RequestExternal
 }
 
 // telnyx const variables
@@ -36,15 +35,10 @@ const (
 	ConnectionID string = "1749650875783055057" // telnyx's voipbin connection id
 )
 
-// List of default values
-const (
-	defaultTimeStamp = "9999-01-01 00:00:00.000000"
-)
-
 var (
 	metricsNamespace = "number_manager"
 
-	promNumberCreateTotal = prometheus.NewCounterVec(
+	promTelnyxCreateTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
 			Name:      "telnyx_number_create_total",
@@ -56,26 +50,20 @@ var (
 
 func init() {
 	prometheus.MustRegister(
-		promNumberCreateTotal,
+		promTelnyxCreateTotal,
 	)
 }
 
 // NewNumberHandler returns new service handler
-func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) NumberHandler {
+func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler) NumberHandlerTelnyx {
 
-	h := &numberHandler{
-		reqHandler: r,
-		db:         db,
-		cache:      cache,
+	reqExternal := requestexternal.NewRequestExternal()
+
+	h := &numberHandlerTelnyx{
+		reqHandler:      r,
+		db:              db,
+		requestExternal: reqExternal,
 	}
 
 	return h
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

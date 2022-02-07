@@ -7,50 +7,50 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 )
 
 // CreateOrderNumbers creates a new order numbers of given numbers from the telnyx
-func (h *numberHandler) CreateOrderNumbers(customerID uuid.UUID, numbers []string) ([]*number.Number, error) {
+func (h *numberHandlerTelnyx) CreateOrderNumber(customerID, flowID uuid.UUID, num, name, detail string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"numbers": numbers,
+			"customer_id": customerID,
+			"number":      num,
 		},
 	)
 
 	// send a request to number providers
-	_, err := h.reqHandler.TelnyxNumberOrdersPost(numbers)
+	numbers := []string{num}
+	_, err := h.requestExternal.TelnyxNumberOrdersPost(numbers)
 	if err != nil {
 		log.Errorf("Could not send the order request to the telnyx. err: %v", err)
 		return nil, err
 	}
 
 	// create db record for each ordered numbers
-	res := []*number.Number{}
-	for _, number := range numbers {
-		tmpNumber, err := h.createNumberByTelnyxOrderNumber(customerID, number)
-		if err != nil {
-			log.Errorf("Could not handle the ordered number to the telnyx. number: %s, err: %v", number, err)
-			continue
-		}
-
-		// append
-		res = append(res, tmpNumber)
+	res, err := h.createNumberByTelnyxOrderNumber(customerID, flowID, num, name, detail)
+	if err != nil {
+		log.Errorf("Could not handle the ordered number to the telnyx. number: %s, err: %v", num, err)
+		return nil, err
 	}
 
 	return res, nil
 }
 
 // createNumberByTelnyxOrderNumber creates a number by ordered number to the telnyx.
-func (h *numberHandler) createNumberByTelnyxOrderNumber(customerID uuid.UUID, number string) (*number.Number, error) {
+func (h *numberHandlerTelnyx) createNumberByTelnyxOrderNumber(customerID, flowID uuid.UUID, number, name, detail string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"number": number,
+			"func":          "createNumberByTelnyxOrderNumber",
+			"customer_id":   customerID,
+			"flow_id":       flowID,
+			"number_number": number,
 		},
 	)
 	ctx := context.Background()
 
 	// get number info
-	numInfos, err := h.reqHandler.TelnyxPhoneNumbersGet(1, "", number)
+	numInfos, err := h.requestExternal.TelnyxPhoneNumbersGet(1, "", number)
 	if err != nil {
 		log.Errorf("Could not get correct number info. number: %s, err: %v", number, err)
 
@@ -63,7 +63,7 @@ func (h *numberHandler) createNumberByTelnyxOrderNumber(customerID uuid.UUID, nu
 
 	// update connection id
 	numInfo := numInfos[0]
-	tmpNum, err := h.reqHandler.TelnyxPhoneNumbersIDUpdateConnectionID(numInfo.ID, ConnectionID)
+	tmpNum, err := h.requestExternal.TelnyxPhoneNumbersIDUpdateConnectionID(numInfo.ID, ConnectionID)
 	if err != nil {
 		log.Errorf("Could not update connection ID info. err: %v", err)
 		return nil, err
@@ -74,10 +74,13 @@ func (h *numberHandler) createNumberByTelnyxOrderNumber(customerID uuid.UUID, nu
 	// add uuid
 	tmp.ID = uuid.Must(uuid.NewV4())
 	tmp.CustomerID = customerID
+	tmp.FlowID = flowID
+	tmp.Name = name
+	tmp.Detail = detail
 
-	tmp.TMCreate = getCurTime()
-	tmp.TMUpdate = defaultTimeStamp
-	tmp.TMDelete = defaultTimeStamp
+	tmp.TMCreate = dbhandler.GetCurTime()
+	tmp.TMUpdate = dbhandler.DefaultTimeStamp
+	tmp.TMDelete = dbhandler.DefaultTimeStamp
 
 	// insert into db
 	if err := h.db.NumberCreate(ctx, tmp); err != nil {
@@ -100,7 +103,7 @@ func (h *numberHandler) createNumberByTelnyxOrderNumber(customerID uuid.UUID, nu
 }
 
 // ReleseOrderNumbers release an existed order number from the telnyx
-func (h *numberHandler) ReleaseOrderNumber(ctx context.Context, number *number.Number) (*number.Number, error) {
+func (h *numberHandlerTelnyx) ReleaseOrderNumber(ctx context.Context, number *number.Number) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"number": number,
@@ -108,7 +111,7 @@ func (h *numberHandler) ReleaseOrderNumber(ctx context.Context, number *number.N
 	)
 
 	// delete the number from the telnyx
-	phoneNumber, err := h.reqHandler.TelnyxPhoneNumbersIDDelete(number.ProviderReferenceID)
+	phoneNumber, err := h.requestExternal.TelnyxPhoneNumbersIDDelete(number.ProviderReferenceID)
 	if err != nil {
 		log.Errorf("Could not delete the number from the telnyx. number: %s, err: %v", number.ID, err)
 		return nil, err
