@@ -320,7 +320,7 @@ type RequestHandler interface {
 	NMV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)
 
 	// number-manager number
-	NMV1NumberCreate(ctx context.Context, customerID, flowID uuid.UUID, num, name, detail string) (*nmnumber.Number, error)
+	NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*nmnumber.Number, error)
 	NMV1NumberDelete(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error)
 	NMV1NumberFlowDelete(ctx context.Context, flowID uuid.UUID) error
 	NMV1NumberGetByNumber(ctx context.Context, num string) (*nmnumber.Number, error)
