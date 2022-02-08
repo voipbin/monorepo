@@ -142,7 +142,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, *rabbitExchangeDelay)
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler)
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, numberHandler)
