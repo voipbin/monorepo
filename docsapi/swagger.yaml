@@ -31,6 +31,9 @@ definitions:
         items:
           $ref: '#/definitions/address.Address'
         type: array
+      customer_id:
+        description: owned customer's id
+        type: string
       detail:
         description: agent's detail
         type: string
@@ -63,9 +66,6 @@ definitions:
       tm_update:
         description: Updated timestamp.
         type: string
-      user_id:
-        description: owned user's id
-        type: integer
       username:
         description: agent's username
         type: string
@@ -196,8 +196,35 @@ definitions:
       webhook_uri:
         type: string
     type: object
+  customer.Customer:
+    properties:
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      permission_ids:
+        items:
+          type: string
+        type: array
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      username:
+        type: string
+      webhook_method:
+        type: WebhookMethod
+      webhook_uri:
+        type: string
+    type: object
   domain.Domain:
     properties:
+      customer_id:
+        type: string
       detail:
         description: Detail
         type: string
@@ -217,11 +244,11 @@ definitions:
       tm_update:
         description: Updated timestamp.
         type: string
-      user_id:
-        type: integer
     type: object
   extension.Extension:
     properties:
+      customer_id:
+        type: string
       detail:
         type: string
       domain_id:
@@ -240,8 +267,6 @@ definitions:
         type: string
       tm_update:
         type: string
-      user_id:
-        type: integer
     type: object
   flow.Flow:
     properties:
@@ -273,11 +298,15 @@ definitions:
     type: object
   number.Number:
     properties:
+      detail:
+        type: string
       emergency_enabled:
         type: boolean
       flow_id:
         type: string
       id:
+        type: string
+      name:
         type: string
       number:
         type: string
@@ -288,9 +317,6 @@ definitions:
       tm_create:
         type: string
       tm_delete:
-        type: string
-      tm_purchase:
-        description: timestamp
         type: string
       tm_update:
         type: string
@@ -348,6 +374,8 @@ definitions:
     type: object
   recording.Recording:
     properties:
+      customer_id:
+        type: string
       filename:
         type: string
       format:
@@ -370,8 +398,6 @@ definitions:
         type: string
       type:
         type: string
-      user_id:
-        type: integer
     type: object
   request.BodyAgentsIDAddressesPUT:
     properties:
@@ -449,8 +475,6 @@ definitions:
       source:
         $ref: '#/definitions/address.Address'
         type: object
-      webhook_uri:
-        type: string
     required:
     - destination
     - source
@@ -470,8 +494,6 @@ definitions:
           $ref: '#/definitions/action.Action'
         type: array
       type:
-        type: string
-      webhook_uri:
         type: string
     required:
     - type
@@ -508,8 +530,6 @@ definitions:
         type: string
       name:
         type: string
-      webhook_uri:
-        type: string
     type: object
   request.BodyFlowsPOST:
     properties:
@@ -520,8 +540,6 @@ definitions:
       detail:
         type: string
       name:
-        type: string
-      webhook_uri:
         type: string
     type: object
   request.BodyLoginPOST:
@@ -536,11 +554,19 @@ definitions:
     type: object
   request.BodyNumbersIDPUT:
     properties:
-      flow_id:
+      detail:
+        type: string
+      name:
         type: string
     type: object
   request.BodyNumbersPOST:
     properties:
+      detail:
+        type: string
+      flow_id:
+        type: string
+      name:
+        type: string
       number:
         type: string
     type: object
@@ -587,47 +613,12 @@ definitions:
       recording_id:
         type: string
     type: object
-  request.BodyUsersIDPUT:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyUsersIDPasswordPUT:
-    properties:
-      password:
-        type: string
-    type: object
-  request.BodyUsersIDPermissionPUT:
-    properties:
-      permission:
-        type: integer
-    type: object
-  request.BodyUsersPOST:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-      permission:
-        type: integer
-      username:
-        type: string
-    required:
-    - password
-    - username
-    type: object
   response.BodyAgentsGET:
     properties:
       next_page_token:
         type: string
       result:
-        items:
-          $ref: '#/definitions/agent.Agent'
-        type: array
+        type: string
     type: object
   response.BodyAvailableNumbersGET:
     properties:
@@ -637,6 +628,13 @@ definitions:
         type: array
     type: object
   response.BodyCallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        type: string
+    type: object
+  response.BodyCustomersGET:
     properties:
       next_page_token:
         type: string
@@ -657,9 +655,7 @@ definitions:
       next_page_token:
         type: string
       result:
-        items:
-          $ref: '#/definitions/flow.Flow'
-        type: array
+        type: string
     type: object
   response.BodyLoginPOST:
     properties:
@@ -673,9 +669,7 @@ definitions:
       next_page_token:
         type: string
       result:
-        items:
-          $ref: '#/definitions/number.Number'
-        type: array
+        type: string
     type: object
   response.BodyQueuesGET:
     properties:
@@ -704,15 +698,6 @@ definitions:
           $ref: '#/definitions/tag.Tag'
         type: array
     type: object
-  response.BodyUsersGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/user.User'
-        type: array
-    type: object
   tag.Tag:
     properties:
       detail:
@@ -733,9 +718,6 @@ definitions:
       tm_update:
         description: Updated timestamp.
         type: string
-      user_id:
-        description: owned user's id
-        type: integer
     type: object
   transcribe.Transcribe:
     properties:
@@ -773,31 +755,6 @@ definitions:
         type: string
       tm_create:
         description: timestamp
-        type: string
-    type: object
-  user.User:
-    properties:
-      detail:
-        type: string
-      id:
-        description: gorm.Model
-        type: integer
-      name:
-        type: string
-      permission:
-        description: User's permission.
-        type: integer
-      tm_create:
-        description: Created timestamp.
-        type: string
-      tm_delete:
-        description: Deleted timestamp.
-        type: string
-      tm_update:
-        description: Updated timestamp.
-        type: string
-      username:
-        description: User's username
         type: string
     type: object
 host: api.voipbin.net
@@ -1012,7 +969,7 @@ paths:
       summary: List available numbers
   /v1.0/calls:
     get:
-      description: get calls of the user
+      description: get calls of the customer
       parameters:
       - description: The size of results. Max 100
         in: query
@@ -1082,7 +1039,7 @@ paths:
       summary: Get detail call info.
   /v1.0/conferences:
     get:
-      description: get conferences of the user
+      description: get conferences of the customer
       parameters:
       - description: The size of results. Max 100
         in: query
@@ -1176,6 +1133,99 @@ paths:
       responses:
         "200": {}
       summary: Kick the call from the conference.
+  /v1.0/customers:
+    get:
+      description: Gets a list of customers
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyCustomersGET'
+      summary: Gets a list of customers.
+    post:
+      description: Create a new customer and returns detail created customer info.
+      parameters:
+      - description: customer info.
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyFlowsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/customer.Customer'
+      summary: Create a new customer and returns detail created customer info.
+  /v1.0/customers/{id}:
+    delete:
+      description: Delete a existing customer.
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete a existing customer.
+    get:
+      description: Returns detail customer info of the given customer id.
+      parameters:
+      - description: The ID of the customer
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/customer.Customer'
+      summary: Returns detail customer info.
+    put:
+      description: Update a customer and returns detail updated customer info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/customer.Customer'
+      summary: Update a customer.
+  /v1.0/customers/{id}/password:
+    put:
+      description: Update a customer's password.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/customer.Customer'
+      summary: Update a customer's password.
+  /v1.0/customers/{id}/permissions_ids:
+    put:
+      description: Update a customer's permission_ids.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/customer.Customer'
+      summary: Update a customer's permission_ids.
   /v1.0/domains:
     get:
       description: Gets a list of domains
@@ -1215,7 +1265,7 @@ paths:
         "200": {}
       summary: Delete a existing domain.
     get:
-      description: Returns detail flow info of the given domain id.
+      description: Returns detail domain info of the given domain id.
       parameters:
       - description: The ID of the domain
         in: path
@@ -1515,7 +1565,7 @@ paths:
       summary: Update the number's basic information.
   /v1.0/queues:
     get:
-      description: get queues of the user
+      description: get queues of the customer
       parameters:
       - description: The size of results. Max 100
         in: query
@@ -1673,7 +1723,7 @@ paths:
       summary: Download the recording file
   /v1.0/recordings:
     get:
-      description: get recordings of the user
+      description: get recordings of the customer
       parameters:
       - description: The size of results. Max 100
         in: query
@@ -1710,7 +1760,7 @@ paths:
       summary: Returns a detail recording information.
   /v1.0/tags:
     get:
-      description: get tags of the user
+      description: get tags of the customer
       parameters:
       - description: The size of results. Max 100
         in: query
@@ -1805,127 +1855,4 @@ paths:
           schema:
             $ref: '#/definitions/transcribe.Transcribe'
       summary: Create a transcribe
-  /v1.0/users:
-    get:
-      description: get tags of the user
-      parameters:
-      - description: The size of results. Max 100
-        in: query
-        name: page_size
-        type: integer
-      - description: The token. tm_create
-        in: query
-        name: page_token
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.BodyUsersGET'
-      summary: List tags
-    post:
-      description: create a new user.
-      parameters:
-      - description: Creating user info.
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/request.BodyUsersPOST'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/user.User'
-      summary: Create a new user.
-  /v1.0/users/{id}:
-    delete:
-      description: Delete the user of the given id
-      parameters:
-      - description: The user's id.
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Delete the user
-    get:
-      description: Get the user of the given id
-      parameters:
-      - description: The user's id.
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Get the user
-    put:
-      description: Get the user of the given id
-      parameters:
-      - description: The ID of the user
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: The update info.
-        in: body
-        name: update_info
-        required: true
-        schema:
-          $ref: '#/definitions/request.BodyUsersIDPUT'
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Put the user
-  /v1.0/users/{id}/password:
-    put:
-      description: Get the user of the given id
-      parameters:
-      - description: The user's id.
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Update info.
-        in: body
-        name: update_info
-        required: true
-        schema:
-          $ref: '#/definitions/request.BodyUsersIDPasswordPUT'
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Put the user
-  /v1.0/users/{id}/permission:
-    put:
-      description: Get the user of the given id
-      parameters:
-      - description: The user's id.
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Update info.
-        in: body
-        name: update_info
-        required: true
-        schema:
-          $ref: '#/definitions/request.BodyUsersIDPermissionPUT'
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Put the user
 swagger: "2.0"

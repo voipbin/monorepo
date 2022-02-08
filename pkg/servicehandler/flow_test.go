@@ -82,7 +82,6 @@ func TestFlowCreate(t *testing.T) {
 				Detail:     "test detail",
 				Actions:    []fmaction.Action{},
 				Persist:    true,
-				WebhookURI: "https://test.com/webhook",
 			},
 			&fmflow.Flow{
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
@@ -90,7 +89,6 @@ func TestFlowCreate(t *testing.T) {
 				Detail:     "test detail",
 				Actions:    []fmaction.Action{},
 				Persist:    true,
-				WebhookURI: "https://test.com/webhook",
 			},
 			&fmflow.Flow{
 				ID:         uuid.FromStringOrNil("5d70b47c-82f5-11eb-9d41-53331f170b23"),
@@ -99,14 +97,12 @@ func TestFlowCreate(t *testing.T) {
 				Detail:     "test detail",
 				Actions:    []fmaction.Action{},
 				Persist:    true,
-				WebhookURI: "https://test.com/webhook",
 			},
 			&fmflow.WebhookMessage{
-				ID:         uuid.FromStringOrNil("5d70b47c-82f5-11eb-9d41-53331f170b23"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions:    []fmaction.Action{},
-				WebhookURI: "https://test.com/webhook",
+				ID:      uuid.FromStringOrNil("5d70b47c-82f5-11eb-9d41-53331f170b23"),
+				Name:    "test",
+				Detail:  "test detail",
+				Actions: []fmaction.Action{},
 			},
 		},
 	}
@@ -114,8 +110,8 @@ func TestFlowCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.response, nil)
-			res, err := h.FlowCreate(tt.customer, tt.flow.Name, tt.flow.Detail, tt.flow.WebhookURI, tt.flow.Actions, tt.flow.Persist)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.response, nil)
+			res, err := h.FlowCreate(tt.customer, tt.flow.Name, tt.flow.Detail, tt.flow.Actions, tt.flow.Persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

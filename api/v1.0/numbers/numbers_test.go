@@ -13,11 +13,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -34,16 +34,14 @@ func TestNumbersGET(t *testing.T) {
 
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		uri      string
 		req      request.ParamNumbersGET
 
-		resNumbers []*number.Number
-	}
-
-	tests := []test{
+		resNumbers []*nmnumber.WebhookMessage
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -56,18 +54,9 @@ func TestNumbersGET(t *testing.T) {
 					PageToken: "2021-03-02 03:23:20.995000",
 				},
 			},
-			[]*number.Number{
+			[]*nmnumber.WebhookMessage{
 				{
-					ID:               uuid.FromStringOrNil("31ee638c-7b23-11eb-858a-33e73c4f82f7"),
-					Number:           "+821021656521",
-					CustomerID:       uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-					Status:           "active",
-					T38Enabled:       false,
-					EmergencyEnabled: false,
-					TMPurchase:       "",
-					TMCreate:         "",
-					TMUpdate:         "",
-					TMDelete:         "",
+					ID: uuid.FromStringOrNil("31ee638c-7b23-11eb-858a-33e73c4f82f7"),
 				},
 			},
 		},
@@ -104,17 +93,15 @@ func TestNumbersIDGET(t *testing.T) {
 
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		numberID uuid.UUID
 		uri      string
 
-		resNumber  *number.Number
+		resNumber  *nmnumber.WebhookMessage
 		expectBody []byte
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -122,19 +109,10 @@ func TestNumbersIDGET(t *testing.T) {
 			},
 			uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 			"/v1.0/numbers/3ab6711c-7be6-11eb-8da6-d31a9f3d45a6",
-			&number.Number{
-				ID:               uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
-				Number:           "+821021656521",
-				CustomerID:       uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				Status:           "active",
-				T38Enabled:       false,
-				EmergencyEnabled: false,
-				TMPurchase:       "",
-				TMCreate:         "",
-				TMUpdate:         "",
-				TMDelete:         "",
+			&nmnumber.WebhookMessage{
+				ID: uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 			},
-			[]byte(`{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			[]byte(`{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","number":"","flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_create":"","tm_update":"","tm_delete":""}`),
 		},
 	}
 
@@ -184,7 +162,7 @@ func TestNumbersIDDELETE(t *testing.T) {
 		numberID uuid.UUID
 		uri      string
 
-		resNumber *number.Number
+		responseNumber *nmnumber.WebhookMessage
 	}
 
 	tests := []test{
@@ -195,17 +173,8 @@ func TestNumbersIDDELETE(t *testing.T) {
 			},
 			uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
 			"/v1.0/numbers/d905c26e-7be6-11eb-b92a-ab4802b4bde3",
-			&number.Number{
-				ID:               uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
-				Number:           "+821021656521",
-				CustomerID:       uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				Status:           "active",
-				T38Enabled:       false,
-				EmergencyEnabled: false,
-				TMPurchase:       "",
-				TMCreate:         "",
-				TMUpdate:         "",
-				TMDelete:         "",
+			&nmnumber.WebhookMessage{
+				ID: uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
 			},
 		},
 	}
@@ -222,7 +191,7 @@ func TestNumbersIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberDelete(&tt.customer, tt.numberID).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberDelete(&tt.customer, tt.numberID).Return(tt.responseNumber, nil)
 			req, _ := http.NewRequest("DELETE", tt.uri, nil)
 
 			r.ServeHTTP(w, req)
@@ -257,6 +226,9 @@ func TestNumbersPOST(t *testing.T) {
 			"/v1.0/numbers",
 			request.BodyNumbersPOST{
 				Number: "+821021656521",
+				FlowID: uuid.FromStringOrNil("7762e356-88b1-11ec-bb0c-7f21b7cad172"),
+				Name:   "test name",
+				Detail: "test detail",
 			},
 		},
 	}
@@ -273,7 +245,7 @@ func TestNumbersPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberCreate(&tt.customer, tt.requestBody.Number)
+			mockSvc.EXPECT().NumberCreate(&tt.customer, tt.requestBody.Number, tt.requestBody.FlowID, tt.requestBody.Name, tt.requestBody.Detail)
 
 			// create body
 			body, err := json.Marshal(tt.requestBody)
@@ -303,9 +275,9 @@ func TestNumbersIDPUT(t *testing.T) {
 		customer cscustomer.Customer
 		uri      string
 
-		requestBody   request.BodyNumbersIDPUT
-		requestNumber *number.Number
-		resNumber     *number.Number
+		id          uuid.UUID
+		requestBody request.BodyNumbersIDPUT
+		resNumber   *nmnumber.WebhookMessage
 	}
 
 	tests := []test{
@@ -315,25 +287,14 @@ func TestNumbersIDPUT(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
+
+			uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
 			request.BodyNumbersIDPUT{
-				FlowID: uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
+				Name:   "test name",
+				Detail: "test detail",
 			},
-			&number.Number{
-				ID:     uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
-				FlowID: uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
-			},
-			&number.Number{
-				ID:               uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
-				FlowID:           uuid.FromStringOrNil("68e108d4-7c60-11eb-9276-5b2ca6f08cbb"),
-				Number:           "+821021656521",
-				CustomerID:       uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				Status:           "active",
-				T38Enabled:       false,
-				EmergencyEnabled: false,
-				TMPurchase:       "",
-				TMCreate:         "",
-				TMUpdate:         "",
-				TMDelete:         "",
+			&nmnumber.WebhookMessage{
+				ID: uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
 			},
 		},
 	}
@@ -350,7 +311,7 @@ func TestNumbersIDPUT(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberUpdate(&tt.customer, tt.requestNumber).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberUpdate(&tt.customer, tt.id, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.resNumber, nil)
 
 			// create body
 			body, err := json.Marshal(tt.requestBody)

@@ -99,7 +99,6 @@ func (h *serviceHandler) ConferenceCreate(
 	confType cfconference.Type,
 	name string,
 	detail string,
-	webhookURI string,
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
 ) (*cfconference.WebhookMessage, error) {
@@ -111,14 +110,13 @@ func (h *serviceHandler) ConferenceCreate(
 			"type":         confType,
 			"name":         name,
 			"detail":       detail,
-			"webhook_uri":  webhookURI,
 			"pre_actions":  preActions,
 			"post_actions": postActions,
 		},
 	)
 	log.Debugf("Creating a conference.")
 
-	tmp, err := h.reqHandler.CFV1ConferenceCreate(ctx, u.ID, confType, name, detail, 0, webhookURI, map[string]interface{}{}, preActions, postActions)
+	tmp, err := h.reqHandler.CFV1ConferenceCreate(ctx, u.ID, confType, name, detail, 0, map[string]interface{}{}, preActions, postActions)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
