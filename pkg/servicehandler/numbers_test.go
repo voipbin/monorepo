@@ -10,7 +10,6 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -26,17 +25,15 @@ func TestOrderNumberGets(t *testing.T) {
 		dbHandler:  mockDB,
 	}
 
-	type test struct {
+	tests := []struct {
 		name      string
 		customer  *cscustomer.Customer
 		pageToken string
 		pageSize  uint64
 
 		response  []nmnumber.Number
-		expectRes []*number.Number
-	}
-
-	tests := []test{
+		expectRes []*nmnumber.WebhookMessage
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -47,28 +44,12 @@ func TestOrderNumberGets(t *testing.T) {
 
 			[]nmnumber.Number{
 				{
-					ID:                  uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
-					Number:              "+821021656521",
-					CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					ProviderName:        "telnyx",
-					ProviderReferenceID: "",
-					Status:              nmnumber.StatusActive,
-					T38Enabled:          false,
-					EmergencyEnabled:    false,
+					ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 				},
 			},
-			[]*number.Number{
+			[]*nmnumber.WebhookMessage{
 				{
-					ID:               uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
-					Number:           "+821021656521",
-					CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					Status:           "active",
-					T38Enabled:       false,
-					EmergencyEnabled: false,
-					TMPurchase:       "",
-					TMCreate:         "",
-					TMUpdate:         "",
-					TMDelete:         "",
+					ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 				},
 			},
 		},
@@ -108,16 +89,14 @@ func TestOrderNumberGet(t *testing.T) {
 		dbHandler:  mockDB,
 	}
 
-	type test struct {
+	tests := []struct {
 		name     string
 		customer *cscustomer.Customer
 		id       uuid.UUID
 
 		response  *nmnumber.Number
-		expectRes *number.Number
-	}
-
-	tests := []test{
+		expectRes *nmnumber.WebhookMessage
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -126,27 +105,13 @@ func TestOrderNumberGet(t *testing.T) {
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				ProviderName:        "telnyx",
-				ProviderReferenceID: "",
-				Status:              nmnumber.StatusActive,
-				T38Enabled:          false,
-				EmergencyEnabled:    false,
-				TMDelete:            defaultTimestamp,
+				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				TMDelete:   defaultTimestamp,
 			},
-			&number.Number{
-				ID:               uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				Number:           "+821021656521",
-				CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Status:           "active",
-				T38Enabled:       false,
-				EmergencyEnabled: false,
-				TMPurchase:       "",
-				TMCreate:         "",
-				TMUpdate:         "",
-				TMDelete:         defaultTimestamp,
+			&nmnumber.WebhookMessage{
+				ID:       uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -235,60 +200,46 @@ func TestNumberCreate(t *testing.T) {
 		dbHandler:  mockDB,
 	}
 
-	type test struct {
+	tests := []struct {
 		name     string
 		customer *cscustomer.Customer
-		numbers  string
+
+		num        string
+		flowID     uuid.UUID
+		numberName string
+		detail     string
 
 		response  *nmnumber.Number
-		expectRes *number.Number
-	}
-
-	tests := []test{
+		expectRes *nmnumber.WebhookMessage
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
+
 			"+821021656521",
+			uuid.FromStringOrNil("c7301f68-88af-11ec-bb03-33d26b9b7e37"),
+			"test name",
+			"test detail",
 
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("f06c8c36-7b1d-11eb-8b01-83e94e91b409"),
-				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				ProviderName:        "telnyx",
-				ProviderReferenceID: "",
-				Status:              nmnumber.StatusActive,
-				T38Enabled:          false,
-				EmergencyEnabled:    false,
-				TMDelete:            defaultTimestamp,
+				ID: uuid.FromStringOrNil("f06c8c36-7b1d-11eb-8b01-83e94e91b409"),
 			},
-			&number.Number{
-				Number:           "+821021656521",
-				CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Status:           "active",
-				T38Enabled:       false,
-				EmergencyEnabled: false,
-				TMPurchase:       "",
-				TMCreate:         "",
-				TMUpdate:         "",
-				TMDelete:         defaultTimestamp,
+			&nmnumber.WebhookMessage{
+				ID: uuid.FromStringOrNil("f06c8c36-7b1d-11eb-8b01-83e94e91b409"),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// ctx := context.Background()
-
-			mockReq.EXPECT().NMV1NumberCreate(gomock.Any(), tt.customer.ID, tt.numbers).Return(tt.response, nil)
-
-			res, err := h.NumberCreate(tt.customer, tt.numbers)
+			mockReq.EXPECT().NMV1NumberCreate(gomock.Any(), tt.customer.ID, tt.num, tt.flowID, tt.numberName, tt.detail).Return(tt.response, nil)
+			res, err := h.NumberCreate(tt.customer, tt.num, tt.flowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.ID = uuid.Nil
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
@@ -315,7 +266,6 @@ func TestNumberDelete(t *testing.T) {
 
 		responseGet    *nmnumber.Number
 		responseDelete *nmnumber.Number
-		expectRes      *number.Number
 	}
 
 	tests := []test{
@@ -350,18 +300,6 @@ func TestNumberDelete(t *testing.T) {
 				TMUpdate:            "2021-10-16 00:00:00.000001",
 				TMDelete:            "2021-10-16 00:00:00.000001",
 			},
-			&number.Number{
-				ID:               uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
-				Number:           "+821021656521",
-				CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Status:           "deleted",
-				T38Enabled:       false,
-				EmergencyEnabled: false,
-				TMPurchase:       "",
-				TMCreate:         "2021-10-15 00:00:00.000001",
-				TMUpdate:         "2021-10-16 00:00:00.000001",
-				TMDelete:         "2021-10-16 00:00:00.000001",
-			},
 		},
 	}
 
@@ -376,8 +314,8 @@ func TestNumberDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.responseDelete.ConvertWebhookMessage()) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.responseDelete.ConvertWebhookMessage(), res)
 			}
 		})
 	}
@@ -396,14 +334,15 @@ func TestNumberUpdate(t *testing.T) {
 	}
 
 	type test struct {
-		name         string
-		customer     *cscustomer.Customer
-		updateNumber *number.Number
+		name     string
+		customer *cscustomer.Customer
 
-		updateNMNumber *nmnumber.Number
+		id         uuid.UUID
+		numberName string
+		detail     string
+
 		responseGet    *nmnumber.Number
 		responseUpdate *nmnumber.Number
-		expectRes      *number.Number
 	}
 
 	tests := []test{
@@ -412,15 +351,11 @@ func TestNumberUpdate(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&number.Number{
-				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
-			},
 
-			&nmnumber.Number{
-				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
-			},
+			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+			"update name",
+			"update detail",
+
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 				Number:              "+821021656521",
@@ -444,35 +379,22 @@ func TestNumberUpdate(t *testing.T) {
 				EmergencyEnabled:    false,
 				TMDelete:            defaultTimestamp,
 			},
-			&number.Number{
-				ID:               uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-				FlowID:           uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
-				Number:           "+821021656521",
-				CustomerID:       uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Status:           "active",
-				T38Enabled:       false,
-				EmergencyEnabled: false,
-				TMPurchase:       "",
-				TMCreate:         "",
-				TMUpdate:         "",
-				TMDelete:         defaultTimestamp,
-			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.updateNumber.ID).Return(tt.responseGet, nil)
-			mockReq.EXPECT().NMV1NumberUpdate(gomock.Any(), tt.updateNMNumber).Return(tt.responseUpdate, nil)
+			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NMV1NumberUpdateBasicInfo(gomock.Any(), tt.id, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
 
-			res, err := h.NumberUpdate(tt.customer, tt.updateNumber)
+			res, err := h.NumberUpdate(tt.customer, tt.id, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.responseUpdate.ConvertWebhookMessage()) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.responseUpdate.ConvertWebhookMessage(), res)
 			}
 		})
 	}
@@ -491,9 +413,12 @@ func TestNumberUpdateError(t *testing.T) {
 	}
 
 	type test struct {
-		name         string
-		customer     *cscustomer.Customer
-		updateNumber *number.Number
+		name     string
+		customer *cscustomer.Customer
+
+		id         uuid.UUID
+		numberName string
+		detail     string
 
 		responseGet *nmnumber.Number
 	}
@@ -504,10 +429,10 @@ func TestNumberUpdateError(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&number.Number{
-				ID:     uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-				FlowID: uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
-			},
+
+			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+			"update name",
+			"update detail",
 
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
@@ -526,9 +451,9 @@ func TestNumberUpdateError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.updateNumber.ID).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
 
-			_, err := h.NumberUpdate(tt.customer, tt.updateNumber)
+			_, err := h.NumberUpdate(tt.customer, tt.id, tt.numberName, tt.detail)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}

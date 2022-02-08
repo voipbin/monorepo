@@ -85,8 +85,6 @@ func TestConferenceCreate(t *testing.T) {
 				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
-
-				WebhookURI: "test.com/webhook",
 			},
 			&cfconference.WebhookMessage{
 				ID:   uuid.FromStringOrNil("57916d8a-2089-11ec-98bb-9fcde2f6e0ff"),
@@ -95,8 +93,6 @@ func TestConferenceCreate(t *testing.T) {
 				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
-
-				WebhookURI: "test.com/webhook",
 			},
 		},
 		{
@@ -137,8 +133,6 @@ func TestConferenceCreate(t *testing.T) {
 						Type: fmaction.TypeHangup,
 					},
 				},
-
-				WebhookURI: "test.com/webhook",
 			},
 			&cfconference.WebhookMessage{
 				ID:   uuid.FromStringOrNil("f63e863e-3fe7-11ec-9713-33d614df6067"),
@@ -158,8 +152,6 @@ func TestConferenceCreate(t *testing.T) {
 						Type: fmaction.TypeHangup,
 					},
 				},
-
-				WebhookURI: "test.com/webhook",
 			},
 		},
 	}
@@ -167,8 +159,8 @@ func TestConferenceCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.customer.ID, tt.confType, tt.confName, tt.confDetail, 0, tt.webhookURI, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
-			res, err := h.ConferenceCreate(tt.customer, tt.confType, tt.confName, tt.confDetail, tt.webhookURI, tt.preActions, tt.postActions)
+			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.customer.ID, tt.confType, tt.confName, tt.confDetail, 0, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
+			res, err := h.ConferenceCreate(tt.customer, tt.confType, tt.confName, tt.confDetail, tt.preActions, tt.postActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -343,16 +335,12 @@ func TestConferenceGet(t *testing.T) {
 
 				PreActions:  []fmaction.Action{},
 				PostActions: []fmaction.Action{},
-
-				WebhookURI: "test.com/webhook",
 			},
 			&cfconference.WebhookMessage{
 				ID: uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
 
 				PreActions:  []fmaction.Action{},
 				PostActions: []fmaction.Action{},
-
-				WebhookURI: "test.com/webhook",
 			},
 		},
 	}
