@@ -9,9 +9,10 @@ import (
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	tmcommon "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -36,7 +37,6 @@ func TestTranscribeCreate(t *testing.T) {
 
 		responseRecording *cmrecording.Recording
 		response          *tmtranscribe.Transcribe
-		expectRes         *transcribe.Transcribe
 	}
 
 	tests := []test{
@@ -54,30 +54,13 @@ func TestTranscribeCreate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&tmtranscribe.Transcribe{
-				ID:            uuid.FromStringOrNil("77bd4574-a3f3-11eb-a790-c7e151065eb9"),
-				Type:          tmtranscribe.TypeRecording,
-				ReferenceID:   uuid.FromStringOrNil("4a1b66dc-a3f3-11eb-bdef-bb62ebd98cdd"),
-				Language:      "en-US",
-				WebhookURI:    "",
-				WebhookMethod: "",
-				Transcripts: []tmtranscribe.Transcript{
+				ID:          uuid.FromStringOrNil("77bd4574-a3f3-11eb-a790-c7e151065eb9"),
+				Type:        tmtranscribe.TypeRecording,
+				ReferenceID: uuid.FromStringOrNil("4a1b66dc-a3f3-11eb-bdef-bb62ebd98cdd"),
+				Language:    "en-US",
+				Transcripts: []tmtranscript.Transcript{
 					{
-						Direction: tmtranscribe.TranscriptDirectionIn,
-						Message:   "Hello, this is voipbin.",
-					},
-				},
-			},
-
-			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("77bd4574-a3f3-11eb-a790-c7e151065eb9"),
-				Type:          transcribe.TypeRecording,
-				ReferenceID:   uuid.FromStringOrNil("4a1b66dc-a3f3-11eb-bdef-bb62ebd98cdd"),
-				Language:      "en-US",
-				WebhookURI:    "",
-				WebhookMethod: "",
-				Transcripts: []transcribe.Transcript{
-					{
-						Direction: transcribe.TranscriptDirectionIn,
+						Direction: tmcommon.DirectionIn,
 						Message:   "Hello, this is voipbin.",
 					},
 				},
@@ -88,15 +71,15 @@ func TestTranscribeCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().CMV1RecordingGet(gomock.Any(), tt.referenceID).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().TSV1RecordingCreate(gomock.Any(), tt.referenceID, tt.language).Return(tt.response, nil)
+			mockReq.EXPECT().TSV1RecordingCreate(gomock.Any(), tt.customer.ID, tt.referenceID, tt.language).Return(tt.response, nil)
 
 			res, err := h.TranscribeCreate(tt.customer, tt.referenceID, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.response.ConvertWebhookMessage()) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response.ConvertWebhookMessage(), res)
 			}
 		})
 	}

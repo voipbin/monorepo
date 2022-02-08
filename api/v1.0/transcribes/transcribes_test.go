@@ -11,11 +11,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -37,7 +37,7 @@ func TestTranscribesPOST(t *testing.T) {
 		customer cscustomer.Customer
 
 		requestBody request.BodyTranscribesPOST
-		trans       *transcribe.Transcribe
+		trans       *tmtranscribe.WebhookMessage
 	}
 
 	tests := []test{
@@ -50,19 +50,8 @@ func TestTranscribesPOST(t *testing.T) {
 				RecordingID: uuid.FromStringOrNil("1c71e72e-a3f8-11eb-a402-7b13f5ec585d"),
 				Language:    "en-US",
 			},
-			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("82120398-a3f8-11eb-a86b-cfcde0c85e25"),
-				Type:          transcribe.TypeRecording,
-				ReferenceID:   uuid.FromStringOrNil("1c71e72e-a3f8-11eb-a402-7b13f5ec585d"),
-				Language:      "en-US",
-				WebhookURI:    "",
-				WebhookMethod: "",
-				Transcripts: []transcribe.Transcript{
-					{
-						Direction: transcribe.TranscriptDirectionBoth,
-						Message:   "Hello, world.",
-					},
-				},
+			&tmtranscribe.WebhookMessage{
+				ID: uuid.FromStringOrNil("82120398-a3f8-11eb-a86b-cfcde0c85e25"),
 			},
 		},
 	}

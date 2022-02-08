@@ -75,38 +75,6 @@ func TestCallsPOST(t *testing.T) {
 				Actions: []fmaction.Action{},
 			},
 		},
-		{
-			"with webhook",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-			},
-			request.BodyCallsPOST{
-				WebhookURI: "https://test.com/webhook",
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeSIP,
-					Target: "source@test.voipbin.net",
-				},
-				Destination: cmaddress.Address{
-					Type:   cmaddress.TypeSIP,
-					Target: "destination@test.voipbin.net",
-				},
-				Actions: []fmaction.Action{},
-			},
-			&fmflow.Flow{
-				Name:       "tmp",
-				Detail:     "tmp outbound flow",
-				WebhookURI: "https://test.com/webhook",
-				Actions:    []fmaction.Action{},
-				Persist:    false,
-			},
-			&fmflow.WebhookMessage{
-				ID:         uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
-				Name:       "temp",
-				Detail:     "tmp outbound flow",
-				WebhookURI: "https://test.com/webhook",
-				Actions:    []fmaction.Action{},
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -131,7 +99,7 @@ func TestCallsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
 			mockSvc.EXPECT().CallCreate(&tt.customer, tt.resFlow.ID, &tt.req.Source, &tt.req.Destination).Return(nil, nil)
 
 			r.ServeHTTP(w, req)
@@ -177,7 +145,7 @@ func TestCallsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -204,7 +172,7 @@ func TestCallsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"668e6ee6-f989-11ea-abca-bf1ca885b142","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"5d8167e0-f989-11ea-8b34-2b0a03c78fc5","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"61c6626a-f989-11ea-abbf-97944933fee9","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","webhook_uri":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"668e6ee6-f989-11ea-abca-bf1ca885b142","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"5d8167e0-f989-11ea-8b34-2b0a03c78fc5","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""},{"id":"61c6626a-f989-11ea-abbf-97944933fee9","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -260,17 +228,6 @@ func TestCallsIDGET(t *testing.T) {
 			&cmcall.WebhookMessage{
 				ID:       uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
 				TMCreate: "2020-09-20T03:23:21.995000",
-			},
-		},
-		{
-			"webhook",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-			},
-			&cmcall.WebhookMessage{
-				ID:         uuid.FromStringOrNil("9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353"),
-				WebhookURI: "https://test.com/tesadf",
-				TMCreate:   "2020-09-20T03:23:21.995000",
 			},
 		},
 	}

@@ -98,7 +98,6 @@ func TestConferencesPOST(t *testing.T) {
 		conferenceType cfconference.Type
 		conferenceName string
 		detail         string
-		webhookURI     string
 		preActions     []fmaction.Action
 		postActions    []fmaction.Action
 
@@ -114,7 +113,6 @@ func TestConferencesPOST(t *testing.T) {
 			cfconference.TypeConference,
 			"conference name",
 			"conference detail",
-			"",
 			[]fmaction.Action{},
 			[]fmaction.Action{},
 
@@ -127,28 +125,6 @@ func TestConferencesPOST(t *testing.T) {
 			[]byte(`{"type": "conference", "name": "conference name", "detail": "conference detail"}`),
 		},
 		{
-			"webhook uri",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-			},
-
-			cfconference.TypeConference,
-			"conference name",
-			"conference detail",
-			"test.com/webhook",
-			[]fmaction.Action{},
-			[]fmaction.Action{},
-
-			&cfconference.WebhookMessage{
-				ID:         uuid.FromStringOrNil("b85ee002-2089-11ec-a49b-531b1931ddbd"),
-				Type:       cfconference.TypeConference,
-				Name:       "conference name",
-				Detail:     "conference detail",
-				WebhookURI: "test.com/webhook",
-			},
-			[]byte(`{"type": "conference", "name": "conference name", "detail": "conference detail", "webhook_uri": "test.com/webhook"}`),
-		},
-		{
 			"pre/post actions",
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
@@ -157,7 +133,6 @@ func TestConferencesPOST(t *testing.T) {
 			cfconference.TypeConference,
 			"conference name",
 			"conference detail",
-			"test.com/webhook",
 			[]fmaction.Action{
 				{
 					Type: "answer",
@@ -169,11 +144,10 @@ func TestConferencesPOST(t *testing.T) {
 				},
 			},
 			&cfconference.WebhookMessage{
-				ID:         uuid.FromStringOrNil("62fc88ba-3fe9-11ec-8ebb-8f1ee591edec"),
-				Type:       cfconference.TypeConference,
-				Name:       "conference name",
-				Detail:     "conference detail",
-				WebhookURI: "test.com/webhook",
+				ID:     uuid.FromStringOrNil("62fc88ba-3fe9-11ec-8ebb-8f1ee591edec"),
+				Type:   cfconference.TypeConference,
+				Name:   "conference name",
+				Detail: "conference detail",
 				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
@@ -201,7 +175,7 @@ func TestConferencesPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceCreate(&tt.customer, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.WebhookURI, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
+			mockSvc.EXPECT().ConferenceCreate(&tt.customer, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/conferences", bytes.NewBuffer(tt.request))
 
 			req.Header.Set("Content-Type", "application/json")

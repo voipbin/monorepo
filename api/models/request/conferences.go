@@ -15,7 +15,6 @@ type BodyConferencesPOST struct {
 	Type        cfconference.Type `json:"type" binding:"required"`
 	Name        string            `json:"name"`
 	Detail      string            `json:"detail"`
-	WebhookURI  string            `json:"webhook_uri"`
 	PreActions  []fmaction.Action `json:"pre_actions"`
 	PostActions []fmaction.Action `json:"post_actions"`
 }

@@ -8,14 +8,13 @@ import (
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
+	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // TranscribeCreate sends a request to transcribe-manager
 // to generate a recording-transcribe
 // it returns transcribe if it succeed.
-func (h *serviceHandler) TranscribeCreate(u *cscustomer.Customer, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+func (h *serviceHandler) TranscribeCreate(u *cscustomer.Customer, recordingID uuid.UUID, language string) (*tmtranscribe.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  u.ID,
@@ -37,31 +36,12 @@ func (h *serviceHandler) TranscribeCreate(u *cscustomer.Customer, recordingID uu
 	}
 
 	// create tanscribe
-	tmp, err := h.reqHandler.TSV1RecordingCreate(ctx, recordingID, language)
+	tmp, err := h.reqHandler.TSV1RecordingCreate(ctx, u.ID, recordingID, language)
 	if err != nil {
 		log.Errorf("Could not get recordings from the call manager. err: %v", err)
 		return nil, err
 	}
 
-	res := &transcribe.Transcribe{
-		ID:            tmp.ID,
-		Type:          transcribe.Type(tmp.Type),
-		ReferenceID:   tmp.ReferenceID,
-		Language:      tmp.Language,
-		WebhookURI:    tmp.WebhookURI,
-		WebhookMethod: tmp.WebhookMethod,
-	}
-
-	// transcripts
-	for _, t := range tmp.Transcripts {
-		tmp := transcribe.Transcript{
-			Direction: transcribe.TranscriptDirection(t.Direction),
-			Message:   t.Message,
-			TMCreate:  t.TMCreate,
-		}
-
-		res.Transcripts = append(res.Transcripts, tmp)
-	}
-
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }

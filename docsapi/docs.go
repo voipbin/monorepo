@@ -332,7 +332,7 @@ var doc = `{
         },
         "/v1.0/calls": {
             "get": {
-                "description": "get calls of the user",
+                "description": "get calls of the customer",
                 "produces": [
                     "application/json"
                 ],
@@ -439,7 +439,7 @@ var doc = `{
         },
         "/v1.0/conferences": {
             "get": {
-                "description": "get conferences of the user",
+                "description": "get conferences of the customer",
                 "produces": [
                     "application/json"
                 ],
@@ -581,6 +581,148 @@ var doc = `{
                 }
             }
         },
+        "/v1.0/customers": {
+            "get": {
+                "description": "Gets a list of customers",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of customers.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyCustomersGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new customer and returns detail created customer info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new customer and returns detail created customer info.",
+                "parameters": [
+                    {
+                        "description": "customer info.",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyFlowsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.Customer"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/customers/{id}": {
+            "get": {
+                "description": "Returns detail customer info of the given customer id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail customer info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the customer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.Customer"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a customer and returns detail updated customer info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a customer.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.Customer"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing customer.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing customer.",
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/customers/{id}/password": {
+            "put": {
+                "description": "Update a customer's password.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a customer's password.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.Customer"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/customers/{id}/permissions_ids": {
+            "put": {
+                "description": "Update a customer's permission_ids.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a customer's permission_ids.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.Customer"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/domains": {
             "get": {
                 "description": "Gets a list of domains",
@@ -629,7 +771,7 @@ var doc = `{
         },
         "/v1.0/domains/{id}": {
             "get": {
-                "description": "Returns detail flow info of the given domain id.",
+                "description": "Returns detail domain info of the given domain id.",
                 "produces": [
                     "application/json"
                 ],
@@ -1095,7 +1237,7 @@ var doc = `{
         },
         "/v1.0/queues": {
             "get": {
-                "description": "get queues of the user",
+                "description": "get queues of the customer",
                 "produces": [
                     "application/json"
                 ],
@@ -1333,7 +1475,7 @@ var doc = `{
         },
         "/v1.0/recordings": {
             "get": {
-                "description": "get recordings of the user",
+                "description": "get recordings of the customer",
                 "produces": [
                     "application/json"
                 ],
@@ -1390,7 +1532,7 @@ var doc = `{
         },
         "/v1.0/tags": {
             "get": {
-                "description": "get tags of the user",
+                "description": "get tags of the customer",
                 "produces": [
                     "application/json"
                 ],
@@ -1534,191 +1676,6 @@ var doc = `{
                     }
                 }
             }
-        },
-        "/v1.0/users": {
-            "get": {
-                "description": "get tags of the user",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List tags",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "The size of results. Max 100",
-                        "name": "page_size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "The token. tm_create",
-                        "name": "page_token",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.BodyUsersGET"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "create a new user.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Create a new user.",
-                "parameters": [
-                    {
-                        "description": "Creating user info.",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.BodyUsersPOST"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/user.User"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1.0/users/{id}": {
-            "get": {
-                "description": "Get the user of the given id",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Get the user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The user's id.",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            },
-            "put": {
-                "description": "Get the user of the given id",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Put the user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The ID of the user",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "The update info.",
-                        "name": "update_info",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.BodyUsersIDPUT"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            },
-            "delete": {
-                "description": "Delete the user of the given id",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Delete the user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The user's id.",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/v1.0/users/{id}/password": {
-            "put": {
-                "description": "Get the user of the given id",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Put the user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The user's id.",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update info.",
-                        "name": "update_info",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.BodyUsersIDPasswordPUT"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/v1.0/users/{id}/permission": {
-            "put": {
-                "description": "Get the user of the given id",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Put the user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The user's id.",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update info.",
-                        "name": "update_info",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.BodyUsersIDPermissionPUT"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
         }
     },
     "definitions": {
@@ -1768,6 +1725,10 @@ var doc = `{
                         "$ref": "#/definitions/address.Address"
                     }
                 },
+                "customer_id": {
+                    "description": "owned customer's id",
+                    "type": "string"
+                },
                 "detail": {
                     "description": "agent's detail",
                     "type": "string"
@@ -1810,10 +1771,6 @@ var doc = `{
                 "tm_update": {
                     "description": "Updated timestamp.",
                     "type": "string"
-                },
-                "user_id": {
-                    "description": "owned user's id",
-                    "type": "integer"
                 },
                 "username": {
                     "description": "agent's username",
@@ -2002,9 +1959,50 @@ var doc = `{
                 }
             }
         },
+        "customer.Customer": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permission_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "webhook_method": {
+                    "type": "WebhookMethod"
+                },
+                "webhook_uri": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.Domain": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "description": "Detail",
                     "type": "string"
@@ -2030,15 +2028,15 @@ var doc = `{
                 "tm_update": {
                     "description": "Updated timestamp.",
                     "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
                 }
             }
         },
         "extension.Extension": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
@@ -2065,9 +2063,6 @@ var doc = `{
                 },
                 "tm_update": {
                     "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -2113,6 +2108,9 @@ var doc = `{
         "number.Number": {
             "type": "object",
             "properties": {
+                "detail": {
+                    "type": "string"
+                },
                 "emergency_enabled": {
                     "type": "boolean"
                 },
@@ -2120,6 +2118,9 @@ var doc = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "number": {
@@ -2135,10 +2136,6 @@ var doc = `{
                     "type": "string"
                 },
                 "tm_delete": {
-                    "type": "string"
-                },
-                "tm_purchase": {
-                    "description": "timestamp",
                     "type": "string"
                 },
                 "tm_update": {
@@ -2226,6 +2223,9 @@ var doc = `{
         "recording.Recording": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
                 "filename": {
                     "type": "string"
                 },
@@ -2258,9 +2258,6 @@ var doc = `{
                 },
                 "type": {
                     "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -2382,9 +2379,6 @@ var doc = `{
                 "source": {
                     "type": "object",
                     "$ref": "#/definitions/address.Address"
-                },
-                "webhook_uri": {
-                    "type": "string"
                 }
             }
         },
@@ -2413,9 +2407,6 @@ var doc = `{
                     }
                 },
                 "type": {
-                    "type": "string"
-                },
-                "webhook_uri": {
                     "type": "string"
                 }
             }
@@ -2468,9 +2459,6 @@ var doc = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "webhook_uri": {
-                    "type": "string"
                 }
             }
         },
@@ -2487,9 +2475,6 @@ var doc = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "webhook_uri": {
                     "type": "string"
                 }
             }
@@ -2512,7 +2497,10 @@ var doc = `{
         "request.BodyNumbersIDPUT": {
             "type": "object",
             "properties": {
-                "flow_id": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -2520,6 +2508,15 @@ var doc = `{
         "request.BodyNumbersPOST": {
             "type": "object",
             "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "flow_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
                 "number": {
                     "type": "string"
                 }
@@ -2592,57 +2589,6 @@ var doc = `{
                 }
             }
         },
-        "request.BodyUsersIDPUT": {
-            "type": "object",
-            "properties": {
-                "detail": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.BodyUsersIDPasswordPUT": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.BodyUsersIDPermissionPUT": {
-            "type": "object",
-            "properties": {
-                "permission": {
-                    "type": "integer"
-                }
-            }
-        },
-        "request.BodyUsersPOST": {
-            "type": "object",
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
-                "detail": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "permission": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "response.BodyAgentsGET": {
             "type": "object",
             "properties": {
@@ -2650,10 +2596,7 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/agent.Agent"
-                    }
+                    "type": "string"
                 }
             }
         },
@@ -2669,6 +2612,17 @@ var doc = `{
             }
         },
         "response.BodyCallsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.BodyCustomersGET": {
             "type": "object",
             "properties": {
                 "next_page_token": {
@@ -2700,10 +2654,7 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/flow.Flow"
-                    }
+                    "type": "string"
                 }
             }
         },
@@ -2725,10 +2676,7 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/number.Number"
-                    }
+                    "type": "string"
                 }
             }
         },
@@ -2774,20 +2722,6 @@ var doc = `{
                 }
             }
         },
-        "response.BodyUsersGET": {
-            "type": "object",
-            "properties": {
-                "next_page_token": {
-                    "type": "string"
-                },
-                "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/user.User"
-                    }
-                }
-            }
-        },
         "tag.Tag": {
             "type": "object",
             "properties": {
@@ -2814,10 +2748,6 @@ var doc = `{
                 "tm_update": {
                     "description": "Updated timestamp.",
                     "type": "string"
-                },
-                "user_id": {
-                    "description": "owned user's id",
-                    "type": "integer"
                 }
             }
         },
@@ -2870,41 +2800,6 @@ var doc = `{
                 },
                 "tm_create": {
                     "description": "timestamp",
-                    "type": "string"
-                }
-            }
-        },
-        "user.User": {
-            "type": "object",
-            "properties": {
-                "detail": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "gorm.Model",
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "permission": {
-                    "description": "User's permission.",
-                    "type": "integer"
-                },
-                "tm_create": {
-                    "description": "Created timestamp.",
-                    "type": "string"
-                },
-                "tm_delete": {
-                    "description": "Deleted timestamp.",
-                    "type": "string"
-                },
-                "tm_update": {
-                    "description": "Updated timestamp.",
-                    "type": "string"
-                },
-                "username": {
-                    "description": "User's username",
                     "type": "string"
                 }
             }
