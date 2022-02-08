@@ -16,6 +16,7 @@ import (
 
 // processV1NumbersPost handles POST /v1/numbers request
 func (h *listenHandler) processV1NumbersPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
 
 	var reqData request.V1DataNumbersPost
 	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
@@ -32,7 +33,7 @@ func (h *listenHandler) processV1NumbersPost(req *rabbitmqhandler.Request) (*rab
 		},
 	)
 
-	numb, err := h.numberHandler.CreateNumber(reqData.CustomerID, reqData.FlowID, reqData.Number, reqData.Name, reqData.Detail)
+	numb, err := h.numberHandler.CreateNumber(ctx, reqData.CustomerID, reqData.Number, reqData.FlowID, reqData.Name, reqData.Detail)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil

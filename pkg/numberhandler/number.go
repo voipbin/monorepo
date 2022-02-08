@@ -8,10 +8,11 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 )
 
 // CreateNumber creates a new order numbers of given numbers
-func (h *numberHandler) CreateNumber(customerID, flowID uuid.UUID, num, name, detail string) (*number.Number, error) {
+func (h *numberHandler) CreateNumber(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "CreateNumber",
@@ -23,26 +24,39 @@ func (h *numberHandler) CreateNumber(customerID, flowID uuid.UUID, num, name, de
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
 
 	// use telnyx as a default
-	res, err := h.numHandlerTelnyx.CreateOrderNumber(customerID, flowID, num, name, detail)
+	res, err := h.numHandlerTelnyx.CreateOrderNumber(customerID, num, flowID, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a number from the telnyx. err: %v", err)
 		return nil, fmt.Errorf("could not create a number from the telnyx. err: %v", err)
 	}
+	h.notifyHandler.PublishEvent(ctx, number.EventTypeNumberCreated, res)
 
 	return res, err
 }
 
 // ReleaseNumber release/deleted an existed ordered number
 func (h *numberHandler) ReleaseNumber(ctx context.Context, id uuid.UUID) (*number.Number, error) {
-	logrus.Debugf("ReleaseNumber. number: %s", id)
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "ReleaseNumber",
+		"number_id": id,
+	})
+	log.Debugf("ReleaseNumber. number_id: %s", id)
 
-	number, err := h.db.NumberGet(ctx, id)
+	num, err := h.db.NumberGet(ctx, id)
 	if err != nil {
 		logrus.Errorf("Could not get order number info. number: %s, err: %v", id, err)
 		return nil, err
 	}
+	log.Debugf("Release number info. number: %s", num.Number)
 
-	return h.numHandlerTelnyx.ReleaseOrderNumber(ctx, number)
+	res, err := h.numHandlerTelnyx.ReleaseOrderNumber(ctx, num)
+	if err != nil {
+		log.Errorf("Could not release the number. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishEvent(ctx, number.EventTypeNumberDeleted, res)
+
+	return res, nil
 }
 
 // GetNumberByNumber returns number info of the given number
@@ -91,7 +105,7 @@ func (h *numberHandler) GetNumbers(ctx context.Context, customerID uuid.UUID, pa
 	log.Debugf("GetNumbers. customer_id: %s", customerID)
 
 	if pageToken == "" {
-		pageToken = getCurTime()
+		pageToken = dbhandler.GetCurTime()
 	}
 
 	numbers, err := h.db.NumberGets(ctx, customerID, pageSize, pageToken)
@@ -124,6 +138,7 @@ func (h *numberHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 		log.Errorf("Could not get the updated number. number_id: %s, err: %v", id, err)
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, number.EventTypeNumberUpdated, res)
 
 	return res, nil
 }
@@ -149,6 +164,7 @@ func (h *numberHandler) UpdateFlowID(ctx context.Context, id, flowID uuid.UUID) 
 		log.Errorf("Could not get the updated number. number_id: %s, err: %v", id, err)
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, number.EventTypeNumberUpdated, res)
 
 	return res, nil
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -20,15 +21,17 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
 
 	h := numberHandler{
 		reqHandler:       mockReq,
 		db:               mockDB,
+		notifyHandler:    mockNotify,
 		numHandlerTelnyx: mockTelnyx,
 	}
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -38,9 +41,7 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 		detail     string
 
 		expectRes *number.Number
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal us",
 
@@ -60,10 +61,12 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
-			mockTelnyx.EXPECT().CreateOrderNumber(tt.customerID, tt.flowID, tt.number, tt.numberName, tt.detail).Return(tt.expectRes, nil)
+			mockTelnyx.EXPECT().CreateOrderNumber(tt.customerID, tt.number, tt.flowID, tt.numberName, tt.detail).Return(tt.expectRes, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), number.EventTypeNumberCreated, tt.expectRes)
 
-			res, err := h.CreateNumber(tt.customerID, tt.flowID, tt.number, tt.numberName, tt.detail)
+			res, err := h.CreateNumber(ctx, tt.customerID, tt.number, tt.flowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -225,11 +228,13 @@ func TestUpdateBasicInfo(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
 
 	h := numberHandler{
 		reqHandler:       mockReq,
 		db:               mockDB,
+		notifyHandler:    mockNotify,
 		numHandlerTelnyx: mockTelnyx,
 	}
 
@@ -273,8 +278,9 @@ func TestUpdateBasicInfo(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGet(gomock.Any(), tt.id).Return(tt.number, nil)
+			mockDB.EXPECT().NumberGet(gomock.Any(), tt.id).Return(tt.number, nil).AnyTimes()
 			mockDB.EXPECT().NumberUpdateBasicInfo(gomock.Any(), tt.id, tt.numberName, tt.detail).Return(nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), number.EventTypeNumberUpdated, tt.number)
 			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -4,8 +4,6 @@ package numberhandler
 
 import (
 	"context"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -22,7 +20,7 @@ import (
 type NumberHandler interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
 
-	CreateNumber(customerID, flowID uuid.UUID, num, name, detail string) (*number.Number, error)
+	CreateNumber(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error)
 	GetNumber(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	GetNumberByNumber(ctx context.Context, num string) (*number.Number, error)
 	GetNumbers(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error)
@@ -37,8 +35,9 @@ type NumberHandler interface {
 
 // numberHandler structure for service handle
 type numberHandler struct {
-	reqHandler requesthandler.RequestHandler
-	db         dbhandler.DBHandler
+	reqHandler    requesthandler.RequestHandler
+	db            dbhandler.DBHandler
+	notifyHandler notifyhandler.NotifyHandler
 
 	numHandlerTelnyx numberhandlertelnyx.NumberHandlerTelnyx
 }
@@ -68,19 +67,12 @@ func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, n
 	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(r, db)
 
 	h := &numberHandler{
-		reqHandler: r,
-		db:         db,
+		reqHandler:    r,
+		db:            db,
+		notifyHandler: notifyHandler,
 
 		numHandlerTelnyx: nHandlerTelnyx,
 	}
 
 	return h
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
