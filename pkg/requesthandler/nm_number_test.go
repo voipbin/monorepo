@@ -136,7 +136,7 @@ func TestNMV1NumberCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberCreate(ctx, tt.customerID, tt.flowID, tt.num, tt.numberName, tt.detail)
+			res, err := reqHandler.NMV1NumberCreate(ctx, tt.customerID, tt.num, tt.flowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

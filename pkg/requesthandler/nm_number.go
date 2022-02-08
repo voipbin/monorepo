@@ -105,13 +105,13 @@ func (r *requestHandler) NMV1NumberFlowDelete(ctx context.Context, flowID uuid.U
 // NMNumberCreate sends a request to the number-manager
 // to create an number.
 // Returns created number
-func (r *requestHandler) NMV1NumberCreate(ctx context.Context, customerID, flowID uuid.UUID, num, name, detail string) (*nmnumber.Number, error) {
+func (r *requestHandler) NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*nmnumber.Number, error) {
 	uri := "/v1/numbers"
 
 	data := &nmrequest.V1DataNumbersPost{
 		CustomerID: customerID,
-		FlowID:     flowID,
 		Number:     num,
+		FlowID:     flowID,
 		Name:       name,
 		Detail:     detail,
 	}

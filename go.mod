@@ -6,7 +6,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
-	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a // indirect
+	golang.org/x/sys v0.0.0-20220207234003-57398862261d // indirect
 )
 
 require (
@@ -17,7 +17,7 @@ require (
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220203063008-305be30288a4
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220203044108-296babaad5c9
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220207024948-b975c9ff24f5
-	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220207134017-1cb402772fde
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220207150341-dd320ac1ef09
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220129111440-7128c74e331c
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220128172756-b3561f5b2c80
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6
