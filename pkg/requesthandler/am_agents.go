@@ -26,8 +26,6 @@ func (r *requestHandler) AMV1AgentCreate(
 	password string,
 	name string,
 	detail string,
-	webhookMethod string,
-	webhookURI string,
 	ringMethod amagent.RingMethod,
 	permission amagent.Permission,
 	tagIDs []uuid.UUID,
@@ -36,17 +34,16 @@ func (r *requestHandler) AMV1AgentCreate(
 	uri := "/v1/agents"
 
 	data := &amrequest.V1DataAgentsPost{
-		CustomerID:    customerID,
-		Username:      username,
-		Password:      password,
-		Name:          name,
-		Detail:        detail,
-		WebhookMethod: webhookMethod,
-		WebhookURI:    webhookURI,
-		RingMethod:    string(ringMethod),
-		Permission:    uint64(permission),
-		TagIDs:        tagIDs,
-		Addresses:     addresses,
+		CustomerID: customerID,
+		Username:   username,
+		Password:   password,
+
+		Name:       name,
+		Detail:     detail,
+		RingMethod: string(ringMethod),
+		Permission: uint64(permission),
+		TagIDs:     tagIDs,
+		Addresses:  addresses,
 	}
 
 	m, err := json.Marshal(data)
@@ -196,21 +193,26 @@ func (r *requestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, cus
 // CMV1AgentDelete sends a request to agent-manager
 // to delete the agent.
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentDelete(ctx context.Context, id uuid.UUID) error {
+func (r *requestHandler) AMV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", id)
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodDelete, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res amagent.Agent
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // CMV1AgentLogin sends a request to agent-manager
@@ -252,7 +254,7 @@ func (r *requestHandler) AMV1AgentLogin(ctx context.Context, timeout int, custom
 // CMV1AgentLogin sends a request to agent-manager
 // to login the agent
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) error {
+func (r *requestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/addresses", id)
 
 	data := &amrequest.V1DataAgentsIDAddressesPut{
@@ -261,28 +263,33 @@ func (r *requestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.U
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res amagent.Agent
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // AMV1AgentUpdatePassword sends a request to agent-manager
 // to update the agent's password
 // it returns error if something went wrong.
 // timeout: milliseconds
-func (r *requestHandler) AMV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) error {
+func (r *requestHandler) AMV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/password", id)
 
 	data := &amrequest.V1DataAgentsIDPasswordPut{
@@ -291,27 +298,32 @@ func (r *requestHandler) AMV1AgentUpdatePassword(ctx context.Context, timeout in
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res amagent.Agent
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // CMV1AgentUpdate sends a request to agent-manager
 // to update teh agent basic info
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail, ringMethod string) error {
+func (r *requestHandler) AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail, ringMethod string) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", id)
 
 	data := &amrequest.V1DataAgentsIDPut{
@@ -322,27 +334,32 @@ func (r *requestHandler) AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res amagent.Agent
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // AMV1AgentUpdate sends a request to agent-manager
 // to update teh agent's tag_ids info
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error {
+func (r *requestHandler) AMV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/tag_ids", id)
 
 	data := &amrequest.V1DataAgentsIDTagIDsPut{
@@ -351,27 +368,32 @@ func (r *requestHandler) AMV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res amagent.Agent
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // AMV1AgentUpdateStatus sends a request to agent-manager
 // to update teh agent's status info
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) error {
+func (r *requestHandler) AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/status", id)
 
 	data := &amrequest.V1DataAgentsIDStatusPut{
@@ -380,21 +402,26 @@ func (r *requestHandler) AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res amagent.Agent
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // AMV1AgentDial sends a request to agent-manager

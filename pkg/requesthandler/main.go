@@ -214,8 +214,6 @@ type RequestHandler interface {
 		password string,
 		name string,
 		detail string,
-		webhookMethod string,
-		webhookURI string,
 		ringMethod amagent.RingMethod,
 		permission amagent.Permission,
 		tagIDs []uuid.UUID,
@@ -225,14 +223,14 @@ type RequestHandler interface {
 	AMV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amagent.Agent, error)
 	AMV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]amagent.Agent, error)
 	AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
-	AMV1AgentDelete(ctx context.Context, id uuid.UUID) error
+	AMV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error)
 	AMV1AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID uuid.UUID) error
 	AMV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*amagent.Agent, error)
-	AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail, ringMethod string) error
-	AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) error
-	AMV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) error
-	AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) error
-	AMV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error
+	AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail, ringMethod string) (*amagent.Agent, error)
+	AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) (*amagent.Agent, error)
+	AMV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) (*amagent.Agent, error)
+	AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error)
+	AMV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error)
 
 	AMV1TagCreate(
 		ctx context.Context,
