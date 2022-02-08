@@ -15,15 +15,15 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -70,7 +70,7 @@ type ServiceHandler interface {
 	CallDelete(u *cscustomer.Customer, callID uuid.UUID) error
 
 	// conference handlers
-	ConferenceCreate(u *cscustomer.Customer, confType cfconference.Type, name, detail, webhookURI string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)
+	ConferenceCreate(u *cscustomer.Customer, confType cfconference.Type, name, detail string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)
 	ConferenceDelete(u *cscustomer.Customer, confID uuid.UUID) error
 	ConferenceGet(u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGets(u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
@@ -100,18 +100,19 @@ type ServiceHandler interface {
 	ExtensionUpdate(u *cscustomer.Customer, d *extension.Extension) (*extension.Extension, error)
 
 	// flow handlers
-	FlowCreate(u *cscustomer.Customer, name, detail, webhookURI string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
+	FlowCreate(u *cscustomer.Customer, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
 	FlowDelete(u *cscustomer.Customer, id uuid.UUID) error
 	FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
 	FlowGets(u *cscustomer.Customer, pageSize uint64, pageToken string) ([]*fmflow.WebhookMessage, error)
 	FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error)
 
 	// order numbers handler
-	NumberCreate(u *cscustomer.Customer, num string) (*number.Number, error)
-	NumberGet(u *cscustomer.Customer, id uuid.UUID) (*number.Number, error)
-	NumberGets(u *cscustomer.Customer, size uint64, token string) ([]*number.Number, error)
-	NumberDelete(u *cscustomer.Customer, id uuid.UUID) (*number.Number, error)
-	NumberUpdate(u *cscustomer.Customer, numb *number.Number) (*number.Number, error)
+	NumberCreate(u *cscustomer.Customer, num string, flowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
+	NumberGet(u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
+	NumberGets(u *cscustomer.Customer, size uint64, token string) ([]*nmnumber.WebhookMessage, error)
+	NumberDelete(u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
+	NumberUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
+	NumberUpdateFlowID(u *cscustomer.Customer, id, flowID uuid.UUID) (*nmnumber.WebhookMessage, error)
 
 	// queue handler
 	QueueGet(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
@@ -148,7 +149,7 @@ type ServiceHandler interface {
 	TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) error
 
 	// transcribe handlers
-	TranscribeCreate(u *cscustomer.Customer, referencdID uuid.UUID, language string) (*transcribe.Transcribe, error)
+	TranscribeCreate(u *cscustomer.Customer, referencdID uuid.UUID, language string) (*tmtranscribe.WebhookMessage, error)
 
 	// // user handlers
 	// UserCreate(u *user.User, username, password, name, detail string, permission user.Permission) (*user.User, error)

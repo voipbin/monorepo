@@ -9,7 +9,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -173,7 +172,7 @@ func numbersPOST(c *gin.Context) {
 
 	// create a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberCreate(&u, req.Number)
+	numb, err := serviceHandler.NumberCreate(&u, req.Number, req.FlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create the number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -274,14 +273,9 @@ func numbersIDPUT(c *gin.Context) {
 	}
 	log.WithField("request", req).Debug("Executing numbersIDPUT.")
 
-	tmpN := &number.Number{
-		ID:     id,
-		FlowID: req.FlowID,
-	}
-
 	// update a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberUpdate(&u, tmpN)
+	numb, err := serviceHandler.NumberUpdate(&u, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)

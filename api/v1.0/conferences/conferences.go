@@ -125,7 +125,7 @@ func conferencesPOST(c *gin.Context) {
 	}
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceCreate(&u, requestBody.Type, requestBody.Name, requestBody.Detail, requestBody.WebhookURI, requestBody.PreActions, requestBody.PostActions)
+	res, err := servicehandler.ConferenceCreate(&u, requestBody.Type, requestBody.Name, requestBody.Detail, requestBody.PreActions, requestBody.PostActions)
 	if err != nil || res == nil {
 		log.Errorf("Could not create the conference. err: %v", err)
 		c.AbortWithStatus(400)

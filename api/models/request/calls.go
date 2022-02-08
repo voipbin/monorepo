@@ -9,7 +9,6 @@ import (
 type BodyCallsPOST struct {
 	Source      cmaddress.Address `json:"source" binding:"required"`
 	Destination cmaddress.Address `json:"destination" binding:"required"`
-	WebhookURI  string            `json:"webhook_uri"`
 	Actions     []fmaction.Action `json:"actions"`
 }
 

@@ -70,7 +70,7 @@ func customersPost(c *gin.Context) {
 // @Produce json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.customersGet
+// @Success 200 {object} response.BodyCustomersGET
 // @Router /v1.0/customers [get]
 func customersGet(c *gin.Context) {
 	log := logrus.WithFields(

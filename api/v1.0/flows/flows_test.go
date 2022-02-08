@@ -82,47 +82,6 @@ func TestFlowsPOST(t *testing.T) {
 				},
 			},
 		},
-		{
-			"webhook",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
-			},
-			request.BodyFlowsPOST{
-				Name:       "test name",
-				Detail:     "test detail",
-				WebhookURI: "https://test.com/webhook",
-				Actions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
-				},
-			},
-			&fmflow.Flow{
-				Name:       "test name",
-				Detail:     "test detail",
-				Persist:    true,
-				WebhookURI: "https://test.com/webhook",
-				Actions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
-				},
-			},
-			&fmflow.WebhookMessage{
-				ID:         uuid.FromStringOrNil("7413ccc8-82fa-11eb-9826-3b9adf174ed9"),
-				Name:       "test name",
-				Detail:     "test detail",
-				WebhookURI: "https://test.com/webhook",
-				Actions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
-				},
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -143,7 +102,7 @@ func TestFlowsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.requestBody.WebhookURI, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/flows", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 

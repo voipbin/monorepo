@@ -13,17 +13,17 @@ import (
 	availablenumber "gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	domain "gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
-	number "gitlab.com/voipbin/bin-manager/api-manager.git/models/number"
 	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	tag "gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
-	transcribe "gitlab.com/voipbin/bin-manager/api-manager.git/models/transcribe"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // MockServiceHandler is a mock of ServiceHandler interface.
@@ -269,18 +269,18 @@ func (mr *MockServiceHandlerMockRecorder) CallGets(u, size, token interface{}) *
 }
 
 // ConferenceCreate mocks base method.
-func (m *MockServiceHandler) ConferenceCreate(u *customer.Customer, confType conference.Type, name, detail, webhookURI string, preActions, postActions []action.Action) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceCreate(u *customer.Customer, confType conference.Type, name, detail string, preActions, postActions []action.Action) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceCreate", u, confType, name, detail, webhookURI, preActions, postActions)
+	ret := m.ctrl.Call(m, "ConferenceCreate", u, confType, name, detail, preActions, postActions)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConferenceCreate indicates an expected call of ConferenceCreate.
-func (mr *MockServiceHandlerMockRecorder) ConferenceCreate(u, confType, name, detail, webhookURI, preActions, postActions interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ConferenceCreate(u, confType, name, detail, preActions, postActions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceCreate), u, confType, name, detail, webhookURI, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceCreate), u, confType, name, detail, preActions, postActions)
 }
 
 // ConferenceDelete mocks base method.
@@ -595,18 +595,18 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(u, d interface{}) *gom
 }
 
 // FlowCreate mocks base method.
-func (m *MockServiceHandler) FlowCreate(u *customer.Customer, name, detail, webhookURI string, actions []action.Action, persist bool) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowCreate(u *customer.Customer, name, detail string, actions []action.Action, persist bool) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowCreate", u, name, detail, webhookURI, actions, persist)
+	ret := m.ctrl.Call(m, "FlowCreate", u, name, detail, actions, persist)
 	ret0, _ := ret[0].(*flow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowCreate indicates an expected call of FlowCreate.
-func (mr *MockServiceHandlerMockRecorder) FlowCreate(u, name, detail, webhookURI, actions, persist interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) FlowCreate(u, name, detail, actions, persist interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockServiceHandler)(nil).FlowCreate), u, name, detail, webhookURI, actions, persist)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockServiceHandler)(nil).FlowCreate), u, name, detail, actions, persist)
 }
 
 // FlowDelete mocks base method.
@@ -669,25 +669,25 @@ func (mr *MockServiceHandlerMockRecorder) FlowUpdate(u, f interface{}) *gomock.C
 }
 
 // NumberCreate mocks base method.
-func (m *MockServiceHandler) NumberCreate(u *customer.Customer, num string) (*number.Number, error) {
+func (m *MockServiceHandler) NumberCreate(u *customer.Customer, num string, flowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberCreate", u, num)
-	ret0, _ := ret[0].(*number.Number)
+	ret := m.ctrl.Call(m, "NumberCreate", u, num, flowID, name, detail)
+	ret0, _ := ret[0].(*number.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NumberCreate indicates an expected call of NumberCreate.
-func (mr *MockServiceHandlerMockRecorder) NumberCreate(u, num interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) NumberCreate(u, num, flowID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).NumberCreate), u, num)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).NumberCreate), u, num, flowID, name, detail)
 }
 
 // NumberDelete mocks base method.
-func (m *MockServiceHandler) NumberDelete(u *customer.Customer, id uuid.UUID) (*number.Number, error) {
+func (m *MockServiceHandler) NumberDelete(u *customer.Customer, id uuid.UUID) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberDelete", u, id)
-	ret0, _ := ret[0].(*number.Number)
+	ret0, _ := ret[0].(*number.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -699,10 +699,10 @@ func (mr *MockServiceHandlerMockRecorder) NumberDelete(u, id interface{}) *gomoc
 }
 
 // NumberGet mocks base method.
-func (m *MockServiceHandler) NumberGet(u *customer.Customer, id uuid.UUID) (*number.Number, error) {
+func (m *MockServiceHandler) NumberGet(u *customer.Customer, id uuid.UUID) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGet", u, id)
-	ret0, _ := ret[0].(*number.Number)
+	ret0, _ := ret[0].(*number.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -714,10 +714,10 @@ func (mr *MockServiceHandlerMockRecorder) NumberGet(u, id interface{}) *gomock.C
 }
 
 // NumberGets mocks base method.
-func (m *MockServiceHandler) NumberGets(u *customer.Customer, size uint64, token string) ([]*number.Number, error) {
+func (m *MockServiceHandler) NumberGets(u *customer.Customer, size uint64, token string) ([]*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGets", u, size, token)
-	ret0, _ := ret[0].([]*number.Number)
+	ret0, _ := ret[0].([]*number.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -729,18 +729,33 @@ func (mr *MockServiceHandlerMockRecorder) NumberGets(u, size, token interface{})
 }
 
 // NumberUpdate mocks base method.
-func (m *MockServiceHandler) NumberUpdate(u *customer.Customer, numb *number.Number) (*number.Number, error) {
+func (m *MockServiceHandler) NumberUpdate(u *customer.Customer, id uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberUpdate", u, numb)
-	ret0, _ := ret[0].(*number.Number)
+	ret := m.ctrl.Call(m, "NumberUpdate", u, id, name, detail)
+	ret0, _ := ret[0].(*number.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NumberUpdate indicates an expected call of NumberUpdate.
-func (mr *MockServiceHandlerMockRecorder) NumberUpdate(u, numb interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) NumberUpdate(u, id, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdate", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdate), u, numb)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdate", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdate), u, id, name, detail)
+}
+
+// NumberUpdateFlowID mocks base method.
+func (m *MockServiceHandler) NumberUpdateFlowID(u *customer.Customer, id, flowID uuid.UUID) (*number.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberUpdateFlowID", u, id, flowID)
+	ret0, _ := ret[0].(*number.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberUpdateFlowID indicates an expected call of NumberUpdateFlowID.
+func (mr *MockServiceHandlerMockRecorder) NumberUpdateFlowID(u, id, flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateFlowID", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdateFlowID), u, id, flowID)
 }
 
 // QueueCreate mocks base method.
@@ -977,10 +992,10 @@ func (mr *MockServiceHandlerMockRecorder) TagUpdate(u, id, name, detail interfac
 }
 
 // TranscribeCreate mocks base method.
-func (m *MockServiceHandler) TranscribeCreate(u *customer.Customer, referencdID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+func (m *MockServiceHandler) TranscribeCreate(u *customer.Customer, referencdID uuid.UUID, language string) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeCreate", u, referencdID, language)
-	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret0, _ := ret[0].(*transcribe.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
