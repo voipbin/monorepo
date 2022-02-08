@@ -38,18 +38,18 @@ func (m *MockNumberHandlerTelnyx) EXPECT() *MockNumberHandlerTelnyxMockRecorder 
 }
 
 // CreateOrderNumber mocks base method.
-func (m *MockNumberHandlerTelnyx) CreateOrderNumber(customerID, flowID uuid.UUID, num, name, detail string) (*number.Number, error) {
+func (m *MockNumberHandlerTelnyx) CreateOrderNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrderNumber", customerID, flowID, num, name, detail)
+	ret := m.ctrl.Call(m, "CreateOrderNumber", customerID, num, flowID, name, detail)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateOrderNumber indicates an expected call of CreateOrderNumber.
-func (mr *MockNumberHandlerTelnyxMockRecorder) CreateOrderNumber(customerID, flowID, num, name, detail interface{}) *gomock.Call {
+func (mr *MockNumberHandlerTelnyxMockRecorder) CreateOrderNumber(customerID, num, flowID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrderNumber", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).CreateOrderNumber), customerID, flowID, num, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrderNumber", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).CreateOrderNumber), customerID, num, flowID, name, detail)
 }
 
 // GetAvailableNumbers mocks base method.

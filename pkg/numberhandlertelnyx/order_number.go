@@ -11,7 +11,7 @@ import (
 )
 
 // CreateOrderNumbers creates a new order numbers of given numbers from the telnyx
-func (h *numberHandlerTelnyx) CreateOrderNumber(customerID, flowID uuid.UUID, num, name, detail string) (*number.Number, error) {
+func (h *numberHandlerTelnyx) CreateOrderNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"customer_id": customerID,

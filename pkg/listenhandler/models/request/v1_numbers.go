@@ -7,8 +7,8 @@ import "github.com/gofrs/uuid"
 // /v1/numbers POST
 type V1DataNumbersPost struct {
 	CustomerID uuid.UUID `json:"customer_id"`
-	FlowID     uuid.UUID `json:"flow_id"`
 	Number     string    `json:"number"`
+	FlowID     uuid.UUID `json:"flow_id"`
 	Name       string    `json:"name"`
 	Detail     string    `json:"detail"`
 }

@@ -18,7 +18,7 @@ import (
 // NumberHandlerTelnyx is interface for service handle
 type NumberHandlerTelnyx interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
-	CreateOrderNumber(customerID, flowID uuid.UUID, num, name, detail string) (*number.Number, error)
+	CreateOrderNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error)
 	ReleaseOrderNumber(ctx context.Context, num *number.Number) (*number.Number, error)
 }
 
