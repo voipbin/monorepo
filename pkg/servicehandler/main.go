@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -23,7 +24,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -41,21 +41,19 @@ type ServiceHandler interface {
 		password string,
 		name string,
 		detail string,
-		webhookMethod string,
-		webhookURI string,
 		ringMethod amagent.RingMethod,
-		permission uint64,
+		permission amagent.Permission,
 		tagIDs []uuid.UUID,
 		addresses []cmaddress.Address,
 	) (*amagent.WebhookMessage, error)
 	AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
 	AgentGets(u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error)
-	AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) error
+	AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
 	AgentLogin(customerID uuid.UUID, username, password string) (string, error)
-	AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) error
-	AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []cmaddress.Address) error
-	AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) error
-	AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) error
+	AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)
+	AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []cmaddress.Address) (*amagent.WebhookMessage, error)
+	AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error)
+	AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error)
 
 	// auth handlers
 	AuthLogin(username, password string) (string, error)
@@ -142,11 +140,11 @@ type ServiceHandler interface {
 	// recordingfile handlers
 	RecordingfileGet(u *cscustomer.Customer, id uuid.UUID) (string, error)
 
-	TagCreate(u *cscustomer.Customer, name string, detail string) (*tag.Tag, error)
-	TagDelete(u *cscustomer.Customer, id uuid.UUID) error
-	TagGet(u *cscustomer.Customer, id uuid.UUID) (*tag.Tag, error)
-	TagGets(u *cscustomer.Customer, size uint64, token string) ([]*tag.Tag, error)
-	TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) error
+	TagCreate(u *cscustomer.Customer, name string, detail string) (*amtag.WebhookMessage, error)
+	TagDelete(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)
+	TagGet(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)
+	TagGets(u *cscustomer.Customer, size uint64, token string) ([]*amtag.WebhookMessage, error)
+	TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*amtag.WebhookMessage, error)
 
 	// transcribe handlers
 	TranscribeCreate(u *cscustomer.Customer, referencdID uuid.UUID, language string) (*tmtranscribe.WebhookMessage, error)
