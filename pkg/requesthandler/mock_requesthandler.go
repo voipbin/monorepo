@@ -181,7 +181,7 @@ func (mr *MockRequestHandlerMockRecorder) AMV1AgentLogin(ctx, timeout, customerI
 }
 
 // AMV1AgentUpdate mocks base method.
-func (m *MockRequestHandler) AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail, ringMethod string) (*agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AMV1AgentUpdate", ctx, id, name, detail, ringMethod)
 	ret0, _ := ret[0].(*agent.Agent)

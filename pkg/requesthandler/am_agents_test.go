@@ -764,7 +764,7 @@ func TestAMV1AgentUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentUpdate(ctx, tt.id, tt.agentName, tt.detail, string(tt.ringMethod))
+			res, err := reqHandler.AMV1AgentUpdate(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
