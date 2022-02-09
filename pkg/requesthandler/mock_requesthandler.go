@@ -1670,18 +1670,18 @@ func (mr *MockRequestHandlerMockRecorder) RMV1DomainGets(ctx, customerID, pageTo
 }
 
 // RMV1DomainUpdate mocks base method.
-func (m *MockRequestHandler) RMV1DomainUpdate(ctx context.Context, f *domain.Domain) (*domain.Domain, error) {
+func (m *MockRequestHandler) RMV1DomainUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RMV1DomainUpdate", ctx, f)
+	ret := m.ctrl.Call(m, "RMV1DomainUpdate", ctx, id, name, detail)
 	ret0, _ := ret[0].(*domain.Domain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RMV1DomainUpdate indicates an expected call of RMV1DomainUpdate.
-func (mr *MockRequestHandlerMockRecorder) RMV1DomainUpdate(ctx, f interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RMV1DomainUpdate(ctx, id, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1DomainUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RMV1DomainUpdate), ctx, f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1DomainUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RMV1DomainUpdate), ctx, id, name, detail)
 }
 
 // RMV1ExtensionCreate mocks base method.
@@ -1745,18 +1745,18 @@ func (mr *MockRequestHandlerMockRecorder) RMV1ExtensionGets(ctx, domainID, pageT
 }
 
 // RMV1ExtensionUpdate mocks base method.
-func (m *MockRequestHandler) RMV1ExtensionUpdate(ctx context.Context, f *extension.Extension) (*extension.Extension, error) {
+func (m *MockRequestHandler) RMV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RMV1ExtensionUpdate", ctx, f)
+	ret := m.ctrl.Call(m, "RMV1ExtensionUpdate", ctx, id, name, detail, password)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RMV1ExtensionUpdate indicates an expected call of RMV1ExtensionUpdate.
-func (mr *MockRequestHandlerMockRecorder) RMV1ExtensionUpdate(ctx, f interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RMV1ExtensionUpdate(ctx, id, name, detail, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ExtensionUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ExtensionUpdate), ctx, f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ExtensionUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ExtensionUpdate), ctx, id, name, detail, password)
 }
 
 // SMV1RecordingGet mocks base method.

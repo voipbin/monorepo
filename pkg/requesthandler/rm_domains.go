@@ -102,12 +102,12 @@ func (r *requestHandler) RMV1DomainDelete(ctx context.Context, domainID uuid.UUI
 // RMDomainUpdate sends a request to registrar-manager
 // to update the detail domain info.
 // it returns updated domain info if it succeed.
-func (r *requestHandler) RMV1DomainUpdate(ctx context.Context, f *rmdomain.Domain) (*rmdomain.Domain, error) {
-	uri := fmt.Sprintf("/v1/domains/%s", f.ID)
+func (r *requestHandler) RMV1DomainUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*rmdomain.Domain, error) {
+	uri := fmt.Sprintf("/v1/domains/%s", id)
 
 	data := &rmrequest.V1DataDomainsIDPut{
-		Name:   f.Name,
-		Detail: f.Detail,
+		Name:   name,
+		Detail: detail,
 	}
 
 	m, err := json.Marshal(data)

@@ -99,8 +99,11 @@ func TestRMV1DomainUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		requestDomain *rmdomain.Domain
-		response      *rabbitmqhandler.Response
+		id      uuid.UUID
+		domainN string
+		detail  string
+
+		response *rabbitmqhandler.Response
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -110,16 +113,17 @@ func TestRMV1DomainUpdate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rmdomain.Domain{
-				ID:     uuid.FromStringOrNil("f4063a6c-6ed5-11eb-8835-23f57d9e419c"),
-				Name:   "update name",
-				Detail: "update detail",
-			},
+
+			uuid.FromStringOrNil("f4063a6c-6ed5-11eb-8835-23f57d9e419c"),
+			"update name",
+			"update detail",
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f4063a6c-6ed5-11eb-8835-23f57d9e419c","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_name":"test.sip.voipbin.net","name":"update name","detail":"update detail","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
+
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/domains/f4063a6c-6ed5-11eb-8835-23f57d9e419c",
@@ -145,7 +149,7 @@ func TestRMV1DomainUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1DomainUpdate(ctx, tt.requestDomain)
+			res, err := reqHandler.RMV1DomainUpdate(ctx, tt.id, tt.domainN, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
