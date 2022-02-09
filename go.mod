@@ -13,7 +13,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220203012553-7a6af2df4d9e
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220208200015-018c9b3bd7fe
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220209022910-00f52146bc22
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220207024948-b975c9ff24f5
 	golang.org/x/crypto v0.0.0-20220208233918-bba287dce954
 )
