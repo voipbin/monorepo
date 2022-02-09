@@ -223,32 +223,23 @@ definitions:
     type: object
   domain.Domain:
     properties:
-      customer_id:
-        type: string
       detail:
-        description: Detail
         type: string
       domain_name:
         type: string
       id:
         type: string
       name:
-        description: Name
         type: string
       tm_create:
-        description: Created timestamp.
         type: string
       tm_delete:
-        description: Deleted timestamp.
         type: string
       tm_update:
-        description: Updated timestamp.
         type: string
     type: object
   extension.Extension:
     properties:
-      customer_id:
-        type: string
       detail:
         type: string
       domain_id:
@@ -258,8 +249,6 @@ definitions:
       id:
         type: string
       name:
-        type: string
-      password:
         type: string
       tm_create:
         type: string
@@ -446,7 +435,7 @@ definitions:
       password:
         type: string
       permission:
-        type: integer
+        type: string
       ring_method:
         type: string
       tag_ids:
@@ -454,10 +443,6 @@ definitions:
           type: string
         type: array
       username:
-        type: string
-      webhook_method:
-        type: string
-      webhook_uri:
         type: string
     required:
     - password
@@ -646,9 +631,7 @@ definitions:
       next_page_token:
         type: string
       result:
-        items:
-          $ref: '#/definitions/domain.Domain'
-        type: array
+        type: string
     type: object
   response.BodyFlowsGET:
     properties:
@@ -694,9 +677,7 @@ definitions:
       next_page_token:
         type: string
       result:
-        items:
-          $ref: '#/definitions/tag.Tag'
-        type: array
+        type: string
     type: object
   tag.Tag:
     properties:

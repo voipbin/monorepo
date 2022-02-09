@@ -10,7 +10,6 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -35,7 +34,7 @@ func TestDomainCreate(t *testing.T) {
 		DomainTmpDetail string
 
 		response  *rmdomain.Domain
-		expectRes *domain.Domain
+		expectRes *rmdomain.WebhookMessage
 	}
 
 	tests := []test{
@@ -47,6 +46,7 @@ func TestDomainCreate(t *testing.T) {
 			"test.sip.voipbin.net",
 			"test name",
 			"test detail",
+
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("5b06161c-6ed9-11eb-85e4-f38ba2415baf"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
@@ -54,9 +54,8 @@ func TestDomainCreate(t *testing.T) {
 				Name:       "test",
 				Detail:     "test detail",
 			},
-			&domain.Domain{
+			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("5b06161c-6ed9-11eb-85e4-f38ba2415baf"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
@@ -95,11 +94,13 @@ func TestDomainUpdate(t *testing.T) {
 	type test struct {
 		name     string
 		customer *cscustomer.Customer
-		domain   *domain.Domain
 
-		requestDomain *rmdomain.Domain
-		response      *rmdomain.Domain
-		expectRes     *domain.Domain
+		id      uuid.UUID
+		domainN string
+		detail  string
+
+		response  *rmdomain.Domain
+		expectRes *rmdomain.WebhookMessage
 	}
 
 	tests := []test{
@@ -108,18 +109,11 @@ func TestDomainUpdate(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
-			&domain.Domain{
-				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
-				DomainName: "test.sip.voipbin.net",
-				Name:       "update name",
-				Detail:     "update detail",
-			},
-			&rmdomain.Domain{
-				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
-				DomainName: "test.sip.voipbin.net",
-				Name:       "update name",
-				Detail:     "update detail",
-			},
+
+			uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
+			"update name",
+			"update detail",
+
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
@@ -127,9 +121,8 @@ func TestDomainUpdate(t *testing.T) {
 				Name:       "update name",
 				Detail:     "update detail",
 			},
-			&domain.Domain{
+			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "update name",
 				Detail:     "update detail",
@@ -139,9 +132,9 @@ func TestDomainUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.domain.ID).Return(&rmdomain.Domain{CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3")}, nil)
-			mockReq.EXPECT().RMV1DomainUpdate(gomock.Any(), tt.requestDomain).Return(tt.response, nil)
-			res, err := h.DomainUpdate(tt.customer, tt.domain)
+			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.id).Return(&rmdomain.Domain{CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3")}, nil)
+			mockReq.EXPECT().RMV1DomainUpdate(gomock.Any(), tt.id, tt.domainN, tt.detail).Return(tt.response, nil)
+			res, err := h.DomainUpdate(tt.customer, tt.id, tt.domainN, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -170,7 +163,8 @@ func TestDomainDelete(t *testing.T) {
 		customer *cscustomer.Customer
 		domainID uuid.UUID
 
-		response *rmdomain.Domain
+		response  *rmdomain.Domain
+		expectRes *rmdomain.WebhookMessage
 	}
 
 	tests := []test{
@@ -184,9 +178,9 @@ func TestDomainDelete(t *testing.T) {
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				DomainName: "test.sip.voipbin.net",
-				Name:       "test",
-				Detail:     "test detail",
+			},
+			&rmdomain.WebhookMessage{
+				ID: uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
 			},
 		},
 	}
@@ -194,10 +188,15 @@ func TestDomainDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.domainID).Return(tt.response, nil)
-			mockReq.EXPECT().RMV1DomainDelete(gomock.Any(), tt.domainID).Return(nil)
+			mockReq.EXPECT().RMV1DomainDelete(gomock.Any(), tt.domainID).Return(tt.response, nil)
 
-			if err := h.DomainDelete(tt.customer, tt.domainID); err != nil {
+			res, err := h.DomainDelete(tt.customer, tt.domainID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -221,7 +220,7 @@ func TestDomainGet(t *testing.T) {
 		DomainID uuid.UUID
 
 		response  *rmdomain.Domain
-		expectRes *domain.Domain
+		expectRes *rmdomain.WebhookMessage
 	}
 
 	tests := []test{
@@ -239,9 +238,8 @@ func TestDomainGet(t *testing.T) {
 				Name:       "test",
 				Detail:     "test detail",
 			},
-			&domain.Domain{
+			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
@@ -284,7 +282,7 @@ func TestDomainGets(t *testing.T) {
 		pageSize  uint64
 
 		response  []rmdomain.Domain
-		expectRes []*domain.Domain
+		expectRes []*rmdomain.WebhookMessage
 	}
 
 	tests := []test{
@@ -312,17 +310,15 @@ func TestDomainGets(t *testing.T) {
 					Detail:     "test detail2",
 				},
 			},
-			[]*domain.Domain{
+			[]*rmdomain.WebhookMessage{
 				{
 					ID:         uuid.FromStringOrNil("cbd2f846-6eda-11eb-a1b5-c39b7ed749b1"),
-					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 					DomainName: "test.sip.voipbin.net",
 					Name:       "test1",
 					Detail:     "test detail1",
 				},
 				{
 					ID:         uuid.FromStringOrNil("cf9ee9a8-6eda-11eb-8961-3b8e36c03336"),
-					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 					DomainName: "test2.sip.voipbin.net",
 					Name:       "test2",
 					Detail:     "test detail2",

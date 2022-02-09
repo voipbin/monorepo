@@ -12,8 +12,6 @@ import (
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	availablenumber "gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
-	domain "gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
-	extension "gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -23,6 +21,8 @@ import (
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
@@ -452,10 +452,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerUpdatePermissionIDs(u, custome
 }
 
 // DomainCreate mocks base method.
-func (m *MockServiceHandler) DomainCreate(u *customer.Customer, domainName, name, detail string) (*domain.Domain, error) {
+func (m *MockServiceHandler) DomainCreate(u *customer.Customer, domainName, name, detail string) (*domain.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainCreate", u, domainName, name, detail)
-	ret0, _ := ret[0].(*domain.Domain)
+	ret0, _ := ret[0].(*domain.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -467,11 +467,12 @@ func (mr *MockServiceHandlerMockRecorder) DomainCreate(u, domainName, name, deta
 }
 
 // DomainDelete mocks base method.
-func (m *MockServiceHandler) DomainDelete(u *customer.Customer, id uuid.UUID) error {
+func (m *MockServiceHandler) DomainDelete(u *customer.Customer, id uuid.UUID) (*domain.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainDelete", u, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*domain.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DomainDelete indicates an expected call of DomainDelete.
@@ -481,10 +482,10 @@ func (mr *MockServiceHandlerMockRecorder) DomainDelete(u, id interface{}) *gomoc
 }
 
 // DomainGet mocks base method.
-func (m *MockServiceHandler) DomainGet(u *customer.Customer, id uuid.UUID) (*domain.Domain, error) {
+func (m *MockServiceHandler) DomainGet(u *customer.Customer, id uuid.UUID) (*domain.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGet", u, id)
-	ret0, _ := ret[0].(*domain.Domain)
+	ret0, _ := ret[0].(*domain.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -496,10 +497,10 @@ func (mr *MockServiceHandlerMockRecorder) DomainGet(u, id interface{}) *gomock.C
 }
 
 // DomainGets mocks base method.
-func (m *MockServiceHandler) DomainGets(u *customer.Customer, size uint64, token string) ([]*domain.Domain, error) {
+func (m *MockServiceHandler) DomainGets(u *customer.Customer, size uint64, token string) ([]*domain.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DomainGets", u, size, token)
-	ret0, _ := ret[0].([]*domain.Domain)
+	ret0, _ := ret[0].([]*domain.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -511,41 +512,42 @@ func (mr *MockServiceHandlerMockRecorder) DomainGets(u, size, token interface{})
 }
 
 // DomainUpdate mocks base method.
-func (m *MockServiceHandler) DomainUpdate(u *customer.Customer, d *domain.Domain) (*domain.Domain, error) {
+func (m *MockServiceHandler) DomainUpdate(u *customer.Customer, id uuid.UUID, name, detail string) (*domain.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainUpdate", u, d)
-	ret0, _ := ret[0].(*domain.Domain)
+	ret := m.ctrl.Call(m, "DomainUpdate", u, id, name, detail)
+	ret0, _ := ret[0].(*domain.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // DomainUpdate indicates an expected call of DomainUpdate.
-func (mr *MockServiceHandlerMockRecorder) DomainUpdate(u, d interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) DomainUpdate(u, id, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdate", reflect.TypeOf((*MockServiceHandler)(nil).DomainUpdate), u, d)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdate", reflect.TypeOf((*MockServiceHandler)(nil).DomainUpdate), u, id, name, detail)
 }
 
 // ExtensionCreate mocks base method.
-func (m *MockServiceHandler) ExtensionCreate(u *customer.Customer, e *extension.Extension) (*extension.Extension, error) {
+func (m *MockServiceHandler) ExtensionCreate(u *customer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionCreate", u, e)
-	ret0, _ := ret[0].(*extension.Extension)
+	ret := m.ctrl.Call(m, "ExtensionCreate", u, ext, password, domainID, name, detail)
+	ret0, _ := ret[0].(*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExtensionCreate indicates an expected call of ExtensionCreate.
-func (mr *MockServiceHandlerMockRecorder) ExtensionCreate(u, e interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ExtensionCreate(u, ext, password, domainID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionCreate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionCreate), u, e)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionCreate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionCreate), u, ext, password, domainID, name, detail)
 }
 
 // ExtensionDelete mocks base method.
-func (m *MockServiceHandler) ExtensionDelete(u *customer.Customer, id uuid.UUID) error {
+func (m *MockServiceHandler) ExtensionDelete(u *customer.Customer, id uuid.UUID) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionDelete", u, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*extension.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ExtensionDelete indicates an expected call of ExtensionDelete.
@@ -555,10 +557,10 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionDelete(u, id interface{}) *go
 }
 
 // ExtensionGet mocks base method.
-func (m *MockServiceHandler) ExtensionGet(u *customer.Customer, id uuid.UUID) (*extension.Extension, error) {
+func (m *MockServiceHandler) ExtensionGet(u *customer.Customer, id uuid.UUID) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGet", u, id)
-	ret0, _ := ret[0].(*extension.Extension)
+	ret0, _ := ret[0].(*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -570,10 +572,10 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionGet(u, id interface{}) *gomoc
 }
 
 // ExtensionGets mocks base method.
-func (m *MockServiceHandler) ExtensionGets(u *customer.Customer, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error) {
+func (m *MockServiceHandler) ExtensionGets(u *customer.Customer, domainID uuid.UUID, size uint64, token string) ([]*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGets", u, domainID, size, token)
-	ret0, _ := ret[0].([]*extension.Extension)
+	ret0, _ := ret[0].([]*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -585,18 +587,18 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionGets(u, domainID, size, token
 }
 
 // ExtensionUpdate mocks base method.
-func (m *MockServiceHandler) ExtensionUpdate(u *customer.Customer, d *extension.Extension) (*extension.Extension, error) {
+func (m *MockServiceHandler) ExtensionUpdate(u *customer.Customer, id uuid.UUID, name, detail, password string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionUpdate", u, d)
-	ret0, _ := ret[0].(*extension.Extension)
+	ret := m.ctrl.Call(m, "ExtensionUpdate", u, id, name, detail, password)
+	ret0, _ := ret[0].(*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExtensionUpdate indicates an expected call of ExtensionUpdate.
-func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(u, d interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(u, id, name, detail, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionUpdate), u, d)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionUpdate), u, id, name, detail, password)
 }
 
 // FlowCreate mocks base method.

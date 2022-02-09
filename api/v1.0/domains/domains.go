@@ -9,7 +9,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -223,15 +222,9 @@ func domainsIDPUT(c *gin.Context) {
 		return
 	}
 
-	f := &domain.Domain{
-		ID:     id,
-		Name:   req.Name,
-		Detail: req.Detail,
-	}
-
 	// update a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.DomainUpdate(&u, f)
+	res, err := serviceHandler.DomainUpdate(&u, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the domain. err: %v", err)
 		c.AbortWithStatus(400)
@@ -278,11 +271,12 @@ func domainsIDDELETE(c *gin.Context) {
 
 	// delete a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.DomainDelete(&u, id); err != nil {
+	res, err := serviceHandler.DomainDelete(&u, id)
+	if err != nil {
 		log.Errorf("Could not delete the domain. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
