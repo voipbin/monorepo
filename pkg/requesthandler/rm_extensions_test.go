@@ -105,8 +105,12 @@ func TestRMExtensionUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		requestExtension *rmextension.Extension
-		response         *rabbitmqhandler.Response
+		id            uuid.UUID
+		extensionName string
+		detail        string
+		password      string
+
+		response *rabbitmqhandler.Response
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -116,12 +120,12 @@ func TestRMExtensionUpdate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rmextension.Extension{
-				ID:       uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
-				Name:     "update name",
-				Detail:   "update detail",
-				Password: "update password",
-			},
+
+			uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+			"update name",
+			"update detail",
+			"update password",
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -149,7 +153,7 @@ func TestRMExtensionUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1ExtensionUpdate(ctx, tt.requestExtension)
+			res, err := reqHandler.RMV1ExtensionUpdate(ctx, tt.id, tt.extensionName, tt.detail, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
