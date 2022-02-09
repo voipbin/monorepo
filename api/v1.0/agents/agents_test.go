@@ -39,16 +39,14 @@ func TestAgentsPOST(t *testing.T) {
 		customer cscustomer.Customer
 		req      request.BodyAgentsPOST
 
-		username      string
-		password      string
-		agentName     string
-		detail        string
-		webhookMethod string
-		webhookURI    string
-		ringMethod    amagent.RingMethod
-		permission    uint64
-		tagIDs        []uuid.UUID
-		addresses     []cmaddress.Address
+		username   string
+		password   string
+		agentName  string
+		detail     string
+		ringMethod amagent.RingMethod
+		permission amagent.Permission
+		tagIDs     []uuid.UUID
+		addresses  []cmaddress.Address
 
 		res *amagent.WebhookMessage
 	}
@@ -74,8 +72,6 @@ func TestAgentsPOST(t *testing.T) {
 			"password1",
 			"test1 name",
 			"test1 detail",
-			"",
-			"",
 			agent.RingMethodRingAll,
 			0,
 			[]uuid.UUID{},
@@ -91,24 +87,20 @@ func TestAgentsPOST(t *testing.T) {
 				ID: uuid.FromStringOrNil("580a7a44-7ff8-11ec-916e-d35fe5e74591"),
 			},
 			request.BodyAgentsPOST{
-				Username:      "test1",
-				Password:      "password1",
-				Name:          "test1 name",
-				Detail:        "test1 detail",
-				WebhookMethod: "POST",
-				WebhookURI:    "test.com",
-				RingMethod:    "ringall",
-				Permission:    0,
-				TagIDs:        []uuid.UUID{},
-				Addresses:     []cmaddress.Address{},
+				Username:   "test1",
+				Password:   "password1",
+				Name:       "test1 name",
+				Detail:     "test1 detail",
+				RingMethod: "ringall",
+				Permission: 0,
+				TagIDs:     []uuid.UUID{},
+				Addresses:  []cmaddress.Address{},
 			},
 
 			"test1",
 			"password1",
 			"test1 name",
 			"test1 detail",
-			"POST",
-			"test.com",
 			agent.RingMethodRingAll,
 			0,
 			[]uuid.UUID{},
@@ -141,7 +133,7 @@ func TestAgentsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AgentCreate(&tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
+			mockSvc.EXPECT().AgentCreate(&tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -170,7 +162,6 @@ func TestAgentsGET(t *testing.T) {
 		status    amagent.Status
 
 		resAgents []*amagent.WebhookMessage
-		expectRes string
 	}
 
 	tests := []test{
@@ -192,7 +183,6 @@ func TestAgentsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"1 tag id and status",
@@ -214,7 +204,6 @@ func TestAgentsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 tag ids",
@@ -239,8 +228,6 @@ func TestAgentsGET(t *testing.T) {
 					ID: uuid.FromStringOrNil("39fa07ce-4fb8-11ec-8e5b-db7c7886455c"),
 				},
 			},
-
-			`{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"39fa07ce-4fb8-11ec-8e5b-db7c7886455c","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}
 
@@ -262,10 +249,6 @@ func TestAgentsGET(t *testing.T) {
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-
-			if w.Body.String() != tt.expectRes {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
 	}
@@ -316,7 +299,7 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().AgentUpdateStatus(&tt.customer, tt.agentID, tt.status).Return(nil)
+			mockSvc.EXPECT().AgentUpdateStatus(&tt.customer, tt.agentID, tt.status).Return(&amagent.WebhookMessage{}, nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)

@@ -4,8 +4,6 @@ import (
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 )
 
 // ParamAgentsGET is rquest param define for GET /calls
@@ -17,15 +15,13 @@ type ParamAgentsGET struct {
 
 // BodyAgentsPOST is rquest body define for POST /agents
 type BodyAgentsPOST struct {
-	Username      string             `json:"username" binding:"required"`
-	Password      string             `json:"password" binding:"required"`
-	Name          string             `json:"name"`
-	Detail        string             `json:"detail"`
-	WebhookMethod string             `json:"webhook_method"`
-	WebhookURI    string             `json:"webhook_uri"`
-	RingMethod    amagent.RingMethod `json:"ring_method"`
+	Username   string             `json:"username" binding:"required"`
+	Password   string             `json:"password" binding:"required"`
+	Name       string             `json:"name"`
+	Detail     string             `json:"detail"`
+	RingMethod amagent.RingMethod `json:"ring_method"`
 
-	Permission agent.Permission    `json:"permission"`
+	Permission amagent.Permission  `json:"permission"`
 	TagIDs     []uuid.UUID         `json:"tag_ids"`
 	Addresses  []cmaddress.Address `json:"addresses"`
 }
