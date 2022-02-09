@@ -16,16 +16,16 @@ import (
 // RMExtensionCreate sends a request to registrar-manager
 // to creating a extension.
 // it returns created extension if it succeed.
-func (r *requestHandler) RMV1ExtensionCreate(ctx context.Context, e *rmextension.Extension) (*rmextension.Extension, error) {
+func (r *requestHandler) RMV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.Extension, error) {
 	uri := "/v1/extensions"
 
 	data := &rmrequest.V1DataExtensionsPost{
-		CustomerID: e.CustomerID,
-		Name:       e.Name,
-		Detail:     e.Detail,
-		DomainID:   e.DomainID,
-		Extension:  e.Extension,
-		Password:   e.Password,
+		CustomerID: customerID,
+		Extension:  ext,
+		Password:   password,
+		DomainID:   domainID,
+		Name:       name,
+		Detail:     detail,
 	}
 
 	m, err := json.Marshal(data)
@@ -58,42 +58,47 @@ func (r *requestHandler) RMV1ExtensionCreate(ctx context.Context, e *rmextension
 func (r *requestHandler) RMV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", extensionID)
 
-	res, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var f rmextension.Extension
-	if err := json.Unmarshal([]byte(res.Data), &f); err != nil {
+	var res rmextension.Extension
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &f, nil
+	return &res, nil
 }
 
 // RMExtensionDelete sends a request to registrar-manager
 // to deleting the domain.
-func (r *requestHandler) RMV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) error {
+func (r *requestHandler) RMV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", extensionID)
 
-	res, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodDelete, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodDelete, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
-		return err
-	case res == nil:
+		return nil, err
+	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res rmextension.Extension
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // RMExtensionUpdate sends a request to registrar-manager

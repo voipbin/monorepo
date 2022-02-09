@@ -356,14 +356,14 @@ type RequestHandler interface {
 
 	// registrar-manager domain
 	RMV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*rmdomain.Domain, error)
-	RMV1DomainDelete(ctx context.Context, domainID uuid.UUID) error
+	RMV1DomainDelete(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error)
 	RMV1DomainGet(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error)
 	RMV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmdomain.Domain, error)
 	RMV1DomainUpdate(ctx context.Context, f *rmdomain.Domain) (*rmdomain.Domain, error)
 
 	// registrar-manager extension
-	RMV1ExtensionCreate(ctx context.Context, e *rmextension.Extension) (*rmextension.Extension, error)
-	RMV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) error
+	RMV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.Extension, error)
+	RMV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RMV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RMV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error)
 	RMV1ExtensionUpdate(ctx context.Context, f *rmextension.Extension) (*rmextension.Extension, error)

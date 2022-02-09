@@ -243,6 +243,7 @@ func TestRMV1DomainDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
+		expectRes     *rmdomain.Domain
 	}
 
 	tests := []test{
@@ -252,13 +253,18 @@ func TestRMV1DomainDelete(t *testing.T) {
 			uuid.FromStringOrNil("5980b2e4-6ed8-11eb-abc3-33f6180819c6"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"5980b2e4-6ed8-11eb-abc3-33f6180819c6"}`),
 			},
 
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/domains/5980b2e4-6ed8-11eb-abc3-33f6180819c6",
 				Method:   rabbitmqhandler.RequestMethodDelete,
-				DataType: ContentTypeJSON,
+				DataType: "application/json",
+			},
+			&rmdomain.Domain{
+				ID: uuid.FromStringOrNil("5980b2e4-6ed8-11eb-abc3-33f6180819c6"),
 			},
 		},
 	}
@@ -268,8 +274,13 @@ func TestRMV1DomainDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.RMV1DomainDelete(ctx, tt.domainID); err != nil {
+			res, err := reqHandler.RMV1DomainDelete(ctx, tt.domainID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

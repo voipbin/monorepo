@@ -26,7 +26,12 @@ func TestRMExtensionCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		extension *rmextension.Extension
+		customerID    uuid.UUID
+		ext           string
+		password      string
+		domainID      uuid.UUID
+		extensionName string
+		detail        string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -39,14 +44,12 @@ func TestRMExtensionCreate(t *testing.T) {
 		{
 			"normal",
 
-			&rmextension.Extension{
-				CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
-				Name:       "test name",
-				Detail:     "test detail",
-				DomainID:   uuid.FromStringOrNil("22de2e58-6f9e-11eb-8fee-ef16005005d7"),
-				Extension:  "4c98b74a-6f9e-11eb-a82f-37575ab16881",
-				Password:   "53710356-6f9e-11eb-8a91-43345d98682a",
-			},
+			uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
+			"4c98b74a-6f9e-11eb-a82f-37575ab16881",
+			"53710356-6f9e-11eb-8a91-43345d98682a",
+			uuid.FromStringOrNil("22de2e58-6f9e-11eb-8fee-ef16005005d7"),
+			"test name",
+			"test detail",
 
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
@@ -78,7 +81,7 @@ func TestRMExtensionCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1ExtensionCreate(ctx, tt.extension)
+			res, err := reqHandler.RMV1ExtensionCreate(ctx, tt.customerID, tt.ext, tt.password, tt.domainID, tt.extensionName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -246,6 +249,7 @@ func TestRMExtensionDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
+		expectRes     *rmextension.Extension
 	}
 
 	tests := []test{
@@ -255,6 +259,8 @@ func TestRMExtensionDelete(t *testing.T) {
 			uuid.FromStringOrNil("b2ca6024-6fa1-11eb-aa5a-738c234d2ee1"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"b2ca6024-6fa1-11eb-aa5a-738c234d2ee1"}`),
 			},
 
 			"bin-manager.registrar-manager.request",
@@ -262,6 +268,9 @@ func TestRMExtensionDelete(t *testing.T) {
 				URI:      "/v1/extensions/b2ca6024-6fa1-11eb-aa5a-738c234d2ee1",
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: ContentTypeJSON,
+			},
+			&rmextension.Extension{
+				ID: uuid.FromStringOrNil("b2ca6024-6fa1-11eb-aa5a-738c234d2ee1"),
 			},
 		},
 	}
@@ -271,8 +280,13 @@ func TestRMExtensionDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.RMV1ExtensionDelete(ctx, tt.extesnionID); err != nil {
+			res, err := reqHandler.RMV1ExtensionDelete(ctx, tt.extesnionID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
