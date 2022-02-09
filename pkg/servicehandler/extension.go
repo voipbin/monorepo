@@ -8,35 +8,60 @@ import (
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
+	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
+// extensionGet validates the extension's ownership and returns the extension info.
+func (h *serviceHandler) extensionGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.Extension, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":         "extensionGet",
+			"customer_id":  u.ID,
+			"extension_id": id,
+		},
+	)
+
+	// send request
+	res, err := h.reqHandler.RMV1ExtensionGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get an tag. err: %v", err)
+		return nil, err
+	}
+	log.WithField("tag", res).Debug("Received result.")
+
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// create result
+	return res, nil
+}
+
 // ExtensionCreate is a service handler for flow creation.
-func (h *serviceHandler) ExtensionCreate(u *cscustomer.Customer, e *extension.Extension) (*extension.Extension, error) {
+func (h *serviceHandler) ExtensionCreate(u *cscustomer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
-		"domain_id":   e.DomainID,
-		"name":        e.Name,
-		"detail":      e.Detail,
+		"domain_id":   domainID,
+		"extension":   ext,
+		"name":        name,
+		"detail":      detail,
 	})
 	log.Debug("Creating a new extension.")
 
-	ext := extension.CreateDomain(e)
-	ext.CustomerID = u.ID
-	tmp, err := h.reqHandler.RMV1ExtensionCreate(ctx, ext)
+	tmp, err := h.reqHandler.RMV1ExtensionCreate(ctx, u.ID, ext, password, domainID, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a new domain. err: %v", err)
 		return nil, err
 	}
 
-	res := extension.ConvertExtension(tmp)
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // ExtensionDelete deletes the extension of the given id.
-func (h *serviceHandler) ExtensionDelete(u *cscustomer.Customer, id uuid.UUID) error {
+func (h *serviceHandler) ExtensionDelete(u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  u.ID,
@@ -45,29 +70,25 @@ func (h *serviceHandler) ExtensionDelete(u *cscustomer.Customer, id uuid.UUID) e
 	})
 	log.Debug("Deleting a extension.")
 
-	// get extension
-	ext, err := h.reqHandler.RMV1ExtensionGet(ctx, id)
+	_, err := h.extensionGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
-		return fmt.Errorf("could not find extension info. err: %v", err)
+		return nil, fmt.Errorf("could not find extension info. err: %v", err)
 	}
 
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != ext.CustomerID {
-		log.Errorf("The customer has no permission for this extension. customer: %s, domain_customer: %s", u.ID, ext.CustomerID)
-		return fmt.Errorf("customer has no permission")
+	tmp, err := h.reqHandler.RMV1ExtensionDelete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete the extension. err: %v", err)
+		return nil, err
 	}
 
-	if err := h.reqHandler.RMV1ExtensionDelete(ctx, id); err != nil {
-		return err
-	}
-
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // ExtensionGet gets the extension of the given id.
 // It returns extension if it succeed.
-func (h *serviceHandler) ExtensionGet(u *cscustomer.Customer, id uuid.UUID) (*extension.Extension, error) {
+func (h *serviceHandler) ExtensionGet(u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  u.ID,
@@ -76,28 +97,22 @@ func (h *serviceHandler) ExtensionGet(u *cscustomer.Customer, id uuid.UUID) (*ex
 	})
 	log.Debug("Getting a extension.")
 
-	// get extension
-	d, err := h.reqHandler.RMV1ExtensionGet(ctx, id)
+	tmp, err := h.extensionGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
 	}
 
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != d.CustomerID {
-		log.Errorf("The customer has no permission for this extension. customer_id: %s, extension_customer: %s", u.ID, d.CustomerID)
-		return nil, fmt.Errorf("customer has no permission")
-	}
-
-	res := extension.ConvertExtension(d)
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // ExtensionGets gets the list of extensions of the given customer id.
 // It returns list of extensions if it succeed.
-func (h *serviceHandler) ExtensionGets(u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error) {
+func (h *serviceHandler) ExtensionGets(u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "ExtensionGets",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"size":        size,
@@ -116,10 +131,9 @@ func (h *serviceHandler) ExtensionGets(u *cscustomer.Customer, domainID uuid.UUI
 		return nil, fmt.Errorf("could not find extensions info. err: %v", err)
 	}
 
-	// create result
-	res := []*extension.Extension{}
+	res := []*rmextension.WebhookMessage{}
 	for _, ext := range exts {
-		tmp := extension.ConvertExtension(&ext)
+		tmp := ext.ConvertWebhookMessage()
 		res = append(res, tmp)
 	}
 
@@ -128,35 +142,27 @@ func (h *serviceHandler) ExtensionGets(u *cscustomer.Customer, domainID uuid.UUI
 
 // ExtesnionUpdate updates the extension info.
 // It returns updated extension if it succeed.
-func (h *serviceHandler) ExtensionUpdate(u *cscustomer.Customer, d *extension.Extension) (*extension.Extension, error) {
+func (h *serviceHandler) ExtensionUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"customer_id": u.ID,
-		"username":    u.Username,
-		"extension":   d.ID,
+		"func":         "ExtensionUpdate",
+		"customer_id":  u.ID,
+		"extension_id": id,
 	})
 	log.Debug("Updating an extension.")
 
-	// get extension
-	tmpExtension, err := h.reqHandler.RMV1ExtensionGet(ctx, d.ID)
+	_, err := h.extensionGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
 	}
 
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpExtension.CustomerID {
-		log.Info("The customer has no permission for this extension.")
-		return nil, fmt.Errorf("customer has no permission")
-	}
-
-	reqExtension := extension.CreateDomain(d)
-	res, err := h.reqHandler.RMV1ExtensionUpdate(ctx, reqExtension)
+	tmp, err := h.reqHandler.RMV1ExtensionUpdate(ctx, id, name, detail, password)
 	if err != nil {
 		logrus.Errorf("Could not update the domain. err: %v", err)
 		return nil, err
 	}
 
-	resExtension := extension.ConvertExtension(res)
-	return resExtension, nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
