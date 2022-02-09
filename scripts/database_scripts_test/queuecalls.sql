@@ -11,9 +11,6 @@ create table queuecalls(
   exit_action_id    binary(16),   -- action id for queue exit.
   confbridge_id     binary(16),
 
-  webhook_uri     varchar(1023),
-  webhook_method  varchar(255),
-
   source            json,
   routing_method    varchar(255),
   tag_ids           json,
@@ -32,7 +29,7 @@ create table queuecalls(
   primary key(id)
 );
 
-create index idx_queuecalls_userid on queuecalls(user_id);
+create index idx_queuecalls_customerid on queuecalls(customer_id);
 create index idx_queuecalls_queueid on queuecalls(queue_id);
 create index idx_queuecalls_referenceid on queuecalls(reference_id);
 create index idx_queuecalls_serviceagentid on queuecalls(service_agent_id);

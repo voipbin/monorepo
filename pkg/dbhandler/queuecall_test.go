@@ -40,8 +40,6 @@ func TestQueuecallCreate(t *testing.T) {
 				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
@@ -68,8 +66,6 @@ func TestQueuecallCreate(t *testing.T) {
 				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
@@ -100,8 +96,6 @@ func TestQueuecallCreate(t *testing.T) {
 				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
@@ -129,8 +123,6 @@ func TestQueuecallCreate(t *testing.T) {
 				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",

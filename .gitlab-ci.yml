@@ -1,7 +1,7 @@
 image: voipbin/gitlab-runner:latest
 
 variables:
-  LOCAL_PACKAGE_NAME: user-manager
+  LOCAL_PACKAGE_NAME: queue-manager
   GOOS: linux
   GOARCH: amd64
 

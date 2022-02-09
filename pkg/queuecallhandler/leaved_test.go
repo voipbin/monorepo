@@ -64,8 +64,6 @@ func TestLeaved(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
-				WebhookURI:      "test.com",
-				WebhookMethod:   "",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
@@ -85,8 +83,6 @@ func TestLeaved(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
-				WebhookURI:      "test.com",
-				WebhookMethod:   "",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
@@ -111,7 +107,7 @@ func TestLeaved(t *testing.T) {
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.queuecall, nil)
 			mockDB.EXPECT().QueuecallDelete(gomock.Any(), tt.queuecall.ID, queuecall.StatusDone).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), queuecall.EventTypeQueuecallDone, tt.responseQueuecall.WebhookURI, tt.responseQueuecall)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)
 
 			duration := getDuration(ctx, tt.responseQueuecall.TMService, tt.responseQueuecall.TMDelete)
 			mockDB.EXPECT().QueueRemoveServiceQueueCall(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ID, duration)

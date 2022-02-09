@@ -11,10 +11,8 @@ type Queue struct {
 	CustomerID uuid.UUID `json:"customer_id"` // owner id
 
 	// basic info
-	Name          string `json:"name"`           // queue's name
-	Detail        string `json:"detail"`         // queue's detail
-	WebhookURI    string `json:"webhook_uri"`    // webhook uri.
-	WebhookMethod string `json:"webhook_method"` // webhook method.
+	Name   string `json:"name"`   // queue's name
+	Detail string `json:"detail"` // queue's detail
 
 	// operation info
 	RoutingMethod RoutingMethod `json:"routing_method"` // queue's routing method

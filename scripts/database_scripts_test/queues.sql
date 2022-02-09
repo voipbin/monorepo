@@ -9,8 +9,6 @@ create table queues(
   -- basic info
   name            varchar(255),
   detail          text,
-  webhook_uri     varchar(1023),  -- webhook uri
-  webhook_method  varchar(16),
 
   routing_method  varchar(16),
   tag_ids         json,
@@ -35,6 +33,6 @@ create table queues(
   primary key(id)
 );
 
-create index idx_queues_userid on queues(user_id);
+create index idx_queues_customerid on queues(customer_id);
 create index idx_queues_flowid on queues(flow_id);
 create index idx_queues_confbridgeid on queues(confbridge_id);

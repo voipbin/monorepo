@@ -34,8 +34,6 @@ func TestQueueCreate(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("4fc7cef8-7f54-11ec-8e1f-6f6a91905190"),
 				Name:          "test name",
 				Detail:        "test detail",
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				RoutingMethod: "random",
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("e4368e4e-59de-11ec-badd-378688c95856"),
@@ -57,8 +55,6 @@ func TestQueueCreate(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("4fc7cef8-7f54-11ec-8e1f-6f6a91905190"),
 				Name:          "test name",
 				Detail:        "test detail",
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				RoutingMethod: "random",
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("e4368e4e-59de-11ec-badd-378688c95856"),
@@ -83,8 +79,6 @@ func TestQueueCreate(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
 				Name:          "test name",
 				Detail:        "test detail",
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				RoutingMethod: "random",
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("7366bb8c-59e1-11ec-8f94-9bc5e34bb104"),
@@ -108,8 +102,6 @@ func TestQueueCreate(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
 				Name:          "test name",
 				Detail:        "test detail",
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				RoutingMethod: "random",
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("7366bb8c-59e1-11ec-8f94-9bc5e34bb104"),
@@ -136,8 +128,6 @@ func TestQueueCreate(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
 				Name:          "test name",
 				Detail:        "test detail",
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				RoutingMethod: "random",
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("7366bb8c-59e1-11ec-8f94-9bc5e34bb104"),
@@ -164,8 +154,6 @@ func TestQueueCreate(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
 				Name:          "test name",
 				Detail:        "test detail",
-				WebhookURI:    "test.com",
-				WebhookMethod: "POST",
 				RoutingMethod: "random",
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("7366bb8c-59e1-11ec-8f94-9bc5e34bb104"),
@@ -385,11 +373,9 @@ func TestQueueSetBasicInfo(t *testing.T) {
 
 		data *queue.Queue
 
-		id            uuid.UUID
-		queueName     string
-		detail        string
-		webhookURI    string
-		webhookMethod string
+		id        uuid.UUID
+		queueName string
+		detail    string
 
 		expectRes *queue.Queue
 	}{
@@ -403,14 +389,10 @@ func TestQueueSetBasicInfo(t *testing.T) {
 			uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
 			"new name",
 			"new detail",
-			"test.com",
-			"POST",
 			&queue.Queue{
 				ID:                  uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
 				Name:                "new name",
 				Detail:              "new detail",
-				WebhookURI:          "test.com",
-				WebhookMethod:       "POST",
 				TagIDs:              []uuid.UUID{},
 				WaitActions:         []fmaction.Action{},
 				WaitQueueCallIDs:    []uuid.UUID{},
@@ -431,7 +413,7 @@ func TestQueueSetBasicInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.QueueSetBasicInfo(ctx, tt.id, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod); err != nil {
+			if err := h.QueueSetBasicInfo(ctx, tt.id, tt.queueName, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

@@ -12,10 +12,8 @@ type WebhookMessage struct {
 	ID uuid.UUID `json:"id"` // queue id
 
 	// basic info
-	Name          string `json:"name"`           // queue's name
-	Detail        string `json:"detail"`         // queue's detail
-	WebhookURI    string `json:"webhook_uri"`    // webhook uri.
-	WebhookMethod string `json:"webhook_method"` // webhook method.
+	Name   string `json:"name"`   // queue's name
+	Detail string `json:"detail"` // queue's detail
 
 	// operation info
 	RoutingMethod RoutingMethod `json:"routing_method"` // queue's routing method
@@ -47,8 +45,6 @@ func (h *Queue) ConvertWebhookMessage() *WebhookMessage {
 		ID:            h.ID,
 		Name:          h.Name,
 		Detail:        h.Detail,
-		WebhookURI:    h.WebhookURI,
-		WebhookMethod: h.WebhookMethod,
 		RoutingMethod: h.RoutingMethod,
 		TagIDs:        h.TagIDs,
 

@@ -55,7 +55,7 @@ func (h *queuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallAbandoned, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallAbandoned, tmp)
 
 	// calculate the duration and increase the abandoned count
 	duration := getDuration(ctx, tmp.TMCreate, tmp.TMDelete)

@@ -42,8 +42,6 @@ func (h *listenHandler) processV1QueuesPost(ctx context.Context, m *rabbitmqhand
 		req.CustomerID,
 		req.Name,
 		req.Detail,
-		req.WebhookURI,
-		req.WebhookMethod,
 		queue.RoutingMethod(req.RoutingMethod),
 		req.TagIDs,
 		req.WaitActions,
@@ -206,7 +204,7 @@ func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *rabbitmqhan
 	log.WithField("request", req).Debug("Updating the queue's basic info.")
 
 	// join to the queue
-	err := h.queueHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail, req.WebhookURI, req.WebhookMethod)
+	err := h.queueHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the queue's basic info. err: %v", err)
 		return simpleResponse(500), nil
