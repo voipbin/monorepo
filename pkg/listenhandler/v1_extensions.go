@@ -9,8 +9,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 )
@@ -129,13 +129,13 @@ func (h *listenHandler) processV1ExtensionsIDPut(req *rabbitmqhandler.Request) (
 		Password: reqData.Password,
 	}
 
-	domain, err := h.extensionHandler.ExtensionUpdate(ctx, tmpExt)
+	tmp, err := h.extensionHandler.ExtensionUpdate(ctx, tmpExt)
 	if err != nil {
 		logrus.Errorf("Could not get domain info. err: %v", err)
 		return nil, err
 	}
 
-	data, err := json.Marshal(domain)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		logrus.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
@@ -163,13 +163,22 @@ func (h *listenHandler) processV1ExtensionsIDDelete(req *rabbitmqhandler.Request
 	tmpVals := strings.Split(u.Path, "/")
 	extID := uuid.FromStringOrNil(tmpVals[3])
 
-	if err := h.extensionHandler.ExtensionDelete(ctx, extID); err != nil {
+	tmp, err := h.extensionHandler.ExtensionDelete(ctx, extID)
+	if err != nil {
 		logrus.Errorf("Could not get domain info. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

@@ -55,71 +55,6 @@ func (h *handler) astAuthGetFromRow(row *sql.Rows) (*astauth.AstAuth, error) {
 	return res, nil
 }
 
-// AstAuthGetFromDB returns AstAuth from the DB.
-func (h *handler) AstAuthGetFromDB(ctx context.Context, id string) (*astauth.AstAuth, error) {
-
-	q := fmt.Sprintf("%s where id = ?", astAuthSelect)
-
-	row, err := h.db.Query(q, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. AstAuthGetFromDB. err: %v", err)
-	}
-	defer row.Close()
-
-	if row.Next() == false {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.astAuthGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. AstAuthGetFromDB. err: %v", err)
-	}
-
-	return res, nil
-}
-
-// AstAuthUpdateToCache gets the AstAuth from the DB and update the cache.
-func (h *handler) AstAuthUpdateToCache(ctx context.Context, id string) error {
-
-	res, err := h.AstAuthGetFromDB(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	if err := h.AstAuthSetToCache(ctx, res); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AstAuthSetToCache sets the given AstAuth to the cache
-func (h *handler) AstAuthSetToCache(ctx context.Context, auth *astauth.AstAuth) error {
-	if err := h.cache.AstAuthSet(ctx, auth); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AstAuthGetFromCache returns AstAuth from the cache.
-func (h *handler) AstAuthGetFromCache(ctx context.Context, id string) (*astauth.AstAuth, error) {
-
-	// get from cache
-	res, err := h.cache.AstAuthGet(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// AstAuthGetFromCache returns AstAuth from the cache.
-func (h *handler) AstAuthDeleteFromCache(ctx context.Context, id string) error {
-	// delete from the cache
-	return h.cache.AstAuthDel(ctx, id)
-}
-
 // AstAuthCreate creates new asterisk-auth record.
 func (h *handler) AstAuthCreate(ctx context.Context, b *astauth.AstAuth) error {
 	q := `insert into ps_auths(
@@ -167,26 +102,91 @@ func (h *handler) AstAuthCreate(ctx context.Context, b *astauth.AstAuth) error {
 	}
 
 	// update the cache
-	h.AstAuthUpdateToCache(ctx, *b.ID)
+	h.astAuthUpdateToCache(ctx, *b.ID)
 
 	return nil
+}
+
+// astAuthGetFromDB returns AstAuth from the DB.
+func (h *handler) astAuthGetFromDB(ctx context.Context, id string) (*astauth.AstAuth, error) {
+
+	q := fmt.Sprintf("%s where id = ?", astAuthSelect)
+
+	row, err := h.db.Query(q, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AstAuthGetFromDB. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.astAuthGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan the row. AstAuthGetFromDB. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// astAuthUpdateToCache gets the AstAuth from the DB and update the cache.
+func (h *handler) astAuthUpdateToCache(ctx context.Context, id string) error {
+
+	res, err := h.astAuthGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.astAuthSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// astAuthSetToCache sets the given AstAuth to the cache
+func (h *handler) astAuthSetToCache(ctx context.Context, auth *astauth.AstAuth) error {
+	if err := h.cache.AstAuthSet(ctx, auth); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// astAuthGetFromCache returns AstAuth from the cache.
+func (h *handler) astAuthGetFromCache(ctx context.Context, id string) (*astauth.AstAuth, error) {
+
+	// get from cache
+	res, err := h.cache.AstAuthGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// astAuthDeleteFromCache returns AstAuth from the cache.
+func (h *handler) astAuthDeleteFromCache(ctx context.Context, id string) error {
+	// delete from the cache
+	return h.cache.AstAuthDel(ctx, id)
 }
 
 // AstAuthGet returns AstAuth.
 func (h *handler) AstAuthGet(ctx context.Context, id string) (*astauth.AstAuth, error) {
 
-	res, err := h.AstAuthGetFromCache(ctx, id)
+	res, err := h.astAuthGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.AstAuthGetFromDB(ctx, id)
+	res, err = h.astAuthGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	h.AstAuthSetToCache(ctx, res)
+	h.astAuthSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -207,7 +207,7 @@ func (h *handler) AstAuthDelete(ctx context.Context, id string) error {
 	}
 
 	// delete from the cache
-	h.AstAuthDeleteFromCache(ctx, id)
+	h.astAuthDeleteFromCache(ctx, id)
 
 	return nil
 }
@@ -229,7 +229,7 @@ func (h *handler) AstAuthUpdate(ctx context.Context, auth *astauth.AstAuth) erro
 	}
 
 	// update to the cache
-	h.AstAuthUpdateToCache(ctx, *auth.ID)
+	h.astAuthUpdateToCache(ctx, *auth.ID)
 
 	return nil
 }

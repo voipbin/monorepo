@@ -9,33 +9,48 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
-// DomainCreate creates a new domain and returns a created domain info
-func (h *domainHandler) DomainCreate(ctx context.Context, d *domain.Domain) (*domain.Domain, error) {
+// Create creates a new domain and returns a created domain info
+func (h *domainHandler) Create(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*domain.Domain, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
-			"domain": d,
+			"func":              "Create",
+			"customer_id":       customerID,
+			"domain_domainname": domainName,
 		},
 	)
-	log.Debugf("Creating domain. domain: %s", d.DomainName)
+	log.Debugf("Creating domain. domain: %s", domainName)
 
 	// check suffix
-	if strings.HasSuffix(d.DomainName, constDomainSuffix) == false {
-		log.Errorf("Wrong domain name. domain_name: %s, suffix: %s", d.DomainName, constDomainSuffix)
+	if !strings.HasSuffix(domainName, constDomainSuffix) {
+		log.Errorf("Wrong domain name. domain_name: %s, suffix: %s", domainName, constDomainSuffix)
 		return nil, fmt.Errorf("wrong domain name. suffix must matched with %s", constDomainSuffix)
 	}
 
 	// check duplicated domain
-	_, err := h.dbBin.DomainGetByDomainName(ctx, d.DomainName)
+	_, err := h.dbBin.DomainGetByDomainName(ctx, domainName)
 	if err == nil {
 		logrus.Errorf("The given domain is already exists. err: %v", err)
 		return nil, fmt.Errorf("already exists")
 	}
 
 	// create new domain
-	d.ID = uuid.Must(uuid.NewV4())
+	d := &domain.Domain{
+		ID:         uuid.Must(uuid.NewV4()),
+		CustomerID: customerID,
+
+		Name:       name,
+		Detail:     detail,
+		DomainName: domainName,
+
+		TMCreate: dbhandler.GetCurTime(),
+		TMUpdate: dbhandler.DefaultTimeStamp,
+		TMDelete: dbhandler.DefaultTimeStamp,
+	}
+
 	if err := h.dbBin.DomainCreate(ctx, d); err != nil {
 		logrus.Errorf("Could not create a domain info. err: %v", err)
 		return nil, err
@@ -47,12 +62,14 @@ func (h *domainHandler) DomainCreate(ctx context.Context, d *domain.Domain) (*do
 		logrus.Errorf("Could not get created domain info. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, domain.EventTypeDomainCreated, res)
+	promDomainCreateTotal.Inc()
 
 	return res, nil
 }
 
-// GetDomain returns domain
-func (h *domainHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
+// Get returns domain
+func (h *domainHandler) Get(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 	res, err := h.dbBin.DomainGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -73,46 +90,59 @@ func (h *domainHandler) Gets(ctx context.Context, customerID uuid.UUID, token st
 	return domains, nil
 }
 
-// DomainUpdate updates the domain info
-func (h *domainHandler) DomainUpdate(ctx context.Context, d *domain.Domain) (*domain.Domain, error) {
+// Update updates the domain info
+func (h *domainHandler) Update(ctx context.Context, id uuid.UUID, name, detail string) (*domain.Domain, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"domain": d,
+			"func":      "Update",
+			"domain_id": id,
 		},
 	)
 
 	// update
-	if err := h.dbBin.DomainUpdate(ctx, d); err != nil {
+	if err := h.dbBin.DomainUpdateBasicInfo(ctx, id, name, detail); err != nil {
 		log.Errorf("Could not update the domain. err: %v", err)
 		return nil, err
 	}
 
-	res, err := h.dbBin.DomainGet(ctx, d.ID)
+	res, err := h.dbBin.DomainGet(ctx, id)
 	if err != nil {
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, domain.EventTypeDomainUpdated, res)
 
 	return res, nil
 }
 
-// DomainDelete deletes the domain info
-func (h *domainHandler) DomainDelete(ctx context.Context, id uuid.UUID) error {
+// Delete deletes the domain info
+func (h *domainHandler) Delete(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"domain": id,
+			"func":      "Delete",
+			"domain_id": id,
 		},
 	)
 
 	// delete extensions
-	if err := h.extHandler.ExtensionDeleteByDomainID(ctx, id); err != nil {
-		return err
+	tmp, err := h.extHandler.ExtensionDeleteByDomainID(ctx, id)
+	if err != nil {
+		return nil, err
 	}
+	log.WithField("extensions", tmp).Debugf("Deleted extensions. count: %d", len(tmp))
 
 	// delete domain
 	if err := h.dbBin.DomainDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the domain. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res, err := h.dbBin.DomainGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted domain. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishEvent(ctx, domain.EventTypeDomainDeleted, res)
+	promDomainDeleteTotal.Inc()
+
+	return res, nil
 }

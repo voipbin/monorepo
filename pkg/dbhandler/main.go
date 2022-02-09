@@ -20,27 +20,23 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
 
+// list of const variables
+const (
+	DefaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
+)
+
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
 	// AstAOR
 	AstAORCreate(ctx context.Context, b *astaor.AstAOR) error
 	AstAORDelete(ctx context.Context, id string) error
 	AstAORGet(ctx context.Context, id string) (*astaor.AstAOR, error)
-	AstAORGetFromCache(ctx context.Context, id string) (*astaor.AstAOR, error)
-	AstAORGetFromDB(ctx context.Context, id string) (*astaor.AstAOR, error)
-	AstAORSetToCache(ctx context.Context, aor *astaor.AstAOR) error
-	AstAORUpdateToCache(ctx context.Context, id string) error
 
 	// AstAuth
 	AstAuthCreate(ctx context.Context, b *astauth.AstAuth) error
 	AstAuthDelete(ctx context.Context, id string) error
-	AstAuthDeleteFromCache(ctx context.Context, id string) error
 	AstAuthGet(ctx context.Context, id string) (*astauth.AstAuth, error)
-	AstAuthGetFromCache(ctx context.Context, id string) (*astauth.AstAuth, error)
-	AstAuthGetFromDB(ctx context.Context, id string) (*astauth.AstAuth, error)
-	AstAuthSetToCache(ctx context.Context, auth *astauth.AstAuth) error
 	AstAuthUpdate(ctx context.Context, auth *astauth.AstAuth) error
-	AstAuthUpdateToCache(ctx context.Context, id string) error
 
 	// AstContact
 	AstContactDeleteFromCache(ctx context.Context, endpoint string) error
@@ -52,34 +48,21 @@ type DBHandler interface {
 	AstEndpointCreate(ctx context.Context, b *astendpoint.AstEndpoint) error
 	AstEndpointDelete(ctx context.Context, id string) error
 	AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error)
-	AstEndpointGetFromCache(ctx context.Context, id string) (*astendpoint.AstEndpoint, error)
-	AstEndpointGetFromDB(ctx context.Context, id string) (*astendpoint.AstEndpoint, error)
-	AstEndpointSetToCache(ctx context.Context, ednpoint *astendpoint.AstEndpoint) error
-	AstEndpointUpdateToCache(ctx context.Context, id string) error
 
 	// Domain
 	DomainCreate(ctx context.Context, b *domain.Domain) error
 	DomainDelete(ctx context.Context, id uuid.UUID) error
-	DomainDeleteFromCache(ctx context.Context, id uuid.UUID) error
 	DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error)
 	DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error)
-	DomainGetFromCache(ctx context.Context, id uuid.UUID) (*domain.Domain, error)
-	DomainGetFromDB(ctx context.Context, id uuid.UUID) (*domain.Domain, error)
 	DomainGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error)
-	DomainSetToCache(ctx context.Context, e *domain.Domain) error
-	DomainUpdate(ctx context.Context, b *domain.Domain) error
-	DomainUpdateToCache(ctx context.Context, id uuid.UUID) error
+	DomainUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 
 	// Extension
 	ExtensionCreate(ctx context.Context, b *extension.Extension) error
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
-	ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
-	ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
-	ExtensionSetToCache(ctx context.Context, e *extension.Extension) error
 	ExtensionUpdate(ctx context.Context, b *extension.Extension) error
-	ExtensionUpdateToCache(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler
@@ -104,8 +87,8 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	return h
 }
 
-// getCurTime return current utc time string
-func getCurTime() string {
+// GetCurTime return current utc time string
+func GetCurTime() string {
 	now := time.Now().UTC().String()
 	res := strings.TrimSuffix(now, " +0000 UTC")
 

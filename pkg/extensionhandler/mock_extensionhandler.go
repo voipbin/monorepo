@@ -52,11 +52,12 @@ func (mr *MockExtensionHandlerMockRecorder) ExtensionCreate(ctx, e interface{}) 
 }
 
 // ExtensionDelete mocks base method.
-func (m *MockExtensionHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
+func (m *MockExtensionHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ExtensionDelete indicates an expected call of ExtensionDelete.
@@ -66,11 +67,12 @@ func (mr *MockExtensionHandlerMockRecorder) ExtensionDelete(ctx, id interface{})
 }
 
 // ExtensionDeleteByDomainID mocks base method.
-func (m *MockExtensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) error {
+func (m *MockExtensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionDeleteByDomainID", ctx, domainID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].([]*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ExtensionDeleteByDomainID indicates an expected call of ExtensionDeleteByDomainID.

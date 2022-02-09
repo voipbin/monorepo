@@ -14,6 +14,7 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -80,8 +81,6 @@ func main() {
 	run(sqlAst, sqlBin, cache)
 	<-chDone
 
-	return
-
 }
 
 // proces init
@@ -115,7 +114,7 @@ func initLog() {
 
 // initSignal inits sinal settings.
 func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 }
 
@@ -146,9 +145,10 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, cache)
-	domainHandler := domainhandler.NewDomainHandler(reqHandler, dbAst, dbBin, cache, extensionHandler)
-	contactHandler := contacthandler.NewContactHandler(reqHandler, dbAst, dbBin, cache)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitQueueNotify, serviceName)
+	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler)
+	domainHandler := domainhandler.NewDomainHandler(reqHandler, dbAst, dbBin, notifyHandler, extensionHandler)
+	contactHandler := contacthandler.NewContactHandler(reqHandler, dbAst, dbBin)
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, domainHandler, extensionHandler, contactHandler)
 
 	// run

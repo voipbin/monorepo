@@ -270,7 +270,9 @@ func TestProcessV1ExtensionsIDDelete(t *testing.T) {
 		name        string
 		extensionID uuid.UUID
 		request     *rabbitmqhandler.Request
-		expectRes   *rabbitmqhandler.Response
+
+		responseExtension *extension.Extension
+		expectRes         *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -281,8 +283,14 @@ func TestProcessV1ExtensionsIDDelete(t *testing.T) {
 				URI:    "/v1/extensions/adeea2b0-6f4f-11eb-acb7-13291c18927b",
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
+
+			&extension.Extension{
+				ID: uuid.FromStringOrNil("adeea2b0-6f4f-11eb-acb7-13291c18927b"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"adeea2b0-6f4f-11eb-acb7-13291c18927b","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_id":"00000000-0000-0000-0000-000000000000","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -290,7 +298,7 @@ func TestProcessV1ExtensionsIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockExtension.EXPECT().ExtensionDelete(gomock.Any(), tt.extensionID).Return(nil)
+			mockExtension.EXPECT().ExtensionDelete(gomock.Any(), tt.extensionID).Return(tt.responseExtension, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

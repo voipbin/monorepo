@@ -65,65 +65,6 @@ func (h *handler) astAORGetFromRow(row *sql.Rows) (*astaor.AstAOR, error) {
 	return res, nil
 }
 
-// AstAORGetFromDB returns AstAOR from the DB.
-func (h *handler) AstAORGetFromDB(ctx context.Context, id string) (*astaor.AstAOR, error) {
-
-	q := fmt.Sprintf("%s where id = ?", astAorSelect)
-
-	row, err := h.db.Query(q, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. AstAORGetFromDB. err: %v", err)
-	}
-	defer row.Close()
-
-	if row.Next() == false {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.astAORGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. AstAORGetFromDB. err: %v", err)
-	}
-
-	return res, nil
-}
-
-// AstAORUpdateToCache gets the AstAOR from the DB and update the cache.
-func (h *handler) AstAORUpdateToCache(ctx context.Context, id string) error {
-
-	res, err := h.AstAORGetFromDB(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	if err := h.AstAORSetToCache(ctx, res); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AstAORSetToCache sets the given AstAOR to the cache
-func (h *handler) AstAORSetToCache(ctx context.Context, aor *astaor.AstAOR) error {
-	if err := h.cache.AstAORSet(ctx, aor); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AstAORGetFromCache returns AstAOR from the cache.
-func (h *handler) AstAORGetFromCache(ctx context.Context, id string) (*astaor.AstAOR, error) {
-
-	// get from cache
-	res, err := h.cache.AstAORGet(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
 // AstAORCreate creates new asterisk-aor record.
 func (h *handler) AstAORCreate(ctx context.Context, b *astaor.AstAOR) error {
 	q := `insert into ps_aors(
@@ -182,26 +123,85 @@ func (h *handler) AstAORCreate(ctx context.Context, b *astaor.AstAOR) error {
 	}
 
 	// update the cache
-	h.AstAORUpdateToCache(ctx, *b.ID)
+	h.astAORUpdateToCache(ctx, *b.ID)
 
 	return nil
+}
+
+// astAORGetFromDB returns AstAOR from the DB.
+func (h *handler) astAORGetFromDB(ctx context.Context, id string) (*astaor.AstAOR, error) {
+
+	q := fmt.Sprintf("%s where id = ?", astAorSelect)
+
+	row, err := h.db.Query(q, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AstAORGetFromDB. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.astAORGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan the row. AstAORGetFromDB. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// astAORUpdateToCache gets the AstAOR from the DB and update the cache.
+func (h *handler) astAORUpdateToCache(ctx context.Context, id string) error {
+
+	res, err := h.astAORGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.astAORSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// astAORSetToCache sets the given AstAOR to the cache
+func (h *handler) astAORSetToCache(ctx context.Context, aor *astaor.AstAOR) error {
+	if err := h.cache.AstAORSet(ctx, aor); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// astAORGetFromCache returns AstAOR from the cache.
+func (h *handler) astAORGetFromCache(ctx context.Context, id string) (*astaor.AstAOR, error) {
+
+	// get from cache
+	res, err := h.cache.AstAORGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // AstAORGet returns AstAOR.
 func (h *handler) AstAORGet(ctx context.Context, id string) (*astaor.AstAOR, error) {
 
-	res, err := h.AstAORGetFromCache(ctx, id)
+	res, err := h.astAORGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.AstAORGetFromDB(ctx, id)
+	res, err = h.astAORGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	h.AstAORSetToCache(ctx, res)
+	h.astAORSetToCache(ctx, res)
 
 	return res, nil
 }
