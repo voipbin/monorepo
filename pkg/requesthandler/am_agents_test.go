@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 
@@ -471,7 +470,7 @@ func TestAMAgentDelete(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response  *rabbitmqhandler.Response
-		expectRes *agent.Agent
+		expectRes *amagent.Agent
 	}{
 		{
 			"normal",
@@ -597,7 +596,7 @@ func TestAMV1AgentUpdateAddresses(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response  *rabbitmqhandler.Response
-		expectRes *agent.Agent
+		expectRes *amagent.Agent
 	}{
 		{
 			"normal",
@@ -665,7 +664,7 @@ func TestAMV1AgentUpdatePassword(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response  *rabbitmqhandler.Response
-		expectRes *agent.Agent
+		expectRes *amagent.Agent
 	}{
 		{
 			"normal",
@@ -730,7 +729,7 @@ func TestAMV1AgentUpdate(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response  *rabbitmqhandler.Response
-		expectRes *agent.Agent
+		expectRes *amagent.Agent
 	}{
 		{
 			"normal",
@@ -796,7 +795,7 @@ func TestAMV1AgentUpdateTagIDs(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response  *rabbitmqhandler.Response
-		expectRes *agent.Agent
+		expectRes *amagent.Agent
 	}{
 		{
 			"normal",
@@ -861,7 +860,7 @@ func TestAMV1AgentUpdateStatus(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response  *rabbitmqhandler.Response
-		expectRes *agent.Agent
+		expectRes *amagent.Agent
 	}{
 		{
 			"normal",

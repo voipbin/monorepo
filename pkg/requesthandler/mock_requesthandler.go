@@ -1625,11 +1625,12 @@ func (mr *MockRequestHandlerMockRecorder) RMV1DomainCreate(ctx, customerID, doma
 }
 
 // RMV1DomainDelete mocks base method.
-func (m *MockRequestHandler) RMV1DomainDelete(ctx context.Context, domainID uuid.UUID) error {
+func (m *MockRequestHandler) RMV1DomainDelete(ctx context.Context, domainID uuid.UUID) (*domain.Domain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RMV1DomainDelete", ctx, domainID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*domain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // RMV1DomainDelete indicates an expected call of RMV1DomainDelete.
@@ -1684,26 +1685,27 @@ func (mr *MockRequestHandlerMockRecorder) RMV1DomainUpdate(ctx, f interface{}) *
 }
 
 // RMV1ExtensionCreate mocks base method.
-func (m *MockRequestHandler) RMV1ExtensionCreate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
+func (m *MockRequestHandler) RMV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password string, domainID uuid.UUID, name, detail string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RMV1ExtensionCreate", ctx, e)
+	ret := m.ctrl.Call(m, "RMV1ExtensionCreate", ctx, customerID, ext, password, domainID, name, detail)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RMV1ExtensionCreate indicates an expected call of RMV1ExtensionCreate.
-func (mr *MockRequestHandlerMockRecorder) RMV1ExtensionCreate(ctx, e interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RMV1ExtensionCreate(ctx, customerID, ext, password, domainID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ExtensionCreate", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ExtensionCreate), ctx, e)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RMV1ExtensionCreate", reflect.TypeOf((*MockRequestHandler)(nil).RMV1ExtensionCreate), ctx, customerID, ext, password, domainID, name, detail)
 }
 
 // RMV1ExtensionDelete mocks base method.
-func (m *MockRequestHandler) RMV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) error {
+func (m *MockRequestHandler) RMV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RMV1ExtensionDelete", ctx, extensionID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // RMV1ExtensionDelete indicates an expected call of RMV1ExtensionDelete.
