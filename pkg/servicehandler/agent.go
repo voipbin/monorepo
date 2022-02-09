@@ -17,7 +17,7 @@ import (
 )
 
 // agentGet validates the agent's ownership and returns the agent info.
-func (h *serviceHandler) agentGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) agentGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*amagent.Agent, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "agentGet",
@@ -27,19 +27,18 @@ func (h *serviceHandler) agentGet(ctx context.Context, u *cscustomer.Customer, i
 	)
 
 	// send request
-	tmp, err := h.reqHandler.AMV1AgentGet(ctx, id)
+	res, err := h.reqHandler.AMV1AgentGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the agent info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("agent", tmp).Debug("Received result.")
+	log.WithField("agent", res).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
 		log.Info("The user has no permission for this agent.")
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -52,10 +51,8 @@ func (h *serviceHandler) AgentCreate(
 	password string,
 	name string,
 	detail string,
-	webhookMethod string,
-	webhookURI string,
 	ringMethod amagent.RingMethod,
-	permission uint64,
+	permission amagent.Permission,
 	tagIDs []uuid.UUID,
 	addresses []cmaddress.Address,
 ) (*amagent.WebhookMessage, error) {
@@ -68,7 +65,7 @@ func (h *serviceHandler) AgentCreate(
 
 	// send request
 	log.Debug("Creating a new agent.")
-	tmp, err := h.reqHandler.AMV1AgentCreate(ctx, 30, u.ID, username, password, name, detail, webhookMethod, webhookURI, amagent.RingMethod(ringMethod), amagent.Permission(permission), tagIDs, addresses)
+	tmp, err := h.reqHandler.AMV1AgentCreate(ctx, 30, u.ID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -90,12 +87,13 @@ func (h *serviceHandler) AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*a
 		"agent_id":    agentID,
 	})
 
-	res, err := h.agentGet(ctx, u, agentID)
+	tmp, err := h.agentGet(ctx, u, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
 	}
 
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -143,7 +141,7 @@ func (h *serviceHandler) AgentGets(u *cscustomer.Customer, size uint64, token st
 
 // AgentDelete sends a request to call-manager
 // to delete the agent.
-func (h *serviceHandler) AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) error {
+func (h *serviceHandler) AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentDelete",
@@ -155,16 +153,18 @@ func (h *serviceHandler) AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) 
 	_, err := h.agentGet(ctx, u, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// send request
-	if err := h.reqHandler.AMV1AgentDelete(ctx, agentID); err != nil {
+	tmp, err := h.reqHandler.AMV1AgentDelete(ctx, agentID)
+	if err != nil {
 		log.Infof("Could not delete the agent info. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // AgentDelete sends a request to call-manager
@@ -204,7 +204,7 @@ func (h *serviceHandler) AgentLogin(customerID uuid.UUID, username, password str
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent info.
-func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) error {
+func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdate",
@@ -216,21 +216,23 @@ func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, 
 	_, err := h.agentGet(ctx, u, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// send request
-	if err := h.reqHandler.AMV1AgentUpdate(ctx, agentID, name, detail, string(ringMethod)); err != nil {
+	tmp, err := h.reqHandler.AMV1AgentUpdate(ctx, agentID, name, detail, ringMethod)
+	if err != nil {
 		log.Infof("Could not delete the agent info. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent's addresses info.
-func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []cmaddress.Address) error {
+func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []cmaddress.Address) (*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateAddresses",
@@ -242,21 +244,23 @@ func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uu
 	_, err := h.agentGet(ctx, u, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// send request
-	if err := h.reqHandler.AMV1AgentUpdateAddresses(ctx, agentID, addresses); err != nil {
+	tmp, err := h.reqHandler.AMV1AgentUpdateAddresses(ctx, agentID, addresses)
+	if err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // AgentUpdateTagIDs sends a request to agent-manager
 // to update the agent's tag_ids info.
-func (h *serviceHandler) AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) error {
+func (h *serviceHandler) AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateTagIDs",
@@ -268,21 +272,23 @@ func (h *serviceHandler) AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.
 	_, err := h.agentGet(ctx, u, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// send request
-	if err := h.reqHandler.AMV1AgentUpdateTagIDs(ctx, agentID, tagIDs); err != nil {
+	tmp, err := h.reqHandler.AMV1AgentUpdateTagIDs(ctx, agentID, tagIDs)
+	if err != nil {
 		log.Infof("Could not update the agent tag ids. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // AgentUpdateStatus sends a request to agent-manager
 // to update the agent status info.
-func (h *serviceHandler) AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) error {
+func (h *serviceHandler) AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateStatus",
@@ -294,14 +300,16 @@ func (h *serviceHandler) AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.
 	_, err := h.agentGet(ctx, u, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// send request
-	if err := h.reqHandler.AMV1AgentUpdateStatus(ctx, agentID, status); err != nil {
+	tmp, err := h.reqHandler.AMV1AgentUpdateStatus(ctx, agentID, status)
+	if err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }

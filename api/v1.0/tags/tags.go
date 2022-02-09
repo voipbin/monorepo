@@ -107,14 +107,14 @@ func tagsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	err := serviceHandler.TagDelete(&u, id)
+	res, err := serviceHandler.TagDelete(&u, id)
 	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // tagsIDGet handles GET /tags/<tag-id> request.
@@ -292,11 +292,12 @@ func tagsIDPUT(c *gin.Context) {
 
 	// update the tag
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.TagUpdate(&u, id, req.Name, req.Detail); err != nil {
+	res, err := serviceHandler.TagUpdate(&u, id, req.Name, req.Detail)
+	if err != nil {
 		log.Errorf("Could not update the tag. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }

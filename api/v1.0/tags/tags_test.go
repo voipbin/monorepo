@@ -10,12 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -41,7 +41,7 @@ func TestTagsPOST(t *testing.T) {
 		tagName string
 		detail  string
 
-		res *tag.Tag
+		res *amtag.WebhookMessage
 	}
 
 	tests := []test{
@@ -59,7 +59,7 @@ func TestTagsPOST(t *testing.T) {
 			"test1 name",
 			"test1 detail",
 
-			&tag.Tag{
+			&amtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
 			},
 		},
@@ -95,7 +95,7 @@ func TestTagsPOST(t *testing.T) {
 	}
 }
 
-func TestAgentsGET(t *testing.T) {
+func TestTagsGET(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -111,7 +111,7 @@ func TestAgentsGET(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		resAgents []*tag.Tag
+		resAgents []*amtag.WebhookMessage
 		expectRes string
 	}
 
@@ -126,7 +126,7 @@ func TestAgentsGET(t *testing.T) {
 			11,
 			"2020-09-20T03:23:20.995000",
 
-			[]*tag.Tag{
+			[]*amtag.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					TMCreate: "2020-09-20T03:23:21.995000",
@@ -144,7 +144,7 @@ func TestAgentsGET(t *testing.T) {
 			10,
 			"2020-09-20T03:23:20.995000",
 
-			[]*tag.Tag{
+			[]*amtag.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					TMCreate: "2020-09-20T03:23:21.995000",
@@ -227,7 +227,7 @@ func TestTagsDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagDelete(&tt.customer, tt.agentID).Return(nil)
+			mockSvc.EXPECT().TagDelete(&tt.customer, tt.agentID).Return(&amtag.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -251,7 +251,7 @@ func TestTagsIDGet(t *testing.T) {
 		agentID  uuid.UUID
 		reqQuery string
 
-		response *tag.Tag
+		response *amtag.WebhookMessage
 	}
 
 	tests := []test{
@@ -263,7 +263,7 @@ func TestTagsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			"/v1.0/tags/c07ff34e-500d-11ec-8393-2bc7870b7eff",
 
-			&tag.Tag{
+			&amtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			},
 		},
@@ -343,7 +343,7 @@ func TestTagsIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagUpdate(&tt.customer, tt.agentID, tt.tagName, tt.detail).Return(nil)
+			mockSvc.EXPECT().TagUpdate(&tt.customer, tt.agentID, tt.tagName, tt.detail).Return(&amtag.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

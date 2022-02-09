@@ -6,14 +6,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 )
 
 // tagGet validates the tag's ownership and returns the tag info.
-func (h *serviceHandler) tagGet(ctx context.Context, u *cscustomer.Customer, tagID uuid.UUID) (*tag.Tag, error) {
+func (h *serviceHandler) tagGet(ctx context.Context, u *cscustomer.Customer, tagID uuid.UUID) (*amtag.Tag, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "tagGet",
@@ -23,27 +22,26 @@ func (h *serviceHandler) tagGet(ctx context.Context, u *cscustomer.Customer, tag
 	)
 
 	// send request
-	tmp, err := h.reqHandler.AMV1TagGet(ctx, tagID)
+	res, err := h.reqHandler.AMV1TagGet(ctx, tagID)
 	if err != nil {
 		log.Errorf("Could not get an tag. err: %v", err)
 		return nil, err
 	}
-	log.WithField("tag", tmp).Debug("Received result.")
+	log.WithField("tag", res).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
 		log.Info("The user has no permission for this agent.")
 		return nil, fmt.Errorf("user has no permission")
 	}
 
 	// create result
-	res := tag.ConvertToTag(tmp)
 	return res, nil
 }
 
 // TagCreate sends a request to agent-manager
 // to creating a tag.
 // it returns created tag info if it succeed.
-func (h *serviceHandler) TagCreate(u *cscustomer.Customer, name string, detail string) (*tag.Tag, error) {
+func (h *serviceHandler) TagCreate(u *cscustomer.Customer, name string, detail string) (*amtag.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
@@ -60,14 +58,13 @@ func (h *serviceHandler) TagCreate(u *cscustomer.Customer, name string, detail s
 	log.WithField("tag", tmp).Debug("Received result.")
 
 	// create result
-	res := tag.ConvertToTag(tmp)
-
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // AgentGet sends a request to agent-manager
 // to getting a tag.
-func (h *serviceHandler) TagGet(u *cscustomer.Customer, id uuid.UUID) (*tag.Tag, error) {
+func (h *serviceHandler) TagGet(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagGet",
@@ -76,18 +73,20 @@ func (h *serviceHandler) TagGet(u *cscustomer.Customer, id uuid.UUID) (*tag.Tag,
 		"tag_id":      id,
 	})
 
-	res, err := h.tagGet(ctx, u, id)
+	tmp, err := h.tagGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not validate the tag info. err: %v", err)
 		return nil, err
 	}
 
+	// create result
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // TagGets sends a request to agent-manager
 // to getting a list of tags.
-func (h *serviceHandler) TagGets(u *cscustomer.Customer, size uint64, token string) ([]*tag.Tag, error) {
+func (h *serviceHandler) TagGets(u *cscustomer.Customer, size uint64, token string) ([]*amtag.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagGets",
@@ -101,9 +100,9 @@ func (h *serviceHandler) TagGets(u *cscustomer.Customer, size uint64, token stri
 		return nil, err
 	}
 
-	res := []*tag.Tag{}
+	res := []*amtag.WebhookMessage{}
 	for _, ta := range tmp {
-		t := tag.ConvertToTag(&ta)
+		t := ta.ConvertWebhookMessage()
 		res = append(res, t)
 	}
 
@@ -112,7 +111,7 @@ func (h *serviceHandler) TagGets(u *cscustomer.Customer, size uint64, token stri
 
 // TagDelete sends a request to call-manager
 // to delete the tag.
-func (h *serviceHandler) TagDelete(u *cscustomer.Customer, id uuid.UUID) error {
+func (h *serviceHandler) TagDelete(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagDelete",
@@ -124,21 +123,25 @@ func (h *serviceHandler) TagDelete(u *cscustomer.Customer, id uuid.UUID) error {
 	_, err := h.tagGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not validate the tag info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// send request
-	if err := h.reqHandler.AMV1TagDelete(ctx, id); err != nil {
+	tmp, err := h.reqHandler.AMV1TagDelete(ctx, id)
+	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	// create result
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+
 }
 
 // TagUpdate sends a request to call-manager
 // to update the tag.
-func (h *serviceHandler) TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) error {
+func (h *serviceHandler) TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*amtag.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagUpdate",
@@ -150,14 +153,17 @@ func (h *serviceHandler) TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, d
 	_, err := h.tagGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not validate the tag info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// send request
-	if err := h.reqHandler.AMV1TagUpdate(ctx, id, name, detail); err != nil {
+	tmp, err := h.reqHandler.AMV1TagUpdate(ctx, id, name, detail)
+	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	// create result
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
