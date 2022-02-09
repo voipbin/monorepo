@@ -18,7 +18,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -36,10 +35,16 @@ func TestExtensionsPOST(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name        string
-		customer    cscustomer.Customer
+		name     string
+		customer cscustomer.Customer
+
+		ext      string
+		password string
+		domainID uuid.UUID
+		extName  string
+		detail   string
+
 		requestBody request.BodyExtensionsPOST
-		reqExt      *extension.Extension
 	}
 
 	tests := []test{
@@ -51,20 +56,19 @@ func TestExtensionsPOST(t *testing.T) {
 					cspermission.PermissionAdmin.ID,
 				},
 			},
+
+			"test",
+			"password",
+			uuid.FromStringOrNil("7da5ed2e-6faf-11eb-92bd-bf4592baa4c4"),
+			"test name",
+			"test detail",
+
 			request.BodyExtensionsPOST{
 				Name:      "test name",
 				Detail:    "test detail",
 				DomainID:  uuid.FromStringOrNil("7da5ed2e-6faf-11eb-92bd-bf4592baa4c4"),
 				Extension: "test",
 				Password:  "password",
-			},
-			&extension.Extension{
-				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				Name:       "test name",
-				Detail:     "test detail",
-				DomainID:   uuid.FromStringOrNil("7da5ed2e-6faf-11eb-92bd-bf4592baa4c4"),
-				Extension:  "test",
-				Password:   "password",
 			},
 		},
 	}
@@ -87,7 +91,7 @@ func TestExtensionsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().ExtensionCreate(&tt.customer, tt.reqExt).Return(&extension.Extension{}, nil)
+			mockSvc.EXPECT().ExtensionCreate(&tt.customer, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail).Return(&rmextension.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/extensions", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -112,7 +116,7 @@ func TestExtensionsGET(t *testing.T) {
 		customer cscustomer.Customer
 		DomainID uuid.UUID
 
-		expectExt []*extension.Extension
+		expectExt []*rmextension.WebhookMessage
 	}
 
 	tests := []test{
@@ -122,15 +126,13 @@ func TestExtensionsGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("f92c19b2-6fb6-11eb-859c-0378f27fc22f"),
-			[]*extension.Extension{
+			[]*rmextension.WebhookMessage{
 				{
-					ID:         uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
-					CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-					DomainID:   uuid.FromStringOrNil("f92c19b2-6fb6-11eb-859c-0378f27fc22f"),
-					Name:       "test name",
-					Detail:     "test detail",
-					Extension:  "test",
-					Password:   "password",
+					ID:        uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+					DomainID:  uuid.FromStringOrNil("f92c19b2-6fb6-11eb-859c-0378f27fc22f"),
+					Name:      "test name",
+					Detail:    "test detail",
+					Extension: "test",
 				},
 			},
 		},
@@ -172,7 +174,7 @@ func TestExtensionsIDGET(t *testing.T) {
 		customer cscustomer.Customer
 		ext      *rmextension.Extension
 
-		expectExt *extension.Extension
+		expectExt *rmextension.WebhookMessage
 	}
 
 	tests := []test{
@@ -190,14 +192,12 @@ func TestExtensionsIDGET(t *testing.T) {
 				Extension:  "test",
 				Password:   "password",
 			},
-			&extension.Extension{
-				ID:         uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
-				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				DomainID:   uuid.FromStringOrNil("2ff2b962-6fb0-11eb-a768-e3780d10e360"),
-				Name:       "test name",
-				Detail:     "test detail",
-				Extension:  "test",
-				Password:   "password",
+			&rmextension.WebhookMessage{
+				ID:        uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+				DomainID:  uuid.FromStringOrNil("2ff2b962-6fb0-11eb-a768-e3780d10e360"),
+				Name:      "test name",
+				Detail:    "test detail",
+				Extension: "test",
 			},
 		},
 	}
@@ -234,11 +234,15 @@ func TestExtensionsIDPUT(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name        string
-		customer    cscustomer.Customer
-		extID       uuid.UUID
+		name     string
+		customer cscustomer.Customer
+
+		extID    uuid.UUID
+		extName  string
+		detail   string
+		password string
+
 		requestBody request.BodyExtensionsIDPUT
-		expectExt   *extension.Extension
 	}
 
 	tests := []test{
@@ -250,14 +254,13 @@ func TestExtensionsIDPUT(t *testing.T) {
 					cspermission.PermissionAdmin.ID,
 				},
 			},
+
 			uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+			"test name",
+			"test detail",
+			"update password",
+
 			request.BodyExtensionsIDPUT{
-				Name:     "test name",
-				Detail:   "test detail",
-				Password: "update password",
-			},
-			&extension.Extension{
-				ID:       uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
 				Name:     "test name",
 				Detail:   "test detail",
 				Password: "update password",
@@ -283,7 +286,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().ExtensionUpdate(&tt.customer, tt.expectExt).Return(&extension.Extension{}, nil)
+			mockSvc.EXPECT().ExtensionUpdate(&tt.customer, tt.extID, tt.extName, tt.detail, tt.password).Return(&rmextension.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/extensions/"+tt.extID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -331,7 +334,7 @@ func TestExtensionsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ExtensionDelete(&tt.customer, tt.extID).Return(nil)
+			mockSvc.EXPECT().ExtensionDelete(&tt.customer, tt.extID).Return(&rmextension.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/extensions/%s", tt.extID), nil)
 
 			r.ServeHTTP(w, req)

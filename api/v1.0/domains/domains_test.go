@@ -18,7 +18,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -76,7 +75,7 @@ func TestDomainsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().DomainCreate(&tt.customer, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&domain.Domain{}, nil)
+			mockSvc.EXPECT().DomainCreate(&tt.customer, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&rmdomain.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/domains", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -101,7 +100,7 @@ func TestDomainsIDGET(t *testing.T) {
 		customer cscustomer.Customer
 		domain   *rmdomain.Domain
 
-		expectDomain *domain.Domain
+		expectDomain *rmdomain.WebhookMessage
 	}
 
 	tests := []test{
@@ -117,12 +116,11 @@ func TestDomainsIDGET(t *testing.T) {
 				Detail:     "test detail",
 				CustomerID: uuid.FromStringOrNil("d8eff4fa-7ff7-11ec-834f-679286ad908b"),
 			},
-			&domain.Domain{
+			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("8c769d1e-6edb-11eb-a141-8bb08ceaaa69"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test name",
 				Detail:     "test detail",
-				CustomerID: uuid.FromStringOrNil("d8eff4fa-7ff7-11ec-834f-679286ad908b"),
 			},
 		},
 	}
@@ -159,11 +157,14 @@ func TestDomainsIDPUT(t *testing.T) {
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
-		name         string
-		customer     cscustomer.Customer
-		domainID     uuid.UUID
-		requestBody  request.BodyDomainsIDPUT
-		expectDomain *domain.Domain
+		name     string
+		customer cscustomer.Customer
+
+		domainID uuid.UUID
+		domainN  string
+		detail   string
+
+		requestBody request.BodyDomainsIDPUT
 	}
 
 	tests := []test{
@@ -175,13 +176,12 @@ func TestDomainsIDPUT(t *testing.T) {
 					cspermission.PermissionAdmin.ID,
 				},
 			},
+
 			uuid.FromStringOrNil("91f5852a-6edb-11eb-86c9-f3e5fc2d3a80"),
+			"test name",
+			"test detail",
+
 			request.BodyDomainsIDPUT{
-				Name:   "test name",
-				Detail: "test detail",
-			},
-			&domain.Domain{
-				ID:     uuid.FromStringOrNil("91f5852a-6edb-11eb-86c9-f3e5fc2d3a80"),
 				Name:   "test name",
 				Detail: "test detail",
 			},
@@ -206,7 +206,7 @@ func TestDomainsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().DomainUpdate(&tt.customer, tt.expectDomain).Return(&domain.Domain{}, nil)
+			mockSvc.EXPECT().DomainUpdate(&tt.customer, tt.domainID, tt.domainN, tt.detail).Return(&rmdomain.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/domains/"+tt.domainID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -254,7 +254,7 @@ func TestDomainsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().DomainDelete(&tt.customer, tt.domainID).Return(nil)
+			mockSvc.EXPECT().DomainDelete(&tt.customer, tt.domainID).Return(&rmdomain.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/domains/%s", tt.domainID), nil)
 
 			r.ServeHTTP(w, req)

@@ -2000,11 +2000,7 @@ var doc = `{
         "domain.Domain": {
             "type": "object",
             "properties": {
-                "customer_id": {
-                    "type": "string"
-                },
                 "detail": {
-                    "description": "Detail",
                     "type": "string"
                 },
                 "domain_name": {
@@ -2014,19 +2010,15 @@ var doc = `{
                     "type": "string"
                 },
                 "name": {
-                    "description": "Name",
                     "type": "string"
                 },
                 "tm_create": {
-                    "description": "Created timestamp.",
                     "type": "string"
                 },
                 "tm_delete": {
-                    "description": "Deleted timestamp.",
                     "type": "string"
                 },
                 "tm_update": {
-                    "description": "Updated timestamp.",
                     "type": "string"
                 }
             }
@@ -2034,9 +2026,6 @@ var doc = `{
         "extension.Extension": {
             "type": "object",
             "properties": {
-                "customer_id": {
-                    "type": "string"
-                },
                 "detail": {
                     "type": "string"
                 },
@@ -2050,9 +2039,6 @@ var doc = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 },
                 "tm_create": {
@@ -2337,7 +2323,7 @@ var doc = `{
                     "type": "string"
                 },
                 "permission": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "ring_method": {
                     "type": "string"
@@ -2349,12 +2335,6 @@ var doc = `{
                     }
                 },
                 "username": {
-                    "type": "string"
-                },
-                "webhook_method": {
-                    "type": "string"
-                },
-                "webhook_uri": {
                     "type": "string"
                 }
             }
@@ -2640,10 +2620,7 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.Domain"
-                    }
+                    "type": "string"
                 }
             }
         },
@@ -2715,10 +2692,7 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/tag.Tag"
-                    }
+                    "type": "string"
                 }
             }
         },
