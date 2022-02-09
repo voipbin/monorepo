@@ -86,6 +86,6 @@ func (h *queuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID) {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallEntering, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallEntering, tmp)
 
 }

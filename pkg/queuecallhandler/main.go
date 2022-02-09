@@ -4,7 +4,6 @@ package queuecallhandler
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -36,8 +35,6 @@ type QueuecallHandler interface {
 		exitActionID uuid.UUID,
 		forwardActionID uuid.UUID,
 		confbridgeID uuid.UUID,
-		webhookURI string,
-		webhookMethod string,
 		source cmaddress.Address,
 		routingMethod queue.RoutingMethod,
 		tagIDs []uuid.UUID,
@@ -82,14 +79,6 @@ func NewQueuecallHandler(
 
 		queuecallReferenceHandler: queuecallReferenceHandler,
 	}
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
 
 // parseTime return the time.Time of parsed voipbin's timestamp string.

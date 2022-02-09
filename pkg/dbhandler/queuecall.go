@@ -26,9 +26,6 @@ const (
 		exit_action_id,
 		confbridge_id,
 
-		webhook_uri,
-		webhook_method,
-
 		source,
 		routing_method,
 		tag_ids,
@@ -66,9 +63,6 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 		&res.ForwardActionID,
 		&res.ExitActionID,
 		&res.ConfbridgeID,
-
-		&res.WebhookURI,
-		&res.WebhookMethod,
 
 		&source,
 		&res.RoutingMethod,
@@ -116,9 +110,6 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		exit_action_id,
 		confbridge_id,
 
-		webhook_uri,
-		webhook_method,
-
 		source,
 		routing_method,
 		tag_ids,
@@ -136,7 +127,6 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 	) values(
 		?, ?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?,
 		?, ?, ?,
 		?, ?,
 		?, ?,
@@ -165,9 +155,6 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		a.ForwardActionID.Bytes(),
 		a.ExitActionID.Bytes(),
 		a.ConfbridgeID.Bytes(),
-
-		a.WebhookURI,
-		a.WebhookMethod,
 
 		tmpSource,
 		a.RoutingMethod,

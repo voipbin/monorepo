@@ -21,8 +21,6 @@ func (h *queueHandler) Create(
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	webhookURI string,
-	webhookMethod string,
 	routingMethod queue.RoutingMethod,
 	tagIDs []uuid.UUID,
 	waitActions []fmaction.Action,
@@ -30,10 +28,10 @@ func (h *queueHandler) Create(
 	serviceTimeout int,
 ) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":   "Create",
-		"userid": customerID,
+		"func":        "Create",
+		"customer_id": customerID,
 	})
-	log.Debug("Creating a new user.")
+	log.Debug("Creating a new queue.")
 
 	// generate queue id
 	id := uuid.Must(uuid.NewV4())
@@ -49,10 +47,8 @@ func (h *queueHandler) Create(
 		ID:         id,
 		CustomerID: customerID,
 
-		Name:          name,
-		Detail:        detail,
-		WebhookURI:    webhookURI,
-		WebhookMethod: webhookMethod,
+		Name:   name,
+		Detail: detail,
 
 		RoutingMethod: routingMethod,
 		TagIDs:        tagIDs,
@@ -109,7 +105,7 @@ func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID
 	flowName := fmt.Sprintf("queue-%s", queueID.String())
 
 	// create flow
-	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", "", actions, false)
+	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", actions, false)
 	if err != nil {
 		log.Errorf("Could not create a queue flow. err: %v", err)
 		return nil, err

@@ -20,9 +20,6 @@ type Queuecall struct {
 	ExitActionID    uuid.UUID `json:"exit_action_id"`    // action id for queue exit. When the queuecall has ended, the queuemanager will send the request forward to this action id.
 	ConfbridgeID    uuid.UUID `json:"confbridge_id"`     // confbridge id
 
-	WebhookURI    string `json:"webhook_uri"`    // webhook uri.
-	WebhookMethod string `json:"webhook_method"` // webhook method.
-
 	Source        cmaddress.Address   `json:"source"`         // source address for calling to the agent.
 	RoutingMethod queue.RoutingMethod `json:"routing_method"` // queue's routing method
 	TagIDs        []uuid.UUID         `json:"tag_ids"`        // queue's tags

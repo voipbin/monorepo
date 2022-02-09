@@ -14,9 +14,6 @@ type V1DataQueuesPost struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
-	WebhookURI    string `json:"webhook_uri"`
-	WebhookMethod string `json:"webhook_method"`
-
 	RoutingMethod string      `json:"routing_method"`
 	TagIDs        []uuid.UUID `json:"tag_ids"`
 
@@ -31,9 +28,6 @@ type V1DataQueuesPost struct {
 type V1DataQueuesIDPut struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
-
-	WebhookURI    string `json:"webhook_uri"`
-	WebhookMethod string `json:"webhook_method"`
 }
 
 // V1DataQueuesIDQueuecallsPost is

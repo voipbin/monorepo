@@ -40,6 +40,13 @@ func (h *queuecallReferenceHandler) SetCurrentQueuecallID(ctx context.Context, r
 			log.Errorf("Could not create the QueuecallReference. err: %v", errCreate)
 			return errCreate
 		}
+
+		tmp, err := h.db.QueuecallReferenceGet(ctx, referenceID)
+		if err != nil {
+			log.Errorf("Could not get created queuecallreference. err: %v", err)
+			return err
+		}
+		h.notifyhandler.PublishEvent(ctx, queuecallreference.EventTypeQueuecallReferenceCreated, tmp)
 	}
 
 	// set
@@ -47,6 +54,13 @@ func (h *queuecallReferenceHandler) SetCurrentQueuecallID(ctx context.Context, r
 		log.Errorf("Could not set queuecallreference. err: %v", err)
 		return err
 	}
+
+	tmp, err := h.db.QueuecallReferenceGet(ctx, referenceID)
+	if err != nil {
+		log.Errorf("Could not get updated queuecallreference. err: %v", err)
+		return err
+	}
+	h.notifyhandler.PublishEvent(ctx, queuecallreference.EventTypeQueuecallReferenceUpdated, tmp)
 
 	return nil
 
@@ -67,10 +81,23 @@ func (h *queuecallReferenceHandler) Get(ctx context.Context, id uuid.UUID) (*que
 
 // Delete deletes the queuecallreference.
 func (h *queuecallReferenceHandler) Delete(ctx context.Context, id uuid.UUID) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":                   "Delete",
+			"queuecall_reference_id": id,
+		},
+	)
 
 	if errDel := h.db.QueuecallReferenceDelete(ctx, id); errDel != nil {
 		return errDel
 	}
+
+	tmp, err := h.db.QueuecallReferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted queuecallreference. err: %v", err)
+		return err
+	}
+	h.notifyhandler.PublishEvent(ctx, queuecallreference.EventTypeQueuecallReferenceDeleted, tmp)
 
 	return nil
 }

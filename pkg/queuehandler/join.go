@@ -85,8 +85,6 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		forwardActionID,
 		exitActionID,
 		cb.ID,
-		q.WebhookURI,
-		q.WebhookMethod,
 		source,
 		q.RoutingMethod,
 		q.TagIDs,

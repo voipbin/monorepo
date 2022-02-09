@@ -31,8 +31,6 @@ type QueueHandler interface {
 		customerID uuid.UUID,
 		name string,
 		detail string,
-		webhookURI string,
-		webhookMethod string,
 		routingMethod queue.RoutingMethod,
 		tagIDs []uuid.UUID,
 		waitActions []fmaction.Action,
@@ -43,7 +41,7 @@ type QueueHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error)
 	Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID uuid.UUID, exitActionID uuid.UUID) (*queuecall.Queuecall, error)
-	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookURI, webhookMethod string) error
+	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error
 	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) error
 	UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) error

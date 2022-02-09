@@ -22,8 +22,6 @@ const (
 
 		name,
 		detail,
-		webhook_uri,
-		webhook_method,
 
 		routing_method,
 		tag_ids,
@@ -63,8 +61,6 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 
 		&res.Name,
 		&res.Detail,
-		&res.WebhookURI,
-		&res.WebhookMethod,
 
 		&res.RoutingMethod,
 		&tagIDs,
@@ -127,8 +123,6 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 
 		name,
 		detail,
-		webhook_uri,
-		webhook_method,
 
 		routing_method,
 		tag_ids,
@@ -150,7 +144,7 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 		tm_delete
 	) values(
 		?, ?,
-		?, ?, ?, ?,
+		?, ?,
 		?, ?,
 		?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?,
@@ -181,8 +175,6 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 
 		a.Name,
 		a.Detail,
-		a.WebhookURI,
-		a.WebhookMethod,
 
 		a.RoutingMethod,
 		tagIDs,
@@ -341,7 +333,7 @@ func (h *handler) QueueDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // QueueSetBasicInfo sets the queue's basic info.
-func (h *handler) QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookURI, webhookMethod string) error {
+func (h *handler) QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	// prepare
 	q := `
 	update
@@ -349,13 +341,11 @@ func (h *handler) QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, det
 	set
 		name = ?,
 		detail = ?,
-		webhook_uri = ?,
-		webhook_method = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, webhookURI, webhookMethod, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueSetBasicInfo. err: %v", err)
 	}

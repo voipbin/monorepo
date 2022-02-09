@@ -155,17 +155,17 @@ func (mr *MockDBHandlerMockRecorder) QueueRemoveServiceQueueCall(ctx, id, queueC
 }
 
 // QueueSetBasicInfo mocks base method.
-func (m *MockDBHandler) QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookURI, webhookMethod string) error {
+func (m *MockDBHandler) QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueSetBasicInfo", ctx, id, name, detail, webhookURI, webhookMethod)
+	ret := m.ctrl.Call(m, "QueueSetBasicInfo", ctx, id, name, detail)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // QueueSetBasicInfo indicates an expected call of QueueSetBasicInfo.
-func (mr *MockDBHandlerMockRecorder) QueueSetBasicInfo(ctx, id, name, detail, webhookURI, webhookMethod interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) QueueSetBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSetBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).QueueSetBasicInfo), ctx, id, name, detail, webhookURI, webhookMethod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSetBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).QueueSetBasicInfo), ctx, id, name, detail)
 }
 
 // QueueSetRoutingMethod mocks base method.

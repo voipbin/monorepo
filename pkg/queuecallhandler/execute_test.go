@@ -54,8 +54,6 @@ func TestExecute(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
-				WebhookURI:      "test.com",
-				WebhookMethod:   "",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
@@ -82,8 +80,6 @@ func TestExecute(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
-				WebhookURI:      "test.com",
-				WebhookMethod:   "",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
@@ -110,7 +106,7 @@ func TestExecute(t *testing.T) {
 			mockReq.EXPECT().FMV1ActvieFlowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceID, tt.queuecall.ForwardActionID, true).Return(nil)
 			mockDB.EXPECT().QueuecallSetServiceAgentID(gomock.Any(), tt.queuecall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.responseQueuecall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), queuecall.EventTypeQueuecallEntering, tt.responseQueuecall.WebhookURI, tt.responseQueuecall)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallEntering, tt.responseQueuecall)
 
 			h.Execute(ctx, tt.queueCallID)
 		})

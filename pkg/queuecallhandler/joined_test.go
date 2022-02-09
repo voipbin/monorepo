@@ -64,8 +64,6 @@ func TestJoined(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
-				WebhookURI:      "test.com",
-				WebhookMethod:   "",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
@@ -85,8 +83,6 @@ func TestJoined(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
-				WebhookURI:      "test.com",
-				WebhookMethod:   "",
 				Source: cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821021656521",
@@ -111,7 +107,7 @@ func TestJoined(t *testing.T) {
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.queuecall, nil)
 			mockDB.EXPECT().QueuecallSetStatusService(gomock.Any(), tt.queuecall.ID).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecall.ID).Return(tt.queuecall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), queuecall.EventTypeQueuecallServiced, tt.queuecall.WebhookURI, tt.queuecall)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.queuecall.CustomerID, queuecall.EventTypeQueuecallServiced, tt.queuecall)
 
 			duration := getDuration(ctx, tt.responseQueuecall.TMCreate, tt.responseQueuecall.TMService)
 			mockDB.EXPECT().QueueIncreaseTotalServicedCount(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ID, duration)

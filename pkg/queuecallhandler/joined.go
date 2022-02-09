@@ -53,7 +53,7 @@ func (h *queuecallHandler) Joined(ctx context.Context, referenceID, confbridgeID
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallServiced, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallServiced, tmp)
 
 	// get wait duration and increase the serviced count
 	waitDuration := getDuration(ctx, qc.TMCreate, qc.TMService)

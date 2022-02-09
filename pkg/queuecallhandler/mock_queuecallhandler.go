@@ -39,18 +39,18 @@ func (m *MockQueuecallHandler) EXPECT() *MockQueuecallHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockQueuecallHandler) Create(ctx context.Context, customerID, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, flowID, exitActionID, forwardActionID, confbridgeID uuid.UUID, webhookURI, webhookMethod string, source address.Address, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, timeoutWait, timeoutService int) (*queuecall.Queuecall, error) {
+func (m *MockQueuecallHandler) Create(ctx context.Context, customerID, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, flowID, exitActionID, forwardActionID, confbridgeID uuid.UUID, source address.Address, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, timeoutWait, timeoutService int) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, queueID, referenceType, referenceID, flowID, exitActionID, forwardActionID, confbridgeID, webhookURI, webhookMethod, source, routingMethod, tagIDs, timeoutWait, timeoutService)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, queueID, referenceType, referenceID, flowID, exitActionID, forwardActionID, confbridgeID, source, routingMethod, tagIDs, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, customerID, queueID, referenceType, referenceID, flowID, exitActionID, forwardActionID, confbridgeID, webhookURI, webhookMethod, source, routingMethod, tagIDs, timeoutWait, timeoutService interface{}) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, customerID, queueID, referenceType, referenceID, flowID, exitActionID, forwardActionID, confbridgeID, source, routingMethod, tagIDs, timeoutWait, timeoutService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, customerID, queueID, referenceType, referenceID, flowID, exitActionID, forwardActionID, confbridgeID, webhookURI, webhookMethod, source, routingMethod, tagIDs, timeoutWait, timeoutService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, customerID, queueID, referenceType, referenceID, flowID, exitActionID, forwardActionID, confbridgeID, source, routingMethod, tagIDs, timeoutWait, timeoutService)
 }
 
 // Execute mocks base method.

@@ -24,7 +24,7 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
+	// get customer
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	log := logrus.WithFields(logrus.Fields{

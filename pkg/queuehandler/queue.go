@@ -53,7 +53,7 @@ func (h *queueHandler) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 // UpdateBasicInfo updates the queue's basic info.
-func (h *queueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, webhookURI, webhookMethod string) error {
+func (h *queueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "UpdateBasicInfo",
 		"queue_id":     id,
@@ -62,7 +62,7 @@ func (h *queueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, 
 	})
 	log.Debug("Updating the queue's basic info.")
 
-	err := h.db.QueueSetBasicInfo(ctx, id, name, detail, webhookURI, webhookMethod)
+	err := h.db.QueueSetBasicInfo(ctx, id, name, detail)
 	if err != nil {
 		log.Errorf("Could not update the basic info. err: %v", err)
 		return err

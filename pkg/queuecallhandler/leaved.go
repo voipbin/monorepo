@@ -60,7 +60,7 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, queuecall.EventTypeQueuecallDone, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallDone, tmp)
 
 	// calculate the duration and increase the serviced count
 	duration := getDuration(ctx, tmp.TMService, tmp.TMDelete)
