@@ -564,6 +564,8 @@ gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220131015406-68c5d0a1a
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220131015406-68c5d0a1a790/go.mod h1:7Ru9O8isku5tJ/Uv94evoy8RvsK50Qz9XbFEslS7104=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220208193438-0e648b83c246 h1:sa1HQlAdTUQml0ZT3jnnixYCdVi+63kYAVM+gVXGQ5w=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220208193438-0e648b83c246/go.mod h1:+oH1vIf4DBiFKItLozAz9fA0N2xPegzXQZEq7iSANZc=
+gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220209015816-ff5604a5fbd0 h1:nRZa+5J2mSOpiJ0GexcwaIFHRp3ELqtMb2uBLDvkHsg=
+gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220209015816-ff5604a5fbd0/go.mod h1:D/yKhFUGHCa0pENnm35Dwmwwh6S+tKdyuCNoeO6RWcY=
 gitlab.com/voipbin/bin-manager/api-manager.git v0.0.0-20210402144932-b009a9fdec61/go.mod h1:XE6VmmxD4AchDPJOeYpXQ4hwU/F5NkvLEAL8s1sO9jI=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210318185928-279c054cd811/go.mod h1:Skj2uyFiCLVSs6wveSE5HMELruhBm2AlqAMvyZ7ykMo=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20210322014347-b91defb4fa6f/go.mod h1:rFueUC5a6Ak/hZejGBLaZ8PEsKoH0kXnvHFAF0If0a0=

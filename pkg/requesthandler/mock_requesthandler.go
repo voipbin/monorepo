@@ -271,11 +271,12 @@ func (mr *MockRequestHandlerMockRecorder) AMV1TagCreate(ctx, customerID, name, d
 }
 
 // AMV1TagDelete mocks base method.
-func (m *MockRequestHandler) AMV1TagDelete(ctx context.Context, id uuid.UUID) error {
+func (m *MockRequestHandler) AMV1TagDelete(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AMV1TagDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*tag.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AMV1TagDelete indicates an expected call of AMV1TagDelete.
@@ -315,11 +316,12 @@ func (mr *MockRequestHandlerMockRecorder) AMV1TagGets(ctx, customerID, pageToken
 }
 
 // AMV1TagUpdate mocks base method.
-func (m *MockRequestHandler) AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) error {
+func (m *MockRequestHandler) AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AMV1TagUpdate", ctx, id, name, detail)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*tag.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AMV1TagUpdate indicates an expected call of AMV1TagUpdate.

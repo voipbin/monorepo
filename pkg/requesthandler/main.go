@@ -240,8 +240,8 @@ type RequestHandler interface {
 	) (*amtag.Tag, error)
 	AMV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
 	AMV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error)
-	AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) error
-	AMV1TagDelete(ctx context.Context, id uuid.UUID) error
+	AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*amtag.Tag, error)
+	AMV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
 
 	// call-manager call
 	CMV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error

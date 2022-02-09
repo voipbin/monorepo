@@ -241,7 +241,8 @@ func TestAMTagDelete(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 
-		response *rabbitmqhandler.Response
+		response  *rabbitmqhandler.Response
+		expectRes *amtag.Tag
 	}{
 		{
 			"normal",
@@ -258,6 +259,10 @@ func TestAMTagDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"f4b44b28-4e79-11ec-be3c-73450ec23a51"}`),
+			},
+			&amtag.Tag{
+				ID: uuid.FromStringOrNil("f4b44b28-4e79-11ec-be3c-73450ec23a51"),
 			},
 		},
 	}
@@ -267,8 +272,13 @@ func TestAMTagDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.AMV1TagDelete(ctx, tt.id); err != nil {
+			res, err := reqHandler.AMV1TagDelete(ctx, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -292,7 +302,9 @@ func TestAMV1TagUpdate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+
+		response  *rabbitmqhandler.Response
+		expectRes *amtag.Tag
 	}{
 		{
 			"normal",
@@ -308,9 +320,14 @@ func TestAMV1TagUpdate(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
 			},
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"1e60cb12-4e7b-11ec-9d7b-532466c1faf1"}`),
+			},
+			&amtag.Tag{
+				ID: uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
 			},
 		},
 	}
@@ -320,8 +337,13 @@ func TestAMV1TagUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.AMV1TagUpdate(ctx, tt.id, tt.agentName, tt.detail); err != nil {
+			res, err := reqHandler.AMV1TagUpdate(ctx, tt.id, tt.agentName, tt.detail)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
