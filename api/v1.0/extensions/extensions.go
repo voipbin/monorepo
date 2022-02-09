@@ -9,7 +9,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -52,18 +51,8 @@ func extensionsPOST(c *gin.Context) {
 	}
 
 	// create a extension
-	e := &extension.Extension{
-		CustomerID: u.ID,
-		Name:       req.Name,
-		Detail:     req.Detail,
-		DomainID:   req.DomainID,
-
-		Extension: req.Extension,
-		Password:  req.Password,
-	}
-
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	ext, err := serviceHandler.ExtensionCreate(&u, e)
+	ext, err := serviceHandler.ExtensionCreate(&u, req.Extension, req.Password, req.DomainID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -239,16 +228,9 @@ func extensionsIDPUT(c *gin.Context) {
 	}
 	log.Debug("Executing extensionsIDPUT.")
 
-	f := &extension.Extension{
-		ID:       id,
-		Name:     req.Name,
-		Detail:   req.Detail,
-		Password: req.Password,
-	}
-
 	// update
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ExtensionUpdate(&u, f)
+	res, err := serviceHandler.ExtensionUpdate(&u, id, req.Name, req.Detail, req.Password)
 	if err != nil {
 		log.Errorf("Could not update the extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -296,11 +278,12 @@ func extensionsIDDELETE(c *gin.Context) {
 
 	// delete a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.ExtensionDelete(&u, id); err != nil {
+	res, err := serviceHandler.ExtensionDelete(&u, id)
+	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }

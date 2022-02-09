@@ -18,11 +18,11 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -84,18 +84,18 @@ type ServiceHandler interface {
 	CustomerUpdatePermissionIDs(u *cscustomer.Customer, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error)
 
 	// domain handlers
-	DomainCreate(u *cscustomer.Customer, domainName, name, detail string) (*domain.Domain, error)
-	DomainDelete(u *cscustomer.Customer, id uuid.UUID) error
-	DomainGet(u *cscustomer.Customer, id uuid.UUID) (*domain.Domain, error)
-	DomainGets(u *cscustomer.Customer, size uint64, token string) ([]*domain.Domain, error)
-	DomainUpdate(u *cscustomer.Customer, d *domain.Domain) (*domain.Domain, error)
+	DomainCreate(u *cscustomer.Customer, domainName, name, detail string) (*rmdomain.WebhookMessage, error)
+	DomainDelete(u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error)
+	DomainGet(u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error)
+	DomainGets(u *cscustomer.Customer, size uint64, token string) ([]*rmdomain.WebhookMessage, error)
+	DomainUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*rmdomain.WebhookMessage, error)
 
 	// extension handlers
-	ExtensionCreate(u *cscustomer.Customer, e *extension.Extension) (*extension.Extension, error)
-	ExtensionDelete(u *cscustomer.Customer, id uuid.UUID) error
-	ExtensionGet(u *cscustomer.Customer, id uuid.UUID) (*extension.Extension, error)
-	ExtensionGets(u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*extension.Extension, error)
-	ExtensionUpdate(u *cscustomer.Customer, d *extension.Extension) (*extension.Extension, error)
+	ExtensionCreate(u *cscustomer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.WebhookMessage, error)
+	ExtensionDelete(u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
+	ExtensionGet(u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
+	ExtensionGets(u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error)
+	ExtensionUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
 
 	// flow handlers
 	FlowCreate(u *cscustomer.Customer, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)

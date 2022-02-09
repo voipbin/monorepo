@@ -1984,11 +1984,7 @@
         "domain.Domain": {
             "type": "object",
             "properties": {
-                "customer_id": {
-                    "type": "string"
-                },
                 "detail": {
-                    "description": "Detail",
                     "type": "string"
                 },
                 "domain_name": {
@@ -1998,19 +1994,15 @@
                     "type": "string"
                 },
                 "name": {
-                    "description": "Name",
                     "type": "string"
                 },
                 "tm_create": {
-                    "description": "Created timestamp.",
                     "type": "string"
                 },
                 "tm_delete": {
-                    "description": "Deleted timestamp.",
                     "type": "string"
                 },
                 "tm_update": {
-                    "description": "Updated timestamp.",
                     "type": "string"
                 }
             }
@@ -2018,9 +2010,6 @@
         "extension.Extension": {
             "type": "object",
             "properties": {
-                "customer_id": {
-                    "type": "string"
-                },
                 "detail": {
                     "type": "string"
                 },
@@ -2034,9 +2023,6 @@
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 },
                 "tm_create": {
@@ -2321,7 +2307,7 @@
                     "type": "string"
                 },
                 "permission": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "ring_method": {
                     "type": "string"
@@ -2333,12 +2319,6 @@
                     }
                 },
                 "username": {
-                    "type": "string"
-                },
-                "webhook_method": {
-                    "type": "string"
-                },
-                "webhook_uri": {
                     "type": "string"
                 }
             }
@@ -2624,10 +2604,7 @@
                     "type": "string"
                 },
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.Domain"
-                    }
+                    "type": "string"
                 }
             }
         },
@@ -2699,10 +2676,7 @@
                     "type": "string"
                 },
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/tag.Tag"
-                    }
+                    "type": "string"
                 }
             }
         },
