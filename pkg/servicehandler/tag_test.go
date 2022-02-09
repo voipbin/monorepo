@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -33,7 +32,7 @@ func TestTagCreate(t *testing.T) {
 		detail   string
 
 		response  *amtag.Tag
-		expectRes *tag.Tag
+		expectRes *amtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -46,7 +45,7 @@ func TestTagCreate(t *testing.T) {
 			&amtag.Tag{
 				ID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			},
-			&tag.Tag{
+			&amtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			},
 		},
@@ -87,7 +86,7 @@ func TestTagGets(t *testing.T) {
 		token    string
 
 		response  []amtag.Tag
-		expectRes []*tag.Tag
+		expectRes []*amtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -102,7 +101,7 @@ func TestTagGets(t *testing.T) {
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
-			[]*tag.Tag{
+			[]*amtag.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
@@ -124,7 +123,7 @@ func TestTagGets(t *testing.T) {
 					ID: uuid.FromStringOrNil("c0f620ee-4fbf-11ec-87b2-7372cbac1bb0"),
 				},
 			},
-			[]*tag.Tag{
+			[]*amtag.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
@@ -170,7 +169,7 @@ func TestTagGet(t *testing.T) {
 		tagID    uuid.UUID
 
 		response  *amtag.Tag
-		expectRes *tag.Tag
+		expectRes *amtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -183,7 +182,7 @@ func TestTagGet(t *testing.T) {
 				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&tag.Tag{
+			&amtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 			},
 		},
@@ -224,7 +223,7 @@ func TestTagDelete(t *testing.T) {
 		tagID    uuid.UUID
 
 		resTagGet *amtag.Tag
-		expectRes *tag.Tag
+		expectRes *amtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -237,7 +236,7 @@ func TestTagDelete(t *testing.T) {
 				ID:         uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&tag.Tag{
+			&amtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 			},
 		},
@@ -247,10 +246,15 @@ func TestTagDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
-			mockReq.EXPECT().AMV1TagDelete(gomock.Any(), tt.tagID).Return(nil)
+			mockReq.EXPECT().AMV1TagDelete(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
 
-			if err := h.TagDelete(tt.customer, tt.tagID); err != nil {
+			res, err := h.TagDelete(tt.customer, tt.tagID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -276,7 +280,7 @@ func TestTagUpdate(t *testing.T) {
 		detail   string
 
 		resTagGet *amtag.Tag
-		expectRes *tag.Tag
+		expectRes *amtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -291,7 +295,7 @@ func TestTagUpdate(t *testing.T) {
 				ID:         uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&tag.Tag{
+			&amtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 			},
 		},
@@ -301,10 +305,15 @@ func TestTagUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
-			mockReq.EXPECT().AMV1TagUpdate(gomock.Any(), tt.tagID, tt.tagName, tt.detail).Return(nil)
+			mockReq.EXPECT().AMV1TagUpdate(gomock.Any(), tt.tagID, tt.tagName, tt.detail).Return(tt.resTagGet, nil)
 
-			if err := h.TagUpdate(tt.customer, tt.tagID, tt.tagName, tt.detail); err != nil {
+			res, err := h.TagUpdate(tt.customer, tt.tagID, tt.tagName, tt.detail)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

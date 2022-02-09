@@ -10,11 +10,11 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	availablenumber "gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	domain "gitlab.com/voipbin/bin-manager/api-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/api-manager.git/models/extension"
 	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
-	tag "gitlab.com/voipbin/bin-manager/api-manager.git/models/tag"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
@@ -50,26 +50,27 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 }
 
 // AgentCreate mocks base method.
-func (m *MockServiceHandler) AgentCreate(u *customer.Customer, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission uint64, tagIDs []uuid.UUID, addresses []address.Address) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentCreate(u *customer.Customer, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCreate", u, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
+	ret := m.ctrl.Call(m, "AgentCreate", u, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentCreate indicates an expected call of AgentCreate.
-func (mr *MockServiceHandlerMockRecorder) AgentCreate(u, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AgentCreate(u, username, password, name, detail, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockServiceHandler)(nil).AgentCreate), u, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockServiceHandler)(nil).AgentCreate), u, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 }
 
 // AgentDelete mocks base method.
-func (m *MockServiceHandler) AgentDelete(u *customer.Customer, agentID uuid.UUID) error {
+func (m *MockServiceHandler) AgentDelete(u *customer.Customer, agentID uuid.UUID) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentDelete", u, agentID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentDelete indicates an expected call of AgentDelete.
@@ -124,11 +125,12 @@ func (mr *MockServiceHandlerMockRecorder) AgentLogin(customerID, username, passw
 }
 
 // AgentUpdate mocks base method.
-func (m *MockServiceHandler) AgentUpdate(u *customer.Customer, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
+func (m *MockServiceHandler) AgentUpdate(u *customer.Customer, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdate", u, agentID, name, detail, ringMethod)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdate indicates an expected call of AgentUpdate.
@@ -138,11 +140,12 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdate(u, agentID, name, detail, 
 }
 
 // AgentUpdateAddresses mocks base method.
-func (m *MockServiceHandler) AgentUpdateAddresses(u *customer.Customer, agentID uuid.UUID, addresses []address.Address) error {
+func (m *MockServiceHandler) AgentUpdateAddresses(u *customer.Customer, agentID uuid.UUID, addresses []address.Address) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateAddresses", u, agentID, addresses)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdateAddresses indicates an expected call of AgentUpdateAddresses.
@@ -152,11 +155,12 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdateAddresses(u, agentID, addre
 }
 
 // AgentUpdateStatus mocks base method.
-func (m *MockServiceHandler) AgentUpdateStatus(u *customer.Customer, agentID uuid.UUID, status agent.Status) error {
+func (m *MockServiceHandler) AgentUpdateStatus(u *customer.Customer, agentID uuid.UUID, status agent.Status) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateStatus", u, agentID, status)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdateStatus indicates an expected call of AgentUpdateStatus.
@@ -166,11 +170,12 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdateStatus(u, agentID, status i
 }
 
 // AgentUpdateTagIDs mocks base method.
-func (m *MockServiceHandler) AgentUpdateTagIDs(u *customer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) error {
+func (m *MockServiceHandler) AgentUpdateTagIDs(u *customer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateTagIDs", u, agentID, tagIDs)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdateTagIDs indicates an expected call of AgentUpdateTagIDs.
@@ -919,10 +924,10 @@ func (mr *MockServiceHandlerMockRecorder) RecordingfileGet(u, id interface{}) *g
 }
 
 // TagCreate mocks base method.
-func (m *MockServiceHandler) TagCreate(u *customer.Customer, name, detail string) (*tag.Tag, error) {
+func (m *MockServiceHandler) TagCreate(u *customer.Customer, name, detail string) (*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagCreate", u, name, detail)
-	ret0, _ := ret[0].(*tag.Tag)
+	ret0, _ := ret[0].(*tag.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -934,11 +939,12 @@ func (mr *MockServiceHandlerMockRecorder) TagCreate(u, name, detail interface{})
 }
 
 // TagDelete mocks base method.
-func (m *MockServiceHandler) TagDelete(u *customer.Customer, id uuid.UUID) error {
+func (m *MockServiceHandler) TagDelete(u *customer.Customer, id uuid.UUID) (*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagDelete", u, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*tag.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // TagDelete indicates an expected call of TagDelete.
@@ -948,10 +954,10 @@ func (mr *MockServiceHandlerMockRecorder) TagDelete(u, id interface{}) *gomock.C
 }
 
 // TagGet mocks base method.
-func (m *MockServiceHandler) TagGet(u *customer.Customer, id uuid.UUID) (*tag.Tag, error) {
+func (m *MockServiceHandler) TagGet(u *customer.Customer, id uuid.UUID) (*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagGet", u, id)
-	ret0, _ := ret[0].(*tag.Tag)
+	ret0, _ := ret[0].(*tag.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -963,10 +969,10 @@ func (mr *MockServiceHandlerMockRecorder) TagGet(u, id interface{}) *gomock.Call
 }
 
 // TagGets mocks base method.
-func (m *MockServiceHandler) TagGets(u *customer.Customer, size uint64, token string) ([]*tag.Tag, error) {
+func (m *MockServiceHandler) TagGets(u *customer.Customer, size uint64, token string) ([]*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagGets", u, size, token)
-	ret0, _ := ret[0].([]*tag.Tag)
+	ret0, _ := ret[0].([]*tag.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -978,11 +984,12 @@ func (mr *MockServiceHandlerMockRecorder) TagGets(u, size, token interface{}) *g
 }
 
 // TagUpdate mocks base method.
-func (m *MockServiceHandler) TagUpdate(u *customer.Customer, id uuid.UUID, name, detail string) error {
+func (m *MockServiceHandler) TagUpdate(u *customer.Customer, id uuid.UUID, name, detail string) (*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagUpdate", u, id, name, detail)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*tag.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // TagUpdate indicates an expected call of TagUpdate.

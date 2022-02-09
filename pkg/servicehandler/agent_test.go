@@ -36,7 +36,7 @@ func TestAgentCreate(t *testing.T) {
 		webhookMethod string
 		webhookURI    string
 		ringMethod    amagent.RingMethod
-		permission    uint64
+		permission    amagent.Permission
 		tagIDs        []uuid.UUID
 		addresses     []cmaddress.Address
 
@@ -94,9 +94,9 @@ func TestAgentCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.customer.ID, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, amagent.RingMethod(tt.ringMethod), amagent.Permission(tt.permission), tt.tagIDs, tt.addresses).Return(tt.response, nil)
+			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.customer.ID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.response, nil)
 
-			res, err := h.AgentCreate(tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
+			res, err := h.AgentCreate(tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -467,9 +467,10 @@ func TestAgentDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentDelete(gomock.Any(), tt.agentID).Return(nil)
+			mockReq.EXPECT().AMV1AgentDelete(gomock.Any(), tt.agentID).Return(&amagent.Agent{}, nil)
 
-			if err := h.AgentDelete(tt.customer, tt.agentID); err != nil {
+			_, err := h.AgentDelete(tt.customer, tt.agentID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -546,6 +547,8 @@ func TestAgentUpdate(t *testing.T) {
 		ringMethod amagent.RingMethod
 
 		resAgentGet *amagent.Agent
+		resAgentPut *amagent.Agent
+		expectRes   *amagent.WebhookMessage
 	}{
 		{
 			"normal",
@@ -561,6 +564,13 @@ func TestAgentUpdate(t *testing.T) {
 				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
+			},
+			&amagent.WebhookMessage{
+				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+			},
 		},
 	}
 
@@ -568,11 +578,17 @@ func TestAgentUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentUpdate(gomock.Any(), tt.agentID, tt.agentName, tt.detail, string(tt.ringMethod)).Return(nil)
+			mockReq.EXPECT().AMV1AgentUpdate(gomock.Any(), tt.agentID, tt.agentName, tt.detail, tt.ringMethod).Return(tt.resAgentPut, nil)
 
-			if err := h.AgentUpdate(tt.customer, tt.agentID, tt.agentName, tt.detail, tt.ringMethod); err != nil {
+			res, err := h.AgentUpdate(tt.customer, tt.agentID, tt.agentName, tt.detail, tt.ringMethod)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }
@@ -621,9 +637,10 @@ func TestAgentUpdateAddresses(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentUpdateAddresses(gomock.Any(), tt.agentID, tt.addresses).Return(nil)
+			mockReq.EXPECT().AMV1AgentUpdateAddresses(gomock.Any(), tt.agentID, tt.addresses).Return(&amagent.Agent{}, nil)
 
-			if err := h.AgentUpdateAddresses(tt.customer, tt.agentID, tt.addresses); err != nil {
+			_, err := h.AgentUpdateAddresses(tt.customer, tt.agentID, tt.addresses)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -670,9 +687,10 @@ func TestAgentUpdateTagIDs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentUpdateTagIDs(gomock.Any(), tt.agentID, tt.tagIDs).Return(nil)
+			mockReq.EXPECT().AMV1AgentUpdateTagIDs(gomock.Any(), tt.agentID, tt.tagIDs).Return(&amagent.Agent{}, nil)
 
-			if err := h.AgentUpdateTagIDs(tt.customer, tt.agentID, tt.tagIDs); err != nil {
+			_, err := h.AgentUpdateTagIDs(tt.customer, tt.agentID, tt.tagIDs)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -718,9 +736,10 @@ func TestAgentUpdateStatus(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentUpdateStatus(gomock.Any(), tt.agentID, amagent.Status(tt.status)).Return(nil)
+			mockReq.EXPECT().AMV1AgentUpdateStatus(gomock.Any(), tt.agentID, amagent.Status(tt.status)).Return(&amagent.Agent{}, nil)
 
-			if err := h.AgentUpdateStatus(tt.customer, tt.agentID, tt.status); err != nil {
+			_, err := h.AgentUpdateStatus(tt.customer, tt.agentID, tt.status)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

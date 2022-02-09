@@ -56,7 +56,7 @@ func agentsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create
-	res, err := serviceHandler.AgentCreate(&u, req.Username, req.Password, req.Name, req.Detail, req.WebhookMethod, req.WebhookURI, req.RingMethod, uint64(req.Permission), req.TagIDs, req.Addresses)
+	res, err := serviceHandler.AgentCreate(&u, req.Username, req.Password, req.Name, req.Detail, req.RingMethod, req.Permission, req.TagIDs, req.Addresses)
 	if err != nil {
 		log.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -109,14 +109,14 @@ func agentsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	err := serviceHandler.AgentDelete(&u, id)
+	res, err := serviceHandler.AgentDelete(&u, id)
 	if err != nil {
 		log.Infof("Could not get the delete the agent info. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // agentIDGet handles GET /agents/<agent-id> request.
@@ -297,13 +297,14 @@ func agentsIDPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.AgentUpdate(&u, id, req.Name, req.Detail, req.RingMethod); err != nil {
+	res, err := serviceHandler.AgentUpdate(&u, id, req.Name, req.Detail, req.RingMethod)
+	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // agentsIDAddressesPUT handles PUT /agents/{id}/Addresses request.
@@ -351,13 +352,14 @@ func agentsIDAddressesPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.AgentUpdateAddresses(&u, id, req.Addresses); err != nil {
+	res, err := serviceHandler.AgentUpdateAddresses(&u, id, req.Addresses)
+	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // agentsIDTagIDsPUT handles PUT /agents/{id}/tag_ids request.
@@ -404,13 +406,14 @@ func agentsIDTagIDsPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.AgentUpdateTagIDs(&u, id, req.TagIDs); err != nil {
+	res, err := serviceHandler.AgentUpdateTagIDs(&u, id, req.TagIDs)
+	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // agentsIDStatusPUT handles PUT /agents/{id}/status request.
@@ -459,11 +462,12 @@ func agentsIDStatusPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.AgentUpdateStatus(&u, id, req.Status); err != nil {
+	res, err := serviceHandler.AgentUpdateStatus(&u, id, req.Status)
+	if err != nil {
 		log.Errorf("Could not update the agent's status. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
