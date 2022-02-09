@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
@@ -22,9 +23,11 @@ func TestExtensionCreate(t *testing.T) {
 
 	mockDBAst := dbhandler.NewMockDBHandler(mc)
 	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	h := &extensionHandler{
-		dbAst: mockDBAst,
-		dbBin: mockDBBin,
+		dbAst:         mockDBAst,
+		dbBin:         mockDBBin,
+		notifyHandler: mockNotify,
 	}
 
 	type test struct {
@@ -78,6 +81,7 @@ func TestExtensionCreate(t *testing.T) {
 		mockDBAst.EXPECT().AstEndpointCreate(gomock.Any(), tt.endpoint).Return(nil)
 		mockDBBin.EXPECT().ExtensionCreate(gomock.Any(), gomock.Any()).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), gomock.Any()).Return(tt.ext, nil)
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), extension.EventTypeExtensionCreated, tt.ext)
 		_, err := h.ExtensionCreate(ctx, tt.ext)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -91,9 +95,11 @@ func TestExtensionUpdate(t *testing.T) {
 
 	mockDBAst := dbhandler.NewMockDBHandler(mc)
 	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	h := &extensionHandler{
-		dbAst: mockDBAst,
-		dbBin: mockDBBin,
+		dbAst:         mockDBAst,
+		dbBin:         mockDBBin,
+		notifyHandler: mockNotify,
 	}
 
 	type test struct {
@@ -148,8 +154,7 @@ func TestExtensionUpdate(t *testing.T) {
 		mockDBAst.EXPECT().AstAuthUpdate(gomock.Any(), tt.updateAuth).Return(nil)
 		mockDBBin.EXPECT().ExtensionUpdate(gomock.Any(), tt.updateExt)
 		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.ext.ID).Return(tt.updatedExt, nil)
-		// mockDBBin.EXPECT().DomainUpdate(gomock.Any(), tt.domain)
-		// mockDBBin.EXPECT().DomainGet(gomock.Any(), tt.domain.ID)
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), extension.EventTypeExtensionUpdated, tt.updateExt)
 		_, err := h.ExtensionUpdate(ctx, tt.updateExt)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -163,19 +168,35 @@ func TestExtensionDelete(t *testing.T) {
 
 	mockDBAst := dbhandler.NewMockDBHandler(mc)
 	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	h := &extensionHandler{
-		dbAst: mockDBAst,
-		dbBin: mockDBBin,
+		dbAst:         mockDBAst,
+		dbBin:         mockDBBin,
+		notifyHandler: mockNotify,
 	}
 
 	type test struct {
 		name string
 		ext  *extension.Extension
+
+		expectRes *extension.Extension
 	}
 
 	tests := []test{
 		{
 			"test normal",
+			&extension.Extension{
+				ID:         uuid.FromStringOrNil("4a6b7618-6f46-11eb-a2fb-1f7595db4195"),
+				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				Name:       "test name",
+				Detail:     "test detail",
+				AuthID:     "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
+				EndpointID: "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
+				AORID:      "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
+				Extension:  "4a6b7618-6f46-11eb-a2fb-1f7595db4195",
+				Password:   "test password",
+			},
+
 			&extension.Extension{
 				ID:         uuid.FromStringOrNil("4a6b7618-6f46-11eb-a2fb-1f7595db4195"),
 				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
@@ -198,8 +219,16 @@ func TestExtensionDelete(t *testing.T) {
 		mockDBAst.EXPECT().AstEndpointDelete(ctx, tt.ext.EndpointID).Return(nil)
 		mockDBAst.EXPECT().AstAuthDelete(ctx, tt.ext.AuthID).Return(nil)
 		mockDBAst.EXPECT().AstAORDelete(ctx, tt.ext.AORID).Return(nil)
-		if err := h.ExtensionDelete(ctx, tt.ext.ID); err != nil {
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
+		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionDeleted, tt.ext)
+
+		res, err := h.ExtensionDelete(ctx, tt.ext.ID)
+		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if !reflect.DeepEqual(tt.expectRes, res) {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 		}
 	}
 }

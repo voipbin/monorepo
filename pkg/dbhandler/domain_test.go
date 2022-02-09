@@ -236,7 +236,7 @@ func TestDomainGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			domains, err := h.DomainGetsByCustomerID(ctx, tt.customerID, getCurTime(), tt.limit)
+			domains, err := h.DomainGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -252,15 +252,20 @@ func TestDomainGetsByCustomerID(t *testing.T) {
 	}
 }
 
-func TestDomainUpdate(t *testing.T) {
+func TestDomainUpdateBasicInfo(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	type test struct {
-		name         string
-		domain       *domain.Domain
+		name   string
+		domain *domain.Domain
+
+		id      uuid.UUID
+		domainN string
+		detail  string
+
 		updateDomain *domain.Domain
 		expectDomain *domain.Domain
 	}
@@ -273,6 +278,11 @@ func TestDomainUpdate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("77030aee-7fec-11ec-9fc4-0fa126e45204"),
 				DomainName: "8e11791c-6eec-11eb-9d29-835387182e69.sip.voipbin.net",
 			},
+
+			uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
+			"update name",
+			"update detail",
+
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("8e11791c-6eec-11eb-9d29-835387182e69"),
 				CustomerID: uuid.FromStringOrNil("77030aee-7fec-11ec-9fc4-0fa126e45204"),
@@ -301,7 +311,7 @@ func TestDomainUpdate(t *testing.T) {
 			}
 
 			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
-			if err := h.DomainUpdate(ctx, tt.updateDomain); err != nil {
+			if err := h.DomainUpdateBasicInfo(ctx, tt.id, tt.domainN, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

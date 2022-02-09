@@ -75,20 +75,20 @@ func (h *handler) DomainCreate(ctx context.Context, b *domain.Domain) error {
 		b.Detail,
 		b.DomainName,
 
-		getCurTime(),
+		GetCurTime(),
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. DomainCreate. err: %v", err)
 	}
 
 	// update the cache
-	h.DomainUpdateToCache(ctx, b.ID)
+	h.domainUpdateToCache(ctx, b.ID)
 
 	return nil
 }
 
-// DomainGetFromDB returns Domain from the DB.
-func (h *handler) DomainGetFromDB(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
+// domainGetFromDB returns Domain from the DB.
+func (h *handler) domainGetFromDB(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
 	q := fmt.Sprintf("%s where id = ? and tm_delete is null", domainSelect)
 
@@ -110,23 +110,23 @@ func (h *handler) DomainGetFromDB(ctx context.Context, id uuid.UUID) (*domain.Do
 	return res, nil
 }
 
-// DomainUpdateToCache gets the AstAuth from the DB and update the cache.
-func (h *handler) DomainUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// domainUpdateToCache gets the AstAuth from the DB and update the cache.
+func (h *handler) domainUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.DomainGetFromDB(ctx, id)
+	res, err := h.domainGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.DomainSetToCache(ctx, res); err != nil {
+	if err := h.domainSetToCache(ctx, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// DomainSetToCache sets the given Domain to the cache
-func (h *handler) DomainSetToCache(ctx context.Context, e *domain.Domain) error {
+// domainSetToCache sets the given Domain to the cache
+func (h *handler) domainSetToCache(ctx context.Context, e *domain.Domain) error {
 	if err := h.cache.DomainSet(ctx, e); err != nil {
 		return err
 	}
@@ -134,8 +134,8 @@ func (h *handler) DomainSetToCache(ctx context.Context, e *domain.Domain) error 
 	return nil
 }
 
-// DomainGetFromCache returns Domain from the cache.
-func (h *handler) DomainGetFromCache(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
+// dDomainGetFromCache returns Domain from the cache.
+func (h *handler) dDomainGetFromCache(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
 	// get from cache
 	res, err := h.cache.DomainGet(ctx, id)
@@ -146,8 +146,8 @@ func (h *handler) DomainGetFromCache(ctx context.Context, id uuid.UUID) (*domain
 	return res, nil
 }
 
-// DomainDeleteFromCache deletes Domain from the cache.
-func (h *handler) DomainDeleteFromCache(ctx context.Context, id uuid.UUID) error {
+// domainDeleteFromCache deletes Domain from the cache.
+func (h *handler) domainDeleteFromCache(ctx context.Context, id uuid.UUID) error {
 
 	// get from cache
 	if err := h.cache.DomainDel(ctx, id); err != nil {
@@ -157,8 +157,8 @@ func (h *handler) DomainDeleteFromCache(ctx context.Context, id uuid.UUID) error
 	return nil
 }
 
-// DomainUpdate updates new Domain record.
-func (h *handler) DomainUpdate(ctx context.Context, b *domain.Domain) error {
+// DomainUpdateBasicInfo updates new Domain record.
+func (h *handler) DomainUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	q := `
 	update domains set
 		name = ?,
@@ -169,17 +169,17 @@ func (h *handler) DomainUpdate(ctx context.Context, b *domain.Domain) error {
 	`
 
 	_, err := h.db.Exec(q,
-		b.Name,
-		b.Detail,
-		getCurTime(),
-		b.ID.Bytes(),
+		name,
+		detail,
+		GetCurTime(),
+		id.Bytes(),
 	)
 	if err != nil {
-		return fmt.Errorf("could not execute. DomainUpdate. err: %v", err)
+		return fmt.Errorf("could not execute. DomainUpdateBasicInfo. err: %v", err)
 	}
 
 	// update the cache
-	h.DomainUpdateToCache(ctx, b.ID)
+	h.domainUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -187,18 +187,18 @@ func (h *handler) DomainUpdate(ctx context.Context, b *domain.Domain) error {
 // DomainGet returns Domain.
 func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
-	res, err := h.DomainGetFromCache(ctx, id)
+	res, err := h.dDomainGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.DomainGetFromDB(ctx, id)
+	res, err = h.domainGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	h.DomainSetToCache(ctx, res)
+	h.domainSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -269,13 +269,13 @@ func (h *handler) DomainDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. DomainDelete. err: %v", err)
 	}
 
 	// delete the cache
-	if err := h.DomainDeleteFromCache(ctx, id); err != nil {
+	if err := h.domainDeleteFromCache(ctx, id); err != nil {
 		return err
 	}
 

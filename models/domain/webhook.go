@@ -1,4 +1,4 @@
-package extension
+package domain
 
 import (
 	"encoding/json"
@@ -10,11 +10,9 @@ import (
 type WebhookMessage struct {
 	ID uuid.UUID `json:"id"`
 
-	Name     string    `json:"name"`
-	Detail   string    `json:"detail"`
-	DomainID uuid.UUID `json:"domain_id"`
-
-	Extension string `json:"extension"`
+	Name       string `json:"name"`
+	Detail     string `json:"detail"`
+	DomainName string `json:"domain_name"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
@@ -22,15 +20,13 @@ type WebhookMessage struct {
 }
 
 // ConvertWebhookMessage converts to the event
-func (h *Extension) ConvertWebhookMessage() *WebhookMessage {
+func (h *Domain) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID: h.ID,
 
-		Name:     h.Name,
-		Detail:   h.Detail,
-		DomainID: h.DomainID,
-
-		Extension: h.Extension,
+		Name:       h.Name,
+		Detail:     h.Detail,
+		DomainName: h.DomainName,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
@@ -39,7 +35,7 @@ func (h *Extension) ConvertWebhookMessage() *WebhookMessage {
 }
 
 // CreateWebhookEvent generates the WebhookEvent
-func (h *Extension) CreateWebhookEvent() ([]byte, error) {
+func (h *Domain) CreateWebhookEvent() ([]byte, error) {
 	e := h.ConvertWebhookMessage()
 
 	m, err := json.Marshal(e)

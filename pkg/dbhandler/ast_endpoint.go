@@ -40,65 +40,6 @@ func (h *handler) astEndpointGetFromRow(row *sql.Rows) (*astendpoint.AstEndpoint
 	return res, nil
 }
 
-// AstEndpointGetFromDB returns AstEndpoint from the DB.
-func (h *handler) AstEndpointGetFromDB(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
-
-	q := fmt.Sprintf("%s where id = ?", astEndpointSelect)
-
-	row, err := h.db.Query(q, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. AstEndpointGetFromDB. err: %v", err)
-	}
-	defer row.Close()
-
-	if !row.Next() {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.astEndpointGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. AstEndpointGetFromDB. err: %v", err)
-	}
-
-	return res, nil
-}
-
-// AstEndpointUpdateToCache gets the AstEdnpoint from the DB and update the cache.
-func (h *handler) AstEndpointUpdateToCache(ctx context.Context, id string) error {
-
-	res, err := h.AstEndpointGetFromDB(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	if err := h.AstEndpointSetToCache(ctx, res); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AstEdnpointSetToCache sets the given AstEndpoint to the cache
-func (h *handler) AstEndpointSetToCache(ctx context.Context, ednpoint *astendpoint.AstEndpoint) error {
-	if err := h.cache.AstEndpointSet(ctx, ednpoint); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AstEndpointGetFromCache returns AstEndpoint from the cache.
-func (h *handler) AstEndpointGetFromCache(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
-
-	// get from cache
-	res, err := h.cache.AstEndpointGet(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
 // AstEndpointCreate creates new asterisk-endpoint record.
 func (h *handler) AstEndpointCreate(ctx context.Context, b *astendpoint.AstEndpoint) error {
 	q := `insert into ps_endpoints(
@@ -131,26 +72,85 @@ func (h *handler) AstEndpointCreate(ctx context.Context, b *astendpoint.AstEndpo
 	}
 
 	// update the cache
-	h.AstEndpointUpdateToCache(ctx, *b.ID)
+	h.astEndpointUpdateToCache(ctx, *b.ID)
 
 	return nil
+}
+
+// astEndpointGetFromDB returns AstEndpoint from the DB.
+func (h *handler) astEndpointGetFromDB(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
+
+	q := fmt.Sprintf("%s where id = ?", astEndpointSelect)
+
+	row, err := h.db.Query(q, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AstEndpointGetFromDB. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.astEndpointGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan the row. AstEndpointGetFromDB. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// astEndpointUpdateToCache gets the AstEdnpoint from the DB and update the cache.
+func (h *handler) astEndpointUpdateToCache(ctx context.Context, id string) error {
+
+	res, err := h.astEndpointGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.astEndpointSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AstEdnpointSetToCache sets the given AstEndpoint to the cache
+func (h *handler) astEndpointSetToCache(ctx context.Context, ednpoint *astendpoint.AstEndpoint) error {
+	if err := h.cache.AstEndpointSet(ctx, ednpoint); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// astEndpointGetFromCache returns AstEndpoint from the cache.
+func (h *handler) astEndpointGetFromCache(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
+
+	// get from cache
+	res, err := h.cache.AstEndpointGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // AstEndpointGet returns AstEndpoint.
 func (h *handler) AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error) {
 
-	res, err := h.AstEndpointGetFromCache(ctx, id)
+	res, err := h.astEndpointGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.AstEndpointGetFromDB(ctx, id)
+	res, err = h.astEndpointGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	h.AstEndpointSetToCache(ctx, res)
+	h.astEndpointSetToCache(ctx, res)
 
 	return res, nil
 }

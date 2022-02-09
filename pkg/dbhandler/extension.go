@@ -105,20 +105,20 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 		b.Extension,
 		b.Password,
 
-		getCurTime(),
+		GetCurTime(),
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. ExtensionCreate. err: %v", err)
 	}
 
 	// update the cache
-	h.ExtensionUpdateToCache(ctx, b.ID)
+	h.extensionUpdateToCache(ctx, b.ID)
 
 	return nil
 }
 
-// ExtensionGetFromDB returns Extension from the DB.
-func (h *handler) ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+// extensionGetFromDB returns Extension from the DB.
+func (h *handler) extensionGetFromDB(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 
 	q := fmt.Sprintf("%s where id = ?", extensionSelect)
 
@@ -140,23 +140,23 @@ func (h *handler) ExtensionGetFromDB(ctx context.Context, id uuid.UUID) (*extens
 	return res, nil
 }
 
-// ExtensionUpdateToCache gets the extension from the DB and update the cache.
-func (h *handler) ExtensionUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// extensionUpdateToCache gets the extension from the DB and update the cache.
+func (h *handler) extensionUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.ExtensionGetFromDB(ctx, id)
+	res, err := h.extensionGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.ExtensionSetToCache(ctx, res); err != nil {
+	if err := h.extensionSetToCache(ctx, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ExtensionSetToCache sets the given extension to the cache
-func (h *handler) ExtensionSetToCache(ctx context.Context, e *extension.Extension) error {
+// extensionSetToCache sets the given extension to the cache
+func (h *handler) extensionSetToCache(ctx context.Context, e *extension.Extension) error {
 	if err := h.cache.ExtensionSet(ctx, e); err != nil {
 		return err
 	}
@@ -164,8 +164,8 @@ func (h *handler) ExtensionSetToCache(ctx context.Context, e *extension.Extensio
 	return nil
 }
 
-// ExtensionGetFromCache returns Extension from the cache.
-func (h *handler) ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+// extensionGetFromCache returns Extension from the cache.
+func (h *handler) extensionGetFromCache(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 
 	// get from cache
 	res, err := h.cache.ExtensionGet(ctx, id)
@@ -179,18 +179,18 @@ func (h *handler) ExtensionGetFromCache(ctx context.Context, id uuid.UUID) (*ext
 // ExtensionGet returns extension.
 func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 
-	res, err := h.ExtensionGetFromCache(ctx, id)
+	res, err := h.extensionGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.ExtensionGetFromDB(ctx, id)
+	res, err = h.extensionGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	h.ExtensionSetToCache(ctx, res)
+	h.extensionSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -204,13 +204,13 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ExtensionDelete. err: %v", err)
 	}
 
 	// update the cache
-	h.ExtensionUpdateToCache(ctx, id)
+	h.extensionUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -231,7 +231,7 @@ func (h *handler) ExtensionUpdate(ctx context.Context, b *extension.Extension) e
 		b.Name,
 		b.Detail,
 		b.Password,
-		getCurTime(),
+		GetCurTime(),
 		b.ID.Bytes(),
 	)
 	if err != nil {
@@ -239,7 +239,7 @@ func (h *handler) ExtensionUpdate(ctx context.Context, b *extension.Extension) e
 	}
 
 	// update the cache
-	h.ExtensionUpdateToCache(ctx, b.ID)
+	h.extensionUpdateToCache(ctx, b.ID)
 
 	return nil
 }

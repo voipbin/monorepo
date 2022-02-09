@@ -119,12 +119,12 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// create a exchange for delayed message
 	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
 	}
 
 	// bind a queue with delayed exchange
 	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// receive requests
@@ -132,7 +132,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		for {
 			err := h.rabbitSock.ConsumeRPCOpt(queue, "registrar-manager", false, false, false, h.processRequest)
 			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+				logrus.Errorf("could not consume the request message correctly. err: %v", err)
 			}
 		}
 	}()

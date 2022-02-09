@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
 // ExtensionCreate creates a new extension
@@ -100,6 +101,8 @@ func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *extension.Ext
 		log.Errorf("Could not get created extension. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionCreated, res)
+	promExtensionCreateTotal.Inc()
 
 	return res, nil
 }
@@ -152,63 +155,83 @@ func (h *extensionHandler) ExtensionUpdate(ctx context.Context, e *extension.Ext
 		log.Errorf("Could not get updated extension info. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionUpdated, res)
 
 	return res, nil
 }
 
 // ExtensionDelete deletes a exists extension
-func (h *extensionHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
+func (h *extensionHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 
 	// get extension
 	ext, err := h.dbBin.ExtensionGet(ctx, id)
 	if err != nil {
 		logrus.Errorf("Could not get delete extension info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// delete extension
 	if err := h.dbBin.ExtensionDelete(ctx, ext.ID); err != nil {
 		logrus.Errorf("Could not delete extension. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// delete endpopint
 	if err := h.dbAst.AstEndpointDelete(ctx, ext.EndpointID); err != nil {
 		logrus.Errorf("Could not delete endpoint. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// delete auth
 	if err := h.dbAst.AstAuthDelete(ctx, ext.AuthID); err != nil {
 		logrus.Errorf("Could not delete auth info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// delete aor
 	if err := h.dbAst.AstAORDelete(ctx, ext.AORID); err != nil {
 		logrus.Errorf("Could not delete aor info. err: %v", err)
-		return err
+		return nil, err
 	}
 	logrus.Debugf("Deleted extension. extension: %s", id)
 
-	return nil
+	res, err := h.dbBin.ExtensionGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionDeleted, res)
+	promExtensionDeleteTotal.Inc()
+
+	return res, nil
 }
 
 // ExtensionDelete deletes a exists extension
-func (h *extensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) error {
+func (h *extensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":      "ExtensionDeleteByDomainID",
+			"domain_id": domainID,
+		},
+	)
+
 	// get extensions
-	exts, err := h.ExtensionGetsByDomainID(ctx, domainID, getCurTime(), 1000)
+	exts, err := h.ExtensionGetsByDomainID(ctx, domainID, dbhandler.GetCurTime(), 1000)
 	if err != nil {
 		logrus.Errorf("Could not get delete extensions")
-		return err
+		return nil, err
 	}
 
 	// delete extensions
+	res := []*extension.Extension{}
 	for _, ext := range exts {
-		h.ExtensionDelete(ctx, ext.ID)
+		tmp, err := h.ExtensionDelete(ctx, ext.ID)
+		if err != nil {
+			log.Errorf("Could not delete the extension. extension_id: %s, err: %v", tmp.ID, err)
+		}
+		res = append(res, tmp)
 	}
 
-	return nil
+	return res, nil
 }
 
 // ExtensionGetsByDomainID returns list of extensions

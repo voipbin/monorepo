@@ -202,7 +202,7 @@ func TestExtensionGetsByDomainID(t *testing.T) {
 				}
 			}
 
-			exts, err := h.ExtensionGetsByDomainID(ctx, tt.domainID, getCurTime(), tt.limit)
+			exts, err := h.ExtensionGetsByDomainID(ctx, tt.domainID, GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

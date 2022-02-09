@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -30,23 +29,15 @@ func (h *listenHandler) processV1DomainsPost(m *rabbitmqhandler.Request) (*rabbi
 		return simpleResponse(400), nil
 	}
 
-	// create a new domain
-	tmpDomain := &domain.Domain{
-		CustomerID: reqData.CustomerID,
-		Name:       reqData.Name,
-		Detail:     reqData.Detail,
-		DomainName: reqData.DomainName,
-	}
-
-	d, err := h.domainHandler.DomainCreate(ctx, tmpDomain)
+	tmp, err := h.domainHandler.Create(ctx, reqData.CustomerID, reqData.DomainName, reqData.Name, reqData.Detail)
 	if err != nil {
 		logrus.Errorf("Could not create a new domain correctly. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(d)
+	data, err := json.Marshal(tmp)
 	if err != nil {
-		logrus.Errorf("Could not marshal the response message. message: %v, err: %v", d, err)
+		logrus.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 
@@ -72,7 +63,7 @@ func (h *listenHandler) processV1DomainsIDGet(req *rabbitmqhandler.Request) (*ra
 	tmpVals := strings.Split(u.Path, "/")
 	domainID := uuid.FromStringOrNil(tmpVals[3])
 
-	domain, err := h.domainHandler.DomainGet(ctx, domainID)
+	domain, err := h.domainHandler.Get(ctx, domainID)
 	if err != nil {
 		logrus.Errorf("Could not get domain info. err: %v", err)
 		return nil, err
@@ -104,7 +95,7 @@ func (h *listenHandler) processV1DomainsIDPut(req *rabbitmqhandler.Request) (*ra
 
 	// "/v1/domains/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
 	tmpVals := strings.Split(u.Path, "/")
-	domainID := uuid.FromStringOrNil(tmpVals[3])
+	id := uuid.FromStringOrNil(tmpVals[3])
 
 	var reqData request.V1DataDomainsIDPut
 	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
@@ -112,14 +103,7 @@ func (h *listenHandler) processV1DomainsIDPut(req *rabbitmqhandler.Request) (*ra
 		return simpleResponse(400), nil
 	}
 
-	// create a update domain info
-	tmpDomain := &domain.Domain{
-		ID:     domainID,
-		Name:   reqData.Name,
-		Detail: reqData.Detail,
-	}
-
-	domain, err := h.domainHandler.DomainUpdate(ctx, tmpDomain)
+	domain, err := h.domainHandler.Update(ctx, id, reqData.Name, reqData.Detail)
 	if err != nil {
 		logrus.Errorf("Could not get domain info. err: %v", err)
 		return nil, err
@@ -153,13 +137,22 @@ func (h *listenHandler) processV1DomainsIDDelete(req *rabbitmqhandler.Request) (
 	tmpVals := strings.Split(u.Path, "/")
 	domainID := uuid.FromStringOrNil(tmpVals[3])
 
-	if err := h.domainHandler.DomainDelete(ctx, domainID); err != nil {
+	tmp, err := h.domainHandler.Delete(ctx, domainID)
+	if err != nil {
 		logrus.Errorf("Could not get domain info. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

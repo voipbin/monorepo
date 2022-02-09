@@ -28,8 +28,13 @@ func TestProcessV1DomainsPost(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		reqDomain *domain.Domain
+		name string
+
+		customerID uuid.UUID
+		domainName string
+		domainN    string
+		detail     string
+
 		resDomain *domain.Domain
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
@@ -38,10 +43,12 @@ func TestProcessV1DomainsPost(t *testing.T) {
 	tests := []test{
 		{
 			"empty addresses",
-			&domain.Domain{
-				CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
-				DomainName: "0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net",
-			},
+
+			uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
+			"0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net",
+			"test name",
+			"test detail",
+
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("1744ccb4-6e13-11eb-b08d-bb42431b2fb3"),
 				CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
@@ -51,7 +58,7 @@ func TestProcessV1DomainsPost(t *testing.T) {
 				URI:      "/v1/domains",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c", "domain_name": "0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net"}`),
+				Data:     []byte(`{"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c", "name": "test name", "detail": "test detail", "domain_name": "0229f50c-6e13-11eb-90cd-e7faf83c6884.sip.voipbin.net"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -64,7 +71,7 @@ func TestProcessV1DomainsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDomain.EXPECT().DomainCreate(gomock.Any(), tt.reqDomain).Return(tt.resDomain, nil)
+			mockDomain.EXPECT().Create(gomock.Any(), tt.customerID, tt.domainName, tt.domainN, tt.detail).Return(tt.resDomain, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -182,6 +189,11 @@ func TestProcessV1DomainsPut(t *testing.T) {
 	type test struct {
 		name      string
 		reqDomain *domain.Domain
+
+		id      uuid.UUID
+		domainN string
+		detail  string
+
 		resDomain *domain.Domain
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
@@ -195,6 +207,11 @@ func TestProcessV1DomainsPut(t *testing.T) {
 				Name:   "update name",
 				Detail: "update detail",
 			},
+
+			uuid.FromStringOrNil("f4f3c3f4-6eee-11eb-8463-cf5490689c2e"),
+			"update name",
+			"update detail",
+
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("f4f3c3f4-6eee-11eb-8463-cf5490689c2e"),
 				CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
@@ -219,7 +236,7 @@ func TestProcessV1DomainsPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDomain.EXPECT().DomainUpdate(gomock.Any(), tt.reqDomain).Return(tt.resDomain, nil)
+			mockDomain.EXPECT().Update(gomock.Any(), tt.id, tt.domainN, tt.detail).Return(tt.resDomain, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -247,22 +264,31 @@ func TestProcessV1DomainsDelete(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		domainID  uuid.UUID
-		request   *rabbitmqhandler.Request
+		name     string
+		domainID uuid.UUID
+
+		request        *rabbitmqhandler.Request
+		responseDomain *domain.Domain
+
 		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
-			"empty addresses",
+			"normal",
 			uuid.FromStringOrNil("09e94cb4-6f32-11eb-af29-27dcd65a7064"),
 			&rabbitmqhandler.Request{
 				URI:    "/v1/domains/09e94cb4-6f32-11eb-af29-27dcd65a7064",
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
+			&domain.Domain{
+				ID: uuid.FromStringOrNil("09e94cb4-6f32-11eb-af29-27dcd65a7064"),
+			},
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"09e94cb4-6f32-11eb-af29-27dcd65a7064","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -270,7 +296,7 @@ func TestProcessV1DomainsDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDomain.EXPECT().DomainDelete(gomock.Any(), tt.domainID).Return(nil)
+			mockDomain.EXPECT().Delete(gomock.Any(), tt.domainID).Return(tt.responseDomain, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
