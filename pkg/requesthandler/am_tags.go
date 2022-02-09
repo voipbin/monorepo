@@ -107,7 +107,7 @@ func (r *requestHandler) AMV1TagGets(ctx context.Context, customerID uuid.UUID, 
 // AMV1TagUpdate sends a request to agent-manager
 // to update teh tag basic info
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) error {
+func (r *requestHandler) AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags/%s", id)
 
 	data := &amrequest.V1DataTagsIDPut{
@@ -117,39 +117,49 @@ func (r *requestHandler) AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, 
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMTag, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res amtag.Tag
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // AMV1TagDelete sends a request to agent-manager
 // to delete the tag.
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1TagDelete(ctx context.Context, id uuid.UUID) error {
+func (r *requestHandler) AMV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags/%s", id)
 
 	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodDelete, resourceAMTag, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
-		return err
+		return nil, err
 	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil, fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res amtag.Tag
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
