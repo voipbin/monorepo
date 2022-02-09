@@ -24,10 +24,10 @@ const (
 // TagHandler interfaces
 type TagHandler interface {
 	Create(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag.Tag, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
 	Get(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error)
-	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
+	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*tag.Tag, error)
 }
 
 type tagHandler struct {

@@ -52,11 +52,12 @@ func (mr *MockTagHandlerMockRecorder) Create(ctx, customerID, name, detail inter
 }
 
 // Delete mocks base method.
-func (m *MockTagHandler) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockTagHandler) Delete(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*tag.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Delete indicates an expected call of Delete.
@@ -96,11 +97,12 @@ func (mr *MockTagHandlerMockRecorder) Gets(ctx, customerID, size, token interfac
 }
 
 // UpdateBasicInfo mocks base method.
-func (m *MockTagHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+func (m *MockTagHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*tag.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UpdateBasicInfo indicates an expected call of UpdateBasicInfo.

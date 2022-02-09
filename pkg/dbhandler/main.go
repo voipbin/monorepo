@@ -66,6 +66,11 @@ var (
 	ErrNotFound = errors.New("Record not found")
 )
 
+// List of default values
+const (
+	DefaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
+)
+
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
@@ -75,8 +80,8 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	return h
 }
 
-// getCurTime return current utc time string
-func getCurTime() string {
+// GetCurTime return current utc time string
+func GetCurTime() string {
 	now := time.Now().UTC().String()
 	res := strings.TrimSuffix(now, " +0000 UTC")
 

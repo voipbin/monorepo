@@ -269,12 +269,10 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-
 	mockTag := taghandler.NewMockTagHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock: mockSock,
-
 		tagHandler: mockTag,
 	}
 
@@ -286,7 +284,8 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 		tagName string
 		detail  string
 
-		expectRes *rabbitmqhandler.Response
+		resonseTag *tag.Tag
+		expectRes  *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -301,9 +300,13 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 			"update name",
 			"update detail",
 
+			&tag.Tag{
+				ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -311,8 +314,7 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTag.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.tagName, tt.detail).Return(nil)
-
+			mockTag.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.tagName, tt.detail).Return(tt.resonseTag, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -331,12 +333,10 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-
 	mockTag := taghandler.NewMockTagHandler(mc)
 
 	h := &listenHandler{
 		rabbitSock: mockSock,
-
 		tagHandler: mockTag,
 	}
 
@@ -346,7 +346,8 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 
 		id uuid.UUID
 
-		expectRes *rabbitmqhandler.Response
+		responseTag *tag.Tag
+		expectRes   *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -358,9 +359,13 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
 
+			&tag.Tag{
+				ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -368,7 +373,7 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTag.EXPECT().Delete(gomock.Any(), tt.id).Return(nil)
+			mockTag.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTag, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

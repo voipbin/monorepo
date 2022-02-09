@@ -93,7 +93,7 @@ func (h *agentHandler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent
 }
 
 // AgentCreate creates a new agent.
-func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error) {
+func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentCreate",
 		"customer_id": customerID,
@@ -123,22 +123,23 @@ func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, us
 
 	id := uuid.Must(uuid.NewV4())
 	a := &agent.Agent{
-		ID:            id,
-		CustomerID:    customerID,
-		Username:      username,
-		PasswordHash:  hashPassword,
-		Name:          name,
-		Detail:        detail,
-		WebhookMethod: webhookMethod,
-		WebhookURI:    webhookURI,
-		RingMethod:    ringMethod,
-		Status:        agent.StatusOffline,
-		Permission:    permission,
-		TagIDs:        tags,
-		Addresses:     addresses,
-		TMCreate:      getCurTime(),
-		TMUpdate:      defaultTimeStamp,
-		TMDelete:      defaultTimeStamp,
+		ID:           id,
+		CustomerID:   customerID,
+		Username:     username,
+		PasswordHash: hashPassword,
+
+		Name:   name,
+		Detail: detail,
+
+		RingMethod: ringMethod,
+		Status:     agent.StatusOffline,
+		Permission: permission,
+		TagIDs:     tags,
+		Addresses:  addresses,
+
+		TMCreate: getCurTime(),
+		TMUpdate: defaultTimeStamp,
+		TMDelete: defaultTimeStamp,
 	}
 	log = log.WithField("agent_id", id)
 
@@ -152,7 +153,7 @@ func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, us
 		log.Errorf("Could not get created agent info. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, agent.EventTypeAgentCreated, res.WebhookURI, res)
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentCreated, res)
 
 	log.WithField("agent", res).Debug("Created a new agent.")
 
@@ -160,7 +161,7 @@ func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, us
 }
 
 // AgentDelete updates the agent's basic info.
-func (h *agentHandler) AgentDelete(ctx context.Context, id uuid.UUID) error {
+func (h *agentHandler) AgentDelete(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "AgentDelete",
 		"agent_id": id,
@@ -169,17 +170,17 @@ func (h *agentHandler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 
 	if err := h.db.AgentDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the agent. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	tmp, err := h.db.AgentGet(ctx, id)
+	res, err := h.db.AgentGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get deleted agent info. err: %v", err)
-		return nil
+		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, agent.EventTypeAgentDeleted, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentDeleted, res)
 
-	return nil
+	return res, nil
 }
 
 // AgentLogin validate the username and password.
@@ -205,7 +206,7 @@ func (h *agentHandler) AgentLogin(ctx context.Context, customerID uuid.UUID, use
 }
 
 // AgentUpdateBasicInfo updates the agent's basic info.
-func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
+func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AgentUpdateBasicInfo",
 		"agent_id":     id,
@@ -214,17 +215,23 @@ func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, n
 	})
 	log.Debug("Updating the agent's basic info.")
 
-	err := h.db.AgentSetBasicInfo(ctx, id, name, detail, ringMethod)
-	if err != nil {
-		log.Errorf("Could not update the basic info. err: %v", err)
-		return err
+	if errUpdate := h.db.AgentSetBasicInfo(ctx, id, name, detail, ringMethod); errUpdate != nil {
+		log.Errorf("Could not update the basic info. err: %v", errUpdate)
+		return nil, errUpdate
 	}
 
-	return nil
+	res, err := h.db.AgentGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated agent. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentDeleted, res)
+
+	return res, nil
 }
 
 // AgentUpdatePassword updates the agent's password.
-func (h *agentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
+func (h *agentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "AgentUpdatePassword",
 		"agent_id": id,
@@ -234,19 +241,26 @@ func (h *agentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, pa
 	passHash, err := generateHash(password)
 	if err != nil {
 		log.Errorf("Could not generate the password hash. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	if err := h.db.AgentSetPasswordHash(ctx, id, passHash); err != nil {
 		log.Errorf("Could not update the password. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res, err := h.db.AgentGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated agent. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+
+	return res, nil
 }
 
 // AgentUpdatePermission updates the agent's permission.
-func (h *agentHandler) AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) error {
+func (h *agentHandler) AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "AgentUpdatePermission",
 		"agent_id": id,
@@ -255,14 +269,21 @@ func (h *agentHandler) AgentUpdatePermission(ctx context.Context, id uuid.UUID, 
 
 	if err := h.db.AgentSetPermission(ctx, id, permission); err != nil {
 		log.Errorf("Could not set the permission. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res, err := h.db.AgentGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated agent. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+
+	return res, nil
 }
 
 // AgentUpdateTagIDs updates the agent's tags.
-func (h *agentHandler) AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error {
+func (h *agentHandler) AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "AgentUpdateTagIDs",
 		"agent_id": id,
@@ -271,14 +292,21 @@ func (h *agentHandler) AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags
 
 	if err := h.db.AgentSetTagIDs(ctx, id, tags); err != nil {
 		log.Errorf("Could not set the tags. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res, err := h.db.AgentGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated agent. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+
+	return res, nil
 }
 
 // AgentUpdateAddresses updates the agent's addresses.
-func (h *agentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) error {
+func (h *agentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "AgentUpdateAddresses",
 		"agent_id": id,
@@ -287,14 +315,21 @@ func (h *agentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, a
 
 	if err := h.db.AgentSetAddresses(ctx, id, addresses); err != nil {
 		log.Errorf("Could not set the addresses. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res, err := h.db.AgentGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated agent. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+
+	return res, nil
 }
 
 // AgentUpdateStatus updates the agent's status.
-func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) error {
+func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "AgentUpdateStatus",
 		"agent_id": id,
@@ -303,17 +338,17 @@ func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, stat
 
 	if err := h.db.AgentSetStatus(ctx, id, status); err != nil {
 		log.Errorf("Could not set the status. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	tmp, err := h.db.AgentGet(ctx, id)
+	res, err := h.db.AgentGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated agent info. err: %v", err)
-		return nil
+		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, agent.EventTypeAgentUpdated, tmp.WebhookURI, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentStatusUpdated, res)
 
-	return nil
+	return res, nil
 }
 
 // AgentDial dials to the agent.
@@ -364,7 +399,7 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 		},
 	}
 
-	f, err := h.reqHandler.FMV1FlowCreate(ctx, ag.CustomerID, fmflow.TypeFlow, "agent dial", "", "", actions, false)
+	f, err := h.reqHandler.FMV1FlowCreate(ctx, ag.CustomerID, fmflow.TypeFlow, "agent dial", "", actions, false)
 	if err != nil {
 		log.Errorf("Could not create the flow. err: %v", err)
 		return err
