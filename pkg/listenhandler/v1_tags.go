@@ -119,14 +119,23 @@ func (h *listenHandler) processV1TagsIDPut(ctx context.Context, m *rabbitmqhandl
 	}
 	log.WithField("request", reqData).Debug("Updating the tag.")
 
-	if err := h.tagHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail); err != nil {
+	tmp, err := h.tagHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail)
+	if err != nil {
 		log.Errorf("Could not update the tag info. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -193,14 +202,23 @@ func (h *listenHandler) processV1TagsIDDelete(ctx context.Context, m *rabbitmqha
 		})
 	log.WithField("request", m).Debug("Received request.")
 
-	if err := h.tagHandler.Delete(ctx, id); err != nil {
+	tmp, err := h.tagHandler.Delete(ctx, id)
+	if err != nil {
 		log.Errorf("Could not delete the tag info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

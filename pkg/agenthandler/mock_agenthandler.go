@@ -67,26 +67,27 @@ func (mr *MockAgentHandlerMockRecorder) AgentCallHungup(ctx, c interface{}) *gom
 }
 
 // AgentCreate mocks base method.
-func (m *MockAgentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail, webhookMethod, webhookURI string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockAgentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCreate", ctx, customerID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
+	ret := m.ctrl.Call(m, "AgentCreate", ctx, customerID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentCreate indicates an expected call of AgentCreate.
-func (mr *MockAgentHandlerMockRecorder) AgentCreate(ctx, customerID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) AgentCreate(ctx, customerID, username, password, name, detail, ringMethod, permission, tagIDs, addresses interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockAgentHandler)(nil).AgentCreate), ctx, customerID, username, password, name, detail, webhookMethod, webhookURI, ringMethod, permission, tagIDs, addresses)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCreate", reflect.TypeOf((*MockAgentHandler)(nil).AgentCreate), ctx, customerID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 }
 
 // AgentDelete mocks base method.
-func (m *MockAgentHandler) AgentDelete(ctx context.Context, id uuid.UUID) error {
+func (m *MockAgentHandler) AgentDelete(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentDelete indicates an expected call of AgentDelete.
@@ -185,11 +186,12 @@ func (mr *MockAgentHandlerMockRecorder) AgentLogin(ctx, customerID, username, pa
 }
 
 // AgentUpdateAddresses mocks base method.
-func (m *MockAgentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) error {
+func (m *MockAgentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateAddresses", ctx, id, addresses)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdateAddresses indicates an expected call of AgentUpdateAddresses.
@@ -199,11 +201,12 @@ func (mr *MockAgentHandlerMockRecorder) AgentUpdateAddresses(ctx, id, addresses 
 }
 
 // AgentUpdateBasicInfo mocks base method.
-func (m *MockAgentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
+func (m *MockAgentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateBasicInfo", ctx, id, name, detail, ringMethod)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdateBasicInfo indicates an expected call of AgentUpdateBasicInfo.
@@ -213,11 +216,12 @@ func (mr *MockAgentHandlerMockRecorder) AgentUpdateBasicInfo(ctx, id, name, deta
 }
 
 // AgentUpdatePassword mocks base method.
-func (m *MockAgentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
+func (m *MockAgentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdatePassword", ctx, id, password)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdatePassword indicates an expected call of AgentUpdatePassword.
@@ -227,11 +231,12 @@ func (mr *MockAgentHandlerMockRecorder) AgentUpdatePassword(ctx, id, password in
 }
 
 // AgentUpdatePermission mocks base method.
-func (m *MockAgentHandler) AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) error {
+func (m *MockAgentHandler) AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdatePermission", ctx, id, permission)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdatePermission indicates an expected call of AgentUpdatePermission.
@@ -241,11 +246,12 @@ func (mr *MockAgentHandlerMockRecorder) AgentUpdatePermission(ctx, id, permissio
 }
 
 // AgentUpdateStatus mocks base method.
-func (m *MockAgentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) error {
+func (m *MockAgentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateStatus", ctx, id, status)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdateStatus indicates an expected call of AgentUpdateStatus.
@@ -255,11 +261,12 @@ func (mr *MockAgentHandlerMockRecorder) AgentUpdateStatus(ctx, id, status interf
 }
 
 // AgentUpdateTagIDs mocks base method.
-func (m *MockAgentHandler) AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error {
+func (m *MockAgentHandler) AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateTagIDs", ctx, id, tags)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentUpdateTagIDs indicates an expected call of AgentUpdateTagIDs.

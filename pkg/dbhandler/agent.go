@@ -23,8 +23,6 @@ const (
 
 		name,
 		detail,
-		webhook_method,
-		webhook_uri,
 
 		ring_method,
 
@@ -56,8 +54,6 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 
 		&res.Name,
 		&res.Detail,
-		&res.WebhookMethod,
-		&res.WebhookURI,
 
 		&res.RingMethod,
 
@@ -100,8 +96,6 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 
 		name,
 		detail,
-		webhook_method,
-		webhook_uri,
 
 		ring_method,
 
@@ -115,7 +109,7 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 		tm_delete
 	) values(
 		?, ?, ?, ?,
-		?, ?, ?, ?,
+		?, ?,
 		?,
 		?, ?, ?, ?,
 		?, ?, ?
@@ -139,8 +133,6 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 
 		a.Name,
 		a.Detail,
-		a.WebhookMethod,
-		a.WebhookURI,
 
 		a.RingMethod,
 
@@ -300,7 +292,7 @@ func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, getCurTime(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentDelete. err: %v", err)
 	}
@@ -325,7 +317,7 @@ func (h *handler) AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, det
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, ringMethod, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, ringMethod, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetBasicInfo. err: %v", err)
 	}
@@ -348,7 +340,7 @@ func (h *handler) AgentSetPasswordHash(ctx context.Context, id uuid.UUID, passwo
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, passwordHash, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, passwordHash, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetPasswordHash. err: %v", err)
 	}
@@ -371,7 +363,7 @@ func (h *handler) AgentSetStatus(ctx context.Context, id uuid.UUID, status agent
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, status, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetStatus. err: %v", err)
 	}
@@ -394,7 +386,7 @@ func (h *handler) AgentSetPermission(ctx context.Context, id uuid.UUID, permissi
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, permission, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, permission, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetPermission. err: %v", err)
 	}
@@ -423,7 +415,7 @@ func (h *handler) AgentSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uui
 		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, t, getCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, t, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetPermission. err: %v", err)
 	}
@@ -452,7 +444,7 @@ func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses
 		return fmt.Errorf("could not marshal the addresses. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, t, getCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, t, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetAddresses. err: %v", err)
 	}

@@ -129,7 +129,7 @@ func TestTagGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.TagGets(ctx, tt.customerID, tt.size, getCurTime())
+			res, err := h.TagGets(ctx, tt.customerID, tt.size, GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

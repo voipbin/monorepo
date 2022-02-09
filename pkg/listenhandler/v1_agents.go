@@ -145,8 +145,6 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *rabbitmqhand
 		reqData.Password,
 		reqData.Name,
 		reqData.Detail,
-		reqData.WebhookMethod,
-		reqData.WebhookURI,
 		agent.RingMethod(reqData.RingMethod),
 		agent.Permission(reqData.Permission),
 		reqData.TagIDs,
@@ -188,14 +186,23 @@ func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *rabbitmq
 		})
 	log.Debug("Executing processV1AgentsIDDelete.")
 
-	if err := h.agentHandler.AgentDelete(ctx, id); err != nil {
+	tmp, err := h.agentHandler.AgentDelete(ctx, id)
+	if err != nil {
 		log.Errorf("Could not delete the agent info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -265,14 +272,23 @@ func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *ra
 		return simpleResponse(400), nil
 	}
 
-	if err := h.agentHandler.AgentUpdateAddresses(ctx, id, reqData.Addresses); err != nil {
+	tmp, err := h.agentHandler.AgentUpdateAddresses(ctx, id, reqData.Addresses)
+	if err != nil {
 		log.Errorf("Could not update the agent's addresses info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -299,14 +315,23 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *rabbitmqhan
 		return simpleResponse(400), nil
 	}
 
-	if err := h.agentHandler.AgentUpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, agent.RingMethod(reqData.RingMethod)); err != nil {
+	tmp, err := h.agentHandler.AgentUpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, agent.RingMethod(reqData.RingMethod))
+	if err != nil {
 		log.Errorf("Could not update the agent's basic info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -333,14 +358,23 @@ func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *rabbi
 		return simpleResponse(400), nil
 	}
 
-	if err := h.agentHandler.AgentUpdateStatus(ctx, id, agent.Status(reqData.Status)); err != nil {
+	tmp, err := h.agentHandler.AgentUpdateStatus(ctx, id, agent.Status(reqData.Status))
+	if err != nil {
 		log.Errorf("Could not update the agent's status info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -367,14 +401,23 @@ func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *rab
 		return simpleResponse(400), nil
 	}
 
-	if err := h.agentHandler.AgentUpdatePassword(ctx, id, req.Password); err != nil {
+	tmp, err := h.agentHandler.AgentUpdatePassword(ctx, id, req.Password)
+	if err != nil {
 		log.Errorf("Could not update the agent's status info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -401,14 +444,23 @@ func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *rabbi
 		return simpleResponse(400), nil
 	}
 
-	if err := h.agentHandler.AgentUpdateTagIDs(ctx, id, reqData.TagIDs); err != nil {
+	tmp, err := h.agentHandler.AgentUpdateTagIDs(ctx, id, reqData.TagIDs)
+	if err != nil {
 		log.Errorf("Could not update the agent's tag_ids info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

@@ -12,10 +12,8 @@ type WebhookMessage struct {
 	ID       uuid.UUID `json:"id"`       // agent id
 	Username string    `json:"username"` // agent's username
 
-	Name          string `json:"name"`           // agent's name
-	Detail        string `json:"detail"`         // agent's detail
-	WebhookMethod string `json:"webhook_method"` // agent's webhook method
-	WebhookURI    string `json:"webhook_uri"`    // agent's wehook uri
+	Name   string `json:"name"`   // agent's name
+	Detail string `json:"detail"` // agent's detail
 
 	RingMethod RingMethod `json:"ring_method"` // agent's ring method
 
@@ -35,10 +33,8 @@ func (h *Agent) ConvertWebhookMessage() *WebhookMessage {
 		ID:       h.ID,
 		Username: h.Username,
 
-		Name:          h.Name,
-		Detail:        h.Detail,
-		WebhookMethod: h.WebhookMethod,
-		WebhookURI:    h.WebhookURI,
+		Name:   h.Name,
+		Detail: h.Detail,
 
 		RingMethod: h.RingMethod,
 

@@ -36,15 +36,26 @@ func (h *tagHandler) Get(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 }
 
 // UpdateBasicInfo updates tag's basic info.
-func (h *tagHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
-	log := logrus.WithField("func", "UpdateBasicInfo")
+func (h *tagHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*tag.Tag, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":   "UpdateBasicInfo",
+			"tag_id": id,
+		})
 
 	if err := h.db.TagSetBasicInfo(ctx, id, name, detail); err != nil {
 		log.Errorf("Could not update the tag basic info. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res, err := h.db.TagGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get tag info. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, tag.EventTypeTagUpdated, res)
+
+	return res, nil
 }
 
 // Create creates a new tag.
@@ -77,13 +88,15 @@ func (h *tagHandler) Create(ctx context.Context, customerID uuid.UUID, name, det
 		log.Errorf("Could not get created tag info. err: %v", err)
 		return nil, err
 	}
+	h.notifyhandler.PublishEvent(ctx, tag.EventTypeTagCreated, res)
+
 	log.WithField("tag", res).Debug("Created a new tag.")
 
 	return res, nil
 }
 
 // Delete deletes the tag info.
-func (h *tagHandler) Delete(ctx context.Context, id uuid.UUID) error {
+func (h *tagHandler) Delete(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "Delete",
 		"tag_id": id,
@@ -94,14 +107,14 @@ func (h *tagHandler) Delete(ctx context.Context, id uuid.UUID) error {
 	t, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get tag info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// get all agents
 	ags, err := h.agentHandler.AgentGetsByTagIDs(ctx, t.CustomerID, []uuid.UUID{t.ID})
 	if err != nil {
 		log.Errorf("Could not get agents. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// delete agent's tag.
@@ -114,15 +127,23 @@ func (h *tagHandler) Delete(ctx context.Context, id uuid.UUID) error {
 			}
 		}
 
-		if err := h.agentHandler.AgentUpdateTagIDs(ctx, ag.ID, newTagIDs); err != nil {
+		_, err := h.agentHandler.AgentUpdateTagIDs(ctx, ag.ID, newTagIDs)
+		if err != nil {
 			log.WithField("agent", ag).Errorf("Could not delete the tag from the agent. err: %v", err)
 		}
 	}
 
 	if err := h.db.TagDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the tag. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res, err := h.db.TagGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get tag info. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, tag.EventTypeTagDeleted, res)
+
+	return res, nil
 }
