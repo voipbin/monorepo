@@ -240,7 +240,7 @@ func TestSearchAgentWithWrongAgents(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.queuecall, nil)
 			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, tt.agentError)
-			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.queueCallID, 1000)
+			mockReq.EXPECT().QMV1QueuecallSearchAgent(gomock.Any(), tt.queueCallID, 1000).Return(nil)
 
 			h.SearchAgent(ctx, tt.queueCallID)
 		})
@@ -350,7 +350,7 @@ func TestSearchAgentWithAgentDialFailure(t *testing.T) {
 			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
 			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agents[0].ID, &tt.queuecall.Source, tt.queuecall.ConfbridgeID).Return(fmt.Errorf(""))
 
-			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.queuecall.ID, 1000)
+			mockReq.EXPECT().QMV1QueuecallSearchAgent(gomock.Any(), tt.queuecall.ID, 1000).Return(nil)
 
 			h.SearchAgent(ctx, tt.queueCallID)
 		})

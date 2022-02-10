@@ -290,7 +290,7 @@ func TestCreate(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.queuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.queuecall)
 
 			if tt.timeoutWait > 0 {
-				mockReq.EXPECT().QMV1QueuecallTiemoutWait(gomock.Any(), gomock.Any(), tt.timeoutWait).Return(nil)
+				mockReq.EXPECT().QMV1QueuecallTimeoutWait(gomock.Any(), gomock.Any(), tt.timeoutWait).Return(nil)
 			}
 
 			res, err := h.Create(

@@ -54,15 +54,18 @@ func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, customerID, queueID, ref
 }
 
 // Execute mocks base method.
-func (m *MockQueuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID) {
+func (m *MockQueuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID, delay int) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Execute", ctx, queuecallID)
+	ret := m.ctrl.Call(m, "Execute", ctx, queuecallID, delay)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockQueuecallHandlerMockRecorder) Execute(ctx, queuecallID interface{}) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) Execute(ctx, queuecallID, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockQueuecallHandler)(nil).Execute), ctx, queuecallID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockQueuecallHandler)(nil).Execute), ctx, queuecallID, delay)
 }
 
 // Get mocks base method.

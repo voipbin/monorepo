@@ -20,7 +20,7 @@ import (
 
 // List of default values
 const (
-	defaultDelayQueuecallExecute = 1000 // 1000 ms(1 sec)
+	defaultDelaySearchAgent = 1000 // 1000 ms(1 sec)
 )
 
 // QueuecallHandler interface
@@ -41,7 +41,7 @@ type QueuecallHandler interface {
 		timeoutWait int,
 		timeoutService int,
 	) (*queuecall.Queuecall, error)
-	Execute(ctx context.Context, queuecallID uuid.UUID)
+	Execute(ctx context.Context, queuecallID uuid.UUID, delay int) (*queuecall.Queuecall, error)
 	Hungup(ctx context.Context, referenceID uuid.UUID)
 	Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error)
 	KickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
