@@ -119,19 +119,17 @@ type ServiceHandler interface {
 		u *cscustomer.Customer,
 		name string,
 		detail string,
-		webhookURI string,
-		webhookMethod string,
 		routingMethod string,
 		tagIDs []uuid.UUID,
 		waitActions []fmaction.Action,
 		timeoutWait int,
 		timeoutService int,
 	) (*qmqueue.WebhookMessage, error)
-	QueueDelete(u *cscustomer.Customer, queueID uuid.UUID) error
-	QueueUpdate(u *cscustomer.Customer, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error
-	QueueUpdateTagIDs(u *cscustomer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) error
-	QueueUpdateRoutingMethod(u *cscustomer.Customer, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) error
-	QueueUpdateActions(u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) error
+	QueueDelete(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
+	QueueUpdate(u *cscustomer.Customer, queueID uuid.UUID, name, detail string) (*qmqueue.WebhookMessage, error)
+	QueueUpdateTagIDs(u *cscustomer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error)
+	QueueUpdateRoutingMethod(u *cscustomer.Customer, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error)
+	QueueUpdateActions(u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.WebhookMessage, error)
 
 	// recording handlers
 	RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*recording.Recording, error)

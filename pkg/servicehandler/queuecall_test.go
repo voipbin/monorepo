@@ -152,7 +152,8 @@ func TestQueuecallDelete(t *testing.T) {
 		customer *cscustomer.Customer
 		id       uuid.UUID
 
-		response *qmqueuecall.Queuecall
+		response  *qmqueuecall.Queuecall
+		expectRes *qmqueuecall.WebhookMessage
 	}
 
 	tests := []test{
@@ -167,6 +168,9 @@ func TestQueuecallDelete(t *testing.T) {
 				ID:         uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
+			&qmqueuecall.WebhookMessage{
+				ID: uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
+			},
 		},
 	}
 
@@ -174,10 +178,15 @@ func TestQueuecallDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().QMV1QueuecallGet(gomock.Any(), tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().QMV1QueuecallDelete(gomock.Any(), tt.id).Return(nil)
+			mockReq.EXPECT().QMV1QueuecallDelete(gomock.Any(), tt.id).Return(tt.response, nil)
 
-			if err := h.QueuecallDelete(tt.customer, tt.id); err != nil {
+			res, err := h.QueuecallDelete(tt.customer, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match. expect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -200,7 +209,8 @@ func TestQueuecallDeleteByReferenceID(t *testing.T) {
 		customer    *cscustomer.Customer
 		referenceID uuid.UUID
 
-		response *qmqueuecall.Queuecall
+		response  *qmqueuecall.Queuecall
+		expectRes *qmqueuecall.WebhookMessage
 	}
 
 	tests := []test{
@@ -215,6 +225,9 @@ func TestQueuecallDeleteByReferenceID(t *testing.T) {
 				ID:         uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
+			&qmqueuecall.WebhookMessage{
+				ID: uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
+			},
 		},
 	}
 
@@ -222,11 +235,17 @@ func TestQueuecallDeleteByReferenceID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			mockReq.EXPECT().QMV1QueuecallGet(gomock.Any(), tt.referenceID).Return(tt.response, nil)
-			mockReq.EXPECT().QMV1QueuecallDelete(gomock.Any(), tt.referenceID).Return(nil)
+			mockReq.EXPECT().QMV1QueuecallDelete(gomock.Any(), tt.referenceID).Return(tt.response, nil)
 
-			if err := h.QueuecallDelete(tt.customer, tt.referenceID); err != nil {
+			res, err := h.QueuecallDelete(tt.customer, tt.referenceID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }
