@@ -294,11 +294,13 @@ func TestQMV1QueuecallExecute(t *testing.T) {
 		name string
 
 		queuecallID uuid.UUID
+		searchDelay int
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 
-		response *rabbitmqhandler.Response
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueuecall.Queuecall
 	}
 
 	tests := []test{
@@ -306,18 +308,23 @@ func TestQMV1QueuecallExecute(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("1e0d5a8c-5dcf-11ec-bc65-377573e53b24"),
+			1000,
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/queuecalls/1e0d5a8c-5dcf-11ec-bc65-377573e53b24/execute",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
+				Data:     []byte(`{"search_delay":1000}`),
 			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"f4b44b28-4e79-11ec-be3c-73450ec23a51"}`),
+				Data:       []byte(`{"id":"1e0d5a8c-5dcf-11ec-bc65-377573e53b24"}`),
+			},
+			&qmqueuecall.Queuecall{
+				ID: uuid.FromStringOrNil("1e0d5a8c-5dcf-11ec-bc65-377573e53b24"),
 			},
 		},
 	}
@@ -327,8 +334,13 @@ func TestQMV1QueuecallExecute(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.QMV1QueuecallExecute(ctx, tt.queuecallID); err != nil {
+			res, err := reqHandler.QMV1QueuecallExecute(ctx, tt.queuecallID, tt.searchDelay)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
