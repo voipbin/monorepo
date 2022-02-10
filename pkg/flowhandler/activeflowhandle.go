@@ -696,18 +696,12 @@ func (h *flowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callI
 	}
 
 	// send the queuecall excute request
-	if err := h.reqHandler.QMV1QueuecallExecute(ctx, qc.ID, 1000); err != nil {
+	tmp, err := h.reqHandler.QMV1QueuecallExecute(ctx, qc.ID, 1000)
+	if err != nil {
 		log.Errorf("Could not send the execute request. err: %v", err)
 		return nil, err
 	}
-
-	// send the queuecall timeout-wait
-	if qc.TimeoutWait > 0 {
-		if err := h.reqHandler.QMV1QueuecallTiemoutWait(ctx, qc.ID, qc.TimeoutWait); err != nil {
-			log.Errorf("Could not send the timeout-wait request. err: %v", err)
-			return nil, err
-		}
-	}
+	log.WithField("queuecall", tmp).Debug("Queuecall executed.")
 
 	return &patchedActions[0], nil
 }
