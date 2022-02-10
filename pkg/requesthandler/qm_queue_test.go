@@ -178,8 +178,6 @@ func TestQMVQueueCreate(t *testing.T) {
 		customerID     uuid.UUID
 		queueName      string
 		detail         string
-		webhookURI     string
-		webhookMethod  string
 		routingMethod  qmqueue.RoutingMethod
 		tagIDs         []uuid.UUID
 		waitActions    []fmaction.Action
@@ -197,8 +195,6 @@ func TestQMVQueueCreate(t *testing.T) {
 			uuid.FromStringOrNil("6cf22a94-7ff1-11ec-9254-5371564adf91"),
 			"name",
 			"detail",
-			"test.com",
-			"POST",
 			qmqueue.RoutingMethodRandom,
 			[]uuid.UUID{
 				uuid.FromStringOrNil("fdbf3fdc-6159-11ec-9263-734d393b9759"),
@@ -216,7 +212,7 @@ func TestQMVQueueCreate(t *testing.T) {
 				URI:      "/v1/queues",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"6cf22a94-7ff1-11ec-9254-5371564adf91","name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST","routing_method":"random","tag_ids":["fdbf3fdc-6159-11ec-9263-734d393b9759"],"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
+				Data:     []byte(`{"customer_id":"6cf22a94-7ff1-11ec-9254-5371564adf91","name":"name","detail":"detail","routing_method":"random","tag_ids":["fdbf3fdc-6159-11ec-9263-734d393b9759"],"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -234,7 +230,7 @@ func TestQMVQueueCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueCreate(ctx, tt.customerID, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod, tt.routingMethod, tt.tagIDs, tt.waitActions, tt.timeoutWait, tt.timeoutService)
+			res, err := reqHandler.QMV1QueueCreate(ctx, tt.customerID, tt.queueName, tt.detail, tt.routingMethod, tt.tagIDs, tt.waitActions, tt.timeoutWait, tt.timeoutService)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -262,7 +258,9 @@ func TestAMV1QueueDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueue.Queue
 	}{
 		{
 			"normal",
@@ -275,9 +273,14 @@ func TestAMV1QueueDelete(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: "application/json",
 			},
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"a2764422-6159-11ec-8d87-975236f7d7b7"}`),
+			},
+			&qmqueue.Queue{
+				ID: uuid.FromStringOrNil("a2764422-6159-11ec-8d87-975236f7d7b7"),
 			},
 		},
 	}
@@ -287,8 +290,13 @@ func TestAMV1QueueDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.QMV1QueueDelete(ctx, tt.id); err != nil {
+			res, err := reqHandler.QMV1QueueDelete(ctx, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -307,15 +315,15 @@ func TestQMVQueueUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id            uuid.UUID
-		queueName     string
-		detail        string
-		webhookURI    string
-		webhookMethod string
+		id        uuid.UUID
+		queueName string
+		detail    string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueue.Queue
 	}{
 		{
 			"normal",
@@ -323,19 +331,22 @@ func TestQMVQueueUpdate(t *testing.T) {
 			uuid.FromStringOrNil("bacc13d4-615a-11ec-a73d-ff4194d49ef7"),
 			"name",
 			"detail",
-			"test.com",
-			"POST",
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/queues/bacc13d4-615a-11ec-a73d-ff4194d49ef7",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"name","detail":"detail","webhook_uri":"test.com","webhook_method":"POST"}`),
+				Data:     []byte(`{"name":"name","detail":"detail"}`),
 			},
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"bacc13d4-615a-11ec-a73d-ff4194d49ef7"}`),
+			},
+			&qmqueue.Queue{
+				ID: uuid.FromStringOrNil("bacc13d4-615a-11ec-a73d-ff4194d49ef7"),
 			},
 		},
 	}
@@ -345,8 +356,13 @@ func TestQMVQueueUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.QMV1QueueUpdate(ctx, tt.id, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod); err != nil {
+			res, err := reqHandler.QMV1QueueUpdate(ctx, tt.id, tt.queueName, tt.detail)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -369,7 +385,9 @@ func TestQMVQueueUpdateTagIDs(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueue.Queue
 	}{
 		{
 			"normal",
@@ -386,9 +404,14 @@ func TestQMVQueueUpdateTagIDs(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"tag_ids":["2c07e118-615b-11ec-a5cd-0fb1d1ab5c67"]}`),
 			},
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
+			},
+			&qmqueue.Queue{
+				ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
 			},
 		},
 	}
@@ -398,9 +421,15 @@ func TestQMVQueueUpdateTagIDs(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.QMV1QueueUpdateTagIDs(ctx, tt.id, tt.tagIDs); err != nil {
+			res, err := reqHandler.QMV1QueueUpdateTagIDs(ctx, tt.id, tt.tagIDs)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }
@@ -422,7 +451,9 @@ func TestQMVQueueUpdateRoutingMethod(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueue.Queue
 	}{
 		{
 			"normal",
@@ -437,9 +468,14 @@ func TestQMVQueueUpdateRoutingMethod(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"routing_method":"random"}`),
 			},
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
+			},
+			&qmqueue.Queue{
+				ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
 			},
 		},
 	}
@@ -449,9 +485,15 @@ func TestQMVQueueUpdateRoutingMethod(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.QMV1QueueUpdateRoutingMethod(ctx, tt.id, tt.routingMethod); err != nil {
+			res, err := reqHandler.QMV1QueueUpdateRoutingMethod(ctx, tt.id, tt.routingMethod)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }
@@ -475,7 +517,9 @@ func TestQMVQueueUpdateActions(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueue.Queue
 	}{
 		{
 			"normal",
@@ -497,9 +541,14 @@ func TestQMVQueueUpdateActions(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
 			},
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
+			},
+			&qmqueue.Queue{
+				ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
 			},
 		},
 	}
@@ -509,9 +558,15 @@ func TestQMVQueueUpdateActions(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.QMV1QueueUpdateActions(ctx, tt.id, tt.waitActions, tt.timeoutWait, tt.timeoutService); err != nil {
+			res, err := reqHandler.QMV1QueueUpdateActions(ctx, tt.id, tt.waitActions, tt.timeoutWait, tt.timeoutService)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }

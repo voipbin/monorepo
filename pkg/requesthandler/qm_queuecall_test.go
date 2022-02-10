@@ -178,7 +178,8 @@ func TestQMQueuecallDelete(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 
-		response *rabbitmqhandler.Response
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueuecall.Queuecall
 	}{
 		{
 			"normal",
@@ -195,6 +196,10 @@ func TestQMQueuecallDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"f4b44b28-4e79-11ec-be3c-73450ec23a51"}`),
+			},
+			&qmqueuecall.Queuecall{
+				ID: uuid.FromStringOrNil("f4b44b28-4e79-11ec-be3c-73450ec23a51"),
 			},
 		},
 	}
@@ -204,8 +209,13 @@ func TestQMQueuecallDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.QMV1QueuecallDelete(ctx, tt.queuecallID); err != nil {
+			res, err := reqHandler.QMV1QueuecallDelete(ctx, tt.queuecallID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -228,7 +238,8 @@ func TestQMQueuecallDeleteByReferenceID(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 
-		response *rabbitmqhandler.Response
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueuecall.Queuecall
 	}{
 		{
 			"normal",
@@ -245,6 +256,10 @@ func TestQMQueuecallDeleteByReferenceID(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"f4b44b28-4e79-11ec-be3c-73450ec23a51"}`),
+			},
+			&qmqueuecall.Queuecall{
+				ID: uuid.FromStringOrNil("f4b44b28-4e79-11ec-be3c-73450ec23a51"),
 			},
 		},
 	}
@@ -254,14 +269,73 @@ func TestQMQueuecallDeleteByReferenceID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.QMV1QueuecallDeleteByReferenceID(ctx, tt.referenceID); err != nil {
+			res, err := reqHandler.QMV1QueuecallDeleteByReferenceID(ctx, tt.referenceID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
 }
 
 func TestQMV1QueuecallExecute(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	type test struct {
+		name string
+
+		queuecallID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+
+		response *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("1e0d5a8c-5dcf-11ec-bc65-377573e53b24"),
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queuecalls/1e0d5a8c-5dcf-11ec-bc65-377573e53b24/execute",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"f4b44b28-4e79-11ec-be3c-73450ec23a51"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.QMV1QueuecallExecute(ctx, tt.queuecallID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+		})
+	}
+}
+
+func TestQMV1QueuecallSearchAgent(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -289,7 +363,7 @@ func TestQMV1QueuecallExecute(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls/1e0d5a8c-5dcf-11ec-bc65-377573e53b24/execute",
+				URI:      "/v1/queuecalls/1e0d5a8c-5dcf-11ec-bc65-377573e53b24/search_agent",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 			},
@@ -301,7 +375,7 @@ func TestQMV1QueuecallExecute(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
-			if err := reqHandler.QMV1QueuecallExecute(ctx, tt.queuecallID, tt.delay); err != nil {
+			if err := reqHandler.QMV1QueuecallSearchAgent(ctx, tt.queuecallID, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -349,7 +423,7 @@ func TestQMV1QueuecallTimeoutWait(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
-			if err := reqHandler.QMV1QueuecallTiemoutWait(ctx, tt.queuecallID, tt.delay); err != nil {
+			if err := reqHandler.QMV1QueuecallTimeoutWait(ctx, tt.queuecallID, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -397,7 +471,7 @@ func TestQMV1QueuecallTimeoutService(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
-			if err := reqHandler.QMV1QueuecallTiemoutService(ctx, tt.queuecallID, tt.delay); err != nil {
+			if err := reqHandler.QMV1QueuecallTimeoutService(ctx, tt.queuecallID, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
