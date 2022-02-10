@@ -14,8 +14,6 @@ type ParamQueuesGET struct {
 type BodyQueuesPOST struct {
 	Name           string            `json:"name"`
 	Detail         string            `json:"detail"`
-	WebhookURI     string            `json:"webhook_uri"`
-	WebhokMethod   string            `json:"webhook_method"`
 	RoutingMethod  string            `json:"routing_method"`
 	TagIDs         []uuid.UUID       `json:"tag_ids"`
 	WaitActions    []fmaction.Action `json:"wait_actions"`
@@ -25,10 +23,8 @@ type BodyQueuesPOST struct {
 
 // BodyQueuesIDPUT is request body define for PUT /queues/<queue-id>
 type BodyQueuesIDPUT struct {
-	Name          string `json:"name"`
-	Detail        string `json:"detail"`
-	WebhookURI    string `json:"webhook_uri"`
-	WebhookMethod string `json:"webhook_method"`
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
 }
 
 // BodyQueuesIDTagIDsPUT is request body define for PUT /queues/<queue-id>/tag_ids
