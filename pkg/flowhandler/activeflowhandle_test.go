@@ -1181,10 +1181,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			mockReq.EXPECT().QMV1QueueCreateQueuecall(gomock.Any(), tt.queue.ID, gomock.Any(), tt.callID, tt.exitActionID).Return(tt.responseQueuecall, nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.responseQueuecall.FlowID).Return(tt.queueFlow, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
-			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.responseQueuecall.ID, 1000).Return(nil)
-			if tt.responseQueuecall.TimeoutWait > 0 {
-				mockReq.EXPECT().QMV1QueuecallTiemoutWait(gomock.Any(), tt.responseQueuecall.ID, tt.responseQueuecall.TimeoutWait).Return(nil)
-			}
+			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.responseQueuecall.ID, 1000).Return(&qmqueuecall.Queuecall{}, nil)
 
 			res, err := h.activeFlowHandleActionQueueJoin(ctx, tt.callID, tt.act)
 			if err != nil {
