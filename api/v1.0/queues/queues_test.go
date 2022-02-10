@@ -65,7 +65,7 @@ func TestQueuesGet(t *testing.T) {
 					TMCreate:            "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"f188b7aa-6476-11ec-a130-03a796c9e1e4","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"f188b7aa-6476-11ec-a130-03a796c9e1e4","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -107,7 +107,7 @@ func TestQueuesGet(t *testing.T) {
 					TMCreate:            "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"f1ad64a6-6476-11ec-a650-cf22de7273e6","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"f1d22dd6-6476-11ec-84e0-676f11515eed","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"f1fd30c6-6476-11ec-8b55-7f9c5b9550b7","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"f1ad64a6-6476-11ec-a650-cf22de7273e6","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"f1d22dd6-6476-11ec-84e0-676f11515eed","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"f1fd30c6-6476-11ec-8b55-7f9c5b9550b7","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -164,8 +164,6 @@ func TestQueuesPost(t *testing.T) {
 			request.BodyQueuesPOST{
 				Name:          "name",
 				Detail:        "detail",
-				WebhookURI:    "test.com",
-				WebhokMethod:  "POST",
 				RoutingMethod: "random",
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("296b096c-6476-11ec-8fc0-2f39371fef93"),
@@ -210,8 +208,6 @@ func TestQueuesPost(t *testing.T) {
 				&tt.customer,
 				tt.req.Name,
 				tt.req.Detail,
-				tt.req.WebhookURI,
-				tt.req.WebhokMethod,
 				tt.req.RoutingMethod,
 				tt.req.TagIDs,
 				tt.req.WaitActions,
@@ -258,7 +254,7 @@ func TestQueuesIDGet(t *testing.T) {
 				ServiceQueueCallIDs: []uuid.UUID{},
 				TMCreate:            "2020-09-20T03:23:21.995000",
 			},
-			`{"id":"395518ca-830a-11eb-badc-b3582bc51917","name":"","detail":"","webhook_uri":"","webhook_method":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
+			`{"id":"395518ca-830a-11eb-badc-b3582bc51917","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
 		},
 		{
 			"webhook",
@@ -267,7 +263,6 @@ func TestQueuesIDGet(t *testing.T) {
 			},
 			&qmqueue.WebhookMessage{
 				ID:          uuid.FromStringOrNil("9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353"),
-				WebhookURI:  "https://test.com/tesadf",
 				TagIDs:      []uuid.UUID{},
 				WaitActions: []fmaction.Action{},
 
@@ -275,7 +270,7 @@ func TestQueuesIDGet(t *testing.T) {
 				ServiceQueueCallIDs: []uuid.UUID{},
 				TMCreate:            "2020-09-20T03:23:21.995000",
 			},
-			`{"id":"9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353","name":"","detail":"","webhook_uri":"https://test.com/tesadf","webhook_method":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
+			`{"id":"9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -346,7 +341,7 @@ func TestQueuesIDDelete(t *testing.T) {
 			reqQuery := fmt.Sprintf("/v1.0/queues/%s", tt.queueID)
 			req, _ := http.NewRequest("DELETE", reqQuery, nil)
 
-			mockSvc.EXPECT().QueueDelete(&tt.customer, tt.queueID).Return(nil)
+			mockSvc.EXPECT().QueueDelete(&tt.customer, tt.queueID).Return(&qmqueue.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -370,11 +365,9 @@ func TestQueuesIDPut(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		queueID       uuid.UUID
-		queueName     string
-		detail        string
-		webhookURI    string
-		webhookMethod string
+		queueID   uuid.UUID
+		queueName string
+		detail    string
 	}
 
 	tests := []test{
@@ -384,13 +377,11 @@ func TestQueuesIDPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/queues/39a61292-6479-11ec-8cee-d7ba44bf24ac",
-			[]byte(`{"name":"new name","detail":"new detail","webhook_uri":"test.com","webhook_method":"POST"}`),
+			[]byte(`{"name":"new name","detail":"new detail"}`),
 
 			uuid.FromStringOrNil("39a61292-6479-11ec-8cee-d7ba44bf24ac"),
 			"new name",
 			"new detail",
-			"test.com",
-			"POST",
 		},
 	}
 
@@ -406,7 +397,7 @@ func TestQueuesIDPut(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdate(&tt.customer, tt.queueID, tt.queueName, tt.detail, tt.webhookURI, tt.webhookMethod).Return(nil)
+			mockSvc.EXPECT().QueueUpdate(&tt.customer, tt.queueID, tt.queueName, tt.detail).Return(&qmqueue.WebhookMessage{}, nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)
@@ -464,7 +455,7 @@ func TestQueuesIDTagIDsPut(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdateTagIDs(&tt.customer, tt.queueID, tt.tagIDs).Return(nil)
+			mockSvc.EXPECT().QueueUpdateTagIDs(&tt.customer, tt.queueID, tt.tagIDs).Return(&qmqueue.WebhookMessage{}, nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)
@@ -520,7 +511,7 @@ func TestQueuesIDRoutingMethodPut(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdateRoutingMethod(&tt.customer, tt.queueID, tt.routingMethod).Return(nil)
+			mockSvc.EXPECT().QueueUpdateRoutingMethod(&tt.customer, tt.queueID, tt.routingMethod).Return(&qmqueue.WebhookMessage{}, nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)
@@ -584,7 +575,7 @@ func TestQueuesIDActionsPut(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdateActions(&tt.customer, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(nil)
+			mockSvc.EXPECT().QueueUpdateActions(&tt.customer, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(&qmqueue.WebhookMessage{}, nil)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			r.ServeHTTP(w, req)

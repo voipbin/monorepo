@@ -133,8 +133,6 @@ func queuesPOST(c *gin.Context) {
 		&u,
 		req.Name,
 		req.Detail,
-		req.WebhookURI,
-		req.WebhokMethod,
 		req.RoutingMethod,
 		req.TagIDs,
 		req.WaitActions,
@@ -193,14 +191,14 @@ func queuesIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	err := serviceHandler.QueueDelete(&u, id)
+	res, err := serviceHandler.QueueDelete(&u, id)
 	if err != nil {
 		log.Infof("Could not get the delete the queue info. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // queuesIDGet handles GET /queues/<queue-id> request.
@@ -298,13 +296,14 @@ func queuesIDPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.QueueUpdate(&u, id, req.Name, req.Detail, req.WebhookURI, req.WebhookMethod); err != nil {
+	res, err := serviceHandler.QueueUpdate(&u, id, req.Name, req.Detail)
+	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // queuesIDTagIDsPUT handles PUT /queues/{id}/tag_ids request.
@@ -354,13 +353,14 @@ func queuesIDTagIDsPUT(c *gin.Context) {
 
 	// update the queue
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.QueueUpdateTagIDs(&u, id, req.TagIDs); err != nil {
+	res, err := serviceHandler.QueueUpdateTagIDs(&u, id, req.TagIDs)
+	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // queuesIDRoutingMethodPUT handles PUT /queues/{id}/routing_method request.
@@ -409,13 +409,14 @@ func queuesIDRoutingMethodPUT(c *gin.Context) {
 
 	// update the queue
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.QueueUpdateRoutingMethod(&u, id, qmqueue.RoutingMethod(req.RoutingMethod)); err != nil {
+	res, err := serviceHandler.QueueUpdateRoutingMethod(&u, id, qmqueue.RoutingMethod(req.RoutingMethod))
+	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // queuesIDActionsPUT handles PUT /queues/{id}/actions request.
@@ -464,11 +465,12 @@ func queuesIDActionsPUT(c *gin.Context) {
 
 	// update the queue
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.QueueUpdateActions(&u, id, req.WaitActions, req.TimeoutWait, req.TimeoutService); err != nil {
+	res, err := serviceHandler.QueueUpdateActions(&u, id, req.WaitActions, req.TimeoutWait, req.TimeoutService)
+	if err != nil {
 		log.Errorf("Could not update the queue's action handle. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }

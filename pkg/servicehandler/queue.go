@@ -99,8 +99,6 @@ func (h *serviceHandler) QueueCreate(
 	u *cscustomer.Customer,
 	name string,
 	detail string,
-	webhookURI string,
-	webhookMethod string,
 	routingMethod string,
 	tagIDs []uuid.UUID,
 	waitActions []fmaction.Action,
@@ -119,8 +117,6 @@ func (h *serviceHandler) QueueCreate(
 		u.ID,
 		name,
 		detail,
-		webhookURI,
-		webhookMethod,
 		qmqueue.RoutingMethod(routingMethod),
 		tagIDs,
 		waitActions,
@@ -140,7 +136,7 @@ func (h *serviceHandler) QueueCreate(
 // QueueDelete sends a request to queue-manager
 // to deleting the queue.
 // it returns error if it failed.
-func (h *serviceHandler) QueueDelete(u *cscustomer.Customer, queueID uuid.UUID) error {
+func (h *serviceHandler) QueueDelete(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueDelete",
@@ -151,21 +147,24 @@ func (h *serviceHandler) QueueDelete(u *cscustomer.Customer, queueID uuid.UUID) 
 	_, err := h.queueGet(ctx, u, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	if err := h.reqHandler.QMV1QueueDelete(ctx, queueID); err != nil {
+	tmp, err := h.reqHandler.QMV1QueueDelete(ctx, queueID)
+	if err != nil {
 		log.Errorf("Could not delete the queue. err: %v", err)
-		return err
+		return nil, err
 	}
+	log.WithField("queue", tmp).Debugf("Deleted queue. queue_id: %s", tmp.ID)
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // QueueUpdate sends a request to queue-manager
 // to updating the queue.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdate(u *cscustomer.Customer, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error {
+func (h *serviceHandler) QueueUpdate(u *cscustomer.Customer, queueID uuid.UUID, name, detail string) (*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueUpdate",
@@ -176,21 +175,24 @@ func (h *serviceHandler) QueueUpdate(u *cscustomer.Customer, queueID uuid.UUID, 
 	_, err := h.queueGet(ctx, u, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	if err := h.reqHandler.QMV1QueueUpdate(ctx, queueID, name, detail, webhookURI, webhookMethod); err != nil {
+	tmp, err := h.reqHandler.QMV1QueueUpdate(ctx, queueID, name, detail)
+	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
-		return err
+		return nil, err
 	}
+	log.WithField("queue", tmp).Debugf("Updated queue. queue_id: %s", tmp.ID)
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // QueueUpdateTagIDs sends a request to queue-manager
 // to updating the queue's tag_ids.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdateTagIDs(u *cscustomer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) error {
+func (h *serviceHandler) QueueUpdateTagIDs(u *cscustomer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueUpdateTagIDs",
@@ -201,21 +203,24 @@ func (h *serviceHandler) QueueUpdateTagIDs(u *cscustomer.Customer, queueID uuid.
 	_, err := h.queueGet(ctx, u, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	if err := h.reqHandler.QMV1QueueUpdateTagIDs(ctx, queueID, tagIDs); err != nil {
-		log.Errorf("Could not update the queue's tag_ids. err: %v", err)
-		return err
+	tmp, err := h.reqHandler.QMV1QueueUpdateTagIDs(ctx, queueID, tagIDs)
+	if err != nil {
+		log.Errorf("Could not update the queue. err: %v", err)
+		return nil, err
 	}
+	log.WithField("queue", tmp).Debugf("Updated queue. queue_id: %s", tmp.ID)
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // QueueUpdateRoutingMethod sends a request to queue-manager
 // to updating the queue's routing_method.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdateRoutingMethod(u *cscustomer.Customer, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) error {
+func (h *serviceHandler) QueueUpdateRoutingMethod(u *cscustomer.Customer, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueUpdateRoutingMethod",
@@ -226,21 +231,24 @@ func (h *serviceHandler) QueueUpdateRoutingMethod(u *cscustomer.Customer, queueI
 	_, err := h.queueGet(ctx, u, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	if err := h.reqHandler.QMV1QueueUpdateRoutingMethod(ctx, queueID, routingMethod); err != nil {
-		log.Errorf("Could not update the queue's routing_method. err: %v", err)
-		return err
+	tmp, err := h.reqHandler.QMV1QueueUpdateRoutingMethod(ctx, queueID, routingMethod)
+	if err != nil {
+		log.Errorf("Could not update the queue. err: %v", err)
+		return nil, err
 	}
+	log.WithField("queue", tmp).Debugf("Updated queue. queue_id: %s", tmp.ID)
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // QueueUpdateActions sends a request to queue-manager
 // to updating the queue's action settings.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdateActions(u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) error {
+func (h *serviceHandler) QueueUpdateActions(u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueUpdateActions",
@@ -251,13 +259,16 @@ func (h *serviceHandler) QueueUpdateActions(u *cscustomer.Customer, queueID uuid
 	_, err := h.queueGet(ctx, u, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	if err := h.reqHandler.QMV1QueueUpdateActions(ctx, queueID, waitActions, timeoutWait, timeoutService); err != nil {
-		log.Errorf("Could not update the queue's actions. err: %v", err)
-		return err
+	tmp, err := h.reqHandler.QMV1QueueUpdateActions(ctx, queueID, waitActions, timeoutWait, timeoutService)
+	if err != nil {
+		log.Errorf("Could not update the queue. err: %v", err)
+		return nil, err
 	}
+	log.WithField("queue", tmp).Debugf("Updated queue. queue_id: %s", tmp.ID)
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
