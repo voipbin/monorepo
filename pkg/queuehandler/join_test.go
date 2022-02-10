@@ -55,7 +55,8 @@ func TestJoin(t *testing.T) {
 		responseConfbridge *cmconfbridge.Confbridge
 		responseFlow       *fmflow.Flow
 
-		expectRes *queuecall.Queuecall
+		responseQueue *queue.Queue
+		expectRes     *queuecall.Queuecall
 	}{
 		{
 			"normal",
@@ -94,6 +95,9 @@ func TestJoin(t *testing.T) {
 				},
 			},
 
+			&queue.Queue{
+				ID: uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
+			},
 			&queuecall.Queuecall{
 				ID:      uuid.FromStringOrNil("20e2616a-60ec-11ec-912a-978318aa1f5e"),
 				QueueID: uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
@@ -142,6 +146,8 @@ func TestJoin(t *testing.T) {
 
 			mockQueuecallReference.EXPECT().SetCurrentQueuecallID(gomock.Any(), tt.referenceID, tt.referenceType, tt.queuecall.ID).Return(nil)
 			mockDB.EXPECT().QueueAddQueueCallID(gomock.Any(), tt.queuecall.QueueID, tt.queuecall.ID).Return(nil)
+			mockDB.EXPECT().QueueGet(gomock.Any(), tt.queueID).Return(tt.responseQueue, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), queue.EventTypeQueueUpdated, tt.responseQueue)
 
 			res, err := h.Join(ctx, tt.queueID, tt.referenceType, tt.referenceID, tt.exitActionID)
 			if err != nil {

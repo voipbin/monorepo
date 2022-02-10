@@ -17,7 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
 
-func TestHangup(t *testing.T) {
+func TestHungup(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -102,7 +102,7 @@ func TestHangup(t *testing.T) {
 			ctx := context.Background()
 
 			mockQueuecallReference.EXPECT().Get(gomock.Any(), tt.referenceID).Return(tt.queuecallReference, nil)
-			mockQueuecallReference.EXPECT().Delete(gomock.Any(), tt.queuecallReference.ID).Return(nil)
+			mockQueuecallReference.EXPECT().Delete(gomock.Any(), tt.queuecallReference.ID).Return(&queuecallreference.QueuecallReference{}, nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.queuecall, nil)
 			mockDB.EXPECT().QueuecallDelete(gomock.Any(), tt.queuecallReference.CurrentQueuecallID, queuecall.StatusAbandoned).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
@@ -111,7 +111,7 @@ func TestHangup(t *testing.T) {
 			duration := getDuration(ctx, tt.responseQueuecall.TMCreate, tt.responseQueuecall.TMDelete)
 			mockDB.EXPECT().QueueIncreaseTotalAbandonedCount(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ID, duration)
 
-			h.Hangup(ctx, tt.referenceID)
+			h.Hungup(ctx, tt.referenceID)
 		})
 	}
 }

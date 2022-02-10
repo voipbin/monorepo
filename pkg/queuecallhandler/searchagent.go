@@ -12,11 +12,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
-// Execute search the available agent and dial to them.
-func (h *queuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID) {
+// SearchAgent search the available agent and dial to them.
+func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUID) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":         "Execute",
+			"func":         "SearchAgent",
 			"queuecall_id": queuecallID,
 		},
 	)
@@ -37,7 +37,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID) {
 		return
 	}
 
-	// get agents
+	// get available agents
 	agents, err := h.reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, qc.CustomerID, qc.TagIDs, amagent.StatusAvailable)
 	if err != nil {
 		log.Errorf("Could not get available agents. Send the request again with 1 sec delay. err: %v", err)
@@ -88,7 +88,4 @@ func (h *queuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID) {
 		return
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallEntering, tmp)
-
 }
-
-

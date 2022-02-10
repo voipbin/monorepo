@@ -62,13 +62,23 @@ func (h *listenHandler) processV1QueuecallreferencesIDDelete(ctx context.Context
 		})
 	log.Debug("Executing processV1QueuecallreferencesIDDelete.")
 
-	if err := h.queuecallHandler.KickByReferenceID(ctx, id); err != nil {
+	tmp, err := h.queuecallHandler.KickByReferenceID(ctx, id)
+	if err != nil {
 		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
 		return simpleResponse(500), nil
 	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

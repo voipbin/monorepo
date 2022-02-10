@@ -302,7 +302,8 @@ func TestProcessV1QueuesIDDelete(t *testing.T) {
 
 		id uuid.UUID
 
-		expectRes *rabbitmqhandler.Response
+		responseQueue *queue.Queue
+		expectRes     *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -314,9 +315,13 @@ func TestProcessV1QueuesIDDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("a8e8faba-6150-11ec-bde0-e75ae9f16df7"),
 
+			&queue.Queue{
+				ID: uuid.FromStringOrNil("a8e8faba-6150-11ec-bde0-e75ae9f16df7"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"a8e8faba-6150-11ec-bde0-e75ae9f16df7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -324,7 +329,7 @@ func TestProcessV1QueuesIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockQueue.EXPECT().Delete(gomock.Any(), tt.id).Return(nil)
+			mockQueue.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -359,7 +364,8 @@ func TestProcessV1QueuesIDPut(t *testing.T) {
 		queueName string
 		detail    string
 
-		expectRes *rabbitmqhandler.Response
+		responseQueue *queue.Queue
+		expectRes     *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -374,9 +380,13 @@ func TestProcessV1QueuesIDPut(t *testing.T) {
 			"name",
 			"detail",
 
+			&queue.Queue{
+				ID: uuid.FromStringOrNil("66f7d436-5f6c-11ec-9298-677df04a59c2"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"66f7d436-5f6c-11ec-9298-677df04a59c2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -384,7 +394,7 @@ func TestProcessV1QueuesIDPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockQueue.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.queueName, tt.detail).Return(nil)
+			mockQueue.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.queueName, tt.detail).Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -487,7 +497,8 @@ func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
 		id     uuid.UUID
 		tagIDs []uuid.UUID
 
-		expectRes *rabbitmqhandler.Response
+		responseQueue *queue.Queue
+		expectRes     *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -503,9 +514,13 @@ func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
 				uuid.FromStringOrNil("7bd9f08a-6018-11ec-a177-6742e33b235a"),
 			},
 
+			&queue.Queue{
+				ID: uuid.FromStringOrNil("4c898be8-5f6d-11ec-b701-a7ba1509a629"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"4c898be8-5f6d-11ec-b701-a7ba1509a629","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -523,9 +538,13 @@ func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
 				uuid.FromStringOrNil("153776e4-6019-11ec-b455-2b5b5ac589ec"),
 			},
 
+			&queue.Queue{
+				ID: uuid.FromStringOrNil("1c0938ae-6019-11ec-8a5d-ab6c7909948a"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"1c0938ae-6019-11ec-8a5d-ab6c7909948a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -533,7 +552,7 @@ func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockQueue.EXPECT().UpdateTagIDs(gomock.Any(), tt.id, tt.tagIDs).Return(nil)
+			mockQueue.EXPECT().UpdateTagIDs(gomock.Any(), tt.id, tt.tagIDs).Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -567,7 +586,8 @@ func TestProcessV1QueuesIDRoutingMethodPut(t *testing.T) {
 		id            uuid.UUID
 		routingMethod queue.RoutingMethod
 
-		expectRes *rabbitmqhandler.Response
+		responseQueue *queue.Queue
+		expectRes     *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -581,9 +601,13 @@ func TestProcessV1QueuesIDRoutingMethodPut(t *testing.T) {
 			uuid.FromStringOrNil("89b402a8-6019-11ec-8f65-cb5c282f0024"),
 			queue.RoutingMethodRandom,
 
+			&queue.Queue{
+				ID: uuid.FromStringOrNil("89b402a8-6019-11ec-8f65-cb5c282f0024"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"89b402a8-6019-11ec-8f65-cb5c282f0024","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -591,7 +615,7 @@ func TestProcessV1QueuesIDRoutingMethodPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockQueue.EXPECT().UpdateRoutingMethod(gomock.Any(), tt.id, tt.routingMethod).Return(nil)
+			mockQueue.EXPECT().UpdateRoutingMethod(gomock.Any(), tt.id, tt.routingMethod).Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -627,7 +651,8 @@ func TestProcessV1QueuesIDWaitActionsPut(t *testing.T) {
 		waitTimeout    int
 		serviceTimeout int
 
-		expectRes *rabbitmqhandler.Response
+		responseQueue *queue.Queue
+		expectRes     *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -648,9 +673,13 @@ func TestProcessV1QueuesIDWaitActionsPut(t *testing.T) {
 			10000,
 			100000,
 
+			&queue.Queue{
+				ID: uuid.FromStringOrNil("e4d05ee8-6019-11ec-ac25-1bd30b213fe2"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"e4d05ee8-6019-11ec-ac25-1bd30b213fe2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -658,7 +687,7 @@ func TestProcessV1QueuesIDWaitActionsPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockQueue.EXPECT().UpdateWaitActionsAndTimeouts(gomock.Any(), tt.id, tt.waitActions, tt.waitTimeout, tt.serviceTimeout).Return(nil)
+			mockQueue.EXPECT().UpdateWaitActionsAndTimeouts(gomock.Any(), tt.id, tt.waitActions, tt.waitTimeout, tt.serviceTimeout).Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

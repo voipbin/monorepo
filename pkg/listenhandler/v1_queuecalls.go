@@ -109,13 +109,23 @@ func (h *listenHandler) processV1QueuecallsIDDelete(ctx context.Context, m *rabb
 		})
 	log.Debug("Executing processV1QueuecallsIDDelete.")
 
-	if err := h.queuecallHandler.Kick(ctx, id); err != nil {
+	tmp, err := h.queuecallHandler.Kick(ctx, id)
+	if err != nil {
 		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
 		return simpleResponse(500), nil
 	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -136,7 +146,31 @@ func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m 
 		})
 	log.Debug("Executing processV1QueuecallsIDExecutePost.")
 
-	h.queuecallHandler.Execute(ctx, id)
+	go h.queuecallHandler.Execute(ctx, id)
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
+// processV1QueuecallsIDSearchAgentPost handles Post /v1/queuecalls/<queuecall-id>/search_agent request
+func (h *listenHandler) processV1QueuecallsIDSearchAgentPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":         "processV1QueuecallsIDSearchAgentPost",
+			"queuecall_id": id,
+		})
+	log.Debug("Executing processV1QueuecallsIDSearchAgentPost.")
+
+	go h.queuecallHandler.SearchAgent(ctx, id)
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",

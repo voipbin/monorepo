@@ -31,10 +31,12 @@ func (h *queuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid.UUI
 	}
 
 	// Kick the queuecall.
-	if err := h.Kick(ctx, qc.ID); err != nil {
+	tmp, err := h.Kick(ctx, qc.ID)
+	if err != nil {
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		return
 	}
+	log.WithField("queuecall", tmp).Debugf("Detail queuecall info.")
 }
 
 // TimeoutService kicks the cqueuecall if the queuecall's status is service.
@@ -59,8 +61,11 @@ func (h *queuecallHandler) TimeoutService(ctx context.Context, queuecallID uuid.
 	}
 
 	// Kick the queuecall.
-	if err := h.Kick(ctx, qc.ID); err != nil {
+	tmp, err := h.Kick(ctx, qc.ID)
+	if err != nil {
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		return
 	}
+	log.WithField("queuecall", tmp).Debugf("Detail queuecall info.")
+
 }

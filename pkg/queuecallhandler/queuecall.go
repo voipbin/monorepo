@@ -139,5 +139,12 @@ func (h *queuecallHandler) Create(
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallCreated, res)
 
+	// send the queuecall timeout-wait
+	if res.TimeoutWait > 0 {
+		if errTiemout := h.reqHandler.QMV1QueuecallTiemoutWait(ctx, res.ID, res.TimeoutWait); errTiemout != nil {
+			log.Errorf("Could not send the timeout-wait request. err: %v", errTiemout)
+		}
+	}
+
 	return res, nil
 }
