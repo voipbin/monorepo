@@ -330,22 +330,23 @@ type RequestHandler interface {
 	// queue-manager queue
 	QMV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueue.Queue, error)
 	QMV1QueueGet(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error)
-	QMV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail, webhookURI, webhookMethod string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error)
-	QMV1QueueDelete(ctx context.Context, queueID uuid.UUID) error
-	QMV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail, webhookURI, webhookMethod string) error
-	QMV1QueueUpdateTagIDs(ctx context.Context, queueID uuid.UUID, tagIDs []uuid.UUID) error
-	QMV1QueueUpdateRoutingMethod(ctx context.Context, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) error
-	QMV1QueueUpdateActions(ctx context.Context, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) error
+	QMV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error)
+	QMV1QueueDelete(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error)
+	QMV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail string) (*qmqueue.Queue, error)
+	QMV1QueueUpdateTagIDs(ctx context.Context, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.Queue, error)
+	QMV1QueueUpdateRoutingMethod(ctx context.Context, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.Queue, error)
+	QMV1QueueUpdateActions(ctx context.Context, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error)
 	QMV1QueueCreateQueuecall(ctx context.Context, queueID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID, exitActionID uuid.UUID) (*qmqueuecall.Queuecall, error)
 
 	// queue-manager queuecall
 	QMV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error)
 	QMV1QueuecallGet(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
-	QMV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) error
-	QMV1QueuecallDeleteByReferenceID(ctx context.Context, referenceID uuid.UUID) error
-	QMV1QueuecallExecute(ctx context.Context, queuecallID uuid.UUID, delay int) error
-	QMV1QueuecallTiemoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error
-	QMV1QueuecallTiemoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error
+	QMV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
+	QMV1QueuecallDeleteByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error)
+	QMV1QueuecallExecute(ctx context.Context, queuecallID uuid.UUID) error
+	QMV1QueuecallSearchAgent(ctx context.Context, queuecallID uuid.UUID, delay int) error
+	QMV1QueuecallTimeoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error
+	QMV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error
 
 	// queue-manager queuecallreference
 	QMV1QueuecallReferenceGet(ctx context.Context, referenceID uuid.UUID) (*qmqueuecallreference.QueuecallReference, error)
