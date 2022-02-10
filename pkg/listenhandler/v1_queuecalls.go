@@ -10,6 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
 )
 
 // processV1QueuecallsGet handles Get /v1/queuecalls request
@@ -133,23 +135,42 @@ func (h *listenHandler) processV1QueuecallsIDDelete(ctx context.Context, m *rabb
 
 // processV1QueuecallsIDExecutePost handles Post /v1/queuecalls/<queuecall-id>/execute request
 func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1QueuecallsIDExecutePost",
+		})
+	log.WithField("request", m).Debug("Executing processV1QueuecallsIDExecutePost.")
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "processV1QueuecallsIDExecutePost",
-			"queuecall_id": id,
-		})
-	log.Debug("Executing processV1QueuecallsIDExecutePost.")
 
-	go h.queuecallHandler.Execute(ctx, id)
+	var req request.V1DataQueuesIDExecutePost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.queuecallHandler.Execute(ctx, id, req.SearchDelay)
+	if err != nil {
+		log.Errorf("Could not execute the queuecall. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -170,7 +191,7 @@ func (h *listenHandler) processV1QueuecallsIDSearchAgentPost(ctx context.Context
 		})
 	log.Debug("Executing processV1QueuecallsIDSearchAgentPost.")
 
-	go h.queuecallHandler.SearchAgent(ctx, id)
+	h.queuecallHandler.SearchAgent(ctx, id)
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",

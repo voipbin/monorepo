@@ -25,7 +25,7 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 	qc, err := h.db.QueuecallGet(ctx, queuecallID)
 	if err != nil {
 		log.Errorf("Could not get queuecall. Send the request again with 1 sec delay. err: %v", err)
-		_ = h.reqHandler.QMV1QueuecallExecute(ctx, queuecallID, defaultDelayQueuecallExecute)
+		_ = h.reqHandler.QMV1QueuecallSearchAgent(ctx, queuecallID, defaultDelaySearchAgent)
 		return
 	}
 	log.WithField("queuecall", qc).Debug("Found queuecall info.")
@@ -41,11 +41,11 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 	agents, err := h.reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, qc.CustomerID, qc.TagIDs, amagent.StatusAvailable)
 	if err != nil {
 		log.Errorf("Could not get available agents. Send the request again with 1 sec delay. err: %v", err)
-		_ = h.reqHandler.QMV1QueuecallExecute(ctx, qc.ID, defaultDelayQueuecallExecute)
+		_ = h.reqHandler.QMV1QueuecallSearchAgent(ctx, qc.ID, defaultDelaySearchAgent)
 		return
 	} else if len(agents) == 0 {
 		log.Info("No available agent now. Send the request again with 1 sec delay.")
-		_ = h.reqHandler.QMV1QueuecallExecute(ctx, qc.ID, defaultDelayQueuecallExecute)
+		_ = h.reqHandler.QMV1QueuecallSearchAgent(ctx, qc.ID, defaultDelaySearchAgent)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 	// dial to the agent
 	if err := h.reqHandler.AMV1AgentDial(ctx, targetAgent.ID, &qc.Source, qc.ConfbridgeID); err != nil {
 		log.Errorf("Could not dial to the agent. Send the request again with 1 sec delay. err: %v", err)
-		_ = h.reqHandler.QMV1QueuecallExecute(ctx, qc.ID, defaultDelayQueuecallExecute)
+		_ = h.reqHandler.QMV1QueuecallSearchAgent(ctx, qc.ID, defaultDelaySearchAgent)
 		return
 	}
 

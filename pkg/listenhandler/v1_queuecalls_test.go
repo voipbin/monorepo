@@ -241,8 +241,10 @@ func TestProcessV1QueuescallsIDExecutePost(t *testing.T) {
 		request *rabbitmqhandler.Request
 
 		queuecallID uuid.UUID
+		searchDelay int
 
-		expectRes *rabbitmqhandler.Response
+		responseQueuecall *queuecall.Queuecall
+		expectRes         *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -250,13 +252,19 @@ func TestProcessV1QueuescallsIDExecutePost(t *testing.T) {
 				URI:      "/v1/queuecalls/7265381e-60a6-11ec-89ed-57111ee53375/execute",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
+				Data:     []byte(`{"search_delay":1000}`),
 			},
 
 			uuid.FromStringOrNil("7265381e-60a6-11ec-89ed-57111ee53375"),
+			1000,
 
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("7265381e-60a6-11ec-89ed-57111ee53375"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"7265381e-60a6-11ec-89ed-57111ee53375","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -264,7 +272,7 @@ func TestProcessV1QueuescallsIDExecutePost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockQueuecall.EXPECT().Execute(gomock.Any(), tt.queuecallID).AnyTimes()
+			mockQueuecall.EXPECT().Execute(gomock.Any(), tt.queuecallID, tt.searchDelay).Return(tt.responseQueuecall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -141,7 +141,7 @@ func (h *queuecallHandler) Create(
 
 	// send the queuecall timeout-wait
 	if res.TimeoutWait > 0 {
-		if errTiemout := h.reqHandler.QMV1QueuecallTiemoutWait(ctx, res.ID, res.TimeoutWait); errTiemout != nil {
+		if errTiemout := h.reqHandler.QMV1QueuecallTimeoutWait(ctx, res.ID, res.TimeoutWait); errTiemout != nil {
 			log.Errorf("Could not send the timeout-wait request. err: %v", errTiemout)
 		}
 	}
