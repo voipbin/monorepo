@@ -28,7 +28,7 @@ type Queuecall struct {
 	ServiceAgentID uuid.UUID `json:"service_agent_id"`
 
 	TimeoutWait    int `json:"timeout_wait"`    // timeout for wait.(ms)
-	TimeoutService int `json:"timeout_service"` // timeout for service.(service)
+	TimeoutService int `json:"timeout_service"` // timeout for service.(ms)
 
 	TMCreate  string `json:"tm_create"`  // Created timestamp.
 	TMService string `json:"tm_service"` // Serviced timestamp.
@@ -51,6 +51,7 @@ type Status string
 const (
 	StatusWait      Status = "wait"      // queue call is waiting in the wait actions.
 	StatusEntering  Status = "entering"  // queue call is entering to the queue's confbridge
+	StatusKicking   Status = "kicking"   // queue call is being kick from the queue
 	StatusService   Status = "service"   // queue call is being service now.
 	StatusDone      Status = "done"      // queue call done.
 	StatusAbandoned Status = "abandoned" // queue call has been abandoned.

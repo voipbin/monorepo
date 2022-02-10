@@ -9,11 +9,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
-// HangupByReferenceID handles reference's hangup.
-func (h *queuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
+// Hungup handles reference's hungup.
+func (h *queuecallHandler) Hungup(ctx context.Context, referenceID uuid.UUID) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":         "Hangup",
+			"func":         "Hungup",
 			"reference_id": referenceID,
 		},
 	)
@@ -26,7 +26,8 @@ func (h *queuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
 	}
 	log.WithField("queuecallreference", qr).Debug("Found queuecallreference.")
 
-	if errDel := h.queuecallReferenceHandler.Delete(ctx, qr.ID); errDel != nil {
+	_, errDel := h.queuecallReferenceHandler.Delete(ctx, qr.ID)
+	if errDel != nil {
 		log.Errorf("Could not delete the queuecall reference. But keep moving on. err: %v", errDel)
 	}
 
@@ -39,7 +40,7 @@ func (h *queuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
 	log = log.WithField("queuecall_id", qc.ID)
 
 	// check queuecall's status
-	if qc.Status != queuecall.StatusWait {
+	if qc.Status != queuecall.StatusWait && qc.Status != queuecall.StatusKicking {
 		// nothing to do here
 		return
 	}

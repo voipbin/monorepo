@@ -354,6 +354,20 @@ func (mr *MockDBHandlerMockRecorder) QueuecallSetServiceAgentID(ctx, id, service
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetServiceAgentID", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetServiceAgentID), ctx, id, serviceAgentID)
 }
 
+// QueuecallSetStatusKicking mocks base method.
+func (m *MockDBHandler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallSetStatusKicking", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueuecallSetStatusKicking indicates an expected call of QueuecallSetStatusKicking.
+func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusKicking(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusKicking", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusKicking), ctx, id)
+}
+
 // QueuecallSetStatusService mocks base method.
 func (m *MockDBHandler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()

@@ -42,11 +42,12 @@ type QueuecallHandler interface {
 		timeoutService int,
 	) (*queuecall.Queuecall, error)
 	Execute(ctx context.Context, queuecallID uuid.UUID)
-	Hangup(ctx context.Context, referenceID uuid.UUID)
-	Kick(ctx context.Context, queuecallID uuid.UUID) error
-	KickByReferenceID(ctx context.Context, referenceID uuid.UUID) error
+	Hungup(ctx context.Context, referenceID uuid.UUID)
+	Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error)
+	KickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	Leaved(ctx context.Context, referenceID, confbridgeID uuid.UUID)
 	Joined(ctx context.Context, referenceID, confbridgeID uuid.UUID)
+	SearchAgent(ctx context.Context, queuecallID uuid.UUID)
 
 	TimeoutService(ctx context.Context, queuecallID uuid.UUID)
 	TimeoutWait(ctx context.Context, queuecallID uuid.UUID)

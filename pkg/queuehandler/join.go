@@ -10,6 +10,7 @@ import (
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
@@ -106,6 +107,13 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 	if err := h.db.QueueAddQueueCallID(ctx, res.QueueID, res.ID); err != nil {
 		log.Errorf("Could not add the queuecall to the queue. err: %v", err)
 	}
+
+	tmp, err := h.db.QueueGet(ctx, queueID)
+	if err != nil {
+		log.Errorf("Could not get deleted queue. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, tmp)
 
 	return res, nil
 }

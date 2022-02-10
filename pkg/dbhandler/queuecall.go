@@ -382,5 +382,28 @@ func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID) e
 	_ = h.queuecallUpdateToCache(ctx, id)
 
 	return nil
+}
+
+// QueuecallSetStatusKicking sets the QueueCall's status to the kicking.
+func (h *handler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		queuecalls
+	set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	_, err := h.db.Exec(q, queuecall.StatusKicking, GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetStatusKicking. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return nil
 
 }

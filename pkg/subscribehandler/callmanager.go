@@ -71,7 +71,7 @@ func (h *subscribeHandler) processEventCMCallHungup(m *rabbitmqhandler.Event) er
 		return err
 	}
 
-	h.queuecallHandler.Hangup(ctx, e.ID)
+	h.queuecallHandler.Hungup(ctx, e.ID)
 
 	return nil
 }

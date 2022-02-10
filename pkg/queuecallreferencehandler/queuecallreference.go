@@ -80,7 +80,7 @@ func (h *queuecallReferenceHandler) Get(ctx context.Context, id uuid.UUID) (*que
 }
 
 // Delete deletes the queuecallreference.
-func (h *queuecallReferenceHandler) Delete(ctx context.Context, id uuid.UUID) error {
+func (h *queuecallReferenceHandler) Delete(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":                   "Delete",
@@ -89,15 +89,15 @@ func (h *queuecallReferenceHandler) Delete(ctx context.Context, id uuid.UUID) er
 	)
 
 	if errDel := h.db.QueuecallReferenceDelete(ctx, id); errDel != nil {
-		return errDel
+		return nil, errDel
 	}
 
-	tmp, err := h.db.QueuecallReferenceGet(ctx, id)
+	res, err := h.db.QueuecallReferenceGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get deleted queuecallreference. err: %v", err)
-		return err
+		return nil, err
 	}
-	h.notifyhandler.PublishEvent(ctx, queuecallreference.EventTypeQueuecallReferenceDeleted, tmp)
+	h.notifyhandler.PublishEvent(ctx, queuecallreference.EventTypeQueuecallReferenceDeleted, res)
 
-	return nil
+	return res, nil
 }

@@ -166,16 +166,23 @@ func (h *listenHandler) processV1QueuesIDDelete(ctx context.Context, m *rabbitmq
 		})
 	log.Debug("Executing processV1QueuesIDDelete.")
 
-	// get queue
-	err := h.queueHandler.Delete(ctx, id)
+	tmp, err := h.queueHandler.Delete(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get queue info. err: %v", err)
+		log.Errorf("Could not delete queue info. err: %v", err)
 		return simpleResponse(500), nil
 	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -204,15 +211,23 @@ func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *rabbitmqhan
 	log.WithField("request", req).Debug("Updating the queue's basic info.")
 
 	// join to the queue
-	err := h.queueHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
+	tmp, err := h.queueHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
 	if err != nil {
-		log.Errorf("Could not update the queue's basic info. err: %v", err)
+		log.Errorf("Could not update the queue info. err: %v", err)
 		return simpleResponse(500), nil
 	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -290,15 +305,23 @@ func (h *listenHandler) processV1QueuesIDTagIDsPut(ctx context.Context, m *rabbi
 	log.WithField("request", req).Debug("Updating the queue's tag_ids info.")
 
 	// update the queue
-	err := h.queueHandler.UpdateTagIDs(ctx, id, req.TagIDs)
+	tmp, err := h.queueHandler.UpdateTagIDs(ctx, id, req.TagIDs)
 	if err != nil {
-		log.Errorf("Could not update the queue's tag_ids info. err: %v", err)
+		log.Errorf("Could not get queue info. err: %v", err)
 		return simpleResponse(500), nil
 	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -327,15 +350,23 @@ func (h *listenHandler) processV1QueuesIDRoutingMethodPut(ctx context.Context, m
 	log.WithField("request", req).Debug("Updating the queue's tag_ids info.")
 
 	// update the queue
-	err := h.queueHandler.UpdateRoutingMethod(ctx, id, queue.RoutingMethod(req.RoutingMethod))
+	tmp, err := h.queueHandler.UpdateRoutingMethod(ctx, id, queue.RoutingMethod(req.RoutingMethod))
 	if err != nil {
-		log.Errorf("Could not update the queue's routing_method info. err: %v", err)
+		log.Errorf("Could not update the queue info. err: %v", err)
 		return simpleResponse(500), nil
 	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -364,15 +395,23 @@ func (h *listenHandler) processV1QueuesIDWaitActionsPut(ctx context.Context, m *
 	log.WithField("request", req).Debug("Updating the queue's tag_ids info.")
 
 	// update the queue
-	err := h.queueHandler.UpdateWaitActionsAndTimeouts(ctx, id, req.WaitActions, req.WaitTimeout, req.ServiceTimeout)
+	tmp, err := h.queueHandler.UpdateWaitActionsAndTimeouts(ctx, id, req.WaitActions, req.WaitTimeout, req.ServiceTimeout)
 	if err != nil {
-		log.Errorf("Could not update the queue's wait_actions info. err: %v", err)
+		log.Errorf("Could not update the queue info. err: %v", err)
 		return simpleResponse(500), nil
 	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

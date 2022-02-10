@@ -563,3 +563,66 @@ func TestQueuecallSetStatusService(t *testing.T) {
 		})
 	}
 }
+
+func TestQueuecallSetStatusKicking(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		data *queuecall.Queuecall
+
+		expectRes *queuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("97222dd6-8a15-11ec-9cb1-eba575c6b180"),
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("97222dd6-8a15-11ec-9cb1-eba575c6b180"),
+			},
+
+			&queuecall.Queuecall{
+				ID:     uuid.FromStringOrNil("97222dd6-8a15-11ec-9cb1-eba575c6b180"),
+				Status: queuecall.StatusKicking,
+				Source: cmaddress.Address{},
+				TagIDs: []uuid.UUID{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			err := h.QueuecallSetStatusKicking(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.QueuecallGet(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v\n", err)
+			}
+
+			tt.expectRes.TMUpdate = res.TMUpdate
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

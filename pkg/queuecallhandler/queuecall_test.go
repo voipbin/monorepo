@@ -269,13 +269,14 @@ func TestCreate(t *testing.T) {
 			1000000,
 
 			&queuecall.Queuecall{
-				Source: cmaddress.Address{},
-				TagIDs: []uuid.UUID{},
+				Source:      cmaddress.Address{},
+				TagIDs:      []uuid.UUID{},
+				TimeoutWait: 100000,
 			},
-
 			&queuecall.Queuecall{
-				Source: cmaddress.Address{},
-				TagIDs: []uuid.UUID{},
+				Source:      cmaddress.Address{},
+				TagIDs:      []uuid.UUID{},
+				TimeoutWait: 100000,
 			},
 		},
 	}
@@ -287,6 +288,10 @@ func TestCreate(t *testing.T) {
 			mockDB.EXPECT().QueuecallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(tt.queuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.queuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.queuecall)
+
+			if tt.timeoutWait > 0 {
+				mockReq.EXPECT().QMV1QueuecallTiemoutWait(gomock.Any(), gomock.Any(), tt.timeoutWait).Return(nil)
+			}
 
 			res, err := h.Create(
 				ctx,

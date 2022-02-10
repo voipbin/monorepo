@@ -54,11 +54,12 @@ func (mr *MockQueueHandlerMockRecorder) Create(ctx, customerID, name, detail, ro
 }
 
 // Delete mocks base method.
-func (m *MockQueueHandler) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockQueueHandler) Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Delete indicates an expected call of Delete.
@@ -113,11 +114,12 @@ func (mr *MockQueueHandlerMockRecorder) Join(ctx, queueID, referenceType, refere
 }
 
 // UpdateBasicInfo mocks base method.
-func (m *MockQueueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+func (m *MockQueueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UpdateBasicInfo indicates an expected call of UpdateBasicInfo.
@@ -127,11 +129,12 @@ func (mr *MockQueueHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail in
 }
 
 // UpdateRoutingMethod mocks base method.
-func (m *MockQueueHandler) UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) error {
+func (m *MockQueueHandler) UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateRoutingMethod", ctx, id, routingMEthod)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UpdateRoutingMethod indicates an expected call of UpdateRoutingMethod.
@@ -141,11 +144,12 @@ func (mr *MockQueueHandlerMockRecorder) UpdateRoutingMethod(ctx, id, routingMEth
 }
 
 // UpdateTagIDs mocks base method.
-func (m *MockQueueHandler) UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error {
+func (m *MockQueueHandler) UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateTagIDs", ctx, id, tagIDs)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UpdateTagIDs indicates an expected call of UpdateTagIDs.
@@ -155,11 +159,12 @@ func (mr *MockQueueHandlerMockRecorder) UpdateTagIDs(ctx, id, tagIDs interface{}
 }
 
 // UpdateWaitActionsAndTimeouts mocks base method.
-func (m *MockQueueHandler) UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) error {
+func (m *MockQueueHandler) UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateWaitActionsAndTimeouts", ctx, id, waitActions, waitTimeout, serviceTimeout)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UpdateWaitActionsAndTimeouts indicates an expected call of UpdateWaitActionsAndTimeouts.

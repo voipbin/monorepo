@@ -110,16 +110,16 @@ func (mr *MockQueuecallHandlerMockRecorder) Gets(ctx, customerID, size, token in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueuecallHandler)(nil).Gets), ctx, customerID, size, token)
 }
 
-// Hangup mocks base method.
-func (m *MockQueuecallHandler) Hangup(ctx context.Context, referenceID uuid.UUID) {
+// Hungup mocks base method.
+func (m *MockQueuecallHandler) Hungup(ctx context.Context, referenceID uuid.UUID) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Hangup", ctx, referenceID)
+	m.ctrl.Call(m, "Hungup", ctx, referenceID)
 }
 
-// Hangup indicates an expected call of Hangup.
-func (mr *MockQueuecallHandlerMockRecorder) Hangup(ctx, referenceID interface{}) *gomock.Call {
+// Hungup indicates an expected call of Hungup.
+func (mr *MockQueuecallHandlerMockRecorder) Hungup(ctx, referenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockQueuecallHandler)(nil).Hangup), ctx, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hungup", reflect.TypeOf((*MockQueuecallHandler)(nil).Hungup), ctx, referenceID)
 }
 
 // Joined mocks base method.
@@ -135,11 +135,12 @@ func (mr *MockQueuecallHandlerMockRecorder) Joined(ctx, referenceID, confbridgeI
 }
 
 // Kick mocks base method.
-func (m *MockQueuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) error {
+func (m *MockQueuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Kick", ctx, queuecallID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Kick indicates an expected call of Kick.
@@ -149,11 +150,12 @@ func (mr *MockQueuecallHandlerMockRecorder) Kick(ctx, queuecallID interface{}) *
 }
 
 // KickByReferenceID mocks base method.
-func (m *MockQueuecallHandler) KickByReferenceID(ctx context.Context, referenceID uuid.UUID) error {
+func (m *MockQueuecallHandler) KickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "KickByReferenceID", ctx, referenceID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // KickByReferenceID indicates an expected call of KickByReferenceID.
@@ -172,6 +174,18 @@ func (m *MockQueuecallHandler) Leaved(ctx context.Context, referenceID, confbrid
 func (mr *MockQueuecallHandlerMockRecorder) Leaved(ctx, referenceID, confbridgeID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockQueuecallHandler)(nil).Leaved), ctx, referenceID, confbridgeID)
+}
+
+// SearchAgent mocks base method.
+func (m *MockQueuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUID) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SearchAgent", ctx, queuecallID)
+}
+
+// SearchAgent indicates an expected call of SearchAgent.
+func (mr *MockQueuecallHandlerMockRecorder) SearchAgent(ctx, queuecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchAgent", reflect.TypeOf((*MockQueuecallHandler)(nil).SearchAgent), ctx, queuecallID)
 }
 
 // TimeoutService mocks base method.
