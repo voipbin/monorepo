@@ -806,9 +806,10 @@ func TestCleanCurrentAction(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		call    *call.Call
-		channel *channel.Channel
+		name      string
+		call      *call.Call
+		channel   *channel.Channel
+		expectRes bool
 	}{
 		{
 			"playback has set",
@@ -822,6 +823,7 @@ func TestCleanCurrentAction(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				PlaybackID: "44a07af0-5837-11ec-bdce-6bfc534e86b7",
 			},
+			false,
 		},
 		{
 			"confbridgeID has set",
@@ -835,20 +837,23 @@ func TestCleanCurrentAction(t *testing.T) {
 				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				AsteriskID: "42:01:0a:a4:00:05",
 			},
+			false,
 		},
 		{
-			"confbridgeID playback have set",
+			"action sleep",
 			&call.Call{
-				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
-				AsteriskID:   "42:01:0a:a4:00:05",
-				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
-				ConfbridgeID: uuid.FromStringOrNil("619bba82-5839-11ec-8733-c3a8bf0aee26"),
+				ID:         uuid.FromStringOrNil("0d074aee-8c1a-11ec-b499-c33db4145901"),
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				Action: action.Action{
+					Type: action.TypeSleep,
+				},
 			},
 			&channel.Channel{
 				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				AsteriskID: "42:01:0a:a4:00:05",
-				PlaybackID: "44a07af0-5837-11ec-bdce-6bfc534e86b7",
 			},
+			true,
 		},
 	}
 
@@ -865,8 +870,13 @@ func TestCleanCurrentAction(t *testing.T) {
 				mockConf.EXPECT().Kick(gomock.Any(), tt.call.ConfbridgeID, tt.call.ID).Return(nil)
 			}
 
-			if err := h.cleanCurrentAction(ctx, tt.call); err != nil {
+			res, err := h.cleanCurrentAction(ctx, tt.call)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if tt.expectRes != res {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -979,15 +989,13 @@ func TestActionNextForce(t *testing.T) {
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
 			if tt.channel.PlaybackID != "" {
 				mockReq.EXPECT().AstPlaybackStop(gomock.Any(), tt.channel.AsteriskID, tt.channel.PlaybackID)
-			}
-
-			if tt.call.ConfbridgeID != uuid.Nil {
+			} else if tt.call.ConfbridgeID != uuid.Nil {
 				mockConf.EXPECT().Kick(gomock.Any(), tt.call.ConfbridgeID, tt.call.ID).Return(nil)
+			} else {
+				mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(tt.act, nil)
+				mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
+				mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
 			}
-
-			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(tt.act, nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
 
 			if err := h.ActionNextForce(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

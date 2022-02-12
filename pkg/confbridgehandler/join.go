@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 )
 
@@ -70,9 +71,12 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 	}
 
 	// answer the call. it is safe to call this for answered call.
-	if err := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); err != nil {
-		log.Errorf("Could not answer the call. err: %v", err)
-		return err
+	if c.Status == call.StatusRinging {
+		log.Debugf("Call was not answered. Answering the call.")
+		if err := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); err != nil {
+			log.Errorf("Could not answer the call. err: %v", err)
+			return err
+		}
 	}
 
 	// check the confbridge's bridge does exist
