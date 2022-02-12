@@ -92,17 +92,17 @@ func (mr *MockRequestHandlerMockRecorder) AMV1AgentDelete(ctx, id interface{}) *
 }
 
 // AMV1AgentDial mocks base method.
-func (m *MockRequestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, confbridgeID uuid.UUID) error {
+func (m *MockRequestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, confbridgeID, masterCallID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AMV1AgentDial", ctx, id, source, confbridgeID)
+	ret := m.ctrl.Call(m, "AMV1AgentDial", ctx, id, source, confbridgeID, masterCallID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AMV1AgentDial indicates an expected call of AMV1AgentDial.
-func (mr *MockRequestHandlerMockRecorder) AMV1AgentDial(ctx, id, source, confbridgeID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AMV1AgentDial(ctx, id, source, confbridgeID, masterCallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentDial", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentDial), ctx, id, source, confbridgeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AMV1AgentDial", reflect.TypeOf((*MockRequestHandler)(nil).AMV1AgentDial), ctx, id, source, confbridgeID, masterCallID)
 }
 
 // AMV1AgentGet mocks base method.
