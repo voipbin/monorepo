@@ -28,6 +28,7 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 		_ = h.reqHandler.QMV1QueuecallSearchAgent(ctx, queuecallID, defaultDelaySearchAgent)
 		return
 	}
+	log = log.WithField("reference_id", qc.ReferenceID)
 	log.WithField("queuecall", qc).Debug("Found queuecall info.")
 
 	// check the status
@@ -63,19 +64,22 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 	}
 
 	// dial to the agent
-	if err := h.reqHandler.AMV1AgentDial(ctx, targetAgent.ID, &qc.Source, qc.ConfbridgeID); err != nil {
+	log.WithField("agent", targetAgent).Debugf("Dialing the agent. agent_id: %s", targetAgent.ID)
+	if err := h.reqHandler.AMV1AgentDial(ctx, targetAgent.ID, &qc.Source, qc.ConfbridgeID, qc.ReferenceID); err != nil {
 		log.Errorf("Could not dial to the agent. Send the request again with 1 sec delay. err: %v", err)
 		_ = h.reqHandler.QMV1QueuecallSearchAgent(ctx, qc.ID, defaultDelaySearchAgent)
 		return
 	}
 
 	// forward the action.
+	log.Debugf("Setting the forward action id. forward_action_id: %s", qc.ForwardActionID)
 	if err := h.reqHandler.FMV1ActvieFlowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ForwardActionID, true); err != nil {
 		log.Errorf("Could not forward the active flow. err: %v", err)
 		return
 	}
 
 	// update the queuecall
+	log.Debugf("Update the queuecall service agent id. agent_id: %s", targetAgent.ID)
 	if err := h.db.QueuecallSetServiceAgentID(ctx, qc.ID, targetAgent.ID); err != nil {
 		log.Errorf("Could not ser the service agent id. err: %v", err)
 		return

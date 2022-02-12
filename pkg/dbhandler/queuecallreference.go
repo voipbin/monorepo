@@ -87,7 +87,7 @@ func (h *handler) QueuecallReferenceCreate(ctx context.Context, a *queuecallrefe
 
 	_, err = h.db.Exec(q,
 		a.ID.Bytes(),
-		a.CustomerID,
+		a.CustomerID.Bytes(),
 		a.Type,
 
 		a.CurrentQueuecallID.Bytes(),
