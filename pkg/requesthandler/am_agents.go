@@ -427,12 +427,13 @@ func (r *requestHandler) AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID
 // AMV1AgentDial sends a request to agent-manager
 // to dial to the agent.
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID uuid.UUID) error {
+func (r *requestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID, masterCallID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/agents/%s/dial", id)
 
 	data := &amrequest.V1DataAgentsIDDialPost{
 		Source:       *source,
 		ConfbridgeID: confbridgeID,
+		MasterCallID: masterCallID,
 	}
 
 	m, err := json.Marshal(data)

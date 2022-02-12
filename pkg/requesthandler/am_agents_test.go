@@ -919,6 +919,7 @@ func TestAMV1AgentDial(t *testing.T) {
 		id           uuid.UUID
 		source       *cmaddress.Address
 		confbridgeID uuid.UUID
+		masterCallID uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -933,13 +934,14 @@ func TestAMV1AgentDial(t *testing.T) {
 				Target: "+821021656521",
 			},
 			uuid.FromStringOrNil("719c27a8-4e7c-11ec-bbc9-3b81de0e9e0a"),
+			uuid.FromStringOrNil("dfe7864a-8c24-11ec-84e5-fbe146d8be9f"),
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1/dial",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"confbridge_id":"719c27a8-4e7c-11ec-bbc9-3b81de0e9e0a"}`),
+				Data:     []byte(`{"source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"confbridge_id":"719c27a8-4e7c-11ec-bbc9-3b81de0e9e0a","master_call_id":"dfe7864a-8c24-11ec-84e5-fbe146d8be9f"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -953,7 +955,7 @@ func TestAMV1AgentDial(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.AMV1AgentDial(ctx, tt.id, tt.source, tt.confbridgeID); err != nil {
+			if err := reqHandler.AMV1AgentDial(ctx, tt.id, tt.source, tt.confbridgeID, tt.masterCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

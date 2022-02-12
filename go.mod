@@ -12,13 +12,13 @@ require (
 require (
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/prometheus/client_golang v1.12.1
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220209025207-df110b53538c
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220212164828-84c227fae15b
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220203012553-7a6af2df4d9e
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220203063008-305be30288a4
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220203044108-296babaad5c9
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220207024948-b975c9ff24f5
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220210082942-16c5a234ac14
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220208185140-cfc6013ffd01
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220210080154-3bd79797d585
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220210092052-b0183fb3e268
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220209071252-a365e400801c
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206205721-6f56cc4c3c1e
