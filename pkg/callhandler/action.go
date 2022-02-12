@@ -26,11 +26,13 @@ const (
 )
 
 // actionExecuteAMD executes the action type external_media_start.
-func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) error {
+// return true if it needs to get next action.
+func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) (bool, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":    "cleanCurrentAction",
-			"call_id": c.ID,
+			"func":              "cleanCurrentAction",
+			"call_id":           c.ID,
+			"current_action_id": c.Action.ID,
 		},
 	)
 
@@ -38,7 +40,7 @@ func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) erro
 	cn, err := h.db.ChannelGet(ctx, c.ChannelID)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
-		return err
+		return false, err
 	}
 
 	// check channel's playback.
@@ -47,6 +49,7 @@ func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) erro
 		if err := h.reqHandler.AstPlaybackStop(ctx, cn.AsteriskID, cn.PlaybackID); err != nil {
 			log.Errorf("Could not stop the playback. err: %v", err)
 		}
+		return false, nil
 	}
 
 	// check call's confbridge
@@ -55,9 +58,10 @@ func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) erro
 		if err := h.confbridgeHandler.Kick(ctx, c.ConfbridgeID, c.ID); err != nil {
 			log.Errorf("Could not kick the call from the confbridge. err: %v", err)
 		}
+		return false, nil
 	}
 
-	return nil
+	return true, nil
 }
 
 // setAction sets the action to the call
@@ -157,9 +161,10 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *action
 func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"call_id": c.ID,
-			"flow_id": c.FlowID,
-			"func":    "ActionNext",
+			"func":              "ActionNext",
+			"call_id":           c.ID,
+			"flow_id":           c.FlowID,
+			"current_action_id": c.Action.ID,
 		})
 	log.WithFields(
 		logrus.Fields{
@@ -181,8 +186,10 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	// get next action
 	nextAction, err := h.reqHandler.FMV1ActvieFlowGetNextAction(ctx, c.ID, c.Action.ID)
 	if err != nil {
-		log.Errorf("Could not get the next action from the flow-manager. Hanging up the call. err: %v", err)
-		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		// could not get the next action from the flow-manager.
+		// but we don't hangup the call here, because we're assuming the call is already moved on next action.
+		// this failure is for the duplicated action close.
+		log.WithField("action", c.Action).Infof("Could not get the next action from the flow-manager. err: %v", err)
 		return nil
 	}
 	log.Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
@@ -207,8 +214,13 @@ func (h *callHandler) ActionNextForce(ctx context.Context, c *call.Call) error {
 	log.WithField("action", c.Action).Debug("Getting a next action for the call.")
 
 	// cleanup the call's current action
-	if err := h.cleanCurrentAction(ctx, c); err != nil {
+	needNext, err := h.cleanCurrentAction(ctx, c)
+	if err != nil {
 		log.Errorf("Could not cleanup the current action. err: %v", err)
+	}
+
+	if !needNext {
+		return nil
 	}
 
 	return h.ActionNext(ctx, c)

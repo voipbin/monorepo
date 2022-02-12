@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -13,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 )
 
 func TestCreateEndpointTarget(t *testing.T) {
@@ -142,7 +142,9 @@ func TestJoin(t *testing.T) {
 			mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridge.ID).Return(tt.confbridge, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 
-			mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			if tt.call.Status == call.StatusRinging {
+				mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			}
 			if tt.confbridge.BridgeID != "" {
 				mockDB.EXPECT().BridgeGet(gomock.Any(), tt.confbridge.BridgeID).Return(tt.bridge, nil)
 				mockReq.EXPECT().AstBridgeGet(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID).Return(tt.bridge, nil)
