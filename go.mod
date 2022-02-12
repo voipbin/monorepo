@@ -13,10 +13,10 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	github.com/ttacon/libphonenumber v1.2.1
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220209025207-df110b53538c
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220212173320-d27bb53bbc9e
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220203012553-7a6af2df4d9e
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220210081109-5c250925c9dd
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220207024948-b975c9ff24f5
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220212173716-fb9f140953ca
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220210082942-16c5a234ac14
 )
 
 require (
@@ -42,6 +42,6 @@ require (
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220203062028-e58cb4d7c71e // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
-	google.golang.org/genproto v0.0.0-20220208230804-65c12eb4c068 // indirect
+	google.golang.org/genproto v0.0.0-20220211171837-173942840c17 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
