@@ -13,7 +13,6 @@ import (
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -365,7 +364,7 @@ func TestActiveFlowNextActionGetTypeTranscribeRecording(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockReq.EXPECT().TSV1CallRecordingCreate(ctx, tt.customerID, tt.callID, tt.language, 120000, 30).Return([]transcribe.Transcribe{}, nil)
+			mockReq.EXPECT().TSV1CallRecordingCreate(ctx, tt.customerID, tt.callID, tt.language, 120000, 30).Return([]tstranscribe.Transcribe{}, nil)
 			if err := h.activeFlowHandleActionTranscribeRecording(ctx, tt.activeflow, tt.callID, tt.act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -395,7 +394,7 @@ func TestActiveFlowNextActionGetTypeTranscribeStart(t *testing.T) {
 		language      string
 		act           *action.Action
 
-		response *transcribe.Transcribe
+		response *tstranscribe.Transcribe
 	}
 
 	tests := []test{
@@ -415,9 +414,9 @@ func TestActiveFlowNextActionGetTypeTranscribeStart(t *testing.T) {
 				Option: []byte(`{"language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
 			},
 
-			&transcribe.Transcribe{
+			&tstranscribe.Transcribe{
 				ID:          uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
-				Type:        transcribe.TypeCall,
+				Type:        tstranscribe.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				HostID:      uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
 				Language:    "en-US",
@@ -769,7 +768,7 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
 			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.activeFlow.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.conference, nil)
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.callID).Return(tt.call, nil)
-			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.conference.ConfbridgeID).Return(nil)
+			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.conference.ConfbridgeID, tt.callID).Return(nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
 			if err := h.activeFlowHandleActionAgentCall(ctx, tt.callID, tt.act); err != nil {
