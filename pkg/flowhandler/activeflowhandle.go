@@ -588,7 +588,8 @@ func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callI
 	log.WithField("call", c).Debug("Found call info.")
 
 	// call to the agent
-	if errDial := h.reqHandler.AMV1AgentDial(ctx, agentID, &c.Source, cf.ConfbridgeID); errDial != nil {
+	log.Debugf("Dialing to the agent. call_id: %s, confbridge_id: %s", callID, cf.ConfbridgeID)
+	if errDial := h.reqHandler.AMV1AgentDial(ctx, agentID, &c.Source, cf.ConfbridgeID, callID); errDial != nil {
 		log.Errorf("Could not dial to the agent. err: %v", errDial)
 		return errDial
 	}
