@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -646,6 +647,7 @@ func TestAgentDial(t *testing.T) {
 		id           uuid.UUID
 		source       *cmaddress.Address
 		confbridgeID uuid.UUID
+		masterCallID uuid.UUID
 
 		agent   *agent.Agent
 		actions []fmaction.Action
@@ -660,6 +662,7 @@ func TestAgentDial(t *testing.T) {
 			uuid.FromStringOrNil("9b608bde-53df-11ec-9437-ab8a0e581104"),
 			&cmaddress.Address{},
 			uuid.FromStringOrNil("54f65714-53df-11ec-9327-470dfe854f0d"),
+			uuid.FromStringOrNil("f5b217cc-8c21-11ec-9571-c7a1180c3fdb"),
 
 			&agent.Agent{
 				ID:         uuid.FromStringOrNil("9b608bde-53df-11ec-9437-ab8a0e581104"),
@@ -713,10 +716,15 @@ func TestAgentDial(t *testing.T) {
 
 			mockDB.EXPECT().AgentDialCreate(gomock.Any(), gomock.Any()).Return(nil)
 			for _, addr := range tt.agent.Addresses {
-				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.resFlowCreate.ID, tt.source, &addr)
+				callID := uuid.Must(uuid.NewV4())
+				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.resFlowCreate.ID, tt.source, &addr).Return(&call.Call{ID: callID}, nil)
+				if tt.masterCallID == uuid.Nil {
+					continue
+				}
+				mockReq.EXPECT().CMV1CallAddChainedCall(gomock.Any(), tt.masterCallID, gomock.Any()).Return(nil)
 			}
 
-			if err := h.AgentDial(ctx, tt.id, tt.source, tt.confbridgeID); err != nil {
+			if err := h.AgentDial(ctx, tt.id, tt.source, tt.confbridgeID, tt.masterCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

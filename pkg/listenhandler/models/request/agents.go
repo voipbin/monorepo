@@ -78,4 +78,5 @@ type V1DataAgentsIDStatusPut struct {
 type V1DataAgentsIDDialPost struct {
 	Source       cmaddress.Address `json:"source"`
 	ConfbridgeID uuid.UUID         `json:"confbridge_id"`
+	MasterCallID uuid.UUID         `json:"master_call_id"`
 }
