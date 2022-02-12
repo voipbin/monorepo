@@ -31,7 +31,7 @@ const (
 type AgentHandler interface {
 	AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error)
 	AgentDelete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
-	AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID uuid.UUID) error
+	AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID, masterCallID uuid.UUID) error
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
 	AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error)

@@ -97,17 +97,17 @@ func (mr *MockAgentHandlerMockRecorder) AgentDelete(ctx, id interface{}) *gomock
 }
 
 // AgentDial mocks base method.
-func (m *MockAgentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, confbridgeID uuid.UUID) error {
+func (m *MockAgentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, confbridgeID, masterCallID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentDial", ctx, id, source, confbridgeID)
+	ret := m.ctrl.Call(m, "AgentDial", ctx, id, source, confbridgeID, masterCallID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AgentDial indicates an expected call of AgentDial.
-func (mr *MockAgentHandlerMockRecorder) AgentDial(ctx, id, source, confbridgeID interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) AgentDial(ctx, id, source, confbridgeID, masterCallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentDial", reflect.TypeOf((*MockAgentHandler)(nil).AgentDial), ctx, id, source, confbridgeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentDial", reflect.TypeOf((*MockAgentHandler)(nil).AgentDial), ctx, id, source, confbridgeID, masterCallID)
 }
 
 // AgentGet mocks base method.

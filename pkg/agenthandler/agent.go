@@ -352,7 +352,7 @@ func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, stat
 }
 
 // AgentDial dials to the agent.
-func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID uuid.UUID) error {
+func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID, masterCallID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "AgentDial",
 		"agent_id":      id,
@@ -444,6 +444,15 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 			continue
 		}
 		log.WithField("call", c).Debug("Created a call")
+
+		if masterCallID == uuid.Nil {
+			continue
+		}
+
+		log.Debugf("Adding the chained call. master_call_id: %s, call_id: %s", masterCallID, c.ID)
+		if errAddChained := h.reqHandler.CMV1CallAddChainedCall(ctx, masterCallID, c.ID); errAddChained != nil {
+			log.Errorf("Could not add the chained call. call_id: %s, err: %v", c.ID, errAddChained)
+		}
 	}
 
 	return nil
