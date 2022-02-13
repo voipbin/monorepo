@@ -13,7 +13,7 @@ type OptionAMD struct {
 
 // OptionAgentCall defines action agent_call's option.
 type OptionAgentCall struct {
-	AgentID string `json:"agent_id"`
+	AgentID uuid.UUID `json:"agent_id"`
 }
 
 // OptionAnswer defines action answer's option.
@@ -23,12 +23,12 @@ type OptionAnswer struct {
 
 // OptionConfbridgeJoin defines action confbridge_join's option.
 type OptionConfbridgeJoin struct {
-	ConfbridgeID string `json:"confbridge_id"`
+	ConfbridgeID uuid.UUID `json:"confbridge_id"`
 }
 
 // OptionConferenceJoin defines action conference_join's option.
 type OptionConferenceJoin struct {
-	ConferenceID string `json:"conference_id"`
+	ConferenceID uuid.UUID `json:"conference_id"`
 }
 
 // OptionConnect defines action connect's optoin.
