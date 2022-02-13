@@ -100,14 +100,15 @@ func (r *requestHandler) CMV1CallActionNext(ctx context.Context, callID uuid.UUI
 // CMV1CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallCreate(ctx context.Context, customerID uuid.UUID, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CMV1CallCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
 	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsPost{
-		CustomerID:  customerID,
-		FlowID:      flowID,
-		Source:      *source,
-		Destination: *destination,
+		CustomerID:   customerID,
+		FlowID:       flowID,
+		MasterCallID: masterCallID,
+		Source:       *source,
+		Destination:  *destination,
 	}
 
 	m, err := json.Marshal(data)
@@ -137,14 +138,15 @@ func (r *requestHandler) CMV1CallCreate(ctx context.Context, customerID uuid.UUI
 // CMV1CallCreateWithID sends a request to call-manager
 // to creating a call with the given id.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, masterCallID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
 	data := &cmrequest.V1DataCallsIDPost{
-		CustomerID:  customerID,
-		FlowID:      flowID,
-		Source:      *source,
-		Destination: *destination,
+		CustomerID:   customerID,
+		FlowID:       flowID,
+		MasterCallID: masterCallID,
+		Source:       *source,
+		Destination:  *destination,
 	}
 
 	m, err := json.Marshal(data)
