@@ -195,9 +195,11 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
 			for i := range tt.destinations {
-				mockReq.EXPECT().CMV1CallCreate(ctx, tt.connectFlow.CustomerID, tt.connectFlow.ID, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
-				if tt.unchained == false {
-					mockReq.EXPECT().CMV1CallAddChainedCall(ctx, tt.callID, uuid.Nil).Return(nil)
+
+				if tt.unchained {
+					mockReq.EXPECT().CMV1CallCreate(ctx, tt.connectFlow.CustomerID, tt.connectFlow.ID, uuid.Nil, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
+				} else {
+					mockReq.EXPECT().CMV1CallCreate(ctx, tt.connectFlow.CustomerID, tt.connectFlow.ID, tt.callID, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
 				}
 			}
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
@@ -709,6 +711,7 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 		conference     *cfconference.Conference
 		call           *cmcall.Call
 		conferenceFlow *flow.Flow
+		resoponseFlow  *flow.Flow
 	}{
 		{
 			"normal",
@@ -758,6 +761,9 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 					},
 				},
 			},
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("7cff1888-8ca4-11ec-afb9-8b0839e726e5"),
+			},
 		},
 	}
 
@@ -768,7 +774,11 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
 			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.activeFlow.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.conference, nil)
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.callID).Return(tt.call, nil)
-			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.conference.ConfbridgeID, tt.callID).Return(nil)
+
+			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.resoponseFlow, nil)
+
+			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.resoponseFlow.ID, tt.callID).Return(nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
 			if err := h.activeFlowHandleActionAgentCall(ctx, tt.callID, tt.act); err != nil {

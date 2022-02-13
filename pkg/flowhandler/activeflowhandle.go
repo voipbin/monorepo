@@ -269,11 +269,10 @@ func (h *flowHandler) activeFlowHandleActionConferenceJoin(ctx context.Context, 
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
 		return nil, err
 	}
-	conferenceID := uuid.FromStringOrNil(opt.ConferenceID)
-	log = log.WithField("conference_id", conferenceID)
+	log = log.WithField("conference_id", opt.ConferenceID)
 
 	// get conference
-	conf, err := h.reqHandler.CFV1ConferenceGet(ctx, conferenceID)
+	conf, err := h.reqHandler.CFV1ConferenceGet(ctx, opt.ConferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference. err: %v", err)
 		return nil, err
@@ -341,7 +340,7 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 
 	// create a temp flow connect conference join
 	optJoin := action.OptionConferenceJoin{
-		ConferenceID: cf.ID.String(),
+		ConferenceID: cf.ID,
 	}
 	optString, err := json.Marshal(optJoin)
 	if err != nil {
@@ -385,25 +384,21 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 		}
 
 		// create a call
-		resCall, err := h.reqHandler.CMV1CallCreate(ctx, connectCF.CustomerID, connectCF.ID, source, destination)
-		if err != nil {
-			log.Errorf("Could not create a outgoing call for connect. err: %v", err)
-			continue
-		}
-
-		// add the chained call id if the unchained option is false
-		if !optConnect.Unchained {
-			if err := h.reqHandler.CMV1CallAddChainedCall(ctx, callID, resCall.ID); err != nil {
-				log.Warnf("Could not add the chained call id. Hangup the call. chained_call_id: %s", resCall.ID)
-				_, errHangup := h.reqHandler.CMV1CallHangup(ctx, resCall.ID)
-				if errHangup != nil {
-					log.Errorf("Could not hangup the call. chained_call_id: %s, err: %v", resCall.ID, errHangup)
-				}
+		if optConnect.Unchained {
+			resCall, err := h.reqHandler.CMV1CallCreate(ctx, connectCF.CustomerID, connectCF.ID, uuid.Nil, source, destination)
+			if err != nil {
+				log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 				continue
 			}
+			log.WithField("call", resCall).Debugf("Created outgoing call for connect without master call id. call: %s", resCall.ID)
+		} else {
+			resCall, err := h.reqHandler.CMV1CallCreate(ctx, connectCF.CustomerID, connectCF.ID, callID, source, destination)
+			if err != nil {
+				log.Errorf("Could not create a outgoing call for connect. err: %v", err)
+				continue
+			}
+			log.WithField("call", resCall).Debugf("Created outgoing call for connect with master call id. call: %s", resCall.ID)
 		}
-
-		log.Debugf("Created outgoing call for connect. call: %s", resCall.ID)
 		successCount++
 	}
 
@@ -558,8 +553,7 @@ func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callI
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
 		return err
 	}
-	agentID := uuid.FromStringOrNil(opt.AgentID)
-	log = log.WithField("agent_id", agentID)
+	log = log.WithField("agent_id", opt.AgentID)
 
 	// get active-flow
 	af, err := h.db.ActiveFlowGet(ctx, callID)
@@ -587,16 +581,24 @@ func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callI
 	}
 	log.WithField("call", c).Debug("Found call info.")
 
+	// generate the flow for the agent call
+	f, err := h.generateFlowForAgentCall(ctx, c.CustomerID, cf.ConfbridgeID)
+	if err != nil {
+		log.Errorf("Could not create the flow. err: %v", err)
+		return err
+	}
+	log.WithField("flow", f).Debug("Created a flow.")
+
 	// call to the agent
-	log.Debugf("Dialing to the agent. call_id: %s, confbridge_id: %s", callID, cf.ConfbridgeID)
-	if errDial := h.reqHandler.AMV1AgentDial(ctx, agentID, &c.Source, cf.ConfbridgeID, callID); errDial != nil {
+	log.Debugf("Dialing to the agent. call_id: %s, flow_id: %s", callID, f.ID)
+	if errDial := h.reqHandler.AMV1AgentDial(ctx, opt.AgentID, &c.Source, f.ID, callID); errDial != nil {
 		log.Errorf("Could not dial to the agent. err: %v", errDial)
 		return errDial
 	}
 
 	// create action connect for conference join
 	optJoin := action.OptionConferenceJoin{
-		ConferenceID: cf.ID.String(),
+		ConferenceID: cf.ID,
 	}
 	optString, err := json.Marshal(optJoin)
 	if err != nil {
