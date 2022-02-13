@@ -438,21 +438,12 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 
 	// dial
 	for i, address := range ag.Addresses {
-		c, err := h.reqHandler.CMV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, f.ID, source, &address)
+		c, err := h.reqHandler.CMV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, f.ID, masterCallID, source, &address)
 		if err != nil {
 			log.Errorf("Could not create a call. err: %v", err)
 			continue
 		}
 		log.WithField("call", c).Debug("Created a call")
-
-		if masterCallID == uuid.Nil {
-			continue
-		}
-
-		log.Debugf("Adding the chained call. master_call_id: %s, call_id: %s", masterCallID, c.ID)
-		if errAddChained := h.reqHandler.CMV1CallAddChainedCall(ctx, masterCallID, c.ID); errAddChained != nil {
-			log.Errorf("Could not add the chained call. call_id: %s, err: %v", c.ID, errAddChained)
-		}
 	}
 
 	return nil
