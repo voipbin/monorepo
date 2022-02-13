@@ -25,13 +25,14 @@ const (
 )
 
 // CreateCallOutgoing creates a call for outgoing
-func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
+func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, masterCallID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"id":          id,
-		"customer_id": customerID,
-		"flow":        flowID,
-		"source":      source,
-		"destination": destination,
+		"id":             id,
+		"customer_id":    customerID,
+		"flow":           flowID,
+		"master_call_id": masterCallID,
+		"source":         source,
+		"destination":    destination,
 	})
 	log.Debug("Creating a call for outgoing.")
 
@@ -67,6 +68,14 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, cust
 		}
 
 		return nil, err
+	}
+
+	// if the mastercallid has set, add chained call
+	if masterCallID != uuid.Nil {
+		if errChained := h.ChainedCallIDAdd(ctx, masterCallID, c.ID); errChained != nil {
+			// we got error here,
+			log.Errorf("Could not add the chained call id. call: %s, chained_call: %s, err: %v", masterCallID, c.ID, errChained)
+		}
 	}
 
 	// get a endpoint destination

@@ -221,18 +221,18 @@ func (mr *MockCallHandlerMockRecorder) ChannelHealthCheck(ctx, asteriskID, chann
 }
 
 // CreateCallOutgoing mocks base method.
-func (m *MockCallHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID uuid.UUID, source, destination address.Address) (*call.Call, error) {
+func (m *MockCallHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, masterCallID uuid.UUID, source, destination address.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCallOutgoing", ctx, id, customerID, flowID, source, destination)
+	ret := m.ctrl.Call(m, "CreateCallOutgoing", ctx, id, customerID, flowID, masterCallID, source, destination)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCallOutgoing indicates an expected call of CreateCallOutgoing.
-func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(ctx, id, customerID, flowID, source, destination interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(ctx, id, customerID, flowID, masterCallID, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), ctx, id, customerID, flowID, source, destination)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), ctx, id, customerID, flowID, masterCallID, source, destination)
 }
 
 // ExternalMediaStart mocks base method.
