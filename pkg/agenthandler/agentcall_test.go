@@ -48,7 +48,7 @@ func TestAgentCallAnswered(t *testing.T) {
 			},
 			&agentdial.AgentDial{
 				AgentID: uuid.FromStringOrNil("9437722e-53e3-11ec-bbba-ab4a8d821d52"),
-				CallIDs: []uuid.UUID{
+				AgentCallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("cc8536e4-53e2-11ec-b251-4b5616ce92b1"),
 				},
 			},
@@ -66,7 +66,7 @@ func TestAgentCallAnswered(t *testing.T) {
 			},
 			&agentdial.AgentDial{
 				AgentID: uuid.FromStringOrNil("9437722e-53e3-11ec-bbba-ab4a8d821d52"),
-				CallIDs: []uuid.UUID{
+				AgentCallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("cc8536e4-53e2-11ec-b251-4b5616ce92b1"),
 					uuid.FromStringOrNil("5b185bd8-53e4-11ec-af8e-abccd8406aa7"),
 				},
@@ -81,7 +81,7 @@ func TestAgentCallAnswered(t *testing.T) {
 			mockDB.EXPECT().AgentCallGet(gomock.Any(), tt.call.ID).Return(tt.agentCall, nil)
 			mockDB.EXPECT().AgentSetStatus(gomock.Any(), tt.agentCall.AgentID, agent.StatusBusy).Return(nil)
 			mockDB.EXPECT().AgentDialGet(gomock.Any(), tt.agentCall.AgentID).Return(tt.agentDial, nil)
-			for _, callID := range tt.agentDial.CallIDs {
+			for _, callID := range tt.agentDial.AgentCallIDs {
 				if callID == tt.agentCall.ID {
 					continue
 				}

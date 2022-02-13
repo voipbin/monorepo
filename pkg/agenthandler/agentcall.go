@@ -41,7 +41,7 @@ func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) er
 	log.WithField("agent_dial", ad).Debug("Found agent dial info.")
 
 	// hang up the other agent calls.
-	for _, callID := range ad.CallIDs {
+	for _, callID := range ad.AgentCallIDs {
 		if callID == c.ID {
 			continue
 		}

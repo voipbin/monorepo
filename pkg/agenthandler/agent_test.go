@@ -12,8 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
@@ -646,13 +644,10 @@ func TestAgentDial(t *testing.T) {
 
 		id           uuid.UUID
 		source       *cmaddress.Address
-		confbridgeID uuid.UUID
+		flowID       uuid.UUID
 		masterCallID uuid.UUID
 
-		agent   *agent.Agent
-		actions []fmaction.Action
-
-		resFlowCreate *fmflow.Flow
+		agent *agent.Agent
 
 		expectRes *agent.Agent
 	}{
@@ -680,14 +675,6 @@ func TestAgentDial(t *testing.T) {
 					},
 				},
 			},
-			[]fmaction.Action{
-				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"54f65714-53df-11ec-9327-470dfe854f0d"}`),
-				},
-			},
-
-			&fmflow.Flow{},
 
 			&agent.Agent{
 				ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
@@ -708,7 +695,6 @@ func TestAgentDial(t *testing.T) {
 
 			mockDB.EXPECT().AgentGet(gomock.Any(), tt.id).Return(tt.agent, nil)
 			mockDB.EXPECT().AgentSetStatus(gomock.Any(), tt.id, agent.StatusRinging).Return(nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.agent.CustomerID, fmflow.TypeFlow, "agent dial", "", tt.actions, false).Return(tt.resFlowCreate, nil)
 
 			for i := 0; i < len(tt.agent.Addresses); i++ {
 				mockDB.EXPECT().AgentCallCreate(gomock.Any(), gomock.Any()).Return(nil)
@@ -717,10 +703,10 @@ func TestAgentDial(t *testing.T) {
 			mockDB.EXPECT().AgentDialCreate(gomock.Any(), gomock.Any()).Return(nil)
 			for _, addr := range tt.agent.Addresses {
 				callID := uuid.Must(uuid.NewV4())
-				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.resFlowCreate.ID, tt.masterCallID, tt.source, &addr).Return(&call.Call{ID: callID}, nil)
+				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.flowID, tt.masterCallID, tt.source, &addr).Return(&call.Call{ID: callID}, nil)
 			}
 
-			if err := h.AgentDial(ctx, tt.id, tt.source, tt.confbridgeID, tt.masterCallID); err != nil {
+			if err := h.AgentDial(ctx, tt.id, tt.source, tt.flowID, tt.masterCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

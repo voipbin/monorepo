@@ -488,7 +488,7 @@ func (h *listenHandler) processV1AgentsIDDialPost(ctx context.Context, m *rabbit
 	}
 
 	// dial
-	if err := h.agentHandler.AgentDial(ctx, id, &reqData.Source, reqData.ConfbridgeID, reqData.MasterCallID); err != nil {
+	if err := h.agentHandler.AgentDial(ctx, id, &reqData.Source, reqData.FlowID, reqData.MasterCallID); err != nil {
 		log.Errorf("Could not dial to the agent. err: %v", err)
 		return simpleResponse(400), nil
 	}

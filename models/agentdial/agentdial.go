@@ -4,6 +4,8 @@ import "github.com/gofrs/uuid"
 
 // AgentDial type
 type AgentDial struct {
-	AgentID uuid.UUID   `json:"agent_id"` // agent's id
-	CallIDs []uuid.UUID `json:"call_ids"`
+	ID           uuid.UUID   `json:"id"`
+	CustomerID   uuid.UUID   `json:"customer_id"`
+	AgentID      uuid.UUID   `json:"agent_id"` // agent's id
+	AgentCallIDs []uuid.UUID `json:"call_ids"`
 }
