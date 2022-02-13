@@ -77,6 +77,6 @@ type V1DataAgentsIDStatusPut struct {
 // /v1/agents/<agent-id>/dial PUT
 type V1DataAgentsIDDialPost struct {
 	Source       cmaddress.Address `json:"source"`
-	ConfbridgeID uuid.UUID         `json:"confbridge_id"`
+	FlowID       uuid.UUID         `json:"flow_id"`
 	MasterCallID uuid.UUID         `json:"master_call_id"`
 }

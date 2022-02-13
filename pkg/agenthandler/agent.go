@@ -2,14 +2,11 @@ package agenthandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
@@ -352,11 +349,12 @@ func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, stat
 }
 
 // AgentDial dials to the agent.
-func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID, masterCallID uuid.UUID) error {
+func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, flowID, masterCallID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "AgentDial",
-		"agent_id":      id,
-		"confbridge_id": confbridgeID,
+		"func":           "AgentDial",
+		"agent_id":       id,
+		"flow_id":        flowID,
+		"master_call_id": masterCallID,
 	})
 	log.Debug("Dialing to the agent.")
 
@@ -383,38 +381,18 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 		return err
 	}
 
-	opt, err := json.Marshal(fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: confbridgeID.String(),
-	})
-	if err != nil {
-		log.Errorf("Could not marshal the action. err: %v", err)
-		return err
-	}
-
-	// create flow
-	actions := []fmaction.Action{
-		{
-			Type:   fmaction.TypeConfbridgeJoin,
-			Option: opt,
-		},
-	}
-
-	f, err := h.reqHandler.FMV1FlowCreate(ctx, ag.CustomerID, fmflow.TypeFlow, "agent dial", "", actions, false)
-	if err != nil {
-		log.Errorf("Could not create the flow. err: %v", err)
-		return err
-	}
-	log.WithField("flow", f).Debug("Created a flow.")
-
 	// generate the call ids and agentcall info
+	agentDialID := uuid.Must(uuid.NewV4())
 	callIDs := []uuid.UUID{}
 	for i := 0; i < len(ag.Addresses); i++ {
-		callID := uuid.Must(uuid.NewV4())
-		callIDs = append(callIDs, callID)
+		agentCallID := uuid.Must(uuid.NewV4())
+		callIDs = append(callIDs, agentCallID)
 
 		ac := &agentcall.AgentCall{
-			ID:      callID,
-			AgentID: ag.ID,
+			ID:          agentCallID,
+			CustomerID:  ag.CustomerID,
+			AgentID:     ag.ID,
+			AgentDialID: agentDialID,
 		}
 		if err := h.db.AgentCallCreate(ctx, ac); err != nil {
 			log.Errorf("Could not create a agent call. err: %v", err)
@@ -424,8 +402,10 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 
 	// create agentdial
 	ad := &agentdial.AgentDial{
-		AgentID: ag.ID,
-		CallIDs: callIDs,
+		ID:           agentDialID,
+		CustomerID:   ag.CustomerID,
+		AgentID:      ag.ID,
+		AgentCallIDs: callIDs,
 	}
 	if err := h.db.AgentDialCreate(ctx, ad); err != nil {
 		log.Errorf("Could not create an agent dial. err: %v", err)
@@ -438,7 +418,7 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 
 	// dial
 	for i, address := range ag.Addresses {
-		c, err := h.reqHandler.CMV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, f.ID, masterCallID, source, &address)
+		c, err := h.reqHandler.CMV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, flowID, masterCallID, source, &address)
 		if err != nil {
 			log.Errorf("Could not create a call. err: %v", err)
 			continue

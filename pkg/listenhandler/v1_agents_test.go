@@ -1102,7 +1102,7 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 
 		id           uuid.UUID
 		source       *cmaddress.Address
-		confbridgeID uuid.UUID
+		flowID       uuid.UUID
 		masterCallID uuid.UUID
 
 		agent     *agent.Agent
@@ -1114,7 +1114,7 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a/dial",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"source":{"type":"tel","target":"+821021656521"},"confbridge_id":"4a089d94-4da9-11ec-bac9-07c16f06b600","master_call_id":"a01fa558-8c22-11ec-8014-f773fd0e57a6"}`),
+				Data:     []byte(`{"source":{"type":"tel","target":"+821021656521"},"flow_id":"4a089d94-4da9-11ec-bac9-07c16f06b600","master_call_id":"a01fa558-8c22-11ec-8014-f773fd0e57a6"}`),
 			},
 
 			uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
@@ -1156,7 +1156,7 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAgent.EXPECT().AgentDial(gomock.Any(), tt.id, tt.source, tt.confbridgeID, tt.masterCallID).Return(nil)
+			mockAgent.EXPECT().AgentDial(gomock.Any(), tt.id, tt.source, tt.flowID, tt.masterCallID).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

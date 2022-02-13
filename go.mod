@@ -13,8 +13,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220213062801-28feecdbdc72
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220213064918-6caa8e8da337
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220212191335-c83028438b84
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220213080050-22f22aa36fd8
 	golang.org/x/crypto v0.0.0-20220210151621-f4118a5b28e2
 )
 
@@ -30,6 +29,7 @@ require (
 	github.com/streadway/amqp v1.0.0 // indirect
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220203063008-305be30288a4 // indirect
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220203044108-296babaad5c9 // indirect
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220213085434-53327faa93d9 // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220208185140-cfc6013ffd01 // indirect
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220212191329-45425ab4f6b5 // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220209071252-a365e400801c // indirect
