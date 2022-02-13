@@ -282,7 +282,15 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
+		name string
+
+		callID       uuid.UUID
+		customerID   uuid.UUID
+		flowID       uuid.UUID
+		masterCallID uuid.UUID
+		source       address.Address
+		destination  address.Address
+
 		call      *call.Call
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
@@ -291,6 +299,14 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 	tests := []test{
 		{
 			"empty addresses",
+
+			uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+			uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
+			uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+			uuid.FromStringOrNil("11b1b1fa-8c93-11ec-9597-2320d5458176"),
+			address.Address{},
+			address.Address{},
+
 			&call.Call{
 				ID:          uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
 				CustomerID:  uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
@@ -303,7 +319,7 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {}, "destination": {}}`),
+				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "master_call_id": "11b1b1fa-8c93-11ec-9597-2320d5458176", "source": {}, "destination": {}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -313,6 +329,18 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 		},
 		{
 			"source address",
+
+			uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+			uuid.FromStringOrNil("ffeda266-7f50-11ec-8089-df3388aef0cc"),
+			uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+			uuid.Nil,
+			address.Address{
+				Type:   address.TypeSIP,
+				Target: "test_source@127.0.0.1:5061",
+				Name:   "test_source",
+			},
+			address.Address{},
+
 			&call.Call{
 				ID:         uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
 				CustomerID: uuid.FromStringOrNil("ffeda266-7f50-11ec-8089-df3388aef0cc"),
@@ -339,6 +367,22 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 		},
 		{
 			"flow_id null",
+
+			uuid.FromStringOrNil("f93eef0c-ed79-11ea-85cb-b39596cdf7ff"),
+			uuid.FromStringOrNil("0017a4bc-7f51-11ec-8407-2f0fd8f346ef"),
+			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+			uuid.Nil,
+			address.Address{
+				Type:   address.TypeSIP,
+				Target: "test_source@127.0.0.1:5061",
+				Name:   "test_source",
+			},
+			address.Address{
+				Type:   address.TypeSIP,
+				Target: "test_destination@127.0.0.1:5061",
+				Name:   "test_destination",
+			},
+
 			&call.Call{
 				ID:         uuid.FromStringOrNil("f93eef0c-ed79-11ea-85cb-b39596cdf7ff"),
 				CustomerID: uuid.FromStringOrNil("0017a4bc-7f51-11ec-8407-2f0fd8f346ef"),
@@ -372,7 +416,7 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.call.ID, tt.call.CustomerID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination).Return(tt.call, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -398,7 +442,14 @@ func TestProcessV1CallsPost(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
+		name string
+
+		customerID   uuid.UUID
+		flowID       uuid.UUID
+		masterCallID uuid.UUID
+		source       address.Address
+		destination  address.Address
+
 		call      *call.Call
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
@@ -407,6 +458,13 @@ func TestProcessV1CallsPost(t *testing.T) {
 	tests := []test{
 		{
 			"empty addresses",
+
+			uuid.FromStringOrNil("34e72f78-7f51-11ec-a83b-cfc69cd4a641"),
+			uuid.FromStringOrNil("78fd1276-f3a8-11ea-9734-6735e73fd720"),
+			uuid.FromStringOrNil("a1c63272-8c91-11ec-8ee7-8b50458d3214"),
+			address.Address{},
+			address.Address{},
+
 			&call.Call{
 				ID:          uuid.FromStringOrNil("72d56d08-f3a8-11ea-9c0c-ef8258d54f42"),
 				CustomerID:  uuid.FromStringOrNil("34e72f78-7f51-11ec-a83b-cfc69cd4a641"),
@@ -418,7 +476,7 @@ func TestProcessV1CallsPost(t *testing.T) {
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "34e72f78-7f51-11ec-a83b-cfc69cd4a641", "flow_id": "78fd1276-f3a8-11ea-9734-6735e73fd720", "source": {}, "destination": {}}`),
+				Data:     []byte(`{"customer_id": "34e72f78-7f51-11ec-a83b-cfc69cd4a641", "flow_id": "78fd1276-f3a8-11ea-9734-6735e73fd720", "master_call_id": "a1c63272-8c91-11ec-8ee7-8b50458d3214", "source": {}, "destination": {}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -428,6 +486,17 @@ func TestProcessV1CallsPost(t *testing.T) {
 		},
 		{
 			"source address",
+
+			uuid.FromStringOrNil("351014ec-7f51-11ec-9e7c-2b6427f906b7"),
+			uuid.FromStringOrNil("d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1"),
+			uuid.Nil,
+			address.Address{
+				Type:   address.TypeSIP,
+				Target: "test_source@127.0.0.1:5061",
+				Name:   "test_source",
+			},
+			address.Address{},
+
 			&call.Call{
 				ID:         uuid.FromStringOrNil("cd561ba6-f3a8-11ea-b7ac-57b19fa28e09"),
 				CustomerID: uuid.FromStringOrNil("351014ec-7f51-11ec-9e7c-2b6427f906b7"),
@@ -453,6 +522,21 @@ func TestProcessV1CallsPost(t *testing.T) {
 		},
 		{
 			"flow_id null",
+
+			uuid.FromStringOrNil("3534d6e2-7f51-11ec-8a74-d70202efb516"),
+			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+			uuid.Nil,
+			address.Address{
+				Type:   address.TypeSIP,
+				Target: "test_source@127.0.0.1:5061",
+				Name:   "test_source",
+			},
+			address.Address{
+				Type:   address.TypeSIP,
+				Target: "test_destination@127.0.0.1:5061",
+				Name:   "test_destination",
+			},
+
 			&call.Call{
 				ID:         uuid.FromStringOrNil("09b84a24-f3a9-11ea-80f6-d7e6af125065"),
 				CustomerID: uuid.FromStringOrNil("3534d6e2-7f51-11ec-8a74-d70202efb516"),
@@ -485,7 +569,7 @@ func TestProcessV1CallsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), gomock.Any(), tt.call.CustomerID, tt.call.FlowID, tt.call.Source, tt.call.Destination).Return(tt.call, nil)
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination).Return(tt.call, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

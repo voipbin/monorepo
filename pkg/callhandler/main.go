@@ -42,7 +42,7 @@ type CallHandler interface {
 	RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)
 	RecordingGet(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error)
 
-	CreateCallOutgoing(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error)
+	CreateCallOutgoing(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, masterCallID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error)
 	StartCallHandle(ctx context.Context, cn *channel.Channel, data map[string]string) error
 	Hangup(ctx context.Context, cn *channel.Channel) error
 	HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error

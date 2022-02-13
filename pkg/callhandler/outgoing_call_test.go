@@ -34,12 +34,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 	}
 
 	type test struct {
-		name        string
-		id          uuid.UUID
-		customerID  uuid.UUID
-		flowID      uuid.UUID
-		source      address.Address
-		destination address.Address
+		name         string
+		id           uuid.UUID
+		customerID   uuid.UUID
+		flowID       uuid.UUID
+		masterCallID uuid.UUID
+		source       address.Address
+		destination  address.Address
 
 		af                *activeflow.ActiveFlow
 		expectCall        *call.Call
@@ -53,6 +54,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 			uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 			uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
 			uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+			uuid.FromStringOrNil("5935ff8a-8c8f-11ec-b26a-3fee169eaf45"),
 			address.Address{
 				Type:       address.TypeSIP,
 				Target:     "testsrc@test.com",
@@ -102,6 +104,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 			uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 			uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
 			uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+			uuid.FromStringOrNil("61c0fe66-8c8f-11ec-873a-ff90a846a02f"),
 			address.Address{
 				Type:       address.TypeTel,
 				Target:     "+99999888",
@@ -152,13 +155,21 @@ func TestCreateCallOutgoing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
+			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.id, tt.flowID).Return(tt.af, nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
-			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.id, tt.flowID).Return(tt.af, nil)
+
+			if tt.masterCallID != uuid.Nil {
+				mockDB.EXPECT().CallTXStart(tt.masterCallID).Return(nil, &call.Call{}, nil)
+				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
+				mockDB.EXPECT().CallSetMasterCallID(gomock.Any(), tt.expectCall.ID, tt.masterCallID).Return(nil)
+				mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
+			}
+
 			mockReq.EXPECT().AstChannelCreate(gomock.Any(), requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
 
-			res, err := h.CreateCallOutgoing(context.Background(), tt.id, tt.customerID, tt.flowID, tt.source, tt.destination)
+			res, err := h.CreateCallOutgoing(context.Background(), tt.id, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

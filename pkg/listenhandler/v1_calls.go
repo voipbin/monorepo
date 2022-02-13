@@ -125,7 +125,7 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 	})
 
 	log.Debug("Creating outgoing call.")
-	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.CustomerID, reqData.FlowID, reqData.Source, reqData.Destination)
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.CustomerID, reqData.FlowID, reqData.MasterCallID, reqData.Source, reqData.Destination)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil
@@ -176,7 +176,7 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 	})
 
 	log.Debug("Creating outgoing call.")
-	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.CustomerID, reqData.FlowID, reqData.Source, reqData.Destination)
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.CustomerID, reqData.FlowID, reqData.MasterCallID, reqData.Source, reqData.Destination)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", reqData.FlowID, reqData.Source, reqData.Destination, err)
 		return simpleResponse(500), nil
