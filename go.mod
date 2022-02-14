@@ -12,8 +12,9 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220214010042-9d735c473204
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220213062801-28feecdbdc72
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220213080050-22f22aa36fd8
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220214011524-4c104d48352c
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220203063008-305be30288a4
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220212191329-45425ab4f6b5
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206205721-6f56cc4c3c1e
@@ -29,7 +30,6 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220213074433-45dbc0be4e3e // indirect
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220203044108-296babaad5c9 // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220208185140-cfc6013ffd01 // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220209071252-a365e400801c // indirect

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -778,7 +779,7 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.resoponseFlow, nil)
 
-			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.resoponseFlow.ID, tt.callID).Return(nil)
+			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.resoponseFlow.ID, tt.callID).Return(&amagentdial.AgentDial{}, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
 			if err := h.activeFlowHandleActionAgentCall(ctx, tt.callID, tt.act); err != nil {
