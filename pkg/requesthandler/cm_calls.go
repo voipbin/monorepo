@@ -100,7 +100,7 @@ func (r *requestHandler) CMV1CallActionNext(ctx context.Context, callID uuid.UUI
 // CMV1CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address) ([]cmcall.Call, error) {
 	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsPost{
@@ -108,7 +108,7 @@ func (r *requestHandler) CMV1CallCreate(ctx context.Context, customerID, flowID,
 		FlowID:       flowID,
 		MasterCallID: masterCallID,
 		Source:       *source,
-		Destination:  *destination,
+		Destinations: destinations,
 	}
 
 	m, err := json.Marshal(data)
@@ -116,23 +116,23 @@ func (r *requestHandler) CMV1CallCreate(ctx context.Context, customerID, flowID,
 		return nil, err
 	}
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var c cmcall.Call
-	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
+	var res []cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	return res, nil
 }
 
 // CMV1CallCreateWithID sends a request to call-manager

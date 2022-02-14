@@ -250,7 +250,7 @@ type RequestHandler interface {
 	CMV1CallAddExternalMedia(ctx context.Context, callID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmresponse.V1ResponseCallsIDExternalMediaPost, error)
 	CMV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
 	CMV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
-	CMV1CallCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error)
+	CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *cmaddress.Address, destination []cmaddress.Address) ([]cmcall.Call, error)
 	CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, masterCallID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error)
 	CMV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CMV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)

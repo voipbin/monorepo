@@ -760,21 +760,6 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallAddExternalMedia(ctx, callID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallAddExternalMedia", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallAddExternalMedia), ctx, callID, externalHost, encapsulation, transport, connectionType, format, direction)
 }
 
-// CMV1CallCreate mocks base method.
-func (m *MockRequestHandler) CMV1CallCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMV1CallCreate", ctx, customerID, flowID, masterCallID, source, destination)
-	ret0, _ := ret[0].(*call.Call)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CMV1CallCreate indicates an expected call of CMV1CallCreate.
-func (mr *MockRequestHandlerMockRecorder) CMV1CallCreate(ctx, customerID, flowID, masterCallID, source, destination interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallCreate), ctx, customerID, flowID, masterCallID, source, destination)
-}
-
 // CMV1CallCreateWithID mocks base method.
 func (m *MockRequestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, masterCallID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
@@ -847,6 +832,21 @@ func (m *MockRequestHandler) CMV1CallHealth(ctx context.Context, id uuid.UUID, d
 func (mr *MockRequestHandlerMockRecorder) CMV1CallHealth(ctx, id, delay, retryCount interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallHealth", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallHealth), ctx, id, delay, retryCount)
+}
+
+// CMV1CallsCreate mocks base method.
+func (m *MockRequestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destination []address.Address) ([]call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMV1CallsCreate", ctx, customerID, flowID, masterCallID, source, destination)
+	ret0, _ := ret[0].([]call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMV1CallsCreate indicates an expected call of CMV1CallsCreate.
+func (mr *MockRequestHandlerMockRecorder) CMV1CallsCreate(ctx, customerID, flowID, masterCallID, source, destination interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallsCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallsCreate), ctx, customerID, flowID, masterCallID, source, destination)
 }
 
 // CMV1ChannelHealth mocks base method.
