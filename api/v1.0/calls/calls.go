@@ -63,7 +63,7 @@ func callsPOST(c *gin.Context) {
 	}
 
 	// create call
-	res, err := serviceHandler.CallCreate(&u, flow.ID, &req.Source, &req.Destination)
+	res, err := serviceHandler.CallCreate(&u, flow.ID, &req.Source, req.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
