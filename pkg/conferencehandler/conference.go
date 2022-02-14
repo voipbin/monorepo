@@ -133,7 +133,7 @@ func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, 
 
 	// append the confbridge join
 	option := fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: confbridgeID.String(),
+		ConfbridgeID: confbridgeID,
 	}
 	opt, err := json.Marshal(option)
 	if err != nil {
