@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -923,7 +924,9 @@ func TestAMV1AgentDial(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+
+		response  *rabbitmqhandler.Response
+		expectRes *amagentdial.AgentDial
 	}{
 		{
 			"normal",
@@ -943,9 +946,14 @@ func TestAMV1AgentDial(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"flow_id":"719c27a8-4e7c-11ec-bbc9-3b81de0e9e0a","master_call_id":"dfe7864a-8c24-11ec-84e5-fbe146d8be9f"}`),
 			},
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"808d03fa-8d32-11ec-a1e1-a38cabfab641"}`),
+			},
+			&amagentdial.AgentDial{
+				ID: uuid.FromStringOrNil("808d03fa-8d32-11ec-a1e1-a38cabfab641"),
 			},
 		},
 	}
@@ -955,9 +963,15 @@ func TestAMV1AgentDial(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.AMV1AgentDial(ctx, tt.id, tt.source, tt.flowID, tt.masterCallID); err != nil {
+			res, err := reqHandler.AMV1AgentDial(ctx, tt.id, tt.source, tt.flowID, tt.masterCallID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+
 		})
 	}
 }
