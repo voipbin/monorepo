@@ -8,9 +8,11 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -102,7 +104,8 @@ func TestSearchAgent(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.queuecall, nil)
 			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
-			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), gomock.Any(), &tt.queuecall.Source, tt.queuecall.ConfbridgeID, tt.queuecall.ReferenceID).Return(nil)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), gomock.Any(), &tt.queuecall.Source, gomock.Any(), tt.queuecall.ReferenceID).Return(&amagentdial.AgentDial{}, nil)
 			mockReq.EXPECT().FMV1ActvieFlowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceID, tt.queuecall.ForwardActionID, true).Return(nil)
 			mockDB.EXPECT().QueuecallSetServiceAgentID(gomock.Any(), tt.queuecall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.responseQueuecall, nil)
@@ -348,7 +351,8 @@ func TestSearchAgentWithAgentDialFailure(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.queuecall, nil)
 			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
-			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agents[0].ID, &tt.queuecall.Source, tt.queuecall.ConfbridgeID, tt.queuecall.ReferenceID).Return(fmt.Errorf(""))
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agents[0].ID, &tt.queuecall.Source, gomock.Any(), tt.queuecall.ReferenceID).Return(nil, fmt.Errorf(""))
 
 			mockReq.EXPECT().QMV1QueuecallSearchAgent(gomock.Any(), tt.queuecall.ID, 1000).Return(nil)
 

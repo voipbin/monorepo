@@ -149,7 +149,7 @@ func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, con
 	// append the confbridge join
 	{
 		option := fmaction.OptionConfbridgeJoin{
-			ConfbridgeID: confbridgeID.String(),
+			ConfbridgeID: confbridgeID,
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
