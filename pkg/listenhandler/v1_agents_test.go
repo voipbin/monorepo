@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
 )
 
@@ -1105,8 +1106,8 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 		flowID       uuid.UUID
 		masterCallID uuid.UUID
 
-		agent     *agent.Agent
-		expectRes *rabbitmqhandler.Response
+		responseAgentDial *agentdial.AgentDial
+		expectRes         *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -1125,30 +1126,13 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 			uuid.FromStringOrNil("4a089d94-4da9-11ec-bac9-07c16f06b600"),
 			uuid.FromStringOrNil("a01fa558-8c22-11ec-8014-f773fd0e57a6"),
 
-			&agent.Agent{
-				ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-				CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-				Username:     "test1",
-				PasswordHash: "password",
-				Name:         "test agent1",
-				Detail:       "test agent1 detail",
-				RingMethod:   "ringall",
-				Status:       agent.StatusAvailable,
-				Permission:   1,
-				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("f196163c-4da3-11ec-bd6c-27b1ed6735b3")},
-				Addresses: []cmaddress.Address{
-					{
-						Type:   cmaddress.TypeTel,
-						Target: "+821021656521",
-					},
-				},
-				TMCreate: "2021-11-23 17:55:39.712000",
-				TMUpdate: "9999-01-01 00:00:00.000000",
-				TMDelete: "9999-01-01 00:00:00.000000",
+			&agentdial.AgentDial{
+				ID: uuid.FromStringOrNil("295b8aba-8d2e-11ec-8635-3301b2f1dc0f"),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"295b8aba-8d2e-11ec-8635-3301b2f1dc0f","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","agent_call_ids":null}`),
 			},
 		},
 	}
@@ -1156,7 +1140,7 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAgent.EXPECT().AgentDial(gomock.Any(), tt.id, tt.source, tt.flowID, tt.masterCallID).Return(nil)
+			mockAgent.EXPECT().AgentDial(gomock.Any(), tt.id, tt.source, tt.flowID, tt.masterCallID).Return(tt.responseAgentDial, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

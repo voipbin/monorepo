@@ -15,7 +15,6 @@ func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) er
 		"func":    "AgentCallAnswered",
 		"call_id": c.ID,
 	})
-	log.Debug("The agent's call has answered.")
 
 	// get agent call
 	ac, err := h.db.AgentCallGet(ctx, c.ID)
@@ -23,6 +22,7 @@ func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) er
 		// not an agent call. ignore it.
 		return nil
 	}
+	log.Debug("The agent's call has answered.")
 
 	// set agent's status to busy
 	if err := h.db.AgentSetStatus(ctx, ac.AgentID, agent.StatusBusy); err != nil {
@@ -33,7 +33,7 @@ func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) er
 	}
 
 	// get agent dial
-	ad, err := h.db.AgentDialGet(ctx, ac.AgentID)
+	ad, err := h.db.AgentDialGet(ctx, ac.AgentDialID)
 	if err != nil {
 		log.Errorf("Could not get agent dial. err: %v", err)
 		return err
@@ -59,12 +59,6 @@ func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) er
 
 // AgentCallHungup handles the situation for agent's call hungup.
 func (h *agentHandler) AgentCallHungup(ctx context.Context, c *cmcall.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "AgentCallHungup",
-		"call_id": c.ID,
-	})
-	log.Debug("The agent's call has answered.")
-
 	// currently, we don't do anything here.
 	// the plan was, if the agent's call has hungup put the agent's status to the available.
 	// but if the agent's call is more than 2, it is hard to know this is right time or not.

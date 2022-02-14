@@ -488,14 +488,23 @@ func (h *listenHandler) processV1AgentsIDDialPost(ctx context.Context, m *rabbit
 	}
 
 	// dial
-	if err := h.agentHandler.AgentDial(ctx, id, &reqData.Source, reqData.FlowID, reqData.MasterCallID); err != nil {
+	tmp, err := h.agentHandler.AgentDial(ctx, id, &reqData.Source, reqData.FlowID, reqData.MasterCallID)
+	if err != nil {
 		log.Errorf("Could not dial to the agent. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

@@ -706,7 +706,8 @@ func TestAgentDial(t *testing.T) {
 				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.flowID, tt.masterCallID, tt.source, &addr).Return(&call.Call{ID: callID}, nil)
 			}
 
-			if err := h.AgentDial(ctx, tt.id, tt.source, tt.flowID, tt.masterCallID); err != nil {
+			_, err := h.AgentDial(ctx, tt.id, tt.source, tt.flowID, tt.masterCallID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
