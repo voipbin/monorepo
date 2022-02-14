@@ -42,7 +42,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		cf           *cfconference.Conference
 		connectFlow  *flow.Flow
 		source       *cmaddress.Address
-		destinations []*cmaddress.Address
+		destinations []cmaddress.Address
 		unchained    bool
 	}
 
@@ -82,7 +82,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 				Type:   cmaddress.TypeTel,
 				Target: "+123456789",
 			},
-			[]*cmaddress.Address{
+			[]cmaddress.Address{
 				{
 					Type:   cmaddress.TypeTel,
 					Target: "+987654321",
@@ -90,7 +90,6 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 			},
 			false,
 		},
-
 		{
 			"multiple destinations",
 			uuid.FromStringOrNil("cb4accf8-2710-11eb-8e49-e73409394bef"),
@@ -126,7 +125,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 				Type:   cmaddress.TypeTel,
 				Target: "+123456789",
 			},
-			[]*cmaddress.Address{
+			[]cmaddress.Address{
 				{
 					Type:   cmaddress.TypeTel,
 					Target: "+987654321",
@@ -138,7 +137,6 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 			},
 			false,
 		},
-
 		{
 			"multiple unchained destinations",
 			uuid.FromStringOrNil("211a68fe-2712-11eb-ad71-97e2b1546a91"),
@@ -174,7 +172,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 				Type:   cmaddress.TypeTel,
 				Target: "+123456789",
 			},
-			[]*cmaddress.Address{
+			[]cmaddress.Address{
 				{
 					Type:   cmaddress.TypeTel,
 					Target: "+987654321",
@@ -195,14 +193,13 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.cf, nil)
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
-			for i := range tt.destinations {
 
-				if tt.unchained {
-					mockReq.EXPECT().CMV1CallCreate(ctx, tt.connectFlow.CustomerID, tt.connectFlow.ID, uuid.Nil, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
-				} else {
-					mockReq.EXPECT().CMV1CallCreate(ctx, tt.connectFlow.CustomerID, tt.connectFlow.ID, tt.callID, tt.source, tt.destinations[i]).Return(&cmcall.Call{ID: uuid.Nil}, nil)
-				}
+			masterCallID := tt.callID
+			if tt.unchained {
+				masterCallID = uuid.Nil
 			}
+
+			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.connectFlow.CustomerID, tt.connectFlow.ID, masterCallID, tt.source, tt.destinations).Return([]cmcall.Call{{ID: uuid.Nil}}, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
 			if err := h.activeFlowHandleActionConnect(ctx, tt.callID, tt.act); err != nil {

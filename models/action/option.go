@@ -2,7 +2,7 @@ package action
 
 import (
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
 // OptionAMD defines action amd's option.
@@ -33,9 +33,9 @@ type OptionConferenceJoin struct {
 
 // OptionConnect defines action connect's optoin.
 type OptionConnect struct {
-	Source       address.Address   `json:"source"`       // source infromation.
-	Destinations []address.Address `json:"destinations"` // target destinations.
-	Unchained    bool              `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
+	Source       cmaddress.Address   `json:"source"`       // source infromation.
+	Destinations []cmaddress.Address `json:"destinations"` // target destinations.
+	Unchained    bool                `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 }
 
 // OptionDTMFReceive defines action dtmf_receive's option.
