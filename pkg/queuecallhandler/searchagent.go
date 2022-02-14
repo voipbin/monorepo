@@ -2,11 +2,14 @@ package queuecallhandler
 
 import (
 	"context"
+	"encoding/json"
 	"math/rand"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -63,13 +66,23 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 		return
 	}
 
+	// create the flow for the agnet dial
+	f, err := h.generateFlowForAgentCall(ctx, qc.CustomerID, qc.ConfbridgeID)
+	if err != nil {
+		log.Errorf("Could not create the flow tor agent dialing. err: %v", err)
+		_ = h.reqHandler.QMV1QueuecallSearchAgent(ctx, qc.ID, defaultDelaySearchAgent)
+		return
+	}
+
 	// dial to the agent
 	log.WithField("agent", targetAgent).Debugf("Dialing the agent. agent_id: %s", targetAgent.ID)
-	if err := h.reqHandler.AMV1AgentDial(ctx, targetAgent.ID, &qc.Source, qc.ConfbridgeID, qc.ReferenceID); err != nil {
+	agentDial, err := h.reqHandler.AMV1AgentDial(ctx, targetAgent.ID, &qc.Source, f.ID, qc.ReferenceID)
+	if err != nil {
 		log.Errorf("Could not dial to the agent. Send the request again with 1 sec delay. err: %v", err)
 		_ = h.reqHandler.QMV1QueuecallSearchAgent(ctx, qc.ID, defaultDelaySearchAgent)
 		return
 	}
+	log.WithField("agent_dial", agentDial).Debugf("Created agent dial. agent_dial_id: %s", agentDial.ID)
 
 	// forward the action.
 	log.Debugf("Setting the forward action id. forward_action_id: %s", qc.ForwardActionID)
@@ -92,4 +105,38 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 		return
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallEntering, tmp)
+}
+
+// generateFlowForAgentCall creates a flow for the agent call action.
+func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, customerID, confbridgeID uuid.UUID) (*fmflow.Flow, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "generateFlowForAgentCall",
+		"confbridge_id": confbridgeID,
+	})
+
+	opt, err := json.Marshal(fmaction.OptionConfbridgeJoin{
+		ConfbridgeID: confbridgeID,
+	})
+	if err != nil {
+		log.Errorf("Could not marshal the action. err: %v", err)
+		return nil, err
+	}
+
+	// create actions
+	actions := []fmaction.Action{
+		{
+			Type:   fmaction.TypeConfbridgeJoin,
+			Option: opt,
+		},
+	}
+
+	// create a flow for agent dial.
+	res, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeFlow, "automatically generated for the agent call by the queue-manager", "", actions, false)
+	if err != nil {
+		log.Errorf("Could not create the flow. err: %v", err)
+		return nil, err
+	}
+	log.WithField("flow", res).Debug("Created a flow.")
+
+	return res, nil
 }
