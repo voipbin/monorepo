@@ -9,6 +9,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -224,7 +225,7 @@ type RequestHandler interface {
 	AMV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]amagent.Agent, error)
 	AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
 	AMV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error)
-	AMV1AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID, masterCallID uuid.UUID) error
+	AMV1AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, flowID, masterCallID uuid.UUID) (*amagentdial.AgentDial, error)
 	AMV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*amagent.Agent, error)
 	AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error)
 	AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) (*amagent.Agent, error)
