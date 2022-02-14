@@ -591,10 +591,12 @@ func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callI
 
 	// call to the agent
 	log.Debugf("Dialing to the agent. call_id: %s, flow_id: %s", callID, f.ID)
-	if errDial := h.reqHandler.AMV1AgentDial(ctx, opt.AgentID, &c.Source, f.ID, callID); errDial != nil {
-		log.Errorf("Could not dial to the agent. err: %v", errDial)
-		return errDial
+	agentDial, err := h.reqHandler.AMV1AgentDial(ctx, opt.AgentID, &c.Source, f.ID, callID)
+	if err != nil {
+		log.Errorf("Could not dial to the agent. err: %v", err)
+		return err
 	}
+	log.WithField("agent_dial", agentDial).Debugf("Created agent_dial. agent_dial_id: %s", agentDial.ID)
 
 	// create action connect for conference join
 	optJoin := action.OptionConferenceJoin{
