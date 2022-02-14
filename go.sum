@@ -609,6 +609,8 @@ gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220213062801-28feecdbdc
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220213062801-28feecdbdc72/go.mod h1:m10P1QiVhE/GPArNVZY7wWqgU+6fHDjIckf6lRhjNKY=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220214044714-399925f20c16 h1:C8CIeWidVoDW0OEq+FzynmTz97abCZdWY2PshKAtL+M=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220214044714-399925f20c16/go.mod h1:JazOnxrq8Danh6onuIJK9dS/c4GfAdj1Ov1EPwovvWk=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220214055641-b5ce519bb632 h1:5U8NCHFl8VDpb9U8rCZ9yZIeKlFnuPYRR7U33L3ghbI=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220214055641-b5ce519bb632/go.mod h1:Z0l57tgqhvV15l7wE4nmFLs1fDTZCwZVjuLqeTYgBZg=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20200916231420-c174522ea887/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210206131226-ca5d2cbbfe65/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210314173554-61bfbbbd5633/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
