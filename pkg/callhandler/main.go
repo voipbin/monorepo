@@ -42,6 +42,7 @@ type CallHandler interface {
 	RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)
 	RecordingGet(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error)
 
+	CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source address.Address, destinations []address.Address) ([]*call.Call, error)
 	CreateCallOutgoing(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, masterCallID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error)
 	StartCallHandle(ctx context.Context, cn *channel.Channel, data map[string]string) error
 	Hangup(ctx context.Context, cn *channel.Channel) error
@@ -157,14 +158,6 @@ func NewCallHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandl
 	}
 
 	return h
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
 
 // getCurTime return current utc time string

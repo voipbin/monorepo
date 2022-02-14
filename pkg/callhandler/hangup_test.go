@@ -148,7 +148,7 @@ func TestHangupWithReason(t *testing.T) {
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallHungup, tt.call)
 
-			if err := h.HangupWithReason(context.Background(), tt.call, tt.reason, tt.hangupBy, getCurTime()); err != nil {
+			if err := h.HangupWithReason(context.Background(), tt.call, tt.reason, tt.hangupBy, dbhandler.GetCurTime()); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

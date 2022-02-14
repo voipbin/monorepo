@@ -16,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // StasisStart event's context types
@@ -344,7 +345,7 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 	log = log.WithField("call_id", callID.String())
 
 	// update call's asterisk id
-	if err := h.db.CallSetAsteriskID(context.Background(), callID, cn.AsteriskID, getCurTime()); err != nil {
+	if err := h.db.CallSetAsteriskID(context.Background(), callID, cn.AsteriskID, dbhandler.GetCurTime()); err != nil {
 		log.Errorf("Could not set call id to the channel. err: %v", err)
 		return fmt.Errorf("could not set asterisk id to call. channel: %s, asterisk: %s", cn.ID, cn.AsteriskID)
 	}
@@ -676,7 +677,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 	// confbridge_join
 	case string(action.TypeConfbridgeJoin):
 		option := action.OptionConfbridgeJoin{
-			ConfbridgeID: DefaultSipServiceOptionConfbridgeID,
+			ConfbridgeID: uuid.FromStringOrNil(DefaultSipServiceOptionConfbridgeID),
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {

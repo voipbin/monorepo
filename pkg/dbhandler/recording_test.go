@@ -139,7 +139,7 @@ func TestRecordingGets(t *testing.T) {
 				_ = h.RecordingCreate(ctx, recording)
 			}
 
-			res, err := h.RecordingGets(context.Background(), tt.customerID, 10, getCurTime())
+			res, err := h.RecordingGets(context.Background(), tt.customerID, 10, GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

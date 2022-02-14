@@ -330,7 +330,7 @@ func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string
 		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetData. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, tmpData, getCurTime(), id)
+	_, err = h.db.Exec(q, tmpData, GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetData. err: %v", err)
 	}
@@ -346,7 +346,7 @@ func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string,
 	//prepare
 	q := fmt.Sprintf("update channels set data = json_set(data, '$.%s', ?), tm_update = ? where id = ?", key)
 
-	_, err := h.db.Exec(q, value, getCurTime(), id)
+	_, err := h.db.Exec(q, value, GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetDataItem. err: %v", err)
 	}
@@ -368,7 +368,7 @@ func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, stasis, getCurTime(), id)
+	_, err := h.db.Exec(q, stasis, GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetStasis. err: %v", err)
 	}
@@ -427,7 +427,7 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) e
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, bridgeID, getCurTime(), id)
+	_, err := h.db.Exec(q, bridgeID, GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetBridgeID. err: %v", err)
 	}
@@ -449,7 +449,7 @@ func (h *handler) ChannelSetDirection(ctx context.Context, id string, direction 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, direction, getCurTime(), id)
+	_, err := h.db.Exec(q, direction, GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetDirection. err: %v", err)
 	}
@@ -471,7 +471,7 @@ func (h *handler) ChannelSetType(ctx context.Context, id string, cType channel.T
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, string(cType), getCurTime(), id)
+	_, err := h.db.Exec(q, string(cType), GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetType. err: %v", err)
 	}
@@ -493,7 +493,7 @@ func (h *handler) ChannelSetSIPTransport(ctx context.Context, id string, transpo
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, transport, getCurTime(), id)
+	_, err := h.db.Exec(q, transport, GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetSIPTransport. err: %v", err)
 	}
@@ -515,7 +515,7 @@ func (h *handler) ChannelSetSIPCallID(ctx context.Context, id string, sipID stri
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, sipID, getCurTime(), id)
+	_, err := h.db.Exec(q, sipID, GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetSIPCallID. err: %v", err)
 	}
@@ -537,7 +537,7 @@ func (h *handler) ChannelSetPlaybackID(ctx context.Context, id string, playbackI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, playbackID, getCurTime(), id)
+	_, err := h.db.Exec(q, playbackID, GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetPlaybackID. err: %v", err)
 	}
@@ -588,7 +588,7 @@ func (h *handler) ChannelSetStasisNameAndStasisData(ctx context.Context, id stri
 		return fmt.Errorf("ChannelSetStasisNameAndStasisData: Could not marshal the stasis_data. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, stasisName, tmpData, getCurTime(), id)
+	_, err = h.db.Exec(q, stasisName, tmpData, GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetStasisNameAndStasisData. err: %v", err)
 	}

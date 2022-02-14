@@ -103,38 +103,35 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 		return simpleResponse(400), nil
 	}
 
-	// generate call id.
-	id := uuid.Must(uuid.NewV4())
 	log := logrus.WithFields(
 		logrus.Fields{
-			"id": id,
+			"func": "processV1CallsPost",
 		})
-	log.Debug("Executing processV1CallsPost.")
+	log.WithField("request", m).Debug("Executing processV1CallsPost.")
 
 	var reqData request.V1DataCallsPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		// same call-id is already exsit
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"user":        reqData.CustomerID,
-		"flow":        reqData.FlowID,
-		"source":      reqData.Source,
-		"destination": reqData.Destination,
+		"user":         reqData.CustomerID,
+		"flow":         reqData.FlowID,
+		"source":       reqData.Source,
+		"destinations": reqData.Destinations,
 	})
 
 	log.Debug("Creating outgoing call.")
-	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.CustomerID, reqData.FlowID, reqData.MasterCallID, reqData.Source, reqData.Destination)
+	calls, err := h.callHandler.CreateCallsOutgoing(ctx, reqData.CustomerID, reqData.FlowID, reqData.MasterCallID, reqData.Source, reqData.Destinations)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Created outgoing call. call: %v", c)
+	log.WithField("calls", calls).Debugf("Created outgoing call. count: %d", len(calls))
 
-	data, err := json.Marshal(c)
+	data, err := json.Marshal(calls)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", c, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", calls, err)
 		return simpleResponse(500), nil
 	}
 
@@ -164,7 +161,6 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 
 	var reqData request.V1DataCallsIDPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		// same call-id is already exsit
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}

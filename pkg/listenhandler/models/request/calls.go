@@ -11,11 +11,11 @@ import (
 // v1 data type request struct for
 // /v1/calls POST
 type V1DataCallsPost struct {
-	FlowID       uuid.UUID       `json:"flow_id"`
-	CustomerID   uuid.UUID       `json:"customer_id"`
-	MasterCallID uuid.UUID       `json:"master_call_id"`
-	Source       address.Address `json:"source"`
-	Destination  address.Address `json:"destination"`
+	FlowID       uuid.UUID         `json:"flow_id"`
+	CustomerID   uuid.UUID         `json:"customer_id"`
+	MasterCallID uuid.UUID         `json:"master_call_id"`
+	Source       address.Address   `json:"source"`
+	Destinations []address.Address `json:"destinations"`
 }
 
 // V1DataCallsIDPost is
