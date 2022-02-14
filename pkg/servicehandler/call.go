@@ -15,37 +15,29 @@ import (
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address) ([]*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"flow_id":     flowID,
 		"source":      source,
-		"destination": destination,
+		"destination": destinations,
 	})
-
-	// parse source/destination
-	addrSrc := &cmaddress.Address{
-		Type:   cmaddress.Type(source.Type),
-		Target: source.Target,
-		Name:   source.Name,
-	}
-	addrDest := &cmaddress.Address{
-		Type:   cmaddress.Type(destination.Type),
-		Target: destination.Target,
-		Name:   destination.Name,
-	}
 
 	// send request
 	log.Debug("Creating a new call.")
-	tmp, err := h.reqHandler.CMV1CallCreate(ctx, u.ID, flowID, addrSrc, addrDest)
+	tmps, err := h.reqHandler.CMV1CallsCreate(ctx, u.ID, flowID, uuid.Nil, source, destinations)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
 	}
 
-	res := tmp.ConvertWebhookMessage()
+	res := []*cmcall.WebhookMessage{}
+	for _, tmp := range tmps {
+		t := tmp.ConvertWebhookMessage()
+		res = append(res, t)
+	}
 
 	return res, err
 }

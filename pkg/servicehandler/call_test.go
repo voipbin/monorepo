@@ -22,12 +22,14 @@ func TestCallCreate(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
 	type test struct {
-		name        string
-		customer    *cscustomer.Customer
-		flowID      uuid.UUID
-		source      *cmaddress.Address
-		destination *cmaddress.Address
-		cmCall      *cmcall.Call
+		name         string
+		customer     *cscustomer.Customer
+		flowID       uuid.UUID
+		source       *cmaddress.Address
+		destinations []cmaddress.Address
+
+		responseCall []cmcall.Call
+		expectRes    []*cmcall.WebhookMessage
 	}
 
 	tests := []test{
@@ -41,32 +43,21 @@ func TestCallCreate(t *testing.T) {
 				Type:   cmaddress.TypeSIP,
 				Target: "testsource@test.com",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeSIP,
-				Target: "testdestination@test.com",
-			},
-			&cmcall.Call{
-				ID:         uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
-				AsteriskID: "02:42:5d:f3:a7:05",
-				ChannelID:  "d66d7c02-efc5-11ea-9f77-6fe9fae57afd",
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				FlowID:     uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-				Type:       cmcall.TypeFlow,
-
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeSIP,
-					Target: "testsource@test.com",
-				},
-				Destination: cmaddress.Address{
+			[]cmaddress.Address{
+				{
 					Type:   cmaddress.TypeSIP,
 					Target: "testdestination@test.com",
 				},
-
-				Status:       cmcall.StatusDialing,
-				Data:         map[string]string{},
-				Direction:    cmcall.DirectionIncoming,
-				HangupBy:     "",
-				HangupReason: "",
+			},
+			[]cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
+				},
+			},
+			[]*cmcall.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
+				},
 			},
 		},
 	}
@@ -78,15 +69,15 @@ func TestCallCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CMV1CallCreate(gomock.Any(), tt.customer.ID, tt.flowID, &tt.cmCall.Source, &tt.cmCall.Destination).Return(tt.cmCall, nil)
+			mockReq.EXPECT().CMV1CallsCreate(gomock.Any(), tt.customer.ID, tt.flowID, uuid.Nil, tt.source, tt.destinations).Return(tt.responseCall, nil)
 
-			res, err := h.CallCreate(tt.customer, tt.flowID, tt.source, tt.destination)
+			res, err := h.CallCreate(tt.customer, tt.flowID, tt.source, tt.destinations)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.cmCall.ConvertWebhookMessage()) != true {
-				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.cmCall.ConvertWebhookMessage(), res)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
 			}
 		})
 	}
