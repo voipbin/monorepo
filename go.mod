@@ -13,10 +13,10 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220214010042-9d735c473204
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220213062801-28feecdbdc72
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220214011524-4c104d48352c
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220203063008-305be30288a4
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220212191329-45425ab4f6b5
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220214055641-b5ce519bb632
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220214055925-5642ed0fc23b
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220214020613-3467a95bad81
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220214021001-a55b20ebbcdc
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206205721-6f56cc4c3c1e
 )
 

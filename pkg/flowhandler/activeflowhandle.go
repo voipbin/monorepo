@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
@@ -368,44 +367,19 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 		return fmt.Errorf("could not unmarshal the connect option. err: %v", err)
 	}
 
-	// create a call for each destination
-	successCount := 0
-	for _, dest := range optConnect.Destinations {
-		source := &address.Address{
-			Type:   address.Type(optConnect.Source.Type),
-			Target: optConnect.Source.Target,
-			Name:   optConnect.Source.Name,
-		}
-
-		destination := &address.Address{
-			Type:   address.Type(dest.Type),
-			Target: dest.Target,
-			Name:   dest.Name,
-		}
-
-		// create a call
-		if optConnect.Unchained {
-			resCall, err := h.reqHandler.CMV1CallCreate(ctx, connectCF.CustomerID, connectCF.ID, uuid.Nil, source, destination)
-			if err != nil {
-				log.Errorf("Could not create a outgoing call for connect. err: %v", err)
-				continue
-			}
-			log.WithField("call", resCall).Debugf("Created outgoing call for connect without master call id. call: %s", resCall.ID)
-		} else {
-			resCall, err := h.reqHandler.CMV1CallCreate(ctx, connectCF.CustomerID, connectCF.ID, callID, source, destination)
-			if err != nil {
-				log.Errorf("Could not create a outgoing call for connect. err: %v", err)
-				continue
-			}
-			log.WithField("call", resCall).Debugf("Created outgoing call for connect with master call id. call: %s", resCall.ID)
-		}
-		successCount++
+	// set master call id.
+	masterCallID := callID
+	if optConnect.Unchained {
+		masterCallID = uuid.Nil
 	}
 
-	if successCount == 0 {
-		log.Errorf("Could not create any successful outgoingcall.")
-		return fmt.Errorf("could not create any successful outgoing call")
+	// create a call
+	resCall, err := h.reqHandler.CMV1CallsCreate(ctx, connectCF.CustomerID, connectCF.ID, masterCallID, &optConnect.Source, optConnect.Destinations)
+	if err != nil {
+		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
+		return err
 	}
+	log.WithField("calls", resCall).Debugf("Created outgoing call for connect without master call id. count: %d", len(resCall))
 
 	// put original call into the created conference
 	resAction := action.Action{
