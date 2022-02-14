@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Hangup Hangup the call
@@ -96,7 +97,7 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 	if c.Direction == call.DirectionOutgoing && call.IsUpdatableStatus(c.Status, call.StatusCanceling) {
 		// canceling
 		// update call status
-		if err := h.db.CallSetStatus(ctx, c.ID, call.StatusCanceling, getCurTime()); err != nil {
+		if err := h.db.CallSetStatus(ctx, c.ID, call.StatusCanceling, dbhandler.GetCurTime()); err != nil {
 			// update status failed, just write log here. No need error handle here.
 			log.Errorf("Could not update the call status StatusCanceling for hangup. err: %v", err)
 			return err
@@ -105,7 +106,7 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 	} else {
 		// incoming and others
 		// update call status
-		if err := h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, getCurTime()); err != nil {
+		if err := h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, dbhandler.GetCurTime()); err != nil {
 			// update status failed, just write log here. No need error handle here.
 			log.Errorf("Could not update the call status StatusTerminating for hangup. err: %v", err)
 			return err

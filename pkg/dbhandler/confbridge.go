@@ -243,7 +243,7 @@ func (h *handler) ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridg
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, bridgeID, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, bridgeID, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetBridgeID. err: %v", err)
 	}
@@ -264,7 +264,7 @@ func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeDelete. err: %v", err)
 	}
@@ -286,7 +286,7 @@ func (h *handler) ConfbridgeSetRecordID(ctx context.Context, id uuid.UUID, recor
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetRecordID. err: %v", err)
 	}
@@ -312,7 +312,7 @@ func (h *handler) ConfbridgeAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddRecordIDs. err: %v", err)
 	}
@@ -338,7 +338,7 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, key, callID.String(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, callID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %v", err)
 	}
@@ -363,7 +363,7 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, key, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %v", err)
 	}

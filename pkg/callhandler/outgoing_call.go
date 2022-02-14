@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 const (
@@ -24,9 +25,50 @@ const (
 	constTransportWSS = "wss" //nolint:deadcode,varcheck
 )
 
-// CreateCallOutgoing creates a call for outgoing
-func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, customerID uuid.UUID, flowID uuid.UUID, masterCallID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
+// CreateCallsOutgoing creates multiple outgoing calls.
+func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source address.Address, destinations []address.Address) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "CreateCallsOutgoing",
+		"customer_id": customerID,
+		"flow_id":     flowID,
+		"source":      source,
+	})
+
+	res := []*call.Call{}
+	for _, destination := range destinations {
+		callID := uuid.Must(uuid.NewV4())
+		log.WithField("destination", destination).Debugf("Creating an outgoing call. call_id: %s, destination_type: %s, destination_target: %s", callID, destination.Type, destination.Target)
+
+		switch destination.Type {
+		case address.TypeSIP, address.TypeTel:
+			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, masterCallID, source, destination)
+			if err != nil {
+				log.Errorf("Could not create an outgoing call. err: %v", err)
+				continue
+			}
+			log.WithField("call", c).Debugf("Created outgoing call. call_id: %s, destination_type: %s, destination_target: %s", callID, destination.Type, destination.Target)
+
+			res = append(res, c)
+
+		case address.TypeAgent:
+			calls, err := h.createCallOutgoingAgent(ctx, customerID, flowID, masterCallID, source, destination)
+			if err != nil {
+				log.Errorf("Could not create an outgoing call to the agent. err: %v", err)
+				continue
+			}
+			log.WithField("calls", calls).Debugf("Created outgoing call to the agent. destination_type: %s, destination_target: %s", destination.Type, destination.Target)
+
+			res = append(res, calls...)
+		}
+	}
+
+	return res, nil
+}
+
+// CreateCallOutgoing creates a call for outgoing
+func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, masterCallID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"funcs":          "CreateCallOutgoing",
 		"id":             id,
 		"customer_id":    customerID,
 		"flow":           flowID,
@@ -35,6 +77,11 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, cust
 		"destination":    destination,
 	})
 	log.Debug("Creating a call for outgoing.")
+
+	// check destination type
+	if destination.Type != address.TypeSIP && destination.Type != address.TypeTel {
+		return nil, fmt.Errorf("the destination type must be sip or tel")
+	}
 
 	// create active-flow
 	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, id, flowID)
@@ -56,25 +103,26 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, cust
 		Source:      source,
 		Destination: destination,
 		Action:      af.CurrentAction,
-		TMCreate:    getCurTime(),
+
+		TMCreate: dbhandler.GetCurTime(),
 	}
 
 	// create a call
 	c, err := h.createCall(ctx, cTmp)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing call. err: %v", err)
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, getCurTime()); err != nil {
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, dbhandler.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
 
 		return nil, err
 	}
 
-	// if the mastercallid has set, add chained call
 	if masterCallID != uuid.Nil {
 		if errChained := h.ChainedCallIDAdd(ctx, masterCallID, c.ID); errChained != nil {
-			// we got error here,
-			log.Errorf("Could not add the chained call id. call: %s, chained_call: %s, err: %v", masterCallID, c.ID, errChained)
+			// could not add the chained call id. but this is minor issue compare to the creating a call.
+			// so just keep moving.
+			log.Errorf("Could not add the chained call id. But keep moving on. master_call_id: %s, call_id: %s err: %v", masterCallID, c.ID, errChained)
 		}
 	}
 
@@ -84,7 +132,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, cust
 		log.Errorf("Could not create a destination endpoint. err: %v", err)
 
 		// hangup
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, getCurTime()); err != nil {
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, dbhandler.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
 		return nil, err
@@ -115,7 +163,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id uuid.UUID, cust
 	if err := h.reqHandler.AstChannelCreate(ctx, requesthandler.AsteriskIDCall, channelID, appArgs, endpointDst, "", "", "", variables); err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, getCurTime()); err != nil {
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, dbhandler.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
 		return nil, err
@@ -180,4 +228,35 @@ func (h *callHandler) getEndpointSDPTransport(endpointDestination string) string
 	}
 
 	return "RTP/AVP"
+}
+
+// CreateCallOutgoingAgent creates an outgoing call to the agent
+func (h *callHandler) createCallOutgoingAgent(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source address.Address, destination address.Address) ([]*call.Call, error) {
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CreateCallOutgoingAgent",
+		"customer_id": customerID,
+	})
+
+	// get agent id
+	agentID := uuid.FromStringOrNil(destination.Target)
+	agentDial, err := h.reqHandler.AMV1AgentDial(ctx, agentID, &source, flowID, masterCallID)
+	if err != nil {
+		log.Errorf("Could not create an outgoing call to agent. err: %v", err)
+		return nil, err
+	}
+	log.WithField("agent_dial", agentDial).Debugf("Created an agent dial. agent_dial_id: %s", agentDial.ID)
+
+	res := []*call.Call{}
+	for _, callID := range agentDial.AgentCallIDs {
+		c, err := h.Get(ctx, callID)
+		if err != nil {
+			log.Errorf("Could not get call info. err: %v", err)
+			continue
+		}
+
+		res = append(res, c)
+	}
+
+	return res, nil
 }

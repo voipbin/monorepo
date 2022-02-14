@@ -439,7 +439,7 @@ func TestCallGets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.CallGets(context.Background(), tt.customerID, 10, getCurTime())
+			res, err := h.CallGets(context.Background(), tt.customerID, 10, GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

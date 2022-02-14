@@ -16,6 +16,7 @@ import (
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Redirect options for timeout action
@@ -87,7 +88,7 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *action
 	var err error
 
 	// set current time
-	a.TMExecute = getCurTime()
+	a.TMExecute = dbhandler.GetCurTime()
 
 	// set action
 	if errSetAction := h.setAction(c, a); errSetAction != nil {
@@ -345,10 +346,9 @@ func (h *callHandler) actionExecuteConfbridgeJoin(ctx context.Context, c *call.C
 		log.Errorf("could not parse the option. err: %v", err)
 		return err
 	}
-	cbID := uuid.FromStringOrNil(option.ConfbridgeID)
 
 	// join to the confbridge
-	if err := h.confbridgeHandler.Join(ctx, cbID, c.ID); err != nil {
+	if err := h.confbridgeHandler.Join(ctx, option.ConfbridgeID, c.ID); err != nil {
 		log.Errorf("Could not join to the confbridge. call: %s, err: %v", c.ID, err)
 		return err
 	}

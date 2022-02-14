@@ -19,8 +19,9 @@ type Type string
 
 // List of CallAddressType
 const (
-	TypeSIP Type = "sip"
-	TypeTel Type = "tel"
+	TypeAgent Type = "agent"
+	TypeSIP   Type = "sip"
+	TypeTel   Type = "tel"
 )
 
 // CreateAddressByChannelSource creates and return the Address using channel's source.
