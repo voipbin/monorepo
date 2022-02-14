@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	agentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 )
@@ -97,11 +98,12 @@ func (mr *MockAgentHandlerMockRecorder) AgentDelete(ctx, id interface{}) *gomock
 }
 
 // AgentDial mocks base method.
-func (m *MockAgentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, confbridgeID, masterCallID uuid.UUID) error {
+func (m *MockAgentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, confbridgeID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentDial", ctx, id, source, confbridgeID, masterCallID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*agentdial.AgentDial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AgentDial indicates an expected call of AgentDial.

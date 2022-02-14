@@ -80,7 +80,7 @@ func TestAgentCallAnswered(t *testing.T) {
 
 			mockDB.EXPECT().AgentCallGet(gomock.Any(), tt.call.ID).Return(tt.agentCall, nil)
 			mockDB.EXPECT().AgentSetStatus(gomock.Any(), tt.agentCall.AgentID, agent.StatusBusy).Return(nil)
-			mockDB.EXPECT().AgentDialGet(gomock.Any(), tt.agentCall.AgentID).Return(tt.agentDial, nil)
+			mockDB.EXPECT().AgentDialGet(gomock.Any(), tt.agentCall.AgentDialID).Return(tt.agentDial, nil)
 			for _, callID := range tt.agentDial.AgentCallIDs {
 				if callID == tt.agentCall.ID {
 					continue

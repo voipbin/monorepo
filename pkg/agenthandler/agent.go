@@ -349,7 +349,7 @@ func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, stat
 }
 
 // AgentDial dials to the agent.
-func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, flowID, masterCallID uuid.UUID) error {
+func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, flowID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "AgentDial",
 		"agent_id":       id,
@@ -362,23 +362,23 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 	ag, err := h.db.AgentGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get agent info. err: %v", err)
-		return err
+		return nil, err
 	}
 	log.WithField("agent", ag).Debug("Found agent.")
 
 	// check agent's status and addresses
 	if ag.Status != agent.StatusAvailable {
 		log.Debugf("Agent is not available. status: %s", ag.Status)
-		return fmt.Errorf("agant is not available")
+		return nil, fmt.Errorf("agant is not available")
 	} else if len(ag.Addresses) == 0 {
 		log.Debugf("Agent has no address.")
-		return fmt.Errorf("agent has no address")
+		return nil, fmt.Errorf("agent has no address")
 	}
 
 	// set agent status to ringing
 	if err := h.db.AgentSetStatus(ctx, ag.ID, agent.StatusRinging); err != nil {
 		log.Errorf("Could not update the agent's status. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// generate the call ids and agentcall info
@@ -413,7 +413,7 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 
 	if ag.RingMethod == agent.RingMethodLinear {
 		log.Errorf("Currently, support the ringall only.")
-		return fmt.Errorf("unsupport ringmethod")
+		return nil, fmt.Errorf("unsupport ringmethod")
 	}
 
 	// dial
@@ -426,5 +426,5 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 		log.WithField("call", c).Debug("Created a call")
 	}
 
-	return nil
+	return ad, nil
 }
