@@ -56,9 +56,11 @@ func TestCallsPOST(t *testing.T) {
 					Type:   cmaddress.TypeSIP,
 					Target: "source@test.voipbin.net",
 				},
-				Destination: cmaddress.Address{
-					Type:   cmaddress.TypeSIP,
-					Target: "destination@test.voipbin.net",
+				Destinations: []cmaddress.Address{
+					{
+						Type:   cmaddress.TypeSIP,
+						Target: "destination@test.voipbin.net",
+					},
 				},
 				Actions: []fmaction.Action{},
 			},
@@ -100,7 +102,7 @@ func TestCallsPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
-			mockSvc.EXPECT().CallCreate(&tt.customer, tt.resFlow.ID, &tt.req.Source, &tt.req.Destination).Return(nil, nil)
+			mockSvc.EXPECT().CallCreate(&tt.customer, tt.resFlow.ID, &tt.req.Source, tt.req.Destinations).Return(nil, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
