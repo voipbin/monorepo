@@ -10,24 +10,41 @@ import (
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address) ([]*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, destinations []cmaddress.Address) ([]*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "CallCreate",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"flow_id":     flowID,
+		"actions":     actions,
 		"source":      source,
 		"destination": destinations,
 	})
 
 	// send request
 	log.Debug("Creating a new call.")
-	tmps, err := h.reqHandler.CMV1CallsCreate(ctx, u.ID, flowID, uuid.Nil, source, destinations)
+
+	targetFlowID := flowID
+	if targetFlowID == uuid.Nil {
+		log.Debugf("The flowID is null. Creating a new temp flow for call dialing.")
+		f, err := h.FlowCreate(u, "tmp", "tmp outbound flow", actions, false)
+		if err != nil {
+			log.Errorf("Could not create a flow for outoing call. err: %v", err)
+			return nil, err
+		}
+		log.WithField("flow", f).Debugf("Create a new tmp flow for call dialing. flow_id: %s", f.ID)
+
+		targetFlowID = f.ID
+	}
+
+	tmps, err := h.reqHandler.CMV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
