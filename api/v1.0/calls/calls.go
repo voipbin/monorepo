@@ -54,16 +54,8 @@ func callsPOST(c *gin.Context) {
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	// create flow
-	flow, err := serviceHandler.FlowCreate(&u, "tmp", "tmp outbound flow", req.Actions, false)
-	if err != nil {
-		log.Errorf("Could not create a flow for outoing call. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
 	// create call
-	res, err := serviceHandler.CallCreate(&u, flow.ID, &req.Source, req.Destinations)
+	res, err := serviceHandler.CallCreate(&u, req.FlowID, req.Actions, &req.Source, req.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)

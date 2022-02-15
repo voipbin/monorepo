@@ -215,18 +215,18 @@ func (mr *MockServiceHandlerMockRecorder) AvailableNumberGets(u, size, countryCo
 }
 
 // CallCreate mocks base method.
-func (m *MockServiceHandler) CallCreate(u *customer.Customer, flowID uuid.UUID, source *address.Address, destinations []address.Address) ([]*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallCreate(u *customer.Customer, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address) ([]*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallCreate", u, flowID, source, destinations)
+	ret := m.ctrl.Call(m, "CallCreate", u, flowID, actions, source, destinations)
 	ret0, _ := ret[0].([]*call.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallCreate indicates an expected call of CallCreate.
-func (mr *MockServiceHandlerMockRecorder) CallCreate(u, flowID, source, destinations interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CallCreate(u, flowID, actions, source, destinations interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockServiceHandler)(nil).CallCreate), u, flowID, source, destinations)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockServiceHandler)(nil).CallCreate), u, flowID, actions, source, destinations)
 }
 
 // CallDelete mocks base method.

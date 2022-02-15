@@ -62,7 +62,7 @@ type ServiceHandler interface {
 	AvailableNumberGets(u *cscustomer.Customer, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error)
 
 	// call handlers
-	CallCreate(u *cscustomer.Customer, flowID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address) ([]*cmcall.WebhookMessage, error)
+	CallCreate(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, destinations []cmaddress.Address) ([]*cmcall.WebhookMessage, error)
 	CallGet(u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallGets(u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	CallDelete(u *cscustomer.Customer, callID uuid.UUID) error

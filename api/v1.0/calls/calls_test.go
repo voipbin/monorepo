@@ -16,7 +16,6 @@ import (
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -41,8 +40,9 @@ func TestCallsPOST(t *testing.T) {
 		name     string
 		customer cscustomer.Customer
 		req      request.BodyCallsPOST
-		reqFlow  *fmflow.Flow
-		resFlow  *fmflow.WebhookMessage
+
+		resCall   []*cmcall.WebhookMessage
+		expectRes string
 	}
 
 	tests := []test{
@@ -64,18 +64,13 @@ func TestCallsPOST(t *testing.T) {
 				},
 				Actions: []fmaction.Action{},
 			},
-			&fmflow.Flow{
-				Name:    "tmp",
-				Detail:  "tmp outbound flow",
-				Actions: []fmaction.Action{},
-				Persist: false,
+
+			[]*cmcall.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("98b963ac-8df9-11ec-b26b-031d30ff93df"),
+				},
 			},
-			&fmflow.WebhookMessage{
-				ID:      uuid.FromStringOrNil("044cf45a-f3a3-11ea-963d-1fc4372fcff8"),
-				Name:    "temp",
-				Detail:  "tmp outbound flow",
-				Actions: []fmaction.Action{},
-			},
+			`[{"id":"98b963ac-8df9-11ec-b26b-031d30ff93df","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}]`,
 		},
 	}
 
@@ -101,12 +96,16 @@ func TestCallsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
-			mockSvc.EXPECT().CallCreate(&tt.customer, tt.resFlow.ID, &tt.req.Source, tt.req.Destinations).Return(nil, nil)
+			// mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().CallCreate(&tt.customer, tt.req.FlowID, tt.req.Actions, &tt.req.Source, tt.req.Destinations).Return(tt.resCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 
 		})
