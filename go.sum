@@ -756,6 +756,8 @@ gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220212191335-c83028438b
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220213085434-53327faa93d9/go.mod h1:/7/2erRmwWg61GZiY28PKSHsDLuc3m5zKcXksgSdzMA=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220214013752-f3210b78171f h1:qVNrIhI51SAvhhaS0MPK1SeNC/fhv6Azqd8GmqmKfM0=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220214013752-f3210b78171f/go.mod h1:CA3wgleeEnKuTEz/Q+cdKsMfu0R/ryYCqOp2tlKixek=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220214062431-f7dcb00cce91 h1:3vk9KeHaLjCeEkGtYmNFQ+6vFYZwD3UlS+G0rSx28zY=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220214062431-f7dcb00cce91/go.mod h1:1nItGi6P6EsjQBimjRxlbZeUf112qB0SZ35JbnE57zg=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210321130210-a1303884d876/go.mod h1:moKBA06hhNrhRq4KOyurZ7Jnz55Ej0PilS3ON3im6r4=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210323024014-e746d8159826/go.mod h1:moKBA06hhNrhRq4KOyurZ7Jnz55Ej0PilS3ON3im6r4=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2/go.mod h1:moKBA06hhNrhRq4KOyurZ7Jnz55Ej0PilS3ON3im6r4=
@@ -895,6 +897,8 @@ golang.org/x/crypto v0.0.0-20220208233918-bba287dce954/go.mod h1:IxCIyHEi3zRg3s0
 golang.org/x/crypto v0.0.0-20220210151621-f4118a5b28e2/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
 golang.org/x/crypto v0.0.0-20220213190939-1e6e3497d506 h1:EuGTJDfeg/PGZJp3gq1K+14eSLFTsrj1eg8KQuiUyKg=
 golang.org/x/crypto v0.0.0-20220213190939-1e6e3497d506/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
+golang.org/x/crypto v0.0.0-20220214200702-86341886e292 h1:f+lwQ+GtmgoY+A2YaQxlSOnDjXcQ7ZRLWOHbC6HtRqE=
+golang.org/x/crypto v0.0.0-20220214200702-86341886e292/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20190306152737-a1d7652674e8/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522/go.mod h1:ZjyILWgesfNpC6sMxTJOJm9Kp84zZh5NQWvqDGG3Qr8=
