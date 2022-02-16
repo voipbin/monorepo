@@ -53,8 +53,8 @@ type CallHandler interface {
 	ActionNextForce(ctx context.Context, c *call.Call) error
 	ActionTimeout(ctx context.Context, callID uuid.UUID, a *action.Action) error
 
-	ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) error
-	ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) error
+	ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)
+	ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)
 
 	ExternalMediaStart(ctx context.Context, callID uuid.UUID, isCallMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error)
 	ExternalMediaStop(ctx context.Context, callID uuid.UUID) error

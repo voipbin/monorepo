@@ -2,10 +2,12 @@ package callhandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -18,15 +20,19 @@ func TestChainedCallIDAdd(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
 	}
 
 	type test struct {
-		name         string
-		call         *call.Call
+		name string
+		call *call.Call
+
+		id           uuid.UUID
 		chaindCallID uuid.UUID
 	}
 
@@ -38,6 +44,7 @@ func TestChainedCallIDAdd(t *testing.T) {
 				Status: call.StatusProgressing,
 			},
 
+			uuid.FromStringOrNil("eb71954c-2504-11eb-a92f-0bd8129658a9"),
 			uuid.FromStringOrNil("ed893c22-2504-11eb-a0ed-839c010855ed"),
 		},
 		{
@@ -47,6 +54,7 @@ func TestChainedCallIDAdd(t *testing.T) {
 				Status: call.StatusDialing,
 			},
 
+			uuid.FromStringOrNil("a31ccbbe-256c-11eb-8d6a-7b6b14b71912"),
 			uuid.FromStringOrNil("a396a86c-256c-11eb-b3ab-d708913b7832"),
 		},
 		{
@@ -56,6 +64,7 @@ func TestChainedCallIDAdd(t *testing.T) {
 				Status: call.StatusRinging,
 			},
 
+			uuid.FromStringOrNil("a3cc1dd0-256c-11eb-afd6-871abdb9c625"),
 			uuid.FromStringOrNil("a4025af8-256c-11eb-bd53-9b3a0b24844d"),
 		},
 	}
@@ -67,8 +76,19 @@ func TestChainedCallIDAdd(t *testing.T) {
 			mockDB.EXPECT().CallSetMasterCallID(gomock.Any(), tt.chaindCallID, tt.call.ID).Return(nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-			if err := h.ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chaindCallID); err != nil {
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
+
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.chaindCallID).Return(&call.Call{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+
+			res, err := h.ChainedCallIDAdd(context.Background(), tt.id, tt.chaindCallID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.call) {
+				t.Errorf("Wrong match.\nexpect: %v, got: %v", tt.call, res)
 			}
 
 		})
@@ -128,7 +148,8 @@ func TestChainedCallIDAddFailStatus(t *testing.T) {
 			mockDB.EXPECT().CallTXStart(tt.call.ID).Return(nil, tt.call, nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), false)
 
-			if err := h.ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chaindCallID); err == nil {
+			_, err := h.ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chaindCallID)
+			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
 		})
@@ -141,15 +162,19 @@ func TestChainedCallIDRemove(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
 	}
 
 	type test struct {
-		name         string
-		call         *call.Call
+		name string
+		call *call.Call
+
+		id           uuid.UUID
 		chaindCallID uuid.UUID
 	}
 
@@ -160,6 +185,7 @@ func TestChainedCallIDRemove(t *testing.T) {
 				ID: uuid.FromStringOrNil("4786ca48-256c-11eb-be3c-7361101fde14"),
 			},
 
+			uuid.FromStringOrNil("4786ca48-256c-11eb-be3c-7361101fde14"),
 			uuid.FromStringOrNil("47cb9c0e-256c-11eb-aff4-7b1173c946b1"),
 		},
 	}
@@ -171,8 +197,19 @@ func TestChainedCallIDRemove(t *testing.T) {
 			mockDB.EXPECT().CallSetMasterCallID(gomock.Any(), tt.chaindCallID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-			if err := h.ChainedCallIDRemove(context.Background(), tt.call.ID, tt.chaindCallID); err != nil {
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
+
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.chaindCallID).Return(&call.Call{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+
+			res, err := h.ChainedCallIDRemove(context.Background(), tt.call.ID, tt.chaindCallID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.call, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.call, res)
 			}
 
 		})
