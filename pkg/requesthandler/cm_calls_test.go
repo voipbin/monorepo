@@ -531,7 +531,7 @@ func TestCMCallAddChainedCall(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		// expectResult  *flow.Flow
+		expectRes     *cmcall.Call
 	}
 
 	tests := []test{
@@ -543,6 +543,8 @@ func TestCMCallAddChainedCall(t *testing.T) {
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				DataType:   "appliation/json",
+				Data:       []byte(`{"id":"887a7600-25c9-11eb-ab60-338d7ef0ba0f"}`),
 			},
 
 			"bin-manager.call-manager.request",
@@ -552,6 +554,9 @@ func TestCMCallAddChainedCall(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"chained_call_id":"8d48ded8-25c9-11eb-a8da-a7bcaada697c"}`),
 			},
+			&cmcall.Call{
+				ID: uuid.FromStringOrNil("887a7600-25c9-11eb-ab60-338d7ef0ba0f"),
+			},
 		},
 	}
 
@@ -560,9 +565,80 @@ func TestCMCallAddChainedCall(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CMV1CallAddChainedCall(ctx, tt.callID, tt.chainedCallID); err != nil {
+			res, err := reqHandler.CMV1CallAddChainedCall(ctx, tt.callID, tt.chainedCallID)
+			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func TestCMCallRemoveChainedCall(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	type test struct {
+		name string
+
+		callID        uuid.UUID
+		chainedCallID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cmcall.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("1ced9274-8ee0-11ec-8c36-13795e573d73"),
+			uuid.FromStringOrNil("1d38dcd4-8ee0-11ec-ace4-178f58435f40"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "appliation/json",
+				Data:       []byte(`{"id":"1ced9274-8ee0-11ec-8c36-13795e573d73"}`),
+			},
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/1ced9274-8ee0-11ec-8c36-13795e573d73/chained-call-ids/1d38dcd4-8ee0-11ec-ace4-178f58435f40",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+			},
+			&cmcall.Call{
+				ID: uuid.FromStringOrNil("1ced9274-8ee0-11ec-8c36-13795e573d73"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CMV1CallRemoveChainedCall(ctx, tt.callID, tt.chainedCallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }

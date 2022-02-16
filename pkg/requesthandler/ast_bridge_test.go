@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -29,7 +29,7 @@ func TestAstBridgeGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectBridge  *bridge.Bridge
+		expectBridge  *cmbridge.Bridge
 	}
 
 	tests := []test{
@@ -50,13 +50,13 @@ func TestAstBridgeGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     nil,
 			},
-			&bridge.Bridge{
+			&cmbridge.Bridge{
 				ID:   "3e6eec96-fabe-4041-870d-e1daee11aafb",
 				Name: "reference_type=confbridge,reference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7",
 
 				// info
-				Type:    bridge.TypeMixing,
-				Tech:    bridge.TechSoftmix,
+				Type:    cmbridge.TypeMixing,
+				Tech:    cmbridge.TechSoftmix,
 				Class:   "stasis",
 				Creator: "Stasis",
 
@@ -66,7 +66,7 @@ func TestAstBridgeGet(t *testing.T) {
 				ChannelIDs: []string{},
 
 				// conference info
-				ReferenceType: bridge.ReferenceTypeConfbridge,
+				ReferenceType: cmbridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("60d7ee79-78f5-4c86-9d34-4c699e8d5ee7"),
 
 				TMCreate: "",

@@ -732,11 +732,12 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallActionTimeout(ctx, id, delay, 
 }
 
 // CMV1CallAddChainedCall mocks base method.
-func (m *MockRequestHandler) CMV1CallAddChainedCall(ctx context.Context, callID, chainedCallID uuid.UUID) error {
+func (m *MockRequestHandler) CMV1CallAddChainedCall(ctx context.Context, callID, chainedCallID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMV1CallAddChainedCall", ctx, callID, chainedCallID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CMV1CallAddChainedCall indicates an expected call of CMV1CallAddChainedCall.
@@ -832,6 +833,21 @@ func (m *MockRequestHandler) CMV1CallHealth(ctx context.Context, id uuid.UUID, d
 func (mr *MockRequestHandlerMockRecorder) CMV1CallHealth(ctx, id, delay, retryCount interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallHealth", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallHealth), ctx, id, delay, retryCount)
+}
+
+// CMV1CallRemoveChainedCall mocks base method.
+func (m *MockRequestHandler) CMV1CallRemoveChainedCall(ctx context.Context, callID, chainedCallID uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMV1CallRemoveChainedCall", ctx, callID, chainedCallID)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMV1CallRemoveChainedCall indicates an expected call of CMV1CallRemoveChainedCall.
+func (mr *MockRequestHandlerMockRecorder) CMV1CallRemoveChainedCall(ctx, callID, chainedCallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallRemoveChainedCall", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallRemoveChainedCall), ctx, callID, chainedCallID)
 }
 
 // CMV1CallsCreate mocks base method.
