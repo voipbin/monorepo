@@ -16,8 +16,6 @@ import (
 )
 
 const (
-	constVoIPBINDomainSuffix = ".sip.voipbin.net"
-
 	constTransportUDP = "udp"
 	constTransportTCP = "tcp" //nolint:deadcode,varcheck
 	constTransportTLS = "tls" //nolint:deadcode,varcheck
@@ -119,15 +117,17 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	if masterCallID != uuid.Nil {
-		if errChained := h.ChainedCallIDAdd(ctx, masterCallID, c.ID); errChained != nil {
+		tmp, errChained := h.ChainedCallIDAdd(ctx, masterCallID, c.ID)
+		if errChained != nil {
 			// could not add the chained call id. but this is minor issue compare to the creating a call.
 			// so just keep moving.
 			log.Errorf("Could not add the chained call id. But keep moving on. master_call_id: %s, call_id: %s err: %v", masterCallID, c.ID, errChained)
 		}
+		log.WithField("call", tmp).Debugf("Added chained call id. master_call_id: %s, call_id: %s", masterCallID, c.ID)
 	}
 
 	// get a endpoint destination
-	endpointDst, err := h.getEndpointDestination(ctx, destination)
+	dialURI, err := h.getDialURI(ctx, destination)
 	if err != nil {
 		log.Errorf("Could not create a destination endpoint. err: %v", err)
 
@@ -139,8 +139,8 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// get sdp-transport
-	sdpTransport := h.getEndpointSDPTransport(endpointDst)
-	log.Debugf("Endpoint detail. endpoint_destination: %s, sdp_transport: %s", endpointDst, sdpTransport)
+	sdpTransport := h.getEndpointSDPTransport(dialURI)
+	log.Debugf("Endpoint detail. endpoint_destination: %s, sdp_transport: %s", dialURI, sdpTransport)
 
 	// create a source endpoint
 	var endpointSrc string
@@ -160,7 +160,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// create a channel
-	if err := h.reqHandler.AstChannelCreate(ctx, requesthandler.AsteriskIDCall, channelID, appArgs, endpointDst, "", "", "", variables); err != nil {
+	if err := h.reqHandler.AstChannelCreate(ctx, requesthandler.AsteriskIDCall, channelID, appArgs, dialURI, "", "", "", variables); err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 
 		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, dbhandler.GetCurTime()); err != nil {
@@ -172,38 +172,28 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	return c, nil
 }
 
-// getEndpointDestination returns corresponded endpoint's destination address for Asterisk's dialing
-func (h *callHandler) getEndpointDestination(ctx context.Context, destination address.Address) (string, error) {
+// getDialURITel returns dial uri of the given tel type destination.
+func (h *callHandler) getDialURITel(ctx context.Context, destination address.Address) (string, error) {
+	res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx, constTransportUDP)
+	return res, nil
+}
 
-	var res string
-
-	// create a destination endpoint
-	// if the type is tel type, uses default gw
-	if destination.Type == address.TypeTel {
-		res = fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx, constTransportUDP)
-		return res, nil
-	}
-
-	// destination is normal sip address.
-	tmp := strings.Split(destination.Target, ";")
-	if !strings.HasSuffix(tmp[0], constVoIPBINDomainSuffix) {
-		endpoint := destination.Target
-		if !strings.HasPrefix(endpoint, "sip") && !strings.HasPrefix(endpoint, "sips:") {
-			endpoint = "sip:" + endpoint
-		}
-
-		res = fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, endpoint)
-		return res, nil
-	}
-
-	// get endpoint
-	// trim the sip: or sips:
+// getDialURISIP returns dial uri of the given sip type destination.
+func (h *callHandler) getDialURISIP(ctx context.Context, destination address.Address) (string, error) {
 	endpoint := destination.Target
-	endpoint = strings.TrimPrefix(endpoint, "sip:")
-	endpoint = strings.TrimPrefix(endpoint, "sips:")
+	if !strings.HasPrefix(destination.Target, "sip:") && !strings.HasPrefix(destination.Target, "sips:") {
+		endpoint = "sip:" + endpoint
+	}
+
+	res := fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, endpoint)
+	return res, nil
+}
+
+// getDialURIEndpoint returns dial uri of the given extension type destination.
+func (h *callHandler) getDialURIEndpoint(ctx context.Context, destination address.Address) (string, error) {
 
 	// get contacts
-	contacts, err := h.reqHandler.RMV1ContactGets(ctx, endpoint)
+	contacts, err := h.reqHandler.RMV1ContactGets(ctx, destination.Target)
 	if err != nil {
 		return "", fmt.Errorf("could not get contacts info. target: err: %v", err)
 	}
@@ -212,11 +202,29 @@ func (h *callHandler) getEndpointDestination(ctx context.Context, destination ad
 		return "", fmt.Errorf("no available contact")
 	}
 
-	// we need only one
-	contact := strings.ReplaceAll(contacts[0].URI, "^3B", ";")
-	res = fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, contact)
+	ct := contacts[0]
+	tmp := strings.ReplaceAll(ct.URI, "^3B", ";")
+	res := fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, tmp)
 
 	return res, nil
+}
+
+// getDialURI returns the given destination address's dial URI for Asterisk's dialing
+func (h *callHandler) getDialURI(ctx context.Context, destination address.Address) (string, error) {
+
+	switch destination.Type {
+	case address.TypeTel:
+		return h.getDialURITel(ctx, destination)
+
+	case address.TypeEndpoint:
+		return h.getDialURIEndpoint(ctx, destination)
+
+	case address.TypeSIP:
+		return h.getDialURISIP(ctx, destination)
+
+	default:
+		return "", fmt.Errorf("unsupported address type")
+	}
 }
 
 // getEndpointSDPTransport returns corresponded sdp-transport

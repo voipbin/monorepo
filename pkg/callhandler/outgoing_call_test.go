@@ -165,6 +165,12 @@ func TestCreateCallOutgoing(t *testing.T) {
 				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
 				mockDB.EXPECT().CallSetMasterCallID(gomock.Any(), tt.expectCall.ID, tt.masterCallID).Return(nil)
 				mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
+
+				mockDB.EXPECT().CallGet(gomock.Any(), tt.masterCallID).Return(&call.Call{}, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+
+				mockDB.EXPECT().CallGet(gomock.Any(), tt.expectCall.ID).Return(&call.Call{}, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 			}
 
 			mockReq.EXPECT().AstChannelCreate(gomock.Any(), requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
@@ -214,7 +220,7 @@ func TestGetEndpointDestinationTypeTel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.getEndpointDestination(context.Background(), *tt.destination)
+			res, err := h.getDialURI(context.Background(), *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -259,7 +265,7 @@ func TestGetEndpointDestinationTypeSIP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.getEndpointDestination(context.Background(), *tt.destination)
+			res, err := h.getDialURI(context.Background(), *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -271,7 +277,7 @@ func TestGetEndpointDestinationTypeSIP(t *testing.T) {
 	}
 }
 
-func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
+func TestGetDialingURISIP(t *testing.T) {
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -285,10 +291,9 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 	}
 
 	type test struct {
-		name               string
-		destination        *address.Address
-		contacts           []*astcontact.AstContact
-		expectEndpointDest string
+		name        string
+		destination *address.Address
+		expectRes   string
 	}
 
 	tests := []test{
@@ -296,6 +301,97 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 			"normal",
 			&address.Address{
 				Type:   address.TypeSIP,
+				Target: "test@test.com",
+			},
+			"pjsip/call-out/sip:test@test.com",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res, err := h.getDialURI(context.Background(), *tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestGetDialingURITel(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &callHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	type test struct {
+		name        string
+		destination *address.Address
+		expectRes   string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&address.Address{
+				Type:   address.TypeTel,
+				Target: "+821100000001",
+			},
+			"pjsip/call-out/sip:+821100000001@sip.telnyx.com;transport=udp",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res, err := h.getDialURI(context.Background(), *tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestGetDialURIExtension(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &callHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	type test struct {
+		name        string
+		destination *address.Address
+		contacts    []*astcontact.AstContact
+		expectRes   string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&address.Address{
+				Type:   address.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -322,7 +418,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 		{
 			"2 contacts",
 			&address.Address{
-				Type:   address.TypeSIP,
+				Type:   address.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -366,7 +462,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 		{
 			"transport ws",
 			&address.Address{
-				Type:   address.TypeSIP,
+				Type:   address.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -393,7 +489,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 		{
 			"transport wss",
 			&address.Address{
-				Type:   address.TypeSIP,
+				Type:   address.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -424,19 +520,19 @@ func TestGetEndpointDestinationTypeSIPVoIPBIN(t *testing.T) {
 
 			mockReq.EXPECT().RMV1ContactGets(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
 
-			res, err := h.getEndpointDestination(context.Background(), *tt.destination)
+			res, err := h.getDialURI(context.Background(), *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectEndpointDest {
-				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectEndpointDest, res)
+			if res != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
 			}
 		})
 	}
 }
 
-func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
+func TestGetDialURIEndpointError(t *testing.T) {
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -459,7 +555,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
 		{
 			"no contact",
 			&address.Address{
-				Type:   address.TypeSIP,
+				Type:   address.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{},
@@ -471,7 +567,7 @@ func TestGetEndpointDestinationTypeSIPVoIPBINError(t *testing.T) {
 
 			mockReq.EXPECT().RMV1ContactGets(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
 
-			_, err := h.getEndpointDestination(context.Background(), *tt.destination)
+			_, err := h.getDialURI(context.Background(), *tt.destination)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}

@@ -216,15 +216,15 @@ func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqh
 	}
 
 	// get updated call info
-	resCall, err := h.callHandler.Get(ctx, id)
+	tmp, err := h.callHandler.Get(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get updated call info. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(resCall)
+	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", resCall, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 
@@ -361,21 +361,30 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, 
 		})
 	log.Debug("Executing processV1CallsIDChainedCallIDsPost.")
 
-	var data request.V1DataCallsIDChainedCallIDsPost
-	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+	var req request.V1DataCallsIDChainedCallIDsPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
 	log.WithFields(logrus.Fields{
-		"chained_call_ids": data,
+		"chained_call_ids": req,
 	}).Debugf("Parsed request data.")
 
-	if err := h.callHandler.ChainedCallIDAdd(ctx, id, data.ChainedCallID); err != nil {
-		log.Errorf("Could not add the chained call id. call: %s, chained_call: %s, err: %v", id, data.ChainedCallID, err)
-		return nil, err
+	tmp, err := h.callHandler.ChainedCallIDAdd(ctx, id, req.ChainedCallID)
+	if err != nil {
+		log.Debugf("Could not get updated call info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -397,13 +406,22 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context
 		})
 	log.Debug("Executing processV1CallsIDChainedCallIDsDelete.")
 
-	if err := h.callHandler.ChainedCallIDRemove(ctx, id, chainedCallID); err != nil {
-		log.Errorf("Could not add the chained call id. err: %v", err)
-		return nil, err
+	tmp, err := h.callHandler.ChainedCallIDRemove(ctx, id, chainedCallID)
+	if err != nil {
+		log.Debugf("Could not get updated call info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

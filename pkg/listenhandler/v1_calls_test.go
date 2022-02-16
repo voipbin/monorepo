@@ -753,7 +753,9 @@ func TestProcessV1CallsIDChainedCallIDsPost(t *testing.T) {
 		call          *call.Call
 		chainedCallID uuid.UUID
 		request       *rabbitmqhandler.Request
-		expectRes     *rabbitmqhandler.Response
+
+		responseCall *call.Call
+		expectRes    *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -770,8 +772,14 @@ func TestProcessV1CallsIDChainedCallIDsPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"chained_call_id": "76490d6a-25c0-11eb-970b-3bf9ae938f41"}`),
 			},
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("bfcdc03a-25bf-11eb-a9b2-bba80a81835b"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"bfcdc03a-25bf-11eb-a9b2-bba80a81835b","customer_id":"00000000-0000-0000-0000-000000000000","asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
 			},
 		},
 	}
@@ -779,7 +787,7 @@ func TestProcessV1CallsIDChainedCallIDsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chainedCallID).Return(nil)
+			mockCall.EXPECT().ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chainedCallID).Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -810,7 +818,9 @@ func TestProcessV1CallsIDChainedCallIDsDelete(t *testing.T) {
 		call          *call.Call
 		chainedCallID uuid.UUID
 		request       *rabbitmqhandler.Request
-		expectRes     *rabbitmqhandler.Response
+
+		responseCall *call.Call
+		expectRes    *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -824,8 +834,14 @@ func TestProcessV1CallsIDChainedCallIDsDelete(t *testing.T) {
 				URI:    "/v1/calls/0eaa2942-25c4-11eb-90a3-63fb2b029bae/chained-call-ids/0ee268f2-25c4-11eb-917c-07eef32616dc",
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("0eaa2942-25c4-11eb-90a3-63fb2b029bae"),
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0eaa2942-25c4-11eb-90a3-63fb2b029bae","customer_id":"00000000-0000-0000-0000-000000000000","asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
 			},
 		},
 	}
@@ -833,7 +849,7 @@ func TestProcessV1CallsIDChainedCallIDsDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCall.EXPECT().ChainedCallIDRemove(context.Background(), tt.call.ID, tt.chainedCallID).Return(nil)
+			mockCall.EXPECT().ChainedCallIDRemove(context.Background(), tt.call.ID, tt.chainedCallID).Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

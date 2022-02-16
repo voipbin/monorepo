@@ -181,11 +181,12 @@ func (mr *MockCallHandlerMockRecorder) CallHealthCheck(ctx, id, retryCount, dela
 }
 
 // ChainedCallIDAdd mocks base method.
-func (m *MockCallHandler) ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) error {
+func (m *MockCallHandler) ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChainedCallIDAdd", ctx, id, chainedCallID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ChainedCallIDAdd indicates an expected call of ChainedCallIDAdd.
@@ -195,11 +196,12 @@ func (mr *MockCallHandlerMockRecorder) ChainedCallIDAdd(ctx, id, chainedCallID i
 }
 
 // ChainedCallIDRemove mocks base method.
-func (m *MockCallHandler) ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) error {
+func (m *MockCallHandler) ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChainedCallIDRemove", ctx, id, chainedCallID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ChainedCallIDRemove indicates an expected call of ChainedCallIDRemove.
