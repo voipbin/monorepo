@@ -12,7 +12,7 @@ import (
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -198,7 +198,7 @@ type RequestHandler interface {
 	AstChannelDTMF(ctx context.Context, asteriskID, channelID string, digit string, duration, before, between, after int) error
 	AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*cmchannel.Channel, error)
 	AstChannelGet(ctx context.Context, asteriskID, channelID string) (*cmchannel.Channel, error)
-	AstChannelHangup(ctx context.Context, asteriskID, channelID string, code ari.ChannelCause) error
+	AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause) error
 	AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
 	AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error
@@ -246,7 +246,8 @@ type RequestHandler interface {
 
 	// call-manager call
 	CMV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
-	CMV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) error
+	CMV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
+	CMV1CallRemoveChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
 	CMV1CallAddExternalMedia(ctx context.Context, callID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmresponse.V1ResponseCallsIDExternalMediaPost, error)
 	CMV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
 	CMV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error

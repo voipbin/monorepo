@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -223,7 +223,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 		name        string
 		asteriskID  string
 		channelID   string
-		hangupCause ari.ChannelCause
+		hangupCause cmari.ChannelCause
 
 		expectURI    string
 		expectQueue  string
@@ -236,7 +236,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 			"have all item",
 			"00:11:22:33:44:55",
 			"ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
-			ari.ChannelCauseNormalClearing,
+			cmari.ChannelCauseNormalClearing,
 
 			"/ari/channels/ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
 			"asterisk.00:11:22:33:44:55.request",
@@ -290,8 +290,8 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 		channelID  string
 		snoopID    string
 		appArgs    string
-		spy        channel.SnoopDirection
-		whisper    channel.SnoopDirection
+		spy        cmchannel.SnoopDirection
+		whisper    cmchannel.SnoopDirection
 
 		expectURI    string
 		expectQueue  string
@@ -306,8 +306,8 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			"a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d",
 			"acc09eea-8dd0-11ea-99ba-e311d0dcd408",
 			"test",
-			channel.SnoopDirectionIn,
-			channel.SnoopDirectionIn,
+			cmchannel.SnoopDirectionIn,
+			cmchannel.SnoopDirectionIn,
 
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk.00:11:22:33:44:55.request",
@@ -320,8 +320,8 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			"a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d",
 			"acc09eea-8dd0-11ea-99ba-e311d0dcd408",
 			"",
-			channel.SnoopDirectionIn,
-			channel.SnoopDirectionNone,
+			cmchannel.SnoopDirectionIn,
+			cmchannel.SnoopDirectionNone,
 
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk.00:11:22:33:44:55.request",
@@ -334,8 +334,8 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 			"a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d",
 			"acc09eea-8dd0-11ea-99ba-e311d0dcd408",
 			"",
-			channel.SnoopDirectionNone,
-			channel.SnoopDirectionBoth,
+			cmchannel.SnoopDirectionNone,
+			cmchannel.SnoopDirectionBoth,
 
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk.00:11:22:33:44:55.request",
@@ -384,7 +384,7 @@ func TestAstChannelGet(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 
-		expectChannel *channel.Channel
+		expectChannel *cmchannel.Channel
 	}
 
 	tests := []test{
@@ -405,17 +405,17 @@ func TestAstChannelGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     nil,
 			},
-			&channel.Channel{
+			&cmchannel.Channel{
 				ID:         "1589711094.100",
 				AsteriskID: "",
 				Name:       "PJSIP/call-in-00000019",
-				Tech:       channel.TechPJSIP,
+				Tech:       cmchannel.TechPJSIP,
 
 				SourceName:   "tttt",
 				SourceNumber: "pchero",
 
 				DestinationNumber: "8872616",
-				State:             ari.ChannelStateUp,
+				State:             cmari.ChannelStateUp,
 
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
@@ -823,7 +823,7 @@ func TestAstChannelExternalMedia(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *channel.Channel
+		expectResult  *cmchannel.Channel
 	}
 
 	tests := []test{
@@ -853,12 +853,12 @@ func TestAstChannelExternalMedia(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"channel_id":"660486e8-ffca-11eb-aef3-6b2e6caea5a5","app":"voipbin","external_host":"http://test.com/external-sample","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
-			&channel.Channel{
+			&cmchannel.Channel{
 				ID:                "660486e8-ffca-11eb-aef3-6b2e6caea5a5",
 				Name:              "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
-				Tech:              channel.TechUnicatRTP,
+				Tech:              cmchannel.TechUnicatRTP,
 				DestinationNumber: "s",
-				State:             ari.ChannelStateDown,
+				State:             cmari.ChannelStateDown,
 				Data: map[string]interface{}{
 					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
 					"UNICASTRTP_LOCAL_PORT":    "10492",

@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -59,7 +59,7 @@ func (r *requestHandler) AstChannelContinue(ctx context.Context, asteriskID, cha
 }
 
 // AstChannelContinue sends the continue request
-func (r *requestHandler) AstChannelHangup(ctx context.Context, asteriskID, channelID string, code ari.ChannelCause) error {
+func (r *requestHandler) AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause) error {
 	url := fmt.Sprintf("/ari/channels/%s", channelID)
 
 	type Data struct {
@@ -150,15 +150,15 @@ func (r *requestHandler) AstChannelCreate(ctx context.Context, asteriskID, chann
 }
 
 // AstChannelCreateSnoop sends the request for create a snoop channel
-func (r *requestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error {
+func (r *requestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper cmchannel.SnoopDirection) error {
 	url := fmt.Sprintf("/ari/channels/%s/snoop", channelID)
 
 	type Data struct {
-		Spy     channel.SnoopDirection `json:"spy,omitempty"`
-		Whisper channel.SnoopDirection `json:"whisper,omitempty"`
-		App     string                 `json:"app"`
-		AppArgs string                 `json:"appArgs,omitempty"`
-		SnoopID string                 `json:"snoopId"`
+		Spy     cmchannel.SnoopDirection `json:"spy,omitempty"`
+		Whisper cmchannel.SnoopDirection `json:"whisper,omitempty"`
+		App     string                   `json:"app"`
+		AppArgs string                   `json:"appArgs,omitempty"`
+		SnoopID string                   `json:"snoopId"`
 	}
 
 	m, err := json.Marshal(Data{
@@ -183,7 +183,7 @@ func (r *requestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, 
 }
 
 // AstChannelGet gets the Asterisk's channel defail
-func (r *requestHandler) AstChannelGet(ctx context.Context, asteriskID, channelID string) (*channel.Channel, error) {
+func (r *requestHandler) AstChannelGet(ctx context.Context, asteriskID, channelID string) (*cmchannel.Channel, error) {
 	url := fmt.Sprintf("/ari/channels/%s", channelID)
 
 	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodGet, resourceAstChannels, requestTimeoutDefault, 0, ContentTypeJSON, nil)
@@ -194,12 +194,12 @@ func (r *requestHandler) AstChannelGet(ctx context.Context, asteriskID, channelI
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	tmpChannel, err := ari.ParseChannel([]byte(res.Data))
+	tmpChannel, err := cmari.ParseChannel([]byte(res.Data))
 	if err != nil {
 		return nil, err
 	}
 
-	channel := channel.NewChannelByARIChannel(tmpChannel)
+	channel := cmchannel.NewChannelByARIChannel(tmpChannel)
 	return channel, nil
 }
 
@@ -332,7 +332,7 @@ func (r *requestHandler) AstChannelRecord(ctx context.Context, asteriskID string
 }
 
 // AstChannelExternalMedia creates a external media.
-func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error) {
+func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*cmchannel.Channel, error) {
 
 	url := "/ari/channels/externalMedia"
 
@@ -373,11 +373,11 @@ func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	tmpCh, err := ari.ParseChannel([]byte(res.Data))
+	tmpCh, err := cmari.ParseChannel([]byte(res.Data))
 	if err != nil {
 		return nil, err
 	}
 
-	ch := channel.NewChannelByARIChannel(tmpCh)
+	ch := cmchannel.NewChannelByARIChannel(tmpCh)
 	return ch, nil
 }
