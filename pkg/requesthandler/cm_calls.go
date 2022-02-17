@@ -353,5 +353,29 @@ func (r *requestHandler) CMV1CallAddExternalMedia(
 	}
 
 	return &resData, nil
+}
 
+// CMV1CallGetDigits sends a request to call-manager
+// to get received digits of the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CMV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error) {
+	uri := fmt.Sprintf("/v1/calls/%s/digits", callID)
+
+	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return "", err
+	case res == nil:
+		// not found
+		return "", fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return "", fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData cmresponse.V1ResponseCallsIDDigitsGet
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return "", err
+	}
+
+	return resData.Digits, nil
 }

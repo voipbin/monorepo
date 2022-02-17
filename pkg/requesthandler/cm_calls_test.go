@@ -783,3 +783,62 @@ func TestCMV1CallAddExternalMedia(t *testing.T) {
 		})
 	}
 }
+
+func Test_CMV1CallGetDigits(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	type test struct {
+		name string
+
+		callID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectRequest *rabbitmqhandler.Request
+		expectRes     string
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("3f73caf8-901a-11ec-8ec8-b7367d212083"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"digits":"1"}`),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/3f73caf8-901a-11ec-8ec8-b7367d212083/digits",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: ContentTypeJSON,
+			},
+			"1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CMV1CallGetDigits(ctx, tt.callID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
