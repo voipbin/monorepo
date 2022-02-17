@@ -955,3 +955,62 @@ func TestProcessV1CallsIDExternalMediaPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1CallsIDDigitsGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockCall := callhandler.NewMockCallHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		callHandler: mockCall,
+	}
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		id             uuid.UUID
+		responseDigits string
+
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls/669e567e-9016-11ec-9190-07c8a63f44a8/digits",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+
+			uuid.FromStringOrNil("669e567e-9016-11ec-9190-07c8a63f44a8"),
+			"1",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"digits":"1"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockCall.EXPECT().DigitsGet(gomock.Any(), tt.id).Return(tt.responseDigits, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

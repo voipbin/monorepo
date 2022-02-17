@@ -441,15 +441,15 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 		})
 	log.Debug("Executing processV1CallsIDExternalMediaPost.")
 
-	var data request.V1DataCallsIDExternalMediaPost
-	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+	var req request.V1DataCallsIDExternalMediaPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
 	log.WithFields(logrus.Fields{
-		"external_media": data,
+		"external_media": req,
 	}).Debugf("Parsed request data.")
 
-	extCh, err := h.callHandler.ExternalMediaStart(ctx, id, false, data.ExternalHost, data.Encapsulation, data.Transport, data.ConnectionType, data.Format, data.Direction)
+	extCh, err := h.callHandler.ExternalMediaStart(ctx, id, false, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. call: %s, err: %v", id, err)
 		return nil, err
@@ -462,21 +462,61 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 		log.Errorf("Could not get external media port. err: %v", err)
 		return nil, err
 	}
-	resExt := &response.V1ResponseCallsIDExternalMediaPost{
+
+	tmp := &response.V1ResponseCallsIDExternalMediaPost{
 		MediaAddrIP:   ip,
 		MediaAddrPort: port,
 	}
 
-	resData, err := json.Marshal(resExt)
+	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", resData, err)
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
 		return simpleResponse(500), nil
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
-		Data:       resData,
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDDigitsGet handles /v1/calls/<id>/digits GET request
+func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1CallsIDActionNextPost.")
+
+	digit, err := h.callHandler.DigitsGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get call's digits. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	tmp := &response.V1ResponseCallsIDDigitsGet{
+		Digits: digit,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
