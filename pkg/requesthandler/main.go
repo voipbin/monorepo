@@ -255,6 +255,7 @@ type RequestHandler interface {
 	CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, masterCallID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error)
 	CMV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CMV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
+	CMV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
 	CMV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 
 	// call-manager channel

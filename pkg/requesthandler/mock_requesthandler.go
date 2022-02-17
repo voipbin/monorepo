@@ -791,6 +791,21 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallGet(ctx, callID interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallGet", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallGet), ctx, callID)
 }
 
+// CMV1CallGetDigits mocks base method.
+func (m *MockRequestHandler) CMV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMV1CallGetDigits", ctx, callID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CMV1CallGetDigits indicates an expected call of CMV1CallGetDigits.
+func (mr *MockRequestHandlerMockRecorder) CMV1CallGetDigits(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallGetDigits", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallGetDigits), ctx, callID)
+}
+
 // CMV1CallGets mocks base method.
 func (m *MockRequestHandler) CMV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]call.Call, error) {
 	m.ctrl.T.Helper()
