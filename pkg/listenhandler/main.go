@@ -47,6 +47,7 @@ var (
 	regV1CallsGet                 = regexp.MustCompile(`/v1/calls\?`)
 	regV1CallsID                  = regexp.MustCompile("/v1/calls/" + regUUID + "$")
 	regV1CallsIDHealth            = regexp.MustCompile("/v1/calls/" + regUUID + "/health-check$")
+	regV1CallsIDDigits            = regexp.MustCompile("/v1/calls/" + regUUID + "/digits$")
 	regV1CallsIDActionNext        = regexp.MustCompile("/v1/calls/" + regUUID + "/action-next$")
 	regV1CallsIDActionTimeout     = regexp.MustCompile("/v1/calls/" + regUUID + "/action-timeout$")
 	regV1CallsIDChainedCallIDs    = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids$")
@@ -185,6 +186,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CallsIDHealth.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDHealthPost(ctx, m)
 		requestType = "/v1/calls/health-check"
+
+	// Get /calls/<id>/digits
+	case regV1CallsIDDigits.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1CallsIDDigitsGet(ctx, m)
+		requestType = "/v1/calls/digits"
 
 	// POST /calls/<id>/action-next
 	case regV1CallsIDActionNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:

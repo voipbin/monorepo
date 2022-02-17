@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -233,6 +234,56 @@ func TestDTMFReceivedStop(t *testing.T) {
 
 			if err := h.DTMFReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_DTMFGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &callHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	type test struct {
+		name string
+
+		id uuid.UUID
+
+		responseDTMF string
+		expectRes    string
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("dec200a8-9014-11ec-9c0b-b35777a9d85a"),
+
+			"1",
+			"1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.id).Return(tt.responseDTMF, nil)
+
+			res, err := h.DigitsGet(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}

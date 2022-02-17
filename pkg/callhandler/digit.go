@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
@@ -85,4 +86,22 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 	}
 
 	return nil
+}
+
+// DigitsGet returns received dtmfs
+func (h *callHandler) DigitsGet(ctx context.Context, id uuid.UUID) (string, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "DigitsGet",
+			"call_id": id,
+		},
+	)
+
+	res, err := h.db.CallDTMFGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get DTMF. err: %v", err)
+		return "", nil
+	}
+
+	return res, nil
 }
