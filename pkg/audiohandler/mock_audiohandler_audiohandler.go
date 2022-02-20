@@ -5,43 +5,46 @@
 package audiohandler
 
 import (
-	gomock "github.com/golang/mock/gomock"
+	context "context"
 	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockAudioHandler is a mock of AudioHandler interface
+// MockAudioHandler is a mock of AudioHandler interface.
 type MockAudioHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockAudioHandlerMockRecorder
 }
 
-// MockAudioHandlerMockRecorder is the mock recorder for MockAudioHandler
+// MockAudioHandlerMockRecorder is the mock recorder for MockAudioHandler.
 type MockAudioHandlerMockRecorder struct {
 	mock *MockAudioHandler
 }
 
-// NewMockAudioHandler creates a new mock instance
+// NewMockAudioHandler creates a new mock instance.
 func NewMockAudioHandler(ctrl *gomock.Controller) *MockAudioHandler {
 	mock := &MockAudioHandler{ctrl: ctrl}
 	mock.recorder = &MockAudioHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAudioHandler) EXPECT() *MockAudioHandlerMockRecorder {
 	return m.recorder
 }
 
-// AudioCreate mocks base method
-func (m *MockAudioHandler) AudioCreate(text, lang, gender, filename string) error {
+// AudioCreate mocks base method.
+func (m *MockAudioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text, lang, gender, filename string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AudioCreate", text, lang, gender, filename)
+	ret := m.ctrl.Call(m, "AudioCreate", ctx, callID, text, lang, gender, filename)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AudioCreate indicates an expected call of AudioCreate
-func (mr *MockAudioHandlerMockRecorder) AudioCreate(text, lang, gender, filename interface{}) *gomock.Call {
+// AudioCreate indicates an expected call of AudioCreate.
+func (mr *MockAudioHandlerMockRecorder) AudioCreate(ctx, callID, text, lang, gender, filename interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AudioCreate", reflect.TypeOf((*MockAudioHandler)(nil).AudioCreate), text, lang, gender, filename)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AudioCreate", reflect.TypeOf((*MockAudioHandler)(nil).AudioCreate), ctx, callID, text, lang, gender, filename)
 }
