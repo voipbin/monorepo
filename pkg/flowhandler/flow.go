@@ -212,7 +212,6 @@ func (h *flowHandler) generateFlowActions(ctx context.Context, actions []action.
 
 	// set action id
 	for _, a := range actions {
-		// a.ID = uuid.Must(uuid.NewV4())
 		tmpAction := a
 		tmpAction.ID = uuid.Must(uuid.NewV4())
 		res = append(res, tmpAction)
@@ -228,7 +227,50 @@ func (h *flowHandler) generateFlowActions(ctx context.Context, actions []action.
 				return nil, err
 			}
 
-			option.TargetID = res[option.TargetIndex].ID
+			targetID, err := h.getIndexActionID(res, option.TargetIndex)
+			if err != nil {
+				log.Errorf("Could not get index for default id. err: %v", err)
+				return nil, err
+			}
+
+			option.TargetID = targetID
+			tmp, err := json.Marshal(option)
+			if err != nil {
+				log.Errorf("Could not marshal the option")
+				return nil, err
+			}
+
+			a.Option = tmp
+			res[i] = a
+		}
+
+		// branch type
+		if a.Type == action.TypeBranch {
+			var option action.OptionBranch
+			if err := json.Unmarshal(a.Option, &option); err != nil {
+				log.Errorf("Could not unmarshal the option. err: %v", err)
+				return nil, err
+			}
+			if option.TargetIDs == nil {
+				option.TargetIDs = map[string]uuid.UUID{}
+			}
+
+			defaultID, err := h.getIndexActionID(res, option.DefaultIndex)
+			if err != nil {
+				log.Errorf("Could not get index for default id. err: %v", err)
+				return nil, err
+			}
+			option.DefaultID = defaultID
+
+			for dtmf, idx := range option.TargetIndexes {
+				targetID, err := h.getIndexActionID(res, idx)
+				if err != nil {
+					log.Errorf("Could not get index target id. err: %v", err)
+					return nil, err
+				}
+				option.TargetIDs[dtmf] = targetID
+			}
+
 			tmp, err := json.Marshal(option)
 			if err != nil {
 				log.Errorf("Could not marshal the option")
@@ -275,4 +317,15 @@ func (h *flowHandler) generateFlowForAgentCall(ctx context.Context, customerID, 
 	log.WithField("flow", res).Debug("Created a flow.")
 
 	return res, nil
+}
+
+// getIndexActionID returns action id of given action index.
+func (h *flowHandler) getIndexActionID(actions []action.Action, index int) (uuid.UUID, error) {
+
+	if index > len(actions) {
+		return uuid.Nil, fmt.Errorf("out of index")
+	}
+
+	a := actions[index]
+	return a.ID, nil
 }

@@ -21,6 +21,14 @@ type OptionAnswer struct {
 	// no option
 }
 
+// OptionBranch defines action branch's option.
+type OptionBranch struct {
+	DefaultIndex  int                  `json:"default_index"`  // default index for if the input dtmf does not match any of branch targets. used for forward_id generate
+	DefaultID     uuid.UUID            `json:"default_id"`     // default id for if the input dtmf does not match any of branch targets.
+	TargetIndexes map[string]int       `json:"target_indexes"` // branch target indexes. used for taget_ids generate
+	TargetIDs     map[string]uuid.UUID `json:"target_ids"`     // branch target ids.
+}
+
 // OptionConfbridgeJoin defines action confbridge_join's option.
 type OptionConfbridgeJoin struct {
 	ConfbridgeID uuid.UUID `json:"confbridge_id"`

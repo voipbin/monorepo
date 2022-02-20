@@ -159,84 +159,66 @@ func (h *flowHandler) executeActiveAction(ctx context.Context, callID uuid.UUID,
 
 	switch act.Type {
 	case action.TypeAgentCall:
-		if err := h.activeFlowHandleActionAgentCall(ctx, callID, act); err != nil {
+		if errHandle := h.activeFlowHandleActionAgentCall(ctx, callID, af); errHandle != nil {
 			log.Errorf("Could not handle the agent_call action correctly. err: %v", err)
 			return nil, err
 		}
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
-		// do activeflow next action get again.
+	case action.TypeBranch:
+		if errHandle := h.activeFlowHandleActionBranch(ctx, callID, af); errHandle != nil {
+			log.Errorf("Could not handle the branch action correctly. err: %v", err)
+			return nil, err
+		}
 		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeConferenceJoin:
-		execAct, err := h.activeFlowHandleActionConferenceJoin(ctx, callID, act)
-		if err != nil {
+		if errHandle := h.activeFlowHandleActionConferenceJoin(ctx, callID, af); errHandle != nil {
 			log.Errorf("Could not handle the conference_join action correctly. err: %v", err)
 			return nil, err
 		}
-
-		// do activeflow next action get again.
-		return h.executeActiveAction(ctx, callID, execAct)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeConnect:
-		if err := h.activeFlowHandleActionConnect(ctx, callID, act); err != nil {
+		if errHandle := h.activeFlowHandleActionConnect(ctx, callID, af); errHandle != nil {
 			log.Errorf("Could not handle the connect action correctly. err: %v", err)
 			return nil, err
 		}
-
-		// do activeflow next action get again.
 		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeGoto:
-		execAct, err := h.activeFlowHandleActionGoto(ctx, callID, act)
-		if err != nil {
+		if errHandle := h.activeFlowHandleActionGoto(ctx, callID, af); errHandle != nil {
 			log.Errorf("Could not handle the goto action correctly. err: %v", err)
 			return nil, err
 		}
-
-		return h.executeActiveAction(ctx, callID, execAct)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypePatch:
-		// handle the patch
-		// add the patched actions to the active-flow
-		execAct, err := h.activeFlowHandleActionPatch(ctx, callID, act)
-		if err != nil {
+		if errHandle := h.activeFlowHandleActionPatch(ctx, callID, af); errHandle != nil {
 			log.Errorf("Could not handle the patch action correctly. err: %v", err)
 			return nil, err
 		}
-
-		// execute the updated action
-		return h.executeActiveAction(ctx, callID, execAct)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypePatchFlow:
-		// handle the patch_flow
-		// add the patched actions to the active-flow
-		execAct, err := h.activeFlowHandleActionPatchFlow(ctx, callID, act)
-		if err != nil {
+		if errHandle := h.activeFlowHandleActionPatchFlow(ctx, callID, af); errHandle != nil {
 			log.Errorf("Could not handle the patch_flow action correctly. err: %v", err)
 			return nil, err
 		}
-
-		// execute the updated action
-		return h.executeActiveAction(ctx, callID, execAct)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeQueueJoin:
-		// handle the queue_join
-		execAct, err := h.activeFlowHandleActionQueueJoin(ctx, callID, act)
-		if err != nil {
+		if errHandle := h.activeFlowHandleActionQueueJoin(ctx, callID, af); errHandle != nil {
 			log.Errorf("Could not handle the queue_join action correctly. err: %v", err)
 			return nil, err
 		}
-
-		// execute the updated action
-		return h.executeActiveAction(ctx, callID, execAct)
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeTranscribeRecording:
 		if err := h.activeFlowHandleActionTranscribeRecording(ctx, af, callID, act); err != nil {
 			log.Errorf("Could not handle the recording_to_text action correctly. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
-
-		// do activeflow next action get again.
 		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
 	case action.TypeTranscribeStart:
@@ -244,8 +226,6 @@ func (h *flowHandler) executeActiveAction(ctx context.Context, callID uuid.UUID,
 			log.Errorf("Could not start the transcribe. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
-
-		// do activeflow next action get again.
 		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 	}
 
@@ -338,9 +318,9 @@ func (h *flowHandler) activeFlowGetNextAction(ctx context.Context, callID uuid.U
 		return nil, fmt.Errorf("current action does not match")
 	}
 
-	// check the move action id.
+	// check the fowrard action id.
 	if af.ForwardActionID != action.IDEmpty {
-		log.Debug("The move action ID exist.")
+		log.Debug("The forward action ID exist.")
 		for _, act := range af.Actions {
 			if act.ID == af.ForwardActionID {
 				log.WithField("action", act).Debugf("Found move action.")
