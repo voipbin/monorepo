@@ -461,6 +461,7 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, act *
 		"action_type": act.Type,
 		"func":        "actionExecuteTalk",
 	})
+	log.WithField("call", c).Debugf("Executing talk.")
 
 	var option action.OptionTalk
 	if act.Option != nil {
@@ -471,8 +472,9 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, act *
 	}
 
 	// send request for create wav file
-	filename, err := h.reqHandler.TMV1SpeecheCreate(ctx, option.Text, option.Gender, option.Language)
+	filename, err := h.reqHandler.TMV1SpeecheCreate(ctx, c.ID, option.Text, option.Gender, option.Language, 10000)
 	if err != nil {
+		log.Errorf("Could not create speech file. err: %v", err)
 		return fmt.Errorf("could not create tts wav. err: %v", err)
 	}
 	url := fmt.Sprintf("http://localhost:8000/%s", filename)
