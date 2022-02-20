@@ -1,28 +1,35 @@
 package listenhandler
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler/models/response"
 )
 
 // v1SpeechesPost handles /v1/speeches POST request
 // creates a new tts audio for the given text and upload the file to the bucket. Returns uploaded filename with path.
-func (h *listenHandler) v1SpeechesPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	var reqData request.V1DataSpeechesPost
-	if err := json.Unmarshal(req.Data, &reqData); err != nil {
-		logrus.Errorf("Could not marshal the data. err: %v", err)
+func (h *listenHandler) v1SpeechesPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+	log := logrus.WithField(
+		"func", "v1SpeechesPost",
+	)
+
+	var req request.V1DataSpeechesPost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
+	log.WithField("request", req).Debugf("Request detail.")
 
 	// create tts
-	filename, err := h.ttshandler.TTSCreate(reqData.Text, reqData.Language, reqData.Gender)
+	filename, err := h.ttshandler.TTSCreate(ctx, req.CallID, req.Text, req.Language, req.Gender)
 	if err != nil {
-		logrus.Errorf("Could not create a tts audio. err: %v", err)
+		log.Errorf("Could not create a tts audio. err: %v", err)
 		return nil, err
 	}
 
@@ -32,7 +39,7 @@ func (h *listenHandler) v1SpeechesPost(req *rabbitmqhandler.Request) (*rabbitmqh
 
 	data, err := json.Marshal(resMsg)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
