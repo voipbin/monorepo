@@ -117,43 +117,92 @@ func (h *flowHandler) getExitActionID(actions []action.Action, actionID uuid.UUI
 	return actions[idx+1].ID, nil
 }
 
-// activeFlowHandleActionGotoUpdate Updates the action flow.
+// activeFlowHandleActionGotoLoop handles goto action's loop condition.
 // it updates the loop_count.
-func (h *flowHandler) activeFlowHandleActionGotoUpdate(ctx context.Context, af *activeflow.ActiveFlow, act *action.Action) error {
+func (h *flowHandler) activeFlowHandleActionGotoLoop(ctx context.Context, af *activeflow.ActiveFlow) error {
 	log := logrus.New().WithFields(
 		logrus.Fields{
-			"func":      "activeFlowHandleActionGotoUpdate",
-			"call_id":   af.CallID,
-			"action_id": act.ID,
+			"func":              "activeFlowHandleActionGotoUpdate",
+			"call_id":           af.CallID,
+			"current_action_id": af.CurrentAction.ID,
 		},
 	)
 
 	// find goto action
+	idx := 0
+	var act action.Action
+	found := false
 	for i, a := range af.Actions {
-		if a.ID == act.ID {
-			tmpGoto := af.Actions[i]
-			var tmpGotoOpt action.OptionGoto
-			if err := json.Unmarshal(tmpGoto.Option, &tmpGotoOpt); err != nil {
-				log.Errorf("Could not unmarshal the goto option. err: %v", err)
-				return err
-			}
-
-			tmpGotoOpt.LoopCount--
-			tmpRaw, err := json.Marshal(tmpGotoOpt)
-			if err != nil {
-				log.Errorf("Could not marshal the goto option. err: %v", err)
-				return err
-			}
-			af.Actions[i].Option = tmpRaw
-
-			// update active flow
-			if err := h.db.ActiveFlowSet(ctx, af); err != nil {
-				log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-				return err
-			}
-
+		if a.ID == af.CurrentAction.ID {
+			idx = i
+			act = a
+			found = true
 			break
 		}
+	}
+
+	if !found {
+		return fmt.Errorf("current action not found")
+	}
+
+	var opt action.OptionGoto
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the goto option. err: %v", err)
+		return err
+	}
+
+	opt.LoopCount--
+	raw, err := json.Marshal(opt)
+	if err != nil {
+		log.Errorf("Could not marshal the goto option. err: %v", err)
+		return err
+	}
+	af.Actions[idx].Option = raw
+
+	af.ForwardActionID = opt.TargetID
+	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// activeFlowHandleActionGotoNext handles goto action's no loop condition.
+// it updates the loop_count.
+func (h *flowHandler) activeFlowHandleActionGotoLoopStop(ctx context.Context, af *activeflow.ActiveFlow) error {
+	log := logrus.New().WithFields(
+		logrus.Fields{
+			"func":              "activeFlowHandleActionGotoUpdate",
+			"call_id":           af.CallID,
+			"current_action_id": af.CurrentAction.ID,
+		},
+	)
+
+	// find goto action
+	idx := 0
+	found := false
+	for i, a := range af.Actions {
+		if a.ID == af.CurrentAction.ID {
+			idx = i
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("current action not found")
+	}
+
+	if idx+1 >= len(af.Actions) {
+		return fmt.Errorf("out of action range")
+	}
+
+	targetAction := af.Actions[idx+1]
+	af.ForwardActionID = targetAction.ID
+	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow. err: %v", err)
+		return err
 	}
 
 	return nil
@@ -161,75 +210,65 @@ func (h *flowHandler) activeFlowHandleActionGotoUpdate(ctx context.Context, af *
 
 // activeFlowHandleActionPatch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *flowHandler) activeFlowHandleActionPatch(ctx context.Context, callID uuid.UUID, act *action.Action) (*action.Action, error) {
+func (h *flowHandler) activeFlowHandleActionPatch(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "activeFlowHandleActionPatch",
-		"call_id":   callID,
-		"action_id": act.ID,
+		"func":              "activeFlowHandleActionPatch",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
 	})
+	act := &af.CurrentAction
 
 	// patch the actions from the remote
 	patchedActions, err := h.actionPatchGet(act, callID)
 	if err != nil {
 		log.Errorf("Could not patch the actions from the remote. err: %v", err)
-		return nil, err
+		return err
 	}
 
-	// generate action id
-	for _, act := range patchedActions {
-		act.ID = uuid.Must(uuid.NewV4())
-	}
-
-	// get active flow
-	af, err := h.db.ActiveFlowGet(ctx, callID)
+	tmpActions, err := h.generateFlowActions(ctx, patchedActions)
 	if err != nil {
-		log.Errorf("Could not get active flow. err: %v", err)
-		return nil, err
+		log.Errorf("Could not generate flow actions. err: %v", err)
+		return err
 	}
 
 	// replace the patched actions to the active flow
-	if err := replaceActions(af, act.ID, patchedActions); err != nil {
+	if err := replaceActions(af, act.ID, tmpActions); err != nil {
 		log.Errorf("Could not append new action. err: %v", err)
-		return nil, fmt.Errorf("could not append new action. err: %v", err)
+		return fmt.Errorf("could not append new action. err: %v", err)
 	}
 	af.TMUpdate = getCurTime()
 
 	// set active flow
+	af.ForwardActionID = tmpActions[0].ID
 	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return nil, err
+		return err
 	}
 
-	return &patchedActions[0], nil
+	return nil
 }
 
 // activeFlowHandleActionPatchFlow handles action patch_flow with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *flowHandler) activeFlowHandleActionPatchFlow(ctx context.Context, callID uuid.UUID, act *action.Action) (*action.Action, error) {
+func (h *flowHandler) activeFlowHandleActionPatchFlow(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "activeFlowHandleActionPatchFlow",
-		"call_id":   callID,
-		"action_id": act.ID,
+		"func":              "activeFlowHandleActionPatchFlow",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
 	})
+	act := &af.CurrentAction
 
 	var option action.OptionPatchFlow
 	if err := json.Unmarshal(act.Option, &option); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
-		return nil, err
-	}
-
-	// get active flow
-	af, err := h.db.ActiveFlowGet(ctx, callID)
-	if err != nil {
-		log.Errorf("Could not get active flow. err: %v", err)
-		return nil, err
+		return err
 	}
 
 	// patch the actions from the remote
 	patchedActions, err := h.getActionsFromFlow(option.FlowID, af.CustomerID)
 	if err != nil {
 		log.Errorf("Could not patch the actions from the remote. err: %v", err)
-		return nil, err
+		return err
 	}
 
 	// generate action id
@@ -240,33 +279,36 @@ func (h *flowHandler) activeFlowHandleActionPatchFlow(ctx context.Context, callI
 	// replace the patched actions to the active flow
 	if err := replaceActions(af, act.ID, patchedActions); err != nil {
 		log.Errorf("Could not append new action. err: %v", err)
-		return nil, fmt.Errorf("could not append new action. err: %v", err)
+		return fmt.Errorf("could not append new action. err: %v", err)
 	}
 	af.TMUpdate = getCurTime()
 
 	// set active flow
+	af.ForwardActionID = patchedActions[0].ID
 	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return nil, err
+		return err
 	}
 
-	return &patchedActions[0], nil
+	return nil
 }
 
 // activeFlowHandleActionConferenceJoin handles action conference_join with active flow.
 // it gets the given conference's flow and replace it.
-func (h *flowHandler) activeFlowHandleActionConferenceJoin(ctx context.Context, callID uuid.UUID, act *action.Action) (*action.Action, error) {
+func (h *flowHandler) activeFlowHandleActionConferenceJoin(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "activeFlowHandleActionConferenceJoin",
-		"call_id":   callID,
-		"action_id": act.ID,
+		"func":              "activeFlowHandleActionConferenceJoin",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
 	})
+	act := &af.CurrentAction
+
 	log.Debugf("Action detail. action: %v", act)
 
 	var opt action.OptionConferenceJoin
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
-		return nil, err
+		return err
 	}
 	log = log.WithField("conference_id", opt.ConferenceID)
 
@@ -274,57 +316,45 @@ func (h *flowHandler) activeFlowHandleActionConferenceJoin(ctx context.Context, 
 	conf, err := h.reqHandler.CFV1ConferenceGet(ctx, opt.ConferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference. err: %v", err)
-		return nil, err
+		return err
 	}
 	if conf.Status != cfconference.StatusProgressing {
 		log.Errorf("The conference is not ready. status: %s", conf.Status)
-		return nil, fmt.Errorf("conference is not ready")
+		return fmt.Errorf("conference is not ready")
 	}
 
 	// get flow
 	f, err := h.FlowGet(ctx, conf.FlowID)
 	if err != nil {
 		log.Errorf("Could not get flow. err: %v", err)
-		return nil, err
-	}
-
-	// get active flow
-	af, err := h.db.ActiveFlowGet(ctx, callID)
-	if err != nil {
-		log.Errorf("Could not get active flow. err: %v", err)
-		return nil, err
+		return err
 	}
 
 	// replace the patched actions to the active flow
 	if err := replaceActions(af, act.ID, f.Actions); err != nil {
 		log.Errorf("Could not append new action. err: %v", err)
-		return nil, fmt.Errorf("could not append new action. err: %v", err)
+		return fmt.Errorf("could not append new action. err: %v", err)
 	}
 	af.TMUpdate = getCurTime()
 
 	// set active flow
+	af.ForwardActionID = f.Actions[0].ID
 	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return nil, err
+		return err
 	}
 
-	return &f.Actions[0], nil
+	return nil
 }
 
 // activeFlowHandleActionConnect handles action connect with active flow.
-func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "activeFlowHandleActionConnect",
-		"call_id":   callID,
-		"action_id": act.ID,
+		"func":              "activeFlowHandleActionConnect",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
 	})
-
-	// get active-flow
-	af, err := h.db.ActiveFlowGet(ctx, callID)
-	if err != nil {
-		log.Errorf("Could not get active-flow. err: %v", err)
-		return fmt.Errorf("could not get active-flow. err: %v", err)
-	}
+	act := &af.CurrentAction
 
 	// create conference room for connect
 	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
@@ -405,63 +435,45 @@ func (h *flowHandler) activeFlowHandleActionConnect(ctx context.Context, callID 
 }
 
 // activeFlowHandleActionGoto handles action goto with active flow.
-func (h *flowHandler) activeFlowHandleActionGoto(ctx context.Context, callID uuid.UUID, act *action.Action) (*action.Action, error) {
+func (h *flowHandler) activeFlowHandleActionGoto(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "activeFlowHandleActionGoto",
-		"call_id":   callID,
-		"action_id": act.ID,
+		"func":              "activeFlowHandleActionGoto",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
 	})
+	act := &af.CurrentAction
 	log.WithField("action", act).Debug("Handle action goto.")
-
-	// get active-flow
-	af, err := h.db.ActiveFlowGet(ctx, callID)
-	if err != nil {
-		log.Errorf("Could not get active-flow. err: %v", err)
-		return nil, fmt.Errorf("could not get active-flow. err: %v", err)
-	}
 
 	var opt action.OptionGoto
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
 		log.Errorf("Could not marshal the goto action's option. err: %v", err)
-		return nil, err
-	}
-
-	var res *action.Action
-	targetIndex := -1
-	for i, a := range af.Actions {
-		if a.ID == opt.TargetID {
-			targetIndex = i
-			res = &a
-			break
-		}
-	}
-	if targetIndex == -1 {
-		log.Errorf("Could not find the target ID in the action flow.")
-		return nil, fmt.Errorf("no target id found")
+		return err
 	}
 
 	if !opt.Loop {
-		return res, nil
-	} else if opt.LoopCount > 0 {
-		if err := h.activeFlowHandleActionGotoUpdate(ctx, af, act); err != nil {
-			log.Errorf("Could not update the active flow for action goto. err: %v", err)
-			return nil, err
+		af.ForwardActionID = opt.TargetID
+		if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+			log.Errorf("Could not update the active flow. err: %v", err)
+			return err
 		}
-		return res, nil
-	} else {
-		// get next action
-		for i, a := range af.Actions {
-			if a.ID == act.ID {
-				if i+1 >= len(af.Actions) {
-					log.Errorf("Exceed length of actions.")
-					return nil, fmt.Errorf("exceed action length")
-				}
-				res = &af.Actions[i+1]
-				return res, nil
-			}
-		}
-		return nil, fmt.Errorf("action not found")
+		return nil
 	}
+
+	if opt.LoopCount > 0 {
+		if err := h.activeFlowHandleActionGotoLoop(ctx, af); err != nil {
+			log.Errorf("Could not update the active flow for action goto. err: %v", err)
+			return err
+		}
+		return nil
+	}
+
+	// loop count is 0. no more loop.
+	if err := h.activeFlowHandleActionGotoLoopStop(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow for action goto no loop. err: %v", err)
+		return err
+	}
+
+	return nil
 }
 
 // activeFlowHandleActionTranscribeRecording handles transcribe_recording
@@ -515,12 +527,13 @@ func (h *flowHandler) activeFlowHandleActionTranscribeStart(ctx context.Context,
 }
 
 // activeFlowHandleActionAgentCall handles action agent_call with active flow.
-func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callID uuid.UUID, act *action.Action) error {
+func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "activeFlowHandleActionAgentCall",
-		"call_id":   callID,
-		"action_id": act.ID,
+		"func":              "activeFlowHandleActionAgentCall",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
 	})
+	act := &af.CurrentAction
 
 	var opt action.OptionAgentCall
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
@@ -528,13 +541,6 @@ func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callI
 		return err
 	}
 	log = log.WithField("agent_id", opt.AgentID)
-
-	// get active-flow
-	af, err := h.db.ActiveFlowGet(ctx, callID)
-	if err != nil {
-		log.Errorf("Could not get active-flow. err: %v", err)
-		return fmt.Errorf("could not get active-flow. err: %v", err)
-	}
 
 	// create conference room for agent_call
 	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
@@ -605,17 +611,18 @@ func (h *flowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callI
 }
 
 // activeFlowHandleActionQueueJoin handles queue_join action type.
-func (h *flowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callID uuid.UUID, act *action.Action) (*action.Action, error) {
+func (h *flowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "activeFlowHandleActionQueueJoin",
-		"call_id":   callID,
-		"action_id": act.ID,
+		"func":              "activeFlowHandleActionQueueJoin",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
 	})
+	act := &af.CurrentAction
 
 	var opt action.OptionQueueJoin
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
-		return nil, err
+		return err
 	}
 	queueID := opt.QueueID
 	log = log.WithField("queue_id", queueID)
@@ -624,23 +631,16 @@ func (h *flowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callI
 	q, err := h.reqHandler.QMV1QueueGet(ctx, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue info. err: %v", err)
-		return nil, err
+		return err
 	}
 	log.WithField("queue", q).Debug("Found queue info.")
-
-	// get active flow
-	af, err := h.db.ActiveFlowGet(ctx, callID)
-	if err != nil {
-		log.Errorf("Could not get active flow. err: %v", err)
-		return nil, err
-	}
 
 	// get exit action id
 	// because we will update the active flow's actions, we need to getting the exit action id before.
 	exitActionID, err := h.getExitActionID(af.Actions, act.ID)
 	if err != nil {
 		log.Errorf("Could not get exit action id. err: %v", err)
-		return nil, err
+		return err
 	}
 
 	// send the queue join request
@@ -658,29 +658,73 @@ func (h *flowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callI
 	patchedActions, err := h.getActionsFromFlow(qc.FlowID, q.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get queue flow's actions. err: %v", err)
-		return nil, err
+		return err
 	}
 
 	// replace the patched actions to the active flow
 	if err := replaceActions(af, act.ID, patchedActions); err != nil {
 		log.Errorf("Could not replace new action. err: %v", err)
-		return nil, fmt.Errorf("could not replace new action. err: %v", err)
+		return fmt.Errorf("could not replace new action. err: %v", err)
 	}
-	af.TMUpdate = getCurTime()
 
 	// set active flow
+	af.TMUpdate = getCurTime()
+	af.ForwardActionID = patchedActions[0].ID
 	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after replace the patched actions. err: %v", err)
-		return nil, err
+		return err
 	}
 
 	// send the queuecall excute request
 	tmp, err := h.reqHandler.QMV1QueuecallExecute(ctx, qc.ID, 1000)
 	if err != nil {
 		log.Errorf("Could not send the execute request. err: %v", err)
-		return nil, err
+		return err
 	}
 	log.WithField("queuecall", tmp).Debug("Queuecall executed.")
 
-	return &patchedActions[0], nil
+	return nil
+}
+
+// activeFlowHandleActionBranch handles branch action type.
+func (h *flowHandler) activeFlowHandleActionBranch(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "activeFlowHandleActionBranch",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	act := af.CurrentAction
+
+	var opt action.OptionBranch
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the branch option. err: %v", err)
+		return err
+	}
+
+	// get received digits
+	digits, err := h.reqHandler.CMV1CallGetDigits(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get digits. err: %v", err)
+		return err
+	}
+
+	targetID, ok := opt.TargetIDs[digits]
+	if !ok {
+		targetID = opt.DefaultID
+		log.Debugf("Input digit is not listed in the branch. digit: %s, default_target_id: %s", digits, targetID)
+	}
+
+	_, err = h.getActionFromActions(af.Actions, targetID)
+	if err != nil {
+		log.Errorf("Could not find target action. err: %v", err)
+		return err
+	}
+
+	af.ForwardActionID = targetID
+	if errSet := h.db.ActiveFlowSet(ctx, af); errSet != nil {
+		log.Errorf("Could not update the active flow. err: %v", errSet)
+		return err
+	}
+
+	return nil
 }

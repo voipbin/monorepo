@@ -608,6 +608,10 @@ gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220213062801-28feecdbdc
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220213062801-28feecdbdc72/go.mod h1:m10P1QiVhE/GPArNVZY7wWqgU+6fHDjIckf6lRhjNKY=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220214055641-b5ce519bb632 h1:5U8NCHFl8VDpb9U8rCZ9yZIeKlFnuPYRR7U33L3ghbI=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220214055641-b5ce519bb632/go.mod h1:Z0l57tgqhvV15l7wE4nmFLs1fDTZCwZVjuLqeTYgBZg=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220216040046-7617fd8b1dc4 h1:u7HUOIlY0qyslFT2Swz+GPDJJ6nzxW/q2SxtyPSI2T4=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220216040046-7617fd8b1dc4/go.mod h1:Pny4ndMtkKXqNYxTRQM/MTOTb6sMl3M994mYFjeY5MM=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220217174530-5b50794ae9df h1:toqXWmYUyHfT06yIMC5aXzKTxa2sKGstU7HnSfkGrVI=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220217174530-5b50794ae9df/go.mod h1:ACBbXQswR2CN8dsgZQBYrPxZe7pQ733xm5gqMY5jW00=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20200916231420-c174522ea887/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210206131226-ca5d2cbbfe65/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20210314173554-61bfbbbd5633/go.mod h1:x9bkcRTTUTmaJOaXz7dHj9nwcPPZnahBoKHWKDIcxxs=
@@ -648,6 +652,10 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220214011524-4c104d48
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220214011524-4c104d48352c/go.mod h1:TejEDNQzrvpzOuzv7PzZlQ6aeQrnK6AEsWWkEh2bTrk=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220214055925-5642ed0fc23b h1:UYU/m0UqOdy6uke8KC6M5yjhWjNWA8WsKDJC2dn8Jpw=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220214055925-5642ed0fc23b/go.mod h1:kFbR425lcWIBbVF0Fi0+FZHMznNnak2DwBLECnpu8Ew=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220216043840-01591c087e02 h1:F9dciI86RR0DCl/erHNlMuhT77PSiqRG4RxPhOBVs+k=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220216043840-01591c087e02/go.mod h1:h5BcTrO/9BOFXWiPrVeibbHoOhyUV+uvwuCVIa1QcSU=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220217234035-12bedcf69727 h1:Prb7LElaC1gcjLU3uuLo9wU9ngt8YT4DqBUr17qrslQ=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220217234035-12bedcf69727/go.mod h1:TEF4LxvHpIoZeUuxYIeGer/3ibPoB9cor+dfa+0lTMs=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211103140851-6e5b25e282b5/go.mod h1:JoSYK5/sNamsxLpoggy9m8xlY1ME7ItWv7jEClHZklI=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211117045559-85c8d74244e2/go.mod h1:EK9tD5zTIpcyhwz48231YOrlpMl3KnrymA3yUu/5C1g=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20211212213016-82044ac29ff6/go.mod h1:NG1pB2VTaBS8XeB4Pdpqmep94kqJcOriBtUK8rh+WxU=
@@ -1258,6 +1266,10 @@ google.golang.org/genproto v0.0.0-20220208230804-65c12eb4c068 h1:pwzFiZfBTH/GjBW
 google.golang.org/genproto v0.0.0-20220208230804-65c12eb4c068/go.mod h1:kGP+zUP2Ddo0ayMi4YuN7C3WZyJvGLZRh8Z5wnAqvEI=
 google.golang.org/genproto v0.0.0-20220211171837-173942840c17 h1:2X+CNIheCutWRyKRte8szGxrE5ggtV4U+NKAbh/oLhg=
 google.golang.org/genproto v0.0.0-20220211171837-173942840c17/go.mod h1:kGP+zUP2Ddo0ayMi4YuN7C3WZyJvGLZRh8Z5wnAqvEI=
+google.golang.org/genproto v0.0.0-20220216160803-4663080d8bc8 h1:divpuJZKgX3Qt7MFDE5v62yu0yQcQbTCD9VJp9leX58=
+google.golang.org/genproto v0.0.0-20220216160803-4663080d8bc8/go.mod h1:kGP+zUP2Ddo0ayMi4YuN7C3WZyJvGLZRh8Z5wnAqvEI=
+google.golang.org/genproto v0.0.0-20220218161850-94dd64e39d7c h1:TU4rFa5APdKTq0s6B7WTsH6Xmx0Knj86s6Biz56mErE=
+google.golang.org/genproto v0.0.0-20220218161850-94dd64e39d7c/go.mod h1:kGP+zUP2Ddo0ayMi4YuN7C3WZyJvGLZRh8Z5wnAqvEI=
 google.golang.org/grpc v1.17.0/go.mod h1:6QZJwpn2B+Zp71q/5VxRsJ6NXXVCE5NRUHRo+f3cWCs=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.0/go.mod h1:chYK+tFQF0nDUGJgXMSgLCQk3phJEuONr2DCgLDdAQM=

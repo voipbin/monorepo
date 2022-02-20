@@ -123,3 +123,14 @@ func (h *flowHandler) ValidateActions(actions []action.Action) error {
 
 	return nil
 }
+
+// getActionFromActions returns action of the actionid from the given actions
+func (h *flowHandler) getActionFromActions(actions []action.Action, actionID uuid.UUID) (*action.Action, error) {
+	for _, a := range actions {
+		if a.ID == actionID {
+			return &a, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no action found")
+}

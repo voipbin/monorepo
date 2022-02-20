@@ -35,10 +35,10 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 	}
 
 	type test struct {
-		name         string
-		callID       uuid.UUID
-		act          *action.Action
-		af           activeflow.ActiveFlow
+		name   string
+		callID uuid.UUID
+		af     *activeflow.ActiveFlow
+
 		cf           *cfconference.Conference
 		connectFlow  *flow.Flow
 		source       *cmaddress.Address
@@ -50,12 +50,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		{
 			"single destination",
 			uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
-			&action.Action{
-				ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
-				Type:   action.TypeConnect,
-				Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
-			},
-			activeflow.ActiveFlow{
+			&activeflow.ActiveFlow{
 				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
@@ -93,12 +88,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		{
 			"multiple destinations",
 			uuid.FromStringOrNil("cb4accf8-2710-11eb-8e49-e73409394bef"),
-			&action.Action{
-				ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
-				Type:   action.TypeConnect,
-				Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
-			},
-			activeflow.ActiveFlow{
+			&activeflow.ActiveFlow{
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
@@ -140,12 +130,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		{
 			"multiple unchained destinations",
 			uuid.FromStringOrNil("211a68fe-2712-11eb-ad71-97e2b1546a91"),
-			&action.Action{
-				ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
-				Type:   action.TypeConnect,
-				Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
-			},
-			activeflow.ActiveFlow{
+			&activeflow.ActiveFlow{
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
@@ -189,7 +174,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
+
 			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.cf, nil)
 			mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.connectFlow, nil)
@@ -202,7 +187,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.connectFlow.CustomerID, tt.connectFlow.ID, masterCallID, tt.source, tt.destinations).Return([]cmcall.Call{{ID: uuid.Nil}}, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
-			if err := h.activeFlowHandleActionConnect(ctx, tt.callID, tt.act); err != nil {
+			if err := h.activeFlowHandleActionConnect(ctx, tt.callID, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -450,23 +435,21 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID        uuid.UUID
-		act           *action.Action
-		resActiveFlow *activeflow.ActiveFlow
-		flow          *flow.Flow
+		callID     uuid.UUID
+		activeFlow *activeflow.ActiveFlow
 
-		expectFlow *activeflow.ActiveFlow
-		expectRes  *action.Action
+		responseflow *flow.Flow
+		expectFlow   *activeflow.ActiveFlow
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			&action.Action{
-				ID:     uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
-				Type:   action.TypePatchFlow,
-				Option: []byte(`{"flow_id": "a1d247b4-3cbf-11ec-8d08-970ce7001aaa"}`),
-			},
 			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
+					Type:   action.TypePatchFlow,
+					Option: []byte(`{"flow_id": "a1d247b4-3cbf-11ec-8d08-970ce7001aaa"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("f0b5605e-648e-11ec-b318-a7f267cc71fc"),
@@ -482,6 +465,7 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 					},
 				},
 			},
+
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("a1d247b4-3cbf-11ec-8d08-970ce7001aaa"),
 				Actions: []action.Action{
@@ -491,8 +475,13 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 					},
 				},
 			},
-
 			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
+					Type:   action.TypePatchFlow,
+					Option: []byte(`{"flow_id": "a1d247b4-3cbf-11ec-8d08-970ce7001aaa"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("f0b5605e-648e-11ec-b318-a7f267cc71fc"),
@@ -508,20 +497,16 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 					},
 				},
 			},
-			&action.Action{
-				ID:   uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
-				Type: action.TypeAMD,
-			},
 		},
 		{
 			"replace flow has 2 actions",
 			uuid.FromStringOrNil("3639f716-648f-11ec-ba9a-3fd10dbd241b"),
-			&action.Action{
-				ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
-				Type:   action.TypePatchFlow,
-				Option: []byte(`{"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e"}`),
-			},
 			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
+					Type:   action.TypePatchFlow,
+					Option: []byte(`{"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("36900886-648f-11ec-88c7-5bc937041ab5"),
@@ -537,6 +522,7 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 					},
 				},
 			},
+
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("36e14dae-648f-11ec-b947-6f91a363d29e"),
 				Actions: []action.Action{
@@ -550,8 +536,13 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 					},
 				},
 			},
-
 			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
+					Type:   action.TypePatchFlow,
+					Option: []byte(`{"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("36900886-648f-11ec-88c7-5bc937041ab5"),
@@ -571,27 +562,17 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 					},
 				},
 			},
-			&action.Action{
-				ID:   uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
-				Type: action.TypeAMD,
-			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.resActiveFlow, nil)
-			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
+			mockDB.EXPECT().FlowGet(gomock.Any(), tt.responseflow.ID).Return(tt.responseflow, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectFlow).Return(nil)
 
-			res, err := h.activeFlowHandleActionPatchFlow(ctx, tt.callID, tt.act)
-			if err != nil {
+			if err := h.activeFlowHandleActionPatchFlow(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -613,22 +594,21 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 		name string
 
 		callID         uuid.UUID
-		act            *action.Action
 		activeFlow     *activeflow.ActiveFlow
 		conference     *cfconference.Conference
 		conferenceFlow *flow.Flow
 
-		expectRes *action.Action
+		expectActiveFlow *activeflow.ActiveFlow
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			&action.Action{
-				ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-				Type:   action.TypeConferenceJoin,
-				Option: []byte(`{"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
-			},
 			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+					Type:   action.TypeConferenceJoin,
+					Option: []byte(`{"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
@@ -658,9 +638,28 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 					},
 				},
 			},
-			&action.Action{
-				ID:   uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
-				Type: action.TypeAnswer,
+
+			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+					Type:   action.TypeConferenceJoin,
+					Option: []byte(`{"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("c76c25d4-410c-11ec-9e97-e34e56d4cc4e"),
+						Type: action.TypeConfbridgeJoin,
+					},
+					{
+						ID:   uuid.FromStringOrNil("c785c6b0-410c-11ec-bd9f-5f698d905eef"),
+						Type: action.TypeHangup,
+					},
+				},
 			},
 		},
 	}
@@ -671,16 +670,10 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 
 			mockReq.EXPECT().CFV1ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.conference.FlowID).Return(tt.conferenceFlow, nil)
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
 
-			res, err := h.activeFlowHandleActionConferenceJoin(ctx, tt.callID, tt.act)
-			if err != nil {
+			if err := h.activeFlowHandleActionConferenceJoin(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -722,6 +715,11 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 			uuid.FromStringOrNil("89593b12-53fc-11ec-9747-f7e71c3a8660"),
 
 			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("716f309c-53fc-11ec-bff3-df8c8ffa945f"),
+					Type:   action.TypeAgentCall,
+					Option: []byte(`{"agent_id": "89593b12-53fc-11ec-9747-f7e71c3a8660"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("716f309c-53fc-11ec-bff3-df8c8ffa945f"),
@@ -769,7 +767,6 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
 			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.activeFlow.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.conference, nil)
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.callID).Return(tt.call, nil)
 
@@ -779,7 +776,7 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.resoponseFlow.ID, tt.callID).Return(&amagentdial.AgentDial{}, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
-			if err := h.activeFlowHandleActionAgentCall(ctx, tt.callID, tt.act); err != nil {
+			if err := h.activeFlowHandleActionAgentCall(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -806,7 +803,8 @@ func TestActiveFlowHandleActionGotoNoLoop(t *testing.T) {
 
 		activeFlow *activeflow.ActiveFlow
 
-		expectRes *action.Action
+		expectActiveFlow *activeflow.ActiveFlow
+		expectRes        *action.Action
 	}{
 		{
 			"normal",
@@ -817,6 +815,11 @@ func TestActiveFlowHandleActionGotoNoLoop(t *testing.T) {
 				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
 			},
 			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type:   action.TypeGoto,
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
@@ -829,6 +832,27 @@ func TestActiveFlowHandleActionGotoNoLoop(t *testing.T) {
 					},
 				},
 			},
+
+			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type:   action.TypeGoto,
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+						Type:   action.TypeGoto,
+						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
+					},
+				},
+			},
+
 			&action.Action{
 				ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
 				Type: action.TypeAnswer,
@@ -840,16 +864,16 @@ func TestActiveFlowHandleActionGotoNoLoop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
+			// mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
+			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
 
-			res, err := h.activeFlowHandleActionGoto(ctx, tt.callID, tt.act)
-			if err != nil {
+			if err := h.activeFlowHandleActionGoto(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
+			// if !reflect.DeepEqual(res, tt.expectRes) {
+			// 	t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			// }
 		})
 	}
 }
@@ -886,6 +910,11 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":3}`),
 			},
 			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type:   action.TypeGoto,
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":3}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
@@ -899,6 +928,12 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 				},
 			},
 			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type:   action.TypeGoto,
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":3}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
@@ -922,16 +957,11 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
+			// mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.updateActiveFlow).Return(nil)
 
-			res, err := h.activeFlowHandleActionGoto(ctx, tt.callID, tt.act)
-			if err != nil {
+			if err := h.activeFlowHandleActionGoto(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}
@@ -957,7 +987,8 @@ func TestActiveFlowHandleActionGotoLoopStop(t *testing.T) {
 
 		activeFlow *activeflow.ActiveFlow
 
-		expectRes *action.Action
+		expectActiveFlow *activeflow.ActiveFlow
+		expectRes        *action.Action
 	}{
 		{
 			"normal",
@@ -968,6 +999,34 @@ func TestActiveFlowHandleActionGotoLoopStop(t *testing.T) {
 				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":0}`),
 			},
 			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type:   action.TypeGoto,
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":0}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+						Type:   action.TypeGoto,
+						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":0}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("8568520c-55f2-11ec-868f-3b955c9b9a39"),
+						Type: action.TypeTalk,
+					},
+				},
+			},
+			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("8568520c-55f2-11ec-868f-3b955c9b9a39"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type:   action.TypeGoto,
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":0}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
@@ -995,15 +1054,9 @@ func TestActiveFlowHandleActionGotoLoopStop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
-
-			res, err := h.activeFlowHandleActionGoto(ctx, tt.callID, tt.act)
-			if err != nil {
+			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
+			if err := h.activeFlowHandleActionGoto(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}
@@ -1033,11 +1086,8 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 		queueFlow    *flow.Flow
 		exitActionID uuid.UUID
 
-		expectActiveFlow *activeflow.ActiveFlow
-
+		expectActiveFlow  *activeflow.ActiveFlow
 		responseQueuecall *qmqueuecall.Queuecall
-
-		expectRes *action.Action
 	}{
 		{
 			"normal",
@@ -1050,6 +1100,11 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			uuid.FromStringOrNil("bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"),
 
 			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
+					Type:   action.TypeQueueJoin,
+					Option: []byte(`{"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
@@ -1081,6 +1136,12 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			uuid.FromStringOrNil("cdd46f0e-6591-11ec-aff5-63bb1f2f2e5f"),
 
 			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("5de173bc-6592-11ec-bd97-bfe78cdda0f5"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
+					Type:   action.TypeQueueJoin,
+					Option: []byte(`{"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("5de173bc-6592-11ec-bd97-bfe78cdda0f5"),
@@ -1096,15 +1157,9 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 					},
 				},
 			},
-
 			&qmqueuecall.Queuecall{
 				ID:     uuid.FromStringOrNil("c9002972-6592-11ec-af59-afccad96c5a4"),
 				FlowID: uuid.FromStringOrNil("0f0a4864-6591-11ec-bc0e-db27e08ddec2"),
-			},
-
-			&action.Action{
-				ID:   uuid.FromStringOrNil("5de173bc-6592-11ec-bd97-bfe78cdda0f5"),
-				Type: action.TypeAnswer,
 			},
 		},
 
@@ -1119,6 +1174,11 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			uuid.FromStringOrNil("d28cb860-7691-11ec-b24f-a31daa9b0585"),
 
 			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
+					Type:   action.TypeQueueJoin,
+					Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
@@ -1151,6 +1211,12 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			uuid.FromStringOrNil("d2b8883c-7691-11ec-a001-075712b96511"),
 
 			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
+					Type:   action.TypeQueueJoin,
+					Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
@@ -1171,11 +1237,6 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 				ID:     uuid.FromStringOrNil("c9002972-6592-11ec-af59-afccad96c5a4"),
 				FlowID: uuid.FromStringOrNil("d2e1b810-7691-11ec-b63f-a7af3ca6f888"),
 			},
-
-			&action.Action{
-				ID:   uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
-				Type: action.TypeAnswer,
-			},
 		},
 	}
 
@@ -1184,20 +1245,154 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
 			mockReq.EXPECT().QMV1QueueCreateQueuecall(gomock.Any(), tt.queue.ID, gomock.Any(), tt.callID, tt.exitActionID).Return(tt.responseQueuecall, nil)
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.responseQueuecall.FlowID).Return(tt.queueFlow, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
 			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.responseQueuecall.ID, 1000).Return(&qmqueuecall.Queuecall{}, nil)
 
-			res, err := h.activeFlowHandleActionQueueJoin(ctx, tt.callID, tt.act)
-			if err != nil {
+			if err := h.activeFlowHandleActionQueueJoin(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+		})
+	}
+}
 
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+func Test_activeFlowHandleActionBranch(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &flowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	tests := []struct {
+		name string
+
+		callID     uuid.UUID
+		activeFlow *activeflow.ActiveFlow
+
+		responseDigits   string
+		expectActiveFlow *activeflow.ActiveFlow
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+					Type:   action.TypeBranch,
+					Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+						Type:   action.TypeBranch,
+						Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+
+			"1",
+			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+					Type:   action.TypeBranch,
+					Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+						Type:   action.TypeBranch,
+						Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+		{
+			"use default",
+			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+					Type:   action.TypeBranch,
+					Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+						Type:   action.TypeBranch,
+						Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+
+			"",
+			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+					Type:   action.TypeBranch,
+					Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+						Type:   action.TypeBranch,
+						Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockReq.EXPECT().CMV1CallGetDigits(gomock.Any(), tt.callID).Return(tt.responseDigits, nil)
+			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
+
+			if err := h.activeFlowHandleActionBranch(ctx, tt.callID, tt.activeFlow); err != nil {
+				t.Errorf("Wrong match. exepct: ok, got: %v", err)
 			}
+
 		})
 	}
 }

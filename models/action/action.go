@@ -44,6 +44,7 @@ const (
 	TypeAgentCall           Type = "agent_call"           // agent-manager. make a all to the agent.
 	TypeAMD                 Type = "amd"                  // call-manager. answering machine detection.
 	TypeAnswer              Type = "answer"               // call-manager. answer the call.
+	TypeBranch              Type = "branch"               // flow-manager. branch the flow
 	TypeConfbridgeJoin      Type = "confbridge_join"      // call-manager. join to the confbridge.
 	TypeConferenceJoin      Type = "conference_join"      // conference-manager. join to the conference.
 	TypeConnect             Type = "connect"              // flow-manager. connect to the other destination.
@@ -73,6 +74,7 @@ var TypeList []Type = []Type{
 	TypeAgentCall,
 	TypeAMD,
 	TypeAnswer,
+	TypeBranch,
 	TypeConfbridgeJoin,
 	TypeConferenceJoin,
 	TypeConnect,
