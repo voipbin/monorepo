@@ -376,7 +376,7 @@ type RequestHandler interface {
 	SMV1RecordingGet(ctx context.Context, id uuid.UUID) (*smbucketrecording.BucketRecording, error)
 
 	// tts-manager speeches
-	TMV1SpeecheCreate(ctx context.Context, text, gender, language string) (string, error)
+	TMV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error)
 
 	// transcribe-manager
 	TSV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]tstranscribe.Transcribe, error)

@@ -1830,18 +1830,18 @@ func (mr *MockRequestHandlerMockRecorder) SMV1RecordingGet(ctx, id interface{}) 
 }
 
 // TMV1SpeecheCreate mocks base method.
-func (m *MockRequestHandler) TMV1SpeecheCreate(ctx context.Context, text, gender, language string) (string, error) {
+func (m *MockRequestHandler) TMV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TMV1SpeecheCreate", ctx, text, gender, language)
+	ret := m.ctrl.Call(m, "TMV1SpeecheCreate", ctx, callID, text, gender, language, timeout)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TMV1SpeecheCreate indicates an expected call of TMV1SpeecheCreate.
-func (mr *MockRequestHandlerMockRecorder) TMV1SpeecheCreate(ctx, text, gender, language interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TMV1SpeecheCreate(ctx, callID, text, gender, language, timeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TMV1SpeecheCreate", reflect.TypeOf((*MockRequestHandler)(nil).TMV1SpeecheCreate), ctx, text, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TMV1SpeecheCreate", reflect.TypeOf((*MockRequestHandler)(nil).TMV1SpeecheCreate), ctx, callID, text, gender, language, timeout)
 }
 
 // TSV1CallRecordingCreate mocks base method.
