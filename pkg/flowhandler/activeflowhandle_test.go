@@ -1396,3 +1396,206 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 		})
 	}
 }
+
+func TestActiveFlowHandleActionConditionDigits(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &flowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	tests := []struct {
+		name string
+
+		callID         uuid.UUID
+		activeFlow     *activeflow.ActiveFlow
+		responseDigits string
+	}{
+		{
+			"length match",
+			uuid.FromStringOrNil("c2dbc228-92b4-11ec-8cc9-3358e0b8bbb5"),
+			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+					Type:   action.TypeConditionDigits,
+					Option: []byte(`{"length": 1}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+						Type:   action.TypeConditionDigits,
+						Option: []byte(`{"length": 1}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("c37492fa-92b4-11ec-94a0-1bfcaf781964"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			"1",
+		},
+		{
+			"key match",
+			uuid.FromStringOrNil("6ef04e44-92b5-11ec-a70a-1b80e125f020"),
+			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+					Type:   action.TypeConditionDigits,
+					Option: []byte(`{"key": "3"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+						Type:   action.TypeConditionDigits,
+						Option: []byte(`{"key": "3"}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("6f893f3c-92b5-11ec-9c9d-437fc938558b"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			"123",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockReq.EXPECT().CMV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
+
+			if err := h.activeFlowHandleActionConditionDigits(ctx, tt.callID, tt.activeFlow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestActiveFlowHandleActionConditionDigitsFail(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &flowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	tests := []struct {
+		name string
+
+		callID     uuid.UUID
+		activeFlow *activeflow.ActiveFlow
+
+		responseDigits      string
+		expectReqActiveFlow *activeflow.ActiveFlow
+	}{
+		{
+			"length fail",
+			uuid.FromStringOrNil("c2dbc228-92b4-11ec-8cc9-3358e0b8bbb5"),
+			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+					Type:   action.TypeConditionDigits,
+					Option: []byte(`{"length": 3, "false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+						Type:   action.TypeConditionDigits,
+						Option: []byte(`{"length": 3, "false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964"}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("c37492fa-92b4-11ec-94a0-1bfcaf781964"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+
+			"1",
+			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("c37492fa-92b4-11ec-94a0-1bfcaf781964"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+					Type:   action.TypeConditionDigits,
+					Option: []byte(`{"length": 3, "false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+						Type:   action.TypeConditionDigits,
+						Option: []byte(`{"length": 3, "false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964"}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("c37492fa-92b4-11ec-94a0-1bfcaf781964"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+		{
+			"key fail",
+			uuid.FromStringOrNil("6ef04e44-92b5-11ec-a70a-1b80e125f020"),
+			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+					Type:   action.TypeConditionDigits,
+					Option: []byte(`{"key": "5", "false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+						Type:   action.TypeConditionDigits,
+						Option: []byte(`{"key": "5", "false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b"}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("6f893f3c-92b5-11ec-9c9d-437fc938558b"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+
+			"123",
+			&activeflow.ActiveFlow{
+				ForwardActionID: uuid.FromStringOrNil("6f893f3c-92b5-11ec-9c9d-437fc938558b"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+					Type:   action.TypeConditionDigits,
+					Option: []byte(`{"key": "5", "false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+						Type:   action.TypeConditionDigits,
+						Option: []byte(`{"key": "5", "false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b"}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("6f893f3c-92b5-11ec-9c9d-437fc938558b"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockReq.EXPECT().CMV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
+			mockDB.EXPECT().ActiveFlowSet(ctx, tt.expectReqActiveFlow).Return(nil)
+
+			if err := h.activeFlowHandleActionConditionDigits(ctx, tt.callID, tt.activeFlow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

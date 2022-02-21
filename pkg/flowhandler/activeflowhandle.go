@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -285,6 +286,51 @@ func (h *flowHandler) activeFlowHandleActionPatchFlow(ctx context.Context, callI
 
 	// set active flow
 	af.ForwardActionID = patchedActions[0].ID
+	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// activeFlowHandleActionConditionDigits handles action condition_digits with active flow.
+// it checks the received digits and sets the forward action id.
+func (h *flowHandler) activeFlowHandleActionConditionDigits(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "activeFlowHandleActionConditionDigits",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	act := &af.CurrentAction
+
+	var opt action.OptionConditionDigits
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", err)
+		return err
+	}
+	log.WithField("option", opt).Debugf("Detail option.")
+
+	// gets the received digits
+	digits, err := h.reqHandler.CMV1CallGetDigits(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get digits. err: %v", err)
+		return err
+	}
+	log.Debugf("Received digits. digits: %s", digits)
+
+	// check the conditions
+	if opt.Length != 0 && len(digits) >= opt.Length {
+		log.Debugf("Condition matched length. len: %d", opt.Length)
+		return nil
+	} else if opt.Key != "" && strings.Contains(digits, opt.Key) {
+		log.Debugf("Condition matched key. key: %s", opt.Key)
+		return nil
+	}
+
+	// failed
+	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
+	af.ForwardActionID = opt.FalseTargetID
 	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err

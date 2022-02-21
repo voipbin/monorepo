@@ -34,6 +34,15 @@ type OptionConfbridgeJoin struct {
 	ConfbridgeID uuid.UUID `json:"confbridge_id"`
 }
 
+// OptionConditionDigits defines action condition_digits's option.
+type OptionConditionDigits struct {
+	Length int    `json:"length"` // digit length for finish
+	Key    string `json:"key"`    // digit key for finish
+
+	FalseTargetID    uuid.UUID `json:"false_target_id"`    // target id for false case.
+	FalseTargetIndex int       `json:"false_target_index"` // target index for false case. used for false taget id generate
+}
+
 // OptionConferenceJoin defines action conference_join's option.
 type OptionConferenceJoin struct {
 	ConferenceID uuid.UUID `json:"conference_id"`

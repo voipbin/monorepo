@@ -45,6 +45,7 @@ const (
 	TypeAMD                 Type = "amd"                  // call-manager. answering machine detection.
 	TypeAnswer              Type = "answer"               // call-manager. answer the call.
 	TypeBranch              Type = "branch"               // flow-manager. branch the flow
+	TypeConditionDigits     Type = "condition_digits"     // flow-manager. condition check(digits)
 	TypeConfbridgeJoin      Type = "confbridge_join"      // call-manager. join to the confbridge.
 	TypeConferenceJoin      Type = "conference_join"      // conference-manager. join to the conference.
 	TypeConnect             Type = "connect"              // flow-manager. connect to the other destination.
@@ -75,6 +76,7 @@ var TypeList []Type = []Type{
 	TypeAMD,
 	TypeAnswer,
 	TypeBranch,
+	TypeConditionDigits,
 	TypeConfbridgeJoin,
 	TypeConferenceJoin,
 	TypeConnect,
