@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
@@ -26,7 +27,8 @@ type ListenHandler interface {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	flowHandler flowhandler.FlowHandler
+	flowHandler       flowhandler.FlowHandler
+	activeflowHandler activeflowhandler.ActiveflowHandler
 }
 
 var (
@@ -77,10 +79,12 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	flowHandler flowhandler.FlowHandler,
+	activeflowHandler activeflowhandler.ActiveflowHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock:  rabbitSock,
-		flowHandler: flowHandler,
+		rabbitSock:        rabbitSock,
+		flowHandler:       flowHandler,
+		activeflowHandler: activeflowHandler,
 	}
 
 	return h

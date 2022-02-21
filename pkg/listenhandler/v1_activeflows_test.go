@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
@@ -19,10 +20,12 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:  mockSock,
-		flowHandler: mockFlowHandler,
+		rabbitSock:        mockSock,
+		flowHandler:       mockFlowHandler,
+		activeflowHandler: mockActive,
 	}
 
 	tests := []struct {
@@ -64,7 +67,7 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectCallID, tt.expectFlowID).Return(tt.af, nil)
+			mockActive.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectCallID, tt.expectFlowID).Return(tt.af, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -89,21 +92,21 @@ func TestV1ActiveFlowsIDNextGet(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:  mockSock,
-		flowHandler: mockFlowHandler,
+		rabbitSock:        mockSock,
+		flowHandler:       mockFlowHandler,
+		activeflowHandler: mockActive,
 	}
 
-	type test struct {
+	tests := []struct {
 		name            string
 		request         *rabbitmqhandler.Request
 		callID          uuid.UUID
 		currentActionID uuid.UUID
 		nextAction      action.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&rabbitmqhandler.Request{
@@ -123,7 +126,7 @@ func TestV1ActiveFlowsIDNextGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().ActiveFlowNextActionGet(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.nextAction, nil)
+			mockActive.EXPECT().ActiveFlowNextActionGet(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.nextAction, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -142,21 +145,21 @@ func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
 	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:  mockSock,
-		flowHandler: mockFlowHandler,
+		rabbitSock:        mockSock,
+		flowHandler:       mockFlowHandler,
+		activeflowHandler: mockActive,
 	}
 
-	type test struct {
+	tests := []struct {
 		name            string
 		request         *rabbitmqhandler.Request
 		callID          uuid.UUID
 		forwardActionID uuid.UUID
 		forwardNow      bool
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&rabbitmqhandler.Request{
@@ -185,7 +188,7 @@ func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockFlowHandler.EXPECT().ActiveFlowSetForwardActionID(gomock.Any(), tt.callID, tt.forwardActionID, tt.forwardNow).Return(nil)
+			mockActive.EXPECT().ActiveFlowSetForwardActionID(gomock.Any(), tt.callID, tt.forwardActionID, tt.forwardNow).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

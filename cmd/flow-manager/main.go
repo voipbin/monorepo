@@ -18,6 +18,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
@@ -145,20 +147,23 @@ func run(dbHandler dbhandler.DBHandler) {
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
-	flowHandler := flowhandler.NewFlowHandler(dbHandler, reqHandler, notifyHandler)
+
+	actionHandler := actionhandler.NewActionHandler()
+	activeflowHandler := activeflowhandler.NewActiveflowHandler(dbHandler, reqHandler, notifyHandler, actionHandler)
+	flowHandler := flowhandler.NewFlowHandler(dbHandler, reqHandler, notifyHandler, actionHandler, activeflowHandler)
 
 	// run listen
-	if errListen := runListen(rabbitSock, flowHandler); errListen != nil {
+	if errListen := runListen(rabbitSock, flowHandler, activeflowHandler); errListen != nil {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
 }
 
 // runListen runs the listen service
-func runListen(sockListen rabbitmqhandler.Rabbit, flowHandler flowhandler.FlowHandler) error {
+func runListen(sockListen rabbitmqhandler.Rabbit, flowHandler flowhandler.FlowHandler, activeflowHandler activeflowhandler.ActiveflowHandler) error {
 	log := logrus.WithField("func", "runListen")
 
-	listenHandler := listenhandler.NewListenHandler(sockListen, flowHandler)
+	listenHandler := listenhandler.NewListenHandler(sockListen, flowHandler, activeflowHandler)
 
 	// run the service
 	if errRun := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); errRun != nil {
