@@ -172,6 +172,12 @@ func (h *flowHandler) executeActiveAction(ctx context.Context, callID uuid.UUID,
 		}
 		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
+	case action.TypeConditionDigits:
+		if errHandle := h.activeFlowHandleActionConditionDigits(ctx, callID, af); errHandle != nil {
+			return nil, err
+		}
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
+
 	case action.TypeConferenceJoin:
 		if errHandle := h.activeFlowHandleActionConferenceJoin(ctx, callID, af); errHandle != nil {
 			log.Errorf("Could not handle the conference_join action correctly. err: %v", err)

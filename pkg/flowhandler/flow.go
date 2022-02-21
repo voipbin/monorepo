@@ -219,66 +219,30 @@ func (h *flowHandler) generateFlowActions(ctx context.Context, actions []action.
 
 	// parse the flow change options
 	for i, a := range res {
-		// goto type
-		if a.Type == action.TypeGoto {
-			var option action.OptionGoto
-			if err := json.Unmarshal(a.Option, &option); err != nil {
-				log.Errorf("Could not unmarshal the option. err: %v", err)
-				return nil, err
-			}
-
-			targetID, err := h.getIndexActionID(res, option.TargetIndex)
+		switch a.Type {
+		case action.TypeConditionDigits:
+			tmp, err := h.generateFlowActionsParseConditionDigits(ctx, res, &a)
 			if err != nil {
-				log.Errorf("Could not get index for default id. err: %v", err)
+				log.Errorf("Could not parse the branch action. err: %v", err)
 				return nil, err
 			}
+			res[i] = *tmp
 
-			option.TargetID = targetID
-			tmp, err := json.Marshal(option)
+		case action.TypeGoto:
+			tmp, err := h.generateFlowActionsParseGoto(ctx, res, &a)
 			if err != nil {
-				log.Errorf("Could not marshal the option")
+				log.Errorf("Could not parse the goto action. err: %v", err)
 				return nil, err
 			}
+			res[i] = *tmp
 
-			a.Option = tmp
-			res[i] = a
-		}
-
-		// branch type
-		if a.Type == action.TypeBranch {
-			var option action.OptionBranch
-			if err := json.Unmarshal(a.Option, &option); err != nil {
-				log.Errorf("Could not unmarshal the option. err: %v", err)
-				return nil, err
-			}
-			if option.TargetIDs == nil {
-				option.TargetIDs = map[string]uuid.UUID{}
-			}
-
-			defaultID, err := h.getIndexActionID(res, option.DefaultIndex)
+		case action.TypeBranch:
+			tmp, err := h.generateFlowActionsParseBranch(ctx, res, &a)
 			if err != nil {
-				log.Errorf("Could not get index for default id. err: %v", err)
+				log.Errorf("Could not parse the branch action err: %v", err)
 				return nil, err
 			}
-			option.DefaultID = defaultID
-
-			for dtmf, idx := range option.TargetIndexes {
-				targetID, err := h.getIndexActionID(res, idx)
-				if err != nil {
-					log.Errorf("Could not get index target id. err: %v", err)
-					return nil, err
-				}
-				option.TargetIDs[dtmf] = targetID
-			}
-
-			tmp, err := json.Marshal(option)
-			if err != nil {
-				log.Errorf("Could not marshal the option")
-				return nil, err
-			}
-
-			a.Option = tmp
-			res[i] = a
+			res[i] = *tmp
 		}
 	}
 
@@ -328,4 +292,109 @@ func (h *flowHandler) getIndexActionID(actions []action.Action, index int) (uuid
 
 	a := actions[index]
 	return a.ID, nil
+}
+
+// generateFlowActionsParseGoto parse the goto action for generate flow actions
+func (h *flowHandler) generateFlowActionsParseGoto(ctx context.Context, actions []action.Action, act *action.Action) (*action.Action, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "generateFlowActionsParseGoto",
+	})
+
+	var opt action.OptionGoto
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", err)
+		return nil, err
+	}
+
+	targetID, err := h.getIndexActionID(actions, opt.TargetIndex)
+	if err != nil {
+		log.Errorf("Could not get action id of the index. err: %v", err)
+		return nil, err
+	}
+	opt.TargetID = targetID
+	log.Debugf("Parsed target id. target_id: %s", targetID)
+
+	tmp, err := json.Marshal(opt)
+	if err != nil {
+		log.Errorf("Could not marshal the option")
+		return nil, err
+	}
+
+	res := *act
+	res.Option = tmp
+	return &res, nil
+}
+
+// generateFlowActionsParseBranch parse the branch action for generate flow actions
+func (h *flowHandler) generateFlowActionsParseBranch(ctx context.Context, actions []action.Action, act *action.Action) (*action.Action, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "generateFlowActionsParseBranch",
+	})
+
+	var opt action.OptionBranch
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", err)
+		return nil, err
+	}
+	if opt.TargetIDs == nil {
+		opt.TargetIDs = map[string]uuid.UUID{}
+	}
+
+	defaultID, err := h.getIndexActionID(actions, opt.DefaultIndex)
+	if err != nil {
+		log.Errorf("Could not get action id of the index. err: %v", err)
+		return nil, err
+	}
+	opt.DefaultID = defaultID
+	log.Debugf("Parsed default id. default_id: %s", defaultID)
+
+	for dtmf, idx := range opt.TargetIndexes {
+		targetID, err := h.getIndexActionID(actions, idx)
+		if err != nil {
+			log.Errorf("Could not get index target id. err: %v", err)
+			return nil, err
+		}
+		opt.TargetIDs[dtmf] = targetID
+	}
+
+	tmp, err := json.Marshal(opt)
+	if err != nil {
+		log.Errorf("Could not marshal the option")
+		return nil, err
+	}
+
+	res := *act
+	res.Option = tmp
+	return &res, nil
+}
+
+// generateFlowActionsParseConditionDigits parse the condition_digits action for generate flow actions
+func (h *flowHandler) generateFlowActionsParseConditionDigits(ctx context.Context, actions []action.Action, act *action.Action) (*action.Action, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "generateFlowActionsParseConditionDigits",
+	})
+
+	var opt action.OptionConditionDigits
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", err)
+		return nil, err
+	}
+
+	falseTargetID, err := h.getIndexActionID(actions, opt.FalseTargetIndex)
+	if err != nil {
+		log.Errorf("Could not get action id of the index. err: %v", err)
+		return nil, err
+	}
+	opt.FalseTargetID = falseTargetID
+	log.Debugf("Parsed false target id. false_target_id: %s", falseTargetID)
+
+	tmp, err := json.Marshal(opt)
+	if err != nil {
+		log.Errorf("Could not marshal the option")
+		return nil, err
+	}
+
+	res := *act
+	res.Option = tmp
+	return &res, nil
 }
