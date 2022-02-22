@@ -109,3 +109,17 @@ func (h *activeflowHandler) getExitActionID(actions []action.Action, actionID uu
 	}
 	return actions[idx+1].ID, nil
 }
+
+// removeAction removes action from the actions
+//nolint:unused // this is ok
+func (h *activeflowHandler) removeAction(actions []action.Action, actionID uuid.UUID) ([]action.Action, error) {
+	for i, a := range actions {
+		if a.ID == actionID {
+			res := append(actions[:i], actions[i+1:]...)
+			return res, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no action found")
+
+}

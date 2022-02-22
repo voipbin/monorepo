@@ -208,7 +208,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, masterCallID, tt.source, tt.destinations).Return([]cmcall.Call{{ID: uuid.Nil}}, nil)
 			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
 
-			if err := h.activeFlowHandleActionConnect(ctx, tt.callID, tt.af); err != nil {
+			if err := h.actionHandleConnect(ctx, tt.callID, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

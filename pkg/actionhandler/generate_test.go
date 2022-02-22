@@ -15,13 +15,7 @@ func Test_generateFlowActions(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	// mockDB := dbhandler.NewMockDBHandler(mc)
-	// mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := &actionHandler{
-		// db:            mockDB,
-		// notifyHandler: mockNotify,
-		// actionHandler: mockAction,
-	}
+	h := &actionHandler{}
 
 	tests := []struct {
 		name string
@@ -159,7 +153,6 @@ func Test_generateFlowActions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			// mockAction.EXPECT().ValidateActions(tt.actions).Return(nil)
 			res, err := h.GenerateFlowActions(ctx, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

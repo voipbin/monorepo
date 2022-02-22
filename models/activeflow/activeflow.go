@@ -19,7 +19,8 @@ type ActiveFlow struct {
 	ExecuteCount    uint64        `json:"execute_count"`
 	ForwardActionID uuid.UUID     `json:"forward_action_id"`
 
-	Actions []action.Action `json:"actions"`
+	Actions         []action.Action `json:"actions"`
+	ExecutedActions []action.Action `json:"executed_actions"` // list of executed actions
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
