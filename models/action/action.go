@@ -49,8 +49,8 @@ const (
 	TypeConfbridgeJoin      Type = "confbridge_join"      // call-manager. join to the confbridge.
 	TypeConferenceJoin      Type = "conference_join"      // conference-manager. join to the conference.
 	TypeConnect             Type = "connect"              // flow-manager. connect to the other destination.
-	TypeDTMFReceive         Type = "dtmf_receive"         // call-manager. receive the dtmfs.
-	TypeDTMFSend            Type = "dtmf_send"            // call-manager. send the dtmfs.
+	TypeDigitsReceive       Type = "digits_receive"       // call-manager. receive the digits(dtmfs).
+	TypeDigitsSend          Type = "digits_send"          // call-manager. send the digits(dtmfs).
 	TypeEcho                Type = "echo"                 // call-manager.
 	TypeExternalMediaStart  Type = "external_media_start" // call-manager.
 	TypeExternalMediaStop   Type = "external_media_stop"  // call-manager.
@@ -80,8 +80,8 @@ var TypeList []Type = []Type{
 	TypeConfbridgeJoin,
 	TypeConferenceJoin,
 	TypeConnect,
-	TypeDTMFReceive,
-	TypeDTMFSend,
+	TypeDigitsReceive,
+	TypeDigitsSend,
 	TypeEcho,
 	TypeExternalMediaStart,
 	TypeExternalMediaStop,

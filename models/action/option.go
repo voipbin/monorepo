@@ -55,15 +55,15 @@ type OptionConnect struct {
 	Unchained    bool                `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 }
 
-// OptionDTMFReceive defines action dtmf_receive's option.
-type OptionDTMFReceive struct {
-	Duration    int    `json:"duration"`       // dtmf receiving duration. ms
-	FinishOnKey string `json:"finish_on_key"`  // If set, determines which DTMF triggers the next step. The end key is not included in the resulting variable. If not set, no key will trigger the next step.
-	MaxNumKey   int    `json:"max_number_key"` // An optional limit to the number of DTMF events that should be gathered before continuing to the next step.
+// OptionDigitsReceive defines action dtmf_receive's option.
+type OptionDigitsReceive struct {
+	Duration int    `json:"duration"` // dtmf receiving duration. ms
+	Key      string `json:"key"`      // If set, determines which DTMF triggers the next step. The end key is not included in the resulting variable. If not set, no key will trigger the next step.
+	Length   int    `json:"length"`   // An optional limit to the number of DTMF events that should be gathered before continuing to the next step.
 }
 
-// OptionDTMFSend defines action dtmf_send's option.
-type OptionDTMFSend struct {
+// OptionDigitsSend defines action dtmf_send's option.
+type OptionDigitsSend struct {
 	DTMFs    string `json:"dtmfs"`    // Keys to send. Allowed set of characters: 0-9, A-D, #, *; with a maximum of 100 keys.
 	Duration int    `json:"duration"` // Duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
 	Interval int    `json:"interval"` // Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
