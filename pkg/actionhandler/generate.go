@@ -33,7 +33,7 @@ func (h *actionHandler) GenerateFlowActions(ctx context.Context, actions []actio
 	for i, a := range res {
 		switch a.Type {
 		case action.TypeConditionDigits:
-			tmp, err := h.generateFlowActionsParseConditionDigits(ctx, res, &a)
+			tmp, err := h.generateFlowActionsConditionDigits(ctx, res, &a)
 			if err != nil {
 				log.Errorf("Could not parse the branch action. err: %v", err)
 				return nil, err
@@ -41,7 +41,7 @@ func (h *actionHandler) GenerateFlowActions(ctx context.Context, actions []actio
 			res[i] = *tmp
 
 		case action.TypeGoto:
-			tmp, err := h.generateFlowActionsParseGoto(ctx, res, &a)
+			tmp, err := h.generateFlowActionsGoto(ctx, res, &a)
 			if err != nil {
 				log.Errorf("Could not parse the goto action. err: %v", err)
 				return nil, err
@@ -49,7 +49,7 @@ func (h *actionHandler) GenerateFlowActions(ctx context.Context, actions []actio
 			res[i] = *tmp
 
 		case action.TypeBranch:
-			tmp, err := h.generateFlowActionsParseBranch(ctx, res, &a)
+			tmp, err := h.generateFlowActionsBranch(ctx, res, &a)
 			if err != nil {
 				log.Errorf("Could not parse the branch action err: %v", err)
 				return nil, err
@@ -72,8 +72,8 @@ func (h *actionHandler) getIndexActionID(actions []action.Action, index int) (uu
 	return a.ID, nil
 }
 
-// generateFlowActionsParseBranch parse the branch action for generate flow actions
-func (h *actionHandler) generateFlowActionsParseBranch(ctx context.Context, actions []action.Action, act *action.Action) (*action.Action, error) {
+// generateFlowActionsBranch parse the branch action for generate flow actions
+func (h *actionHandler) generateFlowActionsBranch(ctx context.Context, actions []action.Action, act *action.Action) (*action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "generateFlowActionsParseBranch",
 	})
@@ -115,8 +115,8 @@ func (h *actionHandler) generateFlowActionsParseBranch(ctx context.Context, acti
 	return &res, nil
 }
 
-// generateFlowActionsParseGoto parse the goto action for generate flow actions
-func (h *actionHandler) generateFlowActionsParseGoto(ctx context.Context, actions []action.Action, act *action.Action) (*action.Action, error) {
+// generateFlowActionsGoto parse the goto action for generate flow actions
+func (h *actionHandler) generateFlowActionsGoto(ctx context.Context, actions []action.Action, act *action.Action) (*action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "generateFlowActionsParseGoto",
 	})
@@ -146,8 +146,8 @@ func (h *actionHandler) generateFlowActionsParseGoto(ctx context.Context, action
 	return &res, nil
 }
 
-// generateFlowActionsParseConditionDigits parse the condition_digits action for generate flow actions
-func (h *actionHandler) generateFlowActionsParseConditionDigits(ctx context.Context, actions []action.Action, act *action.Action) (*action.Action, error) {
+// generateFlowActionsConditionDigits parse the condition_digits action for generate flow actions
+func (h *actionHandler) generateFlowActionsConditionDigits(ctx context.Context, actions []action.Action, act *action.Action) (*action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "generateFlowActionsParseConditionDigits",
 	})

@@ -109,9 +109,9 @@ func (h *activeflowHandler) activeFlowHandleActionGotoLoopStop(ctx context.Conte
 	return nil
 }
 
-// activeFlowHandleActionPatch handles action patch with active flow.
+// actionHandlePatch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *activeflowHandler) activeFlowHandleActionPatch(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+func (h *activeflowHandler) actionHandlePatch(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionPatch",
 		"call_id":           callID,
@@ -126,21 +126,15 @@ func (h *activeflowHandler) activeFlowHandleActionPatch(ctx context.Context, cal
 		return err
 	}
 
-	tmpActions, err := h.actionHandler.GenerateFlowActions(ctx, patchedActions)
-	if err != nil {
-		log.Errorf("Could not generate flow actions. err: %v", err)
-		return err
-	}
-
 	// replace the patched actions to the active flow
-	if err := replaceActions(af, act.ID, tmpActions); err != nil {
+	if err := replaceActions(af, act.ID, patchedActions); err != nil {
 		log.Errorf("Could not append new action. err: %v", err)
 		return fmt.Errorf("could not append new action. err: %v", err)
 	}
 	af.TMUpdate = dbhandler.GetCurTime()
 
 	// set active flow
-	af.ForwardActionID = tmpActions[0].ID
+	af.ForwardActionID = patchedActions[0].ID
 	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
@@ -149,9 +143,9 @@ func (h *activeflowHandler) activeFlowHandleActionPatch(ctx context.Context, cal
 	return nil
 }
 
-// activeFlowHandleActionPatchFlow handles action patch_flow with active flow.
+// actionHandlePatchFlow handles action patch_flow with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *activeflowHandler) activeFlowHandleActionPatchFlow(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+func (h *activeflowHandler) actionHandlePatchFlow(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionPatchFlow",
 		"call_id":           callID,
@@ -172,14 +166,8 @@ func (h *activeflowHandler) activeFlowHandleActionPatchFlow(ctx context.Context,
 		return err
 	}
 
-	tmpActions, err := h.actionHandler.GenerateFlowActions(ctx, patchedActions)
-	if err != nil {
-		log.Errorf("Could not generate flow actions. err: %v", err)
-		return err
-	}
-
 	// replace the patched actions to the active flow
-	if err := replaceActions(af, act.ID, tmpActions); err != nil {
+	if err := replaceActions(af, act.ID, patchedActions); err != nil {
 		log.Errorf("Could not append new action. err: %v", err)
 		return fmt.Errorf("could not append new action. err: %v", err)
 	}
@@ -195,9 +183,9 @@ func (h *activeflowHandler) activeFlowHandleActionPatchFlow(ctx context.Context,
 	return nil
 }
 
-// activeFlowHandleActionConditionDigits handles action condition_digits with active flow.
+// actionHandleConditionDigits handles action condition_digits with active flow.
 // it checks the received digits and sets the forward action id.
-func (h *activeflowHandler) activeFlowHandleActionConditionDigits(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+func (h *activeflowHandler) actionHandleConditionDigits(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionConditionDigits",
 		"call_id":           callID,
@@ -240,9 +228,9 @@ func (h *activeflowHandler) activeFlowHandleActionConditionDigits(ctx context.Co
 	return nil
 }
 
-// activeFlowHandleActionConferenceJoin handles action conference_join with active flow.
+// actionHandleConferenceJoin handles action conference_join with active flow.
 // it gets the given conference's flow and replace it.
-func (h *activeflowHandler) activeFlowHandleActionConferenceJoin(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionConferenceJoin",
 		"call_id":           callID,
@@ -294,8 +282,8 @@ func (h *activeflowHandler) activeFlowHandleActionConferenceJoin(ctx context.Con
 	return nil
 }
 
-// activeFlowHandleActionConnect handles action connect with active flow.
-func (h *activeflowHandler) activeFlowHandleActionConnect(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+// actionHandleConnect handles action connect with active flow.
+func (h *activeflowHandler) actionHandleConnect(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionConnect",
 		"call_id":           callID,
@@ -381,8 +369,8 @@ func (h *activeflowHandler) activeFlowHandleActionConnect(ctx context.Context, c
 	return nil
 }
 
-// activeFlowHandleActionGoto handles action goto with active flow.
-func (h *activeflowHandler) activeFlowHandleActionGoto(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+// actionHandleGoto handles action goto with active flow.
+func (h *activeflowHandler) actionHandleGoto(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionGoto",
 		"call_id":           callID,
@@ -423,8 +411,8 @@ func (h *activeflowHandler) activeFlowHandleActionGoto(ctx context.Context, call
 	return nil
 }
 
-// activeFlowHandleActionTranscribeRecording handles transcribe_recording
-func (h *activeflowHandler) activeFlowHandleActionTranscribeRecording(ctx context.Context, af *activeflow.ActiveFlow, callID uuid.UUID, act *action.Action) error {
+// actionHandleTranscribeRecording handles transcribe_recording
+func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context, af *activeflow.ActiveFlow, callID uuid.UUID, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "activeFlowHandleActionTranscribeRecording",
 		"call_id":   callID,
@@ -448,8 +436,8 @@ func (h *activeflowHandler) activeFlowHandleActionTranscribeRecording(ctx contex
 	return nil
 }
 
-// activeFlowHandleActionTranscribeStart handles transcribe_start
-func (h *activeflowHandler) activeFlowHandleActionTranscribeStart(ctx context.Context, af *activeflow.ActiveFlow, callID uuid.UUID, act *action.Action) error {
+// actionHandleTranscribeStart handles transcribe_start
+func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af *activeflow.ActiveFlow, callID uuid.UUID, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "activeFlowHandleActionTranscribeStart",
 		"call_id":   callID,
@@ -473,8 +461,8 @@ func (h *activeflowHandler) activeFlowHandleActionTranscribeStart(ctx context.Co
 	return nil
 }
 
-// activeFlowHandleActionAgentCall handles action agent_call with active flow.
-func (h *activeflowHandler) activeFlowHandleActionAgentCall(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+// actionHandleAgentCall handles action agent_call with active flow.
+func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionAgentCall",
 		"call_id":           callID,
@@ -557,8 +545,8 @@ func (h *activeflowHandler) activeFlowHandleActionAgentCall(ctx context.Context,
 	return nil
 }
 
-// activeFlowHandleActionQueueJoin handles queue_join action type.
-func (h *activeflowHandler) activeFlowHandleActionQueueJoin(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+// actionHandleQueueJoin handles queue_join action type.
+func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionQueueJoin",
 		"call_id":           callID,
@@ -633,8 +621,8 @@ func (h *activeflowHandler) activeFlowHandleActionQueueJoin(ctx context.Context,
 	return nil
 }
 
-// activeFlowHandleActionBranch handles branch action type.
-func (h *activeflowHandler) activeFlowHandleActionBranch(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+// actionHandleBranch handles branch action type.
+func (h *activeflowHandler) actionHandleBranch(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionBranch",
 		"call_id":           callID,
