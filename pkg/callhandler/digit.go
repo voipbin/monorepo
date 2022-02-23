@@ -37,7 +37,7 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 		},
 	)
 
-	if c.Action.Type != action.TypeDTMFReceive {
+	if c.Action.Type != action.TypeDigitsReceive {
 		// overwrite dtmf receive cache.
 		log.WithField("action_type", c.Action.Type).Debug("The current action is not dtmf receive.")
 
@@ -52,7 +52,7 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 		return nil
 	}
 
-	var option action.OptionDTMFReceive
+	var option action.OptionDigitsReceive
 	if err := json.Unmarshal(c.Action.Option, &option); err != nil {
 		log.WithField("action", c.Action).Errorf("could not parse the option. err: %v", err)
 		return fmt.Errorf("could not parse option. action: %v, err: %v", c.Action, err)
@@ -72,7 +72,7 @@ func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration i
 	}
 
 	// check finish condition
-	if !strings.Contains(option.FinishOnKey, digit) && len(dtmfs) < option.MaxNumKey {
+	if !strings.Contains(option.Key, digit) && len(dtmfs) < option.Length {
 		// the dtmf receive is not finish yet
 		log.Debug("The dtmf receive does not finish yet. Wating next dtmf.")
 		return nil

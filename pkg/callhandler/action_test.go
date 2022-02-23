@@ -411,9 +411,9 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 			},
 			1000,
 			&action.Action{
-				Type:   action.TypeDTMFReceive,
+				Type:   action.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "max_number_key": 3}`),
+				Option: []byte(`{"duration":1000, "length": 3}`),
 			},
 		},
 		{
@@ -425,9 +425,9 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 			},
 			1000,
 			&action.Action{
-				Type:   action.TypeDTMFReceive,
+				Type:   action.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "max_number_key": 3, "finish_on_key": "1234567"}`),
+				Option: []byte(`{"duration":1000, "length": 3, "key": "1234567"}`),
 			},
 		},
 	}
@@ -474,7 +474,7 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 			},
 			"123",
 			&action.Action{
-				Type:   action.TypeDTMFReceive,
+				Type:   action.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
 				Option: []byte(`{"duration":1000, "max_number_key": 3}`),
 			},
@@ -488,9 +488,9 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 			},
 			"#",
 			&action.Action{
-				Type:   action.TypeDTMFReceive,
+				Type:   action.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "max_number_key": 3, "finish_on_key": "#"}`),
+				Option: []byte(`{"duration":1000, "length": 3, "key": "#"}`),
 			},
 		},
 		{
@@ -502,9 +502,9 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 			},
 			"*",
 			&action.Action{
-				Type:   action.TypeDTMFReceive,
+				Type:   action.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "max_number_key": 3, "finish_on_key": "1234567*"}`),
+				Option: []byte(`{"duration":1000, "length": 3, "key": "1234567*"}`),
 			},
 		},
 	}
@@ -553,7 +553,7 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 				ChannelID:  "5daefc0e-69bf-11eb-9e3a-b7d9a5988373",
 			},
 			&action.Action{
-				Type:   action.TypeDTMFSend,
+				Type:   action.TypeDigitsSend,
 				ID:     uuid.FromStringOrNil("508063d8-69bf-11eb-a668-abdbd47ce266"),
 				Option: []byte(`{"dtmfs":"12345", "duration": 500, "interval": 500}`),
 			},
@@ -570,7 +570,7 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 				ChannelID:  "49e625de-69c0-11eb-891d-db5407ae4982",
 			},
 			&action.Action{
-				Type:   action.TypeDTMFSend,
+				Type:   action.TypeDigitsSend,
 				ID:     uuid.FromStringOrNil("4a24912a-69c0-11eb-a334-6f8053ede87a"),
 				Option: []byte(`{"dtmfs":"1", "duration": 500, "interval": 500}`),
 			},
