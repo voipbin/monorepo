@@ -106,11 +106,11 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *action
 	case action.TypeConfbridgeJoin:
 		err = h.actionExecuteConfbridgeJoin(ctx, c, a)
 
-	case action.TypeDTMFReceive:
-		err = h.actionExecuteDTMFReceive(ctx, c, a)
+	case action.TypeDigitsReceive:
+		err = h.actionExecuteDigitsReceive(ctx, c, a)
 
-	case action.TypeDTMFSend:
-		err = h.actionExecuteDTMFSend(ctx, c, a)
+	case action.TypeDigitsSend:
+		err = h.actionExecuteDigitsSend(ctx, c, a)
 
 	case action.TypeEcho:
 		err = h.actionExecuteEcho(ctx, c, a)
@@ -627,9 +627,9 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 	return nil
 }
 
-// actionExecuteDTMFReceive executes the action type dtmf_receive.
+// actionExecuteDigitsReceive executes the action type dtmf_receive.
 // It collects the dtmfs within duration.
-func (h *callHandler) actionExecuteDTMFReceive(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Call, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -637,7 +637,7 @@ func (h *callHandler) actionExecuteDTMFReceive(ctx context.Context, c *call.Call
 		"func":        "actionExecuteDTMFReceive",
 	})
 
-	var option action.OptionDTMFReceive
+	var option action.OptionDigitsReceive
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -649,7 +649,7 @@ func (h *callHandler) actionExecuteDTMFReceive(ctx context.Context, c *call.Call
 	dtmfs, err := h.db.CallDTMFGet(ctx, c.ID)
 
 	// check the dtmf finish condition
-	if err == nil && len(dtmfs) > 0 && (strings.Contains(option.FinishOnKey, dtmfs) || len(dtmfs) >= option.MaxNumKey) {
+	if err == nil && len(dtmfs) > 0 && (strings.Contains(option.Key, dtmfs) || len(dtmfs) >= option.Length) {
 		// the stored dtmf has already qualified finish condition.
 		log.Debugf("The stored dtmfs are already qualified the finish condition. dtmfs: %s", dtmfs)
 		if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID, false); err != nil {
@@ -666,9 +666,9 @@ func (h *callHandler) actionExecuteDTMFReceive(ctx context.Context, c *call.Call
 	return nil
 }
 
-// actionExecuteDTMFSend executes the action type dtmf_send.
+// actionExecuteDigitsSend executes the action type dtmf_send.
 // It sends the DTMFs to the call.
-func (h *callHandler) actionExecuteDTMFSend(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -676,7 +676,7 @@ func (h *callHandler) actionExecuteDTMFSend(ctx context.Context, c *call.Call, a
 		"func":        "actionExecuteDTMFSend",
 	})
 
-	var option action.OptionDTMFSend
+	var option action.OptionDigitsSend
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
