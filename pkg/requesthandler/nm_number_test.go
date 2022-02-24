@@ -468,7 +468,7 @@ func TestNMV1NumberUpdateFlowID(t *testing.T) {
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/numbers/d3877fec-7c5b-11eb-bb46-07fe08c74815",
+				URI:      "/v1/numbers/d3877fec-7c5b-11eb-bb46-07fe08c74815/flow_id",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"flow_id":"5f69889c-881e-11ec-b32e-93104f30aa92"}`),
