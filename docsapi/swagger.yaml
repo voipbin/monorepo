@@ -356,10 +356,6 @@ definitions:
         type: array
       wait_timeout:
         type: integer
-      webhook_method:
-        type: string
-      webhook_uri:
-        type: string
     type: object
   recording.Recording:
     properties:
@@ -454,14 +450,17 @@ definitions:
         items:
           $ref: '#/definitions/action.Action'
         type: array
-      destination:
-        $ref: '#/definitions/address.Address'
-        type: object
+      destinations:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      flow_id:
+        type: string
       source:
         $ref: '#/definitions/address.Address'
         type: object
     required:
-    - destination
+    - destinations
     - source
     type: object
   request.BodyConferencesPOST:
@@ -537,6 +536,11 @@ definitions:
     - password
     - username
     type: object
+  request.BodyNumbersIDFlowIDPUT:
+    properties:
+      flow_id:
+        type: string
+    type: object
   request.BodyNumbersIDPUT:
     properties:
       detail:
@@ -571,10 +575,6 @@ definitions:
       detail:
         type: string
       name:
-        type: string
-      webhook_method:
-        type: string
-      webhook_uri:
         type: string
     type: object
   request.BodyQueuesIDTagIDsPUT:
@@ -1544,6 +1544,24 @@ paths:
           schema:
             $ref: '#/definitions/number.Number'
       summary: Update the number's basic information.
+  /v1.0/numbers/{id}/flow_id:
+    put:
+      description: Update the number's flow_id.
+      parameters:
+      - description: Update info.
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyNumbersIDFlowIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/number.Number'
+      summary: Update the number's flow_id.
   /v1.0/queues:
     get:
       description: get queues of the customer
