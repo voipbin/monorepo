@@ -72,7 +72,7 @@ type OptionDigitsReceive struct {
 
 // OptionDigitsSend defines action dtmf_send's option.
 type OptionDigitsSend struct {
-	Digits   string `json:"dgitis"`   // Keys to send. Allowed set of characters: 0-9, A-D, #, *; with a maximum of 100 keys.
+	Digits   string `json:"digits"`   // Keys to send. Allowed set of characters: 0-9, A-D, #, *; with a maximum of 100 keys.
 	Duration int    `json:"duration"` // Duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
 	Interval int    `json:"interval"` // Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
 }
