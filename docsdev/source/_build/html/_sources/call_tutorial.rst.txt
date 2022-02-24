@@ -18,10 +18,12 @@ When the destination answer the call, it will speak the given text message.
                 "type": "tel",
                 "target": "+821028286521"
             },
-            "destination": {
-                "type": "tel",
-                "target": "+821021656521"
-            },
+            "destinations": [
+                {
+                    "type": "tel",
+                    "target": "+821021656521"
+                }
+            ],
             "actions": [
                 {
                     "type": "talk",
@@ -50,10 +52,12 @@ When the destination answer the call, it will play the given media file.
             "type": "tel",
             "target": "+821028286521"
         },
-        "destination": {
-            "type": "tel",
-            "target": "+821021656521"
-        },
+        "destinations": [
+            {
+                "type": "tel",
+                "target": "+821021656521"
+            }
+        ],
         "actions": [
             {
                 "type": "play",
@@ -66,36 +70,38 @@ When the destination answer the call, it will play the given media file.
         ]
     }'
 
-    {
-        "id": "a023bfa8-1091-4e94-8eaa-7f01fbecc71a",
-        "user_id": 1,
-        "flow_id": "f089791a-ac78-4ea0-be88-8a8e131f9fc5",
-        "conf_id": "00000000-0000-0000-0000-000000000000",
-        "type": "flow",
-        "master_call_id": "00000000-0000-0000-0000-000000000000",
-        "chained_call_ids": [],
-        "recording_id": "00000000-0000-0000-0000-000000000000",
-        "recording_ids": [],
-        "source": {
-            "type": "tel",
-            "target": "+821028286521",
-            "name": ""
-        },
-        "destination": {
-            "type": "tel",
-            "target": "+821021656521",
-            "name": ""
-        },
-        "status": "dialing",
-        "direction": "outgoing",
-        "hangup_by": "",
-        "hangup_reason": "",
-        "tm_create": "2021-02-04 04:44:20.904662",
-        "tm_update": "",
-        "tm_progressing": "",
-        "tm_ringing": "",
-        "tm_hangup": ""
-    }
+    [
+        {
+            "id": "a023bfa8-1091-4e94-8eaa-7f01fbecc71a",
+            "user_id": 1,
+            "flow_id": "f089791a-ac78-4ea0-be88-8a8e131f9fc5",
+            "conf_id": "00000000-0000-0000-0000-000000000000",
+            "type": "flow",
+            "master_call_id": "00000000-0000-0000-0000-000000000000",
+            "chained_call_ids": [],
+            "recording_id": "00000000-0000-0000-0000-000000000000",
+            "recording_ids": [],
+            "source": {
+                "type": "tel",
+                "target": "+821028286521",
+                "name": ""
+            },
+            "destination": {
+                "type": "tel",
+                "target": "+821021656521",
+                "name": ""
+            },
+            "status": "dialing",
+            "direction": "outgoing",
+            "hangup_by": "",
+            "hangup_reason": "",
+            "tm_create": "2021-02-04 04:44:20.904662",
+            "tm_update": "",
+            "tm_progressing": "",
+            "tm_ringing": "",
+            "tm_hangup": ""
+        }
+    ]
 
 
 Simple outbound call with TTS and connect
@@ -113,10 +119,12 @@ Making an outbound call with TTS(Text-to-Speech) and connect to other destinatio
             "type": "tel",
             "target": "+821021656521"
         },
-        "destination": {
-            "type": "tel",
-            "target": "+821021656521"
-        },
+        "destinations": [
+            {
+                "type": "tel",
+                "target": "+821021656521"
+            }
+        ],
         "actions": [
             {
                 "type": "talk",
@@ -144,36 +152,38 @@ Making an outbound call with TTS(Text-to-Speech) and connect to other destinatio
         ]
     }'
 
-    {
-        "id": "9f6265bc-6b59-4e80-a906-2679aca11455",
-        "user_id": 1,
-        "flow_id": "d665fbc0-6dd8-44bc-99ea-2ae54bc59428",
-        "conf_id": "00000000-0000-0000-0000-000000000000",
-        "type": "flow",
-        "master_call_id": "00000000-0000-0000-0000-000000000000",
-        "chained_call_ids": [],
-        "recording_id": "00000000-0000-0000-0000-000000000000",
-        "recording_ids": [],
-        "source": {
-            "type": "tel",
-            "target": "+821021656521",
-            "name": ""
-        },
-        "destination": {
-            "type": "tel",
-            "target": "+821021656521",
-            "name": ""
-        },
-        "status": "dialing",
-        "direction": "outgoing",
-        "hangup_by": "",
-        "hangup_reason": "",
-        "tm_create": "2021-02-06 09:52:49.941865",
-        "tm_update": "",
-        "tm_progressing": "",
-        "tm_ringing": "",
-        "tm_hangup": ""
-    }
+    [
+        {
+            "id": "9f6265bc-6b59-4e80-a906-2679aca11455",
+            "user_id": 1,
+            "flow_id": "d665fbc0-6dd8-44bc-99ea-2ae54bc59428",
+            "conf_id": "00000000-0000-0000-0000-000000000000",
+            "type": "flow",
+            "master_call_id": "00000000-0000-0000-0000-000000000000",
+            "chained_call_ids": [],
+            "recording_id": "00000000-0000-0000-0000-000000000000",
+            "recording_ids": [],
+            "source": {
+                "type": "tel",
+                "target": "+821021656521",
+                "name": ""
+            },
+            "destination": {
+                "type": "tel",
+                "target": "+821021656521",
+                "name": ""
+            },
+            "status": "dialing",
+            "direction": "outgoing",
+            "hangup_by": "",
+            "hangup_reason": "",
+            "tm_create": "2021-02-06 09:52:49.941865",
+            "tm_update": "",
+            "tm_progressing": "",
+            "tm_ringing": "",
+            "tm_hangup": ""
+        }
+    ]
 
 Simple outbound call with talk and dtmf_send
 --------------------------------------------
@@ -186,10 +196,12 @@ Making an outbound call. After answer the call, it will play the TTS and then se
             "type": "tel",
             "target": "+821028286521"
         },
-        "destination": {
-            "type": "tel",
-            "target": "+821021656521"
-        },
+        "destinations": [
+            {
+                "type": "tel",
+                "target": "+821021656521"
+            }
+        ],
         "actions": [
             {
                 "type": "talk",
@@ -218,36 +230,221 @@ Making an outbound call. After answer the call, it will play the TTS and then se
         ]
     }
 
-    {
-        "id": "d7520a58-0b07-4dd7-ab72-a4e2d1979ec0",
-        "user_id": 1,
-        "flow_id": "0f4bd9bc-9df5-4a5b-9465-2189822a3019",
-        "conf_id": "00000000-0000-0000-0000-000000000000",
-        "type": "flow",
-        "master_call_id": "00000000-0000-0000-0000-000000000000",
-        "chained_call_ids": [],
-        "recording_id": "00000000-0000-0000-0000-000000000000",
-        "recording_ids": [],
+    [
+        {
+            "id": "d7520a58-0b07-4dd7-ab72-a4e2d1979ec0",
+            "user_id": 1,
+            "flow_id": "0f4bd9bc-9df5-4a5b-9465-2189822a3019",
+            "conf_id": "00000000-0000-0000-0000-000000000000",
+            "type": "flow",
+            "master_call_id": "00000000-0000-0000-0000-000000000000",
+            "chained_call_ids": [],
+            "recording_id": "00000000-0000-0000-0000-000000000000",
+            "recording_ids": [],
+            "source": {
+                "type": "tel",
+                "target": "+821028286521",
+                "name": ""
+            },
+            "destination": {
+                "type": "tel",
+                "target": "+821021656521",
+                "name": ""
+            },
+            "status": "dialing",
+            "direction": "outgoing",
+            "hangup_by": "",
+            "hangup_reason": "",
+            "tm_create": "2021-02-08 03:59:33.281711",
+            "tm_update": "",
+            "tm_progressing": "",
+            "tm_ringing": "",
+            "tm_hangup": ""
+        }
+    ]
+
+Simple outbound call with Branch
+---------------------------------
+
+Making an outbound call with brach. It will get the digits from the call and will execute the branch.
+
+.. code::
+
+				  Start
+					|
+					|
+	------------>  Talk("Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust")
+	|			    |
+	|			   	|
+	|			  Digit(DTMF) receive
+	|			    |
+	|			    |
+	|		-------------------------------------------------
+	|		|			|					|				|
+	|	 default	   "1"				   "2"			   "3"
+	|	 	|			|					|				|
+	|	 	|           |                   |               |
+	|	 	|		   Talk(...)		   Talk(...)	   Talk(...)
+	|	 	|			|					|				|
+	|	 	|			|					|				|
+	|	 	|		  Hangup			  Hangup		  Hangup
+	|	 	|
+	|	 	|
+	|	  Talk(...)
+	|	 	|
+	----goto(loop 3 times)
+            |
+			|
+		  Talk(...)
+		  	|
+		  	|
+		  Hangup
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    --header 'Content-Type: application/json' \
+    --header 'Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    --data-raw '{
         "source": {
             "type": "tel",
-            "target": "+821028286521",
-            "name": ""
+            "target": "+821028286521"
         },
-        "destination": {
-            "type": "tel",
-            "target": "+821021656521",
-            "name": ""
-        },
-        "status": "dialing",
-        "direction": "outgoing",
-        "hangup_by": "",
-        "hangup_reason": "",
-        "tm_create": "2021-02-08 03:59:33.281711",
-        "tm_update": "",
-        "tm_progressing": "",
-        "tm_ringing": "",
-        "tm_hangup": ""
-    }
+        "destinations": [
+            {
+                "type": "tel",
+                "target": "+821021656521"
+            }
+        ],
+        "actions": [
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "digits_receive",
+                "option": {
+                    "duration": 5000,
+                    "length": 1
+                }
+            },
+            {
+                "type": "branch",
+                "option": {
+                    "default_index": 9,
+                    "target_indexes": {
+                        "1": 3,
+                        "2": 5,
+                        "3": 7
+                    }
+                }
+            },
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "hangup"
+            },
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he's dead. Mama, life had just begun, But now I've gone and thrown it all away.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "hangup"
+            },
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Steve walks warily down the street. With his brim pulled way down low. Ain't no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "hangup"
+            },
+            {
+                "type": "talk",
+                "option": {
+                    "text": "You didn't choice correct number. Default selected.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "goto",
+                "option": {
+                    "target_index": 0,
+                    "loop": true,
+                    "loop_count": 2
+                }
+            },
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Loop over. Hangup the call. Thank you, good bye.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "hangup"
+            }
+        ]
+    }'
+
+    [
+        {
+            "id": "77517719-ffb9-4583-ba44-737ba991d685",
+            "flow_id": "c0827e56-41ef-4fa1-9da0-a8a36fbb76c4",
+            "confbridge_id": "00000000-0000-0000-0000-000000000000",
+            "type": "flow",
+            "master_call_id": "00000000-0000-0000-0000-000000000000",
+            "chained_call_ids": [],
+            "recording_id": "00000000-0000-0000-0000-000000000000",
+            "recording_ids": [],
+            "source": {
+                "type": "tel",
+                "target": "+821028286521",
+                "target_name": "",
+                "name": "",
+                "detail": ""
+            },
+            "destination": {
+                "type": "tel",
+                "target": "+821021656521",
+                "target_name": "",
+                "name": "",
+                "detail": ""
+            },
+            "status": "dialing",
+            "action": {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "type": ""
+            },
+            "direction": "outgoing",
+            "hangup_by": "",
+            "hangup_reason": "",
+            "tm_create": "2022-02-24 02:08:14.469405",
+            "tm_update": "9999-01-01 00:00:00.000000",
+            "tm_progressing": "9999-01-01 00:00:00.000000",
+            "tm_ringing": "9999-01-01 00:00:00.000000",
+            "tm_hangup": "9999-01-01 00:00:00.000000"
+        }
+    ]
 
 Get call list
 -------------
