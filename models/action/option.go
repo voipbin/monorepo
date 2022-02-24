@@ -5,15 +5,23 @@ import (
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
-// OptionAMD defines action amd's option.
-type OptionAMD struct {
-	MachineHandle string `json:"machine_handle"` // hangup,delay,continue if the machine answered a call
-	Async         bool   `json:"async"`          // if it's false, the call flow will be stop until amd done.
-}
-
 // OptionAgentCall defines action agent_call's option.
 type OptionAgentCall struct {
-	AgentID uuid.UUID `json:"agent_id"`
+	AgentID uuid.UUID `json:"agent_id"` // target agent id.
+}
+
+type OptionAMDMachineHandleType string
+
+// list of OptionAMDMachineHandleType
+const (
+	OptionAMDMachineHandleTypeHangup   OptionAMDMachineHandleType = "hangup"
+	OptionAMDMachineHandleTypeContinue OptionAMDMachineHandleType = "continue"
+)
+
+// OptionAMD defines action amd's option.
+type OptionAMD struct {
+	MachineHandle OptionAMDMachineHandleType `json:"machine_handle"` // hangup,continue if the machine answered a call
+	Async         bool                       `json:"async"`          // if it's false, the call flow will be stop until amd done.
 }
 
 // OptionAnswer defines action answer's option.
@@ -64,7 +72,7 @@ type OptionDigitsReceive struct {
 
 // OptionDigitsSend defines action dtmf_send's option.
 type OptionDigitsSend struct {
-	DTMFs    string `json:"dtmfs"`    // Keys to send. Allowed set of characters: 0-9, A-D, #, *; with a maximum of 100 keys.
+	Digits   string `json:"dgitis"`   // Keys to send. Allowed set of characters: 0-9, A-D, #, *; with a maximum of 100 keys.
 	Duration int    `json:"duration"` // Duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
 	Interval int    `json:"interval"` // Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
 }
@@ -157,9 +165,7 @@ type OptionTalk struct {
 
 // OptionTranscribeStart defines action TypeTranscribeStart's option.
 type OptionTranscribeStart struct {
-	Language      string `json:"language"`       // BCP47 format. en-US
-	WebhookURI    string `json:"webhook_uri"`    // webhook uri
-	WebhookMethod string `json:"webhook_method"` // webhook method
+	Language string `json:"language"` // BCP47 format. en-US
 }
 
 // OptionTranscribeStop defines action TypeTranscribeStop's option.
@@ -169,7 +175,5 @@ type OptionTranscribeStop struct {
 
 // OptionTranscribeRecording defines action OptionTranscribeRecording's option.
 type OptionTranscribeRecording struct {
-	Language      string `json:"language"`       // BCP47 format. en-US
-	WebhookURI    string `json:"webhook_uri"`    // webhook uri
-	WebhookMethod string `json:"webhook_method"` // webhook method
+	Language string `json:"language"` // BCP47 format. en-US
 }
