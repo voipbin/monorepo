@@ -1235,6 +1235,34 @@ var doc = `{
                 }
             }
         },
+        "/v1.0/numbers/{id}/flow_id": {
+            "put": {
+                "description": "Update the number's flow_id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update the number's flow_id.",
+                "parameters": [
+                    {
+                        "description": "Update info.",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyNumbersIDFlowIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/number.Number"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/queues": {
             "get": {
                 "description": "get queues of the customer",
@@ -2197,12 +2225,6 @@ var doc = `{
                 },
                 "wait_timeout": {
                     "type": "integer"
-                },
-                "webhook_method": {
-                    "type": "string"
-                },
-                "webhook_uri": {
-                    "type": "string"
                 }
             }
         },
@@ -2342,7 +2364,7 @@ var doc = `{
         "request.BodyCallsPOST": {
             "type": "object",
             "required": [
-                "destination",
+                "destinations",
                 "source"
             ],
             "properties": {
@@ -2352,9 +2374,14 @@ var doc = `{
                         "$ref": "#/definitions/action.Action"
                     }
                 },
-                "destination": {
-                    "type": "object",
-                    "$ref": "#/definitions/address.Address"
+                "destinations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "flow_id": {
+                    "type": "string"
                 },
                 "source": {
                     "type": "object",
@@ -2474,6 +2501,14 @@ var doc = `{
                 }
             }
         },
+        "request.BodyNumbersIDFlowIDPUT": {
+            "type": "object",
+            "properties": {
+                "flow_id": {
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyNumbersIDPUT": {
             "type": "object",
             "properties": {
@@ -2526,12 +2561,6 @@ var doc = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "webhook_method": {
-                    "type": "string"
-                },
-                "webhook_uri": {
                     "type": "string"
                 }
             }
