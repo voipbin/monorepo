@@ -327,3 +327,68 @@ func TestNumbersIDPUT(t *testing.T) {
 		})
 	}
 }
+
+func TestNumbersIDFlowIDPUT(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+		uri      string
+
+		id          uuid.UUID
+		requestBody request.BodyNumbersIDFlowIDPUT
+		resNumber   *nmnumber.WebhookMessage
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			"/v1.0/numbers/a440c6b8-94cd-11ec-a524-af82f0c3ee68/flow_id",
+
+			uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
+			request.BodyNumbersIDFlowIDPUT{
+				FlowID: uuid.FromStringOrNil("b6161d70-94cd-11ec-b56c-bb1a417ae104"),
+			},
+			&nmnumber.WebhookMessage{
+				ID: uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().NumberUpdateFlowID(&tt.customer, tt.id, tt.requestBody.FlowID).Return(tt.resNumber, nil)
+
+			// create body
+			body, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+			req, _ := http.NewRequest("PUT", tt.uri, bytes.NewBuffer(body))
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}

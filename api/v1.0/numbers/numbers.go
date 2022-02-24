@@ -230,7 +230,7 @@ func numbersIDDELETE(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-// numbersIDPUT handles PUT /numbers request.
+// numbersIDPUT handles PUT /numbers/<id> request.
 // It creates a new order number with the given info and returns created order number.
 // @Summary Update the number's basic information.
 // @Description Update the number's basic information.
@@ -276,6 +276,61 @@ func numbersIDPUT(c *gin.Context) {
 	// update a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	numb, err := serviceHandler.NumberUpdate(&u, id, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not update a number. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, numb)
+}
+
+// numbersIDFlowIDPUT handles PUT /numbers/<id>/flow_id request.
+// It updates the number's flow_id.
+// @Summary Update the number's flow_id.
+// @Description Update the number's flow_id.
+// @Produce json
+// @Param update_info body request.BodyNumbersIDFlowIDPUT true "Update info."
+// @Success 200 {object} number.Number
+// @Router /v1.0/numbers/{id}/flow_id [put]
+func numbersIDFlowIDPUT(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "numbersIDPUT",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("number_id", id)
+
+	var req request.BodyNumbersIDFlowIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing numbersIDPUT.")
+
+	// update a number
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	numb, err := serviceHandler.NumberUpdateFlowID(&u, id, req.FlowID)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)
