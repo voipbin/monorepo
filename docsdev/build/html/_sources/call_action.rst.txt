@@ -3,6 +3,38 @@
 Action
 ======
 
+.. _call-action-agent_call: call-action-agent_call
+
+Agent Call
+----------
+Call to agent.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "agent_call",
+        "option": {
+            "agent_id": "<string>"
+        }
+    }
+
+* *agent_id*: target agent id.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "agent_call",
+        "option": {
+            "agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"
+        }
+    }
+
+.. _call-action-amd: call-action-amd
+
 AMD
 ---
 Answering machine detection.
@@ -32,7 +64,7 @@ Example
             "machine_handle": "hangup",
             "sync": true
         }
-    },
+    }
 
 .. _call-action-answer: call-action-answer
 
@@ -56,6 +88,91 @@ Example
         "type": "answer"
     }
 
+.. _call-action-branch: call-action-branch
+
+Branch
+------
+Branch the flow.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "branch",
+        "option": {
+            "default_index": <number>,
+            "default_id": "<string>",
+            "target_indexes": {
+                "<string>": <string>,
+                ...
+            },
+            "target_ids": {
+                "<string>": <string>,
+            }
+        }
+    }
+
+* *default_index*: action index for default selection.
+* *default_id*: action id for default selection. This will be generated automatically by the given default_index.
+* *target_indexes*: set of input digit and target index fair.
+* *target_ids*: set of input digit and target id fair. This will be generated automatically by the given target_indexes.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "branch",
+        "option": {
+            "default_index": 9,
+            "target_indexes": {
+                "1": 3,
+                "2": 5,
+                "3": 7
+            }
+        }
+    }
+
+.. _call-action-condition_digits: call-action-condition_digits
+
+Condition Digits
+----------------
+Check the condition of received digits.
+It checks the received digits and if it matched condition move to the next action. If not, move to the false_target_id.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "condition_digits",
+        "option": {
+            "length": <number>,
+            "key": "<string>",
+            "false_target_index": <number>,
+            "false_target_id": "<string>"
+        }
+    }
+
+* *length*: match digits length.
+* *key*: match digits contain.
+* *false_target_index*: action index for false condition.
+* *false_target_id*: action id for false condition. This will be generated automatically by the given false_target_index.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "condition_digits",
+        "option": {
+            "length": 10,
+            "false_target_index": 3
+        }
+    }
+
+
 .. _call-action-conference_join: call-action-conference_join
 
 Conference Join
@@ -73,7 +190,7 @@ Parameters
         }
     }
 
-* *conference_id*: conference's id to join.
+* *conference_id*: Conference's id to join.
 
 Example
 +++++++
@@ -132,69 +249,69 @@ Example
         }
     }
 
-DTMF Receive
-------------
-Receives the DTMFs for given duration or numbers.
+Digits Receive
+--------------
+Receives the digits for given duration or numbers.
 
 Parameters
 ++++++++++
 .. code::
 
     {
-        "type": "dtmf_receive",
+        "type": "digits_receive",
         "option": {
-            "max_number_key": <number>,
             "duration": <number>,
-            "finish_on_key": "<string>"
+            "length": <number>,
+            "key": "<string>"
         }
     }
 
-* *max_number_key*: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.
 * *duration*: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.
-* *finish_on_key*: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.
+* *length*: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.
+* *key*: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.
 
 Example
 +++++++
 .. code::
 
     {
-        "type": "dtmf_receive",
+        "type": "digits_receive",
         "option": {
-            "max_number_key": 3,
             "duration": 10000,
-            "finish_on_key": "#"
+            "length": 3,
+            "key": "#"
         }
     }
 
-DTMF Send
----------
-Sends the DTMFs with given duration and interval.
+Digits Send
+-----------
+Sends the digits with given duration and interval.
 
 Parameters
 ++++++++++
 .. code::
 
     {
-        "type": "dtmf_send",
+        "type": "digits_send",
         "option": {
-            "dtmfs": "<string>",
+            "digits": "<string>",
             "duration": <number>,
             "interval": <number>
         }
     }
 
-* *dtmfs*: The dtmf string to send. Allowed set of characters: 0-9,A-D, #, '*'; with a maximum of 100 keys.
+* *digits*: The digit string to send. Allowed set of characters: 0-9,A-D, #, '*'; with a maximum of 100 keys.
 * *duration*: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
-* *finish_on_key*: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
+* *interval*: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
 
 Example
 +++++++
 .. code::
 
     {
-        "type": "dtmf_send",
+        "type": "digits_send",
         "option": {
-            "dtmfs": "1234567890",
+            "digits": "1234567890",
             "duration": 500,
             "interval": 500
         }
@@ -211,13 +328,11 @@ Parameters
     {
         "type": "echo",
         "option": {
-            "duration": <integer>,
-            "dtmf": <boolean>
+            "duration": <number>,
         }
     }
 
 * *duration*: Echo duration. ms.
-* *dtmf*: Sending back the DTMF.
 
 Example
 +++++++
@@ -229,6 +344,43 @@ Example
             "duration": 30000
         }
     }
+
+Goto
+----
+Move the action execution.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "goto",
+        "option": {
+            "target_index": <integer>,
+            "target_id": "<string>",
+            "loop": <boolean>,
+            "loop_count": <integer>
+        }
+    }
+
+* *target_index*: action index for move target.
+* *target_id*: action id for move target. This will be generated automatically by the given default_index.
+* *loop*: It this set to true, will loop only number of loop_count.
+* *loop_count*: The number of loop.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "goto",
+        "option": {
+            "target_index": 0,
+            "loop": true,
+            "loop_count": 2
+        }
+    }
+
 
 Hangup
 ------
@@ -282,6 +434,34 @@ Example
         }
     }
 
+Patch Flow
+----------
+Patch the next flow from the existed flow.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "patch_flow",
+        "option": {
+            "flow_id": "<string>"
+        }
+    }
+
+* *flow_id*: The id of flow.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "patch_flow".
+        "option": {
+            "flow_id": "212a32a8-9529-11ec-8bf0-8b89df407b6e"
+        }
+    }
+
 Play
 ----
 Plays the linked file.
@@ -315,8 +495,37 @@ Example
         }
     }
 
+Queue Join
+----------
+Join to the queue.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "queue_join",
+        "option": {
+            "queue_id": "<string>"
+        }
+    }
+
+* *queue_id*: Target queue id.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "queue_join",
+        "option": {
+            "queue_id": "99bf739a-932f-433c-b1bf-103d33d7e9bb"
+        }
+    }
+
 Recording Start
 ---------------
+Starts the call recording.
 
 Parameters
 ++++++++++
@@ -352,6 +561,7 @@ Example
 
 Recording Stop
 --------------
+Stops the call recording.
 
 Parameters
 ++++++++++
@@ -367,6 +577,34 @@ Example
 
     {
         "type": "recording_stop"
+    }
+
+Stream Echo
+-----------
+Echoing the RTP stream including the digits receive.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "stream_echo",
+        "option": {
+            "duration": <number>
+        }
+    }
+
+* *duration*: Echo duration. ms.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "stream_echo"
+        "option": {
+            "duration": 10000
+        }
     }
 
 Talk
@@ -405,7 +643,7 @@ Example
 
 Transcribe_start
 ----------------
-Start the transcribe talk in realtime.
+Start the STT(Speech to text) transcribe in realtime.
 
 Parameters
 ++++++++++
@@ -415,14 +653,10 @@ Parameters
         "type": "transcribe_start",
         "option": {
             "language": "<string>",
-            "webhook_uri": "<string>",
-            "webhook_method": "<string>"
         }
     }
 
 * *language*: Specifies the language. BCP47 format. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).
-* *webhook_uri*: Target webhook uri.
-* *webhook_method*: Target webhook method.
 
 Example
 +++++++
@@ -432,8 +666,6 @@ Example
         "type": "transcribe_start",
         "option": {
             "language": "en-US",
-            "webhook_uri": "https://test.com",
-            "webhook_method": "POST"
         }
     }
 
