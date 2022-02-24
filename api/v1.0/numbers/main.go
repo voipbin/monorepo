@@ -15,4 +15,5 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	numbers.DELETE("/:id", numbersIDDELETE)
 	numbers.PUT("/:id", numbersIDPUT)
 
+	numbers.PUT("/:id/flow_id", numbersIDFlowIDPUT)
 }
