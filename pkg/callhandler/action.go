@@ -673,7 +673,7 @@ func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call,
 		"call_id":     c.ID,
 		"action_id":   act.ID,
 		"action_type": act.Type,
-		"func":        "actionExecuteDTMFSend",
+		"func":        "actionExecuteDigitsSend",
 	})
 
 	var option action.OptionDigitsSend
@@ -685,15 +685,15 @@ func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call,
 	}
 
 	// send dtmfs
-	if err := h.reqHandler.AstChannelDTMF(ctx, c.AsteriskID, c.ChannelID, option.DTMFs, option.Duration, 0, option.Interval, 0); err != nil {
+	if err := h.reqHandler.AstChannelDTMF(ctx, c.AsteriskID, c.ChannelID, option.Digits, option.Duration, 0, option.Interval, 0); err != nil {
 		return fmt.Errorf("could not send the dtmfs. err: %v", err)
 	}
 
 	// caculate timeout
 	// because of the Asterisk doesn't send the dtmf send finish event, we need to do this.
-	maxTimeout := (option.Duration * len(option.DTMFs))
-	if len(option.DTMFs) > 1 {
-		maxTimeout = maxTimeout + (option.Interval * (len(option.DTMFs) - 1))
+	maxTimeout := (option.Duration * len(option.Digits))
+	if len(option.Digits) > 1 {
+		maxTimeout = maxTimeout + (option.Interval * (len(option.Digits) - 1))
 	}
 
 	// set timeout
@@ -793,7 +793,7 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call, act *a
 	// create callapplication info
 	app := &callapplication.AMD{
 		CallID:        c.ID,
-		MachineHandle: option.MachineHandle,
+		MachineHandle: string(option.MachineHandle),
 		Async:         option.Async,
 	}
 

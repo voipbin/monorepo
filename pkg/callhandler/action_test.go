@@ -522,7 +522,7 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 	}
 }
 
-func TestActionExecuteDTMFSend(t *testing.T) {
+func TestActionExecuteDigitsSend(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -538,7 +538,7 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 		name           string
 		call           *call.Call
 		action         *action.Action
-		expectDtmfs    string
+		expectDigits   string
 		expectDuration int
 		expectInterval int
 		expectTimeout  int
@@ -555,7 +555,7 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 			&action.Action{
 				Type:   action.TypeDigitsSend,
 				ID:     uuid.FromStringOrNil("508063d8-69bf-11eb-a668-abdbd47ce266"),
-				Option: []byte(`{"dtmfs":"12345", "duration": 500, "interval": 500}`),
+				Option: []byte(`{"digits":"12345", "duration": 500, "interval": 500}`),
 			},
 			"12345",
 			500,
@@ -563,7 +563,7 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 			4500,
 		},
 		{
-			"send 1 dtmf",
+			"send 1 digits",
 			&call.Call{
 				ID:         uuid.FromStringOrNil("49a66b38-69c0-11eb-b96c-d799dd21ba8f"),
 				AsteriskID: "42:01:0a:a4:00:05",
@@ -572,7 +572,7 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 			&action.Action{
 				Type:   action.TypeDigitsSend,
 				ID:     uuid.FromStringOrNil("4a24912a-69c0-11eb-a334-6f8053ede87a"),
-				Option: []byte(`{"dtmfs":"1", "duration": 500, "interval": 500}`),
+				Option: []byte(`{"digits":"1", "duration": 500, "interval": 500}`),
 			},
 			"1",
 			500,
@@ -584,7 +584,7 @@ func TestActionExecuteDTMFSend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().AstChannelDTMF(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.expectDtmfs, tt.expectDuration, 0, tt.expectInterval, 0)
+			mockReq.EXPECT().AstChannelDTMF(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.expectDigits, tt.expectDuration, 0, tt.expectInterval, 0)
 			mockReq.EXPECT().CMV1CallActionTimeout(gomock.Any(), tt.call.ID, tt.expectTimeout, tt.action)
 
 			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
