@@ -10,6 +10,7 @@ type OptionAgentCall struct {
 	AgentID uuid.UUID `json:"agent_id"` // target agent id.
 }
 
+// OptionAMDMachineHandleType defines
 type OptionAMDMachineHandleType string
 
 // list of OptionAMDMachineHandleType
