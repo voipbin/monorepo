@@ -5,8 +5,11 @@
 package webhookhandler
 
 import (
+	context "context"
+	json "encoding/json"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	webhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
@@ -35,15 +38,15 @@ func (m *MockWebhookHandler) EXPECT() *MockWebhookHandlerMockRecorder {
 }
 
 // SendWebhook mocks base method.
-func (m *MockWebhookHandler) SendWebhook(wh *webhook.Webhook) error {
+func (m *MockWebhookHandler) SendWebhook(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendWebhook", wh)
+	ret := m.ctrl.Call(m, "SendWebhook", ctx, customerID, dataType, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SendWebhook indicates an expected call of SendWebhook.
-func (mr *MockWebhookHandlerMockRecorder) SendWebhook(wh interface{}) *gomock.Call {
+func (mr *MockWebhookHandlerMockRecorder) SendWebhook(ctx, customerID, dataType, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendWebhook", reflect.TypeOf((*MockWebhookHandler)(nil).SendWebhook), wh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendWebhook", reflect.TypeOf((*MockWebhookHandler)(nil).SendWebhook), ctx, customerID, dataType, data)
 }
