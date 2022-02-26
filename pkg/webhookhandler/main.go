@@ -3,10 +3,10 @@ package webhookhandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package webhookhandler -destination ./mock_webhookhandler.go -source main.go -build_flags=-mod=mod
 
 import (
-	"strings"
-	"time"
+	"context"
+	"encoding/json"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
@@ -15,7 +15,7 @@ import (
 
 // WebhookHandler is interface for webhook handle
 type WebhookHandler interface {
-	SendWebhook(wh *webhook.Webhook) error
+	SendWebhook(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error
 }
 
 // webhookHandler structure for service handle
@@ -23,14 +23,6 @@ type webhookHandler struct {
 	db dbhandler.DBHandler
 
 	messageTargetHandler messagetargethandler.MessagetargetHandler
-}
-
-var (
-	metricsNamespace = "webhook_manager"
-)
-
-func init() {
-	prometheus.MustRegister()
 }
 
 // NewWebhookHandler returns new webhook handler
@@ -42,17 +34,4 @@ func NewWebhookHandler(db dbhandler.DBHandler, messageTargetHandler messagetarge
 	}
 
 	return h
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
-}
-
-// getCurTime return current utc time string
-func getCurTimeRFC3339() string {
-	return time.Now().UTC().Format(time.RFC3339)
 }

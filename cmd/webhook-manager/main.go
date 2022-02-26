@@ -32,10 +32,7 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 
-var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event", "rabbitmq exchange name for subscribe")
-
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.webhook-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.webhook-manager.event", "rabbitmq queue name for event notify")
 
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 

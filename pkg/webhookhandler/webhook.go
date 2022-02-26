@@ -2,37 +2,43 @@ package webhookhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
 
 // SendWebhook sends the webhook to the given uri with the given method and data.
-func (h *webhookHandler) SendWebhook(w *webhook.Webhook) error {
-	ctx := context.Background()
+// func (h *webhookHandler) SendWebhook(w *webhook.Webhook) error {
+func (h *webhookHandler) SendWebhook(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"webhook": w,
+			"customer_id": customerID,
 		},
 	)
-	log.Debugf("Sending an webhook. customer_id: %s", w.CustomerID)
+	log.WithFields(logrus.Fields{
+		"data_type": dataType,
+		"data":      data,
+	}).Debugf("Sending an webhook. customer_id: %s", customerID)
 
-	m, err := h.messageTargetHandler.Get(ctx, w.CustomerID)
+	m, err := h.messageTargetHandler.Get(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not get message target. err: %v", err)
 		return fmt.Errorf("could not get message target. err: %v", err)
 	}
 
 	if m.WebhookURI == "" {
+		// no place to send
 		log.Infof("Invalid uri target. uri: %s", m.WebhookURI)
-		return fmt.Errorf("invalid uri target. uri: %s", m.WebhookURI)
+		return nil
 	}
 
 	// send message
 	go func() {
-		res, err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(w.DataType), []byte(w.Data))
+		res, err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(dataType), data)
 		if err != nil {
 			log.Errorf("Could not send a request. err: %v", err)
 			return

@@ -173,7 +173,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		log.Errorf("Could not process the request correctly. method: %s, uri: %s, err: %v", m.Method, uri, err)
 		response = simpleResponse(400)
 		err = nil
-		requestType = "notfound"
 	}
 
 	log.WithFields(

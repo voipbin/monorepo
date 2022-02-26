@@ -6,7 +6,6 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
@@ -26,14 +25,6 @@ type messagetargetHandler struct {
 	db dbhandler.DBHandler
 
 	reqHandler requesthandler.RequestHandler
-}
-
-var (
-	metricsNamespace = "webhook_manager"
-)
-
-func init() {
-	prometheus.MustRegister()
 }
 
 // NewMessageTargetHandler returns new message target handler
