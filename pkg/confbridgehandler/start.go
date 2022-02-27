@@ -107,7 +107,10 @@ func (h *confbridgeHandler) startContextIncomingTypeConnect(ctx context.Context,
 	if len(cb.ChannelCallIDs) == 0 {
 		// if it's the first channel, send a ring
 		log.Debugf("First channel. Send a ring. call_id: %s", callID)
-		// todo: send the ring
+		if err := h.reqHandler.AstChannelRing(ctx, cn.AsteriskID, cn.ID); err != nil {
+			log.Errorf("Could not ring the channel. err: %v", err)
+			return err
+		}
 
 		return nil
 	}

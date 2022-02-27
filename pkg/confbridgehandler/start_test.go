@@ -127,6 +127,29 @@ func Test_startContextIncomingTypeConnect(t *testing.T) {
 				"call_id":       "9ddb42ea-977e-11ec-8245-7f56a442dbdc",
 			},
 		},
+		{
+			"first call",
+
+			&channel.Channel{
+				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000948",
+				DestinationNumber: "01009e28-9794-11ec-bc54-034deaa2338f",
+			},
+			uuid.FromStringOrNil("0156d8b0-9794-11ec-80b3-7fe4ef675ba1"),
+			&confbridge.Confbridge{
+				ID:             uuid.FromStringOrNil("017f3f80-9794-11ec-8ebb-f7a30d24d78f"),
+				Type:           confbridge.TypeConnect,
+				BridgeID:       "01009e28-9794-11ec-bc54-034deaa2338f",
+				ChannelCallIDs: map[string]uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+			},
+			map[string]string{
+				"context":       contextConfbridgeIncoming,
+				"confbridge_id": "017f3f80-9794-11ec-8ebb-f7a30d24d78f",
+				"call_id":       "0156d8b0-9794-11ec-80b3-7fe4ef675ba1",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -134,7 +157,9 @@ func Test_startContextIncomingTypeConnect(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			if len(tt.confbridge.ChannelCallIDs) > 0 {
+			if len(tt.confbridge.ChannelCallIDs) == 0 {
+				mockReq.EXPECT().AstChannelRing(ctx, tt.channel.AsteriskID, tt.channel.ID).Return(nil)
+			} else {
 				mockReq.EXPECT().AstChannelAnswer(ctx, tt.channel.AsteriskID, tt.channel.ID).Return(nil)
 
 				for channelID := range tt.confbridge.ChannelCallIDs {
