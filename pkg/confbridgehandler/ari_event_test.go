@@ -18,7 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestARIStasisStart(t *testing.T) {
+func Test_ARIStasisStartTypeConference(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -41,7 +41,7 @@ func TestARIStasisStart(t *testing.T) {
 		data       map[string]string
 	}{
 		{
-			"confbridge incoming",
+			"normal",
 			&channel.Channel{
 				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
 				AsteriskID:        "80:fa:5b:5e:da:81",
@@ -50,13 +50,14 @@ func TestARIStasisStart(t *testing.T) {
 			},
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("69e97312-3748-11ec-a94b-2357c957d67e"),
+				Type:           confbridge.TypeConference,
 				BridgeID:       "80c2e1ae-3748-11ec-b52c-c7e704ec1140",
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 			},
 			map[string]string{
 				"context":       contextConfbridgeIncoming,
-				"confbridge_id": "15f5582c-34f3-11ec-a88e-07fb1716f396",
+				"confbridge_id": "69e97312-3748-11ec-a94b-2357c957d67e",
 				"call_id":       "22df7716-34f3-11ec-a0d1-1faed65f6fd4",
 			},
 		},
@@ -65,18 +66,23 @@ func TestARIStasisStart(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
-			mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.channel.DestinationNumber, tt.channel.ID, "", false, false).Return(nil)
 
-			err := h.ARIStasisStart(context.Background(), tt.channel, tt.data)
+			mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(nil)
+
+			err := h.ARIStasisStart(ctx, tt.channel, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
-func TestARIStasisStartError(t *testing.T) {
+
+func Test_ARIStasisStartTypeConferenceError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -128,6 +134,78 @@ func TestARIStasisStartError(t *testing.T) {
 
 			if err := h.ARIStasisStart(context.Background(), tt.channel, tt.data); err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+		})
+	}
+}
+
+func Test_ARIStasisStartTypeConnect(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := &confbridgeHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		cache:         mockCache,
+	}
+
+	tests := []struct {
+		name       string
+		channel    *channel.Channel
+		confbridge *confbridge.Confbridge
+		data       map[string]string
+	}{
+		{
+			"call already exist",
+			&channel.Channel{
+				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				Name:              "PJSIP/in-voipbin-00000948",
+				DestinationNumber: "d93fdf46-977c-11ec-8403-5b0f71484cde",
+			},
+			&confbridge.Confbridge{
+				ID:       uuid.FromStringOrNil("d9d609ee-977c-11ec-9a6c-af64f3e8859b"),
+				Type:     confbridge.TypeConnect,
+				BridgeID: "d93fdf46-977c-11ec-8403-5b0f71484cde",
+				ChannelCallIDs: map[string]uuid.UUID{
+					"a6b4bf78-9741-11ec-a688-73fbff5fe5e8": uuid.FromStringOrNil("a70ee066-9741-11ec-baba-ebfa678d2fce"),
+				},
+				RecordingIDs: []uuid.UUID{},
+			},
+			map[string]string{
+				"context":       contextConfbridgeIncoming,
+				"confbridge_id": "d9d609ee-977c-11ec-9a6c-af64f3e8859b",
+				"call_id":       "d9ff2afe-977c-11ec-8b60-ffaa217bff41",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
+			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.channel.DestinationNumber, tt.channel.ID, "", false, false).Return(nil)
+
+			if len(tt.confbridge.ChannelCallIDs) > 0 {
+				mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID).Return(nil)
+
+				for channelID := range tt.confbridge.ChannelCallIDs {
+					mockReq.EXPECT().AstChannelAnswer(ctx, tt.channel.AsteriskID, channelID).Return(nil)
+				}
+			}
+
+			err := h.ARIStasisStart(ctx, tt.channel, tt.data)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

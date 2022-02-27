@@ -28,8 +28,9 @@ func TestProcessV1ConfbridgePost(t *testing.T) {
 	}
 
 	type test struct {
-		name    string
-		request *rabbitmqhandler.Request
+		name           string
+		request        *rabbitmqhandler.Request
+		confbridgeType confbridge.Type
 
 		confbridge *confbridge.Confbridge
 		expectRes  *rabbitmqhandler.Response
@@ -37,14 +38,18 @@ func TestProcessV1ConfbridgePost(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			"normal type connect",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/confbridges",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
+				Data:     []byte(`{"type":"connect"}`),
 			},
+			confbridge.TypeConnect,
+
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23"),
+				Type:           confbridge.TypeConnect,
 				BridgeID:       "73453fa8-3609-11ec-af18-075139856086",
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -54,15 +59,39 @@ func TestProcessV1ConfbridgePost(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","bridge_id":"73453fa8-3609-11ec-af18-075139856086","channel_call_ids":{},"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","type":"connect","bridge_id":"73453fa8-3609-11ec-af18-075139856086","channel_call_ids":{},"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
-	}
+		{
+			"normal type conference",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/confbridges",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"type":"conference"}`),
+			},
+			confbridge.TypeConference,
+
+			&confbridge.Confbridge{
+				ID:             uuid.FromStringOrNil("7a995638-977d-11ec-bd1d-6f78844899df"),
+				Type:           confbridge.TypeConference,
+				BridgeID:       "7b7c4d9e-977d-11ec-96d3-0780fcb609eb",
+				ChannelCallIDs: map[string]uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+				TMCreate:       "",
+				TMUpdate:       "",
+				TMDelete:       "",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				Data:       []byte(`{"id":"7a995638-977d-11ec-bd1d-6f78844899df","type":"conference","bridge_id":"7b7c4d9e-977d-11ec-96d3-0780fcb609eb","channel_call_ids":{},"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConfbridge.EXPECT().Create(gomock.Any()).Return(tt.confbridge, nil)
+			mockConfbridge.EXPECT().Create(gomock.Any(), tt.confbridgeType).Return(tt.confbridge, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

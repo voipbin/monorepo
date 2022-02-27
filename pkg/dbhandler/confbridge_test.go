@@ -28,14 +28,31 @@ func TestConfbridgeCreateAndGet(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			"normal type connect",
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
+				Type:           confbridge.TypeConnect,
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 			},
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
+				Type:           confbridge.TypeConnect,
+				ChannelCallIDs: map[string]uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+			},
+		},
+		{
+			"normal type conference",
+			&confbridge.Confbridge{
+				ID:             uuid.FromStringOrNil("d7f12a42-977b-11ec-9f46-b753ff3f1c92"),
+				Type:           confbridge.TypeConference,
+				ChannelCallIDs: map[string]uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+			},
+			&confbridge.Confbridge{
+				ID:             uuid.FromStringOrNil("d7f12a42-977b-11ec-9f46-b753ff3f1c92"),
+				Type:           confbridge.TypeConference,
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 			},
@@ -43,14 +60,16 @@ func TestConfbridgeCreateAndGet(t *testing.T) {
 		{
 			"have channel call id",
 			&confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
+				ID:   uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
+				Type: confbridge.TypeConnect,
 				ChannelCallIDs: map[string]uuid.UUID{
 					"9ed7ad74-4494-11ec-857e-e37007ea55e6": uuid.FromStringOrNil("9efa08ce-4494-11ec-8759-e3502fbffddb"),
 				},
 				RecordingIDs: []uuid.UUID{},
 			},
 			&confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
+				ID:   uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
+				Type: confbridge.TypeConnect,
 				ChannelCallIDs: map[string]uuid.UUID{
 					"9ed7ad74-4494-11ec-857e-e37007ea55e6": uuid.FromStringOrNil("9efa08ce-4494-11ec-8759-e3502fbffddb"),
 				},

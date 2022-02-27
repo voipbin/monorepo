@@ -14,7 +14,6 @@ type WebhookMessage struct {
 	// identity
 	ID           uuid.UUID `json:"id"`
 	FlowID       uuid.UUID `json:"flow_id"`       // flow id
-	ConfbridgeID uuid.UUID `json:"confbridge_id"` // currently joined confbridge id.
 	Type         Type      `json:"type"`          // call type
 
 	// etc info
@@ -48,7 +47,6 @@ func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID:           h.ID,
 		FlowID:       h.FlowID,
-		ConfbridgeID: h.ConfbridgeID,
 		Type:         h.Type,
 
 		MasterCallID:   h.MasterCallID,

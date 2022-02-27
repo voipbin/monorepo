@@ -271,15 +271,15 @@ func (h *callHandler) startHandlerContextJoin(ctx context.Context, cn *channel.C
 		return err
 	}
 
-	// set sip header
-	if errSet := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "PJSIP_HEADER(add,VB-CALL-ID)", callID); errSet != nil {
-		log.Errorf("Could not set sip header. err: %v", errSet)
-		return errSet
-	}
-	if errSet := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "PJSIP_HEADER(add,VB-CONFBRIDGE-ID)", confbridgeID); errSet != nil {
-		log.Errorf("Could not set sip header. err: %v", errSet)
-		return errSet
-	}
+	// // set sip header
+	// if errSet := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "PJSIP_HEADER(add,VB-CALL-ID)", callID); errSet != nil {
+	// 	log.Errorf("Could not set sip header. err: %v", errSet)
+	// 	return errSet
+	// }
+	// if errSet := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "PJSIP_HEADER(add,VB-CONFBRIDGE-ID)", confbridgeID); errSet != nil {
+	// 	log.Errorf("Could not set sip header. err: %v", errSet)
+	// 	return errSet
+	// }
 
 	// dial to the destination
 	if err := h.reqHandler.AstChannelDial(ctx, cn.AsteriskID, cn.ID, "", defaultDialTimeout); err != nil {

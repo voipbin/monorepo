@@ -109,20 +109,20 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 		})
 	log.WithField("request", m).Debug("Executing processV1CallsPost.")
 
-	var reqData request.V1DataCallsPost
-	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+	var req request.V1DataCallsPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"user":         reqData.CustomerID,
-		"flow":         reqData.FlowID,
-		"source":       reqData.Source,
-		"destinations": reqData.Destinations,
+		"user":         req.CustomerID,
+		"flow":         req.FlowID,
+		"source":       req.Source,
+		"destinations": req.Destinations,
 	})
 
 	log.Debug("Creating outgoing call.")
-	calls, err := h.callHandler.CreateCallsOutgoing(ctx, reqData.CustomerID, reqData.FlowID, reqData.MasterCallID, reqData.Source, reqData.Destinations)
+	calls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil
@@ -159,22 +159,22 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 		})
 	log.Debug("Executing processV1CallsIDPost.")
 
-	var reqData request.V1DataCallsIDPost
-	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+	var req request.V1DataCallsIDPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"user":        reqData.CustomerID,
-		"flow":        reqData.FlowID,
-		"source":      reqData.Source,
-		"destination": reqData.Destination,
+		"user":        req.CustomerID,
+		"flow":        req.FlowID,
+		"source":      req.Source,
+		"destination": req.Destination,
 	})
 
 	log.Debug("Creating outgoing call.")
-	c, err := h.callHandler.CreateCallOutgoing(ctx, id, reqData.CustomerID, reqData.FlowID, reqData.MasterCallID, reqData.Source, reqData.Destination)
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destination)
 	if err != nil {
-		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", reqData.FlowID, reqData.Source, reqData.Destination, err)
+		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", req.FlowID, req.Source, req.Destination, err)
 		return simpleResponse(500), nil
 	}
 	log.Debugf("Created outgoing call. call: %v", c)
