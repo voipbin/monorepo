@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
@@ -40,7 +41,12 @@ func (h *conferenceHandler) Create(
 	log = log.WithField("confbridge_id", id.String())
 
 	// send confbridge create request
-	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx)
+	confbridgeType := cmconfbridge.TypeConnect
+	if conferenceType == conference.TypeConference {
+		confbridgeType = cmconfbridge.TypeConference
+	}
+
+	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx, confbridgeType)
 	if err != nil {
 		log.Errorf("Could not crate confbridge. err: %v", err)
 		return nil, err
