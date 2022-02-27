@@ -883,3 +883,56 @@ func TestAstChannelExternalMedia(t *testing.T) {
 		})
 	}
 }
+
+func TestAstChannelRing(t *testing.T) {
+
+	type test struct {
+		name       string
+		asteriskID string
+		channelID  string
+
+		expectQueue  string
+		expectURI    string
+		expectMethod rabbitmqhandler.RequestMethod
+	}
+
+	tests := []test{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"519b7e6a-9790-11ec-ae44-23af21dc0b55",
+
+			"asterisk.00:11:22:33:44:55.request",
+			"/ari/channels/519b7e6a-9790-11ec-ae44-23af21dc0b55/ring",
+			rabbitmqhandler.RequestMethodPost,
+		},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				&rabbitmqhandler.Request{
+					URI:      tt.expectURI,
+					Method:   tt.expectMethod,
+					DataType: "application/json",
+					Data:     nil,
+				},
+			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+
+			err := reqHandler.AstChannelRing(context.Background(), tt.asteriskID, tt.channelID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}

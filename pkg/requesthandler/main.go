@@ -201,6 +201,7 @@ type RequestHandler interface {
 	AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause) error
 	AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
 	AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
+	AstChannelRing(ctx context.Context, asteriskID string, channelID string) error
 	AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error
 
 	// asterisk playbacks
@@ -262,7 +263,7 @@ type RequestHandler interface {
 	CMV1ChannelHealth(ctx context.Context, asteriskID, channelID string, delay, retryCount, retryCountMax int) error
 
 	// call-manager confbridge
-	CMV1ConfbridgeCreate(ctx context.Context) (*cmconfbridge.Confbridge, error)
+	CMV1ConfbridgeCreate(ctx context.Context, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)
 	CMV1ConfbridgeDelete(ctx context.Context, conferenceID uuid.UUID) error
 	CMV1ConfbridgeCallKick(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error
 	CMV1ConfbridgeCallAdd(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error

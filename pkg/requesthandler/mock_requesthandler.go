@@ -573,6 +573,20 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelRecord(ctx, asteriskID, chan
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelRecord", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelRecord), ctx, asteriskID, channelID, filename, format, duration, silence, beep, endKey, ifExists)
 }
 
+// AstChannelRing mocks base method.
+func (m *MockRequestHandler) AstChannelRing(ctx context.Context, asteriskID, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelRing", ctx, asteriskID, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelRing indicates an expected call of AstChannelRing.
+func (mr *MockRequestHandlerMockRecorder) AstChannelRing(ctx, asteriskID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelRing", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelRing), ctx, asteriskID, channelID)
+}
+
 // AstChannelVariableSet mocks base method.
 func (m *MockRequestHandler) AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error {
 	m.ctrl.T.Helper()
@@ -923,18 +937,18 @@ func (mr *MockRequestHandlerMockRecorder) CMV1ConfbridgeCallKick(ctx, conference
 }
 
 // CMV1ConfbridgeCreate mocks base method.
-func (m *MockRequestHandler) CMV1ConfbridgeCreate(ctx context.Context) (*confbridge.Confbridge, error) {
+func (m *MockRequestHandler) CMV1ConfbridgeCreate(ctx context.Context, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMV1ConfbridgeCreate", ctx)
+	ret := m.ctrl.Call(m, "CMV1ConfbridgeCreate", ctx, confbridgeType)
 	ret0, _ := ret[0].(*confbridge.Confbridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CMV1ConfbridgeCreate indicates an expected call of CMV1ConfbridgeCreate.
-func (mr *MockRequestHandlerMockRecorder) CMV1ConfbridgeCreate(ctx interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CMV1ConfbridgeCreate(ctx, confbridgeType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1ConfbridgeCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMV1ConfbridgeCreate), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1ConfbridgeCreate", reflect.TypeOf((*MockRequestHandler)(nil).CMV1ConfbridgeCreate), ctx, confbridgeType)
 }
 
 // CMV1ConfbridgeDelete mocks base method.
