@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 )
 
@@ -70,14 +69,14 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 		return err
 	}
 
-	// answer the call. it is safe to call this for answered call.
-	if c.Status == call.StatusRinging {
-		log.Debugf("Call was not answered. Answering the call.")
-		if err := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); err != nil {
-			log.Errorf("Could not answer the call. err: %v", err)
-			return err
-		}
-	}
+	// // answer the call. it is safe to call this for answered call.
+	// if c.Status == call.StatusRinging {
+	// 	log.Debugf("Call was not answered. Answering the call.")
+	// 	if err := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); err != nil {
+	// 		log.Errorf("Could not answer the call. err: %v", err)
+	// 		return err
+	// 	}
+	// }
 
 	// check the confbridge's bridge does exist
 	if cb.BridgeID == "" || !h.isBridgeExist(ctx, cb.BridgeID) {
@@ -118,9 +117,15 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 		c.ID.String(),
 	)
 
+	// create variables
+	variables := map[string]string{
+		"PJSIP_HEADER(add,VB-CALL-ID)":       c.ID.String(),
+		"PJSIP_HEADER(add,VB-CONFBRIDGE-ID)": cb.ID.String(),
+	}
+
 	// create a another channel with joining context
 	channelID := uuid.Must(uuid.NewV4())
-	if err := h.reqHandler.AstChannelCreate(ctx, c.AsteriskID, channelID.String(), args, dialDestination, "", "vp8", "", nil); err != nil {
+	if err := h.reqHandler.AstChannelCreate(ctx, c.AsteriskID, channelID.String(), args, dialDestination, "", "vp8", "", variables); err != nil {
 		log.Errorf("Could not create a channel for joining. err: %v", err)
 		return err
 	}

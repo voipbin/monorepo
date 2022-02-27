@@ -37,7 +37,7 @@ type ConfbridgeHandler interface {
 	ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error
 
-	Create(ctx context.Context) (*confbridge.Confbridge, error)
+	Create(ctx context.Context, confbridgeType confbridge.Type) (*confbridge.Confbridge, error)
 	Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	Join(ctx context.Context, confbridgeID, callID uuid.UUID) error
 	Joined(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error

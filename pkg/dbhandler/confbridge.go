@@ -16,6 +16,7 @@ const (
 	confbridgeSelect = `
 	select
 		id,
+		type,
 		bridge_id,
 
 		channel_call_ids,
@@ -41,6 +42,7 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 	res := &confbridge.Confbridge{}
 	if err := row.Scan(
 		&res.ID,
+		&res.Type,
 		&res.BridgeID,
 
 		&channelCallIDs,
@@ -70,6 +72,63 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 	}
 
 	return res, nil
+}
+
+// ConfbridgeCreate creates a new confbridge record.
+func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridge) error {
+	q := `insert into confbridges(
+		id,
+		type,
+		bridge_id,
+
+		channel_call_ids,
+
+		recording_id,
+		recording_ids,
+
+		tm_create,
+		tm_update,
+		tm_delete
+	) values(
+		?, ?, ?,
+		?,
+		?, ?,
+		?, ?, ?
+		)
+	`
+
+	callChannelIDs, err := json.Marshal(cb.ChannelCallIDs)
+	if err != nil {
+		return fmt.Errorf("could not marshal calls. ConfbridgeCreate. err: %v", err)
+	}
+
+	recordingIDs, err := json.Marshal(cb.RecordingIDs)
+	if err != nil {
+		return fmt.Errorf("could not marshal recording_ids. ConfbridgeCreate. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q,
+		cb.ID.Bytes(),
+		cb.Type,
+		cb.BridgeID,
+
+		callChannelIDs,
+
+		cb.RecordingID.Bytes(),
+		recordingIDs,
+
+		cb.TMCreate,
+		cb.TMUpdate,
+		cb.TMDelete,
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. ConfbridgeCreate. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.ConfbridgeUpdateToCache(ctx, cb.ID)
+
+	return nil
 }
 
 // ConfbridgeGetFromCache returns conference from the cache if possible.
@@ -130,61 +189,6 @@ func (h *handler) ConfbridgeSetToCache(ctx context.Context, data *confbridge.Con
 	if err := h.cache.ConfbridgeSet(ctx, data); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-// ConfbridgeCreate creates a new confbridge record.
-func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridge) error {
-	q := `insert into confbridges(
-		id,
-		bridge_id,
-
-		channel_call_ids,
-
-		recording_id,
-		recording_ids,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?,
-		?, ?,
-		?, ?, ?
-		)
-	`
-
-	callChannelIDs, err := json.Marshal(cb.ChannelCallIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal calls. ConfbridgeCreate. err: %v", err)
-	}
-
-	recordingIDs, err := json.Marshal(cb.RecordingIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal recording_ids. ConfbridgeCreate. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q,
-		cb.ID.Bytes(),
-		cb.BridgeID,
-
-		callChannelIDs,
-
-		cb.RecordingID.Bytes(),
-		recordingIDs,
-
-		cb.TMCreate,
-		cb.TMUpdate,
-		cb.TMDelete,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeCreate. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.ConfbridgeUpdateToCache(ctx, cb.ID)
 
 	return nil
 }
