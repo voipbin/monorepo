@@ -7,15 +7,24 @@ import (
 
 	"github.com/gofrs/uuid"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // CMV1ConfbridgeCreate sends the request for confbridge create.
 // conferenceID: conference id
-func (r *requestHandler) CMV1ConfbridgeCreate(ctx context.Context) (*cmconfbridge.Confbridge, error) {
+func (r *requestHandler) CMV1ConfbridgeCreate(ctx context.Context, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error) {
 	uri := "/v1/confbridges"
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	m, err := json.Marshal(cmrequest.V1DataConfbridgesPost{
+		Type: confbridgeType,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

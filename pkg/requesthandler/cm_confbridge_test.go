@@ -24,32 +24,61 @@ func TestCMV1ConfbridgeCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectTarget   string
+		confbridgeType cmconfbridge.Type
+		expectRequest  *rabbitmqhandler.Request
+		response       *rabbitmqhandler.Response
 
 		expectRes *cmconfbridge.Confbridge
 	}
 
 	tests := []test{
 		{
-			"normal",
+			"type connect",
 
 			"bin-manager.call-manager.request",
+			cmconfbridge.TypeConnect,
 			&rabbitmqhandler.Request{
 				URI:      "/v1/confbridges",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
+				Data:     []byte(`{"type":"connect"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"700a6ca0-5ba2-11ec-98bd-a3b749617d0b","bridge_id":"70ee9650-5ba2-11ec-bc2a-032ae9e777fe","channel_call_ids":{},"recording_ids":[]}`),
+				Data:       []byte(`{"id":"700a6ca0-5ba2-11ec-98bd-a3b749617d0b","type":"connect","bridge_id":"70ee9650-5ba2-11ec-bc2a-032ae9e777fe","channel_call_ids":{},"recording_ids":[]}`),
 			},
 
 			&cmconfbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("700a6ca0-5ba2-11ec-98bd-a3b749617d0b"),
+				Type:           cmconfbridge.TypeConnect,
 				BridgeID:       "70ee9650-5ba2-11ec-bc2a-032ae9e777fe",
+				ChannelCallIDs: map[string]uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+			},
+		},
+		{
+			"type conference",
+
+			"bin-manager.call-manager.request",
+			cmconfbridge.TypeConference,
+			&rabbitmqhandler.Request{
+				URI:      "/v1/confbridges",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"type":"conference"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"a8d56354-978f-11ec-b4a0-2f9706b7c3ff","type":"conference","bridge_id":"a96ff9b4-978f-11ec-9091-ef19d43b7524","channel_call_ids":{},"recording_ids":[]}`),
+			},
+
+			&cmconfbridge.Confbridge{
+				ID:             uuid.FromStringOrNil("a8d56354-978f-11ec-b4a0-2f9706b7c3ff"),
+				Type:           cmconfbridge.TypeConference,
+				BridgeID:       "a96ff9b4-978f-11ec-9091-ef19d43b7524",
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 			},
@@ -61,7 +90,7 @@ func TestCMV1ConfbridgeCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1ConfbridgeCreate(ctx)
+			res, err := reqHandler.CMV1ConfbridgeCreate(ctx, tt.confbridgeType)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

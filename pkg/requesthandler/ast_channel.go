@@ -381,3 +381,18 @@ func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID
 	ch := cmchannel.NewChannelByARIChannel(tmpCh)
 	return ch, nil
 }
+
+// AstChannelRing ring the given channel.
+func (r *requestHandler) AstChannelRing(ctx context.Context, asteriskID string, channelID string) error {
+
+	url := fmt.Sprintf("/ari/channels/%s/ring", channelID)
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsExternalMedia, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
