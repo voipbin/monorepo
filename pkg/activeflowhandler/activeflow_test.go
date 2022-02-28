@@ -270,7 +270,7 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 	}
 }
 
-func TestActiveFlowGetNextAction(t *testing.T) {
+func Test_getNextAction(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -365,7 +365,37 @@ func TestActiveFlowGetNextAction(t *testing.T) {
 				Type: action.TypeAnswer,
 			},
 		},
-	}
+		{
+			"next id has set",
+			uuid.FromStringOrNil("e83a9588-9851-11ec-b987-07ce29329c80"),
+			activeflow.ActiveFlow{
+				ForwardActionID: action.IDEmpty,
+				CustomerID:      uuid.FromStringOrNil("e869c452-9851-11ec-aa4c-fbddf1193904"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("e89463c4-9851-11ec-bc37-5ff5ed0bf091"),
+					NextID: uuid.FromStringOrNil("0763d50a-9852-11ec-92d1-4b6db72a5ee8"),
+				},
+
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("e89463c4-9851-11ec-bc37-5ff5ed0bf091"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("e8c79686-9851-11ec-af4a-234fea2ae8da"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("0763d50a-9852-11ec-92d1-4b6db72a5ee8"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			action.Action{
+				ID:   uuid.FromStringOrNil("0763d50a-9852-11ec-92d1-4b6db72a5ee8"),
+				Type: action.TypeAnswer,
+			},
+		}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -11,6 +11,7 @@ import (
 // Action struct
 type Action struct {
 	ID     uuid.UUID       `json:"id"`
+	NextID uuid.UUID       `json:"next_id"` // represent next target action id. if it not set, just go to next action in the action array.
 	Type   Type            `json:"type"`
 	Option json.RawMessage `json:"option,omitempty"`
 
@@ -29,11 +30,11 @@ func (a *Action) String() string {
 	return fmt.Sprintf("%v", *a)
 }
 
-// static ActionID
+// list of ActionID
 var (
-	IDFinish uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000") // reserved action id for finish(hangup)
+	IDEmpty  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000") // empty action
 	IDStart  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001") // reserved action id for start.
-	IDEmpty  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002") // empty action
+	IDFinish uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002") // reserved action id for finish(hangup)
 )
 
 // Type type

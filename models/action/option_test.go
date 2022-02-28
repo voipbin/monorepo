@@ -146,13 +146,13 @@ func Test_marshalOptionBranch(t *testing.T) {
 		{
 			"normal",
 
-			[]byte(`{"default_index": 1, "target_indexes":{"1": 2, "2": 3}}`),
+			[]byte(`{"default_target_id": "fd73c1b4-9841-11ec-bc63-df666ba736e8", "target_ids":{"1": "13fce870-9842-11ec-a83f-970e9052be06", "2": "1428ec22-9842-11ec-92d4-2ff427b3bb21"}}`),
 
 			OptionBranch{
-				DefaultIndex: 1,
-				TargetIndexes: map[string]int{
-					"1": 2,
-					"2": 3,
+				DefaultTargetID: uuid.FromStringOrNil("fd73c1b4-9841-11ec-bc63-df666ba736e8"),
+				TargetIDs: map[string]uuid.UUID{
+					"1": uuid.FromStringOrNil("13fce870-9842-11ec-a83f-970e9052be06"),
+					"2": uuid.FromStringOrNil("1428ec22-9842-11ec-92d4-2ff427b3bb21"),
 				},
 			},
 		},
@@ -222,12 +222,12 @@ func Test_marshalOptionConditionCallDigits(t *testing.T) {
 		{
 			"normal",
 
-			[]byte(`{"length": 5, "key": "#", "false_target_index": 3}`),
+			[]byte(`{"length": 5, "key": "#", "false_target_id": "e998777a-9841-11ec-a7e3-3396ba072ea6"}`),
 
 			OptionConditionCallDigits{
-				Length:           5,
-				Key:              "#",
-				FalseTargetIndex: 3,
+				Length:        5,
+				Key:           "#",
+				FalseTargetID: uuid.FromStringOrNil("e998777a-9841-11ec-a7e3-3396ba072ea6"),
 			},
 		},
 	}
@@ -260,11 +260,11 @@ func Test_marshalOptionConditionCallStatus(t *testing.T) {
 		{
 			"normal",
 
-			[]byte(`{"status": "ringing", "false_target_index": 3}`),
+			[]byte(`{"status": "ringing", "false_target_id": "bcc57e5a-9841-11ec-b4ed-df97ae826297"}`),
 
 			OptionConditionCallStatus{
-				Status:           OptionConditionCallStatusStatusRinging,
-				FalseTargetIndex: 3,
+				Status:        OptionConditionCallStatusStatusRinging,
+				FalseTargetID: uuid.FromStringOrNil("bcc57e5a-9841-11ec-b4ed-df97ae826297"),
 			},
 		},
 	}

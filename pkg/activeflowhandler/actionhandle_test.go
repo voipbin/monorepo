@@ -283,8 +283,6 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 
 		activeFlow       *activeflow.ActiveFlow
 		updateActiveFlow *activeflow.ActiveFlow
-
-		expectRes *action.Action
 	}{
 		{
 			"normal",
@@ -292,13 +290,13 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 			&action.Action{
 				ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 				Type:   action.TypeGoto,
-				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":3}`),
+				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
 			},
 			&activeflow.ActiveFlow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":3}`),
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
 				},
 				Actions: []action.Action{
 					{
@@ -308,7 +306,7 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 					{
 						ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 						Type:   action.TypeGoto,
-						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":3}`),
+						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
 					},
 				},
 			},
@@ -317,7 +315,7 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":3}`),
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
 				},
 				Actions: []action.Action{
 					{
@@ -327,13 +325,9 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 					{
 						ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 						Type:   action.TypeGoto,
-						Option: []byte(`{"target_index":0,"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":2}`),
+						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":2}`),
 					},
 				},
-			},
-			&action.Action{
-				ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-				Type: action.TypeAnswer,
 			},
 		},
 	}
@@ -342,8 +336,7 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			// mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.updateActiveFlow).Return(nil)
+			mockDB.EXPECT().ActiveFlowSet(ctx, tt.updateActiveFlow).Return(nil)
 
 			if err := h.actionHandleGoto(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -352,7 +345,7 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 	}
 }
 
-func TestActiveFlowHandleActionGotoLoopStop(t *testing.T) {
+func Test_activeFlowHandleActionGotoLoopOver(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -373,7 +366,6 @@ func TestActiveFlowHandleActionGotoLoopStop(t *testing.T) {
 		activeFlow *activeflow.ActiveFlow
 
 		expectActiveFlow *activeflow.ActiveFlow
-		expectRes        *action.Action
 	}{
 		{
 			"normal",
@@ -381,13 +373,13 @@ func TestActiveFlowHandleActionGotoLoopStop(t *testing.T) {
 			&action.Action{
 				ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 				Type:   action.TypeGoto,
-				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":0}`),
+				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
 			},
 			&activeflow.ActiveFlow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":0}`),
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":0}`),
 				},
 				Actions: []action.Action{
 					{
@@ -397,20 +389,20 @@ func TestActiveFlowHandleActionGotoLoopStop(t *testing.T) {
 					{
 						ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 						Type:   action.TypeGoto,
-						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":0}`),
+						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":0}`),
 					},
 					{
-						ID:   uuid.FromStringOrNil("8568520c-55f2-11ec-868f-3b955c9b9a39"),
-						Type: action.TypeTalk,
+						ID:   uuid.FromStringOrNil("c299daf0-984c-11ec-9288-0b50517b314d"),
+						Type: action.TypeAnswer,
 					},
 				},
 			},
+
 			&activeflow.ActiveFlow{
-				ForwardActionID: uuid.FromStringOrNil("8568520c-55f2-11ec-868f-3b955c9b9a39"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":0}`),
+					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
 				},
 				Actions: []action.Action{
 					{
@@ -420,17 +412,13 @@ func TestActiveFlowHandleActionGotoLoopStop(t *testing.T) {
 					{
 						ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 						Type:   action.TypeGoto,
-						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop":true,"loop_count":0}`),
+						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":0}`),
 					},
 					{
-						ID:   uuid.FromStringOrNil("8568520c-55f2-11ec-868f-3b955c9b9a39"),
-						Type: action.TypeTalk,
+						ID:   uuid.FromStringOrNil("c299daf0-984c-11ec-9288-0b50517b314d"),
+						Type: action.TypeAnswer,
 					},
 				},
-			},
-			&action.Action{
-				ID:   uuid.FromStringOrNil("8568520c-55f2-11ec-868f-3b955c9b9a39"),
-				Type: action.TypeTalk,
 			},
 		},
 	}
@@ -439,10 +427,10 @@ func TestActiveFlowHandleActionGotoLoopStop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
 			if err := h.actionHandleGoto(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
 		})
 	}
 }
@@ -1004,98 +992,6 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 	}
 }
 
-func TestActiveFlowHandleActionGotoNoLoop(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-
-	h := &activeflowHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-	}
-
-	tests := []struct {
-		name string
-
-		callID uuid.UUID
-		act    *action.Action
-
-		activeFlow *activeflow.ActiveFlow
-
-		expectActiveFlow *activeflow.ActiveFlow
-		expectRes        *action.Action
-	}{
-		{
-			"normal",
-			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			&action.Action{
-				ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-				Type:   action.TypeGoto,
-				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
-			},
-			&activeflow.ActiveFlow{
-				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
-				},
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-						Type:   action.TypeGoto,
-						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
-					},
-				},
-			},
-
-			&activeflow.ActiveFlow{
-				ForwardActionID: uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
-				},
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-						Type:   action.TypeGoto,
-						Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
-					},
-				},
-			},
-
-			&action.Action{
-				ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-				Type: action.TypeAnswer,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-
-			// mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.activeFlow, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
-
-			if err := h.actionHandleGoto(ctx, tt.callID, tt.activeFlow); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-		})
-	}
-}
-
 func Test_activeFlowHandleActionBranch(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -1124,13 +1020,13 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 					Type:   action.TypeBranch,
-					Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 				},
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 						Type:   action.TypeBranch,
-						Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+						Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 					},
 					{
 						ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1149,13 +1045,13 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 					Type:   action.TypeBranch,
-					Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 				},
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 						Type:   action.TypeBranch,
-						Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+						Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 					},
 					{
 						ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1175,13 +1071,13 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 					Type:   action.TypeBranch,
-					Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 				},
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 						Type:   action.TypeBranch,
-						Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+						Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 					},
 					{
 						ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1200,13 +1096,13 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 					Type:   action.TypeBranch,
-					Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 				},
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 						Type:   action.TypeBranch,
-						Option: []byte(`{"default_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+						Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 					},
 					{
 						ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
