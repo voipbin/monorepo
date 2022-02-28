@@ -12,7 +12,7 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
 const defaultConferenceTimeout = 86400
@@ -84,13 +84,13 @@ func (h *conferenceHandler) Create(
 		CallIDs:      []uuid.UUID{},
 		RecordingIDs: []uuid.UUID{},
 
-		TMCreate: getCurTime(),
+		TMCreate: dbhandler.GetCurTime(),
 		TMUpdate: defaultTimeStamp,
 		TMDelete: defaultTimeStamp,
 	}
 
 	// set timestamp
-	newCf.TMCreate = getCurTime()
+	newCf.TMCreate = dbhandler.GetCurTime()
 	newCf.TMUpdate = defaultTimeStamp
 	newCf.TMDelete = defaultTimeStamp
 
@@ -100,16 +100,6 @@ func (h *conferenceHandler) Create(
 		return nil, err
 	}
 	promConferenceCreateTotal.WithLabelValues(string(newCf.Type)).Inc()
-
-	// create conference-confbridge
-	confCb := &conferenceconfbridge.ConferenceConfbridge{
-		ConferenceID: newCf.ID,
-		ConfbridgeID: cb.ID,
-	}
-	if err := h.db.ConferenceConfbridgeSet(ctx, confCb); err != nil {
-		log.Errorf("Could not set conference-confbridge. err: %v", err)
-		return nil, err
-	}
 
 	// get created conference and notify
 	cf, err := h.db.ConferenceGet(ctx, id)

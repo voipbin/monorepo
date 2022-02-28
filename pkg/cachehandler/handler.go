@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
 )
 
 // getSerialize returns cached serialized info.
@@ -55,29 +54,6 @@ func (h *handler) ConferenceSet(ctx context.Context, conference *conference.Conf
 	key := fmt.Sprintf("conference:%s", conference.ID)
 
 	if err := h.setSerialize(ctx, key, conference, time.Hour*24); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ConferenceConfbridgeGet returns conference-confbridge
-func (h *handler) ConferenceConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*conferenceconfbridge.ConferenceConfbridge, error) {
-	key := fmt.Sprintf("conference-confbridge:%s", confbridgeID)
-
-	var res conferenceconfbridge.ConferenceConfbridge
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// ConferenceConfbridgeSet sets the conference-confbridge info into the cache.
-func (h *handler) ConferenceConfbridgeSet(ctx context.Context, data *conferenceconfbridge.ConferenceConfbridge) error {
-	key := fmt.Sprintf("conference-confbridge:%s", data.ConfbridgeID)
-
-	if err := h.setSerialize(ctx, key, data, time.Hour*24*7); err != nil {
 		return err
 	}
 

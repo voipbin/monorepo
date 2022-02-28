@@ -208,13 +208,13 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 	}
 
 	// update the cache
-	_ = h.ConferenceUpdateToCache(ctx, cf.ID)
+	_ = h.conferenceUpdateToCache(ctx, cf.ID)
 
 	return nil
 }
 
-// ConferenceGetFromCache returns conference from the cache if possible.
-func (h *handler) ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+// conferenceGetFromCache returns conference from the cache if possible.
+func (h *handler) conferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 
 	// get from cache
 	res, err := h.cache.ConferenceGet(ctx, id)
@@ -225,15 +225,15 @@ func (h *handler) ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*co
 	return res, nil
 }
 
-// ConferenceGet gets conference.
-func (h *handler) ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+// conferenceGetFromDB gets conference.
+func (h *handler) conferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", conferenceSelect)
 
 	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConferenceGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. conferenceGetFromDB. err: %v", err)
 	}
 	defer row.Close()
 
@@ -243,16 +243,16 @@ func (h *handler) ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*confe
 
 	res, err := h.conferenceGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. ConferenceGet, err: %v", err)
+		return nil, fmt.Errorf("could not get call. conferenceGetFromDB, err: %v", err)
 	}
 
 	return res, nil
 }
 
-// ConferenceUpdateToCache gets the conference from the DB and update the cache.
-func (h *handler) ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// conferenceUpdateToCache gets the conference from the DB and update the cache.
+func (h *handler) conferenceUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.ConferenceGetFromDB(ctx, id)
+	res, err := h.conferenceGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -276,12 +276,12 @@ func (h *handler) ConferenceSetToCache(ctx context.Context, conference *conferen
 // ConferenceGet gets conference.
 func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 
-	res, err := h.ConferenceGetFromCache(ctx, id)
+	res, err := h.conferenceGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.ConferenceGetFromDB(ctx, id)
+	res, err = h.conferenceGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -361,6 +361,30 @@ func (h *handler) ConferenceGetsWithType(ctx context.Context, customerID uuid.UU
 	return res, nil
 }
 
+// ConferenceGetByConfbridgeID returns conference of the given confbridgeID
+func (h *handler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where confbridge_id = ?", conferenceSelect)
+
+	row, err := h.db.Query(q, confbridgeID.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ConferenceGet. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.conferenceGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get call. ConferenceGetByConfbridgeID, err: %v", err)
+	}
+
+	return res, nil
+}
+
 // ConferenceAddCallID adds the call id to the conference.
 func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error {
 	// prepare
@@ -376,13 +400,13 @@ func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID)
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, callID.String(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, callID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddCallID. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.ConferenceUpdateToCache(ctx, id)
+	_ = h.conferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -408,13 +432,13 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, callID.String(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, callID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceRemoveCallID. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.ConferenceUpdateToCache(ctx, id)
+	_ = h.conferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -444,13 +468,13 @@ func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail 
 		return fmt.Errorf("could not marshal the postActions. ConferenceSet. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, name, detail, timeout, tmpPreActions, tmpPostActions, getCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, name, detail, timeout, tmpPreActions, tmpPostActions, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSet. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.ConferenceUpdateToCache(ctx, id)
+	_ = h.conferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -466,13 +490,13 @@ func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, status, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetStatus. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.ConferenceUpdateToCache(ctx, id)
+	_ = h.conferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -493,13 +517,13 @@ func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[
 		return fmt.Errorf("dbhandler: Could not marshal. ConferenceSetData. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, tmpData, getCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmpData, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetData. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.ConferenceUpdateToCache(ctx, id)
+	_ = h.conferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -515,13 +539,13 @@ func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, conference.StatusTerminated, getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, conference.StatusTerminated, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceEnd. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.ConferenceUpdateToCache(ctx, id)
+	_ = h.conferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -537,13 +561,13 @@ func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recor
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetRecordID. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.ConferenceUpdateToCache(ctx, id)
+	_ = h.conferenceUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -563,13 +587,13 @@ func (h *handler) ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), getCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddRecordIDs. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.ConferenceUpdateToCache(ctx, id)
+	_ = h.conferenceUpdateToCache(ctx, id)
 
 	return nil
 }

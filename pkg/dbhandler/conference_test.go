@@ -224,6 +224,67 @@ func TestConferenceCreate(t *testing.T) {
 	}
 }
 
+func Test_ConferenceGetByConfbridgeID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name string
+
+		conference       *conference.Conference
+		expectConference *conference.Conference
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("1ac9f480-9861-11ec-8e29-c7820822026e"),
+				CustomerID:   uuid.FromStringOrNil("1afc3ce2-9861-11ec-90b1-d76e949c3805"),
+				ConfbridgeID: uuid.FromStringOrNil("1b280016-9861-11ec-999c-5f70848e711d"),
+				Type:         conference.TypeConference,
+				Name:         "test type conference",
+				Detail:       "test type conference detail",
+			},
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("1ac9f480-9861-11ec-8e29-c7820822026e"),
+				CustomerID:   uuid.FromStringOrNil("1afc3ce2-9861-11ec-90b1-d76e949c3805"),
+				ConfbridgeID: uuid.FromStringOrNil("1b280016-9861-11ec-999c-5f70848e711d"),
+				Type:         conference.TypeConference,
+				Name:         "test type conference",
+				Detail:       "test type conference detail",
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
+				CallIDs:      []uuid.UUID{},
+				RecordingIDs: []uuid.UUID{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
+			if err := h.ConferenceCreate(context.Background(), tt.conference); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.ConferenceGetByConfbridgeID(context.Background(), tt.conference.ConfbridgeID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMCreate = ""
+			if reflect.DeepEqual(tt.expectConference, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectConference, res)
+			}
+		})
+	}
+}
+
 func TestConferenceSetRecordID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -437,7 +498,7 @@ func TestConferenceGetsWithType(t *testing.T) {
 				_ = h.ConferenceCreate(ctx, cf)
 			}
 
-			res, err := h.ConferenceGetsWithType(ctx, tt.customerID, conference.TypeConference, 10, getCurTime())
+			res, err := h.ConferenceGetsWithType(ctx, tt.customerID, conference.TypeConference, 10, GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -493,7 +554,7 @@ func TestConferenceGets(t *testing.T) {
 				_ = h.ConferenceCreate(ctx, cf)
 			}
 
-			res, err := h.ConferenceGets(ctx, tt.customerID, 10, getCurTime())
+			res, err := h.ConferenceGets(ctx, tt.customerID, 10, GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

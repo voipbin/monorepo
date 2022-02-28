@@ -96,18 +96,18 @@ func (mr *MockConferenceHandlerMockRecorder) Join(ctx, conferenceID, callID inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockConferenceHandler)(nil).Join), ctx, conferenceID, callID)
 }
 
-// Joined mocks base method.
-func (m *MockConferenceHandler) Joined(ctx context.Context, conferenceID, callID uuid.UUID) error {
+// JoinedConfbridge mocks base method.
+func (m *MockConferenceHandler) JoinedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Joined", ctx, conferenceID, callID)
+	ret := m.ctrl.Call(m, "JoinedConfbridge", ctx, confbridgeID, callID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Joined indicates an expected call of Joined.
-func (mr *MockConferenceHandlerMockRecorder) Joined(ctx, conferenceID, callID interface{}) *gomock.Call {
+// JoinedConfbridge indicates an expected call of JoinedConfbridge.
+func (mr *MockConferenceHandlerMockRecorder) JoinedConfbridge(ctx, confbridgeID, callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Joined", reflect.TypeOf((*MockConferenceHandler)(nil).Joined), ctx, conferenceID, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JoinedConfbridge", reflect.TypeOf((*MockConferenceHandler)(nil).JoinedConfbridge), ctx, confbridgeID, callID)
 }
 
 // Leave mocks base method.
@@ -124,18 +124,18 @@ func (mr *MockConferenceHandlerMockRecorder) Leave(ctx, id, callID interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leave", reflect.TypeOf((*MockConferenceHandler)(nil).Leave), ctx, id, callID)
 }
 
-// Leaved mocks base method.
-func (m *MockConferenceHandler) Leaved(ctx context.Context, id, callID uuid.UUID) error {
+// LeavedConfbridge mocks base method.
+func (m *MockConferenceHandler) LeavedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Leaved", ctx, id, callID)
+	ret := m.ctrl.Call(m, "LeavedConfbridge", ctx, confbridgeID, callID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Leaved indicates an expected call of Leaved.
-func (mr *MockConferenceHandlerMockRecorder) Leaved(ctx, id, callID interface{}) *gomock.Call {
+// LeavedConfbridge indicates an expected call of LeavedConfbridge.
+func (mr *MockConferenceHandlerMockRecorder) LeavedConfbridge(ctx, confbridgeID, callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockConferenceHandler)(nil).Leaved), ctx, id, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LeavedConfbridge", reflect.TypeOf((*MockConferenceHandler)(nil).LeavedConfbridge), ctx, confbridgeID, callID)
 }
 
 // Terminate mocks base method.

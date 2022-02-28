@@ -13,7 +13,6 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 )
 
@@ -25,8 +24,7 @@ type DBHandler interface {
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error
 	ConferenceEnd(ctx context.Context, id uuid.UUID) error
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
-	ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
-	ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
+	ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error)
 	ConferenceGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conference.Conference, error)
 	ConferenceGetsWithType(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error)
 	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
@@ -34,11 +32,6 @@ type DBHandler interface {
 	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
 	ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
-	ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error
-	ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error
-
-	ConferenceConfbridgeSet(ctx context.Context, data *conferenceconfbridge.ConferenceConfbridge) error
-	ConferenceConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*conferenceconfbridge.ConferenceConfbridge, error)
 }
 
 // handler database handler
@@ -65,8 +58,8 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	return h
 }
 
-// getCurTime return current utc time string
-func getCurTime() string {
+// GetCurTime return current utc time string
+func GetCurTime() string {
 	now := time.Now().UTC().String()
 	res := strings.TrimSuffix(now, " +0000 UTC")
 

@@ -97,7 +97,6 @@ func TestCreate(t *testing.T) {
 			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any(), confbridgeType).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), gomock.Any(), fmflow.TypeConference, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().ConferenceConfbridgeSet(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectRes.CustomerID, conference.EventTypeConferenceCreated, gomock.Any())
 			if tt.timeout > 0 {
