@@ -2,10 +2,10 @@ package actionhandler
 
 import (
 	"context"
-	"encoding/json"
 	reflect "reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -25,6 +25,21 @@ func Test_generateFlowActions(t *testing.T) {
 	}{
 		{
 			"normal",
+			[]action.Action{
+				{
+					ID:   uuid.FromStringOrNil("1a17219e-984c-11ec-8ae0-8fa990fecf22"),
+					Type: action.TypeAnswer,
+				},
+			},
+			[]action.Action{
+				{
+					ID:   uuid.FromStringOrNil("1a17219e-984c-11ec-8ae0-8fa990fecf22"),
+					Type: action.TypeAnswer,
+				},
+			},
+		},
+		{
+			"has no action id",
 			[]action.Action{
 				{
 					Type: action.TypeAnswer,
@@ -48,7 +63,7 @@ func Test_generateFlowActions(t *testing.T) {
 				},
 				{
 					Type:   action.TypeGoto,
-					Option: []byte(`{"target_index":1}`),
+					Option: []byte(`{"target_id":"4dfdd5e0-984a-11ec-ae86-efa09978823e"}`),
 				},
 			},
 			[]action.Action{
@@ -61,7 +76,7 @@ func Test_generateFlowActions(t *testing.T) {
 				},
 				{
 					Type:   action.TypeGoto,
-					Option: []byte(`{"target_index":1}`),
+					Option: []byte(`{"target_id":"4dfdd5e0-984a-11ec-ae86-efa09978823e"}`),
 				},
 			},
 		},
@@ -77,7 +92,7 @@ func Test_generateFlowActions(t *testing.T) {
 				},
 				{
 					Type:   action.TypeBranch,
-					Option: []byte(`{"forward_index": 1, "target_indexes":{"1": 0}}`),
+					Option: []byte(`{"default_target_id": "962de9f4-984a-11ec-a6b5-bba220315f29", "target_ids":{"1": "85f8a600-984a-11ec-b59a-dbe5b0c51dec"}}`),
 				},
 			},
 			[]action.Action{
@@ -90,35 +105,19 @@ func Test_generateFlowActions(t *testing.T) {
 				},
 				{
 					Type:   action.TypeBranch,
-					Option: []byte(`{"forward_index":1,"target_indexes":{"1":0},"target_ids":{}}`),
+					Option: []byte(`{"default_target_id": "962de9f4-984a-11ec-a6b5-bba220315f29", "target_ids":{"1": "85f8a600-984a-11ec-b59a-dbe5b0c51dec"}}`),
 				},
 			},
 		},
 		{
-			"branch has many index",
+			"branch has many ids",
 			[]action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
 				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world1"}`),
-				},
-				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world2"}`),
-				},
-				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world3"}`),
-				},
-				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world4"}`),
-				},
-				{
 					Type:   action.TypeBranch,
-					Option: []byte(`{"forward_index": 1, "target_indexes":{"1": 0,"2": 1,"3": 2}}`),
+					Option: []byte(`{"default_target_id":"ea4f362c-984b-11ec-9bf3-976297bf44b8","target_ids":{"1": "f12edd8a-984b-11ec-8d44-0fadbb919954", "2": "f151020c-984b-11ec-ac5d-238f01404820", "3": "f17129b0-984b-11ec-9174-3b062faf6b35"}}`),
 				},
 			},
 			[]action.Action{
@@ -126,24 +125,8 @@ func Test_generateFlowActions(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world1"}`),
-				},
-				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world2"}`),
-				},
-				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world3"}`),
-				},
-				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world4"}`),
-				},
-				{
 					Type:   action.TypeBranch,
-					Option: []byte(`{"forward_index":1,"target_indexes":{"1": 0,"2": 1,"3": 2},"target_ids":{}}`),
+					Option: []byte(`{"default_target_id":"ea4f362c-984b-11ec-9bf3-976297bf44b8","target_ids":{"1": "f12edd8a-984b-11ec-8d44-0fadbb919954", "2": "f151020c-984b-11ec-ac5d-238f01404820", "3": "f17129b0-984b-11ec-9174-3b062faf6b35"}}`),
 				},
 			},
 		},
@@ -159,55 +142,9 @@ func Test_generateFlowActions(t *testing.T) {
 			}
 
 			for i, a := range res {
-				tt.expectRes[i].ID = a.ID
-
-				// type goto
-				if a.Type == action.TypeGoto {
-					var option action.OptionGoto
-					if err := json.Unmarshal(tt.expectRes[i].Option, &option); err != nil {
-						t.Errorf("Wrong match. expect: ok. err: %v", err)
-					}
-
-					var resOpt action.OptionGoto
-					if err := json.Unmarshal(a.Option, &resOpt); err != nil {
-						t.Errorf("Wrong match. expect: ok. err: %v", err)
-					}
-
-					option.TargetID = resOpt.TargetID
-					tmp, err := json.Marshal(option)
-					if err != nil {
-						t.Errorf("Wrong match. expect: ok. err: %v", err)
-					}
-
-					tt.expectRes[i].Option = tmp
+				if tt.expectRes[i].ID == uuid.Nil {
+					tt.expectRes[i].ID = a.ID
 				}
-
-				// type branch
-				if a.Type == action.TypeBranch {
-					var option action.OptionBranch
-					if err := json.Unmarshal(tt.expectRes[i].Option, &option); err != nil {
-						t.Errorf("Wrong match. expect: ok. err: %v", err)
-					}
-
-					var resOpt action.OptionBranch
-					if err := json.Unmarshal(a.Option, &resOpt); err != nil {
-						t.Errorf("Wrong match. expect: ok. err: %v", err)
-					}
-
-					option.DefaultID = resOpt.DefaultID
-
-					for j, targetID := range resOpt.TargetIDs {
-						option.TargetIDs[j] = targetID
-					}
-
-					tmp, err := json.Marshal(option)
-					if err != nil {
-						t.Errorf("Wrong match. expect: ok. err: %v", err)
-					}
-
-					tt.expectRes[i].Option = tmp
-				}
-
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {

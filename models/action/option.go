@@ -23,10 +23,8 @@ type OptionAnswer struct {
 
 // OptionBranch defines action branch's option.
 type OptionBranch struct {
-	DefaultIndex  int                  `json:"default_index"`  // default index for if the input dtmf does not match any of branch targets. used for forward_id generate
-	DefaultID     uuid.UUID            `json:"default_id"`     // default id for if the input dtmf does not match any of branch targets.
-	TargetIndexes map[string]int       `json:"target_indexes"` // branch target indexes. used for taget_ids generate
-	TargetIDs     map[string]uuid.UUID `json:"target_ids"`     // branch target ids.
+	DefaultTargetID uuid.UUID            `json:"default_target_id"` // default id for the input dtmf does not match any of branch targets.
+	TargetIDs       map[string]uuid.UUID `json:"target_ids"`        // branch target ids.
 }
 
 // OptionConfbridgeJoin defines action confbridge_join's option.
@@ -39,16 +37,14 @@ type OptionConditionCallDigits struct {
 	Length int    `json:"length"` // digit length for finish
 	Key    string `json:"key"`    // digit key for finish
 
-	FalseTargetID    uuid.UUID `json:"false_target_id"`    // target id for false case.
-	FalseTargetIndex int       `json:"false_target_index"` // target index for false case. used for false taget id generate
+	FalseTargetID uuid.UUID `json:"false_target_id"` // target id for false case.
 }
 
 // OptionConditionCallStatus defines action condition_call_status's option.
 type OptionConditionCallStatus struct {
 	Status OptionConditionCallStatusStatus `json:"status"` // call's status
 
-	FalseTargetID    uuid.UUID `json:"false_target_id"`    // target id for false case.
-	FalseTargetIndex int       `json:"false_target_index"` // target index for false case. used for false taget id generate
+	FalseTargetID uuid.UUID `json:"false_target_id"` // target id for false case.
 }
 
 // OptionConferenceJoin defines action conference_join's option.
@@ -100,10 +96,8 @@ type OptionExternalMediaStop struct {
 
 // OptionGoto defines action goto's option
 type OptionGoto struct {
-	TargetIndex int       `json:"target_index"` // taget's index of flow aray for go to.
-	TargetID    uuid.UUID `json:"target_id"`    // target's action id in the flow array for go to.
-	Loop        bool      `json:"loop"`         // if it's true, do the count goto.
-	LoopCount   int       `json:"loop_count"`   // loop count.
+	TargetID  uuid.UUID `json:"target_id"`  // target's action id in the flow array for go to.
+	LoopCount int       `json:"loop_count"` // loop count.
 }
 
 // OptionHangup defines action hangup's option.

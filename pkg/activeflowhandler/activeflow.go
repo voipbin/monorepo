@@ -332,14 +332,20 @@ func (h *activeflowHandler) getNextAction(ctx context.Context, callID uuid.UUID,
 	// check the fowrard action id.
 	if af.ForwardActionID != action.IDEmpty {
 		log.Debug("The forward action ID exist.")
-		for _, act := range af.Actions {
-			if act.ID == af.ForwardActionID {
-				log.WithField("action", act).Debugf("Found move action.")
-				return &act, nil
-			}
+		act := getAction(af.Actions, af.ForwardActionID)
+		if act == nil {
+			log.WithField("actions", af.Actions).Errorf("Could not find the forward action in the actions. forward_action_id: %v", af.ForwardActionID)
+			return nil, fmt.Errorf("could not find move action in the actions array")
 		}
-		log.WithField("actions", af.Actions).Errorf("Could not find forward action in the actions. forward_action_id: %v", af.ForwardActionID)
-		return nil, fmt.Errorf("could not find move action in the actions array")
+		return act, nil
+	} else if af.CurrentAction.NextID != action.IDEmpty {
+		log.Debug("The next action ID exist.")
+		act := getAction(af.Actions, af.CurrentAction.NextID)
+		if act == nil {
+			log.WithField("actions", af.Actions).Errorf("Could not find the next action in the actions. next_action_id: %v", af.CurrentAction.NextID)
+			return nil, fmt.Errorf("could not find move action in the actions array")
+		}
+		return act, nil
 	}
 
 	// get current action's index
@@ -364,4 +370,14 @@ func (h *activeflowHandler) getNextAction(ctx context.Context, callID uuid.UUID,
 
 	res := af.Actions[idx+1]
 	return &res, nil
+}
+
+// getAction returns give id's action from the actions
+func getAction(actions []action.Action, id uuid.UUID) *action.Action {
+	for _, act := range actions {
+		if act.ID == id {
+			return &act
+		}
+	}
+	return nil
 }

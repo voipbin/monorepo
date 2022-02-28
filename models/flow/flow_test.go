@@ -74,7 +74,7 @@ func TestMarshalActionEcho(t *testing.T) {
 				Type: action.TypeEcho,
 			},
 			nil,
-			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","type":"echo"}`,
+			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}`,
 		},
 		{
 			"have option duration",
@@ -85,7 +85,7 @@ func TestMarshalActionEcho(t *testing.T) {
 			&action.OptionEcho{
 				Duration: 180,
 			},
-			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","type":"echo","option":{"duration":180}}`,
+			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo","option":{"duration":180}}`,
 		},
 	}
 

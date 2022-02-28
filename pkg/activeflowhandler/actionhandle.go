@@ -69,46 +69,6 @@ func (h *activeflowHandler) activeFlowHandleActionGotoLoop(ctx context.Context, 
 	return nil
 }
 
-// activeFlowHandleActionGotoNext handles goto action's no loop condition.
-// it updates the loop_count.
-func (h *activeflowHandler) activeFlowHandleActionGotoLoopStop(ctx context.Context, af *activeflow.ActiveFlow) error {
-	log := logrus.New().WithFields(
-		logrus.Fields{
-			"func":              "activeFlowHandleActionGotoUpdate",
-			"call_id":           af.CallID,
-			"current_action_id": af.CurrentAction.ID,
-		},
-	)
-
-	// find goto action
-	idx := 0
-	found := false
-	for i, a := range af.Actions {
-		if a.ID == af.CurrentAction.ID {
-			idx = i
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("current action not found")
-	}
-
-	if idx+1 >= len(af.Actions) {
-		return fmt.Errorf("out of action range")
-	}
-
-	targetAction := af.Actions[idx+1]
-	af.ForwardActionID = targetAction.ID
-	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow. err: %v", err)
-		return err
-	}
-
-	return nil
-}
-
 // actionHandlePatch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
 func (h *activeflowHandler) actionHandlePatch(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
@@ -427,29 +387,15 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, callID uuid.UU
 		return err
 	}
 
-	if !opt.Loop {
-		af.ForwardActionID = opt.TargetID
-		if err := h.db.ActiveFlowSet(ctx, af); err != nil {
-			log.Errorf("Could not update the active flow. err: %v", err)
-			return err
-		}
+	if opt.LoopCount <= 0 {
+		log.Debugf("Loop over. Move to the next action. loop_count: %d", opt.LoopCount)
 		return nil
 	}
 
-	if opt.LoopCount > 0 {
-		if err := h.activeFlowHandleActionGotoLoop(ctx, af); err != nil {
-			log.Errorf("Could not update the active flow for action goto. err: %v", err)
-			return err
-		}
-		return nil
-	}
-
-	// loop count is 0. no more loop.
-	if err := h.activeFlowHandleActionGotoLoopStop(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow for action goto no loop. err: %v", err)
+	if err := h.activeFlowHandleActionGotoLoop(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow for action goto. err: %v", err)
 		return err
 	}
-
 	return nil
 }
 
@@ -687,7 +633,7 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, callID uuid.
 
 	targetID, ok := opt.TargetIDs[digits]
 	if !ok {
-		targetID = opt.DefaultID
+		targetID = opt.DefaultTargetID
 		log.Debugf("Input digit is not listed in the branch. digit: %s, default_target_id: %s", digits, targetID)
 	}
 
