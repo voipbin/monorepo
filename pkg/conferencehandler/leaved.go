@@ -12,24 +12,37 @@ import (
 
 // leaved handles event the channel has left from the bridge
 // when the channel has left from the conference bridge, this func will be fired.
-func (h *conferenceHandler) Leaved(ctx context.Context, id uuid.UUID, callID uuid.UUID) error {
+func (h *conferenceHandler) LeavedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error {
 
 	log := logrus.WithFields(logrus.Fields{
-		"conference_id": id,
+		"func":          "LeavedConfbridge",
+		"conference_id": confbridgeID,
 		"call_id":       callID,
 	})
 
-	if errRemove := h.db.ConferenceRemoveCallID(ctx, id, callID); errRemove != nil {
-		log.Errorf("Could not remove the callID from the conference. err: %v", errRemove)
-		return errRemove
-	}
-
-	// get conference info
-	cf, err := h.db.ConferenceGet(ctx, id)
+	// get conference
+	cf, err := h.db.ConferenceGetByConfbridgeID(ctx, confbridgeID)
 	if err != nil {
 		log.Errorf("Could not get conference. err: %v", err)
 		return err
 	}
+	log = log.WithField("conference_id", cf.ID)
+	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
+
+	// remove call from the conference
+	if errRemove := h.db.ConferenceRemoveCallID(ctx, confbridgeID, callID); errRemove != nil {
+		log.Errorf("Could not remove the callID from the conference. err: %v", errRemove)
+		return errRemove
+	}
+
+	// get updated conference
+	cf, err = h.db.ConferenceGetByConfbridgeID(ctx, confbridgeID)
+	if err != nil {
+		log.Errorf("Could not get conference. err: %v", err)
+		return err
+	}
+	log = log.WithField("conference_id", cf.ID)
+	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, cf.CustomerID, conference.EventTypeConferenceUpdated, cf)
 
 	switch cf.Type {

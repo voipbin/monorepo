@@ -4,8 +4,6 @@ package conferencehandler
 
 import (
 	"context"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -43,9 +41,9 @@ type ConferenceHandler interface {
 	) (*conference.Conference, error)
 
 	Join(ctx context.Context, conferenceID, callID uuid.UUID) error
-	Joined(ctx context.Context, conferenceID, callID uuid.UUID) error
+	JoinedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error
 	Leave(ctx context.Context, id, callID uuid.UUID) error
-	Leaved(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
+	LeavedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error
 	Terminate(ctx context.Context, id uuid.UUID) error
 }
 
@@ -113,28 +111,4 @@ func NewConferenceHandler(req requesthandler.RequestHandler, notify notifyhandle
 	}
 
 	return h
-}
-
-// // generateBridgeName generates the bridge name for conference
-// // all of conference created bridge must use this function for bridge's name.
-// func generateBridgeName(referenceType bridge.ReferenceType, conferenceID uuid.UUID) string {
-// 	res := fmt.Sprintf("reference_type=%s,reference_id=%s", referenceType, conferenceID.String())
-
-// 	return res
-// }
-
-// isContextConf returns true if
-//nolint:unused,deadcode // this is ok
-func isContextConf(contextType string) bool {
-	tmp := strings.Split(contextType, "-")[0]
-
-	return tmp == "conf"
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

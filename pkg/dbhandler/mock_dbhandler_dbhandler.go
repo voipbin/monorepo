@@ -11,7 +11,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	conferenceconfbridge "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
@@ -66,35 +65,6 @@ func (mr *MockDBHandlerMockRecorder) ConferenceAddRecordIDs(ctx, id, recordID in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddRecordIDs", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddRecordIDs), ctx, id, recordID)
 }
 
-// ConferenceConfbridgeGet mocks base method.
-func (m *MockDBHandler) ConferenceConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*conferenceconfbridge.ConferenceConfbridge, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceConfbridgeGet", ctx, confbridgeID)
-	ret0, _ := ret[0].(*conferenceconfbridge.ConferenceConfbridge)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferenceConfbridgeGet indicates an expected call of ConferenceConfbridgeGet.
-func (mr *MockDBHandlerMockRecorder) ConferenceConfbridgeGet(ctx, confbridgeID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceConfbridgeGet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceConfbridgeGet), ctx, confbridgeID)
-}
-
-// ConferenceConfbridgeSet mocks base method.
-func (m *MockDBHandler) ConferenceConfbridgeSet(ctx context.Context, data *conferenceconfbridge.ConferenceConfbridge) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceConfbridgeSet", ctx, data)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ConferenceConfbridgeSet indicates an expected call of ConferenceConfbridgeSet.
-func (mr *MockDBHandlerMockRecorder) ConferenceConfbridgeSet(ctx, data interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceConfbridgeSet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceConfbridgeSet), ctx, data)
-}
-
 // ConferenceCreate mocks base method.
 func (m *MockDBHandler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
 	m.ctrl.T.Helper()
@@ -138,34 +108,19 @@ func (mr *MockDBHandlerMockRecorder) ConferenceGet(ctx, id interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGet), ctx, id)
 }
 
-// ConferenceGetFromCache mocks base method.
-func (m *MockDBHandler) ConferenceGetFromCache(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+// ConferenceGetByConfbridgeID mocks base method.
+func (m *MockDBHandler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceGetFromCache", ctx, id)
+	ret := m.ctrl.Call(m, "ConferenceGetByConfbridgeID", ctx, confbridgeID)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConferenceGetFromCache indicates an expected call of ConferenceGetFromCache.
-func (mr *MockDBHandlerMockRecorder) ConferenceGetFromCache(ctx, id interface{}) *gomock.Call {
+// ConferenceGetByConfbridgeID indicates an expected call of ConferenceGetByConfbridgeID.
+func (mr *MockDBHandlerMockRecorder) ConferenceGetByConfbridgeID(ctx, confbridgeID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetFromCache), ctx, id)
-}
-
-// ConferenceGetFromDB mocks base method.
-func (m *MockDBHandler) ConferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceGetFromDB", ctx, id)
-	ret0, _ := ret[0].(*conference.Conference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferenceGetFromDB indicates an expected call of ConferenceGetFromDB.
-func (mr *MockDBHandlerMockRecorder) ConferenceGetFromDB(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetFromDB), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGetByConfbridgeID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceGetByConfbridgeID), ctx, confbridgeID)
 }
 
 // ConferenceGets mocks base method.
@@ -266,32 +221,4 @@ func (m *MockDBHandler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, s
 func (mr *MockDBHandlerMockRecorder) ConferenceSetStatus(ctx, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetStatus", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetStatus), ctx, id, status)
-}
-
-// ConferenceSetToCache mocks base method.
-func (m *MockDBHandler) ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceSetToCache", ctx, conference)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ConferenceSetToCache indicates an expected call of ConferenceSetToCache.
-func (mr *MockDBHandlerMockRecorder) ConferenceSetToCache(ctx, conference interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetToCache", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetToCache), ctx, conference)
-}
-
-// ConferenceUpdateToCache mocks base method.
-func (m *MockDBHandler) ConferenceUpdateToCache(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceUpdateToCache", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ConferenceUpdateToCache indicates an expected call of ConferenceUpdateToCache.
-func (mr *MockDBHandlerMockRecorder) ConferenceUpdateToCache(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).ConferenceUpdateToCache), ctx, id)
 }

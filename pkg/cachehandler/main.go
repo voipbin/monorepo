@@ -1,6 +1,6 @@
 package cachehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_cachehandler_cachehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_cachehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferenceconfbridge"
 )
 
 type handler struct {
@@ -26,9 +25,6 @@ type CacheHandler interface {
 
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceSet(ctx context.Context, conference *conference.Conference) error
-
-	ConferenceConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*conferenceconfbridge.ConferenceConfbridge, error)
-	ConferenceConfbridgeSet(ctx context.Context, data *conferenceconfbridge.ConferenceConfbridge) error
 }
 
 // NewHandler creates DBHandler

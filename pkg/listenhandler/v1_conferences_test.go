@@ -186,7 +186,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","customer_id":"2375a978-7f4b-11ec-81ed-73f63efd9dd8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","customer_id":"2375a978-7f4b-11ec-81ed-73f63efd9dd8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -309,7 +309,7 @@ func TestProcessV1ConferencesIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -376,7 +376,7 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"11f067f6-3bf3-11ec-9bca-877deb76639d","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"11f067f6-3bf3-11ec-9bca-877deb76639d","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
