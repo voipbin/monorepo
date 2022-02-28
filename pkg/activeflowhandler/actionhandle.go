@@ -183,17 +183,17 @@ func (h *activeflowHandler) actionHandlePatchFlow(ctx context.Context, callID uu
 	return nil
 }
 
-// actionHandleConditionDigits handles action condition_digits with active flow.
+// actionHandleConditionCallDigits handles action condition_call_digits with active flow.
 // it checks the received digits and sets the forward action id.
-func (h *activeflowHandler) actionHandleConditionDigits(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "activeFlowHandleActionConditionDigits",
+		"func":              "actionHandleConditionCallDigits",
 		"call_id":           callID,
 		"current_action_id": af.CurrentAction.ID,
 	})
 	act := &af.CurrentAction
 
-	var opt action.OptionConditionDigits
+	var opt action.OptionConditionCallDigits
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return err
@@ -214,6 +214,48 @@ func (h *activeflowHandler) actionHandleConditionDigits(ctx context.Context, cal
 		return nil
 	} else if opt.Key != "" && strings.Contains(digits, opt.Key) {
 		log.Debugf("Condition matched key. key: %s", opt.Key)
+		return nil
+	}
+
+	// failed
+	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
+	af.ForwardActionID = opt.FalseTargetID
+	if err := h.db.ActiveFlowSet(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// actionHandleConditionCallStatus handles action condition_call_status with active flow.
+// it checks the call's status and sets the forward action id.
+func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "actionHandleConditionCallStatus",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	act := &af.CurrentAction
+
+	var opt action.OptionConditionCallStatus
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", err)
+		return err
+	}
+	log.WithField("option", opt).Debugf("Detail option.")
+
+	// gets the call
+	c, err := h.reqHandler.CMV1CallGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get call. err: %v", err)
+		return err
+	}
+	log.WithField("call", c).Debugf("Received call info. call_id: %s", callID)
+
+	// match the condition
+	if string(opt.Status) == string(c.Status) {
+		log.Debugf("Condtion matched status. status: %s", opt.Status)
 		return nil
 	}
 
