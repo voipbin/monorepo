@@ -32,7 +32,7 @@ func (h *actionHandler) GenerateFlowActions(ctx context.Context, actions []actio
 	// parse the flow change options
 	for i, a := range res {
 		switch a.Type {
-		case action.TypeConditionDigits:
+		case action.TypeConditionCallDigits:
 			tmp, err := h.generateFlowActionsConditionDigits(ctx, res, &a)
 			if err != nil {
 				log.Errorf("Could not parse the branch action. err: %v", err)
@@ -152,7 +152,7 @@ func (h *actionHandler) generateFlowActionsConditionDigits(ctx context.Context, 
 		"func": "generateFlowActionsParseConditionDigits",
 	})
 
-	var opt action.OptionConditionDigits
+	var opt action.OptionConditionCallDigits
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return nil, err

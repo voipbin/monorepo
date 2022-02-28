@@ -170,8 +170,14 @@ func (h *activeflowHandler) executeAction(ctx context.Context, callID uuid.UUID,
 		}
 		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
-	case action.TypeConditionDigits:
-		if errHandle := h.actionHandleConditionDigits(ctx, callID, af); errHandle != nil {
+	case action.TypeConditionCallDigits:
+		if errHandle := h.actionHandleConditionCallDigits(ctx, callID, af); errHandle != nil {
+			return nil, err
+		}
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
+
+	case action.TypeConditionCallStatus:
+		if errHandle := h.actionHandleConditionCallStatus(ctx, callID, af); errHandle != nil {
 			return nil, err
 		}
 		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)

@@ -10,15 +10,6 @@ type OptionAgentCall struct {
 	AgentID uuid.UUID `json:"agent_id"` // target agent id.
 }
 
-// OptionAMDMachineHandleType defines
-type OptionAMDMachineHandleType string
-
-// list of OptionAMDMachineHandleType
-const (
-	OptionAMDMachineHandleTypeHangup   OptionAMDMachineHandleType = "hangup"
-	OptionAMDMachineHandleTypeContinue OptionAMDMachineHandleType = "continue"
-)
-
 // OptionAMD defines action amd's option.
 type OptionAMD struct {
 	MachineHandle OptionAMDMachineHandleType `json:"machine_handle"` // hangup,continue if the machine answered a call
@@ -43,10 +34,18 @@ type OptionConfbridgeJoin struct {
 	ConfbridgeID uuid.UUID `json:"confbridge_id"`
 }
 
-// OptionConditionDigits defines action condition_digits's option.
-type OptionConditionDigits struct {
+// OptionConditionCallDigits defines action condition_call_digits's option.
+type OptionConditionCallDigits struct {
 	Length int    `json:"length"` // digit length for finish
 	Key    string `json:"key"`    // digit key for finish
+
+	FalseTargetID    uuid.UUID `json:"false_target_id"`    // target id for false case.
+	FalseTargetIndex int       `json:"false_target_index"` // target index for false case. used for false taget id generate
+}
+
+// OptionConditionCallStatus defines action condition_call_status's option.
+type OptionConditionCallStatus struct {
+	Status OptionConditionCallStatusStatus `json:"status"` // call's status
 
 	FalseTargetID    uuid.UUID `json:"false_target_id"`    // target id for false case.
 	FalseTargetIndex int       `json:"false_target_index"` // target index for false case. used for false taget id generate
