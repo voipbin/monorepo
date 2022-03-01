@@ -1121,8 +1121,9 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().CMV1CallGetDigits(gomock.Any(), tt.callID).Return(tt.responseDigits, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
+			mockReq.EXPECT().CMV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
+			mockReq.EXPECT().CMV1CallSetDigits(ctx, tt.callID, "").Return(nil)
+			mockDB.EXPECT().ActiveFlowSet(ctx, tt.expectActiveFlow).Return(nil)
 
 			if err := h.actionHandleBranch(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. exepct: ok, got: %v", err)
