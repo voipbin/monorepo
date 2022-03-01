@@ -631,6 +631,13 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, callID uuid.
 		return err
 	}
 
+	// send digits reset
+	if errDigits := h.reqHandler.CMV1CallSetDigits(ctx, callID, ""); errDigits != nil {
+		// we got the error here, but this is minor issue.
+		// just write the log.
+		log.Errorf("Could not reset the call digits. err: %v", errDigits)
+	}
+
 	targetID, ok := opt.TargetIDs[digits]
 	if !ok {
 		targetID = opt.DefaultTargetID
