@@ -471,6 +471,14 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, act *
 		}
 	}
 
+	// answer the call if not answered
+	if c.Status != call.StatusProgressing {
+		if errAnswer := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); errAnswer != nil {
+			log.Errorf("Could not answer the call. err: %v", errAnswer)
+			return fmt.Errorf("could not answer the call. err: %v", errAnswer)
+		}
+	}
+
 	// send request for create wav file
 	filename, err := h.reqHandler.TMV1SpeecheCreate(ctx, c.ID, option.Text, option.Gender, option.Language, 10000)
 	if err != nil {

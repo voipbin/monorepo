@@ -192,6 +192,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1CallsIDDigitsGet(ctx, m)
 		requestType = "/v1/calls/digits"
 
+	// Get /calls/<id>/digits
+	case regV1CallsIDDigits.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDDigitsSet(ctx, m)
+		requestType = "/v1/calls/digits"
+
 	// POST /calls/<id>/action-next
 	case regV1CallsIDActionNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDActionNextPost(ctx, m)

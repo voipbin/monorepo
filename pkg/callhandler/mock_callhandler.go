@@ -267,6 +267,20 @@ func (mr *MockCallHandlerMockRecorder) DigitsGet(ctx, id interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DigitsGet", reflect.TypeOf((*MockCallHandler)(nil).DigitsGet), ctx, id)
 }
 
+// DigitsSet mocks base method.
+func (m *MockCallHandler) DigitsSet(ctx context.Context, id uuid.UUID, digits string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DigitsSet", ctx, id, digits)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DigitsSet indicates an expected call of DigitsSet.
+func (mr *MockCallHandlerMockRecorder) DigitsSet(ctx, id, digits interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DigitsSet", reflect.TypeOf((*MockCallHandler)(nil).DigitsSet), ctx, id, digits)
+}
+
 // ExternalMediaStart mocks base method.
 func (m *MockCallHandler) ExternalMediaStart(ctx context.Context, callID uuid.UUID, isCallMedia bool, externalHost, encapsulation, transport, connectionType, format, direction string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()

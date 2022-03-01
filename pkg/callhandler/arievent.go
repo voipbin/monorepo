@@ -45,7 +45,7 @@ func (h *callHandler) ARIChannelDtmfReceived(ctx context.Context, cn *channel.Ch
 		return nil
 	}
 
-	if err := h.DTMFReceived(cn, digit, duration); err != nil {
+	if err := h.digitsReceived(cn, digit, duration); err != nil {
 		return err
 	}
 

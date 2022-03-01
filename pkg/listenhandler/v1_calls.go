@@ -521,3 +521,38 @@ func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *rabbit
 
 	return res, nil
 }
+
+// processV1CallsIDDigitsSet handles /v1/calls/<id>/digits POST request
+func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1CallsIDActionNextPost.")
+
+	var req request.V1DataCallsIDDigitsPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+	log.WithFields(logrus.Fields{
+		"request": req,
+	}).Debugf("Parsed request data.")
+
+	if err := h.callHandler.DigitsSet(ctx, id, req.Digits); err != nil {
+		log.Errorf("Could not get call's digits. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
