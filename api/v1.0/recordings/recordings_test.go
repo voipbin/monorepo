@@ -9,11 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -33,7 +33,7 @@ func TestRecordingsIDGET(t *testing.T) {
 	type test struct {
 		name      string
 		customer  cscustomer.Customer
-		recording *recording.Recording
+		recording *cmrecording.WebhookMessage
 	}
 
 	tests := []test{
@@ -42,7 +42,7 @@ func TestRecordingsIDGET(t *testing.T) {
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
-			&recording.Recording{
+			&cmrecording.WebhookMessage{
 				ID: uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929"),
 			},
 		},
