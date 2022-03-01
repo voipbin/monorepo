@@ -118,12 +118,8 @@ type DBHandler interface {
 	RecordingCreate(ctx context.Context, c *recording.Recording) error
 	RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordingGetByFilename(ctx context.Context, filename string) (*recording.Recording, error)
-	RecordingGetFromCache(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
-	RecordingGetFromDB(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)
 	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status, timestamp string) error
-	RecordingSetToCache(ctx context.Context, r *recording.Recording) error
-	RecordingUpdateToCache(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler

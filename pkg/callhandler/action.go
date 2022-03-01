@@ -556,15 +556,16 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 	}
 
 	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,recording_name=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
+	appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,recording_name=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d,beep_start=%v",
 		ContextRecording,
 		c.ID,
 		recordingID,
 		recordingName,
-		option.Format,
+		format,
 		option.EndOfSilence,
 		option.EndOfKey,
 		option.Duration,
+		option.BeepStart,
 	)
 
 	// create a snoop channel
