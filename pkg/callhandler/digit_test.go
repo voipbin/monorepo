@@ -60,7 +60,7 @@ func TestDTMFReceivedNotActionDTMFReceived(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallDTMFSet(gomock.Any(), tt.call.ID, tt.digit).Return(nil)
 
-			if err := h.DTMFReceived(tt.channel, tt.digit, tt.duration); err != nil {
+			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -136,7 +136,7 @@ func TestDTMFReceivedContinue(t *testing.T) {
 			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return(tt.savedDTMFs, nil)
 			mockDB.EXPECT().CallDTMFSet(gomock.Any(), tt.call.ID, tt.savedDTMFs+tt.digit).Return(nil)
 
-			if err := h.DTMFReceived(tt.channel, tt.digit, tt.duration); err != nil {
+			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -232,7 +232,7 @@ func TestDTMFReceivedStop(t *testing.T) {
 			mockDB.EXPECT().CallDTMFSet(gomock.Any(), tt.call.ID, tt.savedDTMFs+tt.digit).Return(nil)
 			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false)
 
-			if err := h.DTMFReceived(tt.channel, tt.digit, tt.duration); err != nil {
+			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

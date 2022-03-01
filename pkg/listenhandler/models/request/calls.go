@@ -72,3 +72,10 @@ type V1DataCallsIDExternalMediaPost struct {
 	Format         string `json:"format"`
 	Direction      string `json:"direction"`
 }
+
+// V1DataCallsIDDigitsPost is
+// v1 data type for V1DataCallsIDDigitsPost
+// /v1/calls/<id>/digits POST
+type V1DataCallsIDDigitsPost struct {
+	Digits string `json:"digits"`
+}

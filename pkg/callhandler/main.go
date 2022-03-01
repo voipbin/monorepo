@@ -37,6 +37,7 @@ type CallHandler interface {
 	CallHealthCheck(ctx context.Context, id uuid.UUID, retryCount int, delay int)
 
 	DigitsGet(ctx context.Context, id uuid.UUID) (string, error)
+	DigitsSet(ctx context.Context, id uuid.UUID, digits string) error
 
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error)
 	Get(ctx context.Context, id uuid.UUID) (*call.Call, error)

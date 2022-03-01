@@ -14,14 +14,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
-// DTMFReceived handles DTMF Recevied event
-func (h *callHandler) DTMFReceived(cn *channel.Channel, digit string, duration int) error {
+// digitsReceived handles DTMF Recevied event
+func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration int) error {
 	ctx := context.Background()
 
 	log := logrus.WithFields(
 		logrus.Fields{
 			"channel": cn,
-			"func":    "DTMFReceived",
+			"func":    "digitsReceived",
 		},
 	)
 
@@ -104,4 +104,21 @@ func (h *callHandler) DigitsGet(ctx context.Context, id uuid.UUID) (string, erro
 	}
 
 	return res, nil
+}
+
+// DigitsSet sets the dtmfs
+func (h *callHandler) DigitsSet(ctx context.Context, id uuid.UUID, digits string) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "DigitsSet",
+			"call_id": id,
+		},
+	)
+
+	if err := h.db.CallDTMFSet(ctx, id, digits); err != nil {
+		log.Errorf("Could not set DTMF. err: %v", err)
+		return err
+	}
+
+	return nil
 }

@@ -56,9 +56,11 @@ func TestActionExecuteConfbridgeJoin(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockConfbridge.EXPECT().Join(gomock.Any(), tt.expectConfbridgeID, tt.call.ID)
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockConfbridge.EXPECT().Join(ctx, tt.expectConfbridgeID, tt.call.ID)
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -269,11 +271,16 @@ func TestActionExecuteTalk(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().TMV1SpeecheCreate(gomock.Any(), tt.call.ID, tt.expectSSML, tt.expectGender, tt.expectLanguage, 10000).Return(tt.filename, nil)
-			mockReq.EXPECT().AstChannelPlay(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, tt.expectURI, "").Return(nil)
+			ctx := context.Background()
 
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			if tt.call.Status != call.StatusProgressing {
+				mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			}
+			mockReq.EXPECT().TMV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tt.expectGender, tt.expectLanguage, 10000).Return(tt.filename, nil)
+			mockReq.EXPECT().AstChannelPlay(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, tt.expectURI, "").Return(nil)
+
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
