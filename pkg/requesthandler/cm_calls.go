@@ -379,3 +379,32 @@ func (r *requestHandler) CMV1CallGetDigits(ctx context.Context, callID uuid.UUID
 
 	return resData.Digits, nil
 }
+
+// CMV1CallSetDigits sends a request to call-manager
+// to sets the digits of the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CMV1CallSetDigits(ctx context.Context, callID uuid.UUID, digits string) error {
+	uri := fmt.Sprintf("/v1/calls/%s/digits", callID)
+
+	reqData := &cmrequest.V1DataCallsIDDigitsPost{
+		Digits: digits,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
+}
