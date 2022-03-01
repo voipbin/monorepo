@@ -6,14 +6,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 )
 
 // RecordingGet returns downloadable url for recording
-func (h *serviceHandler) RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*recording.Recording, error) {
+func (h *serviceHandler) RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -36,7 +35,7 @@ func (h *serviceHandler) RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*re
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	res := recording.Convert(rec)
+	res := rec.ConvertWebhookMessage()
 
 	return res, nil
 }
@@ -44,7 +43,7 @@ func (h *serviceHandler) RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*re
 // RecordingGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) RecordingGets(u *cscustomer.Customer, size uint64, token string) ([]*recording.Recording, error) {
+func (h *serviceHandler) RecordingGets(u *cscustomer.Customer, size uint64, token string) ([]*cmrecording.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
@@ -63,9 +62,9 @@ func (h *serviceHandler) RecordingGets(u *cscustomer.Customer, size uint64, toke
 		return nil, err
 	}
 
-	res := []*recording.Recording{}
+	res := []*cmrecording.WebhookMessage{}
 	for _, tmpRecord := range tmp {
-		record := recording.Convert(&tmpRecord)
+		record := tmpRecord.ConvertWebhookMessage()
 		res = append(res, record)
 	}
 

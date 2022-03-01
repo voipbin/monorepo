@@ -1,9 +1,11 @@
 package response
 
-import "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
+import (
+	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+)
 
 // BodyRecordingsGET is rquest body define for GET /recordings
 type BodyRecordingsGET struct {
-	Result []*recording.Recording `json:"result"`
+	Result []*cmrecording.WebhookMessage `json:"result"`
 	Pagination
 }
