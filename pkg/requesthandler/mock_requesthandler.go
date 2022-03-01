@@ -879,6 +879,20 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallRemoveChainedCall(ctx, callID,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallRemoveChainedCall", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallRemoveChainedCall), ctx, callID, chainedCallID)
 }
 
+// CMV1CallSetDigits mocks base method.
+func (m *MockRequestHandler) CMV1CallSetDigits(ctx context.Context, callID uuid.UUID, digits string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CMV1CallSetDigits", ctx, callID, digits)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CMV1CallSetDigits indicates an expected call of CMV1CallSetDigits.
+func (mr *MockRequestHandlerMockRecorder) CMV1CallSetDigits(ctx, callID, digits interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallSetDigits", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallSetDigits), ctx, callID, digits)
+}
+
 // CMV1CallsCreate mocks base method.
 func (m *MockRequestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destination []address.Address) ([]call.Call, error) {
 	m.ctrl.T.Helper()
