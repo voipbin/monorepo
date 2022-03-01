@@ -136,7 +136,7 @@ var (
 // list of default values
 const (
 	defaultDelayTimeout = time.Millisecond * 150
-	defaultTimeStamp    = "9999-01-01 00:00:00.000000" //nolint:varcheck,deadcode // this is fine
+	DefaultTimeStamp    = "9999-01-01 00:00:00.000000" //nolint:varcheck,deadcode // this is fine
 )
 
 // NewHandler creates DBHandler

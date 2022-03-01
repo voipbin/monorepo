@@ -322,13 +322,14 @@ func TestActionExecuteRecordingStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().RecordingCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(nil)
-			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallAddRecordIDs(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			ctx := context.Background()
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().RecordingCreate(ctx, gomock.Any()).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(nil)
+			mockDB.EXPECT().CallSetRecordID(ctx, tt.call.ID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallAddRecordIDs(ctx, tt.call.ID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

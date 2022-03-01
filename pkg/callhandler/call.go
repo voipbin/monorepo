@@ -7,7 +7,31 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
+
+// create creates a call record. All of call creation process need to use this.
+func (h *callHandler) create(ctx context.Context, c *call.Call) (*call.Call, error) {
+
+	// set default time stamp
+	c.TMUpdate = dbhandler.DefaultTimeStamp
+	c.TMRinging = dbhandler.DefaultTimeStamp
+	c.TMProgressing = dbhandler.DefaultTimeStamp
+	c.TMHangup = dbhandler.DefaultTimeStamp
+
+	if err := h.db.CallCreate(ctx, c); err != nil {
+		return nil, err
+	}
+	promCallCreateTotal.WithLabelValues(string(c.Direction), string(c.Type)).Inc()
+
+	res, err := h.db.CallGet(ctx, c.ID)
+	if err != nil {
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallCreated, res)
+
+	return res, nil
+}
 
 // Gets returns list of calls.
 func (h *callHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error) {
