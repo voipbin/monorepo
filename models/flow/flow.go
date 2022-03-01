@@ -7,6 +7,7 @@ import (
 )
 
 // Flow struct for client show
+// used only for the swag.
 type Flow struct {
 	ID         uuid.UUID `json:"id"` // Flow's ID
 	CustomerID uuid.UUID `json:"-"`  // Flow owner's customer ID
@@ -23,61 +24,3 @@ type Flow struct {
 	TMUpdate string `json:"tm_update"` // Updated timestamp.
 	TMDelete string `json:"tm_delete"` // Deleted timestamp.
 }
-
-// // ConvertFlow returns converted data from fmflow.Flow to flow.Flow
-// func ConvertFlow(f *fmflow.Flow) *Flow {
-
-// 	actions := []action.Action{}
-// 	for _, a := range f.Actions {
-// 		tmp := action.ConvertAction(&a)
-
-// 		actions = append(actions, *tmp)
-// 	}
-
-// 	res := &Flow{
-// 		ID:         f.ID,
-// 		CustomerID: f.CustomerID,
-
-// 		Name:   f.Name,
-// 		Detail: f.Detail,
-
-// 		Persist:    f.Persist,
-// 		WebhookURI: f.WebhookURI,
-
-// 		Actions: actions,
-
-// 		TMCreate: f.TMCreate,
-// 		TMUpdate: f.TMUpdate,
-// 		TMDelete: f.TMDelete,
-// 	}
-
-// 	return res
-// }
-
-// // CreateFlow returns converted data from flow.Flow to fmflow.Flow
-// func CreateFlow(f *Flow) *fmflow.Flow {
-
-// 	actions := []fmaction.Action{}
-// 	for _, a := range f.Actions {
-// 		actions = append(actions, *action.CreateAction(&a))
-// 	}
-
-// 	res := &fmflow.Flow{
-// 		ID:         f.ID,
-// 		CustomerID: f.CustomerID,
-
-// 		Name:   f.Name,
-// 		Detail: f.Detail,
-
-// 		Persist:    f.Persist,
-// 		WebhookURI: f.WebhookURI,
-
-// 		Actions: actions,
-
-// 		TMCreate: f.TMCreate,
-// 		TMUpdate: f.TMUpdate,
-// 		TMDelete: f.TMDelete,
-// 	}
-
-// 	return res
-// }

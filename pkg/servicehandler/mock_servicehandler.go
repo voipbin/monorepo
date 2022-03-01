@@ -12,9 +12,9 @@ import (
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	availablenumber "gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
-	recording "gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -886,10 +886,10 @@ func (mr *MockServiceHandlerMockRecorder) QueueUpdateTagIDs(u, queueID, tagIDs i
 }
 
 // RecordingGet mocks base method.
-func (m *MockServiceHandler) RecordingGet(u *customer.Customer, id uuid.UUID) (*recording.Recording, error) {
+func (m *MockServiceHandler) RecordingGet(u *customer.Customer, id uuid.UUID) (*recording.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGet", u, id)
-	ret0, _ := ret[0].(*recording.Recording)
+	ret0, _ := ret[0].(*recording.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -901,10 +901,10 @@ func (mr *MockServiceHandlerMockRecorder) RecordingGet(u, id interface{}) *gomoc
 }
 
 // RecordingGets mocks base method.
-func (m *MockServiceHandler) RecordingGets(u *customer.Customer, size uint64, token string) ([]*recording.Recording, error) {
+func (m *MockServiceHandler) RecordingGets(u *customer.Customer, size uint64, token string) ([]*recording.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGets", u, size, token)
-	ret0, _ := ret[0].([]*recording.Recording)
+	ret0, _ := ret[0].([]*recording.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

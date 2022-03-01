@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -34,7 +33,7 @@ func TestRecordingGets(t *testing.T) {
 		token string
 
 		response  []cmrecording.Recording
-		expectRes []*recording.Recording
+		expectRes []*cmrecording.WebhookMessage
 	}
 
 	tests := []test{
@@ -59,17 +58,13 @@ func TestRecordingGets(t *testing.T) {
 				},
 			},
 
-			[]*recording.Recording{
+			[]*cmrecording.WebhookMessage{
 				{
 					ID:          uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
-					CustomerID:  uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					Filename:    "call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 					ReferenceID: uuid.Nil,
 				},
 				{
 					ID:          uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
-					Filename:    "call_2f167946-b2b4-4370-94fa-d6c2c57c84da_2020-12-04T18:48:03Z",
-					CustomerID:  uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 					ReferenceID: uuid.Nil,
 				},
 			},
