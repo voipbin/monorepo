@@ -175,8 +175,9 @@ func (h *callHandler) startHandlerContextRecording(ctx context.Context, cn *chan
 	silence, _ := strconv.Atoi(data["end_of_silence"])
 	endKey := data["end_of_key"]
 	callID := data["call_id"]
+	beep, _ := strconv.ParseBool(data["beep_start"])
 
-	if err := h.reqHandler.AstChannelRecord(ctx, cn.AsteriskID, cn.ID, name, format, duration, silence, false, endKey, "fail"); err != nil {
+	if err := h.reqHandler.AstChannelRecord(ctx, cn.AsteriskID, cn.ID, name, format, duration, silence, beep, endKey, "fail"); err != nil {
 		logrus.Errorf("Could not start the recording. Destorying the chanel. err: %v", err)
 
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)

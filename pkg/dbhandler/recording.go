@@ -117,13 +117,13 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 	}
 
 	// update the cache
-	_ = h.RecordingUpdateToCache(ctx, c.ID)
+	_ = h.recordingUpdateToCache(ctx, c.ID)
 
 	return nil
 }
 
-// RecordingGetFromCache returns record from the cache.
-func (h *handler) RecordingGetFromCache(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
+// recordingGetFromCache returns record from the cache.
+func (h *handler) recordingGetFromCache(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 
 	// get from cache
 	res, err := h.cache.RecordingGet(ctx, id)
@@ -134,8 +134,8 @@ func (h *handler) RecordingGetFromCache(ctx context.Context, id uuid.UUID) (*rec
 	return res, nil
 }
 
-// RecordingGetFromDB returns record from the DB.
-func (h *handler) RecordingGetFromDB(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
+// recordingGetFromDB returns record from the DB.
+func (h *handler) recordingGetFromDB(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", recordingSelect)
@@ -158,23 +158,23 @@ func (h *handler) RecordingGetFromDB(ctx context.Context, id uuid.UUID) (*record
 	return res, nil
 }
 
-// RecordingUpdateToCache gets the record from the DB and update the cache.
-func (h *handler) RecordingUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// recordingUpdateToCache gets the record from the DB and update the cache.
+func (h *handler) recordingUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.RecordingGetFromDB(ctx, id)
+	res, err := h.recordingGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.RecordingSetToCache(ctx, res); err != nil {
+	if err := h.recordingSetToCache(ctx, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// RecordingSetToCache sets the given record to the cache
-func (h *handler) RecordingSetToCache(ctx context.Context, r *recording.Recording) error {
+// recordingSetToCache sets the given record to the cache
+func (h *handler) recordingSetToCache(ctx context.Context, r *recording.Recording) error {
 	if err := h.cache.RecordingSet(ctx, r); err != nil {
 		return err
 	}
@@ -185,18 +185,18 @@ func (h *handler) RecordingSetToCache(ctx context.Context, r *recording.Recordin
 // RecordingGet returns record.
 func (h *handler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 
-	res, err := h.RecordingGetFromCache(ctx, id)
+	res, err := h.recordingGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.RecordingGetFromDB(ctx, id)
+	res, err = h.recordingGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	_ = h.RecordingSetToCache(ctx, res)
+	_ = h.recordingSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -289,7 +289,7 @@ func (h *handler) recordingSetStatusInitiating(ctx context.Context, id uuid.UUID
 	}
 
 	// update the cache
-	_ = h.RecordingUpdateToCache(ctx, id)
+	_ = h.recordingUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -315,7 +315,7 @@ func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID,
 	}
 
 	// update the cache
-	_ = h.RecordingUpdateToCache(ctx, id)
+	_ = h.recordingUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -341,7 +341,7 @@ func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID, times
 	}
 
 	// update the cache
-	_ = h.RecordingUpdateToCache(ctx, id)
+	_ = h.recordingUpdateToCache(ctx, id)
 
 	return nil
 }

@@ -13,7 +13,8 @@ import (
 func (h *callHandler) RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "RecordingGets",
+			"func":        "RecordingGets",
+			"customer_id": customerID,
 		},
 	)
 
