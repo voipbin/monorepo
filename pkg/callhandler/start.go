@@ -75,29 +75,6 @@ const (
 	DefaultSipServiceOptionConfbridgeID = "037a20b9-d11d-4b63-a135-ae230cafd495" // default conference ID for conference@sip-service
 )
 
-// createCall create a call record. All of call creation process need to use this.
-func (h *callHandler) createCall(ctx context.Context, c *call.Call) (*call.Call, error) {
-
-	// set default time stamp
-	c.TMUpdate = defaultTimeStamp
-	c.TMRinging = defaultTimeStamp
-	c.TMProgressing = defaultTimeStamp
-	c.TMHangup = defaultTimeStamp
-
-	if err := h.db.CallCreate(ctx, c); err != nil {
-		return nil, err
-	}
-	promCallCreateTotal.WithLabelValues(string(c.Direction), string(c.Type)).Inc()
-
-	res, err := h.db.CallGet(ctx, c.ID)
-	if err != nil {
-		return nil, err
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallCreated, res)
-
-	return res, nil
-}
-
 // StartCallHandle starts the call handle service
 func (h *callHandler) StartCallHandle(ctx context.Context, cn *channel.Channel, data map[string]string) error {
 
@@ -175,9 +152,8 @@ func (h *callHandler) startHandlerContextRecording(ctx context.Context, cn *chan
 	silence, _ := strconv.Atoi(data["end_of_silence"])
 	endKey := data["end_of_key"]
 	callID := data["call_id"]
-	beep, _ := strconv.ParseBool(data["beep_start"])
 
-	if err := h.reqHandler.AstChannelRecord(ctx, cn.AsteriskID, cn.ID, name, format, duration, silence, beep, endKey, "fail"); err != nil {
+	if err := h.reqHandler.AstChannelRecord(ctx, cn.AsteriskID, cn.ID, name, format, duration, silence, false, endKey, "fail"); err != nil {
 		logrus.Errorf("Could not start the recording. Destorying the chanel. err: %v", err)
 
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
@@ -503,7 +479,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 	tmpCall.Action = af.CurrentAction
 
 	// create a call
-	c, err := h.createCall(ctx, tmpCall)
+	c, err := h.create(ctx, tmpCall)
 	if err != nil {
 		log.Errorf("Could not create a call info. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
@@ -574,7 +550,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	log.Debugf("Created an active flow. active-flow: %v", af)
 	tmpCall.Action = af.CurrentAction
 
-	c, err := h.createCall(ctx, tmpCall)
+	c, err := h.create(ctx, tmpCall)
 	if err != nil {
 		log.Errorf("Could not create a call info. Hangup the call. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
@@ -620,7 +596,7 @@ func (h *callHandler) typeSipServiceStart(ctx context.Context, cn *channel.Chann
 	tmpCall.BridgeID = callBridgeID
 
 	// create a call
-	c, err := h.createCall(ctx, tmpCall)
+	c, err := h.create(ctx, tmpCall)
 	if err != nil {
 		log.Errorf("Could not create a call info. Hangup the call. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)

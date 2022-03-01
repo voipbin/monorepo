@@ -106,7 +106,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// create a call
-	c, err := h.createCall(ctx, cTmp)
+	c, err := h.create(ctx, cTmp)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing call. err: %v", err)
 		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, dbhandler.GetCurTime()); err != nil {
