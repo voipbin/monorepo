@@ -11,6 +11,7 @@ import (
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -23,7 +24,6 @@ import (
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -132,8 +132,8 @@ type ServiceHandler interface {
 	QueueUpdateActions(u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.WebhookMessage, error)
 
 	// recording handlers
-	RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*recording.Recording, error)
-	RecordingGets(u *cscustomer.Customer, size uint64, token string) ([]*recording.Recording, error)
+	RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error)
+	RecordingGets(u *cscustomer.Customer, size uint64, token string) ([]*cmrecording.WebhookMessage, error)
 
 	// recordingfile handlers
 	RecordingfileGet(u *cscustomer.Customer, id uuid.UUID) (string, error)
