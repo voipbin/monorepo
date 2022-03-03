@@ -185,8 +185,8 @@ Making an outbound call with TTS(Text-to-Speech) and connect to other destinatio
         }
     ]
 
-Simple outbound call with talk and dtmf_send
---------------------------------------------
+Simple outbound call with talk and digits_send
+----------------------------------------------
 Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.
 
 .. code::
@@ -262,6 +262,8 @@ Making an outbound call. After answer the call, it will play the TTS and then se
             "tm_hangup": ""
         }
     ]
+
+
 
 Simple outbound call with Branch
 ---------------------------------
