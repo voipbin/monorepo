@@ -60,6 +60,118 @@ Gets the list of registered flows.
         "next_page_token": "2020-09-04 23:53:14.496918"
     }
 
+Simple voicemail scenario
+-------------------------
+
+Making a outgoing call for forwarding. If call not answered, leave a voicemail.
+
+.. code::
+
+                  Start
+                    |
+                    |
+                Connect(Making an outgoing call for forwarding)
+                    |
+                    |
+                Condition check(check the call's status is Answered)
+                    |
+                    |
+       ------------------------------
+       |                            |
+   condition false               condition true
+       |                            |
+       |                          Hangup
+     Talk(...)
+       |
+       |
+     Beep
+       |
+       |
+    Recording start
+       |
+       |
+     Sleep(30 sec)
+       |
+       |
+     Hangup
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    --header 'Content-Type: application/json' \
+    --header 'Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    --data-raw '{
+        "name": "simple voicemail scenario",
+        "detail": "simple flow for voicemail scenario",
+        "actions": [
+            {
+                "type": "connect",
+                "option": {
+                    "source": {
+                        "type": "tel",
+                        "target": "+821021656521"
+                    },
+                    "destinations": [
+                        {
+                            "type": "tel",
+                            "target": "+821021546521"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "3746e628-8cc1-4ff4-82fe-194b16b9a10e",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "condition_call_status",
+                "option": {
+                    "status": "progressing",
+                    "false_target_id": "cfe0e8ea-991c-11ec-b849-d7fc54168fd5"
+                }
+            },
+            {
+                "id": "58f859e9-92d8-4b46-8073-722b9c881ae0",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "hangup"
+            },
+            {
+                "id": "cfe0e8ea-991c-11ec-b849-d7fc54168fd5",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "talk",
+                "option": {
+                    "text": "Thank you for your calling. We are busy now. Please leave a message after tone.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            },
+            {
+                "id": "0a9b6f38-ddcd-448b-80a1-ae47ac0e08aa",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "beep"
+            },
+            {
+                "id": "ad969315-6ac4-4339-b300-566eb6352fea",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "recording_start",
+                "option": {
+                    "beep_start": true
+                }
+            },
+            {
+                "id": "8abf3f9d-414c-4a15-aa94-02a799409f48",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "sleep",
+                "option": {
+                    "duration": 10000
+                }
+            },
+            {
+                "id": "e4fc5d9e-9fa8-4b3e-ae77-b55b04c1f2d3",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "hangup"
+            }
+        ]
+    }'
+
 
 Get detail of specified flow
 ----------------------------
