@@ -21,6 +21,11 @@ type OptionAnswer struct {
 	// no option
 }
 
+// OptionBeep defines action beep's option.
+type OptionBeep struct {
+	// no option
+}
+
 // OptionBranch defines action branch's option.
 type OptionBranch struct {
 	DefaultTargetID uuid.UUID            `json:"default_target_id"` // default id for the input dtmf does not match any of branch targets.

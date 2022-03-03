@@ -112,7 +112,7 @@ func Test_marshalOptionAnswer(t *testing.T) {
 		{
 			"normal",
 
-			[]byte(`{"machine_handle": "hangup"}`),
+			[]byte(`{}`),
 
 			OptionAnswer{},
 		},
@@ -122,6 +122,40 @@ func Test_marshalOptionAnswer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			res := OptionAnswer{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_marshalOptionBeep(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectRes OptionBeep
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			[]byte(`{}`),
+
+			OptionBeep{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionBeep{}
 			if err := json.Unmarshal(tt.option, &res); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

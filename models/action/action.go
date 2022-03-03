@@ -45,6 +45,7 @@ const (
 	TypeAgentCall           Type = "agent_call"            // agent-manager. make a all to the agent.
 	TypeAMD                 Type = "amd"                   // call-manager. answering machine detection.
 	TypeAnswer              Type = "answer"                // call-manager. answer the call.
+	TypeBeep                Type = "beep"                  // call-manager. play the beep sound.
 	TypeBranch              Type = "branch"                // flow-manager. branch the flow
 	TypeConditionCallDigits Type = "condition_call_digits" // flow-manager. condition check(call's digits)
 	TypeConditionCallStatus Type = "condition_call_status" // flow-manager. condition check(call's status)
@@ -77,6 +78,7 @@ var TypeList []Type = []Type{
 	TypeAgentCall,
 	TypeAMD,
 	TypeAnswer,
+	TypeBeep,
 	TypeBranch,
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
