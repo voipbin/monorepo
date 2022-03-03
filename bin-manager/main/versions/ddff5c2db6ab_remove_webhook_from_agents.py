@@ -23,4 +23,4 @@ def upgrade():
 
 def downgrade():
     op.execute("""alter table agents add webhook_method varchar(255);""")
-    op.execute("""alter table agents add webhook_uri after varchar(1023);""")
+    op.execute("""alter table agents add webhook_uri varchar(1023);""")
