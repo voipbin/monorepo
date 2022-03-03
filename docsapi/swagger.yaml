@@ -1,7 +1,15 @@
 definitions:
   action.Action:
     properties:
+      id:
+        type: string
+      next_id:
+        description: represent next target action id. if it not set, just go to next action in the action array.
+        type: string
       option:
+        type: string
+      tm_execute:
+        description: represent when this action has executed. This is used in call-manager.
         type: string
       type:
         type: string
@@ -359,10 +367,6 @@ definitions:
     type: object
   recording.Recording:
     properties:
-      customer_id:
-        type: string
-      filename:
-        type: string
       format:
         type: string
       id:
@@ -668,9 +672,7 @@ definitions:
       next_page_token:
         type: string
       result:
-        items:
-          $ref: '#/definitions/recording.Recording'
-        type: array
+        type: string
     type: object
   response.BodyTagsGET:
     properties:
