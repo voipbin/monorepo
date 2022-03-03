@@ -213,6 +213,115 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="simple-voicemail-scenario">
+<h2>Simple voicemail scenario<a class="headerlink" href="#simple-voicemail-scenario" title="Permalink to this headline">¶</a></h2>
+<p>Making a outgoing call for forwarding. If call not answered, leave a voicemail.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>               <span class="n">Start</span>
+                 <span class="o">|</span>
+                 <span class="o">|</span>
+             <span class="n">Connect</span><span class="p">(</span><span class="n">Making</span> <span class="n">an</span> <span class="n">outgoing</span> <span class="n">call</span> <span class="k">for</span> <span class="n">forwarding</span><span class="p">)</span>
+                 <span class="o">|</span>
+                 <span class="o">|</span>
+             <span class="n">Condition</span> <span class="n">check</span><span class="p">(</span><span class="n">check</span> <span class="n">the</span> <span class="n">call</span><span class="s1">&#39;s status is Answered)</span>
+                 <span class="o">|</span>
+                 <span class="o">|</span>
+    <span class="o">------------------------------</span>
+    <span class="o">|</span>                            <span class="o">|</span>
+<span class="n">condition</span> <span class="n">false</span>               <span class="n">condition</span> <span class="n">true</span>
+    <span class="o">|</span>                            <span class="o">|</span>
+    <span class="o">|</span>                          <span class="n">Hangup</span>
+  <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="o">|</span>
+    <span class="o">|</span>
+  <span class="n">Beep</span>
+    <span class="o">|</span>
+    <span class="o">|</span>
+ <span class="n">Recording</span> <span class="n">start</span>
+    <span class="o">|</span>
+    <span class="o">|</span>
+  <span class="n">Sleep</span><span class="p">(</span><span class="mi">30</span> <span class="n">sec</span><span class="p">)</span>
+    <span class="o">|</span>
+    <span class="o">|</span>
+  <span class="n">Hangup</span>
+</pre></div>
+</div>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--data-raw &#39;{
+    &quot;name&quot;: &quot;simple voicemail scenario&quot;,
+    &quot;detail&quot;: &quot;simple flow for voicemail scenario&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;connect&quot;,
+            &quot;option&quot;: {
+                &quot;source&quot;: {
+                    &quot;type&quot;: &quot;tel&quot;,
+                    &quot;target&quot;: &quot;+821021656521&quot;
+                },
+                &quot;destinations&quot;: [
+                    {
+                        &quot;type&quot;: &quot;tel&quot;,
+                        &quot;target&quot;: &quot;+821021546521&quot;
+                    }
+                ]
+            }
+        },
+        {
+            &quot;id&quot;: &quot;3746e628-8cc1-4ff4-82fe-194b16b9a10e&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;condition_call_status&quot;,
+            &quot;option&quot;: {
+                &quot;status&quot;: &quot;progressing&quot;,
+                &quot;false_target_id&quot;: &quot;cfe0e8ea-991c-11ec-b849-d7fc54168fd5&quot;
+            }
+        },
+        {
+            &quot;id&quot;: &quot;58f859e9-92d8-4b46-8073-722b9c881ae0&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;hangup&quot;
+        },
+        {
+            &quot;id&quot;: &quot;cfe0e8ea-991c-11ec-b849-d7fc54168fd5&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Thank you for your calling. We are busy now. Please leave a message after tone.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;id&quot;: &quot;0a9b6f38-ddcd-448b-80a1-ae47ac0e08aa&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;beep&quot;
+        },
+        {
+            &quot;id&quot;: &quot;ad969315-6ac4-4339-b300-566eb6352fea&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;recording_start&quot;,
+            &quot;option&quot;: {
+                &quot;beep_start&quot;: true
+            }
+        },
+        {
+            &quot;id&quot;: &quot;8abf3f9d-414c-4a15-aa94-02a799409f48&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;sleep&quot;,
+            &quot;option&quot;: {
+                &quot;duration&quot;: 10000
+            }
+        },
+        {
+            &quot;id&quot;: &quot;e4fc5d9e-9fa8-4b3e-ae77-b55b04c1f2d3&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;hangup&quot;
+        }
+    ]
+}&#39;
+</pre></div>
+</div>
+</div>
 <div class="section" id="get-detail-of-specified-flow">
 <h2>Get detail of specified flow<a class="headerlink" href="#get-detail-of-specified-flow" title="Permalink to this headline">¶</a></h2>
 <p>Gets the detail of registered flows.</p>

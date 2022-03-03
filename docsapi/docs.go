@@ -1710,7 +1710,18 @@ var doc = `{
         "action.Action": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "next_id": {
+                    "description": "represent next target action id. if it not set, just go to next action in the action array.",
+                    "type": "string"
+                },
                 "option": {
+                    "type": "string"
+                },
+                "tm_execute": {
+                    "description": "represent when this action has executed. This is used in call-manager.",
                     "type": "string"
                 },
                 "type": {
@@ -2231,12 +2242,6 @@ var doc = `{
         "recording.Recording": {
             "type": "object",
             "properties": {
-                "customer_id": {
-                    "type": "string"
-                },
-                "filename": {
-                    "type": "string"
-                },
                 "format": {
                     "type": "string"
                 },
@@ -2707,10 +2712,7 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/recording.Recording"
-                    }
+                    "type": "string"
                 }
             }
         },
