@@ -103,6 +103,9 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *action
 	case action.TypeAnswer:
 		err = h.actionExecuteAnswer(ctx, c, a)
 
+	case action.TypeBeep:
+		err = h.actionExecuteBeep(ctx, c, a)
+
 	case action.TypeConfbridgeJoin:
 		err = h.actionExecuteConfbridgeJoin(ctx, c, a)
 
@@ -294,6 +297,42 @@ func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call, a *
 	// send next action request
 	if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID, false); err != nil {
 		return fmt.Errorf("could not send the next action request. err: %v", err)
+	}
+
+	return nil
+}
+
+// actionExecuteBeep executes the action type beep
+func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call, a *action.Action) error {
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":     c.ID,
+		"action_id":   a.ID,
+		"action_type": a.Type,
+		"func":        "actionExecuteBeep",
+	})
+
+	var option action.OptionBeep
+	if a.Option != nil {
+		if err := json.Unmarshal(a.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
+		}
+	}
+
+	// create a media string array
+	medias := []string{
+		"sound:beep",
+	}
+	log.WithFields(
+		logrus.Fields{
+			"media": medias,
+		},
+	).Debugf("Sending a request to the asterisk for media playing.")
+
+	// play the beep
+	if err := h.reqHandler.AstChannelPlay(ctx, c.AsteriskID, c.ChannelID, a.ID, medias, ""); err != nil {
+		log.Errorf("Could not play the media. media: %v, err: %v", medias, err)
+		return fmt.Errorf("could not play the media. err: %v", err)
 	}
 
 	return nil

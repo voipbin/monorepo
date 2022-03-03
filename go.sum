@@ -704,6 +704,8 @@ gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220228055922-f2a821c968
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220228055922-f2a821c9687f/go.mod h1:zEChK0G4ejq6dJR6WP+c5mPUggC9YwnkQK5zjMarrbQ=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220301062903-8bbbc9545deb h1:B9MnJL22vFrM/sfI+baWJnPQX6loSNsUh3hEvsH9iXE=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220301062903-8bbbc9545deb/go.mod h1:Nmul1hrgBdVNDwq+Mu54nxfWZQoUKwTK1eHYzB4NV9E=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220303002125-d04cd8388dd3 h1:X6arSMaaRmbdS6sfG+J9jG7mj6WFt8vP7fMnMSFGpYQ=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220303002125-d04cd8388dd3/go.mod h1:Nmul1hrgBdVNDwq+Mu54nxfWZQoUKwTK1eHYzB4NV9E=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210321130210-a1303884d876/go.mod h1:moKBA06hhNrhRq4KOyurZ7Jnz55Ej0PilS3ON3im6r4=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210323024014-e746d8159826/go.mod h1:moKBA06hhNrhRq4KOyurZ7Jnz55Ej0PilS3ON3im6r4=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20210405060100-f0029edb7aa2/go.mod h1:moKBA06hhNrhRq4KOyurZ7Jnz55Ej0PilS3ON3im6r4=
@@ -1296,6 +1298,8 @@ google.golang.org/genproto v0.0.0-20220222213610-43724f9ea8cf h1:SVYXkUz2yZS9FWb
 google.golang.org/genproto v0.0.0-20220222213610-43724f9ea8cf/go.mod h1:kGP+zUP2Ddo0ayMi4YuN7C3WZyJvGLZRh8Z5wnAqvEI=
 google.golang.org/genproto v0.0.0-20220228195345-15d65a4533f7 h1:ntPPoHzFW6Xp09ueznmahONZufyoSakK/piXnr2BU3I=
 google.golang.org/genproto v0.0.0-20220228195345-15d65a4533f7/go.mod h1:kGP+zUP2Ddo0ayMi4YuN7C3WZyJvGLZRh8Z5wnAqvEI=
+google.golang.org/genproto v0.0.0-20220302033224-9aa15565e42a h1:uqouglH745GoGeZ1YFZbPBiu961tgi/9Qm5jaorajjQ=
+google.golang.org/genproto v0.0.0-20220302033224-9aa15565e42a/go.mod h1:kGP+zUP2Ddo0ayMi4YuN7C3WZyJvGLZRh8Z5wnAqvEI=
 google.golang.org/grpc v1.17.0/go.mod h1:6QZJwpn2B+Zp71q/5VxRsJ6NXXVCE5NRUHRo+f3cWCs=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.0/go.mod h1:chYK+tFQF0nDUGJgXMSgLCQk3phJEuONr2DCgLDdAQM=
