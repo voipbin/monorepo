@@ -1,4 +1,4 @@
-.. _call-tutorial: call-tutorial
+.. _call-tutorial:
 
 Tutorial
 ========

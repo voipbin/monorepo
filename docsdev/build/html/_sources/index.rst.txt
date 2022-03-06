@@ -13,12 +13,15 @@ Welcome to voipbin's documentation!
    intro
    api
    call
+   agent
    conference
    domain
    extension
    flow
    number
+   queue
    recording
+   tag
 
 
 Indices and tables

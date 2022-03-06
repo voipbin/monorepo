@@ -5,5 +5,6 @@ Recording
 *************
 
 .. include:: recording_overview.rst
+.. include:: recording_struct.rst
 .. include:: recording_tutorial.rst
 

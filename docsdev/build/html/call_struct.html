@@ -85,12 +85,15 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 
             
@@ -158,8 +161,62 @@
             
   <div class="section" id="struct">
 <h1>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="call">
+<span id="call-struct-call"></span><h2>Call<a class="headerlink" href="#call" title="Permalink to this headline">¶</a></h2>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><em>id</em>: Call’s ID.</li>
+<li><em>flow_id</em>: Call’s flow id.</li>
+<li><em>type</em>: Call’s type. See detail <a class="reference internal" href="#call-struct-type"><span class="std std-ref">here</span></a>.</li>
+<li><em>master_call_id</em>: Master call’s id. If the master_call_id set, it follows master call’s hangup.</li>
+<li><em>chained_call_ids</em>: List of chained call ids. If the call hangs up, the chained call also will hangup.</li>
+<li><em>recording_id</em>: Shows currently recording id.</li>
+<li><em>recording_ids</em>: List of recording ids.</li>
+<li><em>source</em>: Source address info. See detail <a class="reference internal" href="#call-struct-address"><span class="std std-ref">here</span></a>.</li>
+<li><em>destination</em>: Destination address info. See detail <a class="reference internal" href="#call-struct-address"><span class="std std-ref">here</span></a>.</li>
+<li><em>status</em>: Call’s status. See detail <a class="reference internal" href="#call-struct-status"><span class="std std-ref">here</span></a>.</li>
+<li><em>action</em>: Call’s current action. See detail <a class="reference internal" href="flow_action.html#flow-action"><span class="std std-ref">here</span></a>.</li>
+<li><em>direction</em>: Call’s direction. See detail <a class="reference internal" href="#call-struct-direction"><span class="std std-ref">here</span></a>.</li>
+<li><em>hangup_by</em>: Shows call’s hangup end. See detail <a class="reference internal" href="#call-struct-hangupby"><span class="std std-ref">here</span></a>.</li>
+<li><em>hangup_reason</em>: Show call’s hangup reason. See detail <a class="reference internal" href="#call-struct-hangupreason"><span class="std std-ref">here</span></a>.</li>
+</ul>
+</div>
 <div class="section" id="type">
-<h2>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h2>
+<span id="call-struct-type"></span><h2>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h2>
 <p>Call’s type.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -185,7 +242,7 @@
 </table>
 </div>
 <div class="section" id="status">
-<h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<span id="call-struct-status"></span><h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <p>Call’s status.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -220,7 +277,7 @@
 </table>
 </div>
 <div class="section" id="direction">
-<h2>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h2>
+<span id="call-struct-direction"></span><h2>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h2>
 <p>Call’s direction.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -243,7 +300,7 @@
 </table>
 </div>
 <div class="section" id="hangup-by">
-<h2>Hangup by<a class="headerlink" href="#hangup-by" title="Permalink to this headline">¶</a></h2>
+<span id="call-struct-hangupby"></span><h2>Hangup by<a class="headerlink" href="#hangup-by" title="Permalink to this headline">¶</a></h2>
 <p>The Hangup by shows which endpoint sent the hangup request first.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -266,7 +323,7 @@
 </table>
 </div>
 <div class="section" id="hangup-reason">
-<h2>Hangup reason<a class="headerlink" href="#hangup-reason" title="Permalink to this headline">¶</a></h2>
+<span id="call-struct-hangupreason"></span><h2>Hangup reason<a class="headerlink" href="#hangup-reason" title="Permalink to this headline">¶</a></h2>
 <p>Shows why the call was hungup.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -304,27 +361,32 @@
 </table>
 </div>
 <div class="section" id="address">
-<h2>Address<a class="headerlink" href="#address" title="Permalink to this headline">¶</a></h2>
+<span id="call-struct-address"></span><h2>Address<a class="headerlink" href="#address" title="Permalink to this headline">¶</a></h2>
 <p>Defines target(source/destination) address.</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li>type: Address type.</li>
-<li>target: Target address.</li>
-<li>name: Target name.</li>
+<li><em>type</em>: Address type. See detail <a class="reference internal" href="#call-struct-address-type"><span class="std std-ref">here</span></a>.</li>
+<li><em>target</em>: address endpoint.</li>
+<li><em>target_name</em>: address’s name.</li>
+<li><em>name</em>: Name.</li>
+<li><em>detail</em>: Detail description.</li>
 </ul>
 </div>
 <div class="section" id="address-type">
-<h2>Address type<a class="headerlink" href="#address-type" title="Permalink to this headline">¶</a></h2>
+<span id="call-struct-address-type"></span><h2>Address type<a class="headerlink" href="#address-type" title="Permalink to this headline">¶</a></h2>
+<p>Defines types of address.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="32%" />
-<col width="68%" />
+<col width="19%" />
+<col width="81%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Type</th>
@@ -332,6 +394,12 @@
 </tr>
 </thead>
 <tbody valign="top">
+<tr class="row-even"><td>agent</td>
+<td>Used for calling to the agent</td>
+</tr>
+<tr class="row-odd"><td>endpoint</td>
+<td>Used for calling to endpoint(<a class="reference external" href="mailto:extension&#37;&#52;&#48;domain">extension<span>&#64;</span>domain</a>)</td>
+</tr>
 <tr class="row-even"><td>sip</td>
 <td>SIP type address.</td>
 </tr>
