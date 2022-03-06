@@ -532,17 +532,17 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelGet(ctx, asteriskID, channel
 }
 
 // AstChannelHangup mocks base method.
-func (m *MockRequestHandler) AstChannelHangup(ctx context.Context, asteriskID, channelID string, code ari.ChannelCause) error {
+func (m *MockRequestHandler) AstChannelHangup(ctx context.Context, asteriskID, channelID string, code ari.ChannelCause, delay int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelHangup", ctx, asteriskID, channelID, code)
+	ret := m.ctrl.Call(m, "AstChannelHangup", ctx, asteriskID, channelID, code, delay)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelHangup indicates an expected call of AstChannelHangup.
-func (mr *MockRequestHandlerMockRecorder) AstChannelHangup(ctx, asteriskID, channelID, code interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelHangup(ctx, asteriskID, channelID, code, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHangup", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHangup), ctx, asteriskID, channelID, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHangup", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHangup), ctx, asteriskID, channelID, code, delay)
 }
 
 // AstChannelPlay mocks base method.
