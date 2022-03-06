@@ -224,6 +224,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 		asteriskID  string
 		channelID   string
 		hangupCause cmari.ChannelCause
+		delay       int
 
 		expectURI    string
 		expectQueue  string
@@ -237,8 +238,21 @@ func TestChannelAstChannelHangup(t *testing.T) {
 			"00:11:22:33:44:55",
 			"ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
 			cmari.ChannelCauseNormalClearing,
+			1000,
 
 			"/ari/channels/ef6ed35e-828d-11ea-9cd9-83d7b7314faa",
+			"asterisk.00:11:22:33:44:55.request",
+			rabbitmqhandler.RequestMethodDelete,
+			[]byte(`{"reason_code":"16"}`),
+		},
+		{
+			"no delay",
+			"00:11:22:33:44:55",
+			"6fb72ce0-9d54-11ec-b69c-a7c8e3d19337",
+			cmari.ChannelCauseNormalClearing,
+			0,
+
+			"/ari/channels/6fb72ce0-9d54-11ec-b69c-a7c8e3d19337",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmqhandler.RequestMethodDelete,
 			[]byte(`{"reason_code":"16"}`),
@@ -256,18 +270,32 @@ func TestChannelAstChannelHangup(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockSock.EXPECT().PublishRPC(
-				gomock.Any(),
-				tt.expectQueue,
-				&rabbitmqhandler.Request{
-					URI:      tt.expectURI,
-					Method:   tt.expectMethod,
-					DataType: ContentTypeJSON,
-					Data:     tt.expectData,
-				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			if tt.delay == 0 {
+				mockSock.EXPECT().PublishRPC(
+					gomock.Any(),
+					tt.expectQueue,
+					&rabbitmqhandler.Request{
+						URI:      tt.expectURI,
+						Method:   tt.expectMethod,
+						DataType: ContentTypeJSON,
+						Data:     tt.expectData,
+					},
+				).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			} else {
+				mockSock.EXPECT().PublishExchangeDelayedRequest(
+					gomock.Any(),
+					tt.expectQueue,
+					&rabbitmqhandler.Request{
+						URI:      tt.expectURI,
+						Method:   tt.expectMethod,
+						DataType: ContentTypeJSON,
+						Data:     tt.expectData,
+					},
+					tt.delay,
+				).Return(nil)
+			}
 
-			err := reqHandler.AstChannelHangup(context.Background(), tt.asteriskID, tt.channelID, tt.hangupCause)
+			err := reqHandler.AstChannelHangup(context.Background(), tt.asteriskID, tt.channelID, tt.hangupCause, tt.delay)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

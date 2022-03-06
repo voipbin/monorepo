@@ -198,7 +198,7 @@ type RequestHandler interface {
 	AstChannelDTMF(ctx context.Context, asteriskID, channelID string, digit string, duration, before, between, after int) error
 	AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*cmchannel.Channel, error)
 	AstChannelGet(ctx context.Context, asteriskID, channelID string) (*cmchannel.Channel, error)
-	AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause) error
+	AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause, delay int) error
 	AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
 	AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelRing(ctx context.Context, asteriskID string, channelID string) error

@@ -59,7 +59,8 @@ func (r *requestHandler) AstChannelContinue(ctx context.Context, asteriskID, cha
 }
 
 // AstChannelContinue sends the continue request
-func (r *requestHandler) AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause) error {
+// delay: milliseconds
+func (r *requestHandler) AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause, delay int) error {
 	url := fmt.Sprintf("/ari/channels/%s", channelID)
 
 	type Data struct {
@@ -73,10 +74,12 @@ func (r *requestHandler) AstChannelHangup(ctx context.Context, asteriskID, chann
 		return err
 	}
 
-	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsHangup, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsHangup, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
+	case res == nil:
+		return nil
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
