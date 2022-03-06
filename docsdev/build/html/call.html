@@ -36,7 +36,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Conference" href="conference.html" />
+    <link rel="next" title="Agent" href="agent.html" />
     <link rel="prev" title="API" href="api.html" /> 
 </head>
 
@@ -90,6 +90,19 @@
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pstn-phone-number-format">PSTN/Phone number format</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extension-number-format">Extension number format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#incoming-call">Incoming call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#outgoing-call">Outgoing call</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#call-struct-call">Call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#direction">Direction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hangup-by">Hangup by</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hangup-reason">Hangup reason</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#address">Address</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#address-type">Address type</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
@@ -102,137 +115,17 @@
 <li class="toctree-l3"><a class="reference internal" href="#get-specific-call">Get specific call</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#type">Type</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#status">Status</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#direction">Direction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#hangup-by">Hangup by</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#hangup-reason">Hangup reason</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#address">Address</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#address-type">Address type</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#action">Action</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#agent-call">Agent Call</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#example">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#amd">AMD</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id1">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id2">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#answer">Answer</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id3">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id4">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#branch">Branch</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id5">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id6">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#condition-digits">Condition Digits</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id7">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id8">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#conference-join">Conference Join</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id9">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id10">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#connect">Connect</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id11">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id12">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#digits-receive">Digits Receive</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id13">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id14">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#digits-send">Digits Send</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id15">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id16">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#echo">Echo</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id17">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id18">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#goto">Goto</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id19">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id20">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#hangup">Hangup</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id21">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id22">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#patch">Patch</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id23">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id24">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#patch-flow">Patch Flow</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id25">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id26">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#play">Play</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id27">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id28">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#queue-join">Queue Join</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id29">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id30">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#recording-start">Recording Start</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id31">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id32">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#recording-stop">Recording Stop</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id33">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id34">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#stream-echo">Stream Echo</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id35">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id36">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#talk">Talk</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id37">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id38">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#transcribe-start">Transcribe_start</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id39">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id40">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#transcribe-stop">Transcribe_stop</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id41">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id42">Example</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 
             
@@ -299,9 +192,9 @@
            <div itemprop="articleBody">
             
   <div class="section" id="call">
-<h1>Call<a class="headerlink" href="#call" title="Permalink to this headline">¶</a></h1>
+<span id="call-main"></span><h1>Call<a class="headerlink" href="#call" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<span id="call-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>The VoIPBIN call API is the easiest way to build high-quality call application in the Cloud.</p>
 <p>With the VoIPBIN API you can:</p>
 <ul class="simple">
@@ -327,9 +220,272 @@
 <li>Contain no special characters, such as space, () or -.</li>
 </ul>
 </div>
+<div class="section" id="incoming-call">
+<h3>Incoming call<a class="headerlink" href="#incoming-call" title="Permalink to this headline">¶</a></h3>
+<p>The voipbin provides incoming call handle.
+If the call came to the voipbin, the voipbin execute the flow of the given destination.</p>
+<img alt="_images/call_incoming.png" src="_images/call_incoming.png" />
+</div>
+<div class="section" id="outgoing-call">
+<h3>Outgoing call<a class="headerlink" href="#outgoing-call" title="Permalink to this headline">¶</a></h3>
+<p>The voipbin provides outgoing call handle.
+Waiting for call’s answer, then execute the flow actions.</p>
+<img alt="_images/call_outgoing.png" src="_images/call_outgoing.png" />
+</div>
+</div>
+<div class="section" id="struct">
+<h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="call-struct-call">
+<span id="id1"></span><h3>Call<a class="headerlink" href="#call-struct-call" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><em>id</em>: Call’s ID.</li>
+<li><em>flow_id</em>: Call’s flow id.</li>
+<li><em>type</em>: Call’s type. See detail <a class="reference internal" href="call_struct.html#call-struct-type"><span class="std std-ref">here</span></a>.</li>
+<li><em>master_call_id</em>: Master call’s id. If the master_call_id set, it follows master call’s hangup.</li>
+<li><em>chained_call_ids</em>: List of chained call ids. If the call hangs up, the chained call also will hangup.</li>
+<li><em>recording_id</em>: Shows currently recording id.</li>
+<li><em>recording_ids</em>: List of recording ids.</li>
+<li><em>source</em>: Source address info. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</li>
+<li><em>destination</em>: Destination address info. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</li>
+<li><em>status</em>: Call’s status. See detail <a class="reference internal" href="call_struct.html#call-struct-status"><span class="std std-ref">here</span></a>.</li>
+<li><em>action</em>: Call’s current action. See detail <a class="reference internal" href="flow_action.html#flow-action"><span class="std std-ref">here</span></a>.</li>
+<li><em>direction</em>: Call’s direction. See detail <a class="reference internal" href="call_struct.html#call-struct-direction"><span class="std std-ref">here</span></a>.</li>
+<li><em>hangup_by</em>: Shows call’s hangup end. See detail <a class="reference internal" href="call_struct.html#call-struct-hangupby"><span class="std std-ref">here</span></a>.</li>
+<li><em>hangup_reason</em>: Show call’s hangup reason. See detail <a class="reference internal" href="call_struct.html#call-struct-hangupreason"><span class="std std-ref">here</span></a>.</li>
+</ul>
+</div>
+<div class="section" id="type">
+<span id="call-struct-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h3>
+<p>Call’s type.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>flow</td>
+<td>Executing the call-flow</td>
+</tr>
+<tr class="row-odd"><td>conference</td>
+<td>Conference call.</td>
+</tr>
+<tr class="row-even"><td>sip-service</td>
+<td>sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="status">
+<span id="call-struct-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
+<p>Call’s status.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Status</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dialing</td>
+<td>The call is created. We are dialing to the destination.</td>
+</tr>
+<tr class="row-odd"><td>ringing</td>
+<td>The destination has confirmed that the call is ringng.</td>
+</tr>
+<tr class="row-even"><td>progressing</td>
+<td>The call has answered. The both endpoints are talking to each other.</td>
+</tr>
+<tr class="row-odd"><td>terminating</td>
+<td>The call is terminating.</td>
+</tr>
+<tr class="row-even"><td>canceling</td>
+<td>The call originator is canceling the call.</td>
+</tr>
+<tr class="row-odd"><td>hangup</td>
+<td>The call has been completed.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="direction">
+<span id="call-struct-direction"></span><h3>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h3>
+<p>Call’s direction.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Direction</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>incoming</td>
+<td>Call is coming from outside from voipbin.</td>
+</tr>
+<tr class="row-odd"><td>outgoing</td>
+<td>Call is generating form the voipbin.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="hangup-by">
+<span id="call-struct-hangupby"></span><h3>Hangup by<a class="headerlink" href="#hangup-by" title="Permalink to this headline">¶</a></h3>
+<p>The Hangup by shows which endpoint sent the hangup request first.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">hangup by</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>remote</td>
+<td>The remote end hangup the call first.</td>
+</tr>
+<tr class="row-odd"><td>local</td>
+<td>The local end hangup the call first.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="hangup-reason">
+<span id="call-struct-hangupreason"></span><h3>Hangup reason<a class="headerlink" href="#hangup-reason" title="Permalink to this headline">¶</a></h3>
+<p>Shows why the call was hungup.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="91%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Reason</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>normal</td>
+<td>The call has ended after answer.</td>
+</tr>
+<tr class="row-odd"><td>failed</td>
+<td>The call attempt(signal) was not reached to the phone network.</td>
+</tr>
+<tr class="row-even"><td>busy</td>
+<td>The destination is on the line with another caller.</td>
+</tr>
+<tr class="row-odd"><td>cancel</td>
+<td>Call was cancelled by the originator before it was answered.</td>
+</tr>
+<tr class="row-even"><td>timeout</td>
+<td>Call reached max call duration after it was answered.</td>
+</tr>
+<tr class="row-odd"><td>unanswer</td>
+<td>Destination didn’t answer until destination’s timeout.</td>
+</tr>
+<tr class="row-even"><td>dialout</td>
+<td>The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="address">
+<span id="call-struct-address"></span><h3>Address<a class="headerlink" href="#address" title="Permalink to this headline">¶</a></h3>
+<p>Defines target(source/destination) address.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><em>type</em>: Address type. See detail <a class="reference internal" href="call_struct.html#call-struct-address-type"><span class="std std-ref">here</span></a>.</li>
+<li><em>target</em>: address endpoint.</li>
+<li><em>target_name</em>: address’s name.</li>
+<li><em>name</em>: Name.</li>
+<li><em>detail</em>: Detail description.</li>
+</ul>
+</div>
+<div class="section" id="address-type">
+<span id="call-struct-address-type"></span><h3>Address type<a class="headerlink" href="#address-type" title="Permalink to this headline">¶</a></h3>
+<p>Defines types of address.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="81%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>agent</td>
+<td>Used for calling to the agent</td>
+</tr>
+<tr class="row-odd"><td>endpoint</td>
+<td>Used for calling to endpoint(<a class="reference external" href="mailto:extension&#37;&#52;&#48;domain">extension<span>&#64;</span>domain</a>)</td>
+</tr>
+<tr class="row-even"><td>sip</td>
+<td>SIP type address.</td>
+</tr>
+<tr class="row-odd"><td>tel</td>
+<td>Telephone type address.</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section" id="tutorial">
-<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
+<span id="call-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="simple-outbound-call-with-tts">
 <h3>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Permalink to this headline">¶</a></h3>
 <p>Making an outbound call with TTS(Text-to-Speech) action.
@@ -846,881 +1002,6 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </div>
 </div>
-<div class="section" id="struct">
-<h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="type">
-<h3>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h3>
-<p>Call’s type.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Type</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>flow</td>
-<td>Executing the call-flow</td>
-</tr>
-<tr class="row-odd"><td>conference</td>
-<td>Conference call.</td>
-</tr>
-<tr class="row-even"><td>sip-service</td>
-<td>sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="status">
-<h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
-<p>Call’s status.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="14%" />
-<col width="86%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Status</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>dialing</td>
-<td>The call is created. We are dialing to the destination.</td>
-</tr>
-<tr class="row-odd"><td>ringing</td>
-<td>The destination has confirmed that the call is ringng.</td>
-</tr>
-<tr class="row-even"><td>progressing</td>
-<td>The call has answered. The both endpoints are talking to each other.</td>
-</tr>
-<tr class="row-odd"><td>terminating</td>
-<td>The call is terminating.</td>
-</tr>
-<tr class="row-even"><td>canceling</td>
-<td>The call originator is canceling the call.</td>
-</tr>
-<tr class="row-odd"><td>hangup</td>
-<td>The call has been completed.</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="direction">
-<h3>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h3>
-<p>Call’s direction.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="21%" />
-<col width="79%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Direction</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>incoming</td>
-<td>Call is coming from outside from voipbin.</td>
-</tr>
-<tr class="row-odd"><td>outgoing</td>
-<td>Call is generating form the voipbin.</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="hangup-by">
-<h3>Hangup by<a class="headerlink" href="#hangup-by" title="Permalink to this headline">¶</a></h3>
-<p>The Hangup by shows which endpoint sent the hangup request first.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="23%" />
-<col width="77%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">hangup by</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>remote</td>
-<td>The remote end hangup the call first.</td>
-</tr>
-<tr class="row-odd"><td>local</td>
-<td>The local end hangup the call first.</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="hangup-reason">
-<h3>Hangup reason<a class="headerlink" href="#hangup-reason" title="Permalink to this headline">¶</a></h3>
-<p>Shows why the call was hungup.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="9%" />
-<col width="91%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Reason</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>normal</td>
-<td>The call has ended after answer.</td>
-</tr>
-<tr class="row-odd"><td>failed</td>
-<td>The call attempt(signal) was not reached to the phone network.</td>
-</tr>
-<tr class="row-even"><td>busy</td>
-<td>The destination is on the line with another caller.</td>
-</tr>
-<tr class="row-odd"><td>cancel</td>
-<td>Call was cancelled by the originator before it was answered.</td>
-</tr>
-<tr class="row-even"><td>timeout</td>
-<td>Call reached max call duration after it was answered.</td>
-</tr>
-<tr class="row-odd"><td>unanswer</td>
-<td>Destination didn’t answer until destination’s timeout.</td>
-</tr>
-<tr class="row-even"><td>dialout</td>
-<td>The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="address">
-<h3>Address<a class="headerlink" href="#address" title="Permalink to this headline">¶</a></h3>
-<p>Defines target(source/destination) address.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li>type: Address type.</li>
-<li>target: Target address.</li>
-<li>name: Target name.</li>
-</ul>
-</div>
-<div class="section" id="address-type">
-<h3>Address type<a class="headerlink" href="#address-type" title="Permalink to this headline">¶</a></h3>
-<table border="1" class="docutils">
-<colgroup>
-<col width="32%" />
-<col width="68%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Type</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>sip</td>
-<td>SIP type address.</td>
-</tr>
-<tr class="row-odd"><td>tel</td>
-<td>Telephone type address.</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="section" id="action">
-<h2>Action<a class="headerlink" href="#action" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="agent-call">
-<h3>Agent Call<a class="headerlink" href="#agent-call" title="Permalink to this headline">¶</a></h3>
-<p>Call to agent.</p>
-<div class="section" id="parameters">
-<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent_call&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>agent_id</em>: target agent id.</li>
-</ul>
-</div>
-<div class="section" id="example">
-<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent_call&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="amd">
-<h3>AMD<a class="headerlink" href="#amd" title="Permalink to this headline">¶</a></h3>
-<p>Answering machine detection.</p>
-<div class="section" id="id1">
-<h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;amd&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;machine_handle&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;async&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>machine_handle</em>: hangup,delay,continue if the machine answered a call.</li>
-<li><em>async</em>: if it’s false, the call flow will be stop until amd done.</li>
-</ul>
-</div>
-<div class="section" id="id2">
-<h4>Example<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;amd&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;machine_handle&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="n">true</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="answer">
-<h3>Answer<a class="headerlink" href="#answer" title="Permalink to this headline">¶</a></h3>
-<p>Answer the call</p>
-<div class="section" id="id3">
-<h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="id4">
-<h4>Example<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="branch">
-<h3>Branch<a class="headerlink" href="#branch" title="Permalink to this headline">¶</a></h3>
-<p>Branch the flow.</p>
-<div class="section" id="id5">
-<h4>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;default_index&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;default_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target_indexes&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">,</span>
-            <span class="o">...</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>default_index</em>: action index for default selection.</li>
-<li><em>default_id</em>: action id for default selection. This will be generated automatically by the given default_index.</li>
-<li><em>target_indexes</em>: set of input digit and target index fair.</li>
-<li><em>target_ids</em>: set of input digit and target id fair. This will be generated automatically by the given target_indexes.</li>
-</ul>
-</div>
-<div class="section" id="id6">
-<h4>Example<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;default_index&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
-        <span class="s2">&quot;target_indexes&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-            <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="mi">7</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="condition-digits">
-<h3>Condition Digits<a class="headerlink" href="#condition-digits" title="Permalink to this headline">¶</a></h3>
-<p>Check the condition of received digits.
-It checks the received digits and if it matched condition move to the next action. If not, move to the false_target_id.</p>
-<div class="section" id="id7">
-<h4>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_digits&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;false_target_index&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>length</em>: match digits length.</li>
-<li><em>key</em>: match digits contain.</li>
-<li><em>false_target_index</em>: action index for false condition.</li>
-<li><em>false_target_id</em>: action id for false condition. This will be generated automatically by the given false_target_index.</li>
-</ul>
-</div>
-<div class="section" id="id8">
-<h4>Example<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_digits&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-        <span class="s2">&quot;false_target_index&quot;</span><span class="p">:</span> <span class="mi">3</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="conference-join">
-<h3>Conference Join<a class="headerlink" href="#conference-join" title="Permalink to this headline">¶</a></h3>
-<p>Join to the conference</p>
-<div class="section" id="id9">
-<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference_join&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;conference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>conference_id</em>: Conference’s id to join.</li>
-</ul>
-</div>
-<div class="section" id="id10">
-<h4>Example<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference_join&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;conference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;367e0e7a-3a8c-11eb-bb08-f3c3f059cfbe&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="connect">
-<h3>Connect<a class="headerlink" href="#connect" title="Permalink to this headline">¶</a></h3>
-<p>Originate to the other destination(s) and connect to them each other.</p>
-<div class="section" id="id11">
-<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
-        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="p">{</span><span class="o">...</span><span class="p">},</span>
-            <span class="o">...</span>
-        <span class="p">]</span>
-        <span class="s2">&quot;unchained&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>source</em>: Source address.</li>
-<li><em>destinations</em>: Destination addresses.</li>
-<li><em>unchained</em>: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.</li>
-</ul>
-</div>
-<div class="section" id="id12">
-<h4>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+11111111111111&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+222222222222222&quot;</span>
-            <span class="p">}</span>
-        <span class="p">]</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="digits-receive">
-<h3>Digits Receive<a class="headerlink" href="#digits-receive" title="Permalink to this headline">¶</a></h3>
-<p>Receives the digits for given duration or numbers.</p>
-<div class="section" id="id13">
-<h4>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>duration</em>: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.</li>
-<li><em>length</em>: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.</li>
-<li><em>key</em>: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.</li>
-</ul>
-</div>
-<div class="section" id="id14">
-<h4>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
-        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;#&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="digits-send">
-<h3>Digits Send<a class="headerlink" href="#digits-send" title="Permalink to this headline">¶</a></h3>
-<p>Sends the digits with given duration and interval.</p>
-<div class="section" id="id15">
-<h4>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_send&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>digits</em>: The digit string to send. Allowed set of characters: 0-9,A-D, #, ‘*’; with a maximum of 100 keys.</li>
-<li><em>duration</em>: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.</li>
-<li><em>interval</em>: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.</li>
-</ul>
-</div>
-<div class="section" id="id16">
-<h4>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_send&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
-        <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">500</span>
-    <span class="p">}</span>
-<span class="p">},</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="echo">
-<h3>Echo<a class="headerlink" href="#echo" title="Permalink to this headline">¶</a></h3>
-<p>Echoing the call.</p>
-<div class="section" id="id17">
-<h4>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>duration</em>: Echo duration. ms.</li>
-</ul>
-</div>
-<div class="section" id="id18">
-<h4>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">30000</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="goto">
-<h3>Goto<a class="headerlink" href="#goto" title="Permalink to this headline">¶</a></h3>
-<p>Move the action execution.</p>
-<div class="section" id="id19">
-<h4>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;target_index&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;loop&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>target_index</em>: action index for move target.</li>
-<li><em>target_id</em>: action id for move target. This will be generated automatically by the given default_index.</li>
-<li><em>loop</em>: It this set to true, will loop only number of loop_count.</li>
-<li><em>loop_count</em>: The number of loop.</li>
-</ul>
-</div>
-<div class="section" id="id20">
-<h4>Example<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;target_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;loop&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-        <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="mi">2</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="hangup">
-<h3>Hangup<a class="headerlink" href="#hangup" title="Permalink to this headline">¶</a></h3>
-<p>Hangup the call.</p>
-<div class="section" id="id21">
-<h4>Parameters<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="id22">
-<h4>Example<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="patch">
-<h3>Patch<a class="headerlink" href="#patch" title="Permalink to this headline">¶</a></h3>
-<p>Patch the next flow from the remote.</p>
-<div class="section" id="id23">
-<h4>Parameters<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;event_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>event_url</em>: The url for flow patching.</li>
-<li><em>event_method</em>: The method for flow patching.</li>
-</ul>
-</div>
-<div class="section" id="id24">
-<h4>Example<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="o">.</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="patch-flow">
-<h3>Patch Flow<a class="headerlink" href="#patch-flow" title="Permalink to this headline">¶</a></h3>
-<p>Patch the next flow from the existed flow.</p>
-<div class="section" id="id25">
-<h4>Parameters<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch_flow&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>flow_id</em>: The id of flow.</li>
-</ul>
-</div>
-<div class="section" id="id26">
-<h4>Example<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch_flow&quot;</span><span class="o">.</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;212a32a8-9529-11ec-8bf0-8b89df407b6e&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="play">
-<h3>Play<a class="headerlink" href="#play" title="Permalink to this headline">¶</a></h3>
-<p>Plays the linked file.</p>
-<div class="section" id="id27">
-<h4>Parameters<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;stream_urls&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-            <span class="o">...</span>
-        <span class="p">]</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>stream_urls</em>: Stream url array for media.</li>
-</ul>
-</div>
-<div class="section" id="id28">
-<h4>Example<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;stream_urls&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;</span>
-        <span class="p">]</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="queue-join">
-<h3>Queue Join<a class="headerlink" href="#queue-join" title="Permalink to this headline">¶</a></h3>
-<p>Join to the queue.</p>
-<div class="section" id="id29">
-<h4>Parameters<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>queue_id</em>: Target queue id.</li>
-</ul>
-</div>
-<div class="section" id="id30">
-<h4>Example<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="recording-start">
-<h3>Recording Start<a class="headerlink" href="#recording-start" title="Permalink to this headline">¶</a></h3>
-<p>Starts the call recording.</p>
-<div class="section" id="id31">
-<h4>Parameters<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;end_of_silence&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;end_of_key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;beep_start&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>format</em>: Format to encode audio in. wav, mp3, ogg.</li>
-<li><em>end_of_silence</em>: Maximum duration of silence, in seconds. 0 for no limit.</li>
-<li><em>end_of_key</em>: DTMF input to terminate recording. none, any, *, #.</li>
-<li><em>duration</em>: Maximum duration of the recording, in seconds. 0 for no limit.</li>
-<li><em>beep_start</em>: Play beep when recording begins</li>
-</ul>
-</div>
-<div class="section" id="id32">
-<h4>Example<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;wav&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="recording-stop">
-<h3>Recording Stop<a class="headerlink" href="#recording-stop" title="Permalink to this headline">¶</a></h3>
-<p>Stops the call recording.</p>
-<div class="section" id="id33">
-<h4>Parameters<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="id34">
-<h4>Example<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="stream-echo">
-<h3>Stream Echo<a class="headerlink" href="#stream-echo" title="Permalink to this headline">¶</a></h3>
-<p>Echoing the RTP stream including the digits receive.</p>
-<div class="section" id="id35">
-<h4>Parameters<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream_echo&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>duration</em>: Echo duration. ms.</li>
-</ul>
-</div>
-<div class="section" id="id36">
-<h4>Example<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream_echo&quot;</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="talk">
-<h3>Talk<a class="headerlink" href="#talk" title="Permalink to this headline">¶</a></h3>
-<p>Text to speech. SSML(<a class="reference external" href="https://www.w3.org/TR/speech-synthesis/">https://www.w3.org/TR/speech-synthesis/</a>) supported.</p>
-<div class="section" id="id37">
-<h4>Parameters<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>text</em>: Text to speech. SSML(<a class="reference external" href="https://cloud.google.com/text-to-speech/docs/ssml">https://cloud.google.com/text-to-speech/docs/ssml</a>) supported.</li>
-<li><em>gender</em>: male/female.</li>
-<li><em>language</em>: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</li>
-</ul>
-</div>
-<div class="section" id="id38">
-<h4>Example<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. Welcome to voipbin. This is test message. Please enjoy the voipbin service. Thank you. Bye&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="transcribe-start">
-<h3>Transcribe_start<a class="headerlink" href="#transcribe-start" title="Permalink to this headline">¶</a></h3>
-<p>Start the STT(Speech to text) transcribe in realtime.</p>
-<div class="section" id="id39">
-<h4>Parameters<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><em>language</em>: Specifies the language. BCP47 format. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</li>
-</ul>
-</div>
-<div class="section" id="id40">
-<h4>Example<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="transcribe-stop">
-<h3>Transcribe_stop<a class="headerlink" href="#transcribe-stop" title="Permalink to this headline">¶</a></h3>
-<p>Stop the transcribe talk in realtime.</p>
-<div class="section" id="id41">
-<h4>Parameters<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="id42">
-<h4>Example<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h4>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
 </div>
 
 
@@ -1731,7 +1012,7 @@ It checks the received digits and if it matched condition move to the next actio
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="conference.html" class="btn btn-neutral float-right" title="Conference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="agent.html" class="btn btn-neutral float-right" title="Agent" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="api.html" class="btn btn-neutral float-left" title="API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

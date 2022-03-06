@@ -87,10 +87,15 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Extension</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#extension-struct-extension">Extension</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#get-list-of-extensions">Get list of extensions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-detail-of-specified-extension">Get detail of specified extension</a></li>
@@ -103,7 +108,9 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 
             
@@ -177,6 +184,31 @@
 <p>Calling a registered SIP endpoint works the same as calling any other SIP URI, only you will now be using the AOR of your registered SIP extension(endpoint).</p>
 <p>When calling your registered SIP extension(endpoint), you should use the general SIP domain URI, omitting the Voipbin’s sip URI i.e.:</p>
 <p><cite>{extension}&#64;{your voipbin domain}.sip.voipbin.net</cite></p>
+</div>
+<div class="section" id="struct">
+<span id="extension-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="extension-struct-extension">
+<span id="id1"></span><h3>Extension<a class="headerlink" href="#extension-struct-extension" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e1491290-c61c-4349-a7ff-5890c796b61b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test domain&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test domain creation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;domain_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;extension&quot;</span><span class="p">:</span> <span class="s2">&quot;test12&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-03-21 11:24:26.485161&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>id: Extension’s id.</li>
+<li>name: Extension’s name.</li>
+<li>detail: Extensions’s detail description.</li>
+<li>domain_id: Domain’s id.</li>
+<li>extension: Extension</li>
+</ul>
+</div>
 </div>
 <div class="section" id="tutorial">
 <h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>

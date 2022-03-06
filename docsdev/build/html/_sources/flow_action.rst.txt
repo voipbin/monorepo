@@ -1,9 +1,76 @@
-.. _call-action: call-action
+.. _flow-action:
 
 Action
 ======
 
-.. _call-action-agent_call: call-action-agent_call
+.. _flow-action-action:
+
+Action
+------
+
+.. code::
+
+    {
+        "id": "<string>>",
+        "next_id": "<string>>",
+        "type": "<string>>",
+        "option": {
+            ...
+        },
+        "tm_execute": "<string>>"
+    }
+
+* *id*: Action's id.
+* *next_id*: Action's next id. If it sets empty, just move on to the next action in the action array.
+* *type*: Action's type. See detail :ref:`here <flow-struct-action-type>`.
+* *option*: Action's option.
+
+.. _flow-action-action-type:
+
+Action type
+-----------
+
+======================= ==================
+type                    Description
+======================= ==================
+agent_call              Make a call to the agent.
+amd                     Answering machine detection.
+answer                  Answer the call.
+beep                    Play the beep sound.
+branch                  Branch the flow
+condition_call_digits   Condition check(call's digits)
+condition_call_status   Condition check(call's status)
+confbridge_join         Join to the confbridge.
+conference_join         Join to the conference.
+connect                 Connect to the other destination.
+digits_receive          Receive the digits(dtmfs).
+digits_send             Send the digits(dtmfs).
+echo                    Echo to stream.
+external_media_start    Start the external media.
+external_media_stop     Stop the external media.
+goto                    Goto.
+hangup                  Hangup the call.
+patch                   Patch the actions from endpoint.
+patch_flow              Patch the actions from the exist flow.
+play                    Play the file.
+queue_join              Join to the queue.
+recording_start         Startr the record of the given call.
+recording_stop          Stop the record of the given call.
+sleep                   Sleep.
+stream_echo             Echo the steam.
+talk                    Generate audio from the given text(ssml or plain text) and play it.
+transcribe_start        Start transcribe the call
+transcribe_stop         Stop transcribe the call
+transcribe_recording    Transcribe the recording and send it to webhook.
+======================= ==================
+
+.. _flow-actions:
+
+Actions
+=======
+List of actions
+
+.. _flow-action-agent_call:
 
 Agent Call
 ----------
@@ -33,7 +100,7 @@ Example
         }
     }
 
-.. _call-action-amd: call-action-amd
+.. _flow-action-amd: flow-action-amd
 
 AMD
 ---
@@ -51,8 +118,19 @@ Parameters
         }
     }
 
-* *machine_handle*: hangup,delay,continue if the machine answered a call.
+* *machine_handle*: hangup,delay,continue if the machine answered a call. See detail :ref:`here <flow-action-amd-machinehandle>`.
 * *async*: if it's false, the call flow will be stop until amd done.
+
+.. _flow-action-amd-machinehandle:
+
+Machine handle
+++++++++++++++
+======== ==============
+Type     Description
+======== ==============
+hangup   Hangup the call.
+continue Continue the call.
+======== ==============
 
 Example
 +++++++
@@ -66,7 +144,7 @@ Example
         }
     }
 
-.. _call-action-answer: call-action-answer
+.. _flow-action-answer:
 
 Answer
 ------
@@ -88,7 +166,30 @@ Example
         "type": "answer"
     }
 
-.. _call-action-branch: call-action-branch
+.. _flow-action-beep:
+
+Beep
+------
+Make a beep sound.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "beep"
+    }
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "beep"
+    }
+
+
+.. _flow-action-branch:
 
 Branch
 ------
@@ -101,21 +202,14 @@ Parameters
     {
         "type": "branch",
         "option": {
-            "default_index": <number>,
-            "default_id": "<string>",
-            "target_indexes": {
-                "<string>": <string>,
-                ...
-            },
+            "default_target_id": "<string>",
             "target_ids": {
                 "<string>": <string>,
             }
         }
     }
 
-* *default_index*: action index for default selection.
-* *default_id*: action id for default selection. This will be generated automatically by the given default_index.
-* *target_indexes*: set of input digit and target index fair.
+* *default_target_id*: action id for default selection. This will be generated automatically by the given default_index.
 * *target_ids*: set of input digit and target id fair. This will be generated automatically by the given target_indexes.
 
 Example
@@ -125,19 +219,39 @@ Example
     {
         "type": "branch",
         "option": {
-            "default_index": 9,
+            "default_target_id": "779f2580-9c8b-11ec-ae23-0bb6b66c8a86",
             "target_indexes": {
-                "1": 3,
-                "2": 5,
-                "3": 7
+                "1": "78dcfb2a-9c8b-11ec-b0fd-cb5d94b8bd32",
+                "2": "7903829a-9c8b-11ec-8aa5-978e3a1124e9",
+                "3": "792b07c0-9c8b-11ec-8407-dbe1a113664c"
             }
         }
     }
 
-.. _call-action-condition_digits: call-action-condition_digits
+.. _flow-action-confbridge_join:
 
-Condition Digits
+Confbridge Join
 ----------------
+Join to the confbridge.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "confbridge_join",
+        "option": {
+            "confbridge_id": "<string>"
+        }
+    }
+
+* *confbridge_id*: Target confbridge id.
+
+
+.. _flow-action-condition_call_digits:
+
+Condition Call Digits
+---------------------
 Check the condition of received digits.
 It checks the received digits and if it matched condition move to the next action. If not, move to the false_target_id.
 
@@ -146,34 +260,66 @@ Parameters
 .. code::
 
     {
-        "type": "condition_digits",
+        "type": "condition_call_digits",
         "option": {
             "length": <number>,
             "key": "<string>",
-            "false_target_index": <number>,
             "false_target_id": "<string>"
         }
     }
 
 * *length*: match digits length.
 * *key*: match digits contain.
-* *false_target_index*: action index for false condition.
-* *false_target_id*: action id for false condition. This will be generated automatically by the given false_target_index.
+* *false_target_id*: action id for false condition.
 
 Example
 +++++++
 .. code::
 
     {
-        "type": "condition_digits",
+        "type": "condition_call_digits",
         "option": {
             "length": 10,
-            "false_target_index": 3
+            "false_target_id": "e3e50e6c-9c8b-11ec-8031-0384a8fcd1e2"
+        }
+    }
+
+.. _flow-action-condition_call_status:
+
+Condition Call Status
+---------------------
+Check the condition of call's status.
+It checks the call's status and if it matched with condition then move to the next action. If not, move to the false_target_id.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "condition_call_status",
+        "option": {
+            "status": <number>,
+            "false_target_id": "<string>"
+        }
+    }
+
+* *status*: match call's status. See detail :ref:`here <call-struct-status>`.
+* *false_target_id*: action id for false condition.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "condition_call_status",
+        "option": {
+            "status": "progressing,
+            "false_target_id": "e3e50e6c-9c8b-11ec-8031-0384a8fcd1e2"
         }
     }
 
 
-.. _call-action-conference_join: call-action-conference_join
+.. _flow-action-conference_join:
 
 Conference Join
 ---------------
@@ -203,7 +349,7 @@ Example
         }
     }
 
-.. _call-action-connect: call-action-connect
+.. _flow-action-connect:
 
 Connect
 -------
@@ -218,7 +364,6 @@ Parameters
         "option": {
             "source": {...},
             "destinations": [
-                {...},
                 ...
             ]
             "unchained": <boolean>
@@ -226,7 +371,7 @@ Parameters
     }
 
 * *source*: Source address.
-* *destinations*: Destination addresses.
+* *destinations*: Array of destination addresses.
 * *unchained*: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 
 Example
@@ -248,6 +393,8 @@ Example
             ]
         }
     }
+
+.. _flow-action-digits_receive:
 
 Digits Receive
 --------------
@@ -283,6 +430,8 @@ Example
         }
     }
 
+.. _flow-action-digits_send:
+
 Digits Send
 -----------
 Sends the digits with given duration and interval.
@@ -317,6 +466,8 @@ Example
         }
     },
 
+.. _flow-action-echo:
+
 Echo
 ----
 Echoing the call.
@@ -345,6 +496,53 @@ Example
         }
     }
 
+.. _flow-action-external_media_start:
+
+External Media Start
+--------------------
+Start the external media.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "external_media_start",
+        "option": {
+            "external_host": "<string>",
+            "encapsulation": "<string>",
+            "transport": "<string>",
+            "connection_type": "<string>",
+            "format": "<string>",
+            "direction": "<string>",
+            "data": "<string>"
+        }
+    }
+
+* *external_host*: external media target host address.
+* *encapsulation*: encapsulation. default: rtp.
+* *transport*: transport. default: udp.
+* *connection_type*: connection type. default: client
+* *format*: format default: ulaw
+* *direction*: Direction. default: both.
+* *data*: Data. Reserved.
+
+.. _flow-action-external_media_stop:
+
+External Media Stop
+--------------------
+Stop the external media.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "external_media_stop",
+    }
+
+.. _flow-action-goto:
+
 Goto
 ----
 Move the action execution.
@@ -356,16 +554,12 @@ Parameters
     {
         "type": "goto",
         "option": {
-            "target_index": <integer>,
             "target_id": "<string>",
-            "loop": <boolean>,
             "loop_count": <integer>
         }
     }
 
-* *target_index*: action index for move target.
-* *target_id*: action id for move target. This will be generated automatically by the given default_index.
-* *loop*: It this set to true, will loop only number of loop_count.
+* *target_id*: action id for move target.
 * *loop_count*: The number of loop.
 
 Example
@@ -375,12 +569,12 @@ Example
     {
         "type": "goto",
         "option": {
-            "target_index": 0,
-            "loop": true,
+            "target_id": "ca4ddd74-9c8d-11ec-818d-d7cf1487e8df",
             "loop_count": 2
         }
     }
 
+.. _flow-action-hangup:
 
 Hangup
 ------
@@ -402,7 +596,7 @@ Example
         "type": "hangup"
     }
 
-.. _call-action-patch: call-action-patch
+.. _flow-action-patch: flow-action-patch
 
 Patch
 -----
@@ -434,6 +628,8 @@ Example
         }
     }
 
+.. _flow-action-patch_flow:
+
 Patch Flow
 ----------
 Patch the next flow from the existed flow.
@@ -461,6 +657,8 @@ Example
             "flow_id": "212a32a8-9529-11ec-8bf0-8b89df407b6e"
         }
     }
+
+.. _flow-action-play:
 
 Play
 ----
@@ -495,6 +693,8 @@ Example
         }
     }
 
+.. _flow-action-queue_join:
+
 Queue Join
 ----------
 Join to the queue.
@@ -522,6 +722,8 @@ Example
             "queue_id": "99bf739a-932f-433c-b1bf-103d33d7e9bb"
         }
     }
+
+.. _flow-action-recording_start:
 
 Recording Start
 ---------------
@@ -559,6 +761,8 @@ Example
         }
     }
 
+.. _flow-action-recording_stop:
+
 Recording Stop
 --------------
 Stops the call recording.
@@ -578,6 +782,27 @@ Example
     {
         "type": "recording_stop"
     }
+
+.. _flow-action-sleep:
+
+Sleep
+--------------
+Sleep the call.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "sleep",
+        "option": {
+            "duration": <number>
+        }
+    }
+
+* duration: Sleep duration(ms).
+
+.. _flow-action-stream_echo:
 
 Stream Echo
 -----------
@@ -606,6 +831,8 @@ Example
             "duration": 10000
         }
     }
+
+.. _flow-action-talk:
 
 Talk
 ----
@@ -641,7 +868,9 @@ Example
         }
     }
 
-Transcribe_start
+.. _flow-action-transribe_start:
+
+Transcribe Start
 ----------------
 Start the STT(Speech to text) transcribe in realtime.
 
@@ -669,7 +898,9 @@ Example
         }
     }
 
-Transcribe_stop
+.. _flow-action-transcribe_stop:
+
+Transcribe Stop
 ---------------
 Stop the transcribe talk in realtime.
 
@@ -688,3 +919,4 @@ Example
     {
         "type": "transcribe_stop"
     }
+

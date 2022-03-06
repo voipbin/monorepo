@@ -1,0 +1,391 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Agent &mdash; voipbin  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Conference" href="conference.html" />
+    <link rel="prev" title="Call" href="call.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> voipbin
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Agent</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#call-to-agent">Call to agent</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#agent-struct-agent">Agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ring-method">Ring method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#status">Status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-new-agent">Create a new agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#update-agent-s-status">Update agent’s status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#update-agent-s-addresses">Update agent’s addresses</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">voipbin</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Agent</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/agent.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="agent">
+<h1>Agent<a class="headerlink" href="#agent" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<span id="agent-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The agent, or more accurately the call centre agent or phone agent, works for a company and takes calls with private or business customers on their behalf.
+In general, the place of work is a call centre, where a number of agents are employed. The operator of the call centre may be the company itself or an external service provider. Independent service providers often serve a whole range of different customers from a single site.</p>
+<div class="section" id="call-to-agent">
+<h3>Call to agent<a class="headerlink" href="#call-to-agent" title="Permalink to this headline">¶</a></h3>
+<p>The agent can have multiple addresses. So, when the VoIPBIN makes a call to agents, it will generate calls to every agent’s address. And if the agent answers one of the calls, then the other calls will hang up immediately.</p>
+<img alt="_images/agent_call.png" src="_images/agent_call.png" />
+</div>
+</div>
+<div class="section" id="struct">
+<span id="agent-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="agent-struct-agent">
+<span id="id1"></span><h3>Agent<a class="headerlink" href="#agent-struct-agent" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ring_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;permission&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;addresses&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><em>id</em>: Agent’s id.</li>
+<li><em>username</em>: Agent’s login username.</li>
+<li><em>name</em>: Agent’s name.</li>
+<li><em>detail</em>: Agent’s detail description.</li>
+<li><em>ring_method</em>: Ring method for agent calling. See detail <a class="reference internal" href="agent_struct.html#agent-struct-ring-method"><span class="std std-ref">here</span></a>.</li>
+<li><em>status</em>: Agent’s status. See detail <a class="reference internal" href="agent_struct.html#agent-struct-status"><span class="std std-ref">here</span></a>.</li>
+<li><em>permission</em>: Agent’s permission.</li>
+<li><em>tag_ids</em>: List of agent’s tags.</li>
+<li><em>addresses</em>: List of agent’s addresses. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</li>
+</ul>
+</div>
+<div class="section" id="ring-method">
+<span id="agent-struct-ring-method"></span><h3>Ring method<a class="headerlink" href="#ring-method" title="Permalink to this headline">¶</a></h3>
+<p>Agent’s calling method.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ringall</td>
+<td>Dial to the all addresses.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="status">
+<span id="agent-struct-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
+<p>Agent’s status.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="45%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>available</td>
+<td>Available.</td>
+</tr>
+<tr class="row-odd"><td>away</td>
+<td>Away.</td>
+</tr>
+<tr class="row-even"><td>busy</td>
+<td>Busy.</td>
+</tr>
+<tr class="row-odd"><td>offline</td>
+<td>Offline.</td>
+</tr>
+<tr class="row-even"><td>ringing</td>
+<td>Ringing.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="tutorial">
+<span id="agent-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="create-a-new-agent">
+<h3>Create a new agent<a class="headerlink" href="#create-a-new-agent" title="Permalink to this headline">¶</a></h3>
+<p>Create a new agent.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/agents?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDY4NzQwMzl9.LoPJ9Vv6GFAItYQ1AVV4lrEoOVtJaFOQx-tkauUR1-g&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDY4NzQwMzl9.LoPJ9Vv6GFAItYQ1AVV4lrEoOVtJaFOQx-tkauUR1-g&#39; \
+    --data-raw &#39;{
+        &quot;username&quot;: &quot;test2&quot;,
+        &quot;password&quot;: &quot;test2&quot;,
+        &quot;name&quot;: &quot;test tag&quot;,
+        &quot;detail&quot;: &quot;test tag example&quot;,
+        &quot;ring_method&quot;: &quot;ringall&quot;,
+        &quot;permission&quot;: 0,
+        &quot;tag_ids&quot;: [&quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;]
+    }&#39;
+</pre></div>
+</div>
+</div>
+<div class="section" id="update-agent-s-status">
+<h3>Update agent’s status<a class="headerlink" href="#update-agent-s-status" title="Permalink to this headline">¶</a></h3>
+<p>Update agent’s status to the available.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/status?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDY4NzQwMzl9.LoPJ9Vv6GFAItYQ1AVV4lrEoOVtJaFOQx-tkauUR1-g&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDYyNDExOTF9.SE9ddn1ZKdZ9zeRpw0a--XUKLvK4JhVU-pBLZCkMXbY&#39; \
+    --data-raw &#39;{
+        &quot;status&quot;: &quot;available&quot;
+    }&#39;
+</pre></div>
+</div>
+</div>
+<div class="section" id="update-agent-s-addresses">
+<h3>Update agent’s addresses<a class="headerlink" href="#update-agent-s-addresses" title="Permalink to this headline">¶</a></h3>
+<p>Update agent’s addresses.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/addresses?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDY4NzQwMzl9.LoPJ9Vv6GFAItYQ1AVV4lrEoOVtJaFOQx-tkauUR1-g&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDY4NzQwMzl9.LoPJ9Vv6GFAItYQ1AVV4lrEoOVtJaFOQx-tkauUR1-g&#39; \
+    --data-raw &#39;{
+        &quot;addresses&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+821021656521&quot;
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="conference.html" class="btn btn-neutral float-right" title="Conference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="call.html" class="btn btn-neutral float-left" title="Call" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Sungtae Kim
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
