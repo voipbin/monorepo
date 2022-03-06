@@ -87,9 +87,14 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Domain</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#domain-struct-domain">Domain</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#get-list-of-domains">Get list of domains</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-detail-of-specified-domain">Get detail of specified domain</a></li>
@@ -103,7 +108,9 @@
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 
             
@@ -170,11 +177,35 @@
            <div itemprop="articleBody">
             
   <div class="section" id="domain">
-<h1>Domain<a class="headerlink" href="#domain" title="Permalink to this headline">¶</a></h1>
+<span id="domain-main"></span><h1>Domain<a class="headerlink" href="#domain" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>A SIP Domain resource describes a custom DNS hostname that can be accept SIP traffic for your account. A SIP request to that domain, such as to
 <cite>sip:alice&#64;example.sip.voipbin.net</cite>, routes to Voipbin. Voipbin authenticates the request and requests Voipbin from the voice_url of the SIP domain.</p>
+<img alt="_images/domain_overview_flow.png" src="_images/domain_overview_flow.png" />
+</div>
+<div class="section" id="struct">
+<span id="domain-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="domain-struct-domain">
+<span id="id1"></span><h3>Domain<a class="headerlink" href="#domain-struct-domain" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;domain_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><em>id</em>: Domain’s id.</li>
+<li><em>name</em>: Domain’s name.</li>
+<li><em>detail</em>: Domain’s detail description.</li>
+<li><em>domain_name</em>: Target domain name. Must include ‘.sip.voipbin.net’.</li>
+</ul>
+</div>
 </div>
 <div class="section" id="tutorial">
 <h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>

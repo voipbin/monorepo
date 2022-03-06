@@ -37,7 +37,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Domain" href="domain.html" />
-    <link rel="prev" title="Call" href="call.html" /> 
+    <link rel="prev" title="Agent" href="agent.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,8 +87,15 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Conference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#conference-struct-conference">Conference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#status">Status</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#get-list-of-conferences">Get list of conferences</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-detail-of-conference">Get detail of conference</a></li>
@@ -101,7 +108,9 @@
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 
             
@@ -170,10 +179,110 @@
   <div class="section" id="conference">
 <h1>Conference<a class="headerlink" href="#conference" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<span id="conference-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>The Conference API is a low-level API that allows you to create a conference room for various objects such as voice, video, and chat.
 Conferences are the fundamental concept the API revolves around. Conferences are containers of communcations exchanged between two or more users which could be a sinble interaction or the history of all interactions between them.</p>
 <p>The API also allows you to create voice/video/WebRTC calls to enable voice and video communications exchaged between two Users and store them in Conferences.</p>
+<img alt="_images/conference_overview_flow.png" src="_images/conference_overview_flow.png" />
+</div>
+<div class="section" id="struct">
+<span id="conference-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="conference-struct-conference">
+<span id="id1"></span><h3>Conference<a class="headerlink" href="#conference-struct-conference" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test conference&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test conference for example.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;pre_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;post_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-03 06:08:56.672025&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-03 06:29:48.601658&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><em>id</em>: Conference’s ID.</li>
+<li><em>type</em>: Conference’s type. See detail <a class="reference internal" href="conference_struct.html#conference-struct-type"><span class="std std-ref">here</span></a>.</li>
+<li><em>status</em>: Conference’s status. See detail <a class="reference internal" href="conference_struct.html#conference-struct-status"><span class="std std-ref">here</span></a>.</li>
+<li><em>name</em>: Conference’s name.</li>
+<li><em>detail</em>: Conference’s detail description.</li>
+<li><em>data</em>: Reserved.</li>
+<li><em>timeout</em>: Timeout(second).</li>
+<li><em>pre_actions</em>: Set of actions for entering calls.</li>
+<li><em>post_action</em>: Set of actions for leaving calls.</li>
+<li><em>call_ids</em>: List of conferencing call ids.</li>
+<li><em>recording_id</em>: Currently recoriding id.</li>
+<li><em>recording_ids</em>: List of recording ids.</li>
+</ul>
+</div>
+<div class="section" id="type">
+<span id="conference-struct-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h3>
+<p>Conference’s type.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="42%" />
+<col width="58%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>conference</td>
+<td>Conference.</td>
+</tr>
+<tr class="row-odd"><td>connect</td>
+<td>Connect.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="status">
+<span id="conference-struct-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
+<p>Conference’s status.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>starting</td>
+<td>Conference is starting.</td>
+</tr>
+<tr class="row-odd"><td>progressing</td>
+<td>Conference is progressing.</td>
+</tr>
+<tr class="row-even"><td>terminating</td>
+<td>Conference is terminating.</td>
+</tr>
+<tr class="row-odd"><td>terminated</td>
+<td>Conference is terminated.</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section" id="tutorial">
 <h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
@@ -268,7 +377,7 @@ Conferences are the fundamental concept the API revolves around. Conferences are
         <a href="domain.html" class="btn btn-neutral float-right" title="Domain" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="call.html" class="btn btn-neutral float-left" title="Call" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="agent.html" class="btn btn-neutral float-left" title="Agent" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

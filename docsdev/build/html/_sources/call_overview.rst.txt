@@ -1,4 +1,4 @@
-.. _call-overview: call-overview
+.. _call-overview:
 
 Overview
 ========
@@ -27,3 +27,17 @@ Extension number format
 Extension numbers can be anything with the below limitation.
 
 * Contain no special characters, such as space, () or -.
+
+Incoming call
+-------------
+The voipbin provides incoming call handle.
+If the call came to the voipbin, the voipbin execute the flow of the given destination.
+
+.. image:: _static/images/call_incoming.png
+
+Outgoing call
+-------------
+The voipbin provides outgoing call handle.
+Waiting for call's answer, then execute the flow actions.
+
+.. image:: _static/images/call_outgoing.png
