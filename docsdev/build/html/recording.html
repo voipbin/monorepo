@@ -36,7 +36,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Number" href="number.html" /> 
+    <link rel="next" title="Tag" href="tag.html" />
+    <link rel="prev" title="Queue" href="queue.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -86,13 +87,22 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Recording</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#recording-struct-recording">Recording</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#format">Format</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#get-list-of-recordings">Get list of recordings</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-detail-of-recording">Get detail of recording</a></li>
@@ -101,6 +111,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 
             
@@ -179,6 +190,99 @@
 <li>Download call recording audio files.</li>
 <li>Asynchronously export call recording in bulk.</li>
 </ul>
+</div>
+<div class="section" id="struct">
+<span id="recording-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="recording-struct-recording">
+<span id="id1"></span><h3>Recording<a class="headerlink" href="#recording-struct-recording" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_start&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_end&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>id: Recording’s ID.</li>
+<li>type: Recording’s type. See detail <a class="reference internal" href="recording_struct.html#reocording-struct-type"><span class="std std-ref">here</span></a>.</li>
+<li>reference_id: Reference’s ID. It shows call/conference’s ID.</li>
+<li>status: Recording status. See detail <a class="reference internal" href="recording_struct.html#recording-struct-status"><span class="std std-ref">here</span></a>.</li>
+<li>format: Recording file format. See detail <a class="reference internal" href="recording_struct.html#recording-struct-format"><span class="std std-ref">here</span></a>.</li>
+</ul>
+</div>
+<div class="section" id="type">
+<span id="reocording-struct-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>call</td>
+<td>Call recording.</td>
+</tr>
+<tr class="row-odd"><td>conference</td>
+<td>Conference recording.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="status">
+<span id="recording-struct-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>initiating</td>
+<td>Preparing the recording.</td>
+</tr>
+<tr class="row-odd"><td>recording</td>
+<td>Recording now.</td>
+</tr>
+<tr class="row-even"><td>ended</td>
+<td>Recording ended.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="format">
+<span id="recording-struct-format"></span><h3>Format<a class="headerlink" href="#format" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="48%" />
+<col width="52%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>wav</td>
+<td>Wav format.</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section" id="tutorial">
 <h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
@@ -291,8 +395,10 @@ Done.
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="tag.html" class="btn btn-neutral float-right" title="Tag" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-        <a href="number.html" class="btn btn-neutral float-left" title="Number" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+        <a href="queue.html" class="btn btn-neutral float-left" title="Queue" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -85,12 +85,15 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 
             
@@ -157,7 +160,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<span id="call-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
 <p>The VoIPBIN call API is the easiest way to build high-quality call application in the Cloud.</p>
 <p>With the VoIPBIN API you can:</p>
 <ul class="simple">
@@ -182,6 +185,18 @@
 <ul class="simple">
 <li>Contain no special characters, such as space, () or -.</li>
 </ul>
+</div>
+<div class="section" id="incoming-call">
+<h2>Incoming call<a class="headerlink" href="#incoming-call" title="Permalink to this headline">¶</a></h2>
+<p>The voipbin provides incoming call handle.
+If the call came to the voipbin, the voipbin execute the flow of the given destination.</p>
+<img alt="_images/call_incoming.png" src="_images/call_incoming.png" />
+</div>
+<div class="section" id="outgoing-call">
+<h2>Outgoing call<a class="headerlink" href="#outgoing-call" title="Permalink to this headline">¶</a></h2>
+<p>The voipbin provides outgoing call handle.
+Waiting for call’s answer, then execute the flow actions.</p>
+<img alt="_images/call_outgoing.png" src="_images/call_outgoing.png" />
 </div>
 </div>
 

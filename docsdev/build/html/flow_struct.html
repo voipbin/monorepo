@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Struct &mdash; voipbin  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> voipbin
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">voipbin</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Struct</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/flow_struct.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="struct">
+<span id="flow-struct"></span><h1>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="flow">
+<span id="flow-struct-flow"></span><h2>Flow<a class="headerlink" href="#flow" title="Permalink to this headline">¶</a></h2>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;flow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test conference_join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test flow for conference_join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e2cafb4a-2f68-46e6-99bd-9cb0d527eca1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;6596bbc2-6079-4665-8ded-3d8d6fb9fea7&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference_join&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;conference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-03 05:37:48.545532&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-03 06:10:23.604222&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<p>action</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;tm_execute&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><em>id</em>: Action’s id.</li>
+<li><em>next_id</em>: Action’s next id. If it sets empty, just move on to the next action in the action array.</li>
+<li><em>type</em>: Action’s type. See detail <a class="reference internal" href="#flow-struct-action-type"><span class="std std-ref">here</span></a>.</li>
+<li><em>option</em>: Action’s option.</li>
+</ul>
+</div>
+<div class="section" id="action-type">
+<span id="flow-struct-action-type"></span><h2>Action type<a class="headerlink" href="#action-type" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="74%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>agent_call</td>
+<td>Make a call to the agent.</td>
+</tr>
+<tr class="row-odd"><td>amd</td>
+<td>Answering machine detection.</td>
+</tr>
+<tr class="row-even"><td>answer</td>
+<td>Answer the call.</td>
+</tr>
+<tr class="row-odd"><td>beep</td>
+<td>Play the beep sound.</td>
+</tr>
+<tr class="row-even"><td>branch</td>
+<td>Branch the flow</td>
+</tr>
+<tr class="row-odd"><td>condition_call_digits</td>
+<td>Condition check(call’s digits)</td>
+</tr>
+<tr class="row-even"><td>condition_call_status</td>
+<td>Condition check(call’s status)</td>
+</tr>
+<tr class="row-odd"><td>confbridge_join</td>
+<td>Join to the confbridge.</td>
+</tr>
+<tr class="row-even"><td>conference_join</td>
+<td>Join to the conference.</td>
+</tr>
+<tr class="row-odd"><td>connect</td>
+<td>Connect to the other destination.</td>
+</tr>
+<tr class="row-even"><td>digits_receive</td>
+<td>Receive the digits(dtmfs).</td>
+</tr>
+<tr class="row-odd"><td>digits_send</td>
+<td>Send the digits(dtmfs).</td>
+</tr>
+<tr class="row-even"><td>echo</td>
+<td>Echo to stream.</td>
+</tr>
+<tr class="row-odd"><td>external_media_start</td>
+<td>Start the external media.</td>
+</tr>
+<tr class="row-even"><td>external_media_stop</td>
+<td>Stop the external media.</td>
+</tr>
+<tr class="row-odd"><td>goto</td>
+<td>Goto.</td>
+</tr>
+<tr class="row-even"><td>hangup</td>
+<td>Hangup the call.</td>
+</tr>
+<tr class="row-odd"><td>patch</td>
+<td>Patch the actions from endpoint.</td>
+</tr>
+<tr class="row-even"><td>patch_flow</td>
+<td>Patch the actions from the exist flow.</td>
+</tr>
+<tr class="row-odd"><td>play</td>
+<td>Play the file.</td>
+</tr>
+<tr class="row-even"><td>queue_join</td>
+<td>Join to the queue.</td>
+</tr>
+<tr class="row-odd"><td>recording_start</td>
+<td>Startr the record of the given call.</td>
+</tr>
+<tr class="row-even"><td>recording_stop</td>
+<td>Stop the record of the given call.</td>
+</tr>
+<tr class="row-odd"><td>sleep</td>
+<td>Sleep.</td>
+</tr>
+<tr class="row-even"><td>stream_echo</td>
+<td>Echo the steam.</td>
+</tr>
+<tr class="row-odd"><td>talk</td>
+<td>Generate audio from the given text(ssml or plain text) and play it.</td>
+</tr>
+<tr class="row-even"><td>transcribe_start</td>
+<td>Start transcribe the call</td>
+</tr>
+<tr class="row-odd"><td>transcribe_stop</td>
+<td>Stop transcribe the call</td>
+</tr>
+<tr class="row-even"><td>transcribe_recording</td>
+<td>Transcribe the recording and send it to webhook.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Sungtae Kim
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
