@@ -21,7 +21,7 @@ func (h *callHandler) startServiceFromDefault(ctx context.Context, cn *channel.C
 	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination, 0)
 		return err
 	}
 
@@ -35,7 +35,7 @@ func (h *callHandler) startServiceFromAMD(ctx context.Context, cn *channel.Chann
 		"channel_id": cn.ID,
 	})
 	defer func() {
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
 	}()
 
 	status := data["amd_status"]

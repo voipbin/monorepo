@@ -95,7 +95,7 @@ func TestHangup(t *testing.T) {
 
 				mockDB.EXPECT().CallGet(gomock.Any(), chainedCallID).Return(tmpCall, nil)
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), tmpCall.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-				mockReq.EXPECT().AstChannelHangup(gomock.Any(), tmpCall.AsteriskID, tmpCall.ChannelID, ari.ChannelCauseNormalClearing)
+				mockReq.EXPECT().AstChannelHangup(gomock.Any(), tmpCall.AsteriskID, tmpCall.ChannelID, ari.ChannelCauseNormalClearing, 0)
 			}
 			if err := h.Hangup(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -195,7 +195,7 @@ func TestHanginUp(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.cause).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.cause, 0).Return(nil)
 
 			if err := h.HangingUp(context.Background(), tt.call.ID, tt.cause); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

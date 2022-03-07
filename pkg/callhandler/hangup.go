@@ -34,7 +34,7 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	}
 
 	// calculate hangup_reason, hangup_by
-	reason := call.CalculateHangupReason(c.Status, cn.HangupCause)
+	reason := call.CalculateHangupReason(c.Direction, c.Status, cn.HangupCause)
 	hangupBy := call.CalculateHangupBy(c.Status)
 
 	// set hangup
@@ -114,7 +114,7 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 	}
 
 	// send hangup request
-	if err := h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, c.ChannelID, cause); err != nil {
+	if err := h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, c.ChannelID, cause, 0); err != nil {
 		// Send hangup request has failed. Something really wrong.
 		log.Errorf("Could not send the hangup request for call hangup. err: %v", err)
 		return err

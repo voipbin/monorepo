@@ -23,7 +23,7 @@ func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, b
 	})
 
 	log.Debug("Hangup join channel.")
-	_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
 
 	// set empty conference id
 	if err := h.db.CallSetConfbridgeID(ctx, br.ReferenceID, uuid.Nil); err != nil {
@@ -66,7 +66,7 @@ func (h *callHandler) bridgeLeftExternal(ctx context.Context, cn *channel.Channe
 
 	// hang up the channel
 	log.Debug("Hangup external media channel.")
-	_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+	_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
 
 	// remove all other channels
 	if len(br.ChannelIDs) == 0 {

@@ -137,7 +137,7 @@ func TestExternalMediaStop(t *testing.T) {
 
 			mockDB.EXPECT().ExternalMediaGet(gomock.Any(), tt.call.ID).Return(tt.extMedia, nil)
 			if tt.extMedia != nil {
-				mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
+				mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
 				mockDB.EXPECT().ExternalMediaDelete(gomock.Any(), tt.call.ID).Return(nil)
 			}
 

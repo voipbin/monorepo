@@ -144,7 +144,7 @@ func TestNewCallByChannel(t *testing.T) {
 
 	tests := []test{
 		{
-			"normarl",
+			"normal",
 			uuid.FromStringOrNil("fc76c9cc-7f42-11ec-bdfd-bf439d0e729c"),
 			`{"type":"ChannelCreated","timestamp":"2020-05-02T20:56:51.498+0000","channel":{"id":"1588453011.231","name":"PJSIP/in-voipbin-00000074","state":"Ring","caller":{"name":"","number":"3001"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"9901146812420898","priority":1,"app_name":"","app_data":""},"creationtime":"2020-05-02T20:56:51.498+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
 			TypeSipService,
@@ -196,6 +196,499 @@ func TestNewCallByChannel(t *testing.T) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, c)
 			}
 
+		})
+	}
+}
+
+func Test_calculateHangupReasonDirectionIncoming(t *testing.T) {
+	type test struct {
+		name string
+
+		lastStatus []Status
+		cause      []ari.ChannelCause
+
+		expectRes HangupReason
+	}
+
+	tests := []test{
+		{
+			"dialing/ringing with noanswer",
+
+			[]Status{
+				StatusDialing,
+				StatusRinging,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseNoAnswer,
+			},
+
+			HangupReasonNoanswer,
+		},
+		{
+			"dialing/ringing with userbusy",
+
+			[]Status{
+				StatusDialing,
+				StatusRinging,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseUserBusy,
+			},
+
+			HangupReasonBusy,
+		},
+		{
+			"dialing/ringing with others",
+
+			[]Status{
+				StatusDialing,
+				StatusRinging,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseUnknown,
+				ari.ChannelCauseUnallocated,
+				ari.ChannelCauseNoRouteTransitNet,
+				ari.ChannelCauseNoRouteDestination,
+				ari.ChannelCauseMisdialedTrunkPrefix,
+				ari.ChannelCauseChannelUnacceptable,
+				ari.ChannelCauseCallAwardedDelivered,
+				ari.ChannelCausePreEmpted,
+				ari.ChannelCauseNumberPortedNotHere,
+				ari.ChannelCauseNormalClearing,
+				ari.ChannelCauseNoUserResponse,
+				ari.ChannelCauseSubscriberAbsent,
+				ari.ChannelCauseCallRejected,
+				ari.ChannelCauseNumberChanged,
+				ari.ChannelCauseRedirectedToNewDestination,
+				ari.ChannelCauseAnsweredElsewhere,
+				ari.ChannelCauseDestinatioOutOfOrder,
+				ari.ChannelCauseInvalidNumberFormat,
+				ari.ChannelCauseFacilityRejected,
+				ari.ChannelCauseResponseToStatusEnquiry,
+				ari.ChannelCauseNormalUnspecified,
+				ari.ChannelCauseNormalCircuitCongestion,
+				ari.ChannelCauseNetworkOutOfOrder,
+				ari.ChannelCauseNormalTemporaryFailure,
+				ari.ChannelCauseSwitchCongestion,
+				ari.ChannelCauseAccessInfoDiscarded,
+				ari.ChannelCauseRequestedChanUnavail,
+				ari.ChannelCauseFacilityNotSubscribed,
+				ari.ChannelCauseOutgoingCallBarred,
+				ari.ChannelCauseIncomingCallBarred,
+				ari.ChannelCauseBearerCapabilityNotauth,
+				ari.ChannelCauseBearerCapabilityNotavail,
+				ari.ChannelCauseBearerCapabilityNotimpl,
+				ari.ChannelCauseChanNotImplemented,
+				ari.ChannelCauseFacilityNotImplemented,
+				ari.ChannelCauseInvalidCallReference,
+				ari.ChannelCauseIncompatibleDestination,
+				ari.ChannelCauseInvalidMsgUnspecified,
+				ari.ChannelCauseMandatoryIeMissing,
+				ari.ChannelCauseMessageTypeNonexist,
+				ari.ChannelCauseWrongMessage,
+				ari.ChannelCauseIeNonexist,
+				ari.ChannelCauseInvalidIeContents,
+				ari.ChannelCauseWrongCallState,
+				ari.ChannelCauseRecoveryIeTimerExpire,
+				ari.ChannelCauseMandatoryIeLengthError,
+				ari.ChannelCauseProtocolError,
+
+				ari.ChannelCauseInterworking,
+
+				ari.ChannelCauseCallDurationTimeout,
+			},
+
+			HangupReasonNormal,
+		},
+		{
+			"progressing with call duration timeout",
+
+			[]Status{
+				StatusProgressing,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseCallDurationTimeout,
+			},
+
+			HangupReasonTimeout,
+		},
+		{
+			"progressing with others",
+
+			[]Status{
+				StatusProgressing,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseUnknown,
+				ari.ChannelCauseUnallocated,
+				ari.ChannelCauseNoRouteTransitNet,
+				ari.ChannelCauseNoRouteDestination,
+
+				ari.ChannelCauseMisdialedTrunkPrefix,
+				ari.ChannelCauseChannelUnacceptable,
+				ari.ChannelCauseCallAwardedDelivered,
+				ari.ChannelCausePreEmpted,
+
+				ari.ChannelCauseNumberPortedNotHere,
+
+				ari.ChannelCauseNormalClearing,
+				ari.ChannelCauseUserBusy,
+				ari.ChannelCauseNoUserResponse,
+				ari.ChannelCauseNoAnswer,
+				ari.ChannelCauseSubscriberAbsent,
+				ari.ChannelCauseCallRejected,
+				ari.ChannelCauseNumberChanged,
+				ari.ChannelCauseRedirectedToNewDestination,
+
+				ari.ChannelCauseAnsweredElsewhere,
+				ari.ChannelCauseDestinatioOutOfOrder,
+				ari.ChannelCauseInvalidNumberFormat,
+				ari.ChannelCauseFacilityRejected,
+				ari.ChannelCauseResponseToStatusEnquiry,
+				ari.ChannelCauseNormalUnspecified,
+
+				ari.ChannelCauseNormalCircuitCongestion,
+
+				ari.ChannelCauseNetworkOutOfOrder,
+
+				ari.ChannelCauseNormalTemporaryFailure,
+				ari.ChannelCauseSwitchCongestion,
+				ari.ChannelCauseAccessInfoDiscarded,
+				ari.ChannelCauseRequestedChanUnavail,
+
+				ari.ChannelCauseFacilityNotSubscribed,
+
+				ari.ChannelCauseOutgoingCallBarred,
+
+				ari.ChannelCauseIncomingCallBarred,
+
+				ari.ChannelCauseBearerCapabilityNotauth,
+				ari.ChannelCauseBearerCapabilityNotavail,
+
+				ari.ChannelCauseBearerCapabilityNotimpl,
+				ari.ChannelCauseChanNotImplemented,
+
+				ari.ChannelCauseFacilityNotImplemented,
+
+				ari.ChannelCauseInvalidCallReference,
+
+				ari.ChannelCauseIncompatibleDestination,
+
+				ari.ChannelCauseInvalidMsgUnspecified,
+				ari.ChannelCauseMandatoryIeMissing,
+				ari.ChannelCauseMessageTypeNonexist,
+				ari.ChannelCauseWrongMessage,
+				ari.ChannelCauseIeNonexist,
+				ari.ChannelCauseInvalidIeContents,
+				ari.ChannelCauseWrongCallState,
+				ari.ChannelCauseRecoveryIeTimerExpire,
+				ari.ChannelCauseMandatoryIeLengthError,
+
+				ari.ChannelCauseProtocolError,
+
+				ari.ChannelCauseInterworking,
+			},
+
+			HangupReasonNormal,
+		},
+		{
+			"StatusCanceling/StatusHangup/StatusTerminating with all",
+
+			[]Status{
+				StatusCanceling,
+				StatusHangup,
+				StatusTerminating,
+			},
+			ari.ChannelCauseAll,
+
+			HangupReasonNormal,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			for _, status := range tt.lastStatus {
+				for _, cause := range tt.cause {
+
+					res := calculateHangupReasonDirectionIncoming(status, cause)
+					if res != tt.expectRes {
+						t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+					}
+				}
+			}
+		})
+	}
+}
+
+func Test_calculateHangupReasonDirectionOutgoing(t *testing.T) {
+	type test struct {
+		name string
+
+		lastStatuses []Status
+		causes       []ari.ChannelCause
+
+		expectRes HangupReason
+	}
+
+	tests := []test{
+		{
+			"dialing/ringing with noanswer/callrejected",
+
+			[]Status{
+				StatusDialing,
+				StatusRinging,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseNoAnswer,
+				ari.ChannelCauseCallRejected,
+			},
+
+			HangupReasonNoanswer,
+		},
+		{
+			"dialing/ringing with userbusy",
+
+			[]Status{
+				StatusDialing,
+				StatusRinging,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseUserBusy,
+			},
+
+			HangupReasonBusy,
+		},
+		{
+			"dialing/ringing with normalclearing/answeredelsewhere",
+
+			[]Status{
+				StatusDialing,
+				StatusRinging,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseNormalClearing,
+				ari.ChannelCauseAnsweredElsewhere,
+			},
+
+			HangupReasonNormal,
+		},
+		{
+			"dialing/ringing with unknown",
+
+			[]Status{
+				StatusDialing,
+				StatusRinging,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseUnknown,
+			},
+
+			HangupReasonDialout,
+		},
+		{
+			"dialing/ringing with others",
+
+			[]Status{
+				StatusDialing,
+				StatusRinging,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseUnallocated,
+				ari.ChannelCauseNoRouteTransitNet,
+				ari.ChannelCauseNoRouteDestination,
+
+				ari.ChannelCauseMisdialedTrunkPrefix,
+				ari.ChannelCauseChannelUnacceptable,
+				ari.ChannelCauseCallAwardedDelivered,
+				ari.ChannelCausePreEmpted,
+
+				ari.ChannelCauseNumberPortedNotHere,
+
+				ari.ChannelCauseNoUserResponse,
+				ari.ChannelCauseSubscriberAbsent,
+				ari.ChannelCauseNumberChanged,
+				ari.ChannelCauseRedirectedToNewDestination,
+
+				ari.ChannelCauseDestinatioOutOfOrder,
+				ari.ChannelCauseInvalidNumberFormat,
+				ari.ChannelCauseFacilityRejected,
+				ari.ChannelCauseResponseToStatusEnquiry,
+				ari.ChannelCauseNormalUnspecified,
+
+				ari.ChannelCauseNormalCircuitCongestion,
+
+				ari.ChannelCauseNetworkOutOfOrder,
+
+				ari.ChannelCauseNormalTemporaryFailure,
+				ari.ChannelCauseSwitchCongestion,
+				ari.ChannelCauseAccessInfoDiscarded,
+				ari.ChannelCauseRequestedChanUnavail,
+
+				ari.ChannelCauseFacilityNotSubscribed,
+
+				ari.ChannelCauseOutgoingCallBarred,
+
+				ari.ChannelCauseIncomingCallBarred,
+
+				ari.ChannelCauseBearerCapabilityNotauth,
+				ari.ChannelCauseBearerCapabilityNotavail,
+
+				ari.ChannelCauseBearerCapabilityNotimpl,
+				ari.ChannelCauseChanNotImplemented,
+
+				ari.ChannelCauseFacilityNotImplemented,
+
+				ari.ChannelCauseInvalidCallReference,
+
+				ari.ChannelCauseIncompatibleDestination,
+
+				ari.ChannelCauseInvalidMsgUnspecified,
+				ari.ChannelCauseMandatoryIeMissing,
+				ari.ChannelCauseMessageTypeNonexist,
+				ari.ChannelCauseWrongMessage,
+				ari.ChannelCauseIeNonexist,
+				ari.ChannelCauseInvalidIeContents,
+				ari.ChannelCauseWrongCallState,
+				ari.ChannelCauseRecoveryIeTimerExpire,
+				ari.ChannelCauseMandatoryIeLengthError,
+
+				ari.ChannelCauseProtocolError,
+
+				ari.ChannelCauseInterworking,
+
+				ari.ChannelCauseCallDurationTimeout,
+			},
+
+			HangupReasonFailed,
+		},
+		{
+			"StatusProgressing with call timeout",
+
+			[]Status{
+				StatusProgressing,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseCallDurationTimeout,
+			},
+
+			HangupReasonTimeout,
+		},
+		{
+			"StatusProgressing with others",
+
+			[]Status{
+				StatusProgressing,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseUnknown,
+				ari.ChannelCauseUnallocated,
+				ari.ChannelCauseNoRouteTransitNet,
+				ari.ChannelCauseNoRouteDestination,
+
+				ari.ChannelCauseMisdialedTrunkPrefix,
+				ari.ChannelCauseChannelUnacceptable,
+				ari.ChannelCauseCallAwardedDelivered,
+				ari.ChannelCausePreEmpted,
+
+				ari.ChannelCauseNumberPortedNotHere,
+
+				ari.ChannelCauseNormalClearing,
+				ari.ChannelCauseUserBusy,
+				ari.ChannelCauseNoUserResponse,
+				ari.ChannelCauseNoAnswer,
+				ari.ChannelCauseSubscriberAbsent,
+				ari.ChannelCauseCallRejected,
+				ari.ChannelCauseNumberChanged,
+				ari.ChannelCauseRedirectedToNewDestination,
+
+				ari.ChannelCauseAnsweredElsewhere,
+				ari.ChannelCauseDestinatioOutOfOrder,
+				ari.ChannelCauseInvalidNumberFormat,
+				ari.ChannelCauseFacilityRejected,
+				ari.ChannelCauseResponseToStatusEnquiry,
+				ari.ChannelCauseNormalUnspecified,
+
+				ari.ChannelCauseNormalCircuitCongestion,
+
+				ari.ChannelCauseNetworkOutOfOrder,
+
+				ari.ChannelCauseNormalTemporaryFailure,
+				ari.ChannelCauseSwitchCongestion,
+				ari.ChannelCauseAccessInfoDiscarded,
+				ari.ChannelCauseRequestedChanUnavail,
+
+				ari.ChannelCauseFacilityNotSubscribed,
+
+				ari.ChannelCauseOutgoingCallBarred,
+
+				ari.ChannelCauseIncomingCallBarred,
+
+				ari.ChannelCauseBearerCapabilityNotauth,
+				ari.ChannelCauseBearerCapabilityNotavail,
+
+				ari.ChannelCauseBearerCapabilityNotimpl,
+				ari.ChannelCauseChanNotImplemented,
+
+				ari.ChannelCauseFacilityNotImplemented,
+
+				ari.ChannelCauseInvalidCallReference,
+
+				ari.ChannelCauseIncompatibleDestination,
+
+				ari.ChannelCauseInvalidMsgUnspecified,
+				ari.ChannelCauseMandatoryIeMissing,
+				ari.ChannelCauseMessageTypeNonexist,
+				ari.ChannelCauseWrongMessage,
+				ari.ChannelCauseIeNonexist,
+				ari.ChannelCauseInvalidIeContents,
+				ari.ChannelCauseWrongCallState,
+				ari.ChannelCauseRecoveryIeTimerExpire,
+				ari.ChannelCauseMandatoryIeLengthError,
+
+				ari.ChannelCauseProtocolError,
+
+				ari.ChannelCauseInterworking,
+			},
+
+			HangupReasonNormal,
+		},
+		{
+			"StatusCanceling with all",
+
+			[]Status{
+				StatusCanceling,
+			},
+			ari.ChannelCauseAll,
+
+			HangupReasonCanceled,
+		},
+
+		{
+			"StatusHangup/StatusTerminating else with all",
+
+			[]Status{
+				StatusHangup,
+				StatusTerminating,
+			},
+			ari.ChannelCauseAll,
+
+			HangupReasonNormal,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			for _, status := range tt.lastStatuses {
+				for _, cause := range tt.causes {
+
+					res := calculateHangupReasonDirectionOutgoing(status, cause)
+					if res != tt.expectRes {
+						t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+					}
+				}
+			}
 		})
 	}
 }

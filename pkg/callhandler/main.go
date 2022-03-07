@@ -83,8 +83,9 @@ const (
 
 // List of default values
 const (
-	defaultDialTimeout = 60 // default outgoing dial timeout
-	defaultTimeStamp   = "9999-01-01 00:00:00.000000"
+	defaultDialTimeout         = 60 // default outgoing dial timeout
+	defaultTimeStamp           = "9999-01-01 00:00:00.000000"
+	defaultTimeoutCallDuration = 3600000 // default call duration timeout. 1h
 )
 
 var (

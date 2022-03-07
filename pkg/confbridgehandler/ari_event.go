@@ -27,12 +27,12 @@ func (h *confbridgeHandler) ARIStasisStart(ctx context.Context, cn *channel.Chan
 
 	case contextConfbridgeOutgoing:
 		log.Errorf("Currently, we don't support conference outgoing context. Something was wrong. context: %s", confContext)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination, 0)
 		return fmt.Errorf("unsupported conference context type. context: %s", confContext)
 
 	default:
 		log.Errorf("Unsuppurted context type. context: %s", confContext)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination, 0)
 		return fmt.Errorf("unsupported conference context type. context: %s", confContext)
 	}
 }
