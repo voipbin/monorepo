@@ -82,7 +82,7 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 	// send next action request
 	if errNext := h.reqHandler.CMV1CallActionNext(ctx, c.ID, false); errNext != nil {
 		log.Errorf("Could not get next action. err: %v", errNext)
-		_ = h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing, 0)
 	}
 
 	return nil

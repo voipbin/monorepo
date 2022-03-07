@@ -10,8 +10,8 @@ type Address struct {
 	Type       Type   `json:"type"`        // type of address
 	Target     string `json:"target"`      // address endpoint
 	TargetName string `json:"target_name"` // address's name.
-	Name       string `json:"name"`        // parsed name
-	Detail     string `json:"detail"`
+	Name       string `json:"name"`        // name
+	Detail     string `json:"detail"`      // detail description.
 }
 
 // Type type

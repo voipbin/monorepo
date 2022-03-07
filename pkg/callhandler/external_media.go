@@ -118,7 +118,7 @@ func (h *callHandler) ExternalMediaStop(ctx context.Context, callID uuid.UUID) e
 	}
 
 	// hangup the external media channel
-	if errHangup := h.reqHandler.AstChannelHangup(ctx, extMedia.AsteriskID, extMedia.ChannelID, ari.ChannelCauseNormalClearing); errHangup != nil {
+	if errHangup := h.reqHandler.AstChannelHangup(ctx, extMedia.AsteriskID, extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0); errHangup != nil {
 		log.Errorf("Could not hangup the external media. err: %v", errHangup)
 		return nil
 	}

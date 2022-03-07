@@ -130,7 +130,7 @@ func Test_ARIStasisStartTypeConferenceError(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNoRouteDestination, 0).Return(nil)
 
 			if err := h.ARIStasisStart(context.Background(), tt.channel, tt.data); err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")

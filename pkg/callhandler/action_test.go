@@ -380,7 +380,7 @@ func TestActionExecuteRecordingStop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.call.RecordingID).Return(tt.record, nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
 			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
 
 			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
@@ -717,7 +717,7 @@ func TestActionExecuteExternalMediaStop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().ExternalMediaGet(gomock.Any(), tt.call.ID).Return(tt.extMedia, nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0)
 			mockDB.EXPECT().ExternalMediaDelete(gomock.Any(), tt.extMedia.CallID).Return(nil)
 			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
 			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {

@@ -60,7 +60,7 @@ func TestBridgeLeftJoin(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
 			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.bridge.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
@@ -129,7 +129,7 @@ func TestBridgeLeftExternal(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
 
 			if len(tt.bridge.ChannelIDs) == 0 {
 				mockReq.EXPECT().AstBridgeDelete(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID)

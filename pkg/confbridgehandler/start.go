@@ -26,7 +26,7 @@ func (h *confbridgeHandler) StartContextIncoming(ctx context.Context, cn *channe
 
 	// set channel type
 	if err := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeConfbridge)); err != nil {
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated, 0)
 		log.Errorf("Could not set channel var. err: %v", err)
 		return fmt.Errorf("could not set channel var. id: %s, asterisk: %s, bridge: %s, err: %v", cn.ID, cn.AsteriskID, cn.DestinationNumber, err)
 	}
@@ -35,7 +35,7 @@ func (h *confbridgeHandler) StartContextIncoming(ctx context.Context, cn *channe
 	confbridgeID := uuid.FromStringOrNil(data["confbridge_id"])
 	callID := uuid.FromStringOrNil(data["call_id"])
 	if confbridgeID == uuid.Nil || callID == uuid.Nil {
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated, 0)
 		log.Errorf("Could not get confbridge or call info. confbridge_id: %s, call_id: %s", confbridgeID, callID)
 		return fmt.Errorf("could not get confbridge id or call id info")
 	}
@@ -44,7 +44,7 @@ func (h *confbridgeHandler) StartContextIncoming(ctx context.Context, cn *channe
 	// get confbridge
 	cb, err := h.db.ConfbridgeGet(ctx, confbridgeID)
 	if err != nil {
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated, 0)
 		log.Errorf("Could not get confbridge. err: %v", err)
 		return fmt.Errorf("could not get confbridge info. err: %v", err)
 	}
@@ -52,7 +52,7 @@ func (h *confbridgeHandler) StartContextIncoming(ctx context.Context, cn *channe
 
 	// add the channel to the bridge
 	if err := h.reqHandler.AstBridgeAddChannel(ctx, cn.AsteriskID, cn.DestinationNumber, cn.ID, "", false, false); err != nil {
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated, 0)
 		log.Errorf("Could not add the channel to the bridge. err: %v", err)
 		return fmt.Errorf("could not put the channel to the bridge. id: %s, asterisk: %s, bridge: %s, err: %v", cn.ID, cn.AsteriskID, cn.DestinationNumber, err)
 	}
@@ -84,7 +84,7 @@ func (h *confbridgeHandler) startContextIncomingTypeConference(ctx context.Conte
 
 	log.Debugf("Answering the conference type confbridge joining channel. call_id: %s", callID)
 	if err := h.reqHandler.AstChannelAnswer(ctx, cn.AsteriskID, cn.ID); err != nil {
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated, 0)
 		log.Errorf("Could not answer the channel. err: %v", err)
 		return err
 	}
@@ -118,7 +118,7 @@ func (h *confbridgeHandler) startContextIncomingTypeConnect(ctx context.Context,
 	// answer the call. it is safe to answer for answered call.
 	log.Debugf("Answering the joining channel. call_id: %s", callID)
 	if err := h.reqHandler.AstChannelAnswer(ctx, cn.AsteriskID, cn.ID); err != nil {
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated, 0)
 		log.Errorf("Could not answer the channel. err: %v", err)
 		return err
 	}

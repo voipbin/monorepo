@@ -68,7 +68,7 @@ func (h *confbridgeHandler) destroyBridge(ctx context.Context, bridgeID string) 
 	}
 
 	for _, channelID := range br.ChannelIDs {
-		if err := h.reqHandler.AstChannelHangup(ctx, br.AsteriskID, channelID, ari.ChannelCauseNormalClearing); err != nil {
+		if err := h.reqHandler.AstChannelHangup(ctx, br.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0); err != nil {
 			log.WithFields(
 				logrus.Fields{
 					"asterisk": br.AsteriskID,

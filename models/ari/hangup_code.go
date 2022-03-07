@@ -5,6 +5,7 @@ type ChannelCause int
 
 // List of ChannelCause type
 const (
+	ChannelCauseUnknown            ChannelCause = 0
 	ChannelCauseUnallocated        ChannelCause = 1 // code -> sip: 404
 	ChannelCauseNoRouteTransitNet  ChannelCause = 2 // code -> sip: 404
 	ChannelCauseNoRouteDestination ChannelCause = 3 // code -> sip: 404
@@ -72,4 +73,81 @@ const (
 	ChannelCauseProtocolError ChannelCause = 111 // code -> sip:
 
 	ChannelCauseInterworking ChannelCause = 127 // code -> sip: 500
+
+	/// VoIPBIN defined cause code.
+	ChannelCauseCallDurationTimeout ChannelCause = 200 // call progress timeout
 )
+
+// ChannelCauseAll list of all ChannelCauses
+var ChannelCauseAll = []ChannelCause{
+	ChannelCauseUnknown,
+	ChannelCauseUnallocated,
+	ChannelCauseNoRouteTransitNet,
+	ChannelCauseNoRouteDestination,
+
+	ChannelCauseMisdialedTrunkPrefix,
+	ChannelCauseChannelUnacceptable,
+	ChannelCauseCallAwardedDelivered,
+	ChannelCausePreEmpted,
+
+	ChannelCauseNumberPortedNotHere,
+
+	ChannelCauseNormalClearing,
+	ChannelCauseUserBusy,
+	ChannelCauseNoUserResponse,
+	ChannelCauseNoAnswer,
+	ChannelCauseSubscriberAbsent,
+	ChannelCauseCallRejected,
+	ChannelCauseNumberChanged,
+	ChannelCauseRedirectedToNewDestination,
+
+	ChannelCauseAnsweredElsewhere,
+	ChannelCauseDestinatioOutOfOrder,
+	ChannelCauseInvalidNumberFormat,
+	ChannelCauseFacilityRejected,
+	ChannelCauseResponseToStatusEnquiry,
+	ChannelCauseNormalUnspecified,
+
+	ChannelCauseNormalCircuitCongestion,
+
+	ChannelCauseNetworkOutOfOrder,
+
+	ChannelCauseNormalTemporaryFailure,
+	ChannelCauseSwitchCongestion,
+	ChannelCauseAccessInfoDiscarded,
+	ChannelCauseRequestedChanUnavail,
+
+	ChannelCauseFacilityNotSubscribed,
+
+	ChannelCauseOutgoingCallBarred,
+
+	ChannelCauseIncomingCallBarred,
+
+	ChannelCauseBearerCapabilityNotauth,
+	ChannelCauseBearerCapabilityNotavail,
+
+	ChannelCauseBearerCapabilityNotimpl,
+	ChannelCauseChanNotImplemented,
+
+	ChannelCauseFacilityNotImplemented,
+
+	ChannelCauseInvalidCallReference,
+
+	ChannelCauseIncompatibleDestination,
+
+	ChannelCauseInvalidMsgUnspecified,
+	ChannelCauseMandatoryIeMissing,
+	ChannelCauseMessageTypeNonexist,
+	ChannelCauseWrongMessage,
+	ChannelCauseIeNonexist,
+	ChannelCauseInvalidIeContents,
+	ChannelCauseWrongCallState,
+	ChannelCauseRecoveryIeTimerExpire,
+	ChannelCauseMandatoryIeLengthError,
+
+	ChannelCauseProtocolError,
+
+	ChannelCauseInterworking,
+
+	ChannelCauseCallDurationTimeout,
+}

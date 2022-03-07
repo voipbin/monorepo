@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -13,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 )
 
 func TestKick(t *testing.T) {
@@ -64,7 +64,7 @@ func TestKick(t *testing.T) {
 
 			mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridgeID).Return(tt.confbridge, nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
 
 			if err := h.Kick(ctx, tt.confbridgeID, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -37,7 +37,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 	// we don't set the confbridge id to the call.
 	if err := h.db.CallSetConfbridgeID(ctx, callID, uuid.Nil); err != nil {
 		log.Errorf("Could not set the conference id for a call. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
 		return err
 	}
 

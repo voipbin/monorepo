@@ -108,8 +108,8 @@ const (
 	HangupReasonBusy     HangupReason = "busy"     // the destination is on the line with another caller.
 	HangupReasonCanceled HangupReason = "cancel"   // call was cancelled by the originator before it was answered.
 	HangupReasonTimeout  HangupReason = "timeout"  // call reached max call duration after it was answered.
-	HangupReasonUnanswer HangupReason = "unanswer" // destination didn't answer until destination's timeout.
-	HanupgReasonDialout  HangupReason = "dialout"  // The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).
+	HangupReasonNoanswer HangupReason = "noanswer" // The call rejected with noanswer status.
+	HangupReasonDialout  HangupReason = "dialout"  // The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).
 )
 
 // Test values
@@ -240,36 +240,112 @@ func GetStatusByChannelState(state ari.ChannelState) Status {
 }
 
 // CalculateHangupReason calculates call hangup reason based on current status and hangup cause
-func CalculateHangupReason(lastStatus Status, cause ari.ChannelCause) HangupReason {
-	// Hangup reason calculate table
+func CalculateHangupReason(direction Direction, lastStatus Status, cause ari.ChannelCause) HangupReason {
+
+	if direction == DirectionOutgoing {
+		return calculateHangupReasonDirectionOutgoing(lastStatus, cause)
+	}
+
+	return calculateHangupReasonDirectionIncoming(lastStatus, cause)
+}
+
+// calculateHangupReasonDirectionIncoming calculates incoming direction call's hangup reasone.
+func calculateHangupReasonDirectionIncoming(lastStatus Status, cause ari.ChannelCause) HangupReason {
+
+	// Hangup reason calculate table(incoming)
 	//
-	// +----------------------+-------+-----------------------+
-	// | last status          | cause | hangup reason         |
-	// |----------------------+-------+-----------------------+
-	// | StatusDialing        | ?     | HangupReasonFailed    |
-	// | StatusRinging        | ?     | HangupReasonBusy      |
-	// |                      | ?     | HangupReasonTimeout   |
-	// |                      | ?     | HangupReasonUnanswer  |
-	// |                      | ?     | HanupgReasonDialout   |
-	// +----------------------+-------+-----------------------+
-	// | StatusProgressing    | *     | HangupReasonNormal    |
-	// +----------------------+-------+-----------------------+
-	// | StatusTerminating    | *     | HangupReasonNormal    |
-	// +----------------------+-------+-----------------------+
-	// | StatusCanceling      | *     | HangupReasonCanceled  |
-	// +----------------------+-------+-----------------------+
-	// | StatusHangup         | *     | HangupReasonNormal    |
-	// +----------------------+-------+-----------------------+
+	// +----------------------+---------------------------------+-----------------------+
+	// | last status          | cause                           | hangup reason         |
+	// |----------------------+---------------------------------+-----------------------+
+	// | StatusDialing        | ChannelCauseNoAnswer            | HangupReasonNoanswer  |
+	// | StatusRinging        | ChannelCauseUserBusy            | HangupReasonBusy      |
+	// |                      | *                               | HangupReasonNormal    |
+	// +----------------------+---------------------------------+-----------------------+
+	// | StatusProgressing    | ChannelCauseCallProgressTimeout | HangupReasonTimeout   |
+	// |                      | *                               | HangupReasonNormal    |
+	// +----------------------+---------------------------------+-----------------------+
+	// | *                    | *                               | HangupReasonNormal    |
+	// +----------------------+---------------------------------+-----------------------+
 
 	switch lastStatus {
-	case StatusProgressing, StatusTerminating, StatusHangup:
+	case StatusDialing, StatusRinging:
+		switch cause {
+		case ari.ChannelCauseNoAnswer:
+			return HangupReasonNoanswer
+		case ari.ChannelCauseUserBusy:
+			return HangupReasonBusy
+		default:
+			return HangupReasonNormal
+		}
+
+	case StatusProgressing:
+		if cause == ari.ChannelCauseCallDurationTimeout {
+			return HangupReasonTimeout
+		}
+		return HangupReasonNormal
+
+	default:
+		return HangupReasonNormal
+	}
+}
+
+// calculateHangupReasonDirectionOutgoing calculates outgoing direction call's hangup reasone.
+func calculateHangupReasonDirectionOutgoing(lastStatus Status, cause ari.ChannelCause) HangupReason {
+
+	// Hangup reason calculate table(outgoing)
+	//
+	// +----------------------+---------------------------------+-----------------------+
+	// | last status          | cause                           | hangup reason         |
+	// |----------------------+---------------------------------+-----------------------+
+	// | StatusDialing        | ChannelCauseNoAnswer            | HangupReasonNoanswer  |
+	// | StatusRinging        | ChannelCauseCallRejected        | HangupReasonNoanswer  |
+	// |                      | ChannelCauseUserBusy            | HangupReasonBusy      |
+	// |                      | ChannelCauseNormalClearing      | HangupReasonNormal    |
+	// |                      | ChannelCauseAnsweredElsewhere   | HangupReasonNormal    |
+	// |                      | ChannelCauseUnknown             | HangupReasonDialout   |
+	// |                      | *                               | HangupReasonFailed    |
+	// +----------------------+---------------------------------+-----------------------+
+	// | StatusProgressing    | ChannelCauseCallDurationTimeout | HangupReasonTimeout   |
+	// |                      | *                               | HangupReasonNormal    |
+	// +----------------------+---------------------------------+-----------------------+
+	// | StatusTerminating    | *                               | HangupReasonNormal    |
+	// +----------------------+---------------------------------+-----------------------+
+	// | StatusCanceling      | *                               | HangupReasonCanceled  |
+	// +----------------------+---------------------------------+-----------------------+
+	// | StatusHangup         | *                               | HangupReasonNormal    |
+	// +----------------------+---------------------------------+-----------------------+
+	// | *                    | *                               | HangupReasonNormal    |
+	// +----------------------+---------------------------------+-----------------------+
+
+	switch lastStatus {
+	case StatusDialing, StatusRinging:
+		switch cause {
+		case ari.ChannelCauseNoAnswer, ari.ChannelCauseCallRejected:
+			return HangupReasonNoanswer
+		case ari.ChannelCauseUserBusy:
+			return HangupReasonBusy
+		case ari.ChannelCauseNormalClearing, ari.ChannelCauseAnsweredElsewhere:
+			return HangupReasonNormal
+		case ari.ChannelCauseUnknown:
+			return HangupReasonDialout
+		default:
+			return HangupReasonFailed
+		}
+
+	case StatusProgressing:
+		if cause == ari.ChannelCauseCallDurationTimeout {
+			return HangupReasonTimeout
+		}
+		return HangupReasonNormal
+
+	case StatusTerminating, StatusHangup:
 		return HangupReasonNormal
 	case StatusCanceling:
 		return HangupReasonCanceled
-	}
 
-	// TODO: Need to be fixed as above chart.
-	return HangupReasonFailed
+	default:
+		return HangupReasonNormal
+	}
 }
 
 // CalculateHangupBy calculates call hangupBy based on current status and hangup cause

@@ -660,7 +660,7 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 		log.Errorf("Could not get record info. But keep continue to next. err: %v", err)
 	} else {
 		// hangup the channel
-		if err := h.reqHandler.AstChannelHangup(ctx, record.AsteriskID, record.ChannelID, ari.ChannelCauseNormalClearing); err != nil {
+		if err := h.reqHandler.AstChannelHangup(ctx, record.AsteriskID, record.ChannelID, ari.ChannelCauseNormalClearing, 0); err != nil {
 			log.Errorf("Could not hangup the recording channel. err: %v", err)
 		}
 	}
@@ -847,7 +847,7 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call, act *a
 	// add the amd info to the cache
 	if errAMD := h.db.CallApplicationAMDSet(context.Background(), snoopID.String(), app); errAMD != nil {
 		log.Errorf("Could not set the callapplication amd option. err: %v", errAMD)
-		_ = h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, snoopID.String(), ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, snoopID.String(), ari.ChannelCauseNormalClearing, 0)
 	}
 
 	if app.Async {

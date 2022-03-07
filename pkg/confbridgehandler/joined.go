@@ -33,14 +33,14 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 	// add the call/channel info to the confbridge
 	if errChannelCallID := h.db.ConfbridgeAddChannelCallID(ctx, confbridgeID, cn.ID, callID); errChannelCallID != nil {
 		log.Errorf("Could not add the channel/call info to the confbridge. err: %v", errChannelCallID)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated, 0)
 		return errors.Wrap(errChannelCallID, "could not add the confbridge's channel/call info")
 	}
 
 	// set confbridge id to the call
 	if err := h.db.CallSetConfbridgeID(ctx, callID, confbridgeID); err != nil {
 		log.Errorf("Could not set the conference id for a call. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing)
+		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
 		return err
 	}
 
