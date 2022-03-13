@@ -26,6 +26,7 @@ import (
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
@@ -1260,6 +1261,66 @@ func (m *MockRequestHandler) FMV1FlowUpdate(ctx context.Context, f *flow.Flow) (
 func (mr *MockRequestHandlerMockRecorder) FMV1FlowUpdate(ctx, f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowUpdate", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowUpdate), ctx, f)
+}
+
+// MMV1MessageDelete mocks base method.
+func (m *MockRequestHandler) MMV1MessageDelete(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MMV1MessageDelete", ctx, id)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MMV1MessageDelete indicates an expected call of MMV1MessageDelete.
+func (mr *MockRequestHandlerMockRecorder) MMV1MessageDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MMV1MessageDelete", reflect.TypeOf((*MockRequestHandler)(nil).MMV1MessageDelete), ctx, id)
+}
+
+// MMV1MessageGet mocks base method.
+func (m *MockRequestHandler) MMV1MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MMV1MessageGet", ctx, id)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MMV1MessageGet indicates an expected call of MMV1MessageGet.
+func (mr *MockRequestHandlerMockRecorder) MMV1MessageGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MMV1MessageGet", reflect.TypeOf((*MockRequestHandler)(nil).MMV1MessageGet), ctx, id)
+}
+
+// MMV1MessageGets mocks base method.
+func (m *MockRequestHandler) MMV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MMV1MessageGets", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MMV1MessageGets indicates an expected call of MMV1MessageGets.
+func (mr *MockRequestHandlerMockRecorder) MMV1MessageGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MMV1MessageGets", reflect.TypeOf((*MockRequestHandler)(nil).MMV1MessageGets), ctx, customerID, pageToken, pageSize)
+}
+
+// MMV1MessageSend mocks base method.
+func (m *MockRequestHandler) MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MMV1MessageSend", ctx, customerID, source, destinations, text)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MMV1MessageSend indicates an expected call of MMV1MessageSend.
+func (mr *MockRequestHandlerMockRecorder) MMV1MessageSend(ctx, customerID, source, destinations, text interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MMV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).MMV1MessageSend), ctx, customerID, source, destinations, text)
 }
 
 // NMV1AvailableNumberGets mocks base method.
