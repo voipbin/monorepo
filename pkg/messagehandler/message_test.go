@@ -257,3 +257,61 @@ func Test_Gets(t *testing.T) {
 		})
 	}
 }
+
+func Test_Delete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+	h := &messageHandler{
+		db:                        mockDB,
+		notifyHandler:             mockNotify,
+		messageHandlerMessagebird: mockMessagebird,
+	}
+
+	type test struct {
+		name string
+
+		id uuid.UUID
+
+		responseGet *message.Message
+		expectRes   *message.Message
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
+
+			&message.Message{
+				ID: uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
+			},
+			&message.Message{
+				ID: uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessageDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, message.EventTypeMessageDeleted, tt.responseGet)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

@@ -13,7 +13,6 @@ create table messages(
   text          text,
   medias        json,
   direction     varchar(255),
-  parts         integer,
 
   -- timestamps
   tm_create   datetime(6),  --
