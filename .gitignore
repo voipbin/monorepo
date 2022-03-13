@@ -1,0 +1,4 @@
+vendor
+message-manager
+.vscode
+!cmd/*
