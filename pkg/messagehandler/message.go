@@ -11,6 +11,30 @@ import (
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 )
 
+// Gets returns list of messges info of the given customer_id
+func (h *messageHandler) Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "Gets",
+			"customer_id": customerID,
+		},
+	)
+	log.Debugf("Gets the messages. customer_id: %s", customerID)
+
+	if pageToken == "" {
+		pageToken = dbhandler.GetCurTime()
+	}
+
+	res, err := h.db.MessageGets(ctx, customerID, pageSize, pageToken)
+	if err != nil {
+		log.Errorf("Could not get messages. customer_id: %s, err:%v", customerID, err)
+		return nil, err
+	}
+	log.WithField("messages", res).Debugf("Found messages info. count: %d", len(res))
+
+	return res, nil
+}
+
 // Create creates a new message.
 func (h *messageHandler) Create(ctx context.Context, m *message.Message) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -72,26 +96,28 @@ func (h *messageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Messag
 	return res, nil
 }
 
-// Gets returns list of messges info of the given customer_id
-func (h *messageHandler) Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error) {
+// Delete deletes a message info of the given id
+func (h *messageHandler) Delete(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":        "Gets",
-			"customer_id": customerID,
+			"func":       "Delete",
+			"message_id": id,
 		},
 	)
-	log.Debugf("Gets the messages. customer_id: %s", customerID)
+	log.Debugf("Get. message_id: %s", id)
 
-	if pageToken == "" {
-		pageToken = dbhandler.GetCurTime()
-	}
-
-	res, err := h.db.MessageGets(ctx, customerID, pageSize, pageToken)
+	err := h.db.MessageDelete(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get messages. customer_id: %s, err:%v", customerID, err)
+		log.Errorf("Could not get message info. message_id: %s, err:%v", id, err)
 		return nil, err
 	}
-	log.WithField("messages", res).Debugf("Found messages info. count: %d", len(res))
+
+	res, err := h.db.MessageGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted message info. message_id: %s, err: %v", id, err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageDeleted, res)
 
 	return res, nil
 }

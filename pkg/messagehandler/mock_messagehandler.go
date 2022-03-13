@@ -53,6 +53,21 @@ func (mr *MockMessageHandlerMockRecorder) Create(ctx, m interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, m)
 }
 
+// Delete mocks base method.
+func (m *MockMessageHandler) Delete(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockMessageHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMessageHandler)(nil).Delete), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockMessageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	m.ctrl.T.Helper()

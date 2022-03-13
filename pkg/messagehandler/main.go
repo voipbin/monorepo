@@ -19,6 +19,7 @@ import (
 // MessageHandler defines
 type MessageHandler interface {
 	Create(ctx context.Context, m *message.Message) (*message.Message, error)
+	Delete(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	UpdateTargets(ctx context.Context, id uuid.UUID, targets []target.Target) (*message.Message, error)
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error)
