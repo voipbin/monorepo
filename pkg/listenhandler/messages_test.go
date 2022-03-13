@@ -1,0 +1,238 @@
+package listenhandler
+
+import (
+	"reflect"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/messagehandler"
+)
+
+func Test_processV1MessagesGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:     mockSock,
+		messageHandler: mockMessage,
+	}
+
+	type test struct {
+		name string
+
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
+		resultData []*message.Message
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
+			10,
+			"2021-03-01 03:30:17.000000",
+			[]*message.Message{
+				{
+					ID:         uuid.FromStringOrNil("eeafd418-7a4e-11eb-8750-9bb0ca1d7926"),
+					CustomerID: uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
+				},
+			},
+			&rabbitmqhandler.Request{
+				URI:    "/v1/messages?customer_id=197609d6-a29b-11ec-b884-5b8a227db58a&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","customer_id":"197609d6-a29b-11ec-b884-5b8a227db58a","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
+			"2 results",
+
+			uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
+			10,
+			"2021-03-01 03:30:17.000000",
+			[]*message.Message{
+				{
+					ID:         uuid.FromStringOrNil("760f30fa-a29b-11ec-87e7-2fc5bdc8739b"),
+					CustomerID: uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("7639e39a-a29b-11ec-b393-5b239b119501"),
+					CustomerID: uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
+				},
+			},
+			&rabbitmqhandler.Request{
+				URI:    "/v1/messages?customer_id=75dd760a-a29b-11ec-ba70-cb282aa1d594&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"760f30fa-a29b-11ec-87e7-2fc5bdc8739b","customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"7639e39a-a29b-11ec-b393-5b239b119501","customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockMessage.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+		})
+	}
+}
+
+func Test_processV1MessagesPost(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockMessageHandler := messagehandler.NewMockMessageHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:     mockSock,
+		messageHandler: mockMessageHandler,
+	}
+
+	tests := []struct {
+		name string
+
+		customerID   uuid.UUID
+		source       *cmaddress.Address
+		destinations []cmaddress.Address
+		Text         string
+
+		responseSend *message.Message
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("fdca8fb4-a22b-11ec-8894-7bfd708fa894"),
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			[]cmaddress.Address{
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+			},
+			"hello, world",
+
+			&message.Message{
+				ID: uuid.FromStringOrNil("abed7ae4-a22b-11ec-8b95-efa78516ed55"),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/messages",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"fdca8fb4-a22b-11ec-8894-7bfd708fa894", "source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello, world"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"abed7ae4-a22b-11ec-8b95-efa78516ed55","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockMessageHandler.EXPECT().SendMessage(gomock.Any(), tt.customerID, tt.source, tt.destinations, tt.Text).Return(tt.responseSend, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+		})
+	}
+}
+
+func Test_processV1MessagesIDGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:     mockSock,
+		messageHandler: mockMessage,
+	}
+
+	type test struct {
+		name       string
+		id         uuid.UUID
+		resultData *message.Message
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"1 number",
+			uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
+			&message.Message{
+				ID: uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
+			},
+			&rabbitmqhandler.Request{
+				URI:    "/v1/messages/73071e00-a29a-11ec-a43a-079fe08ce740",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"73071e00-a29a-11ec-a43a-079fe08ce740","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockMessage.EXPECT().Get(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+
+		})
+	}
+}

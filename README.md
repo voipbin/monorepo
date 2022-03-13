@@ -1,4 +1,4 @@
-# sms-manager
+# message-manager
 
 
 
@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab.com/voipbin/bin-manager/sms-manager.git
+git remote add origin https://gitlab.com/voipbin/bin-manager/message-manager.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](https://gitlab.com/voipbin/bin-manager/sms-manager/-/settings/integrations)
+- [ ] [Set up project integrations](https://gitlab.com/voipbin/bin-manager/message-manager/-/settings/integrations)
 
 ## Collaborate with your team
 
