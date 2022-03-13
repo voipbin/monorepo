@@ -42,7 +42,7 @@ type Type string
 
 // List of Action types
 const (
-	TypeAgentCall           Type = "agent_call"            // agent-manager. make a all to the agent.
+	TypeAgentCall           Type = "agent_call"            // agent-manager. make a call to the agent.
 	TypeAMD                 Type = "amd"                   // call-manager. answering machine detection.
 	TypeAnswer              Type = "answer"                // call-manager. answer the call.
 	TypeBeep                Type = "beep"                  // call-manager. play the beep sound.
@@ -59,6 +59,7 @@ const (
 	TypeExternalMediaStop   Type = "external_media_stop"   // call-manager.
 	TypeGoto                Type = "goto"                  // flow-manager.
 	TypeHangup              Type = "hangup"                // call-manager.
+	TypeMessageSend         Type = "message_send"          // message-manager.
 	TypePatch               Type = "patch"                 // flow-manager.
 	TypePatchFlow           Type = "patch_flow"            // flow-manager.
 	TypePlay                Type = "play"                  // call-manager.
@@ -92,6 +93,7 @@ var TypeList []Type = []Type{
 	TypeExternalMediaStop,
 	TypeGoto,
 	TypeHangup,
+	TypeMessageSend,
 	TypePatch,
 	TypePatchFlow,
 	TypePlay,

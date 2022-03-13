@@ -9,7 +9,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -417,121 +416,6 @@ func Test_getNextAction(t *testing.T) {
 
 			if reflect.DeepEqual(act, &tt.expectAction) != true {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectAction, act)
-			}
-		})
-	}
-}
-
-func TestActiveFlowNextActionGetTypeTranscribeRecording(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-
-	h := &activeflowHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-	}
-
-	type test struct {
-		name       string
-		activeflow *activeflow.ActiveFlow
-
-		callID     uuid.UUID
-		customerID uuid.UUID
-		language   string
-		act        *action.Action
-	}
-
-	tests := []test{
-		{
-			"normal",
-
-			&activeflow.ActiveFlow{
-				CustomerID: uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
-			},
-
-			uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
-			uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
-			"en-US",
-			&action.Action{
-				ID:     uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
-				Type:   action.TypeTranscribeRecording,
-				Option: []byte(`{"language":"en-US"}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-			mockReq.EXPECT().TSV1CallRecordingCreate(ctx, tt.customerID, tt.callID, tt.language, 120000, 30).Return([]tstranscribe.Transcribe{}, nil)
-			if err := h.actionHandleTranscribeRecording(ctx, tt.activeflow, tt.callID, tt.act); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func TestActiveFlowNextActionGetTypeTranscribeStart(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-
-	h := &activeflowHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-	}
-
-	type test struct {
-		name       string
-		activeFlow *activeflow.ActiveFlow
-
-		customerID    uuid.UUID
-		referenceID   uuid.UUID
-		referenceType tstranscribe.Type
-		language      string
-		act           *action.Action
-
-		response *tstranscribe.Transcribe
-	}
-
-	tests := []test{
-		{
-			"normal",
-			&activeflow.ActiveFlow{
-				CustomerID: uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
-			},
-
-			uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
-			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			tstranscribe.TypeCall,
-			"en-US",
-			&action.Action{
-				ID:     uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
-				Type:   action.TypeTranscribeStart,
-				Option: []byte(`{"language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
-			},
-
-			&tstranscribe.Transcribe{
-				ID:          uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
-				Type:        tstranscribe.TypeCall,
-				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-				HostID:      uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
-				Language:    "en-US",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-			mockReq.EXPECT().TSV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language).Return(tt.response, nil)
-			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow, tt.referenceID, tt.act); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
