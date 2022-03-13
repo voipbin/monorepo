@@ -12,10 +12,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 )
 
-// SendMessage sends the message.
-func (h *messageHandler) SendMessage(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error) {
+// Send sends the message.
+func (h *messageHandler) Send(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "SendMessage",
+		"func":        "Send",
 		"customer_id": customerID,
 	})
 
@@ -51,13 +51,30 @@ func (h *messageHandler) SendMessage(ctx context.Context, customerID uuid.UUID, 
 	}
 
 	// create a message
-	_, err := h.Create(ctx, m)
+	res, err := h.Create(ctx, m)
 	if err != nil {
 		log.Errorf("Could not create a new message. err: %v", err)
 		return nil, err
 	}
 
-	// todo: send webhook
+	go func() {
+		tmp, err := h.sendMessage(ctx, id, customerID, source, destinations, text)
+		if err != nil {
+			log.Errorf("Could not send the message correctly. err: %v", err)
+			return
+		}
+		log.WithField("message", tmp).Debugf("Sent the message send request correctly. message_id: %s", id)
+	}()
+
+	return res, nil
+}
+
+// sendMessage sends the message to the destinations
+func (h *messageHandler) sendMessage(ctx context.Context, id, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "sendMessage",
+		"customer_id": customerID,
+	})
 
 	// send the message
 	tmp, err := h.messageHandlerMessagebird.SendMessage(id, customerID, source, destinations, text)
@@ -74,7 +91,6 @@ func (h *messageHandler) SendMessage(ctx context.Context, customerID uuid.UUID, 
 		return nil, err
 	}
 
-	// todo: send webhook
-
 	return res, nil
+
 }

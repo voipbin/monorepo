@@ -166,7 +166,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockMessageHandler.EXPECT().SendMessage(gomock.Any(), tt.customerID, tt.source, tt.destinations, tt.Text).Return(tt.responseSend, nil)
+			mockMessageHandler.EXPECT().Send(gomock.Any(), tt.customerID, tt.source, tt.destinations, tt.Text).Return(tt.responseSend, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

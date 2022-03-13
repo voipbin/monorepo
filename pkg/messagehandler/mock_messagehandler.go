@@ -98,19 +98,19 @@ func (mr *MockMessageHandlerMockRecorder) Gets(ctx, customerID, pageSize, pageTo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, customerID, pageSize, pageToken)
 }
 
-// SendMessage mocks base method.
-func (m *MockMessageHandler) SendMessage(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message.Message, error) {
+// Send mocks base method.
+func (m *MockMessageHandler) Send(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendMessage", ctx, customerID, source, destinations, text)
+	ret := m.ctrl.Call(m, "Send", ctx, customerID, source, destinations, text)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SendMessage indicates an expected call of SendMessage.
-func (mr *MockMessageHandlerMockRecorder) SendMessage(ctx, customerID, source, destinations, text interface{}) *gomock.Call {
+// Send indicates an expected call of Send.
+func (mr *MockMessageHandlerMockRecorder) Send(ctx, customerID, source, destinations, text interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockMessageHandler)(nil).SendMessage), ctx, customerID, source, destinations, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMessageHandler)(nil).Send), ctx, customerID, source, destinations, text)
 }
 
 // UpdateTargets mocks base method.

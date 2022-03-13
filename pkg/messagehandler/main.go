@@ -24,7 +24,7 @@ type MessageHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error)
 
-	SendMessage(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error)
+	Send(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error)
 }
 
 // messageHandler defines

@@ -75,7 +75,7 @@ func (h *listenHandler) processV1MessagesPost(m *rabbitmqhandler.Request) (*rabb
 	)
 
 	// send message
-	ms, err := h.messageHandler.SendMessage(ctx, req.CustomerID, req.Source, req.Destinations, req.Text)
+	ms, err := h.messageHandler.Send(ctx, req.CustomerID, req.Source, req.Destinations, req.Text)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil
