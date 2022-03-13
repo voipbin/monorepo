@@ -24,6 +24,7 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
@@ -72,6 +73,7 @@ const (
 	queueConference = "bin-manager.conference-manager.request"
 	queueCustomer   = "bin-manager.customer-manager.request"
 	queueFlow       = "bin-manager.flow-manager.request"
+	queueMessage    = "bin-manager.message-manager.request"
 	queueNumber     = "bin-manager.number-manager.request"
 	queueQueue      = "bin-manager.queue-manager.request"
 	queueRegistrar  = "bin-manager.registrar-manager.request"
@@ -136,6 +138,8 @@ const (
 	resourceFlowsActions  resource = "flows/actions"
 	resourceFMFlows       resource = "fm/flows"
 	resourceFMActiveFlows resource = "fm/active-flows"
+
+	resourceMMMessages resource = "mm/messages"
 
 	resourceNumberAvailableNumbers resource = "nm/available-number"
 	resourceNumberNumbers          resource = "number/numbers"
@@ -318,6 +322,12 @@ type RequestHandler interface {
 	FMV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 	FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error)
+
+	// message-manager message
+	MMV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error)
+	MMV1MessageGet(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
+	MMV1MessageDelete(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
+	MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*mmmessage.Message, error)
 
 	// number-manager available-number
 	NMV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)
