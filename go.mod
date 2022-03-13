@@ -13,8 +13,8 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220214010042-9d735c473204
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220301040955-a9ad051cf3f6
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220301043257-59a8c270d5c0
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220307023541-9c3558ddce63
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220313122141-6b0c26bcb150
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220228065618-f07d7d687d12
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220214021001-a55b20ebbcdc
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206205721-6f56cc4c3c1e
@@ -31,6 +31,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220203044108-296babaad5c9 // indirect
+	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220313125149-89d9febec66c // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220208185140-cfc6013ffd01 // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220209071252-a365e400801c // indirect
 	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20220103005331-229d07d977e5 // indirect
@@ -38,7 +39,7 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220220065756-9f1522273672 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220226054513-a1e1364329d7 // indirect
-	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
-	google.golang.org/genproto v0.0.0-20220228195345-15d65a4533f7 // indirect
+	golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
+	google.golang.org/genproto v0.0.0-20220310185008-1973136f34c6 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )

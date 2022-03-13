@@ -203,6 +203,13 @@ func (h *activeflowHandler) executeAction(ctx context.Context, callID uuid.UUID,
 		}
 		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
 
+	case action.TypeMessageSend:
+		if errHandler := h.actionHandleMessageSend(ctx, callID, af); errHandler != nil {
+			log.Errorf("Could not handle the message_send action correctly. err: %v", errHandler)
+			return nil, err
+		}
+		return h.ActiveFlowNextActionGet(ctx, callID, act.ID)
+
 	case action.TypePatch:
 		if errHandle := h.actionHandlePatch(ctx, callID, af); errHandle != nil {
 			log.Errorf("Could not handle the patch action correctly. err: %v", err)

@@ -652,3 +652,28 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, callID uuid.
 
 	return nil
 }
+
+// actionHandleMessageSend handles message_send action type.
+func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, callID uuid.UUID, af *activeflow.ActiveFlow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "actionHandleMessageSend",
+		"call_id":           callID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	act := af.CurrentAction
+
+	var opt action.OptionMessageSend
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the message_send option. err: %v", err)
+		return err
+	}
+
+	tmp, err := h.reqHandler.MMV1MessageSend(ctx, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
+	if err != nil {
+		log.Errorf("Could not send the message correctly. err: %v", err)
+		return err
+	}
+	log.WithField("message", tmp).Debugf("Send the message correctly. message_id: %s", tmp.ID)
+
+	return nil
+}

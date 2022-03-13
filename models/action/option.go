@@ -110,6 +110,13 @@ type OptionHangup struct {
 	// no option
 }
 
+// OptionMessageSend defines action message_send's option.
+type OptionMessageSend struct {
+	Source       *cmaddress.Address  `json:"source"`
+	Destinations []cmaddress.Address `json:"destinations"`
+	Text         string              `json:"text"`
+}
+
 // OptionPatch defines action patch's option.
 type OptionPatch struct {
 	EventURL    string `json:"event_url"`

@@ -11,8 +11,10 @@ import (
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -1487,6 +1489,229 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 			mockDB.EXPECT().ActiveFlowSet(ctx, tt.expectReqActiveFlow)
 
 			if err := h.actionHandleConditionCallStatus(ctx, tt.callID, tt.activeFlow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_actionHandleMessageSend(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	tests := []struct {
+		name string
+
+		callID     uuid.UUID
+		activeFlow *activeflow.ActiveFlow
+
+		expectCustomerID   uuid.UUID
+		expectSource       *cmaddress.Address
+		expectDestinations []cmaddress.Address
+		expectText         string
+
+		responseCall        *cmcall.Call
+		expectReqActiveFlow *activeflow.ActiveFlow
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("4d496946-a2ce-11ec-a96e-eb9ac0dce8e7"),
+			&activeflow.ActiveFlow{
+				CustomerID: uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
+					Type:   action.TypeMessageSend,
+					Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello world"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
+						Type:   action.TypeMessageSend,
+						Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello world"}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("9c06bcfa-a2ce-11ec-bcc6-5bc0b10cd014"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("9c311c5c-a2ce-11ec-b1a2-d735b06f36c8"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+
+			uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			[]cmaddress.Address{
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+			},
+			"hello world",
+
+			&cmcall.Call{
+				ID:     uuid.FromStringOrNil("4d496946-a2ce-11ec-a96e-eb9ac0dce8e7"),
+				Status: cmcall.StatusProgressing,
+			},
+			&activeflow.ActiveFlow{
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
+					Type:   action.TypeMessageSend,
+					Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello world"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
+						Type:   action.TypeMessageSend,
+						Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello world"}`),
+					},
+					{
+						ID:   uuid.FromStringOrNil("9c06bcfa-a2ce-11ec-bcc6-5bc0b10cd014"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("9c311c5c-a2ce-11ec-b1a2-d735b06f36c8"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockReq.EXPECT().MMV1MessageSend(ctx, tt.expectCustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(&mmmessage.Message{}, nil)
+
+			if err := h.actionHandleMessageSend(ctx, tt.callID, tt.activeFlow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_actionHandleTranscribeRecording(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	type test struct {
+		name       string
+		activeflow *activeflow.ActiveFlow
+
+		callID     uuid.UUID
+		customerID uuid.UUID
+		language   string
+		act        *action.Action
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			&activeflow.ActiveFlow{
+				CustomerID: uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
+			},
+
+			uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
+			uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
+			"en-US",
+			&action.Action{
+				ID:     uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
+				Type:   action.TypeTranscribeRecording,
+				Option: []byte(`{"language":"en-US"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockReq.EXPECT().TSV1CallRecordingCreate(ctx, tt.customerID, tt.callID, tt.language, 120000, 30).Return([]tstranscribe.Transcribe{}, nil)
+			if err := h.actionHandleTranscribeRecording(ctx, tt.activeflow, tt.callID, tt.act); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_actionHandleTranscribeStart(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	type test struct {
+		name       string
+		activeFlow *activeflow.ActiveFlow
+
+		customerID    uuid.UUID
+		referenceID   uuid.UUID
+		referenceType tstranscribe.Type
+		language      string
+		act           *action.Action
+
+		response *tstranscribe.Transcribe
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&activeflow.ActiveFlow{
+				CustomerID: uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
+			},
+
+			uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
+			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+			tstranscribe.TypeCall,
+			"en-US",
+			&action.Action{
+				ID:     uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
+				Type:   action.TypeTranscribeStart,
+				Option: []byte(`{"language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
+			},
+
+			&tstranscribe.Transcribe{
+				ID:          uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
+				Type:        tstranscribe.TypeCall,
+				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+				HostID:      uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
+				Language:    "en-US",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockReq.EXPECT().TSV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language).Return(tt.response, nil)
+			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow, tt.referenceID, tt.act); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
