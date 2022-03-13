@@ -169,6 +169,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1MessagesIDGet(m)
 		requestType = "/v1/messages"
 
+	// DELETE /messages/<id>
+	case regV1MessagesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1MessagesIDDelete(m)
+		requestType = "/v1/messages"
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////

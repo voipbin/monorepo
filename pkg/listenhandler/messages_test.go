@@ -236,3 +236,60 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1MessagesIDDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:     mockSock,
+		messageHandler: mockMessage,
+	}
+
+	type test struct {
+		name           string
+		id             uuid.UUID
+		responseDelete *message.Message
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("63772a08-a2ee-11ec-8c6d-9714fb1cc108"),
+			&message.Message{
+				ID: uuid.FromStringOrNil("63772a08-a2ee-11ec-8c6d-9714fb1cc108"),
+			},
+			&rabbitmqhandler.Request{
+				URI:    "/v1/messages/63772a08-a2ee-11ec-8c6d-9714fb1cc108",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"63772a08-a2ee-11ec-8c6d-9714fb1cc108","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mockMessage.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseDelete, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+
+		})
+	}
+}

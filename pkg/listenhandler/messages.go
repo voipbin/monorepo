@@ -77,7 +77,7 @@ func (h *listenHandler) processV1MessagesPost(m *rabbitmqhandler.Request) (*rabb
 	// send message
 	ms, err := h.messageHandler.Send(ctx, req.CustomerID, req.Source, req.Destinations, req.Text)
 	if err != nil {
-		log.Errorf("Could not handle the order number. err: %v", err)
+		log.Errorf("Could not send a message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -108,18 +108,54 @@ func (h *listenHandler) processV1MessagesIDGet(req *rabbitmqhandler.Request) (*r
 		logrus.Fields{
 			"id": id,
 		})
-	log.Debugf("Executing processV1MessagesIDGet. number: %s", id)
+	log.Debugf("Executing processV1MessagesIDGet. message_id: %s", id)
 
 	ctx := context.Background()
-	number, err := h.messageHandler.Get(ctx, id)
+	tmp, err := h.messageHandler.Get(ctx, id)
 	if err != nil {
-		log.Debugf("Could not get a number. number: %s, err: %v", id, err)
+		log.Debugf("Could not get a message. message_id: %s, err: %v", id, err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(number)
+	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", number, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1MessagesIDDelete handles DELETE /v1/messages/<id> request
+func (h *listenHandler) processV1MessagesIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(req.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debugf("Executing processV1MessagesIDDelete. message_id: %s", id)
+
+	ctx := context.Background()
+	tmp, err := h.messageHandler.Delete(ctx, id)
+	if err != nil {
+		log.Debugf("Could not get a message. message_id: %s, err: %v", id, err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 
