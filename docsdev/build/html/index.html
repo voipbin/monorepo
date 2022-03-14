@@ -86,6 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
@@ -201,6 +202,22 @@
 <li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-branch">Simple outbound call with Branch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#get-call-list">Get call list</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#get-specific-call">Get specific call</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="message.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message.html#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="message.html#message-struct-message">Message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="message.html#target">Target</a></li>
+<li class="toctree-l3"><a class="reference internal" href="message.html#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="message.html#direction">Direction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="message.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="message.html#send-a-message">Send a message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="message.html#get-list-of-messages">Get list of messages</a></li>
 </ul>
 </li>
 </ul>
@@ -371,58 +388,62 @@
 <li class="toctree-l4"><a class="reference internal" href="flow.html#id32">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="flow.html#patch">Patch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#message-send">Message send</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="flow.html#id33">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id34">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#patch">Patch</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id34">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id35">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#patch-flow">Patch Flow</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id35">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id36">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id36">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id37">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#play">Play</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id37">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id38">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id38">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id39">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#queue-join">Queue Join</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id39">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id40">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id40">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id41">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#recording-start">Recording Start</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id41">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id42">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id42">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id43">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#recording-stop">Recording Stop</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id43">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id44">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id44">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id45">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#sleep">Sleep</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id45">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id46">Parameters</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#stream-echo">Stream Echo</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id46">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id47">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id47">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id48">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#talk">Talk</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id48">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id49">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id49">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id50">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#transcribe-start">Transcribe Start</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id50">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id51">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id51">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id52">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#transcribe-stop">Transcribe Stop</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id52">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flow.html#id53">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id53">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id54">Example</a></li>
 </ul>
 </li>
 </ul>

@@ -13,6 +13,7 @@ Welcome to voipbin's documentation!
    intro
    api
    call
+   message
    agent
    conference
    domain

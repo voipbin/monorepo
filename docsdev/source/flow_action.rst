@@ -50,6 +50,7 @@ external_media_start    Start the external media.
 external_media_stop     Stop the external media.
 goto                    Goto.
 hangup                  Hangup the call.
+message_send            Send a message.
 patch                   Patch the actions from endpoint.
 patch_flow              Patch the actions from the exist flow.
 play                    Play the file.
@@ -370,8 +371,8 @@ Parameters
         }
     }
 
-* *source*: Source address.
-* *destinations*: Array of destination addresses.
+* *source*: Source address. See detail :ref:`here <call-struct-address>`.
+* *destinations*: Array of destination addresses. See detail :ref:`here <call-struct-address>`.
 * *unchained*: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 
 Example
@@ -595,6 +596,36 @@ Example
     {
         "type": "hangup"
     }
+
+.. _flow-action-message_send:
+
+Message send
+------------
+Send a message.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "message_send",
+        "option": {
+            "source": {
+                ...
+            },
+            "destinations": [
+                {
+                    ...
+                },
+                ...
+            ],
+            "text": "<string>"
+        }
+    }
+
+* *source*: Source address info. See detail :ref:`here <call-struct-address>`.
+* *destinations*: Array of destination addresses. See detail :ref:`here <call-struct-address>`.
+* text: Message's text.
 
 .. _flow-action-patch: flow-action-patch
 

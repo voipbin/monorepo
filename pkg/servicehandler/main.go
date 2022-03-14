@@ -17,6 +17,7 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
@@ -103,6 +104,12 @@ type ServiceHandler interface {
 	FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
 	FlowGets(u *cscustomer.Customer, pageSize uint64, pageToken string) ([]*fmflow.WebhookMessage, error)
 	FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error)
+
+	// message handlers
+	MessageDelete(u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error)
+	MessageGets(u *cscustomer.Customer, size uint64, token string) ([]*mmmessage.WebhookMessage, error)
+	MessageGet(u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error)
+	MessageSend(u *cscustomer.Customer, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*mmmessage.WebhookMessage, error)
 
 	// order numbers handler
 	NumberCreate(u *cscustomer.Customer, num string, flowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
