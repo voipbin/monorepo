@@ -19,6 +19,7 @@ import (
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
@@ -673,6 +674,66 @@ func (m *MockServiceHandler) FlowUpdate(u *customer.Customer, f *flow.Flow) (*fl
 func (mr *MockServiceHandlerMockRecorder) FlowUpdate(u, f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockServiceHandler)(nil).FlowUpdate), u, f)
+}
+
+// MessageDelete mocks base method.
+func (m *MockServiceHandler) MessageDelete(u *customer.Customer, id uuid.UUID) (*message.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageDelete", u, id)
+	ret0, _ := ret[0].(*message.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageDelete indicates an expected call of MessageDelete.
+func (mr *MockServiceHandlerMockRecorder) MessageDelete(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageDelete", reflect.TypeOf((*MockServiceHandler)(nil).MessageDelete), u, id)
+}
+
+// MessageGet mocks base method.
+func (m *MockServiceHandler) MessageGet(u *customer.Customer, id uuid.UUID) (*message.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageGet", u, id)
+	ret0, _ := ret[0].(*message.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageGet indicates an expected call of MessageGet.
+func (mr *MockServiceHandlerMockRecorder) MessageGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGet", reflect.TypeOf((*MockServiceHandler)(nil).MessageGet), u, id)
+}
+
+// MessageGets mocks base method.
+func (m *MockServiceHandler) MessageGets(u *customer.Customer, size uint64, token string) ([]*message.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageGets", u, size, token)
+	ret0, _ := ret[0].([]*message.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageGets indicates an expected call of MessageGets.
+func (mr *MockServiceHandlerMockRecorder) MessageGets(u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockServiceHandler)(nil).MessageGets), u, size, token)
+}
+
+// MessageSend mocks base method.
+func (m *MockServiceHandler) MessageSend(u *customer.Customer, source *address.Address, destinations []address.Address, text string) (*message.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageSend", u, source, destinations, text)
+	ret0, _ := ret[0].(*message.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageSend indicates an expected call of MessageSend.
+func (mr *MockServiceHandlerMockRecorder) MessageSend(u, source, destinations, text interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSend", reflect.TypeOf((*MockServiceHandler)(nil).MessageSend), u, source, destinations, text)
 }
 
 // NumberCreate mocks base method.
