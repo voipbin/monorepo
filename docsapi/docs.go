@@ -1102,6 +1102,113 @@ var doc = `{
                 }
             }
         },
+        "/v1.0/messages": {
+            "get": {
+                "description": "get messages",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List order messages",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyMessagesGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Send a message and returns a sent message.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Send a message and returns a sent message.",
+                "parameters": [
+                    {
+                        "description": "Sending message info.",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyMessagesPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/message.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/messages/{id}": {
+            "get": {
+                "description": "get message of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the message",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/message.Message"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete message of the given id and returns deleted item.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The message's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/message.Message"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/numbers": {
             "get": {
                 "description": "get order numbers of the country",
@@ -2130,6 +2237,41 @@ var doc = `{
                 }
             }
         },
+        "message.Message": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "source": {
+                    "description": "from/to info",
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "targets": {
+                    "type": "string"
+                },
+                "text": {
+                    "description": "message info",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "number.Number": {
             "type": "object",
             "properties": {
@@ -2506,6 +2648,24 @@ var doc = `{
                 }
             }
         },
+        "request.BodyMessagesPOST": {
+            "type": "object",
+            "properties": {
+                "destinations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "source": {
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyNumbersIDFlowIDPUT": {
             "type": "object",
             "properties": {
@@ -2676,6 +2836,17 @@ var doc = `{
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.BodyMessagesGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
                     "type": "string"
                 }
             }
