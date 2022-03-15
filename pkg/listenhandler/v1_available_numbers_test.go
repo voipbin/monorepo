@@ -24,7 +24,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 		numberHandler: mockNumber,
 	}
 
-	type test struct {
+	tests := []struct {
 		name        string
 		countryCode string
 		pageSize    uint
@@ -32,9 +32,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"empty numbers",
 			"US",
