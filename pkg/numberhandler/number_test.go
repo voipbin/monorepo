@@ -63,7 +63,9 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockTelnyx.EXPECT().CreateOrderNumber(tt.customerID, tt.number, tt.flowID, tt.numberName, tt.detail).Return(tt.expectRes, nil)
+			mockTelnyx.EXPECT().CreateNumber(tt.customerID, tt.number, tt.flowID, tt.numberName, tt.detail).Return(tt.expectRes, nil)
+			mockDB.EXPECT().NumberCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), number.EventTypeNumberCreated, tt.expectRes)
 
 			res, err := h.CreateNumber(ctx, tt.customerID, tt.number, tt.flowID, tt.numberName, tt.detail)

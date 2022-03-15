@@ -15,19 +15,44 @@ import (
 func (h *numberHandler) CreateNumber(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":        "CreateNumber",
-			"customer_id": customerID,
-			"flow_id":     flowID,
-			"number":      num,
+			"func":          "CreateNumber",
+			"customer_id":   customerID,
+			"flow_id":       flowID,
+			"target_number": num,
 		},
 	)
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
 
 	// use telnyx as a default
-	res, err := h.numHandlerTelnyx.CreateOrderNumber(customerID, num, flowID, name, detail)
+	tmp, err := h.numHandlerTelnyx.CreateNumber(customerID, num, flowID, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a number from the telnyx. err: %v", err)
 		return nil, fmt.Errorf("could not create a number from the telnyx. err: %v", err)
+	}
+
+	// add info
+	tmp.ID = uuid.Must(uuid.NewV4())
+	tmp.CustomerID = customerID
+	tmp.FlowID = flowID
+	tmp.Name = name
+	tmp.Detail = detail
+
+	tmp.TMCreate = dbhandler.GetCurTime()
+	tmp.TMUpdate = dbhandler.DefaultTimeStamp
+	tmp.TMDelete = dbhandler.DefaultTimeStamp
+	log.WithField("number", tmp).Debugf("Creating a number record. number: %s", tmp.Number)
+
+	// insert into db
+	if err := h.db.NumberCreate(ctx, tmp); err != nil {
+		log.Errorf("Could not create a number. number: %s, err: %v", tmp.Number, err)
+		return nil, err
+	}
+
+	// get created number
+	res, err := h.db.NumberGet(ctx, tmp.ID)
+	if err != nil {
+		log.Errorf("Could not get created number info. err: %v", err)
+		return nil, err
 	}
 	h.notifyHandler.PublishEvent(ctx, number.EventTypeNumberCreated, res)
 
@@ -49,7 +74,7 @@ func (h *numberHandler) ReleaseNumber(ctx context.Context, id uuid.UUID) (*numbe
 	}
 	log.Debugf("Release number info. number: %s", num.Number)
 
-	res, err := h.numHandlerTelnyx.ReleaseOrderNumber(ctx, num)
+	res, err := h.numHandlerTelnyx.ReleaseNumber(ctx, num)
 	if err != nil {
 		log.Errorf("Could not release the number. err: %v", err)
 		return nil, err

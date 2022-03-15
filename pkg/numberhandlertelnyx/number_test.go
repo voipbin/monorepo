@@ -2,6 +2,7 @@ package numberhandlertelnyx
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -14,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 )
 
-func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
+func Test_CreateNumber(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -37,7 +38,10 @@ func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
 		numberName string
 		detail     string
 
-		phoneNumbers []*telnyx.PhoneNumber
+		responseOrder  *telnyx.OrderNumber
+		responseNumber *telnyx.PhoneNumber
+
+		expectRes *number.Number
 	}
 
 	tests := []test{
@@ -50,23 +54,40 @@ func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
 			"test name",
 			"test detail",
 
-			[]*telnyx.PhoneNumber{
-				{
-					ID:                    "1580568175064384684",
-					RecordType:            "phone_number",
-					PhoneNumber:           "+12704940136",
-					Status:                telnyx.PhoneNumberStatusActive,
-					Tags:                  []string{},
-					ConnectionID:          ConnectionID,
-					T38FaxGatewayEnabled:  true,
-					PurchasedAt:           "2021-02-26T18:26:49Z",
-					EmergencyEnabled:      false,
-					CallForwardingEnabled: true,
-					CNAMListingEnabled:    false,
-					CallRecordingEnabled:  false,
-					CreatedAt:             "2021-02-26T18:26:49.277Z",
-					UpdatedAt:             "2021-02-27T17:07:16.234Z",
+			&telnyx.OrderNumber{
+				PhoneNumbers: []telnyx.OrderNumberPhoneNumber{
+					{
+						ID:          "1748688147379652251",
+						PhoneNumber: "+821021656521",
+						Status:      "active",
+					},
 				},
+			},
+			&telnyx.PhoneNumber{
+				ID:                    "1748688147379652251",
+				RecordType:            "phone_number",
+				PhoneNumber:           "+12704940136",
+				Status:                telnyx.PhoneNumberStatusActive,
+				Tags:                  []string{},
+				ConnectionID:          "tmp connection id",
+				T38FaxGatewayEnabled:  true,
+				PurchasedAt:           "2021-02-26T18:26:49Z",
+				EmergencyEnabled:      false,
+				CallForwardingEnabled: true,
+				CNAMListingEnabled:    false,
+				CallRecordingEnabled:  false,
+				CreatedAt:             "2021-02-26T18:26:49.277Z",
+				UpdatedAt:             "2021-02-27T17:07:16.234Z",
+			},
+
+			&number.Number{
+				Number:              "+12704940136",
+				ProviderName:        number.ProviderNameTelnyx,
+				ProviderReferenceID: "1748688147379652251",
+				Status:              number.StatusActive,
+				T38Enabled:          true,
+				EmergencyEnabled:    false,
+				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
 		},
 	}
@@ -74,13 +95,16 @@ func TestCreateNumberByTelnyxOrderNumber(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockExternal.EXPECT().TelnyxPhoneNumbersGet(uint(1), "", tt.number).Return(tt.phoneNumbers, nil)
-			mockExternal.EXPECT().TelnyxPhoneNumbersIDUpdateConnectionID(tt.phoneNumbers[0].ID, ConnectionID).Return(tt.phoneNumbers[0], nil)
-			mockDB.EXPECT().NumberCreate(gomock.Any(), gomock.Any())
-			mockDB.EXPECT().NumberGet(gomock.Any(), gomock.Any())
-			_, err := h.createNumberByTelnyxOrderNumber(tt.customerID, tt.flowID, tt.number, tt.numberName, tt.detail)
+			numbers := []string{tt.number}
+			mockExternal.EXPECT().TelnyxNumberOrdersPost(numbers).Return(tt.responseOrder, nil)
+			mockExternal.EXPECT().TelnyxPhoneNumbersIDGet(tt.responseOrder.PhoneNumbers[0].ID).Return(tt.responseNumber, nil)
+			res, err := h.CreateNumber(tt.customerID, tt.number, tt.flowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -122,7 +146,7 @@ func TestReleaseNumber(t *testing.T) {
 			mockExternal.EXPECT().TelnyxPhoneNumbersIDDelete(tt.number.ProviderReferenceID)
 			mockDB.EXPECT().NumberDelete(gomock.Any(), tt.number.ID)
 			mockDB.EXPECT().NumberGet(gomock.Any(), tt.number.ID)
-			_, err := h.ReleaseOrderNumber(ctx, tt.number)
+			_, err := h.ReleaseNumber(ctx, tt.number)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

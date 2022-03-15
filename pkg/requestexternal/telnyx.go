@@ -42,7 +42,7 @@ func (h *requestExternal) TelnyxAvailableNumberGets(countryCode, locality, admin
 
 	client := &http.Client{}
 
-	authToken := fmt.Sprintf("Bearer %s", TelnyxToken)
+	authToken := fmt.Sprintf("Bearer %s", telnyxToken)
 	req.Header.Add("Authorization", authToken)
 
 	// send a request go provider
@@ -81,7 +81,10 @@ func (h *requestExternal) TelnyxNumberOrdersPost(numbers []string) (*telnyx.Orde
 	// create a request uri
 	uri := "https://api.telnyx.com/v2/number_orders"
 
-	reqData := request.TelnyxV2DataNumberOrdersPost{}
+	reqData := request.TelnyxV2DataNumberOrdersPost{
+		ConnectionID:       telnyxConnectionID,
+		MessagingProfileID: telnyxMessagingProfileID,
+	}
 	for _, number := range numbers {
 		tmp := request.TelnyxPhoneNumber{
 			PhoneNumber: number,
@@ -101,7 +104,7 @@ func (h *requestExternal) TelnyxNumberOrdersPost(numbers []string) (*telnyx.Orde
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	authToken := fmt.Sprintf("Bearer %s", TelnyxToken)
+	authToken := fmt.Sprintf("Bearer %s", telnyxToken)
 	req.Header.Add("Authorization", authToken)
 
 	// send a request go provider
@@ -141,7 +144,7 @@ func (h *requestExternal) TelnyxPhoneNumbersIDGet(id string) (*telnyx.PhoneNumbe
 	}
 
 	client := &http.Client{}
-	authToken := fmt.Sprintf("Bearer %s", TelnyxToken)
+	authToken := fmt.Sprintf("Bearer %s", telnyxToken)
 	req.Header.Add("Authorization", authToken)
 
 	// send a request go provider
@@ -169,55 +172,6 @@ func (h *requestExternal) TelnyxPhoneNumbersIDGet(id string) (*telnyx.PhoneNumbe
 	return &resParse.Data, nil
 }
 
-// TelnyxPhoneNumbersIDUpdateConnectionID sends the connectionID update request to the telnyx
-func (h *requestExternal) TelnyxPhoneNumbersIDUpdateConnectionID(id string, connectionID string) (*telnyx.PhoneNumber, error) {
-	// create a request uri
-	uri := fmt.Sprintf("https://api.telnyx.com/v2/phone_numbers/%s", id)
-
-	reqData := map[string]string{
-		"connection_id": connectionID,
-	}
-	m, err := json.Marshal(reqData)
-	if err != nil {
-		return nil, err
-	}
-
-	// create a request
-	req, err := http.NewRequest("PATCH", uri, bytes.NewBuffer(m))
-	if err != nil {
-		return nil, fmt.Errorf("could not create a http request. err: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	authToken := fmt.Sprintf("Bearer %s", TelnyxToken)
-	req.Header.Add("Authorization", authToken)
-
-	// send a request go provider
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("could not get correct response. err: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("could not read the response body. err: %v", err)
-	}
-
-	// parse
-	resParse := response.TelnyxV2ResponseNumbersIDUpdateConnectionID{}
-	if err := json.Unmarshal(body, &resParse); err != nil {
-		return nil, err
-	}
-
-	return &resParse.Data, nil
-}
-
 // TelnyxPhoneNumbersIDDelete delets the phone number of the given id
 func (h *requestExternal) TelnyxPhoneNumbersIDDelete(id string) (*telnyx.PhoneNumber, error) {
 	// create a request uri
@@ -230,7 +184,7 @@ func (h *requestExternal) TelnyxPhoneNumbersIDDelete(id string) (*telnyx.PhoneNu
 	}
 
 	client := &http.Client{}
-	authToken := fmt.Sprintf("Bearer %s", TelnyxToken)
+	authToken := fmt.Sprintf("Bearer %s", telnyxToken)
 	req.Header.Add("Authorization", authToken)
 
 	// send a request go provider
@@ -258,7 +212,7 @@ func (h *requestExternal) TelnyxPhoneNumbersIDDelete(id string) (*telnyx.PhoneNu
 	return &resParse.Data, nil
 }
 
-// TelnyxPhoneNumbersIDGet gets the phone number info from the telnyx and return
+// TelnyxPhoneNumbersGet gets the phone number info from the telnyx and return
 func (h *requestExternal) TelnyxPhoneNumbersGet(size uint, tag, number string) ([]*telnyx.PhoneNumber, error) {
 	// create a request uri
 	if size <= 0 {
@@ -280,7 +234,7 @@ func (h *requestExternal) TelnyxPhoneNumbersGet(size uint, tag, number string) (
 	}
 
 	client := &http.Client{}
-	authToken := fmt.Sprintf("Bearer %s", TelnyxToken)
+	authToken := fmt.Sprintf("Bearer %s", telnyxToken)
 	req.Header.Add("Authorization", authToken)
 
 	// send a request go provider

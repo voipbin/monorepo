@@ -56,7 +56,7 @@ func TestTelnyxAvailableNumberGets(t *testing.T) {
 	}
 }
 
-func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
+func Test_TelnyxPhoneNumbersIDGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -87,7 +87,7 @@ func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
 				CallForwardingEnabled: true,
 				CNAMListingEnabled:    false,
 				CallRecordingEnabled:  false,
-				MessagingProfileID:    "",
+				MessagingProfileID:    telnyxMessagingProfileID,
 				MessagingProfileName:  "",
 				NumberBlockID:         "",
 				CreatedAt:             "2021-10-16T17:31:11.737Z",
@@ -103,7 +103,8 @@ func TestTelnyxPhoneNumbersIDGet(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.UpdatedAt = ""
+			tt.expectRes.UpdatedAt = res.UpdatedAt
+			tt.expectRes.MessagingProfileName = res.MessagingProfileName
 			if reflect.DeepEqual(tt.expectRes, res) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
