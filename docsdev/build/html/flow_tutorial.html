@@ -1,0 +1,556 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial &mdash; voipbin  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> voipbin
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">voipbin</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Tutorial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/flow_tutorial.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="get-list-of-flows">
+<h2>Get list of flows<a class="headerlink" href="#get-list-of-flows" title="Permalink to this headline">¶</a></h2>
+<p>Gets the list of registered flows.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+
+{
+    &quot;result&quot;: [
+        {
+            &quot;id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
+            &quot;name&quot;: &quot;default flow&quot;,
+            &quot;detail&quot;: &quot;default flow for voipbin incoming calls&quot;,
+            &quot;actions&quot;: [
+                {
+                    &quot;id&quot;: &quot;b34aa8a4-0b30-11eb-8016-1f5bc75b1c04&quot;,
+                    &quot;type&quot;: &quot;play&quot;,
+                    &quot;option&quot;: {
+                        &quot;stream_url&quot;: [
+                            &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
+                        ]
+                    }
+                },
+                {
+                    &quot;id&quot;: &quot;57a3dcd2-0b2b-11eb-94a6-a7129b64693c&quot;,
+                    &quot;type&quot;: &quot;play&quot;,
+                    &quot;option&quot;: {
+                        &quot;stream_url&quot;: [
+                            &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
+                        ]
+                    }
+                }
+            ],
+            &quot;tm_create&quot;: &quot;2020-10-11 01:00:00.000001&quot;,
+            &quot;tm_update&quot;: &quot;&quot;,
+            &quot;tm_delete&quot;: &quot;&quot;
+        },
+        {
+            &quot;id&quot;: &quot;af9dae94-ef07-11ea-a101-8f52e568f39b&quot;,
+            &quot;name&quot;: &quot;test flow&quot;,
+            &quot;detail&quot;: &quot;manual flow test&quot;,
+            &quot;actions&quot;: [
+                {
+                    &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+                    &quot;type&quot;: &quot;echo&quot;
+                }
+            ],
+            &quot;tm_create&quot;: &quot;2020-09-04 23:53:14.496918&quot;,
+            &quot;tm_update&quot;: &quot;&quot;,
+            &quot;tm_delete&quot;: &quot;&quot;
+        }
+    ],
+    &quot;next_page_token&quot;: &quot;2020-09-04 23:53:14.496918&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="simple-voicemail-scenario">
+<h2>Simple voicemail scenario<a class="headerlink" href="#simple-voicemail-scenario" title="Permalink to this headline">¶</a></h2>
+<p>Making a outgoing call for forwarding. If call not answered, leave a voicemail.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>               <span class="n">Start</span>
+                 <span class="o">|</span>
+                 <span class="o">|</span>
+             <span class="n">Connect</span><span class="p">(</span><span class="n">Making</span> <span class="n">an</span> <span class="n">outgoing</span> <span class="n">call</span> <span class="k">for</span> <span class="n">forwarding</span><span class="p">)</span>
+                 <span class="o">|</span>
+                 <span class="o">|</span>
+             <span class="n">Condition</span> <span class="n">check</span><span class="p">(</span><span class="n">check</span> <span class="n">the</span> <span class="n">call</span><span class="s1">&#39;s status is Answered)</span>
+                 <span class="o">|</span>
+                 <span class="o">|</span>
+    <span class="o">------------------------------</span>
+    <span class="o">|</span>                            <span class="o">|</span>
+<span class="n">condition</span> <span class="n">false</span>               <span class="n">condition</span> <span class="n">true</span>
+    <span class="o">|</span>                            <span class="o">|</span>
+    <span class="o">|</span>                          <span class="n">Hangup</span>
+  <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="o">|</span>
+    <span class="o">|</span>
+  <span class="n">Beep</span>
+    <span class="o">|</span>
+    <span class="o">|</span>
+ <span class="n">Recording</span> <span class="n">start</span>
+    <span class="o">|</span>
+    <span class="o">|</span>
+  <span class="n">Sleep</span><span class="p">(</span><span class="mi">30</span> <span class="n">sec</span><span class="p">)</span>
+    <span class="o">|</span>
+    <span class="o">|</span>
+  <span class="n">Hangup</span>
+</pre></div>
+</div>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--data-raw &#39;{
+    &quot;name&quot;: &quot;simple voicemail scenario&quot;,
+    &quot;detail&quot;: &quot;simple flow for voicemail scenario&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;connect&quot;,
+            &quot;option&quot;: {
+                &quot;source&quot;: {
+                    &quot;type&quot;: &quot;tel&quot;,
+                    &quot;target&quot;: &quot;+821021656521&quot;
+                },
+                &quot;destinations&quot;: [
+                    {
+                        &quot;type&quot;: &quot;tel&quot;,
+                        &quot;target&quot;: &quot;+821021546521&quot;
+                    }
+                ]
+            }
+        },
+        {
+            &quot;id&quot;: &quot;3746e628-8cc1-4ff4-82fe-194b16b9a10e&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;condition_call_status&quot;,
+            &quot;option&quot;: {
+                &quot;status&quot;: &quot;progressing&quot;,
+                &quot;false_target_id&quot;: &quot;cfe0e8ea-991c-11ec-b849-d7fc54168fd5&quot;
+            }
+        },
+        {
+            &quot;id&quot;: &quot;58f859e9-92d8-4b46-8073-722b9c881ae0&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;hangup&quot;
+        },
+        {
+            &quot;id&quot;: &quot;cfe0e8ea-991c-11ec-b849-d7fc54168fd5&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Thank you for your calling. We are busy now. Please leave a message after tone.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;id&quot;: &quot;0a9b6f38-ddcd-448b-80a1-ae47ac0e08aa&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;beep&quot;
+        },
+        {
+            &quot;id&quot;: &quot;ad969315-6ac4-4339-b300-566eb6352fea&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;recording_start&quot;,
+            &quot;option&quot;: {
+                &quot;beep_start&quot;: true
+            }
+        },
+        {
+            &quot;id&quot;: &quot;8abf3f9d-414c-4a15-aa94-02a799409f48&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;sleep&quot;,
+            &quot;option&quot;: {
+                &quot;duration&quot;: 10000
+            }
+        },
+        {
+            &quot;id&quot;: &quot;e4fc5d9e-9fa8-4b3e-ae77-b55b04c1f2d3&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;hangup&quot;
+        }
+    ]
+}&#39;
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-detail-of-specified-flow">
+<h2>Get detail of specified flow<a class="headerlink" href="#get-detail-of-specified-flow" title="Permalink to this headline">¶</a></h2>
+<p>Gets the detail of registered flows.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+
+{
+    &quot;id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
+    &quot;name&quot;: &quot;default flow&quot;,
+    &quot;detail&quot;: &quot;default flow for voipbin incoming calls&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;id&quot;: &quot;b34aa8a4-0b30-11eb-8016-1f5bc75b1c04&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
+                ]
+            }
+        },
+        {
+            &quot;id&quot;: &quot;57a3dcd2-0b2b-11eb-94a6-a7129b64693c&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
+                ]
+            }
+        }
+    ],
+    &quot;tm_create&quot;: &quot;2020-10-11 01:00:00.000001&quot;,
+    &quot;tm_update&quot;: &quot;&quot;,
+    &quot;tm_delete&quot;: &quot;&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-a-flow">
+<h2>Create a flow<a class="headerlink" href="#create-a-flow" title="Permalink to this headline">¶</a></h2>
+<p>Create a new flow for incoming call requests.
+When the call is comming, this flow will answer the call first, then will speech the welcome text.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;name&quot;: &quot;test flow&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;answer&quot;
+        },
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;\&#39;&#39;s service. thank you.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        }
+    ]
+}&#39;
+
+{
+    &quot;id&quot;: &quot;24013a0e-d15b-4b5e-9a96-04221a8c6a15&quot;,
+    &quot;name&quot;: &quot;test flow&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;id&quot;: &quot;9461bda1-54fd-4e27-ab04-4186c6f72830&quot;,
+            &quot;type&quot;: &quot;answer&quot;
+        },
+        {
+            &quot;id&quot;: &quot;69af787e-f5fa-4a1b-9d12-f0b43b86dae6&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;s service. thank you.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        }
+    ],
+    &quot;tm_create&quot;: &quot;2021-02-04 06:47:01.139361&quot;,
+    &quot;tm_update&quot;: &quot;&quot;,
+    &quot;tm_delete&quot;: &quot;&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="update-the-flow">
+<h2>Update the flow<a class="headerlink" href="#update-the-flow" title="Permalink to this headline">¶</a></h2>
+<p>Update the existed flow with given info.
+The doesn’t affect to the existed call. The flow changes will be affected only a new calls.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;name&quot;: &quot;test flow update&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example update&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;answer&quot;
+        },
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;\&#39;&#39;s service. thank you.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
+                ]
+            }
+        },
+        {
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
+                ]
+            }
+        }
+    ]
+}&#39;
+
+{
+    &quot;id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
+    &quot;name&quot;: &quot;test flow update&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example update&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;id&quot;: &quot;be682498-e57e-41e9-b210-a578f9c044c5&quot;,
+            &quot;type&quot;: &quot;answer&quot;
+        },
+        {
+            &quot;id&quot;: &quot;6669bfdd-a7b0-45e6-9a8d-db6bb898159f&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;s service. thank you.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;id&quot;: &quot;099b60c1-7b95-4d69-8cac-df11a992ee11&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
+                ]
+            }
+        },
+        {
+            &quot;id&quot;: &quot;89fa5091-a192-4758-8a29-316776ead8fe&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_url&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
+                ]
+            }
+        }
+    ],
+    &quot;tm_create&quot;: &quot;2020-10-11 01:00:00.000001&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-05 13:08:56.113036&quot;,
+    &quot;tm_delete&quot;: &quot;&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="delete-the-flow">
+<h2>Delete the flow<a class="headerlink" href="#delete-the-flow" title="Permalink to this headline">¶</a></h2>
+<p>Delete the existed flow of given flow id.
+The doesn’t affect to the existed call.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Sungtae Kim
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

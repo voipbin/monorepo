@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Struct &mdash; voipbin  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> voipbin
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">voipbin</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Struct</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/call_struct.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="struct">
+<h1>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="type">
+<h2>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h2>
+<p>Call’s type.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>flow</td>
+<td>Executing the call-flow</td>
+</tr>
+<tr class="row-odd"><td>conference</td>
+<td>Conference call.</td>
+</tr>
+<tr class="row-even"><td>sip-service</td>
+<td>sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="status">
+<h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<p>Call’s status.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Status</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dialing</td>
+<td>The call is created. We are dialing to the destination.</td>
+</tr>
+<tr class="row-odd"><td>ringing</td>
+<td>The destination has confirmed that the call is ringng.</td>
+</tr>
+<tr class="row-even"><td>progressing</td>
+<td>The call has answered. The both endpoints are talking to each other.</td>
+</tr>
+<tr class="row-odd"><td>terminating</td>
+<td>The call is terminating.</td>
+</tr>
+<tr class="row-even"><td>canceling</td>
+<td>The call originator is canceling the call.</td>
+</tr>
+<tr class="row-odd"><td>hangup</td>
+<td>The call has been completed.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="direction">
+<h2>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h2>
+<p>Call’s direction.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Direction</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>incoming</td>
+<td>Call is coming from outside from voipbin.</td>
+</tr>
+<tr class="row-odd"><td>outgoing</td>
+<td>Call is generating form the voipbin.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="hangup-by">
+<h2>Hangup by<a class="headerlink" href="#hangup-by" title="Permalink to this headline">¶</a></h2>
+<p>The Hangup by shows which endpoint sent the hangup request first.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">hangup by</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>remote</td>
+<td>The remote end hangup the call first.</td>
+</tr>
+<tr class="row-odd"><td>local</td>
+<td>The local end hangup the call first.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="hangup-reason">
+<h2>Hangup reason<a class="headerlink" href="#hangup-reason" title="Permalink to this headline">¶</a></h2>
+<p>Shows why the call was hungup.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="91%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Reason</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>normal</td>
+<td>The call has ended after answer.</td>
+</tr>
+<tr class="row-odd"><td>failed</td>
+<td>The call attempt(signal) was not reached to the phone network.</td>
+</tr>
+<tr class="row-even"><td>busy</td>
+<td>The destination is on the line with another caller.</td>
+</tr>
+<tr class="row-odd"><td>cancel</td>
+<td>Call was cancelled by the originator before it was answered.</td>
+</tr>
+<tr class="row-even"><td>timeout</td>
+<td>Call reached max call duration after it was answered.</td>
+</tr>
+<tr class="row-odd"><td>unanswer</td>
+<td>Destination didn’t answer until destination’s timeout.</td>
+</tr>
+<tr class="row-even"><td>dialout</td>
+<td>The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="address">
+<h2>Address<a class="headerlink" href="#address" title="Permalink to this headline">¶</a></h2>
+<p>Defines target(source/destination) address.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>type: Address type.</li>
+<li>target: Target address.</li>
+<li>name: Target name.</li>
+</ul>
+</div>
+<div class="section" id="address-type">
+<h2>Address type<a class="headerlink" href="#address-type" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>sip</td>
+<td>SIP type address.</td>
+</tr>
+<tr class="row-odd"><td>tel</td>
+<td>Telephone type address.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Sungtae Kim
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

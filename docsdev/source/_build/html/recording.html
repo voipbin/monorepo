@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Recording &mdash; voipbin  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Flow" href="flow.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> voipbin
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Recording</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#get-list-of-recordings">Get list of recordings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-detail-of-recording">Get detail of recording</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#simple-recordingfile-download">Simple recordingfile download</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">voipbin</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Recording</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/recording.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="recording">
+<h1>Recording<a class="headerlink" href="#recording" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The VoIPBIN recording API enables you to manage your call recordings.</p>
+<p>The Call Recording APIs will enable you to build automation workflows using call recording metadata and their associated audio recordings:</p>
+<ul class="simple">
+<li>List call recording metadata.</li>
+<li>Get single call recording metadata.</li>
+<li>Delete call recordings.</li>
+<li>Download call recording audio files.</li>
+<li>Asynchronously export call recording in bulk.</li>
+</ul>
+</div>
+<div class="section" id="tutorial">
+<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="get-list-of-recordings">
+<h3>Get list of recordings<a class="headerlink" href="#get-list-of-recordings" title="Permalink to this headline">¶</a></h3>
+<p>Example</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/recordings?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTIyMzIxOTcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.of3jiawHOaTaq5t7USc25aVcSag-RhuXfYNdItXrDds&amp;page_size=10&amp;page_token=2021-05-03+21%3A35%3A02.809&#39;
+
+{
+    &quot;result&quot;: [
+        {
+            &quot;id&quot;: &quot;348d988b-2ac9-4702-84f0-ae81301ad349&quot;,
+            &quot;user_id&quot;: 1,
+            &quot;type&quot;: &quot;call&quot;,
+            &quot;reference_id&quot;: &quot;531bc6f4-c695-4c6d-a478-f28b88dfc2ca&quot;,
+            &quot;status&quot;: &quot;ended&quot;,
+            &quot;format&quot;: &quot;wav&quot;,
+            &quot;filename&quot;: &quot;call_531bc6f4-c695-4c6d-a478-f28b88dfc2ca_2021-01-29T05:31:45Z.wav&quot;,
+            &quot;tm_start&quot;: &quot;2021-01-29 05:31:47.870000&quot;,
+            &quot;tm_end&quot;: &quot;2021-01-29 05:31:58.932000&quot;,
+            &quot;tm_create&quot;: &quot;2021-01-29 05:31:45.051136&quot;,
+            &quot;tm_update&quot;: &quot;2021-01-29 05:31:58.943456&quot;,
+            &quot;tm_delete&quot;: &quot;&quot;
+        },
+        {
+            &quot;id&quot;: &quot;142e8ef8-392c-4514-abf0-8656da5d2fdf&quot;,
+            &quot;user_id&quot;: 1,
+            &quot;type&quot;: &quot;call&quot;,
+            &quot;reference_id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
+            &quot;status&quot;: &quot;ended&quot;,
+            &quot;format&quot;: &quot;wav&quot;,
+            &quot;filename&quot;: &quot;call_f457951b-9918-44af-a834-2216b1cc31bc_2021-01-29T03:18:07Z.wav&quot;,
+            &quot;tm_start&quot;: &quot;2021-01-29 03:18:10.790000&quot;,
+            &quot;tm_end&quot;: &quot;2021-01-29 03:18:22.131000&quot;,
+            &quot;tm_create&quot;: &quot;2021-01-29 03:18:07.950164&quot;,
+            &quot;tm_update&quot;: &quot;2021-01-29 03:18:22.144432&quot;,
+            &quot;tm_delete&quot;: &quot;&quot;
+        },
+        {
+            &quot;id&quot;: &quot;f27d65bc-2f10-49e1-a49d-a7762965df13&quot;,
+            &quot;user_id&quot;: 1,
+            &quot;type&quot;: &quot;call&quot;,
+            &quot;reference_id&quot;: &quot;5f7a0eff-9de9-4c41-a018-08bffd4a19aa&quot;,
+            &quot;status&quot;: &quot;ended&quot;,
+            &quot;format&quot;: &quot;wav&quot;,
+            &quot;filename&quot;: &quot;call_5f7a0eff-9de9-4c41-a018-08bffd4a19aa_2021-01-28T09:16:58Z.wav&quot;,
+            &quot;tm_start&quot;: &quot;2021-01-28 09:17:00.814000&quot;,
+            &quot;tm_end&quot;: &quot;2021-01-28 09:17:11.883000&quot;,
+            &quot;tm_create&quot;: &quot;2021-01-28 09:16:58.076735&quot;,
+            &quot;tm_update&quot;: &quot;2021-01-28 09:17:11.890500&quot;,
+            &quot;tm_delete&quot;: &quot;&quot;
+        }
+    ],
+    &quot;next_page_token&quot;: &quot;2021-01-28 09:16:58.076735&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-detail-of-recording">
+<h3>Get detail of recording<a class="headerlink" href="#get-detail-of-recording" title="Permalink to this headline">¶</a></h3>
+<p>Example</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/recordings/f27d65bc-2f10-49e1-a49d-a7762965df13?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTIyMzIxOTcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.of3jiawHOaTaq5t7USc25aVcSag-RhuXfYNdItXrDds&#39;
+
+{
+    &quot;id&quot;: &quot;f27d65bc-2f10-49e1-a49d-a7762965df13&quot;,
+    &quot;user_id&quot;: 1,
+    &quot;type&quot;: &quot;call&quot;,
+    &quot;reference_id&quot;: &quot;5f7a0eff-9de9-4c41-a018-08bffd4a19aa&quot;,
+    &quot;status&quot;: &quot;ended&quot;,
+    &quot;format&quot;: &quot;wav&quot;,
+    &quot;filename&quot;: &quot;call_5f7a0eff-9de9-4c41-a018-08bffd4a19aa_2021-01-28T09:16:58Z.wav&quot;,
+    &quot;tm_start&quot;: &quot;2021-01-28 09:17:00.814000&quot;,
+    &quot;tm_end&quot;: &quot;2021-01-28 09:17:11.883000&quot;,
+    &quot;tm_create&quot;: &quot;2021-01-28 09:16:58.076735&quot;,
+    &quot;tm_update&quot;: &quot;2021-01-28 09:17:11.890500&quot;,
+    &quot;tm_delete&quot;: &quot;&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="simple-recordingfile-download">
+<h3>Simple recordingfile download<a class="headerlink" href="#simple-recordingfile-download" title="Permalink to this headline">¶</a></h3>
+<p>Example</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/recordingfiles/348d988b-2ac9-4702-84f0-ae81301ad349?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTIyMzIxOTcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.of3jiawHOaTaq5t7USc25aVcSag-RhuXfYNdItXrDds&#39; -o tmp.wav
+
+$ play tmp.wav                                                                                                                                                                                     11s
+
+tmp.wav:
+
+File Size: 170k      Bit Rate: 128k
+Encoding: Signed PCM
+Channels: 1 @ 16-bit
+Samplerate: 8000Hz
+Replaygain: off
+Duration: 00:00:10.62
+
+In:100%  00:00:10.62 [00:00:00.00] Out:85.0k [      |      ] Hd:4.4 Clip:0
+Done.
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="flow.html" class="btn btn-neutral float-left" title="Flow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Sungtae Kim
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
