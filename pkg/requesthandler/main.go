@@ -24,6 +24,7 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	hmhook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -322,6 +323,9 @@ type RequestHandler interface {
 	FMV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 	FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error)
+
+	// message-manager hook
+	MMV1Hook(ctx context.Context, hm *hmhook.Hook) error
 
 	// message-manager message
 	MMV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error)

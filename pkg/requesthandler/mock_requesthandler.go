@@ -26,6 +26,7 @@ import (
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	hook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
 	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -1261,6 +1262,20 @@ func (m *MockRequestHandler) FMV1FlowUpdate(ctx context.Context, f *flow.Flow) (
 func (mr *MockRequestHandlerMockRecorder) FMV1FlowUpdate(ctx, f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowUpdate", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowUpdate), ctx, f)
+}
+
+// MMV1Hook mocks base method.
+func (m *MockRequestHandler) MMV1Hook(ctx context.Context, hm *hook.Hook) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MMV1Hook", ctx, hm)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MMV1Hook indicates an expected call of MMV1Hook.
+func (mr *MockRequestHandlerMockRecorder) MMV1Hook(ctx, hm interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MMV1Hook", reflect.TypeOf((*MockRequestHandler)(nil).MMV1Hook), ctx, hm)
 }
 
 // MMV1MessageDelete mocks base method.
