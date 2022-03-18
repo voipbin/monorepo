@@ -43,9 +43,12 @@ spec:
             - name: metrics
               protocol: "TCP"
               containerPort: 2112
-            - name: service
+            - name: service-https
               protocol: "TCP"
               containerPort: 443
+            - name: service-http
+              protocol: "TCP"
+              containerPort: 80
           readinessProbe:
             httpGet:
               path: /ping

@@ -6,5 +6,5 @@ import "github.com/gin-gonic/gin"
 func ApplyRoutes(r *gin.RouterGroup) {
 	messages := r.Group("/messages")
 
-	messages.POST("", messagesPOST)
+	messages.POST("/:target", messagesPOST)
 }

@@ -10,6 +10,11 @@ spec:
   selector:
     app: hook-manager
   ports:
-  - port: 443
+  - name: https
+    port: 443
     targetPort: 443
+    protocol: TCP
+  - name: http
+    port: 80
+    targetPort: 80
     protocol: TCP

@@ -5,22 +5,26 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
+	hmhook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
 )
 
 // Message handles message receive
 func (h *serviceHandler) Message(ctx context.Context, uri string, m []byte) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "HookMessage",
+			"func": "Message",
 		},
 	)
 
-	req := &hook.Hook{
+	req := &hmhook.Hook{
 		ReceviedURI:  uri,
 		ReceivedData: m,
 	}
+
 	log.WithField("request", req).Debugf("Created hook.")
+	if err := h.reqHandler.MMV1Hook(ctx, req); err != nil {
+		return err
+	}
 
 	return nil
 }
