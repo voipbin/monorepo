@@ -35,7 +35,7 @@ func messagesPOST(c *gin.Context) {
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if errHandler := serviceHandler.Message(ctx, c.Request.RequestURI, data); errHandler != nil {
+	if errHandler := serviceHandler.Message(ctx, c.Request.Host+c.Request.URL.Path, data); errHandler != nil {
 		log.Errorf("Could not handle the message correctly. err: %v", errHandler)
 		c.AbortWithStatus(500)
 		return
