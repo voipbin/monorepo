@@ -25,13 +25,6 @@ func (h *listenHandler) processV1HooksPost(m *rabbitmqhandler.Request) (*rabbitm
 		},
 	)
 
-	// res := &rabbitmqhandler.Response{
-	// 	StatusCode: 200,
-	// 	DataType:   "application/json",
-	// }
-
-	// return res, nil
-
 	if errHook := h.messageHandler.Hook(ctx, req.ReceviedURI, req.ReceivedData); errHook != nil {
 		log.Errorf("Could not hook the message correctly. err: %v", errHook)
 	}

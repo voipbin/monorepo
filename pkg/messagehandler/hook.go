@@ -3,6 +3,7 @@ package messagehandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -34,6 +35,12 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) error {
 		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
 		return errUnmarshal
 	}
+
+	if len(hm.Data.Payload.To) == 0 {
+		log.Errorf("Destination address is empty.")
+		return fmt.Errorf("destination address is empty")
+	}
+
 	toNum := hm.Data.Payload.To[0].PhoneNumber
 	log = log.WithField("number", toNum)
 
