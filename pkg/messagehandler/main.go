@@ -16,6 +16,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/messagehandlermessagebird"
 )
 
+// list of hook suffix types
+const (
+	hookTelnyx = "telnyx"
+)
+
 // MessageHandler defines
 type MessageHandler interface {
 	Create(ctx context.Context, m *message.Message) (*message.Message, error)
@@ -25,6 +30,8 @@ type MessageHandler interface {
 	Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error)
 
 	Send(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error)
+
+	Hook(ctx context.Context, uri string, m []byte) error
 }
 
 // messageHandler defines
