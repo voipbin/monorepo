@@ -25,7 +25,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 		messageHandler: mockMessage,
 	}
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -35,9 +35,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 

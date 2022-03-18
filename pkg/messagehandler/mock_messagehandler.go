@@ -98,6 +98,20 @@ func (mr *MockMessageHandlerMockRecorder) Gets(ctx, customerID, pageSize, pageTo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, customerID, pageSize, pageToken)
 }
 
+// Hook mocks base method.
+func (m_2 *MockMessageHandler) Hook(ctx context.Context, uri string, m []byte) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "Hook", ctx, uri, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Hook indicates an expected call of Hook.
+func (mr *MockMessageHandlerMockRecorder) Hook(ctx, uri, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockMessageHandler)(nil).Hook), ctx, uri, m)
+}
+
 // Send mocks base method.
 func (m *MockMessageHandler) Send(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message.Message, error) {
 	m.ctrl.T.Helper()

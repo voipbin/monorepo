@@ -43,6 +43,9 @@ var (
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
 	regV1Messages    = regexp.MustCompile(`/v1/messages$`)
 	regV1MessagesID  = regexp.MustCompile("/v1/messages/" + regUUID + "$")
+
+	// hooks
+	regV1Hooks = regexp.MustCompile(`/v1/hooks$`)
 )
 
 var (
@@ -173,6 +176,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1MessagesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1MessagesIDDelete(m)
 		requestType = "/v1/messages"
+
+	////////////////////
+	// hooks
+	////////////////////
+	// POST /hooks
+	case regV1Hooks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1HooksPost(m)
+		requestType = "/v1/hooks"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
