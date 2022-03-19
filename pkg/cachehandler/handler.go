@@ -83,7 +83,7 @@ func (h *handler) FlowDel(ctx context.Context, id uuid.UUID) error {
 
 // ActiveFlowSet sets the activeflow info into the cache
 func (h *handler) ActiveFlowSet(ctx context.Context, af *activeflow.ActiveFlow) error {
-	key := fmt.Sprintf("activeflow:%s", af.CallID)
+	key := fmt.Sprintf("activeflow:%s", af.ID)
 
 	if err := h.setSerialize(ctx, key, af); err != nil {
 		return err

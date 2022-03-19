@@ -30,9 +30,11 @@ func TestActiveFlowCreate(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		flow         *flow.Flow
-		callID       uuid.UUID
+		name string
+		flow *flow.Flow
+
+		refereceType activeflow.ReferenceType
+		referenceID  uuid.UUID
 		expectActive *activeflow.ActiveFlow
 	}{
 		{
@@ -41,10 +43,14 @@ func TestActiveFlowCreate(t *testing.T) {
 				ID:      uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
 				Actions: []action.Action{},
 			},
+
+			activeflow.ReferenceTypeCall,
 			uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
 			&activeflow.ActiveFlow{
-				CallID: uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
-				FlowID: uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				ID:            uuid.FromStringOrNil("32808a7c-a7a1-11ec-8de8-2331c11da2e8"),
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
+				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -61,11 +67,11 @@ func TestActiveFlowCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
-			mockDB.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectActive).Return(nil)
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.expectActive, nil)
+			mockDB.EXPECT().ActiveFlowCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), gomock.Any()).Return(tt.expectActive, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectActive.CustomerID, activeflow.EventTypeActiveFlowCreated, tt.expectActive)
 
-			res, err := h.ActiveFlowCreate(ctx, tt.callID, tt.flow.ID)
+			res, err := h.ActiveFlowCreate(ctx, tt.refereceType, tt.referenceID, tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

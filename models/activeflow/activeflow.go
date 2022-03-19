@@ -11,9 +11,13 @@ import (
 
 // ActiveFlow struct
 type ActiveFlow struct {
-	CallID     uuid.UUID `json:"call_id"`
+	ID uuid.UUID `json:"id"`
+
 	FlowID     uuid.UUID `json:"flow_id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+
+	ReferenceType ReferenceType `json:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id"`
 
 	CurrentAction   action.Action `json:"current_action"`
 	ExecuteCount    uint64        `json:"execute_count"`
@@ -26,6 +30,16 @@ type ActiveFlow struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
+
+// ReferenceType define
+type ReferenceType string
+
+// list of ReferenceType
+const (
+	ReferenceTypeNone    ReferenceType = ""        // none
+	ReferenceTypeCall    ReferenceType = "call"    // call
+	ReferenceTypeMessage ReferenceType = "message" // message
+)
 
 // Matches return true if the given items are the same
 // Used in test

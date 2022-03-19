@@ -38,18 +38,18 @@ func (m *MockActiveflowHandler) EXPECT() *MockActiveflowHandlerMockRecorder {
 }
 
 // ActiveFlowCreate mocks base method.
-func (m *MockActiveflowHandler) ActiveFlowCreate(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
+func (m *MockActiveflowHandler) ActiveFlowCreate(ctx context.Context, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveFlowCreate", ctx, callID, flowID)
+	ret := m.ctrl.Call(m, "ActiveFlowCreate", ctx, referenceType, referenceID, flowID)
 	ret0, _ := ret[0].(*activeflow.ActiveFlow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ActiveFlowCreate indicates an expected call of ActiveFlowCreate.
-func (mr *MockActiveflowHandlerMockRecorder) ActiveFlowCreate(ctx, callID, flowID interface{}) *gomock.Call {
+func (mr *MockActiveflowHandlerMockRecorder) ActiveFlowCreate(ctx, referenceType, referenceID, flowID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowCreate", reflect.TypeOf((*MockActiveflowHandler)(nil).ActiveFlowCreate), ctx, callID, flowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowCreate", reflect.TypeOf((*MockActiveflowHandler)(nil).ActiveFlowCreate), ctx, referenceType, referenceID, flowID)
 }
 
 // ActiveFlowNextActionGet mocks base method.
@@ -79,4 +79,18 @@ func (m *MockActiveflowHandler) ActiveFlowSetForwardActionID(ctx context.Context
 func (mr *MockActiveflowHandlerMockRecorder) ActiveFlowSetForwardActionID(ctx, callID, actionID, forwardNow interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowSetForwardActionID", reflect.TypeOf((*MockActiveflowHandler)(nil).ActiveFlowSetForwardActionID), ctx, callID, actionID, forwardNow)
+}
+
+// Execute mocks base method.
+func (m *MockActiveflowHandler) Execute(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockActiveflowHandlerMockRecorder) Execute(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockActiveflowHandler)(nil).Execute), ctx, id)
 }
