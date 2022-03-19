@@ -22,6 +22,7 @@ const (
 		channel_id,
 		bridge_id,
 		flow_id,
+		active_flow_id,
 		confbridge_id,
 		type,
 
@@ -68,6 +69,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.ChannelID,
 		&res.BridgeID,
 		&res.FlowID,
+		&res.ActiveFlowID,
 		&res.ConfbridgeID,
 		&res.Type,
 
@@ -134,7 +136,9 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		asterisk_id,
 		channel_id,
 		bridge_id,
+
 		flow_id,
+		active_flow_id,
 		confbridge_id,
 		type,
 
@@ -162,7 +166,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		tm_ringing,
 		tm_hangup
 	) values(
-		?, ?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?,
+		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?,
@@ -213,6 +218,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.ChannelID,
 		c.BridgeID,
 		c.FlowID.Bytes(),
+		c.ActiveFlowID.Bytes(),
 		c.ConfbridgeID.Bytes(),
 		c.Type,
 

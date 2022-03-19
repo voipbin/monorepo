@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -82,25 +82,26 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// create active-flow
-	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, id, flowID)
+	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, flowID, fmactiveflow.ReferenceTypeCall, id)
 	if err != nil {
-		af = &activeflow.ActiveFlow{}
+		af = &fmactiveflow.ActiveFlow{}
 		log.Errorf("Could not get an active flow for outgoing call. Created dummy active flow. This call will be hungup. call: %s, flow: %s, err: %v", id, flowID, err)
 	}
 	log.Debugf("Created active-flow. active-flow: %v", af)
 
 	channelID := uuid.Must(uuid.NewV4()).String()
 	cTmp := &call.Call{
-		ID:          id,
-		CustomerID:  customerID,
-		ChannelID:   channelID,
-		FlowID:      flowID,
-		Type:        call.TypeFlow,
-		Status:      call.StatusDialing,
-		Direction:   call.DirectionOutgoing,
-		Source:      source,
-		Destination: destination,
-		Action:      af.CurrentAction,
+		ID:           id,
+		CustomerID:   customerID,
+		ChannelID:    channelID,
+		FlowID:       flowID,
+		ActiveFlowID: af.ID,
+		Type:         call.TypeFlow,
+		Status:       call.StatusDialing,
+		Direction:    call.DirectionOutgoing,
+		Source:       source,
+		Destination:  destination,
+		Action:       af.CurrentAction,
 
 		TMCreate: dbhandler.GetCurTime(),
 	}

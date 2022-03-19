@@ -913,11 +913,12 @@ func TestActionNext(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
-				Status:     call.StatusProgressing,
-				FlowID:     uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
+				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				AsteriskID:   "42:01:0a:a4:00:05",
+				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				Status:       call.StatusProgressing,
+				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
+				ActiveFlowID: uuid.FromStringOrNil("01603928-a7bb-11ec-86d6-57ce9c598437"),
 				Action: action.Action{
 					ID:   uuid.FromStringOrNil("c9bc39a0-583b-11ec-b0c4-2373b012eba7"),
 					Type: action.TypeAnswer,
@@ -939,7 +940,7 @@ func TestActionNext(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
-			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(tt.act, nil)
+			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.act, nil)
 			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
 
 			if err := h.ActionNext(ctx, tt.call); err != nil {
@@ -971,11 +972,12 @@ func TestActionNextForce(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
-				Status:     call.StatusProgressing,
-				FlowID:     uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
+				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				AsteriskID:   "42:01:0a:a4:00:05",
+				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				Status:       call.StatusProgressing,
+				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
+				ActiveFlowID: uuid.FromStringOrNil("10bf10ce-a7bb-11ec-8327-3f6d5d146557"),
 				Action: action.Action{
 					ID:   uuid.FromStringOrNil("c9bc39a0-583b-11ec-b0c4-2373b012eba7"),
 					Type: action.TypeAnswer,
@@ -1002,7 +1004,7 @@ func TestActionNextForce(t *testing.T) {
 			} else if tt.call.ConfbridgeID != uuid.Nil {
 				mockConf.EXPECT().Kick(gomock.Any(), tt.call.ConfbridgeID, tt.call.ID).Return(nil)
 			} else {
-				mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(tt.act, nil)
+				mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.act, nil)
 				mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
 				mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
 			}

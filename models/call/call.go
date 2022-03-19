@@ -19,10 +19,11 @@ type Call struct {
 	CustomerID   uuid.UUID `json:"customer_id"`
 	AsteriskID   string    `json:"asterisk_id"`
 	ChannelID    string    `json:"channel_id"`
-	BridgeID     string    `json:"bridge_id"`     // call bridge id
-	FlowID       uuid.UUID `json:"flow_id"`       // flow id
-	ConfbridgeID uuid.UUID `json:"confbridge_id"` // currently joined confbridge id.
-	Type         Type      `json:"type"`          // call type
+	BridgeID     string    `json:"bridge_id"`      // call bridge id
+	FlowID       uuid.UUID `json:"flow_id"`        // flow id
+	ActiveFlowID uuid.UUID `json:"active_flow_id"` // active flow id
+	ConfbridgeID uuid.UUID `json:"confbridge_id"`  // currently joined confbridge id.
+	Type         Type      `json:"type"`           // call type
 
 	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
