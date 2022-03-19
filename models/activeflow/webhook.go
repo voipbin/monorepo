@@ -10,8 +10,13 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	CallID uuid.UUID `json:"call_id"`
-	FlowID uuid.UUID `json:"flow_id"`
+	ID uuid.UUID `json:"id"`
+
+	FlowID     uuid.UUID `json:"flow_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+
+	ReferenceType ReferenceType `json:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id"`
 
 	CurrentAction   action.Action `json:"current_action"`
 	ForwardActionID uuid.UUID     `json:"forward_action_id"`
@@ -26,8 +31,12 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *ActiveFlow) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		CallID: h.CallID,
+		ID: h.ID,
+
 		FlowID: h.FlowID,
+
+		ReferenceType: h.ReferenceType,
+		ReferenceID:   h.ReferenceID,
 
 		CurrentAction:   h.CurrentAction,
 		ForwardActionID: h.ForwardActionID,

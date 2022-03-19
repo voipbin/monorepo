@@ -24,7 +24,9 @@ func (h *activeflowHandler) activeFlowHandleActionGotoLoop(ctx context.Context, 
 	log := logrus.New().WithFields(
 		logrus.Fields{
 			"func":              "activeFlowHandleActionGotoUpdate",
-			"call_id":           af.CallID,
+			"active_flow_id":    af.ID,
+			"reference_type":    af.ReferenceType,
+			"reference_id":      af.ReferenceID,
 			"current_action_id": af.CurrentAction.ID,
 		},
 	)

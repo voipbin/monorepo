@@ -24,7 +24,7 @@ func (h *listenHandler) v1ActiveFlowsPost(req *rabbitmqhandler.Request) (*rabbit
 	}
 
 	// create active flow
-	resActiveFlow, err := h.activeflowHandler.ActiveFlowCreate(ctx, reqData.CallID, reqData.FlowID)
+	resActiveFlow, err := h.activeflowHandler.ActiveFlowCreate(ctx, reqData.ReferenceType, reqData.ReferenceID, reqData.FlowID)
 	if err != nil {
 		logrus.Errorf("Could not create a new active flow. err: %v", err)
 		return nil, err
@@ -47,13 +47,12 @@ func (h *listenHandler) v1ActiveFlowsPost(req *rabbitmqhandler.Request) (*rabbit
 
 // v1ActiveFlowsIDNextGet handles
 // /v1/active-flows/{id}/next GET
-// /v1/flows/{id}/actions/{id}/next GET
 func (h *listenHandler) v1ActiveFlowsIDNextGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
 	// "/v1/active-flows/be2692f8-066a-11eb-847f-1b4de696fafb/next"
 	tmpVals := strings.Split(req.URI, "/")
-	callID := uuid.FromStringOrNil(tmpVals[3])
+	id := uuid.FromStringOrNil(tmpVals[3])
 
 	var reqData request.V1DataActiveFlowsIDNextGet
 	if err := json.Unmarshal(req.Data, &reqData); err != nil {
@@ -61,11 +60,11 @@ func (h *listenHandler) v1ActiveFlowsIDNextGet(req *rabbitmqhandler.Request) (*r
 		return nil, err
 	}
 
-	resAction, err := h.activeflowHandler.ActiveFlowNextActionGet(ctx, callID, reqData.CurrentActionID)
+	resAction, err := h.activeflowHandler.ActiveFlowNextActionGet(ctx, id, reqData.CurrentActionID)
 	if err != nil {
 		return nil, err
 	}
-	logrus.Debugf("Found next action. call: %s, current_action_id: %s, next_action: %s", callID, reqData.CurrentActionID, resAction)
+	logrus.Debugf("Found next action. call: %s, current_action_id: %s, next_action: %s", id, reqData.CurrentActionID, resAction)
 
 	data, err := json.Marshal(resAction)
 	if err != nil {
@@ -88,7 +87,7 @@ func (h *listenHandler) v1ActiveFlowsIDForwardActionIDPut(req *rabbitmqhandler.R
 
 	// "/v1/active-flows/be2692f8-066a-11eb-847f-1b4de696fafb/forward_action_id"
 	tmpVals := strings.Split(req.URI, "/")
-	callID := uuid.FromStringOrNil(tmpVals[3])
+	id := uuid.FromStringOrNil(tmpVals[3])
 
 	var reqData request.V1DataActiveFlowsIDForwardActionIDPut
 	if err := json.Unmarshal(req.Data, &reqData); err != nil {
@@ -98,17 +97,47 @@ func (h *listenHandler) v1ActiveFlowsIDForwardActionIDPut(req *rabbitmqhandler.R
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":              "v1ActiveFlowsIDForwardActionIDPut",
-			"call_id":           callID,
+			"id":                id,
 			"forward_action_id": reqData.ForwardActionID,
 			"forward_now":       reqData.ForwardNow,
 		},
 	)
 	log.Debug("Executing v1ActiveFlowsIDForwardActionIDPut.")
 
-	if err := h.activeflowHandler.ActiveFlowSetForwardActionID(ctx, callID, reqData.ForwardActionID, reqData.ForwardNow); err != nil {
+	if err := h.activeflowHandler.ActiveFlowSetForwardActionID(ctx, id, reqData.ForwardActionID, reqData.ForwardNow); err != nil {
 		log.Errorf("Could not set the forward action id. err: %v", err)
 		return nil, err
 	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
+// v1ActiveFlowsIDExecutePost handles
+// /v1/active-flows/{id}/execute Post
+func (h *listenHandler) v1ActiveFlowsIDExecutePost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+
+	// "/v1/active-flows/be2692f8-066a-11eb-847f-1b4de696fafb/execute"
+	tmpVals := strings.Split(req.URI, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1ActiveFlowsIDExecutePost",
+			"id":   id,
+		},
+	)
+	log.Debug("Executing v1ActiveFlowsIDExecutePost.")
+
+	go func() {
+		if err := h.activeflowHandler.Execute(ctx, id); err != nil {
+			log.Errorf("Could not execute the active-flow correctly. err: %v", err)
+		}
+	}()
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,

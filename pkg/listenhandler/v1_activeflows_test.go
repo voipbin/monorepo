@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -29,9 +30,12 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		request      *rabbitmqhandler.Request
-		expectCallID uuid.UUID
+		name    string
+		request *rabbitmqhandler.Request
+
+		expectRefereceType activeflow.ReferenceType
+		expectRefereceID   uuid.UUID
+
 		expectFlowID uuid.UUID
 		af           *activeflow.ActiveFlow
 		expectRes    *rabbitmqhandler.Response
@@ -42,14 +46,22 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 				URI:      "/v1/active-flows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"call_id": "1d8dacf4-05ee-11eb-9eae-037ddd66443e", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
+				Data:     []byte(`{"reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
 			},
-			uuid.FromStringOrNil("1d8dacf4-05ee-11eb-9eae-037ddd66443e"),
+
+			activeflow.ReferenceTypeCall,
+			uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
+
 			uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
 			&activeflow.ActiveFlow{
-				CallID:     uuid.FromStringOrNil("1d8dacf4-05ee-11eb-9eae-037ddd66443e"),
+				ID: uuid.FromStringOrNil("bd89ee76-a7a4-11ec-a1bd-8315ed90b9d1"),
+
 				FlowID:     uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
 				CustomerID: uuid.FromStringOrNil("cd607242-7f4b-11ec-a34f-bb861637ee36"),
+
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
+
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -60,14 +72,14 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"call_id":"1d8dacf4-05ee-11eb-9eae-037ddd66443e","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"execute_count":0,"forward_action_id":"00000000-0000-0000-0000-000000000000","actions":[],"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bd89ee76-a7a4-11ec-a1bd-8315ed90b9d1","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"execute_count":0,"forward_action_id":"00000000-0000-0000-0000-000000000000","actions":[],"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockActive.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectCallID, tt.expectFlowID).Return(tt.af, nil)
+			mockActive.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.af, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -190,6 +202,62 @@ func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
 
 			if res.StatusCode != 200 {
 				t.Errorf("Wrong match. expect: 200, got: %d", res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_v1ActiveFlowsIDExecutePost(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:        mockSock,
+		flowHandler:       mockFlowHandler,
+		activeflowHandler: mockActive,
+	}
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		activeflowID uuid.UUID
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/active-flows/07c60d7c-a7ae-11ec-ad69-c3e765668a2b/execute",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("07c60d7c-a7ae-11ec-ad69-c3e765668a2b"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockActive.EXPECT().Execute(gomock.Any(), tt.activeflowID)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			time.Sleep(100 * time.Millisecond)
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
