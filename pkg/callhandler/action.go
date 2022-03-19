@@ -188,7 +188,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	}
 
 	// get next action
-	nextAction, err := h.reqHandler.FMV1ActvieFlowGetNextAction(ctx, c.ID, c.Action.ID)
+	nextAction, err := h.reqHandler.FMV1ActvieFlowGetNextAction(ctx, c.ActiveFlowID, c.Action.ID)
 	if err != nil {
 		// could not get the next action from the flow-manager.
 		// but we don't hangup the call here, because we're assuming the call is already moved on next action.

@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -475,14 +475,15 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 	tmpCall.BridgeID = callBridgeID
 
 	// create active flow
-	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, tmpCall.ID, tmpCall.FlowID)
+	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, tmpCall.FlowID, fmactiveflow.ReferenceTypeCall, tmpCall.ID)
 	if err != nil {
 		log.Errorf("Could not create active flow. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
 		return errors.Wrap(err, "could not create an active flow")
 	}
-	log.Debugf("Created an active flow. active-flow: %v", af)
+	log.WithField("active_flow", af).Debugf("Created an active flow. active_flow_id: %s", af.ID)
 	tmpCall.Action = af.CurrentAction
+	tmpCall.ActiveFlowID = af.ID
 
 	// create a call
 	c, err := h.create(ctx, tmpCall)
@@ -541,13 +542,14 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	tmpCall.BridgeID = callBridgeID
 
 	// create active flow
-	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, tmpCall.ID, numb.FlowID)
+	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, numb.FlowID, fmactiveflow.ReferenceTypeCall, tmpCall.ID)
 	if err != nil {
-		af = &activeflow.ActiveFlow{}
+		af = &fmactiveflow.ActiveFlow{}
 		log.Errorf("Could not get an active flow info. Created dummy active flow. This call will be hungup. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)
 	}
 	log.Debugf("Created an active flow. active-flow: %v", af)
 	tmpCall.Action = af.CurrentAction
+	tmpCall.ActiveFlowID = af.ID
 
 	c, err := h.create(ctx, tmpCall)
 	if err != nil {

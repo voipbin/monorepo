@@ -11,7 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
@@ -42,7 +42,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 		source       address.Address
 		destination  address.Address
 
-		af                *activeflow.ActiveFlow
+		af                *fmactiveflow.ActiveFlow
 		expectCall        *call.Call
 		expectEndpointDst string
 		expectVariables   map[string]string
@@ -66,7 +66,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 				TargetName: "test target",
 			},
 
-			&activeflow.ActiveFlow{
+			&fmactiveflow.ActiveFlow{
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -116,7 +116,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 				TargetName: "test target",
 			},
 
-			&activeflow.ActiveFlow{
+			&fmactiveflow.ActiveFlow{
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -155,7 +155,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.id, tt.flowID).Return(tt.af, nil)
+			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.af, nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)

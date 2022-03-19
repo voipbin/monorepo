@@ -256,7 +256,8 @@ func TestARIPlaybackFinished(t *testing.T) {
 				Action: action.Action{
 					ID: uuid.FromStringOrNil("77a82874-e7dd-11ea-9647-27054cd71830"),
 				},
-				FlowID: uuid.FromStringOrNil("32c36bf4-156f-11ec-af17-87eb4aca917b"),
+				FlowID:       uuid.FromStringOrNil("32c36bf4-156f-11ec-af17-87eb4aca917b"),
+				ActiveFlowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),
 			},
 			"77a82874-e7dd-11ea-9647-27054cd71830",
 		},
@@ -273,7 +274,7 @@ func TestARIPlaybackFinished(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 
 			// action next part.
-			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ID, tt.call.Action.ID).Return(&returnAction, nil)
+			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(&returnAction, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
