@@ -105,15 +105,16 @@ func (r *requestHandler) NMV1NumberFlowDelete(ctx context.Context, flowID uuid.U
 // NMNumberCreate sends a request to the number-manager
 // to create an number.
 // Returns created number
-func (r *requestHandler) NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*nmnumber.Number, error) {
+func (r *requestHandler) NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.Number, error) {
 	uri := "/v1/numbers"
 
 	data := &nmrequest.V1DataNumbersPost{
-		CustomerID: customerID,
-		Number:     num,
-		FlowID:     flowID,
-		Name:       name,
-		Detail:     detail,
+		CustomerID:    customerID,
+		Number:        num,
+		CallFlowID:    callFlowID,
+		MessageFlowID: messageFlowID,
+		Name:          name,
+		Detail:        detail,
 	}
 
 	m, err := json.Marshal(data)
@@ -200,11 +201,12 @@ func (r *requestHandler) NMV1NumberUpdateBasicInfo(ctx context.Context, id uuid.
 // NMV1NumberUpdate sends a request to the number-manager
 // to update a number.
 // Returns updated number info
-func (r *requestHandler) NMV1NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) (*nmnumber.Number, error) {
+func (r *requestHandler) NMV1NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s/flow_id", id)
 
 	data := &nmrequest.V1DataNumbersIDFlowIDPut{
-		FlowID: flowID,
+		CallFlowID:    callFlowID,
+		MessageFlowID: messageFlowID,
 	}
 
 	m, err := json.Marshal(data)

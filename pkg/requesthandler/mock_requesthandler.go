@@ -1354,18 +1354,18 @@ func (mr *MockRequestHandlerMockRecorder) NMV1AvailableNumberGets(ctx, customerI
 }
 
 // NMV1NumberCreate mocks base method.
-func (m *MockRequestHandler) NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error) {
+func (m *MockRequestHandler) NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMV1NumberCreate", ctx, customerID, num, flowID, name, detail)
+	ret := m.ctrl.Call(m, "NMV1NumberCreate", ctx, customerID, num, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NMV1NumberCreate indicates an expected call of NMV1NumberCreate.
-func (mr *MockRequestHandlerMockRecorder) NMV1NumberCreate(ctx, customerID, num, flowID, name, detail interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) NMV1NumberCreate(ctx, customerID, num, callFlowID, messageFlowID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumberCreate), ctx, customerID, num, flowID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumberCreate), ctx, customerID, num, callFlowID, messageFlowID, name, detail)
 }
 
 // NMV1NumberDelete mocks base method.
@@ -1458,18 +1458,18 @@ func (mr *MockRequestHandlerMockRecorder) NMV1NumberUpdateBasicInfo(ctx, id, nam
 }
 
 // NMV1NumberUpdateFlowID mocks base method.
-func (m *MockRequestHandler) NMV1NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) (*number.Number, error) {
+func (m *MockRequestHandler) NMV1NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NMV1NumberUpdateFlowID", ctx, id, flowID)
+	ret := m.ctrl.Call(m, "NMV1NumberUpdateFlowID", ctx, id, callFlowID, messageFlowID)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NMV1NumberUpdateFlowID indicates an expected call of NMV1NumberUpdateFlowID.
-func (mr *MockRequestHandlerMockRecorder) NMV1NumberUpdateFlowID(ctx, id, flowID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) NMV1NumberUpdateFlowID(ctx, id, callFlowID, messageFlowID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumberUpdateFlowID", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumberUpdateFlowID), ctx, id, flowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NMV1NumberUpdateFlowID", reflect.TypeOf((*MockRequestHandler)(nil).NMV1NumberUpdateFlowID), ctx, id, callFlowID, messageFlowID)
 }
 
 // QMV1QueueCreate mocks base method.
