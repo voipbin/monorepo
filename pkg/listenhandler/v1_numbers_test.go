@@ -533,7 +533,7 @@ func TestProcessV1NumbersIDFlowIDPut(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 			&rabbitmqhandler.Request{
-				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f/flow_id",
+				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f/flow_ids",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6"}`),

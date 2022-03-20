@@ -12,8 +12,6 @@ type V1DataNumbersPost struct {
 	MessageFlowID uuid.UUID `json:"message_flow_id"`
 	Name          string    `json:"name"`
 	Detail        string    `json:"detail"`
-
-	FlowID uuid.UUID // deprecated
 }
 
 // V1DataNumbersIDPut is
@@ -30,6 +28,4 @@ type V1DataNumbersIDPut struct {
 type V1DataNumbersIDFlowIDPut struct {
 	CallFlowID    uuid.UUID `json:"call_flow_id"`
 	MessageFlowID uuid.UUID `json:"message_flow_id"`
-
-	FlowID uuid.UUID // deprecated
 }

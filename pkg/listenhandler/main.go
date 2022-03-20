@@ -44,11 +44,11 @@ var (
 	regV1AvailableNumbers = regexp.MustCompile("/v1/available_numbers")
 
 	// numbers
-	regV1NumbersGet      = regexp.MustCompile(`/v1/numbers\?`)
-	regV1Numbers         = regexp.MustCompile(`/v1/numbers$`)
-	regV1NumbersID       = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
-	regV1NumbersNumber   = regexp.MustCompile("/v1/numbers/+" + regAny + "$")
-	regV1NumbersIDFlowID = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_id$")
+	regV1NumbersGet       = regexp.MustCompile(`/v1/numbers\?`)
+	regV1Numbers          = regexp.MustCompile(`/v1/numbers$`)
+	regV1NumbersID        = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
+	regV1NumbersNumber    = regexp.MustCompile("/v1/numbers/+" + regAny + "$")
+	regV1NumbersIDFlowIDs = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
 
 	// numberflows
 	regV1NumberFlowsID = regexp.MustCompile("/v1/number_flows/" + regUUID)
@@ -188,8 +188,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/v1/numbers"
 
 	// PUT /numbers/<id>/flow_id
-	case regV1NumbersIDFlowID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1NumbersIDFlowIDPut(m)
+	case regV1NumbersIDFlowIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1NumbersIDFlowIDsPut(m)
 		requestType = "/v1/numbers"
 
 	// GET /numbers/<number>
