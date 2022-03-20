@@ -202,7 +202,7 @@ func (r *requestHandler) NMV1NumberUpdateBasicInfo(ctx context.Context, id uuid.
 // to update a number.
 // Returns updated number info
 func (r *requestHandler) NMV1NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.Number, error) {
-	uri := fmt.Sprintf("/v1/numbers/%s/flow_id", id)
+	uri := fmt.Sprintf("/v1/numbers/%s/flow_ids", id)
 
 	data := &nmrequest.V1DataNumbersIDFlowIDPut{
 		CallFlowID:    callFlowID,
