@@ -12,19 +12,19 @@ import (
 )
 
 // CreateNumber creates a new order numbers of given numbers
-func (h *numberHandler) CreateNumber(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error) {
+func (h *numberHandler) CreateNumber(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "CreateNumber",
 			"customer_id":   customerID,
-			"flow_id":       flowID,
+			"flow_id":       callFlowID,
 			"target_number": num,
 		},
 	)
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
 
 	// use telnyx as a default
-	tmp, err := h.numHandlerTelnyx.CreateNumber(customerID, num, flowID, name, detail)
+	tmp, err := h.numHandlerTelnyx.CreateNumber(customerID, num, callFlowID, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a number from the telnyx. err: %v", err)
 		return nil, fmt.Errorf("could not create a number from the telnyx. err: %v", err)
@@ -33,7 +33,8 @@ func (h *numberHandler) CreateNumber(ctx context.Context, customerID uuid.UUID, 
 	// add info
 	tmp.ID = uuid.Must(uuid.NewV4())
 	tmp.CustomerID = customerID
-	tmp.FlowID = flowID
+	tmp.CallFlowID = callFlowID
+	tmp.MessageFlowID = messageFlowID
 	tmp.Name = name
 	tmp.Detail = detail
 
@@ -169,17 +170,18 @@ func (h *numberHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 }
 
 // UpdateFlowID updates the number's flow_id
-func (h *numberHandler) UpdateFlowID(ctx context.Context, id, flowID uuid.UUID) (*number.Number, error) {
+func (h *numberHandler) UpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":      "UpdateFlowID",
-			"number_id": id,
-			"flow_id":   flowID,
+			"func":            "UpdateFlowID",
+			"number_id":       id,
+			"call_flow_id":    callFlowID,
+			"message_flow_id": messageFlowID,
 		},
 	)
 	log.Debugf("UpdateFlowID. number_id: %s", id)
 
-	if err := h.db.NumberUpdateFlowID(ctx, id, flowID); err != nil {
+	if err := h.db.NumberUpdateFlowID(ctx, id, callFlowID, messageFlowID); err != nil {
 		log.Errorf("Could not update the flow_id. number_id: %s, err:%v", id, err)
 		return nil, err
 	}

@@ -10,7 +10,9 @@ import (
 type WebhookMessage struct {
 	ID     uuid.UUID `json:"id"`
 	Number string    `json:"number"`
-	FlowID uuid.UUID `json:"flow_id"`
+
+	CallFlowID    uuid.UUID `json:"call_flow_id"`
+	MessageFlowID uuid.UUID `json:"message_flow_id"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
@@ -30,7 +32,9 @@ func (h *Number) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID:     h.ID,
 		Number: h.Number,
-		FlowID: h.FlowID,
+
+		CallFlowID:    h.CallFlowID,
+		MessageFlowID: h.MessageFlowID,
 
 		Name:   h.Name,
 		Detail: h.Detail,

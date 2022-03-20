@@ -15,8 +15,10 @@ const (
 	select
 		id,
 		number,
-		flow_id,
 		customer_id,
+
+		call_flow_id,
+		message_flow_id,
 
 		name,
 		detail,
@@ -45,8 +47,10 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 	if err := row.Scan(
 		&res.ID,
 		&res.Number,
-		&res.FlowID,
 		&res.CustomerID,
+
+		&res.CallFlowID,
+		&res.MessageFlowID,
 
 		&res.Name,
 		&res.Detail,
@@ -75,8 +79,10 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 	q := `insert into numbers(
 		id,
 		number,
-		flow_id,
 		customer_id,
+
+		call_flow_id,
+		message_flow_id,
 
 		name,
 		detail,
@@ -94,7 +100,8 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?, ?,
+		?, ?, ?,
+		?, ?,
 		?, ?,
 		?, ?,
 		?,
@@ -105,8 +112,10 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 	_, err := h.db.Exec(q,
 		n.ID.Bytes(),
 		n.Number,
-		n.FlowID.Bytes(),
 		n.CustomerID.Bytes(),
+
+		n.CallFlowID.Bytes(),
+		n.MessageFlowID.Bytes(),
 
 		n.Name,
 		n.Detail,
@@ -318,13 +327,13 @@ func (h *handler) NumberGets(ctx context.Context, customerID uuid.UUID, size uin
 	return res, nil
 }
 
-// NumberGetsByFlowID returns a list of numbers by flow_id.
-func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
+// NumberGetsByCallFlowID returns a list of numbers by call_flow_id.
+func (h *handler) NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
 		where
-			flow_id = ?
+			call_flow_id = ?
 			and tm_create < ?
 			and tm_delete >= ?
 		order by
@@ -335,7 +344,7 @@ func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size
 
 	rows, err := h.db.Query(q, flowID.Bytes(), token, DefaultTimeStamp, size)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGetsByFlowID. err: %v", err)
+		return nil, fmt.Errorf("could not query. NumberGetsByCallFlowID. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -343,7 +352,41 @@ func (h *handler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size
 	for rows.Next() {
 		u, err := h.numberGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. NumberGetsByFlowID, err: %v", err)
+			return nil, fmt.Errorf("could not get data. NumberGetsByCallFlowID, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
+// NumberGetsByMessageFlowID returns a list of numbers by message_flow_id.
+func (h *handler) NumberGetsByMessageFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
+
+	// prepare
+	q := fmt.Sprintf(`%s
+		where
+			message_flow_id = ?
+			and tm_create < ?
+			and tm_delete >= ?
+		order by
+			tm_create desc
+		limit ?
+		`,
+		numberSelect)
+
+	rows, err := h.db.Query(q, flowID.Bytes(), token, DefaultTimeStamp, size)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. NumberGetsByMessageFlowID. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*number.Number{}
+	for rows.Next() {
+		u, err := h.numberGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. NumberGetsByMessageFlowID, err: %v", err)
 		}
 
 		res = append(res, u)
@@ -405,11 +448,38 @@ func (h *handler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 	return nil
 }
 
-// NumberUpdateBasicInfo updates flow id.
-func (h *handler) NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) error {
+// NumberUpdateFlowID updates number's flow id.
+func (h *handler) NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) error {
 	q := `
 	update numbers set
-		flow_id = ?,
+		call_flow_id = ?,
+		message_flow_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q,
+		callFlowID.Bytes(),
+		messageFlowID.Bytes(),
+		GetCurTime(),
+		id.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. NumberUpdateFlowID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.numberUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// NumberUpdateCallFlowID updates call_flow_id.
+func (h *handler) NumberUpdateCallFlowID(ctx context.Context, id, flowID uuid.UUID) error {
+	q := `
+	update numbers set
+		call_flow_id = ?,
 		tm_update = ?
 	where
 		id = ?
@@ -422,6 +492,31 @@ func (h *handler) NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) 
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. NumberUpdateFlowID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.numberUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// NumberUpdateMessageFlowID updates message_flow_id.
+func (h *handler) NumberUpdateMessageFlowID(ctx context.Context, id, flowID uuid.UUID) error {
+	q := `
+	update numbers set
+		message_flow_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q,
+		flowID.Bytes(),
+		GetCurTime(),
+		id.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. NumberUpdateMessageFlowID. err: %v", err)
 	}
 
 	// update the cache

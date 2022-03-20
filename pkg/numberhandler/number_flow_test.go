@@ -28,38 +28,43 @@ func TestRemoveNumbersFlowID(t *testing.T) {
 	}
 
 	type test struct {
-		name    string
-		numbers []*number.Number
-		flowID  uuid.UUID
+		name               string
+		numbersCallFlow    []*number.Number
+		numbersMessageFlow []*number.Number
+		flowID             uuid.UUID
 	}
 
 	tests := []test{
 		{
-			"normal",
+			"normal call flow id",
 			[]*number.Number{
 				{
-					ID:     uuid.FromStringOrNil("e9e983b2-7d22-11eb-acd3-13c2efec905d"),
-					FlowID: uuid.FromStringOrNil("dd92f3fa-7d22-11eb-be53-47ee94a9bce3"),
+					ID:         uuid.FromStringOrNil("e9e983b2-7d22-11eb-acd3-13c2efec905d"),
+					CallFlowID: uuid.FromStringOrNil("dd92f3fa-7d22-11eb-be53-47ee94a9bce3"),
 				},
 			},
+			[]*number.Number{},
+
 			uuid.FromStringOrNil("dd92f3fa-7d22-11eb-be53-47ee94a9bce3"),
 		},
 		{
-			"3 items",
+			"3 items call flow id",
 			[]*number.Number{
 				{
-					ID:     uuid.FromStringOrNil("094aa406-7d24-11eb-81d5-2f5e99ab6fc1"),
-					FlowID: uuid.FromStringOrNil("0974bd22-7d24-11eb-8517-8f90f5f6be56"),
+					ID:         uuid.FromStringOrNil("094aa406-7d24-11eb-81d5-2f5e99ab6fc1"),
+					CallFlowID: uuid.FromStringOrNil("0974bd22-7d24-11eb-8517-8f90f5f6be56"),
 				},
 				{
-					ID:     uuid.FromStringOrNil("0993e8dc-7d24-11eb-8bee-dbca074d9894"),
-					FlowID: uuid.FromStringOrNil("0974bd22-7d24-11eb-8517-8f90f5f6be56"),
+					ID:         uuid.FromStringOrNil("0993e8dc-7d24-11eb-8bee-dbca074d9894"),
+					CallFlowID: uuid.FromStringOrNil("0974bd22-7d24-11eb-8517-8f90f5f6be56"),
 				},
 				{
-					ID:     uuid.FromStringOrNil("09ada2cc-7d24-11eb-8518-97f716018857"),
-					FlowID: uuid.FromStringOrNil("0974bd22-7d24-11eb-8517-8f90f5f6be56"),
+					ID:         uuid.FromStringOrNil("09ada2cc-7d24-11eb-8518-97f716018857"),
+					CallFlowID: uuid.FromStringOrNil("0974bd22-7d24-11eb-8517-8f90f5f6be56"),
 				},
 			},
+			[]*number.Number{},
+
 			uuid.FromStringOrNil("0974bd22-7d24-11eb-8517-8f90f5f6be56"),
 		},
 	}
@@ -68,10 +73,14 @@ func TestRemoveNumbersFlowID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGetsByFlowID(gomock.Any(), tt.flowID, gomock.Any(), gomock.Any()).Return(tt.numbers, nil)
+			mockDB.EXPECT().NumberGetsByCallFlowID(gomock.Any(), tt.flowID, gomock.Any(), gomock.Any()).Return(tt.numbersCallFlow, nil)
+			for _, num := range tt.numbersCallFlow {
+				mockDB.EXPECT().NumberUpdateCallFlowID(gomock.Any(), num.ID, uuid.Nil)
+			}
 
-			for _, num := range tt.numbers {
-				mockDB.EXPECT().NumberUpdateFlowID(gomock.Any(), num.ID, uuid.Nil)
+			mockDB.EXPECT().NumberGetsByMessageFlowID(gomock.Any(), tt.flowID, gomock.Any(), gomock.Any()).Return(tt.numbersMessageFlow, nil)
+			for _, num := range tt.numbersMessageFlow {
+				mockDB.EXPECT().NumberUpdateMessageFlowID(gomock.Any(), num.ID, uuid.Nil)
 			}
 
 			if err := h.RemoveNumbersFlowID(ctx, tt.flowID); err != nil {

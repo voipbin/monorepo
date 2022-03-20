@@ -109,19 +109,34 @@ func (mr *MockDBHandlerMockRecorder) NumberGets(ctx, customerID, size, token int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGets", reflect.TypeOf((*MockDBHandler)(nil).NumberGets), ctx, customerID, size, token)
 }
 
-// NumberGetsByFlowID mocks base method.
-func (m *MockDBHandler) NumberGetsByFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
+// NumberGetsByCallFlowID mocks base method.
+func (m *MockDBHandler) NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetsByFlowID", ctx, flowID, size, token)
+	ret := m.ctrl.Call(m, "NumberGetsByCallFlowID", ctx, flowID, size, token)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NumberGetsByFlowID indicates an expected call of NumberGetsByFlowID.
-func (mr *MockDBHandlerMockRecorder) NumberGetsByFlowID(ctx, flowID, size, token interface{}) *gomock.Call {
+// NumberGetsByCallFlowID indicates an expected call of NumberGetsByCallFlowID.
+func (mr *MockDBHandlerMockRecorder) NumberGetsByCallFlowID(ctx, flowID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByFlowID), ctx, flowID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByCallFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByCallFlowID), ctx, flowID, size, token)
+}
+
+// NumberGetsByMessageFlowID mocks base method.
+func (m *MockDBHandler) NumberGetsByMessageFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberGetsByMessageFlowID", ctx, flowID, size, token)
+	ret0, _ := ret[0].([]*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberGetsByMessageFlowID indicates an expected call of NumberGetsByMessageFlowID.
+func (mr *MockDBHandlerMockRecorder) NumberGetsByMessageFlowID(ctx, flowID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByMessageFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByMessageFlowID), ctx, flowID, size, token)
 }
 
 // NumberUpdateBasicInfo mocks base method.
@@ -138,16 +153,44 @@ func (mr *MockDBHandlerMockRecorder) NumberUpdateBasicInfo(ctx, id, name, detail
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateBasicInfo), ctx, id, name, detail)
 }
 
-// NumberUpdateFlowID mocks base method.
-func (m *MockDBHandler) NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) error {
+// NumberUpdateCallFlowID mocks base method.
+func (m *MockDBHandler) NumberUpdateCallFlowID(ctx context.Context, id, flowID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberUpdateFlowID", ctx, id, flowID)
+	ret := m.ctrl.Call(m, "NumberUpdateCallFlowID", ctx, id, flowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NumberUpdateCallFlowID indicates an expected call of NumberUpdateCallFlowID.
+func (mr *MockDBHandlerMockRecorder) NumberUpdateCallFlowID(ctx, id, flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateCallFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateCallFlowID), ctx, id, flowID)
+}
+
+// NumberUpdateFlowID mocks base method.
+func (m *MockDBHandler) NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberUpdateFlowID", ctx, id, callFlowID, messageFlowID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // NumberUpdateFlowID indicates an expected call of NumberUpdateFlowID.
-func (mr *MockDBHandlerMockRecorder) NumberUpdateFlowID(ctx, id, flowID interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) NumberUpdateFlowID(ctx, id, callFlowID, messageFlowID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateFlowID), ctx, id, flowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateFlowID), ctx, id, callFlowID, messageFlowID)
+}
+
+// NumberUpdateMessageFlowID mocks base method.
+func (m *MockDBHandler) NumberUpdateMessageFlowID(ctx context.Context, id, flowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberUpdateMessageFlowID", ctx, id, flowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NumberUpdateMessageFlowID indicates an expected call of NumberUpdateMessageFlowID.
+func (mr *MockDBHandlerMockRecorder) NumberUpdateMessageFlowID(ctx, id, flowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateMessageFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateMessageFlowID), ctx, id, flowID)
 }

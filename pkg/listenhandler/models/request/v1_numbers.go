@@ -6,11 +6,14 @@ import "github.com/gofrs/uuid"
 // v1 data type request struct for
 // /v1/numbers POST
 type V1DataNumbersPost struct {
-	CustomerID uuid.UUID `json:"customer_id"`
-	Number     string    `json:"number"`
-	FlowID     uuid.UUID `json:"flow_id"`
-	Name       string    `json:"name"`
-	Detail     string    `json:"detail"`
+	CustomerID    uuid.UUID `json:"customer_id"`
+	Number        string    `json:"number"`
+	CallFlowID    uuid.UUID `json:"call_flow_id"`
+	MessageFlowID uuid.UUID `json:"message_flow_id"`
+	Name          string    `json:"name"`
+	Detail        string    `json:"detail"`
+
+	FlowID uuid.UUID // deprecated
 }
 
 // V1DataNumbersIDPut is
@@ -25,5 +28,8 @@ type V1DataNumbersIDPut struct {
 // v1 data type request struct for
 // /v1/numbers/<id>/flow_id PUT
 type V1DataNumbersIDFlowIDPut struct {
-	FlowID uuid.UUID `json:"flow_id"`
+	CallFlowID    uuid.UUID `json:"call_flow_id"`
+	MessageFlowID uuid.UUID `json:"message_flow_id"`
+
+	FlowID uuid.UUID // deprecated
 }
