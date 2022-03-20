@@ -585,8 +585,8 @@ func TestTypeFlowStart(t *testing.T) {
 				"domain":  "pstn.voipbin.net",
 			},
 			&number.Number{
-				ID:     uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
-				FlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
+				ID:         uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
+				CallFlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
 			},
 			&fmactiveflow.ActiveFlow{
 				ID:            uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
@@ -627,8 +627,8 @@ func TestTypeFlowStart(t *testing.T) {
 				"domain":  "pstn.voipbin.net",
 			},
 			&number.Number{
-				ID:     uuid.FromStringOrNil("f06df84e-82e0-11eb-9ca5-7f84ada50218"),
-				FlowID: uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
+				ID:         uuid.FromStringOrNil("f06df84e-82e0-11eb-9ca5-7f84ada50218"),
+				CallFlowID: uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
 			},
 			&fmactiveflow.ActiveFlow{
 				ID:            uuid.FromStringOrNil("540e43b0-a7b9-11ec-af05-43bcbf20d46b"),
@@ -667,7 +667,7 @@ func TestTypeFlowStart(t *testing.T) {
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(nil)
 
 			mockReq.EXPECT().NMV1NumberGetByNumber(gomock.Any(), tt.channel.DestinationNumber).Return(tt.numb, nil)
-			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.numb.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.af, nil)
+			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.numb.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.af, nil)
 			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)

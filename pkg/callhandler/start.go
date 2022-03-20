@@ -524,7 +524,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	// create a temp call info
 	// todo: need to be fixed to set to the number's customer id
 	tmpCall := call.NewCallByChannel(cn, numb.CustomerID, call.TypeFlow, call.DirectionIncoming, data)
-	tmpCall.FlowID = numb.FlowID
+	tmpCall.FlowID = numb.CallFlowID
 	log = log.WithFields(
 		logrus.Fields{
 			"call_id": tmpCall.ID,
@@ -542,7 +542,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	tmpCall.BridgeID = callBridgeID
 
 	// create active flow
-	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, numb.FlowID, fmactiveflow.ReferenceTypeCall, tmpCall.ID)
+	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, numb.CallFlowID, fmactiveflow.ReferenceTypeCall, tmpCall.ID)
 	if err != nil {
 		af = &fmactiveflow.ActiveFlow{}
 		log.Errorf("Could not get an active flow info. Created dummy active flow. This call will be hungup. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)
