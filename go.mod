@@ -13,10 +13,10 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220319190413-8ed5f56d3873
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220320184250-5263103ed0df
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220228065618-f07d7d687d12
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220319183648-20df29780dad
-	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220315173806-77cceaa9d494
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220320183155-5a5e01a5c899
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220209071252-a365e400801c
 )
 
