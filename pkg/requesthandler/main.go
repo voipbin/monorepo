@@ -337,14 +337,14 @@ type RequestHandler interface {
 	NMV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)
 
 	// number-manager number
-	NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*nmnumber.Number, error)
+	NMV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.Number, error)
 	NMV1NumberDelete(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error)
 	NMV1NumberFlowDelete(ctx context.Context, flowID uuid.UUID) error
 	NMV1NumberGetByNumber(ctx context.Context, num string) (*nmnumber.Number, error)
 	NMV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error)
 	NMV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
 	NMV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*nmnumber.Number, error)
-	NMV1NumberUpdateFlowID(ctx context.Context, id, flowID uuid.UUID) (*nmnumber.Number, error)
+	NMV1NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.Number, error)
 
 	// queue-manager queue
 	QMV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueue.Queue, error)
