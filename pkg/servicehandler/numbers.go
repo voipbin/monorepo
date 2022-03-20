@@ -43,7 +43,7 @@ func (h *serviceHandler) NumberGets(u *cscustomer.Customer, size uint64, token s
 // NumberCreate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberCreate(u *cscustomer.Customer, num string, flowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberCreate(u *cscustomer.Customer, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
@@ -57,7 +57,7 @@ func (h *serviceHandler) NumberCreate(u *cscustomer.Customer, num string, flowID
 	}
 
 	// create numbers
-	tmp, err := h.reqHandler.NMV1NumberCreate(ctx, u.ID, num, flowID, name, detail)
+	tmp, err := h.reqHandler.NMV1NumberCreate(ctx, u.ID, num, callFlowID, messageFlowID, name, detail)
 	if err != nil {
 		log.Infof("Could not get available numbers info. err: %v", err)
 		return nil, err
@@ -183,7 +183,7 @@ func (h *serviceHandler) NumberUpdate(u *cscustomer.Customer, id uuid.UUID, name
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdateFlowID(u *cscustomer.Customer, id, flowID uuid.UUID) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberUpdateFlowIDs(u *cscustomer.Customer, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
@@ -209,7 +209,7 @@ func (h *serviceHandler) NumberUpdateFlowID(u *cscustomer.Customer, id, flowID u
 	}
 
 	// update number
-	tmp, err := h.reqHandler.NMV1NumberUpdateFlowID(ctx, id, flowID)
+	tmp, err := h.reqHandler.NMV1NumberUpdateFlowID(ctx, id, callFlowID, messageFlowID)
 	if err != nil {
 		log.Errorf("Could not update the number info. err: %v", err)
 		return nil, err
