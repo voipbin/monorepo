@@ -172,7 +172,7 @@ func numbersPOST(c *gin.Context) {
 
 	// create a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberCreate(&u, req.Number, req.FlowID, req.Name, req.Detail)
+	numb, err := serviceHandler.NumberCreate(&u, req.Number, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create the number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -330,7 +330,7 @@ func numbersIDFlowIDPUT(c *gin.Context) {
 
 	// update a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberUpdateFlowID(&u, id, req.FlowID)
+	numb, err := serviceHandler.NumberUpdateFlowIDs(&u, id, req.CallFlowID, req.MessageFlowID)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)
