@@ -20,7 +20,7 @@ import (
 type NumberHandler interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
 
-	CreateNumber(ctx context.Context, customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error)
+	CreateNumber(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error)
 	GetNumber(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	GetNumberByNumber(ctx context.Context, num string) (*number.Number, error)
 	GetNumbers(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error)
@@ -30,7 +30,7 @@ type NumberHandler interface {
 	RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUID) error
 
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*number.Number, error)
-	UpdateFlowID(ctx context.Context, id, flowID uuid.UUID) (*number.Number, error)
+	UpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error)
 }
 
 // numberHandler structure for service handle

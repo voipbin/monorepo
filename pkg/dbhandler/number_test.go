@@ -142,7 +142,7 @@ func TestNumberGets(t *testing.T) {
 	}
 }
 
-func TestNumberGetsByFlowID(t *testing.T) {
+func Test_NumberGetsByCallFlowID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -160,13 +160,13 @@ func TestNumberGetsByFlowID(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			"call flow id",
 			uuid.FromStringOrNil("66beabfe-7d20-11eb-9b69-375c485b40fa"),
 			[]*number.Number{
 				{
 					ID:         uuid.FromStringOrNil("5d73b940-7d20-11eb-8335-97856a00f2c6"),
 					CustomerID: uuid.FromStringOrNil("57115e32-7ff3-11ec-850e-afd53272231d"),
-					FlowID:     uuid.FromStringOrNil("66beabfe-7d20-11eb-9b69-375c485b40fa"),
+					CallFlowID: uuid.FromStringOrNil("66beabfe-7d20-11eb-9b69-375c485b40fa"),
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
 					TMUpdate:   DefaultTimeStamp,
@@ -182,7 +182,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 				{
 					ID:         uuid.FromStringOrNil("109347b6-7d21-11eb-bdd4-c7226a0e1c81"),
 					CustomerID: uuid.FromStringOrNil("5c6ea31c-7ff3-11ec-a028-b345c3f8ab55"),
-					FlowID:     uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
+					CallFlowID: uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
 					TMUpdate:   DefaultTimeStamp,
@@ -191,7 +191,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 				{
 					ID:         uuid.FromStringOrNil("10b60706-7d21-11eb-90ae-2305526adf47"),
 					CustomerID: uuid.FromStringOrNil("5c6ea31c-7ff3-11ec-a028-b345c3f8ab55"),
-					FlowID:     uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
+					CallFlowID: uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
 					TMUpdate:   DefaultTimeStamp,
@@ -200,7 +200,7 @@ func TestNumberGetsByFlowID(t *testing.T) {
 				{
 					ID:         uuid.FromStringOrNil("10cf5ee0-7d21-11eb-9733-b73b63288625"),
 					CustomerID: uuid.FromStringOrNil("5c6ea31c-7ff3-11ec-a028-b345c3f8ab55"),
-					FlowID:     uuid.FromStringOrNil("10eff100-7d21-11eb-b275-6ff5cde65beb"),
+					CallFlowID: uuid.FromStringOrNil("10eff100-7d21-11eb-b275-6ff5cde65beb"),
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
 					TMUpdate:   DefaultTimeStamp,
@@ -222,7 +222,99 @@ func TestNumberGetsByFlowID(t *testing.T) {
 				_ = h.NumberCreate(ctx, n)
 			}
 
-			res, err := h.NumberGetsByFlowID(ctx, tt.flowID, 100, GetCurTime())
+			res, err := h.NumberGetsByCallFlowID(ctx, tt.flowID, 100, GetCurTime())
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if len(res) != tt.expectNum {
+				t.Errorf("Wrong match. expect: %d, got: %v", tt.expectNum, len(res))
+			}
+		})
+	}
+}
+
+func Test_NumberGetsByMessageFlowID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
+
+	type test struct {
+		name string
+
+		flowID  uuid.UUID
+		numbers []*number.Number
+
+		expectNum int
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("9714e212-a85f-11ec-a571-d79e5520a61c"),
+			[]*number.Number{
+				{
+					ID:            uuid.FromStringOrNil("974bb36e-a85f-11ec-afd8-13a6af6c6b79"),
+					CustomerID:    uuid.FromStringOrNil("9775e2f6-a85f-11ec-a63e-ff69aed73a7f"),
+					MessageFlowID: uuid.FromStringOrNil("9714e212-a85f-11ec-a571-d79e5520a61c"),
+					TMPurchase:    "2021-01-01 00:00:00.000",
+					TMCreate:      "2021-01-01 00:00:00.000",
+					TMUpdate:      DefaultTimeStamp,
+					TMDelete:      DefaultTimeStamp,
+				},
+			},
+			1,
+		},
+		{
+			"3 flows, but grep 2",
+			uuid.FromStringOrNil("97a1d14a-a85f-11ec-bd41-53acbe702228"),
+			[]*number.Number{
+				{
+					ID:            uuid.FromStringOrNil("c5b4a4b6-a861-11ec-84c2-4fedd4b408ea"),
+					CustomerID:    uuid.FromStringOrNil("5c6ea31c-7ff3-11ec-a028-b345c3f8ab55"),
+					MessageFlowID: uuid.FromStringOrNil("97a1d14a-a85f-11ec-bd41-53acbe702228"),
+					TMPurchase:    "2021-01-01 00:00:00.000",
+					TMCreate:      "2021-01-01 00:00:00.000",
+					TMUpdate:      DefaultTimeStamp,
+					TMDelete:      DefaultTimeStamp,
+				},
+				{
+					ID:            uuid.FromStringOrNil("c5e7c274-a861-11ec-b567-9bf433831b7f"),
+					CustomerID:    uuid.FromStringOrNil("5c6ea31c-7ff3-11ec-a028-b345c3f8ab55"),
+					MessageFlowID: uuid.FromStringOrNil("97a1d14a-a85f-11ec-bd41-53acbe702228"),
+					TMPurchase:    "2021-01-01 00:00:00.000",
+					TMCreate:      "2021-01-01 00:00:00.000",
+					TMUpdate:      DefaultTimeStamp,
+					TMDelete:      DefaultTimeStamp,
+				},
+				{
+					ID:            uuid.FromStringOrNil("c611edce-a861-11ec-9dd3-abcaf22fe95a"),
+					CustomerID:    uuid.FromStringOrNil("5c6ea31c-7ff3-11ec-a028-b345c3f8ab55"),
+					MessageFlowID: uuid.FromStringOrNil("97d0b186-a85f-11ec-8a8a-cb8bcfc342ba"),
+					TMPurchase:    "2021-01-01 00:00:00.000",
+					TMCreate:      "2021-01-01 00:00:00.000",
+					TMUpdate:      DefaultTimeStamp,
+					TMDelete:      DefaultTimeStamp,
+				},
+			},
+			2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			// create numbers
+			for _, n := range tt.numbers {
+				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+				mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
+				_ = h.NumberCreate(ctx, n)
+			}
+
+			res, err := h.NumberGetsByMessageFlowID(ctx, tt.flowID, 100, GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -336,7 +428,7 @@ func TestNumberUpdateBasicInfo(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
 				Number:              "+821021656521",
-				FlowID:              uuid.FromStringOrNil("5293ec2e-881a-11ec-a3bd-bbda5d0724de"),
+				CallFlowID:          uuid.FromStringOrNil("5293ec2e-881a-11ec-a3bd-bbda5d0724de"),
 				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
 				Name:                "test name",
 				Detail:              "test detail",
@@ -354,7 +446,7 @@ func TestNumberUpdateBasicInfo(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
 				Number:              "+821021656521",
-				FlowID:              uuid.FromStringOrNil("5293ec2e-881a-11ec-a3bd-bbda5d0724de"),
+				CallFlowID:          uuid.FromStringOrNil("5293ec2e-881a-11ec-a3bd-bbda5d0724de"),
 				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
 				Name:                "update name",
 				Detail:              "update detail",
@@ -403,7 +495,7 @@ func TestNumberUpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func TestNumberUpdateFlowID(t *testing.T) {
+func Test_NumberUpdateFlowID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -413,14 +505,103 @@ func TestNumberUpdateFlowID(t *testing.T) {
 		name   string
 		number *number.Number
 
-		flowID uuid.UUID
+		callFlowID    uuid.UUID
+		messageFlowID uuid.UUID
 
 		expectNumber *number.Number
 	}
 
 	tests := []test{
 		{
-			"test normal",
+			"normal",
+			&number.Number{
+				ID:                  uuid.FromStringOrNil("4a7c7d2a-a85f-11ec-8d15-9730036800e5"),
+				Number:              "+821021656521",
+				CustomerID:          uuid.FromStringOrNil("4aa698da-a85f-11ec-a93a-5fbf7b8302db"),
+				Name:                "test name",
+				Detail:              "test detail",
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "1580568175064384684",
+				Status:              number.StatusActive,
+				T38Enabled:          true,
+				EmergencyEnabled:    false,
+				TMPurchase:          "2021-02-26 18:26:49.000",
+			},
+
+			uuid.FromStringOrNil("4acedf84-a85f-11ec-bdc6-27902c5c6987"),
+			uuid.FromStringOrNil("4af49f4e-a85f-11ec-ad06-676681d45adb"),
+
+			&number.Number{
+				ID:                  uuid.FromStringOrNil("4a7c7d2a-a85f-11ec-8d15-9730036800e5"),
+				Number:              "+821021656521",
+				CustomerID:          uuid.FromStringOrNil("4aa698da-a85f-11ec-a93a-5fbf7b8302db"),
+				CallFlowID:          uuid.FromStringOrNil("4acedf84-a85f-11ec-bdc6-27902c5c6987"),
+				MessageFlowID:       uuid.FromStringOrNil("4af49f4e-a85f-11ec-ad06-676681d45adb"),
+				Name:                "test name",
+				Detail:              "test detail",
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "1580568175064384684",
+				Status:              number.StatusActive,
+				T38Enabled:          true,
+				EmergencyEnabled:    false,
+				TMPurchase:          "2021-02-26 18:26:49.000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
+
+			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
+			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any()).AnyTimes()
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.NumberCreate(ctx, tt.number); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if err := h.NumberUpdateFlowID(ctx, tt.number.ID, tt.callFlowID, tt.messageFlowID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.NumberGet(context.Background(), tt.number.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.TMUpdate == "" {
+				t.Errorf("Wrong match. expect: not empty, got: empty")
+			}
+			res.TMCreate = ""
+			res.TMDelete = ""
+			res.TMUpdate = ""
+
+			if reflect.DeepEqual(tt.expectNumber, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectNumber, res)
+			}
+		})
+	}
+}
+
+func Test_NumberUpdateCallFlowID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name   string
+		number *number.Number
+
+		callFlowID uuid.UUID
+
+		expectNumber *number.Number
+	}
+
+	tests := []test{
+		{
+			"update callflow",
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("37357400-8817-11ec-9616-0f38be341833"),
 				Number:              "+821021656521",
@@ -440,7 +621,8 @@ func TestNumberUpdateFlowID(t *testing.T) {
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("37357400-8817-11ec-9616-0f38be341833"),
 				Number:              "+821021656521",
-				FlowID:              uuid.FromStringOrNil("535c0ca4-8801-11ec-accb-7bd692b1c078"),
+				CallFlowID:          uuid.FromStringOrNil("535c0ca4-8801-11ec-accb-7bd692b1c078"),
+				MessageFlowID:       uuid.Nil,
 				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
 				Name:                "test name",
 				Detail:              "test detail",
@@ -466,7 +648,93 @@ func TestNumberUpdateFlowID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.NumberUpdateFlowID(ctx, tt.number.ID, tt.flowID); err != nil {
+			if err := h.NumberUpdateCallFlowID(ctx, tt.number.ID, tt.callFlowID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.NumberGet(context.Background(), tt.number.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.TMUpdate == "" {
+				t.Errorf("Wrong match. expect: not empty, got: empty")
+			}
+			res.TMCreate = ""
+			res.TMDelete = ""
+			res.TMUpdate = ""
+
+			if reflect.DeepEqual(tt.expectNumber, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectNumber, res)
+			}
+		})
+	}
+}
+
+func Test_NumberUpdateMessageFlowID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	type test struct {
+		name   string
+		number *number.Number
+
+		flowID uuid.UUID
+
+		expectNumber *number.Number
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&number.Number{
+				ID:                  uuid.FromStringOrNil("b37a0bae-a85e-11ec-b666-7fce3ed0d0d5"),
+				Number:              "+821021656521",
+				CustomerID:          uuid.FromStringOrNil("b3e74570-a85e-11ec-a53b-331bdfd1d2f3"),
+				Name:                "test name",
+				Detail:              "test detail",
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "1580568175064384684",
+				Status:              number.StatusActive,
+				T38Enabled:          true,
+				EmergencyEnabled:    false,
+				TMPurchase:          "2021-02-26 18:26:49.000",
+			},
+
+			uuid.FromStringOrNil("b416b062-a85e-11ec-a230-7f3aae198503"),
+
+			&number.Number{
+				ID:                  uuid.FromStringOrNil("b37a0bae-a85e-11ec-b666-7fce3ed0d0d5"),
+				Number:              "+821021656521",
+				MessageFlowID:       uuid.FromStringOrNil("b416b062-a85e-11ec-a230-7f3aae198503"),
+				CustomerID:          uuid.FromStringOrNil("b3e74570-a85e-11ec-a53b-331bdfd1d2f3"),
+				Name:                "test name",
+				Detail:              "test detail",
+				ProviderName:        "telnyx",
+				ProviderReferenceID: "1580568175064384684",
+				Status:              number.StatusActive,
+				T38Enabled:          true,
+				EmergencyEnabled:    false,
+				TMPurchase:          "2021-02-26 18:26:49.000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
+
+			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
+			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any()).AnyTimes()
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.NumberCreate(ctx, tt.number); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if err := h.NumberUpdateMessageFlowID(ctx, tt.number.ID, tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

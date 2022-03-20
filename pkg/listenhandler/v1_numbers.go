@@ -20,7 +20,6 @@ func (h *listenHandler) processV1NumbersPost(req *rabbitmqhandler.Request) (*rab
 
 	var reqData request.V1DataNumbersPost
 	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
-		// same call-id is already exsit
 		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", req.Data, err)
 		return simpleResponse(400), nil
 	}
@@ -33,7 +32,7 @@ func (h *listenHandler) processV1NumbersPost(req *rabbitmqhandler.Request) (*rab
 		},
 	)
 
-	numb, err := h.numberHandler.CreateNumber(ctx, reqData.CustomerID, reqData.Number, reqData.FlowID, reqData.Name, reqData.Detail)
+	numb, err := h.numberHandler.CreateNumber(ctx, reqData.CustomerID, reqData.Number, reqData.CallFlowID, reqData.MessageFlowID, reqData.Name, reqData.Detail)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil
@@ -267,14 +266,15 @@ func (h *listenHandler) processV1NumbersIDFlowIDPut(req *rabbitmqhandler.Request
 
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":      "processV1NumbersIDFlowIDPut",
-			"number_id": id,
-			"flow_id":   reqData.FlowID,
+			"func":            "processV1NumbersIDFlowIDPut",
+			"number_id":       id,
+			"call_flow_id":    reqData.CallFlowID,
+			"message_flow_id": reqData.MessageFlowID,
 		},
 	)
 	log.Debugf("Executing processV1NumbersIDPut. number: %s", id)
 
-	number, err := h.numberHandler.UpdateFlowID(ctx, id, reqData.FlowID)
+	number, err := h.numberHandler.UpdateFlowID(ctx, id, reqData.CallFlowID, reqData.MessageFlowID)
 	if err != nil {
 		log.Debugf("Could not update the number's flow_id. number_id: %s, err: %v", id, err)
 		return simpleResponse(500), nil

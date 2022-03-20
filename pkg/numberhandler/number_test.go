@@ -34,11 +34,12 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		flowID     uuid.UUID
-		number     string
-		numberName string
-		detail     string
+		customerID    uuid.UUID
+		callFlowID    uuid.UUID
+		messageFlowID uuid.UUID
+		number        string
+		numberName    string
+		detail        string
 
 		expectRes *number.Number
 	}{
@@ -46,6 +47,7 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 			"normal us",
 
 			uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+			uuid.FromStringOrNil("1b38eca6-a864-11ec-a2a1-6f2bb4ef8c7e"),
 			uuid.FromStringOrNil("3ba45c68-8821-11ec-bc88-2367c938e4d5"),
 			"+821021656521",
 			"test name",
@@ -63,12 +65,12 @@ func TestCreateOrderNumberTelnyx(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockTelnyx.EXPECT().CreateNumber(tt.customerID, tt.number, tt.flowID, tt.numberName, tt.detail).Return(tt.expectRes, nil)
+			mockTelnyx.EXPECT().CreateNumber(tt.customerID, tt.number, tt.callFlowID, tt.numberName, tt.detail).Return(tt.expectRes, nil)
 			mockDB.EXPECT().NumberCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), number.EventTypeNumberCreated, tt.expectRes)
 
-			res, err := h.CreateNumber(ctx, tt.customerID, tt.number, tt.flowID, tt.numberName, tt.detail)
+			res, err := h.CreateNumber(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -260,7 +262,7 @@ func TestUpdateBasicInfo(t *testing.T) {
 
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("1e5f4238-7c58-11eb-a6aa-fb7278bbb0bc"),
-				FlowID:              uuid.FromStringOrNil("1f71c61e-7c58-11eb-8d07-6f618f90475f"),
+				CallFlowID:          uuid.FromStringOrNil("1f71c61e-7c58-11eb-8d07-6f618f90475f"),
 				Number:              "+821021656521",
 				CustomerID:          uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 				Name:                "update name",
