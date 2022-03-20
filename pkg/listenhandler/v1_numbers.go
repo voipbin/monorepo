@@ -249,8 +249,8 @@ func (h *listenHandler) processV1NumbersGet(req *rabbitmqhandler.Request) (*rabb
 	return res, nil
 }
 
-// processV1NumbersIDFlowIDPut handles PUT /v1/numbers/<id>/flow_id request
-func (h *listenHandler) processV1NumbersIDFlowIDPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1NumbersIDFlowIDsPut handles PUT /v1/numbers/<id>/flow_id request
+func (h *listenHandler) processV1NumbersIDFlowIDsPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 	uriItems := strings.Split(req.URI, "/")
 	if len(uriItems) < 4 {
