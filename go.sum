@@ -746,6 +746,8 @@ gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220315173806-77cceaa9
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220315173806-77cceaa9d494/go.mod h1:ePlTasB493vYFPB4B3OiObPJsLyXboPqkgRWVDkwBIM=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220320171946-d70d02b1499a h1:GmvLH94+qiuAtKc1nCX69u7lgKmK5rvZd3WrRKN4dB0=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220320171946-d70d02b1499a/go.mod h1:ePlTasB493vYFPB4B3OiObPJsLyXboPqkgRWVDkwBIM=
+gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220320183155-5a5e01a5c899 h1:WnnKhDOGXXVJVH+Lg927phuXdN/GD7ZxWVPPJq4JFQw=
+gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220320183155-5a5e01a5c899/go.mod h1:LSfkPCjzTyhlqnhzdtfn1M/2YtGIdr7eAAbv6p7eEPE=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20211220065018-454c40607da2/go.mod h1:gy9NkKzwD/nKbrw760Rq6/0+Ipb0g2vWWYUUyNcy3KA=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20211223161822-5764a1da6719/go.mod h1:gy9NkKzwD/nKbrw760Rq6/0+Ipb0g2vWWYUUyNcy3KA=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220104074348-3486ace09d53/go.mod h1:wwJCZZYg3YLo3zI6RhD1NyJpTUU2wRafNik6/wV1iYA=

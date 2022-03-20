@@ -108,7 +108,7 @@ func TestNMV1NumberCreate(t *testing.T) {
 				URI:      "/v1/numbers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","number":"+821021656521","call_flow_id":"55b69e86-881c-11ec-8901-3b828e31a38d","message_flow_id":"7cfce5fa-a873-11ec-b620-577094655392","name":"test name","detail":"test detail","FlowID":"00000000-0000-0000-0000-000000000000"}`),
+				Data:     []byte(`{"customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","number":"+821021656521","call_flow_id":"55b69e86-881c-11ec-8901-3b828e31a38d","message_flow_id":"7cfce5fa-a873-11ec-b620-577094655392","name":"test name","detail":"test detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -473,10 +473,10 @@ func Test_NMV1NumberUpdateFlowID(t *testing.T) {
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/numbers/d3877fec-7c5b-11eb-bb46-07fe08c74815/flow_id",
+				URI:      "/v1/numbers/d3877fec-7c5b-11eb-bb46-07fe08c74815/flow_ids",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"call_flow_id":"5f69889c-881e-11ec-b32e-93104f30aa92","message_flow_id":"d04e2a5c-a873-11ec-b16f-23f1e4cf842e","FlowID":"00000000-0000-0000-0000-000000000000"}`),
+				Data:     []byte(`{"call_flow_id":"5f69889c-881e-11ec-b32e-93104f30aa92","message_flow_id":"d04e2a5c-a873-11ec-b16f-23f1e4cf842e"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
