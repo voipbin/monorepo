@@ -112,7 +112,7 @@ func TestNumbersIDGET(t *testing.T) {
 			&nmnumber.WebhookMessage{
 				ID: uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 			},
-			[]byte(`{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","number":"","flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_create":"","tm_update":"","tm_delete":""}`),
+			[]byte(`{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_create":"","tm_update":"","tm_delete":""}`),
 		},
 	}
 
@@ -225,10 +225,10 @@ func TestNumbersPOST(t *testing.T) {
 			},
 			"/v1.0/numbers",
 			request.BodyNumbersPOST{
-				Number: "+821021656521",
-				FlowID: uuid.FromStringOrNil("7762e356-88b1-11ec-bb0c-7f21b7cad172"),
-				Name:   "test name",
-				Detail: "test detail",
+				Number:     "+821021656521",
+				CallFlowID: uuid.FromStringOrNil("7762e356-88b1-11ec-bb0c-7f21b7cad172"),
+				Name:       "test name",
+				Detail:     "test detail",
 			},
 		},
 	}
@@ -245,7 +245,7 @@ func TestNumbersPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberCreate(&tt.customer, tt.requestBody.Number, tt.requestBody.FlowID, tt.requestBody.Name, tt.requestBody.Detail)
+			mockSvc.EXPECT().NumberCreate(&tt.customer, tt.requestBody.Number, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID, tt.requestBody.Name, tt.requestBody.Detail)
 
 			// create body
 			body, err := json.Marshal(tt.requestBody)
@@ -352,11 +352,12 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
-			"/v1.0/numbers/a440c6b8-94cd-11ec-a524-af82f0c3ee68/flow_id",
+			"/v1.0/numbers/a440c6b8-94cd-11ec-a524-af82f0c3ee68/flow_ids",
 
 			uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
 			request.BodyNumbersIDFlowIDPUT{
-				FlowID: uuid.FromStringOrNil("b6161d70-94cd-11ec-b56c-bb1a417ae104"),
+				CallFlowID:    uuid.FromStringOrNil("b6161d70-94cd-11ec-b56c-bb1a417ae104"),
+				MessageFlowID: uuid.FromStringOrNil("6e7ecc24-a881-11ec-bb4f-4b5822260cbe"),
 			},
 			&nmnumber.WebhookMessage{
 				ID: uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
@@ -376,7 +377,7 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberUpdateFlowID(&tt.customer, tt.id, tt.requestBody.FlowID).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberUpdateFlowIDs(&tt.customer, tt.id, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID).Return(tt.resNumber, nil)
 
 			// create body
 			body, err := json.Marshal(tt.requestBody)

@@ -204,10 +204,11 @@ func TestNumberCreate(t *testing.T) {
 		name     string
 		customer *cscustomer.Customer
 
-		num        string
-		flowID     uuid.UUID
-		numberName string
-		detail     string
+		num           string
+		callFlowID    uuid.UUID
+		messageFlowID uuid.UUID
+		numberName    string
+		detail        string
 
 		response  *nmnumber.Number
 		expectRes *nmnumber.WebhookMessage
@@ -220,6 +221,7 @@ func TestNumberCreate(t *testing.T) {
 
 			"+821021656521",
 			uuid.FromStringOrNil("c7301f68-88af-11ec-bb03-33d26b9b7e37"),
+			uuid.FromStringOrNil("4872b1e4-a881-11ec-b15b-efa630b95991"),
 			"test name",
 			"test detail",
 
@@ -234,8 +236,8 @@ func TestNumberCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().NMV1NumberCreate(gomock.Any(), tt.customer.ID, tt.num, tt.flowID, tt.numberName, tt.detail).Return(tt.response, nil)
-			res, err := h.NumberCreate(tt.customer, tt.num, tt.flowID, tt.numberName, tt.detail)
+			mockReq.EXPECT().NMV1NumberCreate(gomock.Any(), tt.customer.ID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
+			res, err := h.NumberCreate(tt.customer, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -369,7 +371,7 @@ func TestNumberUpdate(t *testing.T) {
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-				FlowID:              uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
+				CallFlowID:          uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
 				Number:              "+821021656521",
 				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
