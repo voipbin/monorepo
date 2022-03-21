@@ -2,12 +2,14 @@ package messagehandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -119,6 +121,68 @@ func Test_Hook(t *testing.T) {
 
 			if errHook := h.Hook(ctx, tt.uri, tt.data); errHook != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errHook)
+			}
+		})
+	}
+}
+
+func Test_executeMessageFlow(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+
+		messageHandlerMessagebird: mockMessagebird,
+	}
+
+	tests := []struct {
+		name string
+
+		m   *message.Message
+		num *nmnumber.Number
+
+		expectRes *fmactiveflow.ActiveFlow
+	}{
+		{
+			"normal",
+
+			&message.Message{
+				ID: uuid.FromStringOrNil("1491e9e4-a8b8-11ec-bbe9-4b9389eaa6f7"),
+			},
+			&nmnumber.Number{
+				ID:            uuid.FromStringOrNil("1f2db1da-a8b8-11ec-82b1-2bb474596df1"),
+				MessageFlowID: uuid.FromStringOrNil("275a692a-a8b8-11ec-9de7-d39f5b03faec"),
+			},
+
+			&fmactiveflow.ActiveFlow{
+				ID: uuid.FromStringOrNil("64447c9a-a8b8-11ec-a544-0b44fb74dc28"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockReq.EXPECT().FMV1ActvieFlowCreate(ctx, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.m.ID).Return(tt.expectRes, nil)
+			mockReq.EXPECT().FMV1ActiveFlowExecute(ctx, tt.expectRes.ID).Return(nil)
+
+			res, err := h.executeMessageFlow(ctx, tt.m, tt.num)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

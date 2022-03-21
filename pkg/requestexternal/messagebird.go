@@ -3,10 +3,12 @@ package requestexternal
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -28,7 +30,18 @@ func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []s
 	data.Set("originator", sender)
 	data.Set("body", text)
 
-	client := &http.Client{}
+	t := &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout:   60 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		// We use ABSURDLY large keys, and should probably not.
+		TLSHandshakeTimeout: 60 * time.Second,
+	}
+
+	client := &http.Client{
+		Transport: t,
+	}
 	r, err := http.NewRequest("POST", uri, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil {
 		log.Fatal(err)
