@@ -1,11 +1,11 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Tutorial &mdash; voipbin  documentation</title>
   
@@ -16,20 +16,19 @@
 
   
   
+
   
   
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
+  
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -49,7 +48,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home" alt="Documentation Home"> voipbin
+            <a href="index.html" class="icon icon-home"> voipbin
           
 
           
@@ -135,6 +134,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -146,7 +147,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="_sources/domain_tutorial.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -165,7 +166,7 @@
 <div class="section" id="get-list-of-domains">
 <h2>Get list of domains<a class="headerlink" href="#get-list-of-domains" title="Permalink to this headline">¶</a></h2>
 <p>Gets the list of registered domains.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/domains?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/domains?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
 
 {
     &quot;result&quot;: [
@@ -189,7 +190,7 @@
 <div class="section" id="get-detail-of-specified-domain">
 <h2>Get detail of specified domain<a class="headerlink" href="#get-detail-of-specified-domain" title="Permalink to this headline">¶</a></h2>
 <p>Gets the detail of registered domain.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/domains/5a8437de-abc4-4685-a532-3c494d50c065?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/domains/5a8437de-abc4-4685-a532-3c494d50c065?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
 
 {
     &quot;id&quot;: &quot;5a8437de-abc4-4685-a532-3c494d50c065&quot;,
@@ -207,7 +208,7 @@
 <div class="section" id="create-a-domain">
 <h2>Create a domain<a class="headerlink" href="#create-a-domain" title="Permalink to this headline">¶</a></h2>
 <p>Create a new domain.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/domains?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/domains?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;name&quot;: &quot;test domain&quot;,
@@ -231,7 +232,7 @@
 <div class="section" id="update-the-domain">
 <h2>Update the domain<a class="headerlink" href="#update-the-domain" title="Permalink to this headline">¶</a></h2>
 <p>Update the existed domain with given info.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/domains/8a66a234-67d6-4722-9482-ac7866708994?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/domains/8a66a234-67d6-4722-9482-ac7866708994?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;name&quot;: &quot;update name&quot;,
@@ -255,7 +256,7 @@
 <h2>Delete the domain<a class="headerlink" href="#delete-the-domain" title="Permalink to this headline">¶</a></h2>
 <p>Delete the existed domain of given domain id.
 This will deletes all of related extensions of the domain.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/domains/8a66a234-67d6-4722-9482-ac7866708994?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/domains/8a66a234-67d6-4722-9482-ac7866708994?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
 </pre></div>
 </div>
 </div>
@@ -266,28 +267,25 @@ This will deletes all of related extensions of the domain.</p>
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2020, Sungtae Kim
+        &#169; Copyright 2020, Sungtae Kim.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
