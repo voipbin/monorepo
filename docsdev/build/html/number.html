@@ -93,8 +93,10 @@
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Number</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#flow-execution">Flow execution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flow-execution">Flow execution</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#number-struct-number">Number</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#example">example</a></li>
@@ -192,12 +194,12 @@
 To find a new number to provision use the subresources of the AvailableNumbers resource.</p>
 <p>Provisioning a number is a two-step process. First, you must find an available number to provision using the subresource of the AvailableNumbers resource.
 Second, you must POST to the Numbers list resource.</p>
-</div>
 <div class="section" id="flow-execution">
-<span id="number-overview-flow-execution"></span><h2>Flow execution<a class="headerlink" href="#flow-execution" title="Permalink to this headline">¶</a></h2>
+<span id="number-overview-flow-execution"></span><h3>Flow execution<a class="headerlink" href="#flow-execution" title="Permalink to this headline">¶</a></h3>
 <p>VoIPBin’s Number can have multiple flows. This allows execute the registered flow for variable situation.</p>
 <p>Currently, allows call_flow_id and message_flow_id.</p>
 <img alt="_images/number-flow_execution.png" src="_images/number-flow_execution.png" />
+</div>
 </div>
 <div class="section" id="struct">
 <span id="number-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
@@ -226,7 +228,7 @@ Second, you must POST to the Numbers list resource.</p>
 <li><p>message_flow_id: Flow id for incoming message.</p></li>
 <li><p>name: Number’s name.</p></li>
 <li><p>detail: Number’s detail description.</p></li>
-<li><p>status: Number’s status. See detail <a class="reference internal" href="number_struct.html#number-struct-status"><span class="std std-ref">here</span></a></p></li>
+<li><p>status: Number’s status. See detail <a class="reference internal" href="#number-struct-status"><span class="std std-ref">here</span></a></p></li>
 <li><p>t38_enabled: T38 support.</p></li>
 <li><p>emergency_enabled: Emergency call support.</p></li>
 </ul>
