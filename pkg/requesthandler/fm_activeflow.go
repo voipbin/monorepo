@@ -98,8 +98,8 @@ func (r *requestHandler) FMV1ActvieFlowUpdateForwardActionID(ctx context.Context
 	return nil
 }
 
-// FMV1ActvieFlowExecute executes the active-flow
-func (r *requestHandler) FMV1ActvieFlowExecute(ctx context.Context, id uuid.UUID) error {
+// FMV1ActiveFlowExecute executes the active-flow
+func (r *requestHandler) FMV1ActiveFlowExecute(ctx context.Context, id uuid.UUID) error {
 
 	uri := fmt.Sprintf("/v1/active-flows/%s/execute", id)
 
