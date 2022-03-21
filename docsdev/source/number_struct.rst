@@ -13,7 +13,8 @@ Number
     {
         "id": "<string>",
         "number": "<string>",
-        "flow_id": "<string>",
+        "call_flow_id": "<string>",
+        "message_flow_id": "<string>",
         "name": "<string>",
         "detail": "<string>",
         "status": "<string>",
@@ -26,11 +27,34 @@ Number
 
 * id: Number's ID.
 * number: Number.
+* call_flow_id: Flow id for incoming call.
+* message_flow_id: Flow id for incoming message.
 * name: Number's name.
 * detail: Number's detail description.
 * status: Number's status. See detail :ref:`here <number-struct-status>`
 * t38_enabled: T38 support.
 * emergency_enabled: Emergency call support.
+
+example
++++++++
+
+.. code::
+
+    {
+        "id": "0b266038-844b-11ec-97d8-63ba531361ce",
+        "number": "+821100000001",
+        "call_flow_id": "d157ce07-0360-4cad-9007-c8ab89fccf9c",
+        "message_flow_id": "00000000-0000-0000-0000-000000000000",
+        "name": "test talk",
+        "detail": "simple number for talk flow",
+        "status": "active",
+        "t38_enabled": false,
+        "emergency_enabled": false,
+        "tm_create": "2022-02-01 00:00:00.000000",
+        "tm_update": "2022-03-20 19:37:53.135685",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
 
 .. _number-struct-status:
 
