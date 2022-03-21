@@ -13,9 +13,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/requestexternal"
 )
 
-// messagebird const variables
-const ()
-
 // MessageHandlerMessagebird is interface for service handle
 type MessageHandlerMessagebird interface {
 	SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error)
