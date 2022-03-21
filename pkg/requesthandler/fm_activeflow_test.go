@@ -299,7 +299,7 @@ func Test_FMV1ActvieFlowExecute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FMV1ActvieFlowExecute(context.Background(), tt.id); err != nil {
+			if err := reqHandler.FMV1ActiveFlowExecute(context.Background(), tt.id); err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
 

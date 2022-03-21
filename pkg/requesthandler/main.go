@@ -316,6 +316,7 @@ type RequestHandler interface {
 	FMV1ActvieFlowCreate(ctx context.Context, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.ActiveFlow, error)
 	FMV1ActvieFlowGetNextAction(ctx context.Context, callID, actionID uuid.UUID) (*fmaction.Action, error)
 	FMV1ActvieFlowUpdateForwardActionID(ctx context.Context, callID, forwardActionID uuid.UUID, forwardNow bool) error
+	FMV1ActiveFlowExecute(ctx context.Context, activeflowID uuid.UUID) error
 
 	// flow-manager flow
 	FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error)
