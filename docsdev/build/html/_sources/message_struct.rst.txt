@@ -43,13 +43,13 @@ Message struct
     }
 
 * id: Message's ID.
-* type: Message's type. See detail :ref:`here <call-struct-type>`.
+* *type*: Message's type. See detail :ref:`here <message-struct-type>`.
 * *source*: Source address info. See detail :ref:`here <call-struct-address>`.
-* targets: List of targets.
+* *targets*: List of targets. See detail :ref:`here <message-struct-target>`.
 * *destinations*: List of destination addresses info. See detail :ref:`here <call-struct-address>`.
 * *targets*: List of targets. See detail :ref:`here <message-struct-target>`.
 * text: Message's text.
-* direction: Message's direction. See detail :ref:`here <message-struct-direction>`.
+* *direction*: Message's direction. See detail :ref:`here <message-struct-direction>`.
 
 .. _message-struct-target:
 

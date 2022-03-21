@@ -5,8 +5,8 @@ Overview
 
 The flow is a set of instructions you can use to tell VoIPBIN what to do when you receive an incoming call.
 
-How Flow works
---------------
+How the flow works
+------------------
 
 When someone makes a call to one of your VoIPBIN numbers or destinations, VoIPBIN looks up the URL associated with that phone number and sends it a request.
 VoIPBIN then reads the Flow instructions to determine what to do, whether it's recording the call, playing a message for the caller, or prompting the caller to press digits on their keypad.

@@ -1,11 +1,11 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Welcome to voipbin’s documentation! &mdash; voipbin  documentation</title>
   
@@ -16,20 +16,19 @@
 
   
   
+
   
   
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
+  
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -50,7 +49,7 @@
           
 
           
-            <a href="#" class="icon icon-home" alt="Documentation Home"> voipbin
+            <a href="#" class="icon icon-home"> voipbin
           
 
           
@@ -136,6 +135,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -147,7 +148,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -291,7 +292,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="flow.html#how-flow-works">How Flow works</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#how-the-flow-works">How the flow works</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#struct">Struct</a><ul>
@@ -448,21 +449,30 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="flow.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#tutorial-basic">Tutorial basic</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#get-list-of-flows">Get list of flows</a></li>
-<li class="toctree-l3"><a class="reference internal" href="flow.html#simple-voicemail-scenario">Simple voicemail scenario</a></li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#get-detail-of-specified-flow">Get detail of specified flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#create-a-flow">Create a flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#update-the-flow">Update the flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#delete-the-flow">Delete the flow</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#tutorial-scenario">Tutorial scenario</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#simple-voicemail">Simple voicemail</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#simple-branch">Simple branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#simple-message-send">Simple message send</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="number.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="number.html#flow-execution">Flow execution</a></li>
 <li class="toctree-l2"><a class="reference internal" href="number.html#struct">Struct</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="number.html#number-struct-number">Number</a></li>
+<li class="toctree-l3"><a class="reference internal" href="number.html#number-struct-number">Number</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="number.html#example">example</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="number.html#status">Status</a></li>
 </ul>
 </li>
@@ -530,9 +540,9 @@
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
 </div>
 
@@ -541,35 +551,28 @@
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="glossary.html" class="btn btn-neutral float-right" title="Glossary" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
+        <a href="glossary.html" class="btn btn-neutral float-right" title="Glossary" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2020, Sungtae Kim
+        &#169; Copyright 2020, Sungtae Kim.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
