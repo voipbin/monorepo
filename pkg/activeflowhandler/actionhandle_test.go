@@ -1717,3 +1717,241 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 		})
 	}
 }
+
+func Test_actionHandleCall(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+
+		actionHandler: mockAction,
+	}
+
+	tests := []struct {
+		name         string
+		activeflowID uuid.UUID
+		af           *activeflow.ActiveFlow
+
+		source       *cmaddress.Address
+		destinations []cmaddress.Address
+		flowID       uuid.UUID
+		actions      []action.Action
+
+		responseFlow *flow.Flow
+		responseCall []cmcall.Call
+	}{
+		{
+			"single destination with flow id",
+			uuid.FromStringOrNil("7fb0af78-a942-11ec-8c60-67384864d90a"),
+			&activeflow.ActiveFlow{
+				ID:         uuid.FromStringOrNil("7fb0af78-a942-11ec-8c60-67384864d90a"),
+				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("4edb5840-a941-11ec-b674-93c2ef347891"),
+					Type:   action.TypeCall,
+					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "15df43ee-a941-11ec-a903-2b7266f49e4b"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("4edb5840-a941-11ec-b674-93c2ef347891"),
+						Type:   action.TypeCall,
+						Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "15df43ee-a941-11ec-a903-2b7266f49e4b"}`),
+					},
+				},
+			},
+
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			[]cmaddress.Address{
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+			},
+			uuid.FromStringOrNil("15df43ee-a941-11ec-a903-2b7266f49e4b"),
+			[]action.Action{},
+
+			&flow.Flow{},
+			[]cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("a49dda82-a941-11ec-b5a9-9baf180541e9"),
+				},
+			},
+		},
+		{
+			"2 destinations with flow id",
+			uuid.FromStringOrNil("fe7b3838-a941-11ec-b3d6-5337e9635d88"),
+			&activeflow.ActiveFlow{
+				ID:         uuid.FromStringOrNil("fe7b3838-a941-11ec-b3d6-5337e9635d88"),
+				CustomerID: uuid.FromStringOrNil("fea0d30e-a941-11ec-a38a-478b19a5dfd2"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("fec56ebc-a941-11ec-8e4c-9fafab93ddcc"),
+					Type:   action.TypeCall,
+					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "+821100000003"}], "flow_id": "feedab34-a941-11ec-a6a8-1bbdada16b4d"}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("fec56ebc-a941-11ec-8e4c-9fafab93ddcc"),
+						Type:   action.TypeCall,
+						Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [,{"type": "tel", "target": "+821100000003"}], "flow_id": "feedab34-a941-11ec-a6a8-1bbdada16b4d"}`),
+					},
+				},
+			},
+
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			[]cmaddress.Address{
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000003",
+				},
+			},
+			uuid.FromStringOrNil("feedab34-a941-11ec-a6a8-1bbdada16b4d"),
+			[]action.Action{},
+
+			&flow.Flow{},
+			[]cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("ff16e1f2-a941-11ec-b2c1-c3aa4ce144a0"),
+				},
+				{
+					ID: uuid.FromStringOrNil("ff477790-a941-11ec-8475-035d159c8a77"),
+				},
+			},
+		},
+		{
+			"single destination with actions",
+			uuid.FromStringOrNil("38a78fec-a943-11ec-b279-c7b264a9d36a"),
+			&activeflow.ActiveFlow{
+				ID:         uuid.FromStringOrNil("38a78fec-a943-11ec-b279-c7b264a9d36a"),
+				CustomerID: uuid.FromStringOrNil("38d87102-a943-11ec-99aa-5fc910add207"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("39063286-a943-11ec-b54c-d3be23fdf738"),
+					Type:   action.TypeCall,
+					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("39063286-a943-11ec-b54c-d3be23fdf738"),
+						Type:   action.TypeConnect,
+						Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+					},
+				},
+			},
+
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			[]cmaddress.Address{
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+			},
+			uuid.Nil,
+			[]action.Action{
+				{
+					Type: action.TypeAnswer,
+				},
+				{
+					Type:   action.TypeTalk,
+					Option: []byte(`{"text": "hello world"}`),
+				},
+			},
+
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("3936013c-a943-11ec-bdf1-af72361eecf4"),
+			},
+			[]cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("39691e00-a943-11ec-a69c-7f0e69becb70"),
+				},
+			},
+		},
+		{
+			"2 destinations with actions",
+			uuid.FromStringOrNil("f3ddb5ca-a943-11ec-be88-ebdd9b1c7f1b"),
+			&activeflow.ActiveFlow{
+				ID:         uuid.FromStringOrNil("f3ddb5ca-a943-11ec-be88-ebdd9b1c7f1b"),
+				CustomerID: uuid.FromStringOrNil("f40e389e-a943-11ec-83a7-7f90e0c22e96"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("f43f85de-a943-11ec-9ba5-b3f019b002e7"),
+					Type:   action.TypeCall,
+					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("f43f85de-a943-11ec-9ba5-b3f019b002e7"),
+						Type:   action.TypeConnect,
+						Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+					},
+				},
+			},
+
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			[]cmaddress.Address{
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+			},
+			uuid.Nil,
+			[]action.Action{
+				{
+					Type: action.TypeAnswer,
+				},
+				{
+					Type:   action.TypeTalk,
+					Option: []byte(`{"text": "hello world"}`),
+				},
+			},
+
+			&flow.Flow{
+				ID: uuid.FromStringOrNil("f46f3e96-a943-11ec-b4e1-2bfce6b84c2b"),
+			},
+			[]cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("f4a90298-a943-11ec-b31a-bf1f552ced44"),
+				},
+				{
+					ID: uuid.FromStringOrNil("f4dd1e0c-a943-11ec-9295-6f71727bd164"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			flowID := tt.flowID
+			if flowID == uuid.Nil {
+				mockReq.EXPECT().FMV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.actions, false).Return(tt.responseFlow, nil)
+				flowID = tt.responseFlow.ID
+			}
+			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.af.CustomerID, flowID, uuid.Nil, tt.source, tt.destinations).Return(tt.responseCall, nil)
+
+			if errCall := h.actionHandleCall(ctx, tt.activeflowID, tt.af); errCall != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errCall)
+			}
+		})
+	}
+}

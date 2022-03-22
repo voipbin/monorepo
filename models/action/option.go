@@ -32,6 +32,14 @@ type OptionBranch struct {
 	TargetIDs       map[string]uuid.UUID `json:"target_ids"`        // branch target ids.
 }
 
+// OptionCall defines action call's option.
+type OptionCall struct {
+	Source       *cmaddress.Address  `json:"source"`
+	Destinations []cmaddress.Address `json:"destinations"`
+	FlowID       uuid.UUID           `json:"flow_id"`
+	Actions      []Action            `json:"actions"`
+}
+
 // OptionConfbridgeJoin defines action confbridge_join's option.
 type OptionConfbridgeJoin struct {
 	ConfbridgeID uuid.UUID `json:"confbridge_id"`
