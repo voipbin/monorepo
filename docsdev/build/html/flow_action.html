@@ -179,7 +179,7 @@
 <ul class="simple">
 <li><p><em>id</em>: Action’s id.</p></li>
 <li><p><em>next_id</em>: Action’s next id. If it sets empty, just move on to the next action in the action array.</p></li>
-<li><p><em>type</em>: Action’s type. See detail <a class="reference internal" href="flow_struct.html#flow-struct-action-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>type</em>: Action’s type. See detail <a class="reference internal" href="flow.html#flow-struct-action-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>option</em>: Action’s option.</p></li>
 </ul>
 </div>
@@ -211,79 +211,82 @@
 <tr class="row-even"><td><p>branch</p></td>
 <td><p>Branch the flow</p></td>
 </tr>
-<tr class="row-odd"><td><p>condition_call_digits</p></td>
+<tr class="row-odd"><td><p>call</p></td>
+<td><p>Make a call in a new context.</p></td>
+</tr>
+<tr class="row-even"><td><p>condition_call_digits</p></td>
 <td><p>Condition check(call’s digits)</p></td>
 </tr>
-<tr class="row-even"><td><p>condition_call_status</p></td>
+<tr class="row-odd"><td><p>condition_call_status</p></td>
 <td><p>Condition check(call’s status)</p></td>
 </tr>
-<tr class="row-odd"><td><p>confbridge_join</p></td>
+<tr class="row-even"><td><p>confbridge_join</p></td>
 <td><p>Join to the confbridge.</p></td>
 </tr>
-<tr class="row-even"><td><p>conference_join</p></td>
+<tr class="row-odd"><td><p>conference_join</p></td>
 <td><p>Join to the conference.</p></td>
 </tr>
-<tr class="row-odd"><td><p>connect</p></td>
+<tr class="row-even"><td><p>connect</p></td>
 <td><p>Connect to the other destination.</p></td>
 </tr>
-<tr class="row-even"><td><p>digits_receive</p></td>
+<tr class="row-odd"><td><p>digits_receive</p></td>
 <td><p>Receive the digits(dtmfs).</p></td>
 </tr>
-<tr class="row-odd"><td><p>digits_send</p></td>
+<tr class="row-even"><td><p>digits_send</p></td>
 <td><p>Send the digits(dtmfs).</p></td>
 </tr>
-<tr class="row-even"><td><p>echo</p></td>
+<tr class="row-odd"><td><p>echo</p></td>
 <td><p>Echo to stream.</p></td>
 </tr>
-<tr class="row-odd"><td><p>external_media_start</p></td>
+<tr class="row-even"><td><p>external_media_start</p></td>
 <td><p>Start the external media.</p></td>
 </tr>
-<tr class="row-even"><td><p>external_media_stop</p></td>
+<tr class="row-odd"><td><p>external_media_stop</p></td>
 <td><p>Stop the external media.</p></td>
 </tr>
-<tr class="row-odd"><td><p>goto</p></td>
+<tr class="row-even"><td><p>goto</p></td>
 <td><p>Goto.</p></td>
 </tr>
-<tr class="row-even"><td><p>hangup</p></td>
+<tr class="row-odd"><td><p>hangup</p></td>
 <td><p>Hangup the call.</p></td>
 </tr>
-<tr class="row-odd"><td><p>message_send</p></td>
+<tr class="row-even"><td><p>message_send</p></td>
 <td><p>Send a message.</p></td>
 </tr>
-<tr class="row-even"><td><p>patch</p></td>
+<tr class="row-odd"><td><p>patch</p></td>
 <td><p>Patch the actions from endpoint.</p></td>
 </tr>
-<tr class="row-odd"><td><p>patch_flow</p></td>
+<tr class="row-even"><td><p>patch_flow</p></td>
 <td><p>Patch the actions from the exist flow.</p></td>
 </tr>
-<tr class="row-even"><td><p>play</p></td>
+<tr class="row-odd"><td><p>play</p></td>
 <td><p>Play the file.</p></td>
 </tr>
-<tr class="row-odd"><td><p>queue_join</p></td>
+<tr class="row-even"><td><p>queue_join</p></td>
 <td><p>Join to the queue.</p></td>
 </tr>
-<tr class="row-even"><td><p>recording_start</p></td>
+<tr class="row-odd"><td><p>recording_start</p></td>
 <td><p>Startr the record of the given call.</p></td>
 </tr>
-<tr class="row-odd"><td><p>recording_stop</p></td>
+<tr class="row-even"><td><p>recording_stop</p></td>
 <td><p>Stop the record of the given call.</p></td>
 </tr>
-<tr class="row-even"><td><p>sleep</p></td>
+<tr class="row-odd"><td><p>sleep</p></td>
 <td><p>Sleep.</p></td>
 </tr>
-<tr class="row-odd"><td><p>stream_echo</p></td>
+<tr class="row-even"><td><p>stream_echo</p></td>
 <td><p>Echo the steam.</p></td>
 </tr>
-<tr class="row-even"><td><p>talk</p></td>
+<tr class="row-odd"><td><p>talk</p></td>
 <td><p>Generate audio from the given text(ssml or plain text) and play it.</p></td>
 </tr>
-<tr class="row-odd"><td><p>transcribe_start</p></td>
+<tr class="row-even"><td><p>transcribe_start</p></td>
 <td><p>Start transcribe the call</p></td>
 </tr>
-<tr class="row-even"><td><p>transcribe_stop</p></td>
+<tr class="row-odd"><td><p>transcribe_stop</p></td>
 <td><p>Stop transcribe the call</p></td>
 </tr>
-<tr class="row-odd"><td><p>transcribe_recording</p></td>
+<tr class="row-even"><td><p>transcribe_recording</p></td>
 <td><p>Transcribe the recording and send it to webhook.</p></td>
 </tr>
 </tbody>
@@ -454,11 +457,82 @@
 </div>
 </div>
 </div>
+<div class="section" id="call">
+<span id="flow-action-call"></span><h2>Call<a class="headerlink" href="#call" title="Permalink to this headline">¶</a></h2>
+<p>Make a new outbound call in a new context.</p>
+<img alt="_images/flow_action_call.png" src="_images/flow_action_call.png" />
+<div class="section" id="id10">
+<h3>Parameters<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="o">...</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="o">...</span>
+            <span class="p">},</span>
+            <span class="o">...</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+        <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="o">...</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;chained&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><em>source</em>: Source address. See detail <a class="reference internal" href="call_struct.html#call-struct-address-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destinations</em>: Array of destination addresses. See detail <a class="reference internal" href="call_struct.html#call-struct-address-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>flow_id: Call’s flow id. If this not set, will use the actions array.</p></li>
+<li><p>actions: Array of actions. If the flow_id not set, the call flow will be created with this actions.</p></li>
+<li><p>chained: If it sets to true, created calls will be hungup when the master call is hangup. Default false.</p></li>
+</ul>
+</div>
+<div class="section" id="id11">
+<h3>Example<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e34ab97a-c53a-4eb4-aebf-36767a528f00&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000002&quot;</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;chained&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
 <div class="section" id="confbridge-join">
 <span id="flow-action-confbridge-join"></span><h2>Confbridge Join<a class="headerlink" href="#confbridge-join" title="Permalink to this headline">¶</a></h2>
 <p>Join to the confbridge.</p>
-<div class="section" id="id10">
-<h3>Parameters<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id12">
+<h3>Parameters<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;confbridge_join&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -476,8 +550,8 @@
 <span id="flow-action-condition-call-digits"></span><h2>Condition Call Digits<a class="headerlink" href="#condition-call-digits" title="Permalink to this headline">¶</a></h2>
 <p>Check the condition of received digits.
 It checks the received digits and if it matched condition move to the next action. If not, move to the false_target_id.</p>
-<div class="section" id="id11">
-<h3>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id13">
+<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_call_digits&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -494,8 +568,8 @@ It checks the received digits and if it matched condition move to the next actio
 <li><p><em>false_target_id</em>: action id for false condition.</p></li>
 </ul>
 </div>
-<div class="section" id="id12">
-<h3>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id14">
+<h3>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_call_digits&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -511,8 +585,8 @@ It checks the received digits and if it matched condition move to the next actio
 <span id="flow-action-condition-call-status"></span><h2>Condition Call Status<a class="headerlink" href="#condition-call-status" title="Permalink to this headline">¶</a></h2>
 <p>Check the condition of call’s status.
 It checks the call’s status and if it matched with condition then move to the next action. If not, move to the false_target_id.</p>
-<div class="section" id="id13">
-<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_call_status&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -527,8 +601,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>false_target_id</em>: action id for false condition.</p></li>
 </ul>
 </div>
-<div class="section" id="id14">
-<h3>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id16">
+<h3>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_call_status&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -543,8 +617,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="conference-join">
 <span id="flow-action-conference-join"></span><h2>Conference Join<a class="headerlink" href="#conference-join" title="Permalink to this headline">¶</a></h2>
 <p>Join to the conference</p>
-<div class="section" id="id15">
-<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id17">
+<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference_join&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -557,8 +631,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>conference_id</em>: Conference’s id to join.</p></li>
 </ul>
 </div>
-<div class="section" id="id16">
-<h3>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id18">
+<h3>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference_join&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -572,8 +646,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="connect">
 <span id="flow-action-connect"></span><h2>Connect<a class="headerlink" href="#connect" title="Permalink to this headline">¶</a></h2>
 <p>Originate to the other destination(s) and connect to them each other.</p>
-<div class="section" id="id17">
-<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id19">
+<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -592,8 +666,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>unchained</em>: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.</p></li>
 </ul>
 </div>
-<div class="section" id="id18">
-<h3>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id20">
+<h3>Example<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -616,8 +690,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="digits-receive">
 <span id="flow-action-digits-receive"></span><h2>Digits Receive<a class="headerlink" href="#digits-receive" title="Permalink to this headline">¶</a></h2>
 <p>Receives the digits for given duration or numbers.</p>
-<div class="section" id="id19">
-<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id21">
+<h3>Parameters<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -634,8 +708,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>key</em>: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.</p></li>
 </ul>
 </div>
-<div class="section" id="id20">
-<h3>Example<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id22">
+<h3>Example<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -651,8 +725,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="digits-send">
 <span id="flow-action-digits-send"></span><h2>Digits Send<a class="headerlink" href="#digits-send" title="Permalink to this headline">¶</a></h2>
 <p>Sends the digits with given duration and interval.</p>
-<div class="section" id="id21">
-<h3>Parameters<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id23">
+<h3>Parameters<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_send&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -669,8 +743,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>interval</em>: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.</p></li>
 </ul>
 </div>
-<div class="section" id="id22">
-<h3>Example<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id24">
+<h3>Example<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_send&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -686,8 +760,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="echo">
 <span id="flow-action-echo"></span><h2>Echo<a class="headerlink" href="#echo" title="Permalink to this headline">¶</a></h2>
 <p>Echoing the call.</p>
-<div class="section" id="id23">
-<h3>Parameters<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id25">
+<h3>Parameters<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -700,8 +774,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>duration</em>: Echo duration. ms.</p></li>
 </ul>
 </div>
-<div class="section" id="id24">
-<h3>Example<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id26">
+<h3>Example<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -715,8 +789,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="external-media-start">
 <span id="flow-action-external-media-start"></span><h2>External Media Start<a class="headerlink" href="#external-media-start" title="Permalink to this headline">¶</a></h2>
 <p>Start the external media.</p>
-<div class="section" id="id25">
-<h3>Parameters<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id27">
+<h3>Parameters<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;external_media_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -745,8 +819,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="external-media-stop">
 <span id="flow-action-external-media-stop"></span><h2>External Media Stop<a class="headerlink" href="#external-media-stop" title="Permalink to this headline">¶</a></h2>
 <p>Stop the external media.</p>
-<div class="section" id="id26">
-<h3>Parameters<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id28">
+<h3>Parameters<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;external_media_stop&quot;</span><span class="p">,</span>
 <span class="p">}</span>
@@ -757,8 +831,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="goto">
 <span id="flow-action-goto"></span><h2>Goto<a class="headerlink" href="#goto" title="Permalink to this headline">¶</a></h2>
 <p>Move the action execution.</p>
-<div class="section" id="id27">
-<h3>Parameters<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id29">
+<h3>Parameters<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -773,8 +847,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>loop_count</em>: The number of loop.</p></li>
 </ul>
 </div>
-<div class="section" id="id28">
-<h3>Example<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id30">
+<h3>Example<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -789,16 +863,16 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="hangup">
 <span id="flow-action-hangup"></span><h2>Hangup<a class="headerlink" href="#hangup" title="Permalink to this headline">¶</a></h2>
 <p>Hangup the call.</p>
-<div class="section" id="id29">
-<h3>Parameters<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id31">
+<h3>Parameters<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id30">
-<h3>Example<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id32">
+<h3>Example<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
@@ -809,8 +883,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="message-send">
 <span id="flow-action-message-send"></span><h2>Message send<a class="headerlink" href="#message-send" title="Permalink to this headline">¶</a></h2>
 <p>Send a message.</p>
-<div class="section" id="id31">
-<h3>Parameters<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id33">
+<h3>Parameters<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_send&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -838,8 +912,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="patch">
 <h2>Patch<a class="headerlink" href="#patch" title="Permalink to this headline">¶</a></h2>
 <p>Patch the next flow from the remote.</p>
-<div class="section" id="id32">
-<h3>Parameters<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id34">
+<h3>Parameters<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -854,8 +928,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>event_method</em>: The method for flow patching.</p></li>
 </ul>
 </div>
-<div class="section" id="id33">
-<h3>Example<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id35">
+<h3>Example<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="o">.</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -869,8 +943,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="patch-flow">
 <span id="flow-action-patch-flow"></span><h2>Patch Flow<a class="headerlink" href="#patch-flow" title="Permalink to this headline">¶</a></h2>
 <p>Patch the next flow from the existed flow.</p>
-<div class="section" id="id34">
-<h3>Parameters<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id36">
+<h3>Parameters<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch_flow&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -883,8 +957,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>flow_id</em>: The id of flow.</p></li>
 </ul>
 </div>
-<div class="section" id="id35">
-<h3>Example<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id37">
+<h3>Example<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch_flow&quot;</span><span class="o">.</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -898,8 +972,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="play">
 <span id="flow-action-play"></span><h2>Play<a class="headerlink" href="#play" title="Permalink to this headline">¶</a></h2>
 <p>Plays the linked file.</p>
-<div class="section" id="id36">
-<h3>Parameters<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id38">
+<h3>Parameters<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -915,8 +989,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>stream_urls</em>: Stream url array for media.</p></li>
 </ul>
 </div>
-<div class="section" id="id37">
-<h3>Example<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id39">
+<h3>Example<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -932,8 +1006,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="queue-join">
 <span id="flow-action-queue-join"></span><h2>Queue Join<a class="headerlink" href="#queue-join" title="Permalink to this headline">¶</a></h2>
 <p>Join to the queue.</p>
-<div class="section" id="id38">
-<h3>Parameters<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id40">
+<h3>Parameters<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -946,8 +1020,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>queue_id</em>: Target queue id.</p></li>
 </ul>
 </div>
-<div class="section" id="id39">
-<h3>Example<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id41">
+<h3>Example<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -961,8 +1035,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="recording-start">
 <span id="flow-action-recording-start"></span><h2>Recording Start<a class="headerlink" href="#recording-start" title="Permalink to this headline">¶</a></h2>
 <p>Starts the call recording.</p>
-<div class="section" id="id40">
-<h3>Parameters<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id42">
+<h3>Parameters<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -983,8 +1057,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>beep_start</em>: Play beep when recording begins</p></li>
 </ul>
 </div>
-<div class="section" id="id41">
-<h3>Example<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id43">
+<h3>Example<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -998,16 +1072,16 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="recording-stop">
 <span id="flow-action-recording-stop"></span><h2>Recording Stop<a class="headerlink" href="#recording-stop" title="Permalink to this headline">¶</a></h2>
 <p>Stops the call recording.</p>
-<div class="section" id="id42">
-<h3>Parameters<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id44">
+<h3>Parameters<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id43">
-<h3>Example<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id45">
+<h3>Example<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
@@ -1018,8 +1092,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="sleep">
 <span id="flow-action-sleep"></span><h2>Sleep<a class="headerlink" href="#sleep" title="Permalink to this headline">¶</a></h2>
 <p>Sleep the call.</p>
-<div class="section" id="id44">
-<h3>Parameters<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id46">
+<h3>Parameters<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sleep&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1036,8 +1110,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="stream-echo">
 <span id="flow-action-stream-echo"></span><h2>Stream Echo<a class="headerlink" href="#stream-echo" title="Permalink to this headline">¶</a></h2>
 <p>Echoing the RTP stream including the digits receive.</p>
-<div class="section" id="id45">
-<h3>Parameters<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id47">
+<h3>Parameters<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream_echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1050,8 +1124,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>duration</em>: Echo duration. ms.</p></li>
 </ul>
 </div>
-<div class="section" id="id46">
-<h3>Example<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id48">
+<h3>Example<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream_echo&quot;</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1065,8 +1139,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="talk">
 <span id="flow-action-talk"></span><h2>Talk<a class="headerlink" href="#talk" title="Permalink to this headline">¶</a></h2>
 <p>Text to speech. SSML(<a class="reference external" href="https://www.w3.org/TR/speech-synthesis/">https://www.w3.org/TR/speech-synthesis/</a>) supported.</p>
-<div class="section" id="id47">
-<h3>Parameters<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id49">
+<h3>Parameters<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1083,8 +1157,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>language</em>: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</p></li>
 </ul>
 </div>
-<div class="section" id="id48">
-<h3>Example<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id50">
+<h3>Example<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1100,8 +1174,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="transcribe-start">
 <span id="flow-action-transribe-start"></span><h2>Transcribe Start<a class="headerlink" href="#transcribe-start" title="Permalink to this headline">¶</a></h2>
 <p>Start the STT(Speech to text) transcribe in realtime.</p>
-<div class="section" id="id49">
-<h3>Parameters<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id51">
+<h3>Parameters<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1114,8 +1188,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>language</em>: Specifies the language. BCP47 format. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</p></li>
 </ul>
 </div>
-<div class="section" id="id50">
-<h3>Example<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id52">
+<h3>Example<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1129,16 +1203,16 @@ It checks the call’s status and if it matched with condition then move to the 
 <div class="section" id="transcribe-stop">
 <span id="flow-action-transcribe-stop"></span><h2>Transcribe Stop<a class="headerlink" href="#transcribe-stop" title="Permalink to this headline">¶</a></h2>
 <p>Stop the transcribe talk in realtime.</p>
-<div class="section" id="id51">
-<h3>Parameters<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id53">
+<h3>Parameters<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id52">
-<h3>Example<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id54">
+<h3>Example<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
 <span class="p">}</span>
