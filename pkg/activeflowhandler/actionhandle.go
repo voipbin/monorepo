@@ -738,7 +738,12 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, id uuid.UUID, 
 		flowID = tmpFlow.ID
 	}
 
-	resCalls, err := h.reqHandler.CMV1CallsCreate(ctx, af.CustomerID, flowID, uuid.Nil, opt.Source, opt.Destinations)
+	masterCallID := uuid.Nil
+	if opt.Chained && af.ReferenceType == activeflow.ReferenceTypeCall {
+		masterCallID = af.ReferenceID
+	}
+
+	resCalls, err := h.reqHandler.CMV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err

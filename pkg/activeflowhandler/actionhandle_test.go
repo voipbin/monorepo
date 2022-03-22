@@ -1719,19 +1719,6 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 }
 
 func Test_actionHandleCall(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockAction := actionhandler.NewMockActionHandler(mc)
-
-	h := &activeflowHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-
-		actionHandler: mockAction,
-	}
 
 	tests := []struct {
 		name         string
@@ -1742,6 +1729,7 @@ func Test_actionHandleCall(t *testing.T) {
 		destinations []cmaddress.Address
 		flowID       uuid.UUID
 		actions      []action.Action
+		masterCallID uuid.UUID
 
 		responseFlow *flow.Flow
 		responseCall []cmcall.Call
@@ -1778,6 +1766,7 @@ func Test_actionHandleCall(t *testing.T) {
 			},
 			uuid.FromStringOrNil("15df43ee-a941-11ec-a903-2b7266f49e4b"),
 			[]action.Action{},
+			uuid.Nil,
 
 			&flow.Flow{},
 			[]cmcall.Call{
@@ -1822,6 +1811,7 @@ func Test_actionHandleCall(t *testing.T) {
 			},
 			uuid.FromStringOrNil("feedab34-a941-11ec-a6a8-1bbdada16b4d"),
 			[]action.Action{},
+			uuid.Nil,
 
 			&flow.Flow{},
 			[]cmcall.Call{
@@ -1873,6 +1863,7 @@ func Test_actionHandleCall(t *testing.T) {
 					Option: []byte(`{"text": "hello world"}`),
 				},
 			},
+			uuid.Nil,
 
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("3936013c-a943-11ec-bdf1-af72361eecf4"),
@@ -1923,6 +1914,7 @@ func Test_actionHandleCall(t *testing.T) {
 					Option: []byte(`{"text": "hello world"}`),
 				},
 			},
+			uuid.Nil,
 
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("f46f3e96-a943-11ec-b4e1-2bfce6b84c2b"),
@@ -1936,10 +1928,110 @@ func Test_actionHandleCall(t *testing.T) {
 				},
 			},
 		},
+		{
+			"single destination with flow id and chained",
+			uuid.FromStringOrNil("ec55367a-a993-11ec-9eaf-3bd79ecebfdb"),
+			&activeflow.ActiveFlow{
+				ID:            uuid.FromStringOrNil("ec55367a-a993-11ec-9eaf-3bd79ecebfdb"),
+				CustomerID:    uuid.FromStringOrNil("ec7e7e4a-a993-11ec-85a1-2f8c41cac00e"),
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("3f0cd396-a994-11ec-95db-e73c30df842c"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
+					Type:   action.TypeCall,
+					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "ecc964dc-a993-11ec-9c4c-13e5b3d40ea8", "chained": true}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
+						Type:   action.TypeCall,
+						Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "ecc964dc-a993-11ec-9c4c-13e5b3d40ea8", "chained": true}`),
+					},
+				},
+			},
+
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			[]cmaddress.Address{
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+			},
+			uuid.FromStringOrNil("ecc964dc-a993-11ec-9c4c-13e5b3d40ea8"),
+			[]action.Action{},
+			uuid.FromStringOrNil("3f0cd396-a994-11ec-95db-e73c30df842c"),
+
+			&flow.Flow{},
+			[]cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("2aafe7e4-a994-11ec-8bae-338c6a067225"),
+				},
+			},
+		},
+		{
+			"single destination with flow id and chained but reference type is message",
+			uuid.FromStringOrNil("87a4f032-a996-11ec-b260-4b6f3f52e1c9"),
+			&activeflow.ActiveFlow{
+				ID:            uuid.FromStringOrNil("87a4f032-a996-11ec-b260-4b6f3f52e1c9"),
+				CustomerID:    uuid.FromStringOrNil("87ede80a-a996-11ec-9086-d77d045a5f03"),
+				ReferenceType: activeflow.ReferenceTypeMessage,
+				ReferenceID:   uuid.FromStringOrNil("8819cf88-a996-11ec-bd8b-f3a7053103f1"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
+					Type:   action.TypeCall,
+					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "88497954-a996-11ec-b194-a71b02fcb6a8", "chained": true}`),
+				},
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
+						Type:   action.TypeCall,
+						Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "88497954-a996-11ec-b194-a71b02fcb6a8", "chained": true}`),
+					},
+				},
+			},
+
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			[]cmaddress.Address{
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+			},
+			uuid.FromStringOrNil("88497954-a996-11ec-b194-a71b02fcb6a8"),
+			[]action.Action{},
+			uuid.Nil,
+
+			&flow.Flow{},
+			[]cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("8873be9e-a996-11ec-993b-438622bb78da"),
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler: mockAction,
+			}
+
 			ctx := context.Background()
 
 			flowID := tt.flowID
@@ -1947,7 +2039,7 @@ func Test_actionHandleCall(t *testing.T) {
 				mockReq.EXPECT().FMV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.actions, false).Return(tt.responseFlow, nil)
 				flowID = tt.responseFlow.ID
 			}
-			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.af.CustomerID, flowID, uuid.Nil, tt.source, tt.destinations).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations).Return(tt.responseCall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.activeflowID, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)

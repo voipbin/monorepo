@@ -38,6 +38,7 @@ type OptionCall struct {
 	Destinations []cmaddress.Address `json:"destinations"`
 	FlowID       uuid.UUID           `json:"flow_id"`
 	Actions      []Action            `json:"actions"`
+	Chained      bool                `json:"chained"` // If it sets to true, created calls will be hungup when the master call is hangup. Default false.
 }
 
 // OptionConfbridgeJoin defines action confbridge_join's option.
