@@ -292,4 +292,75 @@ Send the message to the multiple destinations.
         ]
     }
 
+.. _flow-tutorial-scenario-simple_message_send_and_make_a_new_outbound_call:
+
+Simple message send and make a new outbound call
+------------------------------------------------
+
+Send the message to the destination and start a new outbound call with talk action.
+
+.. code::
+
+                  Start
+                    |
+                    |
+                  Message send
+                    |
+                    |
+                  Call ------------------- Start
+                    |                        |
+                    |                        |
+                   End                      Talk
+                                             |
+                                             |
+                                            End
+
+.. code::
+
+    {
+        "actions": [
+            {
+                "type": "message_send",
+                "option": {
+                    "source": {
+                        "type": "tel",
+                        "target": "+821100000001"
+                    },
+                    "destinations": [
+                        {
+                            "type": "tel",
+                            "target": "+821100000002"
+                        }
+                    ],
+                    "text": "hello, this is test message."
+                },
+                {
+                    "type": "call",
+                    "option": {
+                        "source": {
+                            "type": "tel",
+                            "target": "+821100000001"
+                        },
+                        "destinations": [
+                            {
+                                "type": "tel",
+                                "target": "+821100000003"
+                            }
+                        ],
+                        "actions": [
+                            {
+                                "type": "talk",
+                                "option": {
+                                    "text": "hello, this is test message.",
+                                    "gender": "female",
+                                    "language": "en-US"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+
 

@@ -38,6 +38,7 @@ amd                     Answering machine detection.
 answer                  Answer the call.
 beep                    Play the beep sound.
 branch                  Branch the flow
+call                    Make a call in a new context.
 condition_call_digits   Condition check(call's digits)
 condition_call_status   Condition check(call's status)
 confbridge_join         Join to the confbridge.
@@ -229,6 +230,79 @@ Example
         }
     }
 
+.. _flow-action-call:
+
+Call
+----
+Make a new outbound call in a new context.
+
+.. image:: _static/images/flow_action_call.png
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "call",
+        "option": {
+            "source": {
+                ...
+            },
+            "destinations": [
+                {
+                    ...
+                },
+                ...
+            ],
+            "flow_id": "<string>"
+            "actions": [
+                {
+                    ...
+                }
+            ],
+            "chained": <boolean>
+        }
+    }
+
+* *source*: Source address. See detail :ref:`here <call-struct-address-type>`.
+* *destinations*: Array of destination addresses. See detail :ref:`here <call-struct-address-type>`.
+* flow_id: Call's flow id. If this not set, will use the actions array.
+* actions: Array of actions. If the flow_id not set, the call flow will be created with this actions.
+* chained: If it sets to true, created calls will be hungup when the master call is hangup. Default false.
+
+Example
++++++++
+.. code::
+
+    {
+        "id": "e34ab97a-c53a-4eb4-aebf-36767a528f00",
+        "next_id": "00000000-0000-0000-0000-000000000000",
+        "type": "call",
+        "option": {
+            "source": {
+                "type": "tel",
+                "target": "+821100000001"
+            },
+            "destinations": [
+                {
+                    "type": "tel",
+                    "target": "+821100000002"
+                }
+            ],
+            "actions": [
+                {
+                    "type": "talk",
+                    "option": {
+                        "text": "hello, this is test message.",
+                        "gender": "female",
+                        "language": "en-US"
+                    }
+                }
+            ],
+            "chained": false
+        }
+    }
+
 .. _flow-action-confbridge_join:
 
 Confbridge Join
@@ -247,7 +321,6 @@ Parameters
     }
 
 * *confbridge_id*: Target confbridge id.
-
 
 .. _flow-action-condition_call_digits:
 
