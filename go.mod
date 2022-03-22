@@ -13,10 +13,10 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220214010042-9d735c473204
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220307023541-9c3558ddce63
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220318045325-aff7edb9fa2c
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220320191707-84e479870961
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220321011305-831dec27bb2c
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220228065618-f07d7d687d12
-	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220318074224-a23aa91bff9a
+	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220321025408-6498f13c097b
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220214021001-a55b20ebbcdc
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206205721-6f56cc4c3c1e
 )
@@ -33,7 +33,7 @@ require (
 	github.com/streadway/amqp v1.0.0 // indirect
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220203044108-296babaad5c9 // indirect
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20220318121408-b737007a1e9d // indirect
-	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220315173806-77cceaa9d494 // indirect
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220320183155-5a5e01a5c899 // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220209071252-a365e400801c // indirect
 	gitlab.com/voipbin/bin-manager/request-manager.git v0.0.0-20220103005331-229d07d977e5 // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6 // indirect

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
 
 func Test_marshalOptionAgentCall(t *testing.T) {
@@ -196,6 +197,87 @@ func Test_marshalOptionBranch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			res := OptionBranch{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_marshalOptionCall(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectRes OptionCall
+	}
+
+	tests := []test{
+		{
+			"flow id set",
+
+			[]byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "flow_id": "5ba29abc-a93b-11ec-ae94-6b77822f1a16"}`),
+
+			OptionCall{
+				Source: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destinations: []cmaddress.Address{
+					{
+						Type:   cmaddress.TypeTel,
+						Target: "+821100000002",
+					},
+					{
+						Type:   cmaddress.TypeTel,
+						Target: "+821100000003",
+					},
+				},
+				FlowID: uuid.FromStringOrNil("5ba29abc-a93b-11ec-ae94-6b77822f1a16"),
+			},
+		},
+		{
+			"actions set",
+
+			[]byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+
+			OptionCall{
+				Source: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destinations: []cmaddress.Address{
+					{
+						Type:   cmaddress.TypeTel,
+						Target: "+821100000002",
+					},
+					{
+						Type:   cmaddress.TypeTel,
+						Target: "+821100000003",
+					},
+				},
+				Actions: []Action{
+					{
+						Type: TypeAnswer,
+					},
+					{
+						Type:   TypeTalk,
+						Option: []byte(`{"text": "hello world"}`),
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionCall{}
 			if err := json.Unmarshal(tt.option, &res); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

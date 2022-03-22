@@ -47,6 +47,7 @@ const (
 	TypeAnswer              Type = "answer"                // call-manager. answer the call.
 	TypeBeep                Type = "beep"                  // call-manager. play the beep sound.
 	TypeBranch              Type = "branch"                // flow-manager. branch the flow
+	TypeCall                Type = "call"                  // flow-manager. make a call.
 	TypeConditionCallDigits Type = "condition_call_digits" // flow-manager. condition check(call's digits)
 	TypeConditionCallStatus Type = "condition_call_status" // flow-manager. condition check(call's status)
 	TypeConfbridgeJoin      Type = "confbridge_join"       // call-manager. join to the confbridge.
@@ -81,6 +82,7 @@ var TypeList []Type = []Type{
 	TypeAnswer,
 	TypeBeep,
 	TypeBranch,
+	TypeCall,
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
 	TypeConfbridgeJoin,

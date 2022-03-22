@@ -176,6 +176,13 @@ func (h *activeflowHandler) executeAction(ctx context.Context, id uuid.UUID, act
 		}
 		return h.ActiveFlowNextActionGet(ctx, id, act.ID)
 
+	case action.TypeCall:
+		if errHandle := h.actionHandleCall(ctx, id, af); errHandle != nil {
+			log.Errorf("Could not handle the call action correctly. err: %v", err)
+			return nil, err
+		}
+		return h.ActiveFlowNextActionGet(ctx, id, act.ID)
+
 	case action.TypeConditionCallDigits:
 		if errHandle := h.actionHandleConditionCallDigits(ctx, id, af); errHandle != nil {
 			return nil, err
