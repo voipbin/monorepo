@@ -437,6 +437,72 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="simple-message-send-and-make-a-new-outbound-call">
+<span id="flow-tutorial-scenario-simple-message-send-and-make-a-new-outbound-call"></span><h2>Simple message send and make a new outbound call<a class="headerlink" href="#simple-message-send-and-make-a-new-outbound-call" title="Permalink to this headline">¶</a></h2>
+<p>Send the message to the destination and start a new outbound call with talk action.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Start</span>
+  <span class="o">|</span>
+  <span class="o">|</span>
+<span class="n">Message</span> <span class="n">send</span>
+  <span class="o">|</span>
+  <span class="o">|</span>
+<span class="n">Call</span> <span class="o">-------------------</span> <span class="n">Start</span>
+  <span class="o">|</span>                        <span class="o">|</span>
+  <span class="o">|</span>                        <span class="o">|</span>
+ <span class="n">End</span>                      <span class="n">Talk</span>
+                           <span class="o">|</span>
+                           <span class="o">|</span>
+                          <span class="n">End</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_send&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000002&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
+                    <span class="p">},</span>
+                    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000003&quot;</span>
+                        <span class="p">}</span>
+                    <span class="p">],</span>
+                    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
