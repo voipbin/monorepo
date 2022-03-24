@@ -76,6 +76,7 @@ const (
 
 	/// VoIPBIN defined cause code.
 	ChannelCauseCallDurationTimeout ChannelCause = 200 // call progress timeout
+	ChannelCauseCallAMD             ChannelCause = 201 // call's amd hangup
 )
 
 // ChannelCauseAll list of all ChannelCauses
@@ -150,4 +151,5 @@ var ChannelCauseAll = []ChannelCause{
 	ChannelCauseInterworking,
 
 	ChannelCauseCallDurationTimeout,
+	ChannelCauseCallAMD,
 }

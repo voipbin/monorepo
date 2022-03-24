@@ -156,23 +156,12 @@ func TestHangupWithReason(t *testing.T) {
 }
 
 func TestHanginUp(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotfiy,
-	}
 
 	tests := []struct {
-		name  string
-		call  *call.Call
-		cause ari.ChannelCause
+		name             string
+		call             *call.Call
+		expectCallStatus call.Status
+		cause            ari.ChannelCause
 	}{
 		{
 			"normal",
@@ -185,6 +174,22 @@ func TestHanginUp(t *testing.T) {
 					Type: action.TypeEcho,
 				},
 			},
+			call.StatusTerminating,
+			ari.ChannelCauseNormalClearing,
+		},
+		{
+			"canceling",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("ac477e50-ab1c-11ec-b50f-7bb28cc97fd4"),
+				ChannelID:  "ac7411a4-ab1c-11ec-bce4-e7e983448875",
+				AsteriskID: "80:fa:5b:5e:da:81",
+				Status:     call.StatusDialing,
+				Direction:  call.DirectionOutgoing,
+				Action: action.Action{
+					Type: action.TypeEcho,
+				},
+			},
+			call.StatusCanceling,
 			ari.ChannelCauseNormalClearing,
 		},
 	}
@@ -192,12 +197,26 @@ func TestHanginUp(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.cause, 0).Return(nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 
-			if err := h.HangingUp(context.Background(), tt.call.ID, tt.cause); err != nil {
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotfiy,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, tt.expectCallStatus, gomock.Any()).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.cause, 0).Return(nil)
+
+			if err := h.HangingUp(ctx, tt.call.ID, tt.cause); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

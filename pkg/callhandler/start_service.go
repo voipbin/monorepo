@@ -10,6 +10,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
+const (
+	amdStatusMachine = "MACHINE" // amd status result machine
+)
+
 func (h *callHandler) startServiceFromDefault(ctx context.Context, cn *channel.Channel, data map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startServiceFromDefault",
@@ -50,10 +54,11 @@ func (h *callHandler) startServiceFromAMD(ctx context.Context, cn *channel.Chann
 	log = log.WithField("call_id", amd.CallID)
 
 	// check the result
-	if status == "MACHINE" && amd.MachineHandle == callapplication.AMDMachineHandleHangup {
+	if status == amdStatusMachine && amd.MachineHandle == callapplication.AMDMachineHandleHangup {
 		// hangup the call
 		log.Infof("The amd option is machine hangup. machine_handle: %s", amd.MachineHandle)
-		_ = h.HangingUp(ctx, amd.CallID, ari.ChannelCauseNormalClearing)
+		_ = h.HangingUp(ctx, amd.CallID, ari.ChannelCauseCallAMD)
+		return nil
 	}
 
 	if !amd.Async {
