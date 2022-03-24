@@ -111,6 +111,7 @@ const (
 	HangupReasonTimeout  HangupReason = "timeout"  // call reached max call duration after it was answered.
 	HangupReasonNoanswer HangupReason = "noanswer" // The call rejected with noanswer status.
 	HangupReasonDialout  HangupReason = "dialout"  // The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).
+	HangupReasonAMD      HangupReason = "amd"      // the call's amd action result hung up the call.
 )
 
 // Test values
@@ -309,11 +310,12 @@ func calculateHangupReasonDirectionOutgoing(lastStatus Status, cause ari.Channel
 	// | StatusProgressing    | ChannelCauseCallDurationTimeout | HangupReasonTimeout   |
 	// |                      | *                               | HangupReasonNormal    |
 	// +----------------------+---------------------------------+-----------------------+
-	// | StatusTerminating    | *                               | HangupReasonNormal    |
+	// | StatusTerminating    | ChannelCauseCallAMD             | HangupReasonAMD       |
+	// |                      | *                               | HangupReasonNormal    |
+	// +----------------------+---------------------------------+-----------------------+
+	// | StatusHangup         | *                               | HangupReasonNormal  |
 	// +----------------------+---------------------------------+-----------------------+
 	// | StatusCanceling      | *                               | HangupReasonCanceled  |
-	// +----------------------+---------------------------------+-----------------------+
-	// | StatusHangup         | *                               | HangupReasonNormal    |
 	// +----------------------+---------------------------------+-----------------------+
 	// | *                    | *                               | HangupReasonNormal    |
 	// +----------------------+---------------------------------+-----------------------+
@@ -334,13 +336,27 @@ func calculateHangupReasonDirectionOutgoing(lastStatus Status, cause ari.Channel
 		}
 
 	case StatusProgressing:
-		if cause == ari.ChannelCauseCallDurationTimeout {
+		switch cause {
+		case ari.ChannelCauseCallDurationTimeout:
 			return HangupReasonTimeout
+		default:
+			return HangupReasonNormal
 		}
-		return HangupReasonNormal
 
-	case StatusTerminating, StatusHangup:
-		return HangupReasonNormal
+	case StatusTerminating:
+		switch cause {
+		case ari.ChannelCauseCallAMD:
+			return HangupReasonAMD
+		default:
+			return HangupReasonNormal
+		}
+
+	case StatusHangup:
+		switch cause {
+		default:
+			return HangupReasonNormal
+		}
+
 	case StatusCanceling:
 		return HangupReasonCanceled
 

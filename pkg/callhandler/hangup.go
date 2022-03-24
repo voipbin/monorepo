@@ -94,23 +94,19 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 		return nil
 	}
 
+	status := call.StatusTerminating
 	if c.Direction == call.DirectionOutgoing && call.IsUpdatableStatus(c.Status, call.StatusCanceling) {
 		// canceling
-		// update call status
-		if err := h.db.CallSetStatus(ctx, c.ID, call.StatusCanceling, dbhandler.GetCurTime()); err != nil {
-			// update status failed, just write log here. No need error handle here.
-			log.Errorf("Could not update the call status StatusCanceling for hangup. err: %v", err)
-			return err
-		}
+		// update call status to canceling
+		status = call.StatusCanceling
+	}
 
-	} else {
-		// incoming and others
-		// update call status
-		if err := h.db.CallSetStatus(ctx, c.ID, call.StatusTerminating, dbhandler.GetCurTime()); err != nil {
-			// update status failed, just write log here. No need error handle here.
-			log.Errorf("Could not update the call status StatusTerminating for hangup. err: %v", err)
-			return err
-		}
+	// update call status
+	log.Debugf("Updating call status for hangup. status: %v", status)
+	if err := h.db.CallSetStatus(ctx, c.ID, status, dbhandler.GetCurTime()); err != nil {
+		// update status failed, just write log here. No need error handle here.
+		log.Errorf("Could not update the call status for hangup. status: %v, err: %v", status, err)
+		return err
 	}
 
 	// send hangup request

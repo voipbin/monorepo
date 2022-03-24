@@ -296,6 +296,7 @@ func Test_calculateHangupReasonDirectionIncoming(t *testing.T) {
 				ari.ChannelCauseInterworking,
 
 				ari.ChannelCauseCallDurationTimeout,
+				ari.ChannelCauseCallAMD,
 			},
 
 			HangupReasonNormal,
@@ -387,17 +388,19 @@ func Test_calculateHangupReasonDirectionIncoming(t *testing.T) {
 				ari.ChannelCauseProtocolError,
 
 				ari.ChannelCauseInterworking,
+
+				ari.ChannelCauseCallAMD,
 			},
 
 			HangupReasonNormal,
 		},
 		{
-			"StatusCanceling/StatusHangup/StatusTerminating with all",
+			"StatusCanceling/StatusTerminating/StatusHangup with all",
 
 			[]Status{
 				StatusCanceling,
-				StatusHangup,
 				StatusTerminating,
+				StatusHangup,
 			},
 			ari.ChannelCauseAll,
 
@@ -558,6 +561,7 @@ func Test_calculateHangupReasonDirectionOutgoing(t *testing.T) {
 				ari.ChannelCauseInterworking,
 
 				ari.ChannelCauseCallDurationTimeout,
+				ari.ChannelCauseCallAMD,
 			},
 
 			HangupReasonFailed,
@@ -649,6 +653,8 @@ func Test_calculateHangupReasonDirectionOutgoing(t *testing.T) {
 				ari.ChannelCauseProtocolError,
 
 				ari.ChannelCauseInterworking,
+
+				ari.ChannelCauseCallAMD,
 			},
 
 			HangupReasonNormal,
@@ -663,13 +669,104 @@ func Test_calculateHangupReasonDirectionOutgoing(t *testing.T) {
 
 			HangupReasonCanceled,
 		},
-
 		{
-			"StatusHangup/StatusTerminating else with all",
+			"/StatusTerminating with amd",
+
+			[]Status{
+				StatusTerminating,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseCallAMD,
+			},
+
+			HangupReasonAMD,
+		},
+		{
+			"StatusTerminating with others",
+
+			[]Status{
+				StatusTerminating,
+			},
+			[]ari.ChannelCause{
+				ari.ChannelCauseUnknown,
+				ari.ChannelCauseUnallocated,
+				ari.ChannelCauseNoRouteTransitNet,
+				ari.ChannelCauseNoRouteDestination,
+
+				ari.ChannelCauseMisdialedTrunkPrefix,
+				ari.ChannelCauseChannelUnacceptable,
+				ari.ChannelCauseCallAwardedDelivered,
+				ari.ChannelCausePreEmpted,
+
+				ari.ChannelCauseNumberPortedNotHere,
+
+				ari.ChannelCauseNormalClearing,
+				ari.ChannelCauseUserBusy,
+				ari.ChannelCauseNoUserResponse,
+				ari.ChannelCauseNoAnswer,
+				ari.ChannelCauseSubscriberAbsent,
+				ari.ChannelCauseCallRejected,
+				ari.ChannelCauseNumberChanged,
+				ari.ChannelCauseRedirectedToNewDestination,
+
+				ari.ChannelCauseAnsweredElsewhere,
+				ari.ChannelCauseDestinatioOutOfOrder,
+				ari.ChannelCauseInvalidNumberFormat,
+				ari.ChannelCauseFacilityRejected,
+				ari.ChannelCauseResponseToStatusEnquiry,
+				ari.ChannelCauseNormalUnspecified,
+
+				ari.ChannelCauseNormalCircuitCongestion,
+
+				ari.ChannelCauseNetworkOutOfOrder,
+
+				ari.ChannelCauseNormalTemporaryFailure,
+				ari.ChannelCauseSwitchCongestion,
+				ari.ChannelCauseAccessInfoDiscarded,
+				ari.ChannelCauseRequestedChanUnavail,
+
+				ari.ChannelCauseFacilityNotSubscribed,
+
+				ari.ChannelCauseOutgoingCallBarred,
+
+				ari.ChannelCauseIncomingCallBarred,
+
+				ari.ChannelCauseBearerCapabilityNotauth,
+				ari.ChannelCauseBearerCapabilityNotavail,
+
+				ari.ChannelCauseBearerCapabilityNotimpl,
+				ari.ChannelCauseChanNotImplemented,
+
+				ari.ChannelCauseFacilityNotImplemented,
+
+				ari.ChannelCauseInvalidCallReference,
+
+				ari.ChannelCauseIncompatibleDestination,
+
+				ari.ChannelCauseInvalidMsgUnspecified,
+				ari.ChannelCauseMandatoryIeMissing,
+				ari.ChannelCauseMessageTypeNonexist,
+				ari.ChannelCauseWrongMessage,
+				ari.ChannelCauseIeNonexist,
+				ari.ChannelCauseInvalidIeContents,
+				ari.ChannelCauseWrongCallState,
+				ari.ChannelCauseRecoveryIeTimerExpire,
+				ari.ChannelCauseMandatoryIeLengthError,
+
+				ari.ChannelCauseProtocolError,
+
+				ari.ChannelCauseInterworking,
+
+				ari.ChannelCauseCallDurationTimeout,
+			},
+
+			HangupReasonNormal,
+		},
+		{
+			"StatusHangup with all",
 
 			[]Status{
 				StatusHangup,
-				StatusTerminating,
 			},
 			ari.ChannelCauseAll,
 
