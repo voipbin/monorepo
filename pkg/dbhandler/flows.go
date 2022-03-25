@@ -113,15 +113,15 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 		return fmt.Errorf("could not execute query. FlowCreate. err: %v", err)
 	}
 
-	_ = h.FlowUpdateToCache(ctx, f.ID)
+	_ = h.flowUpdateToCache(ctx, f.ID)
 
 	return nil
 }
 
-// FlowUpdateToCache gets the flow from the DB and update the cache.
-func (h *handler) FlowUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// flowUpdateToCache gets the flow from the DB and update the cache.
+func (h *handler) flowUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.FlowGetFromDB(ctx, id)
+	res, err := h.flowGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -142,8 +142,8 @@ func (h *handler) FlowSetToCache(ctx context.Context, f *flow.Flow) error {
 	return nil
 }
 
-// FlowGetFromCache returns flow from the cache if possible.
-func (h *handler) FlowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+// flowGetFromCache returns flow from the cache if possible.
+func (h *handler) flowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 
 	// get from cache
 	res, err := h.cache.FlowGet(ctx, id)
@@ -154,8 +154,8 @@ func (h *handler) FlowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flo
 	return res, nil
 }
 
-// FlowDeleteCache deletes cache
-func (h *handler) FlowDeleteCache(ctx context.Context, id uuid.UUID) error {
+// flowDeleteCache deletes cache
+func (h *handler) flowDeleteCache(ctx context.Context, id uuid.UUID) error {
 
 	// delete from cache
 	err := h.cache.FlowDel(ctx, id)
@@ -166,8 +166,8 @@ func (h *handler) FlowDeleteCache(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// FlowGetFromDB gets the flow info from the db.
-func (h *handler) FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+// flowGetFromDB gets the flow info from the db.
+func (h *handler) flowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", flowSelect)
@@ -200,20 +200,17 @@ func (h *handler) FlowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, 
 // FlowGet returns flow.
 func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 
-	res, err := h.FlowGetFromCache(ctx, id)
+	res, err := h.flowGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.FlowGetFromDB(ctx, id)
+	res, err = h.flowGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if res.TMDelete == "" {
-		// set to the cache
-		_ = h.FlowSetToCache(ctx, res)
-	}
+	_ = h.FlowSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -310,7 +307,7 @@ func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail str
 	}
 
 	// set to the cache
-	_ = h.FlowUpdateToCache(ctx, id)
+	_ = h.flowUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -330,7 +327,7 @@ func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	// delete cache
-	_ = h.FlowDeleteCache(ctx, id)
+	_ = h.flowDeleteCache(ctx, id)
 
 	return nil
 }
