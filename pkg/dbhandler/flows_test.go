@@ -460,6 +460,7 @@ func TestFlowDelete(t *testing.T) {
 			}
 
 			mockCache.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(nil, fmt.Errorf("error"))
+			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any()).Return(nil)
 			res, err := h.FlowGet(context.Background(), tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -8,8 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
 
-// ActiveFlowSetToCache sets the given callflow to the cache
-func (h *handler) ActiveFlowSetToCache(ctx context.Context, flow *activeflow.ActiveFlow) error {
+// activeFlowSetToCache sets the given callflow to the cache
+func (h *handler) activeFlowSetToCache(ctx context.Context, flow *activeflow.ActiveFlow) error {
 	if err := h.cache.ActiveFlowSet(ctx, flow); err != nil {
 		return err
 	}
@@ -17,8 +17,8 @@ func (h *handler) ActiveFlowSetToCache(ctx context.Context, flow *activeflow.Act
 	return nil
 }
 
-// ActiveFlowGetFromCache returns flow from the cache if possible.
-func (h *handler) ActiveFlowGetFromCache(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error) {
+// activeFlowGetFromCache returns flow from the cache if possible.
+func (h *handler) activeFlowGetFromCache(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error) {
 
 	// get from cache
 	res, err := h.cache.ActiveFlowGet(ctx, id)
@@ -31,7 +31,7 @@ func (h *handler) ActiveFlowGetFromCache(ctx context.Context, id uuid.UUID) (*ac
 
 func (h *handler) ActiveFlowCreate(ctx context.Context, af *activeflow.ActiveFlow) error {
 
-	if err := h.ActiveFlowSetToCache(ctx, af); err != nil {
+	if err := h.activeFlowSetToCache(ctx, af); err != nil {
 		return err
 	}
 
@@ -41,7 +41,7 @@ func (h *handler) ActiveFlowCreate(ctx context.Context, af *activeflow.ActiveFlo
 // ActiveFlowGet returns activeflow.
 func (h *handler) ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error) {
 
-	res, err := h.ActiveFlowGetFromCache(ctx, id)
+	res, err := h.activeFlowGetFromCache(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (h *handler) ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.
 // ActiveFlowSet sets the activeflow.
 func (h *handler) ActiveFlowSet(ctx context.Context, af *activeflow.ActiveFlow) error {
 
-	if err := h.ActiveFlowSetToCache(ctx, af); err != nil {
+	if err := h.activeFlowSetToCache(ctx, af); err != nil {
 		return err
 	}
 
