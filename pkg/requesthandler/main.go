@@ -138,7 +138,7 @@ const (
 
 	resourceFlowsActions  resource = "flows/actions"
 	resourceFMFlows       resource = "fm/flows"
-	resourceFMActiveFlows resource = "fm/active-flows"
+	resourceFMActiveFlows resource = "fm/activeflows"
 
 	resourceMMMessages resource = "mm/messages"
 
@@ -312,11 +312,12 @@ type RequestHandler interface {
 	// flow-manager action
 	FMV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*fmaction.Action, error)
 
-	// flow-manager active-flow
-	FMV1ActvieFlowCreate(ctx context.Context, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error)
-	FMV1ActvieFlowGetNextAction(ctx context.Context, callID, actionID uuid.UUID) (*fmaction.Action, error)
-	FMV1ActvieFlowUpdateForwardActionID(ctx context.Context, callID, forwardActionID uuid.UUID, forwardNow bool) error
-	FMV1ActiveFlowExecute(ctx context.Context, activeflowID uuid.UUID) error
+	// flow-manager activeflow
+	FMV1ActiveflowCreate(ctx context.Context, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error)
+	FMV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
+	FMV1ActiveflowGetNextAction(ctx context.Context, callID, actionID uuid.UUID) (*fmaction.Action, error)
+	FMV1ActiveflowUpdateForwardActionID(ctx context.Context, callID, forwardActionID uuid.UUID, forwardNow bool) error
+	FMV1ActiveflowExecute(ctx context.Context, activeflowID uuid.UUID) error
 
 	// flow-manager flow
 	FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error)
