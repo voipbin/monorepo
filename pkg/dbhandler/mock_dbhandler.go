@@ -38,47 +38,76 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
-// ActiveFlowCreate mocks base method.
-func (m *MockDBHandler) ActiveFlowCreate(ctx context.Context, af *activeflow.ActiveFlow) error {
+// ActiveflowCreate mocks base method.
+func (m *MockDBHandler) ActiveflowCreate(ctx context.Context, af *activeflow.Activeflow) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveFlowCreate", ctx, af)
+	ret := m.ctrl.Call(m, "ActiveflowCreate", ctx, af)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ActiveFlowCreate indicates an expected call of ActiveFlowCreate.
-func (mr *MockDBHandlerMockRecorder) ActiveFlowCreate(ctx, af interface{}) *gomock.Call {
+// ActiveflowCreate indicates an expected call of ActiveflowCreate.
+func (mr *MockDBHandlerMockRecorder) ActiveflowCreate(ctx, af interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowCreate", reflect.TypeOf((*MockDBHandler)(nil).ActiveFlowCreate), ctx, af)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowCreate", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowCreate), ctx, af)
 }
 
-// ActiveFlowGet mocks base method.
-func (m *MockDBHandler) ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error) {
+// ActiveflowDelete mocks base method.
+func (m *MockDBHandler) ActiveflowDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveFlowGet", ctx, id)
-	ret0, _ := ret[0].(*activeflow.ActiveFlow)
+	ret := m.ctrl.Call(m, "ActiveflowDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActiveflowDelete indicates an expected call of ActiveflowDelete.
+func (mr *MockDBHandlerMockRecorder) ActiveflowDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowDelete", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowDelete), ctx, id)
+}
+
+// ActiveflowGet mocks base method.
+func (m *MockDBHandler) ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowGet", ctx, id)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ActiveFlowGet indicates an expected call of ActiveFlowGet.
-func (mr *MockDBHandlerMockRecorder) ActiveFlowGet(ctx, id interface{}) *gomock.Call {
+// ActiveflowGet indicates an expected call of ActiveflowGet.
+func (mr *MockDBHandlerMockRecorder) ActiveflowGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowGet", reflect.TypeOf((*MockDBHandler)(nil).ActiveFlowGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGet", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowGet), ctx, id)
 }
 
-// ActiveFlowSet mocks base method.
-func (m *MockDBHandler) ActiveFlowSet(ctx context.Context, af *activeflow.ActiveFlow) error {
+// ActiveflowGetsByCustomerID mocks base method.
+func (m *MockDBHandler) ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveFlowSet", ctx, af)
+	ret := m.ctrl.Call(m, "ActiveflowGetsByCustomerID", ctx, customerID, token, limit)
+	ret0, _ := ret[0].([]*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveflowGetsByCustomerID indicates an expected call of ActiveflowGetsByCustomerID.
+func (mr *MockDBHandlerMockRecorder) ActiveflowGetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowGetsByCustomerID), ctx, customerID, token, limit)
+}
+
+// ActiveflowUpdate mocks base method.
+func (m *MockDBHandler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowUpdate", ctx, af)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ActiveFlowSet indicates an expected call of ActiveFlowSet.
-func (mr *MockDBHandlerMockRecorder) ActiveFlowSet(ctx, af interface{}) *gomock.Call {
+// ActiveflowUpdate indicates an expected call of ActiveflowUpdate.
+func (mr *MockDBHandlerMockRecorder) ActiveflowUpdate(ctx, af interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowSet", reflect.TypeOf((*MockDBHandler)(nil).ActiveFlowSet), ctx, af)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowUpdate", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowUpdate), ctx, af)
 }
 
 // FlowCreate mocks base method.

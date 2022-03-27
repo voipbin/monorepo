@@ -51,20 +51,6 @@ func (mr *MockActionHandlerMockRecorder) ActionPatchGet(act, callID interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionPatchGet", reflect.TypeOf((*MockActionHandler)(nil).ActionPatchGet), act, callID)
 }
 
-// CreateActionHangup mocks base method.
-func (m *MockActionHandler) CreateActionHangup() *action.Action {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateActionHangup")
-	ret0, _ := ret[0].(*action.Action)
-	return ret0
-}
-
-// CreateActionHangup indicates an expected call of CreateActionHangup.
-func (mr *MockActionHandlerMockRecorder) CreateActionHangup() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateActionHangup", reflect.TypeOf((*MockActionHandler)(nil).CreateActionHangup))
-}
-
 // GenerateFlowActions mocks base method.
 func (m *MockActionHandler) GenerateFlowActions(ctx context.Context, actions []action.Action) ([]action.Action, error) {
 	m.ctrl.T.Helper()

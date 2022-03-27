@@ -73,7 +73,7 @@ func TestAppendActions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			af := &activeflow.ActiveFlow{
+			af := &activeflow.Activeflow{
 				Actions: tt.action1,
 			}
 			if err := appendActions(af, tt.targetActionID, tt.action2); err != nil {
@@ -147,7 +147,7 @@ func TestReplaceActions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			af := &activeflow.ActiveFlow{
+			af := &activeflow.Activeflow{
 				Actions: tt.action1,
 			}
 			if err := replaceActions(af, tt.targetActionID, tt.action2); err != nil {

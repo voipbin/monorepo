@@ -37,7 +37,7 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 		expectRefereceID   uuid.UUID
 
 		expectFlowID uuid.UUID
-		af           *activeflow.ActiveFlow
+		af           *activeflow.Activeflow
 		expectRes    *rabbitmqhandler.Response
 	}{
 		{
@@ -53,7 +53,7 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 			uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
 
 			uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID: uuid.FromStringOrNil("bd89ee76-a7a4-11ec-a1bd-8315ed90b9d1"),
 
 				FlowID:     uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
@@ -72,14 +72,14 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bd89ee76-a7a4-11ec-a1bd-8315ed90b9d1","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"execute_count":0,"forward_action_id":"00000000-0000-0000-0000-000000000000","actions":[],"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bd89ee76-a7a4-11ec-a1bd-8315ed90b9d1","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"execute_count":0,"forward_action_id":"00000000-0000-0000-0000-000000000000","actions":[],"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockActive.EXPECT().ActiveFlowCreate(gomock.Any(), tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.af, nil)
+			mockActive.EXPECT().Create(gomock.Any(), tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.af, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -132,7 +132,7 @@ func TestV1ActiveFlowsIDNextGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockActive.EXPECT().ActiveFlowNextActionGet(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.nextAction, nil)
+			mockActive.EXPECT().GetNextAction(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.nextAction, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -194,7 +194,7 @@ func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockActive.EXPECT().ActiveFlowSetForwardActionID(gomock.Any(), tt.callID, tt.forwardActionID, tt.forwardNow).Return(nil)
+			mockActive.EXPECT().SetForwardActionID(gomock.Any(), tt.callID, tt.forwardActionID, tt.forwardNow).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -33,25 +33,6 @@ func (h *actionHandler) ValidateActions(actions []action.Action) error {
 	return nil
 }
 
-func (h *actionHandler) CreateActionHangup() *action.Action {
-
-	opt := action.OptionHangup{}
-
-	optString, err := json.Marshal(opt)
-	if err != nil {
-		logrus.Errorf("Could not marshal the hangup option. err: %v", err)
-		return nil
-	}
-
-	res := action.Action{
-		ID:     action.IDFinish,
-		Type:   action.TypeHangup,
-		Option: optString,
-	}
-
-	return &res
-}
-
 // actionPatchGet gets the action from the remote.
 func (h *actionHandler) ActionPatchGet(act *action.Action, callID uuid.UUID) ([]action.Action, error) {
 

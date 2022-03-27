@@ -30,10 +30,11 @@ type activeflowHandler struct {
 
 // ActiveflowHandler defines
 type ActiveflowHandler interface {
-	ActiveFlowCreate(ctx context.Context, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
+	Create(ctx context.Context, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error)
+	Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 
-	ActiveFlowNextActionGet(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
-	ActiveFlowSetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
+	GetNextAction(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
+	SetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
 
 	Execute(ctx context.Context, id uuid.UUID) error
 }

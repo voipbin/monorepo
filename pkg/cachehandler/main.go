@@ -24,8 +24,8 @@ type handler struct {
 type CacheHandler interface {
 	Connect() error
 
-	ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error)
-	ActiveFlowSet(ctx context.Context, cf *activeflow.ActiveFlow) error
+	ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
+	ActiveflowSet(ctx context.Context, cf *activeflow.Activeflow) error
 
 	FlowDel(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
