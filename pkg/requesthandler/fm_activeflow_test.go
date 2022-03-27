@@ -33,7 +33,7 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response  *rabbitmqhandler.Response
-		expectRes *fmactiveflow.ActiveFlow
+		expectRes *fmactiveflow.Activeflow
 	}{
 		{
 			"type call",
@@ -55,7 +55,7 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"4a93277e-a7b4-11ec-860a-cbb5f65b6655","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
-			&fmactiveflow.ActiveFlow{
+			&fmactiveflow.Activeflow{
 				ID:            uuid.FromStringOrNil("4a93277e-a7b4-11ec-860a-cbb5f65b6655"),
 				ReferenceType: fmactiveflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("447e712e-82d8-11eb-8900-7b97c080ddd8"),
@@ -87,7 +87,7 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"a95537d8-a7b5-11ec-b63c-57c0410e1ca4","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
-			&fmactiveflow.ActiveFlow{
+			&fmactiveflow.Activeflow{
 				ID:            uuid.FromStringOrNil("a95537d8-a7b5-11ec-b63c-57c0410e1ca4"),
 				ReferenceType: fmactiveflow.ReferenceTypeMessage,
 				ReferenceID:   uuid.FromStringOrNil("a8d145b8-a7b5-11ec-ac30-6b8228b173eb"),
