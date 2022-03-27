@@ -1146,62 +1146,77 @@ func (mr *MockRequestHandlerMockRecorder) FMV1ActionGet(ctx, flowID, actionID in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActionGet", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActionGet), ctx, flowID, actionID)
 }
 
-// FMV1ActiveFlowExecute mocks base method.
-func (m *MockRequestHandler) FMV1ActiveFlowExecute(ctx context.Context, activeflowID uuid.UUID) error {
+// FMV1ActiveflowCreate mocks base method.
+func (m *MockRequestHandler) FMV1ActiveflowCreate(ctx context.Context, flowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMV1ActiveFlowExecute", ctx, activeflowID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FMV1ActiveFlowExecute indicates an expected call of FMV1ActiveFlowExecute.
-func (mr *MockRequestHandlerMockRecorder) FMV1ActiveFlowExecute(ctx, activeflowID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActiveFlowExecute", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActiveFlowExecute), ctx, activeflowID)
-}
-
-// FMV1ActvieFlowCreate mocks base method.
-func (m *MockRequestHandler) FMV1ActvieFlowCreate(ctx context.Context, flowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID) (*activeflow.Activeflow, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMV1ActvieFlowCreate", ctx, flowID, referenceType, referenceID)
+	ret := m.ctrl.Call(m, "FMV1ActiveflowCreate", ctx, flowID, referenceType, referenceID)
 	ret0, _ := ret[0].(*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FMV1ActvieFlowCreate indicates an expected call of FMV1ActvieFlowCreate.
-func (mr *MockRequestHandlerMockRecorder) FMV1ActvieFlowCreate(ctx, flowID, referenceType, referenceID interface{}) *gomock.Call {
+// FMV1ActiveflowCreate indicates an expected call of FMV1ActiveflowCreate.
+func (mr *MockRequestHandlerMockRecorder) FMV1ActiveflowCreate(ctx, flowID, referenceType, referenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActvieFlowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActvieFlowCreate), ctx, flowID, referenceType, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActiveflowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActiveflowCreate), ctx, flowID, referenceType, referenceID)
 }
 
-// FMV1ActvieFlowGetNextAction mocks base method.
-func (m *MockRequestHandler) FMV1ActvieFlowGetNextAction(ctx context.Context, callID, actionID uuid.UUID) (*action.Action, error) {
+// FMV1ActiveflowDelete mocks base method.
+func (m *MockRequestHandler) FMV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMV1ActvieFlowGetNextAction", ctx, callID, actionID)
+	ret := m.ctrl.Call(m, "FMV1ActiveflowDelete", ctx, activeflowID)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMV1ActiveflowDelete indicates an expected call of FMV1ActiveflowDelete.
+func (mr *MockRequestHandlerMockRecorder) FMV1ActiveflowDelete(ctx, activeflowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActiveflowDelete", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActiveflowDelete), ctx, activeflowID)
+}
+
+// FMV1ActiveflowExecute mocks base method.
+func (m *MockRequestHandler) FMV1ActiveflowExecute(ctx context.Context, activeflowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMV1ActiveflowExecute", ctx, activeflowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FMV1ActiveflowExecute indicates an expected call of FMV1ActiveflowExecute.
+func (mr *MockRequestHandlerMockRecorder) FMV1ActiveflowExecute(ctx, activeflowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActiveflowExecute", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActiveflowExecute), ctx, activeflowID)
+}
+
+// FMV1ActiveflowGetNextAction mocks base method.
+func (m *MockRequestHandler) FMV1ActiveflowGetNextAction(ctx context.Context, callID, actionID uuid.UUID) (*action.Action, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMV1ActiveflowGetNextAction", ctx, callID, actionID)
 	ret0, _ := ret[0].(*action.Action)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FMV1ActvieFlowGetNextAction indicates an expected call of FMV1ActvieFlowGetNextAction.
-func (mr *MockRequestHandlerMockRecorder) FMV1ActvieFlowGetNextAction(ctx, callID, actionID interface{}) *gomock.Call {
+// FMV1ActiveflowGetNextAction indicates an expected call of FMV1ActiveflowGetNextAction.
+func (mr *MockRequestHandlerMockRecorder) FMV1ActiveflowGetNextAction(ctx, callID, actionID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActvieFlowGetNextAction", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActvieFlowGetNextAction), ctx, callID, actionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActiveflowGetNextAction", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActiveflowGetNextAction), ctx, callID, actionID)
 }
 
-// FMV1ActvieFlowUpdateForwardActionID mocks base method.
-func (m *MockRequestHandler) FMV1ActvieFlowUpdateForwardActionID(ctx context.Context, callID, forwardActionID uuid.UUID, forwardNow bool) error {
+// FMV1ActiveflowUpdateForwardActionID mocks base method.
+func (m *MockRequestHandler) FMV1ActiveflowUpdateForwardActionID(ctx context.Context, callID, forwardActionID uuid.UUID, forwardNow bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FMV1ActvieFlowUpdateForwardActionID", ctx, callID, forwardActionID, forwardNow)
+	ret := m.ctrl.Call(m, "FMV1ActiveflowUpdateForwardActionID", ctx, callID, forwardActionID, forwardNow)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// FMV1ActvieFlowUpdateForwardActionID indicates an expected call of FMV1ActvieFlowUpdateForwardActionID.
-func (mr *MockRequestHandlerMockRecorder) FMV1ActvieFlowUpdateForwardActionID(ctx, callID, forwardActionID, forwardNow interface{}) *gomock.Call {
+// FMV1ActiveflowUpdateForwardActionID indicates an expected call of FMV1ActiveflowUpdateForwardActionID.
+func (mr *MockRequestHandlerMockRecorder) FMV1ActiveflowUpdateForwardActionID(ctx, callID, forwardActionID, forwardNow interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActvieFlowUpdateForwardActionID", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActvieFlowUpdateForwardActionID), ctx, callID, forwardActionID, forwardNow)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1ActiveflowUpdateForwardActionID", reflect.TypeOf((*MockRequestHandler)(nil).FMV1ActiveflowUpdateForwardActionID), ctx, callID, forwardActionID, forwardNow)
 }
 
 // FMV1FlowCreate mocks base method.

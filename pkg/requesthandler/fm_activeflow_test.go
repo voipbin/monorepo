@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestFMV1ActvieFlowCreate(t *testing.T) {
+func TestFMV1ActiveflowCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -44,7 +44,7 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows",
+				URI:      "/v1/activeflows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8"}`),
@@ -76,7 +76,7 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows",
+				URI:      "/v1/activeflows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb"}`),
@@ -105,7 +105,7 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMV1ActvieFlowCreate(context.Background(), tt.flowID, tt.referenceType, tt.referenceID)
+			res, err := reqHandler.FMV1ActiveflowCreate(context.Background(), tt.flowID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -118,7 +118,7 @@ func TestFMV1ActvieFlowCreate(t *testing.T) {
 	}
 }
 
-func TestFMV1ActvieFlowGetNextAction(t *testing.T) {
+func TestFMV1ActiveflowGetNextAction(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -147,7 +147,7 @@ func TestFMV1ActvieFlowGetNextAction(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows/447e712e-82d8-11eb-8900-7b97c080ddd8/next",
+				URI:      "/v1/activeflows/447e712e-82d8-11eb-8900-7b97c080ddd8/next",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"current_action_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"}`),
@@ -169,7 +169,7 @@ func TestFMV1ActvieFlowGetNextAction(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMV1ActvieFlowGetNextAction(context.Background(), tt.callID, tt.currentActionID)
+			res, err := reqHandler.FMV1ActiveflowGetNextAction(context.Background(), tt.callID, tt.currentActionID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -182,7 +182,7 @@ func TestFMV1ActvieFlowGetNextAction(t *testing.T) {
 	}
 }
 
-func TestFMV1ActvieFlowUpdateForwardActionID(t *testing.T) {
+func TestFMV1ActiveflowUpdateForwardActionID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -212,7 +212,7 @@ func TestFMV1ActvieFlowUpdateForwardActionID(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows/447e712e-82d8-11eb-8900-7b97c080ddd8/forward_action_id",
+				URI:      "/v1/activeflows/447e712e-82d8-11eb-8900-7b97c080ddd8/forward_action_id",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"forward_action_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","forward_now":true}`),
@@ -232,7 +232,7 @@ func TestFMV1ActvieFlowUpdateForwardActionID(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows/447e712e-82d8-11eb-8900-7b97c080ddd8/forward_action_id",
+				URI:      "/v1/activeflows/447e712e-82d8-11eb-8900-7b97c080ddd8/forward_action_id",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"forward_action_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","forward_now":false}`),
@@ -249,7 +249,7 @@ func TestFMV1ActvieFlowUpdateForwardActionID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FMV1ActvieFlowUpdateForwardActionID(context.Background(), tt.callID, tt.forwardActionID, tt.forwardNow); err != nil {
+			if err := reqHandler.FMV1ActiveflowUpdateForwardActionID(context.Background(), tt.callID, tt.forwardActionID, tt.forwardNow); err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
 
@@ -257,7 +257,7 @@ func TestFMV1ActvieFlowUpdateForwardActionID(t *testing.T) {
 	}
 }
 
-func Test_FMV1ActvieFlowExecute(t *testing.T) {
+func Test_FMV1ActiveflowExecute(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -283,7 +283,7 @@ func Test_FMV1ActvieFlowExecute(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows/fde4653a-a7b5-11ec-a7ae-83d2f5255ec0/execute",
+				URI:      "/v1/activeflows/fde4653a-a7b5-11ec-a7ae-83d2f5255ec0/execute",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 			},
@@ -299,8 +299,68 @@ func Test_FMV1ActvieFlowExecute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FMV1ActiveFlowExecute(context.Background(), tt.id); err != nil {
+			if err := reqHandler.FMV1ActiveflowExecute(context.Background(), tt.id); err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_FMV1ActiveflowDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+
+		response  *rabbitmqhandler.Response
+		expectRes *fmactiveflow.Activeflow
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("2f4bd474-ade1-11ec-9aca-83684de0c293"),
+
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/activeflows/2f4bd474-ade1-11ec-9aca-83684de0c293",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"2f4bd474-ade1-11ec-9aca-83684de0c293"}`),
+			},
+			&fmactiveflow.Activeflow{
+				ID: uuid.FromStringOrNil("2f4bd474-ade1-11ec-9aca-83684de0c293"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.FMV1ActiveflowDelete(context.Background(), tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
