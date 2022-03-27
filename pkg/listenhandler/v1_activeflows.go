@@ -12,9 +12,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
 )
 
-// v1ActiveFlowsPost handles /v1/active-flows POST request
+// v1ActiveflowsPost handles /v1/activeflows POST request
 // creates a new activeflow with given data.
-func (h *listenHandler) v1ActiveFlowsPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
 	var reqData request.V1DataActiveFlowsPost
@@ -45,12 +45,50 @@ func (h *listenHandler) v1ActiveFlowsPost(req *rabbitmqhandler.Request) (*rabbit
 	return res, nil
 }
 
-// v1ActiveFlowsIDNextGet handles
-// /v1/active-flows/{id}/next GET
-func (h *listenHandler) v1ActiveFlowsIDNextGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// v1ActiveflowsIDDelete handles
+// /v1/activeflows/{id} DELETE
+func (h *listenHandler) v1ActiveflowsIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
-	// "/v1/active-flows/be2692f8-066a-11eb-847f-1b4de696fafb/next"
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb"
+	tmpVals := strings.Split(req.URI, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1ActiveflowsIDDelete",
+			"id":   id,
+		},
+	)
+	log.Debug("Executing v1ActiveflowsIDDelete.")
+
+	tmp, err := h.activeflowHandler.Delete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete activeflow. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1ActiveflowsIDNextGet handles
+// /v1/activeflows/{id}/next GET
+func (h *listenHandler) v1ActiveflowsIDNextGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/next"
 	tmpVals := strings.Split(req.URI, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
 
@@ -80,12 +118,12 @@ func (h *listenHandler) v1ActiveFlowsIDNextGet(req *rabbitmqhandler.Request) (*r
 	return res, nil
 }
 
-// v1ActiveFlowsIDForwardActionIDPut handles
-// /v1/active-flows/{id}/forward_action_id PUT
-func (h *listenHandler) v1ActiveFlowsIDForwardActionIDPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// v1ActiveflowsIDForwardActionIDPut handles
+// /v1/activeflows/{id}/forward_action_id PUT
+func (h *listenHandler) v1ActiveflowsIDForwardActionIDPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
-	// "/v1/active-flows/be2692f8-066a-11eb-847f-1b4de696fafb/forward_action_id"
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/forward_action_id"
 	tmpVals := strings.Split(req.URI, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
 
@@ -117,12 +155,12 @@ func (h *listenHandler) v1ActiveFlowsIDForwardActionIDPut(req *rabbitmqhandler.R
 	return res, nil
 }
 
-// v1ActiveFlowsIDExecutePost handles
-// /v1/active-flows/{id}/execute Post
-func (h *listenHandler) v1ActiveFlowsIDExecutePost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// v1ActiveflowsIDExecutePost handles
+// /v1/activeflows/{id}/execute Post
+func (h *listenHandler) v1ActiveflowsIDExecutePost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	ctx := context.Background()
 
-	// "/v1/active-flows/be2692f8-066a-11eb-847f-1b4de696fafb/execute"
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/execute"
 	tmpVals := strings.Split(req.URI, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
 	log := logrus.WithFields(

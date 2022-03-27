@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
-func TestV1ActiveFlowsPost(t *testing.T) {
+func Test_V1ActiveflowsPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -43,7 +43,7 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows",
+				URI:      "/v1/activeflows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
@@ -92,7 +92,7 @@ func TestV1ActiveFlowsPost(t *testing.T) {
 	}
 }
 
-func TestV1ActiveFlowsIDNextGet(t *testing.T) {
+func TestV1ActiveflowsIDNextGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -116,7 +116,7 @@ func TestV1ActiveFlowsIDNextGet(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows/cec5b926-06a7-11eb-967e-fb463343f0a5/next",
+				URI:      "/v1/activeflows/cec5b926-06a7-11eb-967e-fb463343f0a5/next",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"current_action_id": "6a1ce642-06a8-11eb-a632-978be835f982"}`),
@@ -145,7 +145,7 @@ func TestV1ActiveFlowsIDNextGet(t *testing.T) {
 	}
 }
 
-func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
+func TestV1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -169,7 +169,7 @@ func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
+				URI:      "/v1/activeflows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": true}`),
@@ -181,7 +181,7 @@ func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
 		{
 			"forward now false",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
+				URI:      "/v1/activeflows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": false}`),
@@ -207,7 +207,7 @@ func TestV1ActiveFlowsIDForwardActionIDPut(t *testing.T) {
 	}
 }
 
-func Test_v1ActiveFlowsIDExecutePost(t *testing.T) {
+func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -232,7 +232,7 @@ func Test_v1ActiveFlowsIDExecutePost(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/active-flows/07c60d7c-a7ae-11ec-ad69-c3e765668a2b/execute",
+				URI:      "/v1/activeflows/07c60d7c-a7ae-11ec-ad69-c3e765668a2b/execute",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 			},
@@ -255,6 +255,65 @@ func Test_v1ActiveFlowsIDExecutePost(t *testing.T) {
 			}
 
 			time.Sleep(100 * time.Millisecond)
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_v1ActiveflowsIDDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:        mockSock,
+		flowHandler:       mockFlowHandler,
+		activeflowHandler: mockActive,
+	}
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		activeflowID   uuid.UUID
+		responseDelete *activeflow.Activeflow
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/activeflows/4356d70a-adde-11ec-bff4-9fc5420b5bcb",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("4356d70a-adde-11ec-bff4-9fc5420b5bcb"),
+			&activeflow.Activeflow{
+				ID: uuid.FromStringOrNil("4356d70a-adde-11ec-bff4-9fc5420b5bcb"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"4356d70a-adde-11ec-bff4-9fc5420b5bcb","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"execute_count":0,"forward_action_id":"00000000-0000-0000-0000-000000000000","actions":null,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockActive.EXPECT().Delete(gomock.Any(), tt.activeflowID).Return(tt.responseDelete, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)

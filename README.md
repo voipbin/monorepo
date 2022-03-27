@@ -79,14 +79,14 @@ RPC response
 
 # Restful APIs
 
-## /active-flows POST
-Creates a new active-flow.
+## /activeflows POST
+Creates a new activeflow.
 
 ### example
 ```
 request
 {
-  "uri": "/v1/active-flows",
+  "uri": "/v1/activeflows",
   "method": "POST",
   "data_type": "application/json"
   "data": {"call_id": "1eb4ed62-05ef-11eb-9354-eb6fe8497be5", "flow_id": "2f68edd4-05ef-11eb-8beb-0f9f9c21b69c"}
@@ -98,14 +98,14 @@ response
 }
 ```
 
-## /active-flows/<call-id>/next GET
-Returns next action of the given call-id.
+## /activeflows/<id>/next GET
+Returns next action of the given activeflow.
 
 ### example
 ```
 request
 {
-  "uri": "/v1/active-flows/cec5b926-06a7-11eb-967e-fb463343f0a5/next",
+  "uri": "/v1/activeflows/cec5b926-06a7-11eb-967e-fb463343f0a5/next",
   "method": "GET",
   "data_type": "application/json"
   "data": {"current_action_id": "6a1ce642-06a8-11eb-a632-978be835f982"}
