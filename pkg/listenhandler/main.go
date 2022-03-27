@@ -35,10 +35,11 @@ var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// activeflows
-	regV1ActiveFlows                  = regexp.MustCompile("/v1/active-flows$")
-	regV1ActiveFlowsIDExecute         = regexp.MustCompile("/v1/active-flows/" + regUUID + "/execute$")
-	regV1ActiveFlowsIDNext            = regexp.MustCompile("/v1/active-flows/" + regUUID + "/next$")
-	regV1ActiveFlowsIDForwardActionID = regexp.MustCompile("/v1/active-flows/" + regUUID + "/forward_action_id$")
+	regV1Activeflows                  = regexp.MustCompile("/v1/activeflows$")
+	regV1ActiveflowsID                = regexp.MustCompile("/v1/activeflows/" + regUUID + "$")
+	regV1ActiveflowsIDExecute         = regexp.MustCompile("/v1/activeflows/" + regUUID + "/execute$")
+	regV1ActiveflowsIDNext            = regexp.MustCompile("/v1/activeflows/" + regUUID + "/next$")
+	regV1ActiveflowsIDForwardActionID = regexp.MustCompile("/v1/activeflows/" + regUUID + "/forward_action_id$")
 
 	// flows
 	regV1FlowsGet         = regexp.MustCompile(`/v1/flows\?`)
@@ -148,22 +149,26 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	switch {
 
 	// v1
-	// active-flows
-	case regV1ActiveFlows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		requestType = "/active-flows"
-		response, err = h.v1ActiveFlowsPost(m)
+	// activeflows
+	case regV1Activeflows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/activeflows"
+		response, err = h.v1ActiveflowsPost(m)
 
-	case regV1ActiveFlowsIDNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		requestType = "/active-flows"
-		response, err = h.v1ActiveFlowsIDNextGet(m)
+	case regV1ActiveflowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/activeflows"
+		response, err = h.v1ActiveflowsIDDelete(m)
 
-	case regV1ActiveFlowsIDForwardActionID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		requestType = "/active-flows"
-		response, err = h.v1ActiveFlowsIDForwardActionIDPut(m)
+	case regV1ActiveflowsIDNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/activeflows"
+		response, err = h.v1ActiveflowsIDNextGet(m)
 
-	case regV1ActiveFlowsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		requestType = "/active-flows/execute"
-		response, err = h.v1ActiveFlowsIDExecutePost(m)
+	case regV1ActiveflowsIDForwardActionID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/activeflows"
+		response, err = h.v1ActiveflowsIDForwardActionIDPut(m)
+
+	case regV1ActiveflowsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/activeflows/execute"
+		response, err = h.v1ActiveflowsIDExecutePost(m)
 
 	// flows
 	case regV1Flows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:

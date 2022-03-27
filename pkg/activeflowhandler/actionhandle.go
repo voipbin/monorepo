@@ -594,7 +594,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, id uuid.U
 	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, q.ID, qmqueuecall.ReferenceTypeCall, id, exitActionID)
 	if err != nil {
 		log.WithField("exit_action_id", exitActionID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
-		errForward := h.reqHandler.FMV1ActvieFlowUpdateForwardActionID(ctx, id, exitActionID, true)
+		errForward := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, id, exitActionID, true)
 		if errForward != nil {
 			log.Errorf("Could not forward the active flow. err: %v", errForward)
 		}
