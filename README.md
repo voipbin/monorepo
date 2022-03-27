@@ -12,6 +12,14 @@ $ cd bin-manager
 $ alembic -c alembic.ini revision -m "<your change title>"
 ```
 
+# Run
+Need a connection to the VPN.
+
+```
+$ cd bin-manager
+$ alembic -c alembic.ini upgrade head
+```
+
 # Rollback
 Rollback the database change.
 
@@ -23,14 +31,6 @@ Run one of the below.
 ```
 $ alembic -c alembic.ini downgrade -1
 $ alembic -c alembic.ini downgrade ae1027a6acf
-```
-
-# Run
-Need a connection to the VPN.
-
-```
-$ cd bin-manager
-$ alembic -c alembic.ini upgrade head
 ```
 
 # Status check
