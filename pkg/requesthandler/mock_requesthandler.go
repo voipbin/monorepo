@@ -1161,10 +1161,10 @@ func (mr *MockRequestHandlerMockRecorder) FMV1ActiveFlowExecute(ctx, activeflowI
 }
 
 // FMV1ActvieFlowCreate mocks base method.
-func (m *MockRequestHandler) FMV1ActvieFlowCreate(ctx context.Context, flowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID) (*activeflow.ActiveFlow, error) {
+func (m *MockRequestHandler) FMV1ActvieFlowCreate(ctx context.Context, flowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FMV1ActvieFlowCreate", ctx, flowID, referenceType, referenceID)
-	ret0, _ := ret[0].(*activeflow.ActiveFlow)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -14,7 +14,7 @@ import (
 )
 
 // FMV1ActvieFlowCreate creates a new active-flow.
-func (r *requestHandler) FMV1ActvieFlowCreate(ctx context.Context, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.ActiveFlow, error) {
+func (r *requestHandler) FMV1ActvieFlowCreate(ctx context.Context, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error) {
 
 	uri := "/v1/active-flows"
 
@@ -36,7 +36,7 @@ func (r *requestHandler) FMV1ActvieFlowCreate(ctx context.Context, flowID uuid.U
 		return nil, fmt.Errorf("could not get next action")
 	}
 
-	var af fmactiveflow.ActiveFlow
+	var af fmactiveflow.Activeflow
 	if err := json.Unmarshal([]byte(res.Data), &af); err != nil {
 		return nil, err
 	}
