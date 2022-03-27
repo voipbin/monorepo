@@ -102,7 +102,7 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 }
 
 // executeMessageFlow executes the given number's messageflow with message.
-func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Message, num *nmnumber.Number) (*fmactiveflow.ActiveFlow, error) {
+func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Message, num *nmnumber.Number) (*fmactiveflow.Activeflow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":       "executeMessageFlow",
@@ -117,14 +117,14 @@ func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Mess
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, m.ID)
+	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, m.ID)
 	if err != nil {
 		log.Errorf("Could not create an activeflow. err: %v", err)
 		return nil, err
 	}
 	log.WithField("activeflow", af).Debugf("Created activeflow. activeflow_id: %s", af.ID)
 
-	if errExecute := h.reqHandler.FMV1ActiveFlowExecute(ctx, af.ID); errExecute != nil {
+	if errExecute := h.reqHandler.FMV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
 		log.Errorf("Could not execute the activeflow. err: %v", errExecute)
 		return nil, errExecute
 	}

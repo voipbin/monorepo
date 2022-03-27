@@ -150,7 +150,7 @@ func Test_executeMessageFlow(t *testing.T) {
 		m   *message.Message
 		num *nmnumber.Number
 
-		expectRes *fmactiveflow.ActiveFlow
+		expectRes *fmactiveflow.Activeflow
 	}{
 		{
 			"normal",
@@ -163,7 +163,7 @@ func Test_executeMessageFlow(t *testing.T) {
 				MessageFlowID: uuid.FromStringOrNil("275a692a-a8b8-11ec-9de7-d39f5b03faec"),
 			},
 
-			&fmactiveflow.ActiveFlow{
+			&fmactiveflow.Activeflow{
 				ID: uuid.FromStringOrNil("64447c9a-a8b8-11ec-a544-0b44fb74dc28"),
 			},
 		},
@@ -173,8 +173,8 @@ func Test_executeMessageFlow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1ActvieFlowCreate(ctx, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.m.ID).Return(tt.expectRes, nil)
-			mockReq.EXPECT().FMV1ActiveFlowExecute(ctx, tt.expectRes.ID).Return(nil)
+			mockReq.EXPECT().FMV1ActiveflowCreate(ctx, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.m.ID).Return(tt.expectRes, nil)
+			mockReq.EXPECT().FMV1ActiveflowExecute(ctx, tt.expectRes.ID).Return(nil)
 
 			res, err := h.executeMessageFlow(ctx, tt.m, tt.num)
 			if err != nil {
