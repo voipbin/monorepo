@@ -29,10 +29,6 @@ type flowHandler struct {
 type FlowHandler interface {
 	ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error)
 
-	// ActiveFlowCreate(ctx context.Context, callID, flowID uuid.UUID) (*activeflow.ActiveFlow, error)
-	// ActiveFlowNextActionGet(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
-	// ActiveFlowSetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
-
 	FlowCreate(
 		ctx context.Context,
 		customerID uuid.UUID,

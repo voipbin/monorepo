@@ -24,7 +24,7 @@ func (h *listenHandler) v1ActiveFlowsPost(req *rabbitmqhandler.Request) (*rabbit
 	}
 
 	// create active flow
-	resActiveFlow, err := h.activeflowHandler.ActiveFlowCreate(ctx, reqData.ReferenceType, reqData.ReferenceID, reqData.FlowID)
+	resActiveFlow, err := h.activeflowHandler.Create(ctx, reqData.ReferenceType, reqData.ReferenceID, reqData.FlowID)
 	if err != nil {
 		logrus.Errorf("Could not create a new active flow. err: %v", err)
 		return nil, err
@@ -60,7 +60,7 @@ func (h *listenHandler) v1ActiveFlowsIDNextGet(req *rabbitmqhandler.Request) (*r
 		return nil, err
 	}
 
-	resAction, err := h.activeflowHandler.ActiveFlowNextActionGet(ctx, id, reqData.CurrentActionID)
+	resAction, err := h.activeflowHandler.GetNextAction(ctx, id, reqData.CurrentActionID)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (h *listenHandler) v1ActiveFlowsIDForwardActionIDPut(req *rabbitmqhandler.R
 	)
 	log.Debug("Executing v1ActiveFlowsIDForwardActionIDPut.")
 
-	if err := h.activeflowHandler.ActiveFlowSetForwardActionID(ctx, id, reqData.ForwardActionID, reqData.ForwardNow); err != nil {
+	if err := h.activeflowHandler.SetForwardActionID(ctx, id, reqData.ForwardActionID, reqData.ForwardNow); err != nil {
 		log.Errorf("Could not set the forward action id. err: %v", err)
 		return nil, err
 	}

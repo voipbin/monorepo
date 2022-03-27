@@ -35,7 +35,7 @@ func TestActiveFlowCreate(t *testing.T) {
 
 		refereceType activeflow.ReferenceType
 		referenceID  uuid.UUID
-		expectActive *activeflow.ActiveFlow
+		expectActive *activeflow.Activeflow
 	}{
 		{
 			"normal",
@@ -46,7 +46,7 @@ func TestActiveFlowCreate(t *testing.T) {
 
 			activeflow.ReferenceTypeCall,
 			uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID:            uuid.FromStringOrNil("32808a7c-a7a1-11ec-8de8-2331c11da2e8"),
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
@@ -67,11 +67,11 @@ func TestActiveFlowCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
-			mockDB.EXPECT().ActiveFlowCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), gomock.Any()).Return(tt.expectActive, nil)
+			mockDB.EXPECT().ActiveflowCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(gomock.Any(), gomock.Any()).Return(tt.expectActive, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectActive.CustomerID, activeflow.EventTypeActiveFlowCreated, tt.expectActive)
 
-			res, err := h.ActiveFlowCreate(ctx, tt.refereceType, tt.referenceID, tt.flow.ID)
+			res, err := h.Create(ctx, tt.refereceType, tt.referenceID, tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -113,9 +113,9 @@ func TestActiveFlowUpdateCurrentAction(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&activeflow.ActiveFlow{}, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&activeflow.ActiveFlow{}, nil)
+			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&activeflow.Activeflow{}, nil)
+			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&activeflow.Activeflow{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), activeflow.EventTypeActiveFlowUpdated, gomock.Any())
 			_, err := h.updateCurrentAction(ctx, tt.callID, tt.act)
 			if err != nil {
@@ -125,7 +125,7 @@ func TestActiveFlowUpdateCurrentAction(t *testing.T) {
 	}
 }
 
-func TestActiveFlowNextActionGet(t *testing.T) {
+func Test_GetNextAction(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -141,16 +141,16 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		callID       uuid.UUID
+		id           uuid.UUID
 		actionID     uuid.UUID
-		af           *activeflow.ActiveFlow
+		af           *activeflow.Activeflow
 		expectAction action.Action
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
 			uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
 					Type: action.TypeAnswer,
@@ -173,26 +173,10 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 			},
 		},
 		{
-			"empty actions",
-			uuid.FromStringOrNil("085f48fc-08a4-11eb-8ef3-675e25cbc25c"),
-			action.IDStart,
-			&activeflow.ActiveFlow{
-				CurrentAction: action.Action{
-					ID: action.IDStart,
-				},
-				ForwardActionID: action.IDEmpty,
-				Actions:         []action.Action{},
-			},
-			action.Action{
-				ID:   action.IDFinish,
-				Type: action.TypeHangup,
-			},
-		},
-		{
 			"current id start",
 			uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
 			action.IDStart,
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -217,7 +201,7 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 			"move action id has set",
 			uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
 			uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
 				},
@@ -251,25 +235,71 @@ func TestActiveFlowNextActionGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(tt.af, nil).AnyTimes()
+			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.id).Return(tt.af, nil).AnyTimes()
 
-			if len(tt.af.Actions) == 0 {
-				mockAction.EXPECT().CreateActionHangup().Return(&action.Action{
-					ID:   action.IDFinish,
-					Type: action.TypeHangup,
-				})
-			}
-
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.af.CustomerID, activeflow.EventTypeActiveFlowUpdated, tt.af)
 
-			act, err := h.ActiveFlowNextActionGet(ctx, tt.callID, tt.actionID)
+			act, err := h.GetNextAction(ctx, tt.id, tt.actionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if act.ID != tt.expectAction.ID || act.Type != tt.expectAction.Type {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectAction, act)
+			}
+		})
+	}
+}
+
+func Test_GetNextActionError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+
+	h := &activeflowHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		actionHandler: mockAction,
+	}
+
+	tests := []struct {
+		name     string
+		id       uuid.UUID
+		actionID uuid.UUID
+		af       *activeflow.Activeflow
+	}{
+		{
+			"empty actions",
+			uuid.FromStringOrNil("085f48fc-08a4-11eb-8ef3-675e25cbc25c"),
+			action.IDStart,
+			&activeflow.Activeflow{
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				ForwardActionID: action.IDEmpty,
+				Actions:         []action.Action{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.id).Return(tt.af, nil)
+
+			if len(tt.af.Actions) == 0 {
+				mockDB.EXPECT().ActiveflowDelete(ctx, tt.id).Return(nil)
+				mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.af, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.af.CustomerID, activeflow.EventTypeActiveFlowDeleted, tt.af)
+			}
+
+			_, err := h.GetNextAction(ctx, tt.id, tt.actionID)
+			if err == nil {
+				t.Error("Wrong match. expect: err, got: ok")
 			}
 		})
 	}
@@ -293,13 +323,13 @@ func Test_getNextAction(t *testing.T) {
 	tests := []struct {
 		name         string
 		callID       uuid.UUID
-		af           activeflow.ActiveFlow
+		af           activeflow.Activeflow
 		expectAction action.Action
 	}{
 		{
 			"next action echo",
 			uuid.FromStringOrNil("f96b5730-0c24-11eb-89ff-af22fc6e8dce"),
-			activeflow.ActiveFlow{
+			activeflow.Activeflow{
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("005a71ac-0c25-11eb-b9ba-ffa78e01ffc9"),
@@ -325,25 +355,9 @@ func Test_getNextAction(t *testing.T) {
 			},
 		},
 		{
-			"empty actions",
-			uuid.FromStringOrNil("44413184-0c26-11eb-83a9-974d19b06d35"),
-			activeflow.ActiveFlow{
-				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
-				CurrentAction: action.Action{
-					ID: action.IDStart,
-				},
-				ForwardActionID: action.IDEmpty,
-			},
-			action.Action{
-				ID:     action.IDFinish,
-				Type:   action.TypeHangup,
-				Option: []byte(`{}`),
-			},
-		},
-		{
 			"forwrad action id has set",
 			uuid.FromStringOrNil("44413184-0c26-11eb-83a9-974d19b06d35"),
-			activeflow.ActiveFlow{
+			activeflow.Activeflow{
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("15d7d942-574d-11ec-9e99-2fa8e28a2590"),
@@ -373,7 +387,7 @@ func Test_getNextAction(t *testing.T) {
 		{
 			"next id has set",
 			uuid.FromStringOrNil("e83a9588-9851-11ec-b987-07ce29329c80"),
-			activeflow.ActiveFlow{
+			activeflow.Activeflow{
 				ForwardActionID: action.IDEmpty,
 				CustomerID:      uuid.FromStringOrNil("e869c452-9851-11ec-aa4c-fbddf1193904"),
 				CurrentAction: action.Action{
@@ -405,15 +419,7 @@ func Test_getNextAction(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveFlowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
-
-			if len(tt.af.Actions) == 0 {
-				mockAction.EXPECT().CreateActionHangup().Return(&action.Action{
-					ID:     action.IDFinish,
-					Type:   action.TypeHangup,
-					Option: []byte(`{}`),
-				})
-			}
+			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
 
 			act, err := h.getNextAction(ctx, tt.callID, tt.af.CurrentAction.ID)
 			if err != nil {
@@ -422,6 +428,58 @@ func Test_getNextAction(t *testing.T) {
 
 			if reflect.DeepEqual(act, &tt.expectAction) != true {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectAction, act)
+			}
+		})
+	}
+}
+
+func Test_getNextActionError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+
+		actionHandler: mockAction,
+	}
+
+	tests := []struct {
+		name         string
+		callID       uuid.UUID
+		af           activeflow.Activeflow
+		expectAction action.Action
+	}{
+		{
+			"empty actions",
+			uuid.FromStringOrNil("44413184-0c26-11eb-83a9-974d19b06d35"),
+			activeflow.Activeflow{
+				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				ForwardActionID: action.IDEmpty,
+			},
+			action.Action{
+				ID:     action.IDFinish,
+				Type:   action.TypeHangup,
+				Option: []byte(`{}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
+
+			_, err := h.getNextAction(ctx, tt.callID, tt.af.CurrentAction.ID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
 			}
 		})
 	}

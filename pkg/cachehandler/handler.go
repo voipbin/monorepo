@@ -81,8 +81,8 @@ func (h *handler) FlowDel(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// ActiveFlowSet sets the activeflow info into the cache
-func (h *handler) ActiveFlowSet(ctx context.Context, af *activeflow.ActiveFlow) error {
+// ActiveflowSet sets the activeflow info into the cache
+func (h *handler) ActiveflowSet(ctx context.Context, af *activeflow.Activeflow) error {
 	key := fmt.Sprintf("activeflow:%s", af.ID)
 
 	if err := h.setSerialize(ctx, key, af); err != nil {
@@ -92,11 +92,11 @@ func (h *handler) ActiveFlowSet(ctx context.Context, af *activeflow.ActiveFlow) 
 	return nil
 }
 
-// ActiveFlowGet returns cached activeflow info
-func (h *handler) ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error) {
+// ActiveflowGet returns cached activeflow info
+func (h *handler) ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
 	key := fmt.Sprintf("activeflow:%s", id)
 
-	var res activeflow.ActiveFlow
+	var res activeflow.Activeflow
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}

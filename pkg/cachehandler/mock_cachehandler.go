@@ -37,33 +37,33 @@ func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
 }
 
-// ActiveFlowGet mocks base method.
-func (m *MockCacheHandler) ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error) {
+// ActiveflowGet mocks base method.
+func (m *MockCacheHandler) ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveFlowGet", ctx, id)
-	ret0, _ := ret[0].(*activeflow.ActiveFlow)
+	ret := m.ctrl.Call(m, "ActiveflowGet", ctx, id)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ActiveFlowGet indicates an expected call of ActiveFlowGet.
-func (mr *MockCacheHandlerMockRecorder) ActiveFlowGet(ctx, id interface{}) *gomock.Call {
+// ActiveflowGet indicates an expected call of ActiveflowGet.
+func (mr *MockCacheHandlerMockRecorder) ActiveflowGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowGet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveFlowGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveflowGet), ctx, id)
 }
 
-// ActiveFlowSet mocks base method.
-func (m *MockCacheHandler) ActiveFlowSet(ctx context.Context, cf *activeflow.ActiveFlow) error {
+// ActiveflowSet mocks base method.
+func (m *MockCacheHandler) ActiveflowSet(ctx context.Context, cf *activeflow.Activeflow) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveFlowSet", ctx, cf)
+	ret := m.ctrl.Call(m, "ActiveflowSet", ctx, cf)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ActiveFlowSet indicates an expected call of ActiveFlowSet.
-func (mr *MockCacheHandlerMockRecorder) ActiveFlowSet(ctx, cf interface{}) *gomock.Call {
+// ActiveflowSet indicates an expected call of ActiveflowSet.
+func (mr *MockCacheHandlerMockRecorder) ActiveflowSet(ctx, cf interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowSet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveFlowSet), ctx, cf)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowSet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveflowSet), ctx, cf)
 }
 
 // Connect mocks base method.

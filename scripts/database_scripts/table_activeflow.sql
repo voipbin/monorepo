@@ -1,0 +1,27 @@
+create table activeflows(
+  -- identity
+  id          binary(16),
+  customer_id binary(16),
+  flow_id     binary(16),
+
+  reference_type  varchar(255),
+  reference_id    binary(16),
+
+  current_action        json,
+  execute_count         integer,
+  forward_action_id     binary(16),
+
+  actions           json,
+  executed_actions  json,
+
+  -- timestamps
+  tm_create datetime(6),  -- create
+  tm_update datetime(6),  -- update
+  tm_delete datetime(6),  -- delete
+
+  primary key(id)
+);
+
+create index idx_activeflows_customer_id on activeflows(customer_id);
+create index idx_activeflows_flow_id on activeflows(flow_id);
+create index idx_activeflows_reference_id on activeflows(reference_id);

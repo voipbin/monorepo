@@ -19,9 +19,11 @@ import (
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
-	ActiveFlowCreate(ctx context.Context, af *activeflow.ActiveFlow) error
-	ActiveFlowGet(ctx context.Context, id uuid.UUID) (*activeflow.ActiveFlow, error)
-	ActiveFlowSet(ctx context.Context, af *activeflow.ActiveFlow) error
+	ActiveflowCreate(ctx context.Context, af *activeflow.Activeflow) error
+	ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
+	ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error
+	ActiveflowDelete(ctx context.Context, id uuid.UUID) error
+	ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error)
 
 	FlowCreate(ctx context.Context, f *flow.Flow) error
 	FlowDelete(ctx context.Context, id uuid.UUID) error

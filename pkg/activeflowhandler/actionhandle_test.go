@@ -41,7 +41,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 	type test struct {
 		name   string
 		callID uuid.UUID
-		af     *activeflow.ActiveFlow
+		af     *activeflow.Activeflow
 
 		cf           *cfconference.Conference
 		responseFlow *flow.Flow
@@ -56,7 +56,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		{
 			"single destination",
 			uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
@@ -101,7 +101,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		{
 			"multiple destinations",
 			uuid.FromStringOrNil("cb4accf8-2710-11eb-8e49-e73409394bef"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
@@ -150,7 +150,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		{
 			"multiple unchained destinations",
 			uuid.FromStringOrNil("211a68fe-2712-11eb-ad71-97e2b1546a91"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
@@ -211,7 +211,7 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 			}
 
 			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, masterCallID, tt.source, tt.destinations).Return([]cmcall.Call{{ID: uuid.Nil}}, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), gomock.Any()).Return(nil)
 
 			if err := h.actionHandleConnect(ctx, tt.callID, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -283,8 +283,8 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 		callID uuid.UUID
 		act    *action.Action
 
-		activeFlow       *activeflow.ActiveFlow
-		updateActiveFlow *activeflow.ActiveFlow
+		activeFlow       *activeflow.Activeflow
+		updateActiveFlow *activeflow.Activeflow
 	}{
 		{
 			"normal",
@@ -294,7 +294,7 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 				Type:   action.TypeGoto,
 				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
 			},
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 					Type:   action.TypeGoto,
@@ -312,7 +312,7 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 					},
 				},
 			},
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
@@ -338,7 +338,7 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveFlowSet(ctx, tt.updateActiveFlow).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.updateActiveFlow).Return(nil)
 
 			if err := h.actionHandleGoto(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -365,9 +365,9 @@ func Test_activeFlowHandleActionGotoLoopOver(t *testing.T) {
 		callID uuid.UUID
 		act    *action.Action
 
-		activeFlow *activeflow.ActiveFlow
+		activeFlow *activeflow.Activeflow
 
-		expectActiveFlow *activeflow.ActiveFlow
+		expectActiveFlow *activeflow.Activeflow
 	}{
 		{
 			"normal",
@@ -377,7 +377,7 @@ func Test_activeFlowHandleActionGotoLoopOver(t *testing.T) {
 				Type:   action.TypeGoto,
 				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
 			},
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 					Type:   action.TypeGoto,
@@ -400,7 +400,7 @@ func Test_activeFlowHandleActionGotoLoopOver(t *testing.T) {
 				},
 			},
 
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
 					Type:   action.TypeGoto,
@@ -456,12 +456,12 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 		act     *action.Action
 		queueID uuid.UUID
 
-		activeFlow   *activeflow.ActiveFlow
+		activeFlow   *activeflow.Activeflow
 		queue        *qmqueue.Queue
 		queueFlow    *flow.Flow
 		exitActionID uuid.UUID
 
-		expectActiveFlow  *activeflow.ActiveFlow
+		expectActiveFlow  *activeflow.Activeflow
 		responseQueuecall *qmqueuecall.Queuecall
 	}{
 		{
@@ -474,7 +474,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			},
 			uuid.FromStringOrNil("bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"),
 
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
 					Type:   action.TypeQueueJoin,
@@ -510,7 +510,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			},
 			uuid.FromStringOrNil("cdd46f0e-6591-11ec-aff5-63bb1f2f2e5f"),
 
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("5de173bc-6592-11ec-bd97-bfe78cdda0f5"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
@@ -548,7 +548,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			},
 			uuid.FromStringOrNil("d28cb860-7691-11ec-b24f-a31daa9b0585"),
 
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
 					Type:   action.TypeQueueJoin,
@@ -585,7 +585,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			},
 			uuid.FromStringOrNil("d2b8883c-7691-11ec-a001-075712b96511"),
 
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
@@ -623,7 +623,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			mockReq.EXPECT().QMV1QueueCreateQueuecall(gomock.Any(), tt.queue.ID, gomock.Any(), tt.callID, tt.exitActionID).Return(tt.responseQueuecall, nil)
 			mockReq.EXPECT().FMV1FlowGet(ctx, tt.responseQueuecall.FlowID).Return(tt.queueFlow, nil)
 
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), tt.expectActiveFlow).Return(nil)
 			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.responseQueuecall.ID, 1000).Return(&qmqueuecall.Queuecall{}, nil)
 
 			if err := h.actionHandleQueueJoin(ctx, tt.callID, tt.activeFlow); err != nil {
@@ -652,16 +652,16 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 
 		callID     uuid.UUID
 		flowID     uuid.UUID
-		activeFlow *activeflow.ActiveFlow
+		activeFlow *activeflow.Activeflow
 
 		responseflow *flow.Flow
-		expectFlow   *activeflow.ActiveFlow
+		expectFlow   *activeflow.Activeflow
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 			uuid.FromStringOrNil("a1d247b4-3cbf-11ec-8d08-970ce7001aaa"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
 					Type:   action.TypePatchFlow,
@@ -692,7 +692,7 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 					},
 				},
 			},
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
@@ -719,7 +719,7 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 			"replace flow has 2 actions",
 			uuid.FromStringOrNil("3639f716-648f-11ec-ba9a-3fd10dbd241b"),
 			uuid.FromStringOrNil("36e14dae-648f-11ec-b947-6f91a363d29e"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
 					Type:   action.TypePatchFlow,
@@ -754,7 +754,7 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 					},
 				},
 			},
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
@@ -788,7 +788,7 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().FMV1FlowGet(ctx, tt.flowID).Return(tt.responseflow, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectFlow).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), tt.expectFlow).Return(nil)
 
 			if err := h.actionHandlePatchFlow(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -813,16 +813,16 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 		name string
 
 		callID         uuid.UUID
-		activeFlow     *activeflow.ActiveFlow
+		activeFlow     *activeflow.Activeflow
 		conference     *cfconference.Conference
 		conferenceFlow *flow.Flow
 
-		expectActiveFlow *activeflow.ActiveFlow
+		expectActiveFlow *activeflow.Activeflow
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
 					Type:   action.TypeConferenceJoin,
@@ -858,7 +858,7 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 				},
 			},
 
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
@@ -889,7 +889,7 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 
 			mockReq.EXPECT().CFV1ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
 			mockReq.EXPECT().FMV1FlowGet(ctx, tt.conference.FlowID).Return(tt.conferenceFlow, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), tt.expectActiveFlow).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), tt.expectActiveFlow).Return(nil)
 
 			if err := h.actionHandleConferenceJoin(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -920,7 +920,7 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 		act     *action.Action
 		agentID uuid.UUID
 
-		activeFlow         *activeflow.ActiveFlow
+		activeFlow         *activeflow.Activeflow
 		responseConference *cfconference.Conference
 		call               *cmcall.Call
 
@@ -937,7 +937,7 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 			},
 			uuid.FromStringOrNil("89593b12-53fc-11ec-9747-f7e71c3a8660"),
 
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("716f309c-53fc-11ec-bff3-df8c8ffa945f"),
 					Type:   action.TypeAgentCall,
@@ -985,7 +985,7 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 
 			mockReq.EXPECT().FMV1FlowCreate(ctx, tt.activeFlow.CustomerID, flow.TypeFlow, gomock.Any(), "", tt.expectReqActions, false).Return(tt.resoponseFlow, nil)
 			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), tt.agentID, &tt.call.Source, tt.resoponseFlow.ID, tt.callID).Return(&amagentdial.AgentDial{}, nil)
-			mockDB.EXPECT().ActiveFlowSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), gomock.Any()).Return(nil)
 
 			if err := h.actionHandleAgentCall(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1010,15 +1010,15 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 		name string
 
 		callID     uuid.UUID
-		activeFlow *activeflow.ActiveFlow
+		activeFlow *activeflow.Activeflow
 
 		responseDigits   string
-		expectActiveFlow *activeflow.ActiveFlow
+		expectActiveFlow *activeflow.Activeflow
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 					Type:   action.TypeBranch,
@@ -1042,7 +1042,7 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 			},
 
 			"1",
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
@@ -1069,7 +1069,7 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 		{
 			"use default",
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 					Type:   action.TypeBranch,
@@ -1093,7 +1093,7 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 			},
 
 			"",
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
@@ -1125,7 +1125,7 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 
 			mockReq.EXPECT().CMV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
 			mockReq.EXPECT().CMV1CallSetDigits(ctx, tt.callID, "").Return(nil)
-			mockDB.EXPECT().ActiveFlowSet(ctx, tt.expectActiveFlow).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveFlow).Return(nil)
 
 			if err := h.actionHandleBranch(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. exepct: ok, got: %v", err)
@@ -1151,13 +1151,13 @@ func Test_activeFlowHandleActionConditionCallDigits(t *testing.T) {
 		name string
 
 		callID         uuid.UUID
-		activeFlow     *activeflow.ActiveFlow
+		activeFlow     *activeflow.Activeflow
 		responseDigits string
 	}{
 		{
 			"length match",
 			uuid.FromStringOrNil("c2dbc228-92b4-11ec-8cc9-3358e0b8bbb5"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
 					Type:   action.TypeConditionCallDigits,
@@ -1180,7 +1180,7 @@ func Test_activeFlowHandleActionConditionCallDigits(t *testing.T) {
 		{
 			"key match",
 			uuid.FromStringOrNil("6ef04e44-92b5-11ec-a70a-1b80e125f020"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
 					Type:   action.TypeConditionCallDigits,
@@ -1231,15 +1231,15 @@ func Test_activeFlowHandleActionConditionCallDigitsFail(t *testing.T) {
 		name string
 
 		callID     uuid.UUID
-		activeFlow *activeflow.ActiveFlow
+		activeFlow *activeflow.Activeflow
 
 		responseDigits      string
-		expectReqActiveFlow *activeflow.ActiveFlow
+		expectReqActiveFlow *activeflow.Activeflow
 	}{
 		{
 			"length fail",
 			uuid.FromStringOrNil("c2dbc228-92b4-11ec-8cc9-3358e0b8bbb5"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
 					Type:   action.TypeConditionCallDigits,
@@ -1259,7 +1259,7 @@ func Test_activeFlowHandleActionConditionCallDigitsFail(t *testing.T) {
 			},
 
 			"1",
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("c37492fa-92b4-11ec-94a0-1bfcaf781964"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
@@ -1282,7 +1282,7 @@ func Test_activeFlowHandleActionConditionCallDigitsFail(t *testing.T) {
 		{
 			"key fail",
 			uuid.FromStringOrNil("6ef04e44-92b5-11ec-a70a-1b80e125f020"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
 					Type:   action.TypeConditionCallDigits,
@@ -1302,7 +1302,7 @@ func Test_activeFlowHandleActionConditionCallDigitsFail(t *testing.T) {
 			},
 
 			"123",
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("6f893f3c-92b5-11ec-9c9d-437fc938558b"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
@@ -1329,7 +1329,7 @@ func Test_activeFlowHandleActionConditionCallDigitsFail(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CMV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
-			mockDB.EXPECT().ActiveFlowSet(ctx, tt.expectReqActiveFlow).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectReqActiveFlow).Return(nil)
 
 			if err := h.actionHandleConditionCallDigits(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1354,14 +1354,14 @@ func Test_actionHandleConditionCallStatus(t *testing.T) {
 		name string
 
 		callID     uuid.UUID
-		activeFlow *activeflow.ActiveFlow
+		activeFlow *activeflow.Activeflow
 
 		responseCall *cmcall.Call
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("4980416e-9832-11ec-b189-5f96149e7ed8"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("49e01864-9832-11ec-a2de-8f0b27470613"),
 					Type:   action.TypeConditionCallStatus,
@@ -1420,15 +1420,15 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 		name string
 
 		callID     uuid.UUID
-		activeFlow *activeflow.ActiveFlow
+		activeFlow *activeflow.Activeflow
 
 		responseCall        *cmcall.Call
-		expectReqActiveFlow *activeflow.ActiveFlow
+		expectReqActiveFlow *activeflow.Activeflow
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("2a497210-9833-11ec-9c8c-6f81d7341b91"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
 					Type:   action.TypeConditionCallStatus,
@@ -1455,7 +1455,7 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 				ID:     uuid.FromStringOrNil("2a497210-9833-11ec-9c8c-6f81d7341b91"),
 				Status: cmcall.StatusProgressing,
 			},
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ForwardActionID: uuid.FromStringOrNil("2afd89c6-9833-11ec-8e96-37a807af7aa9"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
@@ -1486,7 +1486,7 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CMV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockDB.EXPECT().ActiveFlowSet(ctx, tt.expectReqActiveFlow)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectReqActiveFlow)
 
 			if err := h.actionHandleConditionCallStatus(ctx, tt.callID, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1511,7 +1511,7 @@ func Test_actionHandleMessageSend(t *testing.T) {
 		name string
 
 		callID     uuid.UUID
-		activeFlow *activeflow.ActiveFlow
+		activeFlow *activeflow.Activeflow
 
 		expectCustomerID   uuid.UUID
 		expectSource       *cmaddress.Address
@@ -1519,12 +1519,12 @@ func Test_actionHandleMessageSend(t *testing.T) {
 		expectText         string
 
 		responseCall        *cmcall.Call
-		expectReqActiveFlow *activeflow.ActiveFlow
+		expectReqActiveFlow *activeflow.Activeflow
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("4d496946-a2ce-11ec-a96e-eb9ac0dce8e7"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CustomerID: uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
@@ -1565,7 +1565,7 @@ func Test_actionHandleMessageSend(t *testing.T) {
 				ID:     uuid.FromStringOrNil("4d496946-a2ce-11ec-a96e-eb9ac0dce8e7"),
 				Status: cmcall.StatusProgressing,
 			},
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
 					Type:   action.TypeMessageSend,
@@ -1617,7 +1617,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 
 	type test struct {
 		name       string
-		activeflow *activeflow.ActiveFlow
+		activeflow *activeflow.Activeflow
 
 		callID     uuid.UUID
 		customerID uuid.UUID
@@ -1629,7 +1629,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 		{
 			"normal",
 
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CustomerID: uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
 			},
 
@@ -1669,7 +1669,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 
 	type test struct {
 		name       string
-		activeFlow *activeflow.ActiveFlow
+		activeFlow *activeflow.Activeflow
 
 		customerID    uuid.UUID
 		referenceID   uuid.UUID
@@ -1683,7 +1683,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				CustomerID: uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
 			},
 
@@ -1723,7 +1723,7 @@ func Test_actionHandleCall(t *testing.T) {
 	tests := []struct {
 		name         string
 		activeflowID uuid.UUID
-		af           *activeflow.ActiveFlow
+		af           *activeflow.Activeflow
 
 		source       *cmaddress.Address
 		destinations []cmaddress.Address
@@ -1737,7 +1737,7 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"single destination with flow id",
 			uuid.FromStringOrNil("7fb0af78-a942-11ec-8c60-67384864d90a"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("7fb0af78-a942-11ec-8c60-67384864d90a"),
 				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
 				CurrentAction: action.Action{
@@ -1778,7 +1778,7 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"2 destinations with flow id",
 			uuid.FromStringOrNil("fe7b3838-a941-11ec-b3d6-5337e9635d88"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("fe7b3838-a941-11ec-b3d6-5337e9635d88"),
 				CustomerID: uuid.FromStringOrNil("fea0d30e-a941-11ec-a38a-478b19a5dfd2"),
 				CurrentAction: action.Action{
@@ -1826,7 +1826,7 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"single destination with actions",
 			uuid.FromStringOrNil("38a78fec-a943-11ec-b279-c7b264a9d36a"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("38a78fec-a943-11ec-b279-c7b264a9d36a"),
 				CustomerID: uuid.FromStringOrNil("38d87102-a943-11ec-99aa-5fc910add207"),
 				CurrentAction: action.Action{
@@ -1877,7 +1877,7 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"2 destinations with actions",
 			uuid.FromStringOrNil("f3ddb5ca-a943-11ec-be88-ebdd9b1c7f1b"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("f3ddb5ca-a943-11ec-be88-ebdd9b1c7f1b"),
 				CustomerID: uuid.FromStringOrNil("f40e389e-a943-11ec-83a7-7f90e0c22e96"),
 				CurrentAction: action.Action{
@@ -1931,7 +1931,7 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"single destination with flow id and chained",
 			uuid.FromStringOrNil("ec55367a-a993-11ec-9eaf-3bd79ecebfdb"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID:            uuid.FromStringOrNil("ec55367a-a993-11ec-9eaf-3bd79ecebfdb"),
 				CustomerID:    uuid.FromStringOrNil("ec7e7e4a-a993-11ec-85a1-2f8c41cac00e"),
 				ReferenceType: activeflow.ReferenceTypeCall,
@@ -1974,7 +1974,7 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"single destination with flow id and chained but reference type is message",
 			uuid.FromStringOrNil("87a4f032-a996-11ec-b260-4b6f3f52e1c9"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID:            uuid.FromStringOrNil("87a4f032-a996-11ec-b260-4b6f3f52e1c9"),
 				CustomerID:    uuid.FromStringOrNil("87ede80a-a996-11ec-9086-d77d045a5f03"),
 				ReferenceType: activeflow.ReferenceTypeMessage,

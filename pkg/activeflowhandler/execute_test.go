@@ -31,20 +31,20 @@ func Test_Execute(t *testing.T) {
 
 		id uuid.UUID
 
-		responseActiveFlow *activeflow.ActiveFlow
+		responseActiveFlow *activeflow.Activeflow
 
 		flow *flow.Flow
 
 		refereceType activeflow.ReferenceType
 		referenceID  uuid.UUID
-		expectActive *activeflow.ActiveFlow
+		expectActive *activeflow.Activeflow
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("bef23280-a7ab-11ec-8e79-1b236556e34d"),
 
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID: uuid.FromStringOrNil("bef23280-a7ab-11ec-8e79-1b236556e34d"),
 				Actions: []action.Action{
 					{
@@ -64,7 +64,7 @@ func Test_Execute(t *testing.T) {
 
 			activeflow.ReferenceTypeCall,
 			uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
-			&activeflow.ActiveFlow{
+			&activeflow.Activeflow{
 				ID:            uuid.FromStringOrNil("32808a7c-a7a1-11ec-8de8-2331c11da2e8"),
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
@@ -84,8 +84,8 @@ func Test_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveFlowGet(ctx, tt.id).Return(tt.responseActiveFlow, nil).AnyTimes()
-			mockDB.EXPECT().ActiveFlowSet(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveFlow, nil).AnyTimes()
+			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseActiveFlow.CustomerID, activeflow.EventTypeActiveFlowUpdated, tt.responseActiveFlow)
 
 			if err := h.Execute(ctx, tt.id); err != nil {

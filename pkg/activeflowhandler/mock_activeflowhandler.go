@@ -37,48 +37,34 @@ func (m *MockActiveflowHandler) EXPECT() *MockActiveflowHandlerMockRecorder {
 	return m.recorder
 }
 
-// ActiveFlowCreate mocks base method.
-func (m *MockActiveflowHandler) ActiveFlowCreate(ctx context.Context, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.ActiveFlow, error) {
+// Create mocks base method.
+func (m *MockActiveflowHandler) Create(ctx context.Context, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveFlowCreate", ctx, referenceType, referenceID, flowID)
-	ret0, _ := ret[0].(*activeflow.ActiveFlow)
+	ret := m.ctrl.Call(m, "Create", ctx, referenceType, referenceID, flowID)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ActiveFlowCreate indicates an expected call of ActiveFlowCreate.
-func (mr *MockActiveflowHandlerMockRecorder) ActiveFlowCreate(ctx, referenceType, referenceID, flowID interface{}) *gomock.Call {
+// Create indicates an expected call of Create.
+func (mr *MockActiveflowHandlerMockRecorder) Create(ctx, referenceType, referenceID, flowID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowCreate", reflect.TypeOf((*MockActiveflowHandler)(nil).ActiveFlowCreate), ctx, referenceType, referenceID, flowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockActiveflowHandler)(nil).Create), ctx, referenceType, referenceID, flowID)
 }
 
-// ActiveFlowNextActionGet mocks base method.
-func (m *MockActiveflowHandler) ActiveFlowNextActionGet(ctx context.Context, callID, caID uuid.UUID) (*action.Action, error) {
+// Delete mocks base method.
+func (m *MockActiveflowHandler) Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveFlowNextActionGet", ctx, callID, caID)
-	ret0, _ := ret[0].(*action.Action)
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ActiveFlowNextActionGet indicates an expected call of ActiveFlowNextActionGet.
-func (mr *MockActiveflowHandlerMockRecorder) ActiveFlowNextActionGet(ctx, callID, caID interface{}) *gomock.Call {
+// Delete indicates an expected call of Delete.
+func (mr *MockActiveflowHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowNextActionGet", reflect.TypeOf((*MockActiveflowHandler)(nil).ActiveFlowNextActionGet), ctx, callID, caID)
-}
-
-// ActiveFlowSetForwardActionID mocks base method.
-func (m *MockActiveflowHandler) ActiveFlowSetForwardActionID(ctx context.Context, callID, actionID uuid.UUID, forwardNow bool) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveFlowSetForwardActionID", ctx, callID, actionID, forwardNow)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ActiveFlowSetForwardActionID indicates an expected call of ActiveFlowSetForwardActionID.
-func (mr *MockActiveflowHandlerMockRecorder) ActiveFlowSetForwardActionID(ctx, callID, actionID, forwardNow interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveFlowSetForwardActionID", reflect.TypeOf((*MockActiveflowHandler)(nil).ActiveFlowSetForwardActionID), ctx, callID, actionID, forwardNow)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockActiveflowHandler)(nil).Delete), ctx, id)
 }
 
 // Execute mocks base method.
@@ -93,4 +79,33 @@ func (m *MockActiveflowHandler) Execute(ctx context.Context, id uuid.UUID) error
 func (mr *MockActiveflowHandlerMockRecorder) Execute(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockActiveflowHandler)(nil).Execute), ctx, id)
+}
+
+// GetNextAction mocks base method.
+func (m *MockActiveflowHandler) GetNextAction(ctx context.Context, callID, caID uuid.UUID) (*action.Action, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNextAction", ctx, callID, caID)
+	ret0, _ := ret[0].(*action.Action)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNextAction indicates an expected call of GetNextAction.
+func (mr *MockActiveflowHandlerMockRecorder) GetNextAction(ctx, callID, caID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextAction", reflect.TypeOf((*MockActiveflowHandler)(nil).GetNextAction), ctx, callID, caID)
+}
+
+// SetForwardActionID mocks base method.
+func (m *MockActiveflowHandler) SetForwardActionID(ctx context.Context, callID, actionID uuid.UUID, forwardNow bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetForwardActionID", ctx, callID, actionID, forwardNow)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetForwardActionID indicates an expected call of SetForwardActionID.
+func (mr *MockActiveflowHandlerMockRecorder) SetForwardActionID(ctx, callID, actionID, forwardNow interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetForwardActionID", reflect.TypeOf((*MockActiveflowHandler)(nil).SetForwardActionID), ctx, callID, actionID, forwardNow)
 }

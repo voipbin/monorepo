@@ -29,7 +29,7 @@ type WebhookMessage struct {
 }
 
 // ConvertWebhookMessage converts to the event
-func (h *ActiveFlow) ConvertWebhookMessage() *WebhookMessage {
+func (h *Activeflow) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID: h.ID,
 
@@ -50,7 +50,7 @@ func (h *ActiveFlow) ConvertWebhookMessage() *WebhookMessage {
 }
 
 // CreateWebhookEvent generates the WebhookEvent
-func (h *ActiveFlow) CreateWebhookEvent() ([]byte, error) {
+func (h *Activeflow) CreateWebhookEvent() ([]byte, error) {
 	e := h.ConvertWebhookMessage()
 
 	m, err := json.Marshal(e)

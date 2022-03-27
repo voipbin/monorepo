@@ -9,12 +9,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
-// ActiveFlow struct
-type ActiveFlow struct {
+// Activeflow struct
+type Activeflow struct {
 	ID uuid.UUID `json:"id"`
 
-	FlowID     uuid.UUID `json:"flow_id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+	FlowID     uuid.UUID `json:"flow_id"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
@@ -43,8 +43,8 @@ const (
 
 // Matches return true if the given items are the same
 // Used in test
-func (a *ActiveFlow) Matches(x interface{}) bool {
-	comp := x.(*ActiveFlow)
+func (a *Activeflow) Matches(x interface{}) bool {
+	comp := x.(*Activeflow)
 	c := *a
 
 	c.TMCreate = comp.TMCreate
@@ -54,6 +54,6 @@ func (a *ActiveFlow) Matches(x interface{}) bool {
 	return reflect.DeepEqual(c, *comp)
 }
 
-func (a *ActiveFlow) String() string {
+func (a *Activeflow) String() string {
 	return fmt.Sprintf("%v", *a)
 }
