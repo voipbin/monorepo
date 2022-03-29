@@ -484,3 +484,185 @@ func Test_getNextActionError(t *testing.T) {
 		})
 	}
 }
+
+func Test_SetForwardActionID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+
+		actionHandler: mockAction,
+	}
+
+	tests := []struct {
+		name string
+
+		id         uuid.UUID
+		actionID   uuid.UUID
+		forwardNow bool
+
+		af                     *activeflow.Activeflow
+		expectUpdateActiveflow *activeflow.Activeflow
+	}{
+		{
+			"reference type call forward now true",
+
+			uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
+			uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
+			true,
+
+			&activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
+				CustomerID: uuid.FromStringOrNil("fcc49e18-af6c-11ec-9857-8bc5d3558dc9"),
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
+					Type: action.TypeAnswer,
+				},
+				ForwardActionID: action.IDEmpty,
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
+				CustomerID: uuid.FromStringOrNil("fcc49e18-af6c-11ec-9857-8bc5d3558dc9"),
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
+					Type: action.TypeAnswer,
+				},
+				ForwardActionID: uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+		{
+			"reference type call forward now false",
+
+			uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
+			uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
+			false,
+
+			&activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
+				CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
+					Type: action.TypeAnswer,
+				},
+				ForwardActionID: action.IDEmpty,
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
+				CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
+					Type: action.TypeAnswer,
+				},
+				ForwardActionID: uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+		{
+			"reference type message forward now true",
+
+			uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
+			uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
+			true,
+
+			&activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
+				CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
+					Type: action.TypeAnswer,
+				},
+				ForwardActionID: action.IDEmpty,
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
+				CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
+					Type: action.TypeAnswer,
+				},
+				ForwardActionID: uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
+						Type: action.TypeAnswer,
+					},
+					{
+						ID:   uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.af, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
+
+			if tt.forwardNow && tt.af.ReferenceType == activeflow.ReferenceTypeCall {
+				mockReq.EXPECT().CMV1CallActionNext(ctx, tt.af.ReferenceID, true).Return(nil)
+			}
+
+			if err := h.SetForwardActionID(ctx, tt.id, tt.actionID, tt.forwardNow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

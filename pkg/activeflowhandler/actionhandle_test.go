@@ -437,7 +437,7 @@ func Test_activeFlowHandleActionGotoLoopOver(t *testing.T) {
 	}
 }
 
-func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
+func Test_actionHandleQueueJoin(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -452,11 +452,11 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID  uuid.UUID
-		act     *action.Action
-		queueID uuid.UUID
+		activeflowID uuid.UUID
+		act          *action.Action
+		queueID      uuid.UUID
 
-		activeFlow   *activeflow.Activeflow
+		activeflow   *activeflow.Activeflow
 		queue        *qmqueue.Queue
 		queueFlow    *flow.Flow
 		exitActionID uuid.UUID
@@ -480,6 +480,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 					Type:   action.TypeQueueJoin,
 					Option: []byte(`{"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"}`),
 				},
+				ReferenceID: uuid.FromStringOrNil("3de1fb7a-adfb-11ec-8765-9bb130635c87"),
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
@@ -517,6 +518,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 					Type:   action.TypeQueueJoin,
 					Option: []byte(`{"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"}`),
 				},
+				ReferenceID: uuid.FromStringOrNil("3de1fb7a-adfb-11ec-8765-9bb130635c87"),
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("5de173bc-6592-11ec-bd97-bfe78cdda0f5"),
@@ -537,7 +539,6 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 				FlowID: uuid.FromStringOrNil("0f0a4864-6591-11ec-bc0e-db27e08ddec2"),
 			},
 		},
-
 		{
 			"timeout wait",
 			uuid.FromStringOrNil("d1cff4dc-7691-11ec-851a-5b3385e6cb03"),
@@ -554,6 +555,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 					Type:   action.TypeQueueJoin,
 					Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
 				},
+				ReferenceID: uuid.FromStringOrNil("9bd98a0e-adfb-11ec-8fa1-4b1e5a5964a7"),
 				Actions: []action.Action{
 					{
 						ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
@@ -592,6 +594,7 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 					Type:   action.TypeQueueJoin,
 					Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
 				},
+				ReferenceID: uuid.FromStringOrNil("9bd98a0e-adfb-11ec-8fa1-4b1e5a5964a7"),
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
@@ -620,13 +623,13 @@ func TestActiveFlowHandleActionQueueJoin(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
-			mockReq.EXPECT().QMV1QueueCreateQueuecall(gomock.Any(), tt.queue.ID, gomock.Any(), tt.callID, tt.exitActionID).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().QMV1QueueCreateQueuecall(gomock.Any(), tt.queue.ID, gomock.Any(), tt.activeflow.ReferenceID, tt.activeflow.ID, tt.exitActionID).Return(tt.responseQueuecall, nil)
 			mockReq.EXPECT().FMV1FlowGet(ctx, tt.responseQueuecall.FlowID).Return(tt.queueFlow, nil)
 
 			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), tt.expectActiveFlow).Return(nil)
 			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.responseQueuecall.ID, 1000).Return(&qmqueuecall.Queuecall{}, nil)
 
-			if err := h.actionHandleQueueJoin(ctx, tt.callID, tt.activeFlow); err != nil {
+			if err := h.actionHandleQueueJoin(ctx, tt.activeflowID, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

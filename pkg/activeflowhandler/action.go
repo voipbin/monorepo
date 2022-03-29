@@ -105,7 +105,7 @@ func (h *activeflowHandler) getExitActionID(actions []action.Action, actionID uu
 	}
 
 	if idx >= len(actions)-1 {
-		return uuid.Nil, fmt.Errorf("found no exit action")
+		return action.IDFinish, nil
 	}
 	return actions[idx+1].ID, nil
 }
