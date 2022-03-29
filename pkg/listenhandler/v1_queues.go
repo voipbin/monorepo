@@ -260,7 +260,7 @@ func (h *listenHandler) processV1QueuesIDQueuecallsPost(ctx context.Context, m *
 	log.Debug("Joining to the queue.")
 
 	// join to the queue
-	tmp, err := h.queueHandler.Join(ctx, id, queuecall.ReferenceType(req.ReferenceType), req.ReferenceID, req.ExitActionID)
+	tmp, err := h.queueHandler.Join(ctx, id, queuecall.ReferenceType(req.ReferenceType), req.ReferenceID, req.ReferenceActiveflowID, req.ExitActionID)
 	if err != nil {
 		log.Errorf("Could not joining to the queue. err: %v", err)
 		return simpleResponse(500), nil

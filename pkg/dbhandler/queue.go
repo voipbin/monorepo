@@ -27,9 +27,9 @@ const (
 		tag_ids,
 
 		wait_actions,
-		wait_queue_call_ids,
+		coalesce(wait_queue_call_ids, "[]"),
 		wait_timeout,
-		service_queue_call_ids,
+		coalesce(service_queue_call_ids, "[]"),
 		service_timeout,
 
 		total_incoming_count,

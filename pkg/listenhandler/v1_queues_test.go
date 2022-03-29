@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
-func TestProcessV1QueuesPost(t *testing.T) {
+func Test_processV1QueuesPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -104,7 +104,7 @@ func TestProcessV1QueuesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","customer_id":"442f5d62-7f55-11ec-a2c0-0bcd3814d515","name":"name","detail":"detail","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","customer_id":"442f5d62-7f55-11ec-a2c0-0bcd3814d515","name":"name","detail":"detail","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -425,10 +425,11 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 
 		request *rabbitmqhandler.Request
 
-		id            uuid.UUID
-		referenceType queuecall.ReferenceType
-		referenceID   uuid.UUID
-		exitActionID  uuid.UUID
+		id                   uuid.UUID
+		referenceType        queuecall.ReferenceType
+		referenceID          uuid.UUID
+		refereceActiveflowID uuid.UUID
+		exitActionID         uuid.UUID
 
 		queuecall *queuecall.Queuecall
 
@@ -440,12 +441,13 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 				URI:      "/v1/queues/4c898be8-5f6d-11ec-b701-a7ba1509a629/queuecalls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_type":"call","reference_id":"4cb489b0-5f6d-11ec-b2cd-cb4148c6e166","exit_action_id":"4cd9ff4c-5f6d-11ec-b627-7331d2464ba7"}`),
+				Data:     []byte(`{"reference_type":"call","reference_id":"4cb489b0-5f6d-11ec-b2cd-cb4148c6e166","reference_activeflow_id":"ce180fe2-af52-11ec-8eab-bb707f42a902","exit_action_id":"4cd9ff4c-5f6d-11ec-b627-7331d2464ba7"}`),
 			},
 
 			uuid.FromStringOrNil("4c898be8-5f6d-11ec-b701-a7ba1509a629"),
 			queuecall.ReferenceTypeCall,
 			uuid.FromStringOrNil("4cb489b0-5f6d-11ec-b2cd-cb4148c6e166"),
+			uuid.FromStringOrNil("ce180fe2-af52-11ec-8eab-bb707f42a902"),
 			uuid.FromStringOrNil("4cd9ff4c-5f6d-11ec-b627-7331d2464ba7"),
 
 			&queuecall.Queuecall{
@@ -455,7 +457,7 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a7261c56-5f6d-11ec-8d91-ff8f64486712","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a7261c56-5f6d-11ec-8d91-ff8f64486712","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -463,7 +465,7 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockQueue.EXPECT().Join(gomock.Any(), tt.id, tt.referenceType, tt.referenceID, tt.exitActionID).Return(tt.queuecall, nil)
+			mockQueue.EXPECT().Join(gomock.Any(), tt.id, tt.referenceType, tt.referenceID, tt.refereceActiveflowID, tt.exitActionID).Return(tt.queuecall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

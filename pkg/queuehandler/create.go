@@ -99,7 +99,7 @@ func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID
 		log.Errorf("Could not create actions. err: %v", err)
 		return nil, err
 	}
-	log.Debugf("Created flow actions. actions: %v", actions)
+	log.WithField("actions", actions).Debugf("Created queue flow actions. actions: %v", actions)
 
 	// create flow name
 	flowName := fmt.Sprintf("queue-%s", queueID.String())
@@ -115,7 +115,7 @@ func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID
 	return resFlow, nil
 }
 
-// createConferenceFlowActions creates the actions for conference join.
+// createQueueFlowActions creates the actions for queue join.
 func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, confbridgeID uuid.UUID) ([]fmaction.Action, error) {
 	log := logrus.New().WithFields(
 		logrus.Fields{
@@ -126,42 +126,39 @@ func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, con
 	res := []fmaction.Action{}
 
 	// append the wait actions
-	res = append(res, waitActions...)
-
-	// append the goto
-	{
-		option := fmaction.OptionGoto{
-			TargetIndex: 0,
-			Loop:        false,
-		}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			log.Errorf("Could not marshal the option. err: %v", err)
-			return nil, err
-		}
+	if len(waitActions) == 0 {
 		act := fmaction.Action{
-			Type:   fmaction.TypeGoto,
-			Option: opt,
+			ID:     uuid.Must(uuid.NewV4()),
+			Type:   fmaction.TypeSleep,
+			Option: []byte(`{"duration": 10000}`),
 		}
 		res = append(res, act)
+	} else {
+		for _, act := range waitActions {
+			if act.ID == uuid.Nil {
+				act.ID = uuid.Must(uuid.NewV4())
+			}
+			res = append(res, act)
+		}
 	}
+
+	// set next id for loop
+	res[len(res)-1].NextID = res[0].ID
 
 	// append the confbridge join
-	{
-		option := fmaction.OptionConfbridgeJoin{
-			ConfbridgeID: confbridgeID,
-		}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			log.Errorf("Could not marshal the option. err: %v", err)
-			return nil, err
-		}
-		act := fmaction.Action{
-			Type:   fmaction.TypeConfbridgeJoin,
-			Option: opt,
-		}
-		res = append(res, act)
+	option := fmaction.OptionConfbridgeJoin{
+		ConfbridgeID: confbridgeID,
 	}
+	opt, err := json.Marshal(option)
+	if err != nil {
+		log.Errorf("Could not marshal the option. err: %v", err)
+		return nil, err
+	}
+	act := fmaction.Action{
+		Type:   fmaction.TypeConfbridgeJoin,
+		Option: opt,
+	}
+	res = append(res, act)
 
 	return res, nil
 }

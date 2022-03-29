@@ -9,6 +9,7 @@ import (
 	"github.com/ttacon/libphonenumber"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -20,7 +21,7 @@ const (
 )
 
 // Join creates the new queuecall
-func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID uuid.UUID, exitActionID uuid.UUID) (*queuecall.Queuecall, error) {
+func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, exitActionID uuid.UUID) (*queuecall.Queuecall, error) {
 	log := logrus.New().WithFields(
 		logrus.Fields{
 			"func":     "Join",
@@ -48,14 +49,14 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		log.Errorf("Could not get reference info. err: %v", err)
 		return nil, fmt.Errorf("reference info not found")
 	}
-	log.WithField("call", c).Debug("Found call info.")
+	log.WithField("call", c).Debugf("Found call info.")
 
 	// get source
 	source := h.getSource(c)
-	log.WithField("source", source).Debug("Source address info.")
+	log.WithField("source", source).Debugf("Source address info.")
 
 	// create confbridge
-	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx)
+	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx, cmconfbridge.TypeConnect)
 	if err != nil {
 		log.Errorf("Could not create the confbridge. err: %v", err)
 		return nil, err
@@ -68,7 +69,7 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		return nil, err
 	}
 
-	// get flow target action id
+	// get forward action id
 	forwardActionID, err := h.getForwardActionID(ctx, f)
 	if err != nil {
 		log.Errorf("Could not get forward action id. err: %v", err)
@@ -82,6 +83,7 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		q.ID,
 		referenceType,
 		referenceID,
+		referenceActiveflowID,
 		f.ID,
 		forwardActionID,
 		exitActionID,

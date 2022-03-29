@@ -18,8 +18,10 @@ const (
 		id,
 		customer_id,
 		queue_id,
+
 		reference_type,
 		reference_id,
+		reference_activeflow_id,
 
 		flow_id,
 		forward_action_id,
@@ -56,8 +58,10 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 		&res.ID,
 		&res.CustomerID,
 		&res.QueueID,
+
 		&res.ReferenceType,
 		&res.ReferenceID,
+		&res.ReferenceActiveflowID,
 
 		&res.FlowID,
 		&res.ForwardActionID,
@@ -102,8 +106,10 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		id,
 		customer_id,
 		queue_id,
+
 		reference_type,
 		reference_id,
+		reference_activeflow_id,
 
 		flow_id,
 		forward_action_id,
@@ -125,7 +131,8 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?, ?, ?,
+		?, ?, ?,
+		?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?,
 		?, ?,
@@ -148,8 +155,10 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		a.ID.Bytes(),
 		a.CustomerID.Bytes(),
 		a.QueueID.Bytes(),
+
 		a.ReferenceType,
 		a.ReferenceID.Bytes(),
+		a.ReferenceActiveflowID.Bytes(),
 
 		a.FlowID.Bytes(),
 		a.ForwardActionID.Bytes(),
