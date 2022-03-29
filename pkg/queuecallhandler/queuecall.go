@@ -87,10 +87,11 @@ func (h *queuecallHandler) Create(
 	timeoutService int,
 ) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Create",
-		"queue_id":       queueID,
-		"reference_type": referenceType,
-		"reference_id":   referenceID,
+		"func":                    "Create",
+		"queue_id":                queueID,
+		"reference_type":          referenceType,
+		"reference_id":            referenceID,
+		"reference_activeflow_id": referenceActiveflowID,
 	})
 	log.Debug("Creating a new queuecall.")
 
@@ -99,11 +100,13 @@ func (h *queuecallHandler) Create(
 	log = log.WithField("queuecall_id", id)
 
 	c := &queuecall.Queuecall{
-		ID:            id,
-		CustomerID:    customerID,
-		QueueID:       queueID,
-		ReferenceType: referenceType,
-		ReferenceID:   referenceID,
+		ID:         id,
+		CustomerID: customerID,
+		QueueID:    queueID,
+
+		ReferenceType:         referenceType,
+		ReferenceID:           referenceID,
+		ReferenceActiveflowID: referenceActiveflowID,
 
 		FlowID:          flowID,
 		ForwardActionID: forwardActionID,
