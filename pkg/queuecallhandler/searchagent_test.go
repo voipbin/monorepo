@@ -19,7 +19,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
-func TestSearchAgent(t *testing.T) {
+func Test_SearchAgent(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -106,7 +106,7 @@ func TestSearchAgent(t *testing.T) {
 			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
 			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(&fmflow.Flow{}, nil)
 			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), gomock.Any(), &tt.queuecall.Source, gomock.Any(), tt.queuecall.ReferenceID).Return(&amagentdial.AgentDial{}, nil)
-			mockReq.EXPECT().FMV1ActvieFlowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceID, tt.queuecall.ForwardActionID, true).Return(nil)
+			mockReq.EXPECT().FMV1ActiveflowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceActiveflowID, tt.queuecall.ForwardActionID, true).Return(nil)
 			mockDB.EXPECT().QueuecallSetServiceAgentID(gomock.Any(), tt.queuecall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallEntering, tt.responseQueuecall)
@@ -297,7 +297,7 @@ func TestSearchAgentWithWrongRoutingMethod(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.queuecall, nil)
 			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.queuecall.CustomerID, tt.queuecall.TagIDs, amagent.StatusAvailable).Return(tt.agents, nil)
-			mockReq.EXPECT().FMV1ActvieFlowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceID, tt.queuecall.ExitActionID, true).Return(nil)
+			mockReq.EXPECT().FMV1ActiveflowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceID, tt.queuecall.ExitActionID, true).Return(nil)
 
 			h.SearchAgent(ctx, tt.queueCallID)
 		})

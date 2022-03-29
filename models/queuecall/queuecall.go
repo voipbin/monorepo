@@ -9,11 +9,13 @@ import (
 
 // Queuecall defines
 type Queuecall struct {
-	ID            uuid.UUID     `json:"id"`
-	CustomerID    uuid.UUID     `json:"customer_id"`
-	QueueID       uuid.UUID     `json:"queue_id"`
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	QueueID    uuid.UUID `json:"queue_id"`
+
+	ReferenceType         ReferenceType `json:"reference_type"`          // referenced resource's type.
+	ReferenceID           uuid.UUID     `json:"reference_id"`            // referenced resource's id.
+	ReferenceActiveflowID uuid.UUID     `json:"reference_activeflow_id"` // referenced resource's activeflow id
 
 	FlowID          uuid.UUID `json:"flow_id"`           // queuecall's queue flow id.
 	ForwardActionID uuid.UUID `json:"forward_action_id"` // action id for forward. This is for the confbridge_join's action id.

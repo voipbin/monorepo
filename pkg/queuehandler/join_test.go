@@ -22,7 +22,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
 
-func TestJoin(t *testing.T) {
+func Test_Join(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -43,10 +43,11 @@ func TestJoin(t *testing.T) {
 	tests := []struct {
 		name string
 
-		queueID       uuid.UUID
-		referenceType queuecall.ReferenceType
-		referenceID   uuid.UUID
-		exitActionID  uuid.UUID
+		queueID               uuid.UUID
+		referenceType         queuecall.ReferenceType
+		referenceID           uuid.UUID
+		referenceActiveflowID uuid.UUID
+		exitActionID          uuid.UUID
 
 		queue     *queue.Queue
 		call      *cmcall.Call
@@ -64,6 +65,7 @@ func TestJoin(t *testing.T) {
 			uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
 			queuecall.ReferenceTypeCall,
 			uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
+			uuid.FromStringOrNil("54c643d4-af52-11ec-9f56-5fc9cb76da44"),
 			uuid.FromStringOrNil("8f29be1e-60e9-11ec-8032-977e00b8b523"),
 
 			&queue.Queue{
@@ -112,7 +114,7 @@ func TestJoin(t *testing.T) {
 			mockDB.EXPECT().QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.referenceID).Return(tt.call, nil)
 
-			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any()).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any(), cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queue.CustomerID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(tt.responseFlow, nil)
 
 			var source cmaddress.Address
@@ -133,6 +135,7 @@ func TestJoin(t *testing.T) {
 				tt.queue.ID,
 				tt.referenceType,
 				tt.referenceID,
+				tt.referenceActiveflowID,
 				tt.responseFlow.ID,
 				forwardActionID,
 				tt.exitActionID,
@@ -149,7 +152,7 @@ func TestJoin(t *testing.T) {
 			mockDB.EXPECT().QueueGet(gomock.Any(), tt.queueID).Return(tt.responseQueue, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), queue.EventTypeQueueUpdated, tt.responseQueue)
 
-			res, err := h.Join(ctx, tt.queueID, tt.referenceType, tt.referenceID, tt.exitActionID)
+			res, err := h.Join(ctx, tt.queueID, tt.referenceType, tt.referenceID, tt.referenceActiveflowID, tt.exitActionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

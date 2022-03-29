@@ -34,9 +34,10 @@ type V1DataQueuesIDPut struct {
 // v1 data type request struct for
 // /v1/queues/<queue-id>/queuecalls POST
 type V1DataQueuesIDQueuecallsPost struct {
-	ReferenceType string    `json:"reference_type"`
-	ReferenceID   uuid.UUID `json:"reference_id"`
-	ExitActionID  uuid.UUID `json:"exit_action_id"`
+	ReferenceType         string    `json:"reference_type"`
+	ReferenceID           uuid.UUID `json:"reference_id"`
+	ReferenceActiveflowID uuid.UUID `json:"reference_activeflow_id"`
+	ExitActionID          uuid.UUID `json:"exit_action_id"`
 }
 
 // V1DataQueuesIDTagIDsPut is

@@ -3,8 +3,10 @@ create table queuecalls(
   id                binary(16),   -- id
   customer_id       binary(16),   -- owner's id
   queue_id          binary(16),   -- queue id
-  reference_type    varchar(255), -- reference's type
-  reference_id      binary(16),   -- reference's id
+
+  reference_type          varchar(255), -- reference's type
+  reference_id            binary(16),   -- reference's id
+  reference_activeflow_id binary(16),   -- reference's activeflow id
 
   flow_id           binary(16),   -- queuecall's queue flow id.
   forward_action_id binary(16),   -- action id for forward.
@@ -32,4 +34,5 @@ create table queuecalls(
 create index idx_queuecalls_customerid on queuecalls(customer_id);
 create index idx_queuecalls_queueid on queuecalls(queue_id);
 create index idx_queuecalls_referenceid on queuecalls(reference_id);
+create index idx_queuecalls_reference_activeflow_id on queuecalls(reference_activeflow_id);
 create index idx_queuecalls_serviceagentid on queuecalls(service_agent_id);

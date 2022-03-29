@@ -99,18 +99,18 @@ func (mr *MockQueueHandlerMockRecorder) Gets(ctx, customerID, size, token interf
 }
 
 // Join mocks base method.
-func (m *MockQueueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, exitActionID uuid.UUID) (*queuecall.Queuecall, error) {
+func (m *MockQueueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, exitActionID uuid.UUID) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Join", ctx, queueID, referenceType, referenceID, exitActionID)
+	ret := m.ctrl.Call(m, "Join", ctx, queueID, referenceType, referenceID, referenceActiveflowID, exitActionID)
 	ret0, _ := ret[0].(*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Join indicates an expected call of Join.
-func (mr *MockQueueHandlerMockRecorder) Join(ctx, queueID, referenceType, referenceID, exitActionID interface{}) *gomock.Call {
+func (mr *MockQueueHandlerMockRecorder) Join(ctx, queueID, referenceType, referenceID, referenceActiveflowID, exitActionID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockQueueHandler)(nil).Join), ctx, queueID, referenceType, referenceID, exitActionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockQueueHandler)(nil).Join), ctx, queueID, referenceType, referenceID, referenceActiveflowID, exitActionID)
 }
 
 // UpdateBasicInfo mocks base method.

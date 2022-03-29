@@ -111,7 +111,7 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func TestCreateQueueFlow(t *testing.T) {
+func Test_createQueueFlow(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -148,17 +148,16 @@ func TestCreateQueueFlow(t *testing.T) {
 			[]fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
+					ID:   uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
 				},
 			},
 
 			"queue-61a4651c-60e3-11ec-86ff-efca21ef8707",
 			[]fmaction.Action{
 				{
-					Type: fmaction.TypeAnswer,
-				},
-				{
-					Type:   fmaction.TypeGoto,
-					Option: []byte(`{"target_index":0,"target_id":"00000000-0000-0000-0000-000000000000","loop":false,"loop_count":0}`),
+					Type:   fmaction.TypeAnswer,
+					ID:     uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
+					NextID: uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
 				},
 				{
 					Type:   fmaction.TypeConfbridgeJoin,
@@ -193,7 +192,7 @@ func TestCreateQueueFlow(t *testing.T) {
 	}
 }
 
-func TestCreateQueueFlowActions(t *testing.T) {
+func Test_createQueueFlowActions(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -221,17 +220,16 @@ func TestCreateQueueFlowActions(t *testing.T) {
 			[]fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
+					ID:   uuid.FromStringOrNil("522072fc-adf5-11ec-83ee-13ad3cde9282"),
 				},
 			},
 			uuid.FromStringOrNil("f1b786fa-60e0-11ec-82a4-a3997b361548"),
 
 			[]fmaction.Action{
 				{
-					Type: fmaction.TypeAnswer,
-				},
-				{
-					Type:   fmaction.TypeGoto,
-					Option: []byte(`{"target_index":0,"target_id":"00000000-0000-0000-0000-000000000000","loop":false,"loop_count":0}`),
+					Type:   fmaction.TypeAnswer,
+					ID:     uuid.FromStringOrNil("522072fc-adf5-11ec-83ee-13ad3cde9282"),
+					NextID: uuid.FromStringOrNil("522072fc-adf5-11ec-83ee-13ad3cde9282"),
 				},
 				{
 					Type:   fmaction.TypeConfbridgeJoin,
@@ -245,9 +243,11 @@ func TestCreateQueueFlowActions(t *testing.T) {
 			[]fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
+					ID:   uuid.FromStringOrNil("604da3cc-adf5-11ec-9f76-cb5d6f62ee83"),
 				},
 				{
 					Type:   fmaction.TypeTalk,
+					ID:     uuid.FromStringOrNil("6f39e616-adf5-11ec-b0dd-9f59cb5454d9"),
 					Option: []byte(`{"text":"hello"}`),
 				},
 			},
@@ -256,14 +256,13 @@ func TestCreateQueueFlowActions(t *testing.T) {
 			[]fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
+					ID:   uuid.FromStringOrNil("604da3cc-adf5-11ec-9f76-cb5d6f62ee83"),
 				},
 				{
 					Type:   fmaction.TypeTalk,
+					ID:     uuid.FromStringOrNil("6f39e616-adf5-11ec-b0dd-9f59cb5454d9"),
+					NextID: uuid.FromStringOrNil("604da3cc-adf5-11ec-9f76-cb5d6f62ee83"),
 					Option: []byte(`{"text":"hello"}`),
-				},
-				{
-					Type:   fmaction.TypeGoto,
-					Option: []byte(`{"target_index":0,"target_id":"00000000-0000-0000-0000-000000000000","loop":false,"loop_count":0}`),
 				},
 				{
 					Type:   fmaction.TypeConfbridgeJoin,

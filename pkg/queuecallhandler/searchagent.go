@@ -60,7 +60,7 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 
 	default:
 		log.Errorf("Unsupported routing method. Exit from the queue. routing_method: %s", qc.RoutingMethod)
-		if err := h.reqHandler.FMV1ActvieFlowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ExitActionID, true); err != nil {
+		if err := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ExitActionID, true); err != nil {
 			log.Errorf("Could not forward the call. err: %v", err)
 		}
 		return
@@ -86,7 +86,7 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 
 	// forward the action.
 	log.Debugf("Setting the forward action id. forward_action_id: %s", qc.ForwardActionID)
-	if err := h.reqHandler.FMV1ActvieFlowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ForwardActionID, true); err != nil {
+	if err := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceActiveflowID, qc.ForwardActionID, true); err != nil {
 		log.Errorf("Could not forward the active flow. err: %v", err)
 		return
 	}

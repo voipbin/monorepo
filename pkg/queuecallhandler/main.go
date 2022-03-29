@@ -31,6 +31,7 @@ type QueuecallHandler interface {
 		queueID uuid.UUID,
 		referenceType queuecall.ReferenceType,
 		referenceID uuid.UUID,
+		referenceActiveflowID uuid.UUID,
 		flowID uuid.UUID,
 		exitActionID uuid.UUID,
 		forwardActionID uuid.UUID,

@@ -40,7 +40,14 @@ type QueueHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error)
-	Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID uuid.UUID, exitActionID uuid.UUID) (*queuecall.Queuecall, error)
+	Join(
+		ctx context.Context,
+		queueID uuid.UUID,
+		referenceType queuecall.ReferenceType,
+		referenceID uuid.UUID,
+		referenceActiveflowID uuid.UUID,
+		exitActionID uuid.UUID,
+	) (*queuecall.Queuecall, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*queue.Queue, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*queue.Queue, error)
 	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error)
