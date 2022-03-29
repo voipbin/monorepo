@@ -82,9 +82,9 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// create active-flow
-	af, err := h.reqHandler.FMV1ActvieFlowCreate(ctx, flowID, fmactiveflow.ReferenceTypeCall, id)
+	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, flowID, fmactiveflow.ReferenceTypeCall, id)
 	if err != nil {
-		af = &fmactiveflow.ActiveFlow{}
+		af = &fmactiveflow.Activeflow{}
 		log.Errorf("Could not get an active flow for outgoing call. Created dummy active flow. This call will be hungup. call: %s, flow: %s, err: %v", id, flowID, err)
 	}
 	log.Debugf("Created active-flow. active-flow: %v", af)

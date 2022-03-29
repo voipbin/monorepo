@@ -156,7 +156,7 @@ func TestTypeConferenceStart(t *testing.T) {
 		data       map[string]string
 		call       *call.Call
 		conference *cfconference.Conference
-		activeFlow *fmactiveflow.ActiveFlow
+		activeFlow *fmactiveflow.Activeflow
 	}{
 		{
 			"normal",
@@ -186,7 +186,7 @@ func TestTypeConferenceStart(t *testing.T) {
 				Type:   cfconference.TypeConference,
 				FlowID: uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
 			},
-			&fmactiveflow.ActiveFlow{
+			&fmactiveflow.Activeflow{
 				ID:            uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
 				ReferenceType: fmactiveflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
@@ -207,14 +207,14 @@ func TestTypeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.conference, nil)
 			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
-			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.conference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.activeFlow, nil)
+			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), tt.conference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.activeFlow, nil)
 
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
 
 			// action next part.
-			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), gomock.Any(), fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
+			mockReq.EXPECT().FMV1ActiveflowGetNextAction(gomock.Any(), gomock.Any(), fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
@@ -407,7 +407,7 @@ func TestTypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 		channel      *channel.Channel
 		data         map[string]string
 		call         *call.Call
-		activeFlow   *fmactiveflow.ActiveFlow
+		activeFlow   *fmactiveflow.Activeflow
 		expectAction *fmaction.Action
 	}{
 		{
@@ -433,7 +433,7 @@ func TestTypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 					Target: string(fmaction.TypeConfbridgeJoin),
 				},
 			},
-			&fmactiveflow.ActiveFlow{
+			&fmactiveflow.Activeflow{
 				Actions: []fmaction.Action{
 					{
 						Type: "confbridge_join",
@@ -567,7 +567,7 @@ func TestTypeFlowStart(t *testing.T) {
 		channel *channel.Channel
 		data    map[string]string
 		numb    *number.Number
-		af      *fmactiveflow.ActiveFlow
+		af      *fmactiveflow.Activeflow
 		call    *call.Call
 	}
 
@@ -588,7 +588,7 @@ func TestTypeFlowStart(t *testing.T) {
 				ID:         uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
 				CallFlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
 			},
-			&fmactiveflow.ActiveFlow{
+			&fmactiveflow.Activeflow{
 				ID:            uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
 				ReferenceType: fmactiveflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
@@ -630,7 +630,7 @@ func TestTypeFlowStart(t *testing.T) {
 				ID:         uuid.FromStringOrNil("f06df84e-82e0-11eb-9ca5-7f84ada50218"),
 				CallFlowID: uuid.FromStringOrNil("f08f0ff2-82e0-11eb-8d45-0feb42f4ca6f"),
 			},
-			&fmactiveflow.ActiveFlow{
+			&fmactiveflow.Activeflow{
 				ID:            uuid.FromStringOrNil("540e43b0-a7b9-11ec-af05-43bcbf20d46b"),
 				ReferenceType: fmactiveflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("f0ae2504-82e0-11eb-8981-5752f356cf57"),
@@ -667,7 +667,7 @@ func TestTypeFlowStart(t *testing.T) {
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(nil)
 
 			mockReq.EXPECT().NMV1NumberGetByNumber(gomock.Any(), tt.channel.DestinationNumber).Return(tt.numb, nil)
-			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.numb.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.af, nil)
+			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), tt.numb.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.af, nil)
 			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
@@ -675,7 +675,7 @@ func TestTypeFlowStart(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
 
 			// action next part.
-			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
+			mockReq.EXPECT().FMV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
 			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)

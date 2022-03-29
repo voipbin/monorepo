@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -16,7 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestHangup(t *testing.T) {
+func Test_Hangup(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -84,6 +85,7 @@ func TestHangup(t *testing.T) {
 			mockDB.EXPECT().CallSetHangup(gomock.Any(), tt.call.ID, call.HangupReasonNormal, call.HangupByRemote, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallHungup, gomock.Any())
+			mockReq.EXPECT().FMV1ActiveflowDelete(gomock.Any(), tt.call.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
 
 			for _, chainedCallID := range tt.call.ChainedCallIDs {
 				tmpCall := &call.Call{
