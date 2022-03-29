@@ -589,9 +589,10 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, id uuid.U
 		log.Errorf("Could not get exit action id. err: %v", err)
 		return err
 	}
+	log.Debugf("Found exit action id. action_id: %s", exitActionID)
 
 	// send the queue join request
-	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, q.ID, qmqueuecall.ReferenceTypeCall, id, exitActionID)
+	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, q.ID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, af.ID, exitActionID)
 	if err != nil {
 		log.WithField("exit_action_id", exitActionID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
 		errForward := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, id, exitActionID, true)

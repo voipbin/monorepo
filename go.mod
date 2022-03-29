@@ -14,10 +14,10 @@ require (
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220214010042-9d735c473204
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220324054419-3a3167f56575
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220327152847-dde6c0b68148
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220329120609-37b844e70a7a
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220228065618-f07d7d687d12
-	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220321025408-6498f13c097b
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220214021001-a55b20ebbcdc
+	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220327172303-37339951d6fc
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220329115312-26a6f3cc200f
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206205721-6f56cc4c3c1e
 )
 
@@ -28,7 +28,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.32.1 // indirect
+	github.com/prometheus/common v0.33.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220203044108-296babaad5c9 // indirect
@@ -40,7 +40,7 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220220065756-9f1522273672 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220226054513-a1e1364329d7 // indirect
-	golang.org/x/sys v0.0.0-20220325203850-36772127a21f // indirect
-	google.golang.org/genproto v0.0.0-20220324131243-acbaeb5b85eb // indirect
+	golang.org/x/sys v0.0.0-20220328115105-d36c6a25d886 // indirect
+	google.golang.org/genproto v0.0.0-20220329135034-5a5e19f58d62 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )

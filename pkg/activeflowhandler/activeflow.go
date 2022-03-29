@@ -73,7 +73,7 @@ func (h *activeflowHandler) Create(ctx context.Context, referenceType activeflow
 func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID, actionID uuid.UUID, forwardNow bool) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "SetForwardActionID",
-		"id":                id,
+		"activeflow_id":     id,
 		"forward_action_id": actionID,
 		"forward_now":       forwardNow,
 	})
@@ -108,9 +108,14 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 
 	// send action next
 	if forwardNow {
-		if err := h.reqHandler.CMV1CallActionNext(ctx, id, true); err != nil {
-			log.Errorf("Could not send action next request. err: %v", err)
-			return err
+		switch af.ReferenceType {
+		case activeflow.ReferenceTypeCall:
+			if err := h.reqHandler.CMV1CallActionNext(ctx, af.ReferenceID, true); err != nil {
+				log.Errorf("Could not send action next request. err: %v", err)
+				return err
+			}
+		default:
+			log.Errorf("Unsupported reference type for forward now. reference_type: %s", af.ReferenceType)
 		}
 	}
 
