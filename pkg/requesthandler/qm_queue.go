@@ -253,14 +253,22 @@ func (r *requestHandler) QMV1QueueUpdateActions(ctx context.Context, queueID uui
 	return &res, nil
 }
 
-// QMV1QueueUpdateActions sends the request to update the queue's action handles.
-func (r *requestHandler) QMV1QueueCreateQueuecall(ctx context.Context, queueID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID, exitActionID uuid.UUID) (*qmqueuecall.Queuecall, error) {
+// QMV1QueueCreateQueuecall sends the request to create a new queuecall.
+func (r *requestHandler) QMV1QueueCreateQueuecall(
+	ctx context.Context,
+	queueID uuid.UUID,
+	referenceType qmqueuecall.ReferenceType,
+	referenceID uuid.UUID,
+	referenceActiveflowID uuid.UUID,
+	exitActionID uuid.UUID,
+) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queues/%s/queuecalls", queueID)
 
 	data := &qmrequest.V1DataQueuesIDQueuecallsPost{
-		ReferenceType: string(referenceType),
-		ReferenceID:   referenceID,
-		ExitActionID:  exitActionID,
+		ReferenceType:         string(referenceType),
+		ReferenceID:           referenceID,
+		ReferenceActiveflowID: referenceActiveflowID,
+		ExitActionID:          exitActionID,
 	}
 
 	m, err := json.Marshal(data)

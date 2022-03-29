@@ -6,7 +6,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
-	golang.org/x/sys v0.0.0-20220325203850-36772127a21f // indirect
+	golang.org/x/sys v0.0.0-20220328115105-d36c6a25d886 // indirect
 )
 
 require (
@@ -16,11 +16,11 @@ require (
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220324054419-3a3167f56575
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220228065618-f07d7d687d12
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220203044108-296babaad5c9
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220327142516-9b6a1af084c9
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220327160322-aff35578e0be
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20220318121408-b737007a1e9d
-	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220321025408-6498f13c097b
+	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220327172303-37339951d6fc
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220320183155-5a5e01a5c899
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220214021001-a55b20ebbcdc
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220329115312-26a6f3cc200f
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220209071252-a365e400801c
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220206205721-6f56cc4c3c1e
@@ -35,7 +35,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.32.1 // indirect
+	github.com/prometheus/common v0.33.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
