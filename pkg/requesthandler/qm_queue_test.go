@@ -583,10 +583,11 @@ func TestQMVQueueCreateQueuecall(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id            uuid.UUID
-		referenceType qmqueuecall.ReferenceType
-		referenceID   uuid.UUID
-		exitActionID  uuid.UUID
+		id                    uuid.UUID
+		referenceType         qmqueuecall.ReferenceType
+		referenceID           uuid.UUID
+		referenceActiveflowID uuid.UUID
+		exitActionID          uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -600,6 +601,7 @@ func TestQMVQueueCreateQueuecall(t *testing.T) {
 			uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
 			qmqueuecall.ReferenceTypeCall,
 			uuid.FromStringOrNil("72beeeac-615c-11ec-bb63-4b76d4878b1d"),
+			uuid.FromStringOrNil("8b4d5618-af57-11ec-ba45-7fed62f4b346"),
 			uuid.FromStringOrNil("7aa3cc0a-615c-11ec-89fc-3f90491bf4e4"),
 
 			"bin-manager.queue-manager.request",
@@ -607,7 +609,7 @@ func TestQMVQueueCreateQueuecall(t *testing.T) {
 				URI:      "/v1/queues/2bdd3418-615b-11ec-80a9-a73788a62c03/queuecalls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_type":"call","reference_id":"72beeeac-615c-11ec-bb63-4b76d4878b1d","exit_action_id":"7aa3cc0a-615c-11ec-89fc-3f90491bf4e4"}`),
+				Data:     []byte(`{"reference_type":"call","reference_id":"72beeeac-615c-11ec-bb63-4b76d4878b1d","reference_activeflow_id":"8b4d5618-af57-11ec-ba45-7fed62f4b346","exit_action_id":"7aa3cc0a-615c-11ec-89fc-3f90491bf4e4"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -626,7 +628,7 @@ func TestQMVQueueCreateQueuecall(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueCreateQueuecall(ctx, tt.id, tt.referenceType, tt.referenceID, tt.exitActionID)
+			res, err := reqHandler.QMV1QueueCreateQueuecall(ctx, tt.id, tt.referenceType, tt.referenceID, tt.referenceActiveflowID, tt.exitActionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
