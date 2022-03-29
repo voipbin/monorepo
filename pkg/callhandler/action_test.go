@@ -940,7 +940,7 @@ func TestActionNext(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
-			mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.act, nil)
+			mockReq.EXPECT().FMV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.act, nil)
 			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
 
 			if err := h.ActionNext(ctx, tt.call); err != nil {
@@ -1004,7 +1004,7 @@ func TestActionNextForce(t *testing.T) {
 			} else if tt.call.ConfbridgeID != uuid.Nil {
 				mockConf.EXPECT().Kick(gomock.Any(), tt.call.ConfbridgeID, tt.call.ID).Return(nil)
 			} else {
-				mockReq.EXPECT().FMV1ActvieFlowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.act, nil)
+				mockReq.EXPECT().FMV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.act, nil)
 				mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
 				mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
 			}

@@ -188,12 +188,11 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	}
 
 	// get next action
-	nextAction, err := h.reqHandler.FMV1ActvieFlowGetNextAction(ctx, c.ActiveFlowID, c.Action.ID)
+	nextAction, err := h.reqHandler.FMV1ActiveflowGetNextAction(ctx, c.ActiveFlowID, c.Action.ID)
 	if err != nil {
 		// could not get the next action from the flow-manager.
-		// but we don't hangup the call here, because we're assuming the call is already moved on next action.
-		// this failure is for the duplicated action close.
 		log.WithField("action", c.Action).Infof("Could not get the next action from the flow-manager. err: %v", err)
+		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 	log.Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)

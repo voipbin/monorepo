@@ -42,7 +42,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 		source       address.Address
 		destination  address.Address
 
-		af                *fmactiveflow.ActiveFlow
+		af                *fmactiveflow.Activeflow
 		expectCall        *call.Call
 		expectEndpointDst string
 		expectVariables   map[string]string
@@ -66,7 +66,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 				TargetName: "test target",
 			},
 
-			&fmactiveflow.ActiveFlow{
+			&fmactiveflow.Activeflow{
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -116,7 +116,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 				TargetName: "test target",
 			},
 
-			&fmactiveflow.ActiveFlow{
+			&fmactiveflow.Activeflow{
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -155,7 +155,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().FMV1ActvieFlowCreate(gomock.Any(), tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.af, nil)
+			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.af, nil)
 			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
