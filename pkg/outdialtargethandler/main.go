@@ -1,0 +1,66 @@
+package outdialtargethandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package outdialtargethandler -destination ./mock_outdialtargethandler.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+	"time"
+
+	"github.com/gofrs/uuid"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
+	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
+	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/dbhandler"
+)
+
+type outdialTargetHandler struct {
+	db            dbhandler.DBHandler
+	reqHandler    requesthandler.RequestHandler
+	notifyHandler notifyhandler.NotifyHandler
+}
+
+// OutdialTargetHandler interface
+type OutdialTargetHandler interface {
+	Create(
+		ctx context.Context,
+		outdialID uuid.UUID,
+		name string,
+		detail string,
+		data string,
+		destination0 *cmaddress.Address,
+		destination1 *cmaddress.Address,
+		destination2 *cmaddress.Address,
+		destination3 *cmaddress.Address,
+		destination4 *cmaddress.Address,
+	) (*outdialtarget.OutdialTarget, error)
+	Get(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error)
+	GetsByOutdialID(ctx context.Context, outdialID uuid.UUID, token string, limit uint64) ([]*outdialtarget.OutdialTarget, error)
+	GetAvailable(
+		ctx context.Context,
+		outdialID uuid.UUID,
+		tryCount0 int,
+		tryCount1 int,
+		tryCount2 int,
+		tryCount3 int,
+		tryCount4 int,
+		interval time.Duration,
+		limit uint64,
+	) ([]*outdialtarget.OutdialTarget, error)
+}
+
+// NewOutdialTargetHandler return FlowHandler
+func NewOutdialTargetHandler(
+	db dbhandler.DBHandler,
+	reqHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+) OutdialTargetHandler {
+	h := &outdialTargetHandler{
+		db:            db,
+		reqHandler:    reqHandler,
+		notifyHandler: notifyHandler,
+	}
+
+	return h
+}
