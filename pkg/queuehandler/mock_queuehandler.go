@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -81,6 +82,21 @@ func (m *MockQueueHandler) Get(ctx context.Context, id uuid.UUID) (*queue.Queue,
 func (mr *MockQueueHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockQueueHandler)(nil).Get), ctx, id)
+}
+
+// GetAgents mocks base method.
+func (m *MockQueueHandler) GetAgents(ctx context.Context, id uuid.UUID, status agent.Status) ([]agent.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAgents", ctx, id, status)
+	ret0, _ := ret[0].([]agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAgents indicates an expected call of GetAgents.
+func (mr *MockQueueHandlerMockRecorder) GetAgents(ctx, id, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgents", reflect.TypeOf((*MockQueueHandler)(nil).GetAgents), ctx, id, status)
 }
 
 // Gets mocks base method.

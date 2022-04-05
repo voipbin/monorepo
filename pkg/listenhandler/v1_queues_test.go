@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
@@ -691,6 +692,68 @@ func TestProcessV1QueuesIDWaitActionsPut(t *testing.T) {
 
 			mockQueue.EXPECT().UpdateWaitActionsAndTimeouts(gomock.Any(), tt.id, tt.waitActions, tt.waitTimeout, tt.serviceTimeout).Return(tt.responseQueue, nil)
 
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1QueuesIDAgentsGet(t *testing.T) {
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		id     uuid.UUID
+		status amagent.Status
+
+		responseQueue []amagent.Agent
+		expectRes     *rabbitmqhandler.Response
+	}{
+		{
+			"available",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queues/2e2ca500-b49e-11ec-bde5-4f7293129cfd/agents?status=available",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("2e2ca500-b49e-11ec-bde5-4f7293129cfd"),
+			amagent.StatusAvailable,
+
+			[]amagent.Agent{
+				{
+					ID: uuid.FromStringOrNil("2e5b56a2-b49e-11ec-a643-5b72b632781f"),
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"2e5b56a2-b49e-11ec-a643-5b72b632781f","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
+
+			mockQueue.EXPECT().GetAgents(gomock.Any(), tt.id, tt.status).Return(tt.responseQueue, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
