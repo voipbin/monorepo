@@ -1561,6 +1561,21 @@ func (mr *MockRequestHandlerMockRecorder) QMV1QueueGet(ctx, queueID interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueGet", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueGet), ctx, queueID)
 }
 
+// QMV1QueueGetAgents mocks base method.
+func (m *MockRequestHandler) QMV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, status agent.Status) ([]agent.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QMV1QueueGetAgents", ctx, queueID, status)
+	ret0, _ := ret[0].([]agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QMV1QueueGetAgents indicates an expected call of QMV1QueueGetAgents.
+func (mr *MockRequestHandlerMockRecorder) QMV1QueueGetAgents(ctx, queueID, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueGetAgents", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueGetAgents), ctx, queueID, status)
+}
+
 // QMV1QueueGets mocks base method.
 func (m *MockRequestHandler) QMV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]queue.Queue, error) {
 	m.ctrl.T.Helper()
