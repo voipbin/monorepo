@@ -50,6 +50,7 @@ var (
 	reqV1QueuesIDRoutingMethod = regexp.MustCompile("/v1/queues/" + regUUID + "/routing_method$")
 	reqV1QueuesIDQueuecalls    = regexp.MustCompile("/v1/queues/" + regUUID + "/queuecalls$")
 	reqV1QueuesIDWaitActions   = regexp.MustCompile("/v1/queues/" + regUUID + "/wait_actions$")
+	reqV1QueuesIDAgentsGet     = regexp.MustCompile("/v1/queues/" + regUUID + `/agents\?`)
 
 	// queuecalls
 	regV1QueuecallsGet              = regexp.MustCompile(`/v1/queuecalls\?` + regAny + "$")
@@ -176,6 +177,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// ////////////
 	// // queues
 	// ////////////
+	// /queues
 	// GET /queues
 	case regV1QueuesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1QueuesGet(ctx, m)
@@ -186,40 +188,46 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1QueuesPost(ctx, m)
 		requestType = "/v1/queues"
 
+	// /queues/<queue-id>/
 	// GET /queues/<queue-id>
 	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1QueuesIDGet(ctx, m)
-		requestType = "/v1/queues"
+		requestType = "/v1/queues/<queue-id>/"
 
 	// DELETE /queues/<queue-id>
 	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1QueuesIDDelete(ctx, m)
-		requestType = "/v1/queues"
+		requestType = "/v1/queues/<queue-id>/"
 
 	// PUT /queues/<queue-id>
 	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1QueuesIDPut(ctx, m)
-		requestType = "/v1/queues"
+		requestType = "/v1/queues/<queue-id>/"
 
 	// PUT /queues/<queue-id>/tag_ids
 	case reqV1QueuesIDTagIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1QueuesIDTagIDsPut(ctx, m)
-		requestType = "/v1/queues"
+		requestType = "/v1/queues/<queue-id>/tag_ids"
 
 	// PUT /queues/<queue-id>/routing_method
 	case reqV1QueuesIDRoutingMethod.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1QueuesIDRoutingMethodPut(ctx, m)
-		requestType = "/v1/queues"
+		requestType = "/v1/queues/<queue-id>/routing_method"
 
 	// POST /queues/<queue-id>/queuecalls
 	case reqV1QueuesIDQueuecalls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1QueuesIDQueuecallsPost(ctx, m)
-		requestType = "/v1/queues"
+		requestType = "/v1/queues/<queue-id>/queuecalls"
 
 	// PUT /queues/<queue-id>/wait_actions
 	case reqV1QueuesIDWaitActions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1QueuesIDWaitActionsPut(ctx, m)
-		requestType = "/v1/queues"
+		requestType = "/v1/queues/<queue-id>/wait_actions"
+
+	// GET /queues/<queue-id>/agents
+	case reqV1QueuesIDAgentsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1QueuesIDAgentsGet(ctx, m)
+		requestType = "/v1/queues/<queue-id>/agents"
 
 	/////////////
 	// queuecalls
