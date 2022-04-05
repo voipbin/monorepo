@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -187,6 +188,28 @@ func (r *requestHandler) QMV1QueueUpdateTagIDs(ctx context.Context, queueID uuid
 	}
 
 	return &res, nil
+}
+
+// QMV1QueueGetAgents sends the request to getting the agent list of the given queue's and status.
+func (r *requestHandler) QMV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
+	uri := fmt.Sprintf("/v1/queues/%s/agents?status=%s", queueID, status)
+
+	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodGet, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res []amagent.Agent
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // QMV1QueueUpdateRoutingMethod sends the request to update the queue's routing_method.
