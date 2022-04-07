@@ -85,18 +85,18 @@ func (h *flowHandler) FlowCreate(
 	return res, nil
 }
 
-// FlowGets returns list of flows
-func (h *flowHandler) FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
+// FlowGetsByCustomerID returns list of flows
+func (h *flowHandler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":        "FlowGets",
+			"func":        "FlowGetsByCustomerID",
 			"customer_id": customerID,
 			"token":       token,
 			"limit":       limit,
 		})
 	log.Debug("Getting flows.")
 
-	flows, err := h.db.FlowGets(ctx, customerID, token, limit)
+	flows, err := h.db.FlowGetsByCustomerID(ctx, customerID, token, limit)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err

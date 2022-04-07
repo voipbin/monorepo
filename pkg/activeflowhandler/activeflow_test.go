@@ -18,16 +18,6 @@ import (
 )
 
 func TestActiveFlowCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &activeflowHandler{
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
 
 	tests := []struct {
 		name string
@@ -64,12 +54,23 @@ func TestActiveFlowCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &activeflowHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
 			mockDB.EXPECT().ActiveflowCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(gomock.Any(), gomock.Any()).Return(tt.expectActive, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectActive.CustomerID, activeflow.EventTypeActiveFlowCreated, tt.expectActive)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectActive.CustomerID, activeflow.EventTypeActiveflowCreated, tt.expectActive)
 
 			res, err := h.Create(ctx, tt.refereceType, tt.referenceID, tt.flow.ID)
 			if err != nil {
@@ -84,16 +85,6 @@ func TestActiveFlowCreate(t *testing.T) {
 }
 
 func TestActiveFlowUpdateCurrentAction(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &activeflowHandler{
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
 
 	tests := []struct {
 		name   string
@@ -112,11 +103,22 @@ func TestActiveFlowUpdateCurrentAction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &activeflowHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&activeflow.Activeflow{}, nil)
 			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&activeflow.Activeflow{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), activeflow.EventTypeActiveFlowUpdated, gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), activeflow.EventTypeActiveflowUpdated, gomock.Any())
 			_, err := h.updateCurrentAction(ctx, tt.callID, tt.act)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -126,18 +128,6 @@ func TestActiveFlowUpdateCurrentAction(t *testing.T) {
 }
 
 func Test_GetNextAction(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockAction := actionhandler.NewMockActionHandler(mc)
-
-	h := &activeflowHandler{
-		db:            mockDB,
-		notifyHandler: mockNotify,
-		actionHandler: mockAction,
-	}
 
 	tests := []struct {
 		name         string
@@ -234,11 +224,24 @@ func Test_GetNextAction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+
+			h := &activeflowHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				actionHandler: mockAction,
+			}
+
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.id).Return(tt.af, nil).AnyTimes()
 
 			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), gomock.Any()).Return(nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.af.CustomerID, activeflow.EventTypeActiveFlowUpdated, tt.af)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.af.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.af)
 
 			act, err := h.GetNextAction(ctx, tt.id, tt.actionID)
 			if err != nil {
@@ -253,18 +256,6 @@ func Test_GetNextAction(t *testing.T) {
 }
 
 func Test_GetNextActionError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockAction := actionhandler.NewMockActionHandler(mc)
-
-	h := &activeflowHandler{
-		db:            mockDB,
-		notifyHandler: mockNotify,
-		actionHandler: mockAction,
-	}
 
 	tests := []struct {
 		name     string
@@ -288,13 +279,26 @@ func Test_GetNextActionError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+
+			h := &activeflowHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				actionHandler: mockAction,
+			}
+
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.id).Return(tt.af, nil)
 
 			if len(tt.af.Actions) == 0 {
 				mockDB.EXPECT().ActiveflowDelete(ctx, tt.id).Return(nil)
 				mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.af, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.af.CustomerID, activeflow.EventTypeActiveFlowDeleted, tt.af)
+				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.af.CustomerID, activeflow.EventTypeActiveflowDeleted, tt.af)
 			}
 
 			_, err := h.GetNextAction(ctx, tt.id, tt.actionID)
@@ -306,19 +310,6 @@ func Test_GetNextActionError(t *testing.T) {
 }
 
 func Test_getNextAction(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockAction := actionhandler.NewMockActionHandler(mc)
-
-	h := &activeflowHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-
-		actionHandler: mockAction,
-	}
 
 	tests := []struct {
 		name         string
@@ -418,6 +409,20 @@ func Test_getNextAction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler: mockAction,
+			}
+
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
 
@@ -434,19 +439,6 @@ func Test_getNextAction(t *testing.T) {
 }
 
 func Test_getNextActionError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockAction := actionhandler.NewMockActionHandler(mc)
-
-	h := &activeflowHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-
-		actionHandler: mockAction,
-	}
 
 	tests := []struct {
 		name         string
@@ -474,6 +466,20 @@ func Test_getNextActionError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler: mockAction,
+			}
+
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
 
@@ -486,19 +492,6 @@ func Test_getNextActionError(t *testing.T) {
 }
 
 func Test_SetForwardActionID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockAction := actionhandler.NewMockActionHandler(mc)
-
-	h := &activeflowHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-
-		actionHandler: mockAction,
-	}
 
 	tests := []struct {
 		name string
@@ -652,6 +645,20 @@ func Test_SetForwardActionID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler: mockAction,
+			}
+
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.af, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
