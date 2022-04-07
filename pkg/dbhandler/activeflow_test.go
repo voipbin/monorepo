@@ -15,14 +15,6 @@ import (
 )
 
 func Test_ActiveflowCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		db:    dbTest,
-		cache: mockCache,
-	}
 
 	tests := []struct {
 		name string
@@ -57,6 +49,14 @@ func Test_ActiveflowCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
@@ -82,14 +82,6 @@ func Test_ActiveflowCreate(t *testing.T) {
 }
 
 func Test_ActiveflowUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		db:    dbTest,
-		cache: mockCache,
-	}
 
 	tests := []struct {
 		name             string
@@ -152,6 +144,14 @@ func Test_ActiveflowUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
@@ -181,14 +181,6 @@ func Test_ActiveflowUpdate(t *testing.T) {
 }
 
 func Test_ActiveflowDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		db:    dbTest,
-		cache: mockCache,
-	}
 
 	tests := []struct {
 		name string
@@ -229,6 +221,14 @@ func Test_ActiveflowDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
@@ -257,14 +257,6 @@ func Test_ActiveflowDelete(t *testing.T) {
 }
 
 func Test_ActiveflowGetsByCustomerID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		db:    dbTest,
-		cache: mockCache,
-	}
 
 	tests := []struct {
 		name        string
@@ -306,6 +298,16 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
 			ctx := context.Background()
 
 			for _, activeflow := range tt.activeflows {

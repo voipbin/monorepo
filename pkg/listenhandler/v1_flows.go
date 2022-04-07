@@ -16,10 +16,15 @@ import (
 )
 
 // v1FlowsIDGet handles /v1/flows/{id} GET request
-func (h *listenHandler) v1FlowsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) v1FlowsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1FlowsIDGet",
+		},
+	)
+	log.WithField("request", m).Debug("Received request.")
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -30,13 +35,13 @@ func (h *listenHandler) v1FlowsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhan
 
 	tmp, err := h.flowHandler.FlowGet(ctx, flowID)
 	if err != nil {
-		logrus.Errorf("Could not get flow info. err: %v", err)
+		log.Errorf("Could not get flow info. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -50,8 +55,13 @@ func (h *listenHandler) v1FlowsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhan
 }
 
 // v1FlowsIDPut handles /v1/flows/{id} PUT request
-func (h *listenHandler) v1FlowsIDPut(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) v1FlowsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1FlowsIDPut",
+		},
+	)
+	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -64,19 +74,19 @@ func (h *listenHandler) v1FlowsIDPut(m *rabbitmqhandler.Request) (*rabbitmqhandl
 
 	var req request.V1DataFlowIDPut
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		logrus.Errorf("Could not marshal the data. err: %v", err)
+		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
 
 	tmp, err := h.flowHandler.FlowUpdate(ctx, flowID, req.Name, req.Detail, req.Actions)
 	if err != nil {
-		logrus.Errorf("Could not update the flow info. err: %v", err)
+		log.Errorf("Could not update the flow info. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -90,10 +100,15 @@ func (h *listenHandler) v1FlowsIDPut(m *rabbitmqhandler.Request) (*rabbitmqhandl
 }
 
 // v1FlowsIDDelete handles /v1/flows/{id} Delete request
-func (h *listenHandler) v1FlowsIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) v1FlowsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1FlowsIDDelete",
+		},
+	)
+	log.WithField("request", m).Debug("Received request.")
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +124,7 @@ func (h *listenHandler) v1FlowsIDDelete(req *rabbitmqhandler.Request) (*rabbitmq
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -124,8 +139,7 @@ func (h *listenHandler) v1FlowsIDDelete(req *rabbitmqhandler.Request) (*rabbitmq
 
 // v1FlowsPost handles /v1/flows POST request
 // creates a new flow with given data and return the created flow info.
-func (h *listenHandler) v1FlowsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) v1FlowsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1FlowsPost",
@@ -135,12 +149,12 @@ func (h *listenHandler) v1FlowsPost(m *rabbitmqhandler.Request) (*rabbitmqhandle
 
 	var req request.V1DataFlowPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		logrus.Errorf("Could not marshal the data. err: %v", err)
+		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
 
 	// create flow
-	resFlow, err := h.flowHandler.FlowCreate(
+	tmp, err := h.flowHandler.FlowCreate(
 		ctx,
 		req.CustomerID,
 		req.Type,
@@ -154,7 +168,7 @@ func (h *listenHandler) v1FlowsPost(m *rabbitmqhandler.Request) (*rabbitmqhandle
 		return nil, err
 	}
 
-	data, err := json.Marshal(resFlow)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
@@ -170,17 +184,15 @@ func (h *listenHandler) v1FlowsPost(m *rabbitmqhandler.Request) (*rabbitmqhandle
 }
 
 // v1FlowsGet handles /v1/flows GET request
-func (h *listenHandler) v1FlowsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-
+func (h *listenHandler) v1FlowsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1FlowsGet",
 		},
 	)
-	log.WithField("request", req).Debug("Received request.")
+	log.WithField("request", m).Debug("Received request.")
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -196,24 +208,24 @@ func (h *listenHandler) v1FlowsGet(req *rabbitmqhandler.Request) (*rabbitmqhandl
 	// get type
 	tmpType := flow.Type(u.Query().Get("type"))
 
-	var resFlows []*flow.Flow
+	var tmp []*flow.Flow
 	if tmpType != flow.TypeNone {
-		resFlows, err = h.flowHandler.FlowGetsByType(ctx, customerID, flow.Type(tmpType), pageToken, pageSize)
+		tmp, err = h.flowHandler.FlowGetsByType(ctx, customerID, flow.Type(tmpType), pageToken, pageSize)
 		if err != nil {
 			log.Errorf("Could not get flows. err: %v", err)
 			return nil, err
 		}
 	} else {
-		resFlows, err = h.flowHandler.FlowGets(ctx, customerID, pageToken, pageSize)
+		tmp, err = h.flowHandler.FlowGetsByCustomerID(ctx, customerID, pageToken, pageSize)
 		if err != nil {
-			logrus.Errorf("Could not get flows. err: %v", err)
+			log.Errorf("Could not get flows. err: %v", err)
 			return nil, err
 		}
 	}
 
-	data, err := json.Marshal(resFlows)
+	data, err := json.Marshal(tmp)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -226,12 +238,17 @@ func (h *listenHandler) v1FlowsGet(req *rabbitmqhandler.Request) (*rabbitmqhandl
 	return res, nil
 }
 
-// handlerFlowsIDActionsIDGet handles
+// v1FlowsIDActionsIDGet handles
 // /v1/flows/{id}/actions/{id} GET
-func (h *listenHandler) v1FlowsIDActionsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) v1FlowsIDActionsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1FlowsIDActionsIDGet",
+		},
+	)
+	log.WithField("request", m).Debug("Received request.")
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -241,12 +258,12 @@ func (h *listenHandler) v1FlowsIDActionsIDGet(req *rabbitmqhandler.Request) (*ra
 	flowID := uuid.FromStringOrNil(tmpVals[3])
 	actionID := uuid.FromStringOrNil(tmpVals[5])
 
-	resAction, err := h.flowHandler.ActionGet(ctx, flowID, actionID)
+	tmp, err := h.flowHandler.ActionGet(ctx, flowID, actionID)
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := json.Marshal(resAction)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		return nil, err
 	}

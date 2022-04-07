@@ -64,7 +64,7 @@ func (h *activeflowHandler) Create(ctx context.Context, referenceType activeflow
 		log.Errorf("Could not get created active flow. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveFlowCreated, af)
+	h.notifyHandler.PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveflowCreated, af)
 
 	return af, nil
 }
@@ -187,7 +187,7 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 		log.Errorf("Could not get updated active flow. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveFlowUpdated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowUpdated, res)
 
 	return res, err
 }
@@ -210,7 +210,7 @@ func (h *activeflowHandler) Delete(ctx context.Context, id uuid.UUID) (*activefl
 		log.Errorf("Could not get activeflow. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveFlowDeleted, af)
+	h.notifyHandler.PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveflowDeleted, af)
 
 	return af, nil
 }
