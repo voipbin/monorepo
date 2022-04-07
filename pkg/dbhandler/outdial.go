@@ -190,6 +190,31 @@ func (h *handler) OutdialGet(ctx context.Context, id uuid.UUID) (*outdial.Outdia
 	return res, nil
 }
 
+// OutdialDelete deletes the outdial.
+func (h *handler) OutdialDelete(ctx context.Context, id uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		outdials
+	set
+		tm_update = ?,
+		tm_delete = ?
+	where
+		id = ?
+	`
+
+	ts := GetCurTime()
+	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. OutdialDelete. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.outdialUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // OutdialGetsByCustomerID returns list of outdials.
 func (h *handler) OutdialGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outdial.Outdial, error) {
 

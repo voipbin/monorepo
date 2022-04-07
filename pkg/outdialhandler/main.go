@@ -30,7 +30,7 @@ type OutdialHandler interface {
 		detail string,
 		data string,
 	) (*outdial.Outdial, error)
-
+	Delete(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error)
 	Get(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error)
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outdial.Outdial, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*outdial.Outdial, error)

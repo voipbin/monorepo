@@ -51,6 +51,21 @@ func (mr *MockOutdialHandlerMockRecorder) Create(ctx, customerID, campaignID, na
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockOutdialHandler)(nil).Create), ctx, customerID, campaignID, name, detail, data)
 }
 
+// Delete mocks base method.
+func (m *MockOutdialHandler) Delete(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*outdial.Outdial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockOutdialHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockOutdialHandler)(nil).Delete), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockOutdialHandler) Get(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error) {
 	m.ctrl.T.Helper()

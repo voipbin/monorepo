@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"time"
@@ -41,6 +42,13 @@ var (
 	regV1OutdialsIDAvailable  = regexp.MustCompile("/v1/outdials/" + regUUID + `/available\?`)
 	regV1OutdialsIDTargets    = regexp.MustCompile("/v1/outdials/" + regUUID + "/targets$")
 	regV1OutdialsIDTargetsGet = regexp.MustCompile("/v1/outdials/" + regUUID + `/targets\?`)
+	regV1OutdialsIDCampaignID = regexp.MustCompile("/v1/outdials/" + regUUID + "/campaign_id$")
+	regV1OutdialsIDData       = regexp.MustCompile("/v1/outdials/" + regUUID + "/data$")
+
+	// outdialtargets
+	regV1OutdialtargetsID            = regexp.MustCompile("/v1/outdialtargets/" + regUUID + "$")
+	regV1OutdialtargetsIDProgressing = regexp.MustCompile("/v1/outdialtargets/" + regUUID + "/progressing$")
+	regV1OutdialtargetsIDStatus      = regexp.MustCompile("/v1/outdialtargets/" + regUUID + "/status$")
 )
 
 var (
@@ -128,10 +136,11 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
+
+	ctx := context.Background()
 
 	logrus.WithFields(
 		logrus.Fields{
@@ -147,31 +156,56 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// v1
 	// outdials
 	case regV1Outdials.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		requestType = "/outdials POST"
-		response, err = h.v1OutdialsPost(m)
+		requestType = "/outdials"
+		response, err = h.v1OutdialsPost(ctx, m)
 
 	case regV1OutdialsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		requestType = "/outdials GET"
-		response, err = h.v1OutdialsGet(m)
+		requestType = "/outdials"
+		response, err = h.v1OutdialsGet(ctx, m)
 
 	// outdials/<outdial-id>
 	case regV1OutdialsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		requestType = "/outdials/<outdial-id> GET"
-		response, err = h.v1OutdialsIDGet(m)
+		requestType = "/outdials/<outdial-id>"
+		response, err = h.v1OutdialsIDGet(ctx, m)
+
+	case regV1OutdialsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/outdials/<outdial-id>"
+		response, err = h.v1OutdialsIDPut(ctx, m)
 
 	// outdials/<outdial-id>/available
 	case regV1OutdialsIDAvailable.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		requestType = "/outdials/<outdial-id>/available GET"
-		response, err = h.v1OutdialsIDAvailableGet(m)
+		requestType = "/outdials/<outdial-id>/available"
+		response, err = h.v1OutdialsIDAvailableGet(ctx, m)
 
 	// outdials/<outdial-id>/targets
 	case regV1OutdialsIDTargets.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		requestType = "/outdials/<id>/targets POST"
-		response, err = h.v1OutdialsIDTargetsPost(m)
+		requestType = "/outdials/<outdial-id>/targets"
+		response, err = h.v1OutdialsIDTargetsPost(ctx, m)
 
 	case regV1OutdialsIDTargetsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		requestType = "/outdials/<id>/targets GET"
-		response, err = h.v1OutdialsIDTargetsGet(m)
+		requestType = "/outdials/<outdial-id>/targets"
+		response, err = h.v1OutdialsIDTargetsGet(ctx, m)
+
+	case regV1OutdialsIDCampaignID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/outdials/<outdial-id>/campaign_id"
+		response, err = h.v1OutdialsIDCampaignIDPut(ctx, m)
+
+	case regV1OutdialsIDData.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/outdials/<outdial-id>/data"
+		response, err = h.v1OutdialsIDDataPut(ctx, m)
+
+	// outdialtargets
+	case regV1OutdialtargetsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/outdialtargets/<outdialtarget-id>"
+		response, err = h.v1OutdialtargetsIDDelete(ctx, m)
+
+	case regV1OutdialtargetsIDProgressing.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/outdialtargets/<outdialtarget-id>/progressing"
+		response, err = h.v1OutdialtargetsIDProgressingPost(ctx, m)
+
+	case regV1OutdialtargetsIDStatus.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/outdialtargets/<outdialtarget-id>/status"
+		response, err = h.v1OutdialtargetsIDStatusPut(ctx, m)
 
 	default:
 		logrus.WithFields(

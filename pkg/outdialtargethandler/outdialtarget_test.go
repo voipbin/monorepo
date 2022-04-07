@@ -84,6 +84,47 @@ func Test_Create(t *testing.T) {
 	}
 }
 
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		outdialID uuid.UUID
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("81597cf8-b561-11ec-bd35-fbc2e9bf73b8"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := outdialTargetHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutdialTargetDelete(ctx, tt.outdialID).Return(nil)
+			mockDB.EXPECT().OutdialTargetGet(ctx, tt.outdialID).Return(&outdialtarget.OutdialTarget{}, nil)
+
+			_, err := h.Delete(ctx, tt.outdialID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 func Test_GetsByOutdialID(t *testing.T) {
 
 	tests := []struct {

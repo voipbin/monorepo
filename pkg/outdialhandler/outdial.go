@@ -52,6 +52,30 @@ func (h *outdialHandler) Create(
 		log.Errorf("Could not get created outdial. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, outdial.EventTypeOutdialCreated, res)
+
+	return res, nil
+}
+
+// Delete deletes outdial
+func (h *outdialHandler) Delete(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "Delete",
+			"outdial_id": id,
+		})
+
+	if errDel := h.db.OutdialDelete(ctx, id); errDel != nil {
+		log.Errorf("Could not delete the outdial. err: %v", errDel)
+		return nil, errDel
+	}
+
+	res, err := h.db.OutdialGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted outdial. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, outdial.EventTypeOutdialDeleted, res)
 
 	return res, nil
 }
@@ -114,6 +138,7 @@ func (h *outdialHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 		log.Errorf("Could not get updated outdial info. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, outdial.EventTypeOutdialUpdated, res)
 
 	return res, nil
 }
@@ -139,6 +164,7 @@ func (h *outdialHandler) UpdateCampaignID(ctx context.Context, id, campaignID uu
 		log.Errorf("Could not get updated outdial info. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, outdial.EventTypeOutdialUpdated, res)
 
 	return res, nil
 }
@@ -164,6 +190,7 @@ func (h *outdialHandler) UpdateData(ctx context.Context, id uuid.UUID, data stri
 		log.Errorf("Could not get updated outdial info. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, outdial.EventTypeOutdialUpdated, res)
 
 	return res, nil
 }

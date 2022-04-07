@@ -212,6 +212,67 @@ func Test_v1OutdialsIDGet(t *testing.T) {
 	}
 }
 
+func Test_v1OutdialsIDPut(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id          uuid.UUID
+		outdialName string
+		detail      string
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/outdials/ee6c0268-b62c-11ec-8ce9-a796a6b09de1",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name": "test name", "detail": "test detail"}`),
+			},
+
+			uuid.FromStringOrNil("ee6c0268-b62c-11ec-8ce9-a796a6b09de1"),
+			"test name",
+			"test detail",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockOutdial := outdialhandler.NewMockOutdialHandler(mc)
+			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:           mockSock,
+				outdialHandler:       mockOutdial,
+				outdialTargetHandler: mockOutdialTarget,
+			}
+
+			mockOutdial.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.outdialName, tt.detail).Return(&outdial.Outdial{}, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -490,6 +551,132 @@ func Test_v1OutdialsIDTargetsGet(t *testing.T) {
 			}
 
 			mockOutdialTarget.EXPECT().GetsByOutdialID(gomock.Any(), tt.outdialID, tt.pageToken, tt.pageSize).Return(tt.outdialTargets, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_v1OutdialsIDCampaignIDPut(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		outdialID  uuid.UUID
+		campaignID uuid.UUID
+
+		outdial   *outdial.Outdial
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/outdials/643ef1e6-b563-11ec-bacf-d356bc75b302/campaign_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"campaign_id":"646baed4-b563-11ec-980c-f3bbe82e67fb"}`),
+			},
+
+			uuid.FromStringOrNil("643ef1e6-b563-11ec-bacf-d356bc75b302"),
+			uuid.FromStringOrNil("646baed4-b563-11ec-980c-f3bbe82e67fb"),
+
+			&outdial.Outdial{
+				ID: uuid.FromStringOrNil("643ef1e6-b563-11ec-bacf-d356bc75b302"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"643ef1e6-b563-11ec-bacf-d356bc75b302","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockOutdial := outdialhandler.NewMockOutdialHandler(mc)
+			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:           mockSock,
+				outdialHandler:       mockOutdial,
+				outdialTargetHandler: mockOutdialTarget,
+			}
+
+			mockOutdial.EXPECT().UpdateCampaignID(gomock.Any(), tt.outdialID, tt.campaignID).Return(tt.outdial, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_v1OutdialsIDDataPut(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		outdialID uuid.UUID
+		data      string
+
+		outdial   *outdial.Outdial
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/outdials/beddb5ce-b563-11ec-99e9-dfdfa34a3196/data",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"data":"test_data"}`),
+			},
+
+			uuid.FromStringOrNil("beddb5ce-b563-11ec-99e9-dfdfa34a3196"),
+			"test_data",
+
+			&outdial.Outdial{
+				ID: uuid.FromStringOrNil("beddb5ce-b563-11ec-99e9-dfdfa34a3196"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"beddb5ce-b563-11ec-99e9-dfdfa34a3196","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockOutdial := outdialhandler.NewMockOutdialHandler(mc)
+			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:           mockSock,
+				outdialHandler:       mockOutdial,
+				outdialTargetHandler: mockOutdialTarget,
+			}
+
+			mockOutdial.EXPECT().UpdateData(gomock.Any(), tt.outdialID, tt.data).Return(tt.outdial, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

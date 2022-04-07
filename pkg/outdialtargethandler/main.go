@@ -15,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/dbhandler"
 )
 
+// outdialTargetHandler defines
 type outdialTargetHandler struct {
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
@@ -35,6 +36,8 @@ type OutdialTargetHandler interface {
 		destination3 *cmaddress.Address,
 		destination4 *cmaddress.Address,
 	) (*outdialtarget.OutdialTarget, error)
+	Delete(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error)
+
 	Get(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error)
 	GetsByOutdialID(ctx context.Context, outdialID uuid.UUID, token string, limit uint64) ([]*outdialtarget.OutdialTarget, error)
 	GetAvailable(
@@ -48,9 +51,12 @@ type OutdialTargetHandler interface {
 		interval time.Duration,
 		limit uint64,
 	) ([]*outdialtarget.OutdialTarget, error)
+
+	UpdateStatus(ctx context.Context, id uuid.UUID, status outdialtarget.Status) (*outdialtarget.OutdialTarget, error)
+	UpdateProgressing(ctx context.Context, id uuid.UUID, destinationIndex int) (*outdialtarget.OutdialTarget, error)
 }
 
-// NewOutdialTargetHandler return FlowHandler
+// NewOutdialTargetHandler return OutdialTargetHandler
 func NewOutdialTargetHandler(
 	db dbhandler.DBHandler,
 	reqHandler requesthandler.RequestHandler,

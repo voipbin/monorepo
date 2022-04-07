@@ -22,6 +22,7 @@ import (
 type DBHandler interface {
 	// outdial
 	OutdialCreate(ctx context.Context, f *outdial.Outdial) error
+	OutdialDelete(ctx context.Context, id uuid.UUID) error
 	OutdialGet(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error)
 	OutdialGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outdial.Outdial, error)
 	OutdialUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error

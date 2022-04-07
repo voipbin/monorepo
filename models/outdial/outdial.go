@@ -6,7 +6,7 @@ import "github.com/gofrs/uuid"
 type Outdial struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
-
+	
 	CampaignID uuid.UUID `json:"campaign_id"`
 
 	Name   string `json:"name"`

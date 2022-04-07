@@ -9,12 +9,34 @@ import (
 // v1 data type request struct for
 // /v1/outdials POST
 type V1DataOutdialsPost struct {
-	CustomerID uuid.UUID `json:"customer_id"` // flow's owner
+	CustomerID uuid.UUID `json:"customer_id"`
 	CampaignID uuid.UUID `json:"campaign_id"`
 
 	Name   string `json:"name"`   // name
 	Detail string `json:"detail"` // detail
 	Data   string `json:"data"`
+}
+
+// V1DataOutdialsIDPut is
+// v1 data type request struct for
+// /v1/outdials/<outdial-id> PUT
+type V1DataOutdialsIDPut struct {
+	Name   string `json:"name"`   // name
+	Detail string `json:"detail"` // detail
+}
+
+// V1DataOutdialsIDDataPut is
+// v1 data type request struct for
+// /v1/outdials/<outdial-id>/data PUT
+type V1DataOutdialsIDDataPut struct {
+	Data string `json:"data"`
+}
+
+// V1DataOutdialsIDCampaignIDPut is
+// v1 data type request struct for
+// /v1/outdials/<outdial-id>/campaign_id PUT
+type V1DataOutdialsIDCampaignIDPut struct {
+	CampaignID uuid.UUID `json:"campaign_id"`
 }
 
 // V1DataOutdialsIDTargetsPost is

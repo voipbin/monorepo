@@ -53,6 +53,20 @@ func (mr *MockDBHandlerMockRecorder) OutdialCreate(ctx, f interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialCreate", reflect.TypeOf((*MockDBHandler)(nil).OutdialCreate), ctx, f)
 }
 
+// OutdialDelete mocks base method.
+func (m *MockDBHandler) OutdialDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutdialDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// OutdialDelete indicates an expected call of OutdialDelete.
+func (mr *MockDBHandlerMockRecorder) OutdialDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialDelete", reflect.TypeOf((*MockDBHandler)(nil).OutdialDelete), ctx, id)
+}
+
 // OutdialGet mocks base method.
 func (m *MockDBHandler) OutdialGet(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error) {
 	m.ctrl.T.Helper()
