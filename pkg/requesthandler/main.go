@@ -11,6 +11,7 @@ import (
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
+	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -28,6 +29,8 @@ import (
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
+	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	qmqueuecallreference "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
@@ -76,6 +79,7 @@ const (
 	queueFlow       = "bin-manager.flow-manager.request"
 	queueMessage    = "bin-manager.message-manager.request"
 	queueNumber     = "bin-manager.number-manager.request"
+	queueOutdial    = "bin-manager.outdial-manager.request"
 	queueQueue      = "bin-manager.queue-manager.request"
 	queueRegistrar  = "bin-manager.registrar-manager.request"
 	queueStorage    = "bin-manager.storage-manager.request"
@@ -142,8 +146,11 @@ const (
 
 	resourceMMMessages resource = "mm/messages"
 
-	resourceNumberAvailableNumbers resource = "nm/available-number"
-	resourceNumberNumbers          resource = "number/numbers"
+	resourceNumberAvailableNumbers resource = "number-manager/available-number"
+	resourceNumberNumbers          resource = "number-manager/numbers"
+
+	resourceOMOutdials       resource = "outdial-manager/outdials"
+	resourceOMOutdialTargets resource = "outdial-manager/outdial_targets"
 
 	resourceQMQueues              resource = "qm/queues"
 	resourceQMQueuecalls          resource = "qm/queuecalls"
@@ -347,6 +354,42 @@ type RequestHandler interface {
 	NMV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
 	NMV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*nmnumber.Number, error)
 	NMV1NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.Number, error)
+
+	// outdial-manager outdial
+	OMV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*omoutdial.Outdial, error)
+	OMV1OutdialDelete(ctx context.Context, outdialID uuid.UUID) (*omoutdial.Outdial, error)
+	OMV1OutdialGet(ctx context.Context, id uuid.UUID) (*omoutdial.Outdial, error)
+	OMV1OutdialGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]omoutdial.Outdial, error)
+	OMV1OutdialUpdateBasicInfo(ctx context.Context, outdialID uuid.UUID, name, detail string) (*omoutdial.Outdial, error)
+	OMV1OutdialUpdateCampaignID(ctx context.Context, outdialID, campaignID uuid.UUID) (*omoutdial.Outdial, error)
+	OMV1OutdialUpdateData(ctx context.Context, outdialID uuid.UUID, data string) (*omoutdial.Outdial, error)
+
+	// outdial-manager outdialtarget
+	OMV1OutdialtargetCreate(
+		ctx context.Context,
+		outdialID uuid.UUID,
+		name string,
+		detail string,
+		data string,
+		destination0 *address.Address,
+		destination1 *address.Address,
+		destination2 *address.Address,
+		destination3 *address.Address,
+		destination4 *address.Address,
+	) (*omoutdialtarget.OutdialTarget, error)
+	OMV1OutdialtargetDelete(ctx context.Context, outdialtargetID uuid.UUID) (*omoutdialtarget.OutdialTarget, error)
+	OMV1OutdialtargetGet(ctx context.Context, outdialtargetID uuid.UUID) (*omoutdialtarget.OutdialTarget, error)
+	OMV1OutdialtargetGetsAvailable(
+		ctx context.Context,
+		outdialID uuid.UUID,
+		tryCount0 int,
+		tryCount1 int,
+		tryCount2 int,
+		tryCount3 int,
+		tryCount4 int,
+		interval int,
+		limit int,
+	) ([]omoutdialtarget.OutdialTarget, error)
 
 	// queue-manager queue
 	QMV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueue.Queue, error)

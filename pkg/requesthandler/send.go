@@ -197,3 +197,11 @@ func (r *requestHandler) sendRequestMM(uri string, method rabbitmqhandler.Reques
 
 	return r.sendRequest(queueMessage, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestOutdial send a request to the outdial-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestOutdial(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(queueOutdial, uri, method, resource, timeout, delayed, dataType, data)
+}

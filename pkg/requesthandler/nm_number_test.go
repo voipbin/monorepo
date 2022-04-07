@@ -15,15 +15,8 @@ import (
 )
 
 func TestNMV1NumberFlowDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		flowID uuid.UUID
@@ -32,9 +25,7 @@ func TestNMV1NumberFlowDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -55,6 +46,14 @@ func TestNMV1NumberFlowDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -67,15 +66,8 @@ func TestNMV1NumberFlowDelete(t *testing.T) {
 }
 
 func TestNMV1NumberCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID    uuid.UUID
@@ -90,9 +82,7 @@ func TestNMV1NumberCreate(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult *nmnumber.Number
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -123,6 +113,14 @@ func TestNMV1NumberCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -138,16 +136,9 @@ func TestNMV1NumberCreate(t *testing.T) {
 	}
 }
 
-func TestNMV1NumberGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_NMV1NumberGets(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -159,9 +150,7 @@ func TestNMV1NumberGets(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult []nmnumber.Number
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -201,6 +190,14 @@ func TestNMV1NumberGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
@@ -217,16 +214,9 @@ func TestNMV1NumberGets(t *testing.T) {
 	}
 }
 
-func TestNMV1NumberGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_NMV1NumberGet(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		numberID uuid.UUID
@@ -236,9 +226,7 @@ func TestNMV1NumberGet(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult *nmnumber.Number
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -274,6 +262,14 @@ func TestNMV1NumberGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -289,16 +285,9 @@ func TestNMV1NumberGet(t *testing.T) {
 	}
 }
 
-func TestNMV1NumberDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_NMV1NumberDelete(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		numberID uuid.UUID
@@ -308,9 +297,7 @@ func TestNMV1NumberDelete(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult *nmnumber.Number
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -346,6 +333,14 @@ func TestNMV1NumberDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -361,16 +356,8 @@ func TestNMV1NumberDelete(t *testing.T) {
 	}
 }
 
-func TestNMV1NumberUpdateBasicInfo(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+func Test_NMV1NumberUpdateBasicInfo(t *testing.T) {
+	tests := []struct {
 		name string
 
 		id         uuid.UUID
@@ -382,9 +369,7 @@ func TestNMV1NumberUpdateBasicInfo(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult *nmnumber.Number
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -425,6 +410,14 @@ func TestNMV1NumberUpdateBasicInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -441,15 +434,8 @@ func TestNMV1NumberUpdateBasicInfo(t *testing.T) {
 }
 
 func Test_NMV1NumberUpdateFlowID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		id            uuid.UUID
@@ -461,9 +447,7 @@ func Test_NMV1NumberUpdateFlowID(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult *nmnumber.Number
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -491,6 +475,14 @@ func Test_NMV1NumberUpdateFlowID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
