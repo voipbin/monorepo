@@ -141,6 +141,44 @@ func (h *listenHandler) v1OutdialsIDGet(ctx context.Context, m *rabbitmqhandler.
 	return res, nil
 }
 
+// v1OutdialsIDDelete handles /v1/outdials/<outdial-id> DELETE request
+func (h *listenHandler) v1OutdialsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpVals := strings.Split(u.Path, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "v1OutdialsIDDelete",
+			"outdial_id": id,
+		},
+	)
+	log.WithField("request", m).Debug("Executing v1OutdialsIDDelete.")
+
+	tmp, err := h.outdialHandler.Delete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete outdial. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // v1OutdialsIDPut handles /v1/outdials/<outdial-id> PUT request
 func (h *listenHandler) v1OutdialsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)

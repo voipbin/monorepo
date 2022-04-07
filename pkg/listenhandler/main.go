@@ -172,6 +172,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/outdials/<outdial-id>"
 		response, err = h.v1OutdialsIDPut(ctx, m)
 
+	case regV1OutdialsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/outdials/<outdial-id>"
+		response, err = h.v1OutdialsIDDelete(ctx, m)
+
 	// outdials/<outdial-id>/available
 	case regV1OutdialsIDAvailable.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/outdials/<outdial-id>/available"
