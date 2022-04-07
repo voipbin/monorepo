@@ -53,6 +53,21 @@ func (mr *MockOutdialTargetHandlerMockRecorder) Create(ctx, outdialID, name, det
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockOutdialTargetHandler)(nil).Create), ctx, outdialID, name, detail, data, destination0, destination1, destination2, destination3, destination4)
 }
 
+// Delete mocks base method.
+func (m *MockOutdialTargetHandler) Delete(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*outdialtarget.OutdialTarget)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockOutdialTargetHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockOutdialTargetHandler)(nil).Delete), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockOutdialTargetHandler) Get(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error) {
 	m.ctrl.T.Helper()
@@ -96,4 +111,34 @@ func (m *MockOutdialTargetHandler) GetsByOutdialID(ctx context.Context, outdialI
 func (mr *MockOutdialTargetHandlerMockRecorder) GetsByOutdialID(ctx, outdialID, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByOutdialID", reflect.TypeOf((*MockOutdialTargetHandler)(nil).GetsByOutdialID), ctx, outdialID, token, limit)
+}
+
+// UpdateProgressing mocks base method.
+func (m *MockOutdialTargetHandler) UpdateProgressing(ctx context.Context, id uuid.UUID, destinationIndex int) (*outdialtarget.OutdialTarget, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProgressing", ctx, id, destinationIndex)
+	ret0, _ := ret[0].(*outdialtarget.OutdialTarget)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateProgressing indicates an expected call of UpdateProgressing.
+func (mr *MockOutdialTargetHandlerMockRecorder) UpdateProgressing(ctx, id, destinationIndex interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProgressing", reflect.TypeOf((*MockOutdialTargetHandler)(nil).UpdateProgressing), ctx, id, destinationIndex)
+}
+
+// UpdateStatus mocks base method.
+func (m *MockOutdialTargetHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status outdialtarget.Status) (*outdialtarget.OutdialTarget, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatus", ctx, id, status)
+	ret0, _ := ret[0].(*outdialtarget.OutdialTarget)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStatus indicates an expected call of UpdateStatus.
+func (mr *MockOutdialTargetHandlerMockRecorder) UpdateStatus(ctx, id, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockOutdialTargetHandler)(nil).UpdateStatus), ctx, id, status)
 }

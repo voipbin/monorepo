@@ -16,14 +16,13 @@ import (
 )
 
 // v1OutdialsPost handles /v1/outdials POST request
-func (h *listenHandler) v1OutdialsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) v1OutdialsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1OutdialsPost",
 		},
 	)
-	log.WithField("request", m).Debug("Received request.")
+	log.WithField("request", m).Debug("Executing v1OutdialsPost.")
 
 	var req request.V1DataOutdialsPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
@@ -61,15 +60,14 @@ func (h *listenHandler) v1OutdialsPost(m *rabbitmqhandler.Request) (*rabbitmqhan
 }
 
 // v1OutdialsGet handles /v1/outdials GET request
-func (h *listenHandler) v1OutdialsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) v1OutdialsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1OutdialsGet",
 		},
 	)
-	log.WithField("request", req).Debug("Received request.")
+	log.WithField("request", req).Debug("Executing v1OutdialsGet.")
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -106,24 +104,23 @@ func (h *listenHandler) v1OutdialsGet(req *rabbitmqhandler.Request) (*rabbitmqha
 }
 
 // v1OutdialsIDGet handles /v1/outdials/<outdial-id> GET request
-func (h *listenHandler) v1OutdialsIDGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1OutdialsIDGet",
-		},
-	)
-	log.WithField("request", m).Debug("Received request.")
-
+func (h *listenHandler) v1OutdialsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
 
 	tmpVals := strings.Split(u.Path, "/")
-	outdialID := uuid.FromStringOrNil(tmpVals[3])
+	id := uuid.FromStringOrNil(tmpVals[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "v1OutdialsIDGet",
+			"outdial_id": id,
+		},
+	)
+	log.WithField("request", m).Debug("Executing v1OutdialsIDGet.")
 
-	tmp, err := h.outdialHandler.Get(ctx, outdialID)
+	tmp, err := h.outdialHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outdial. err: %v", err)
 		return nil, err
@@ -144,16 +141,146 @@ func (h *listenHandler) v1OutdialsIDGet(m *rabbitmqhandler.Request) (*rabbitmqha
 	return res, nil
 }
 
-// v1OutdialsIDAvailableGet handles /v1/outdials/<outdial-id>/available GET request
-func (h *listenHandler) v1OutdialsIDAvailableGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+// v1OutdialsIDPut handles /v1/outdials/<outdial-id> PUT request
+func (h *listenHandler) v1OutdialsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpVals := strings.Split(u.Path, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
 
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "v1OutdialsIDAvailableGet",
+			"func":       "v1OutdialsIDPut",
+			"outdial_id": id,
 		},
 	)
-	log.WithField("request", m).Debug("Received request.")
+	log.WithField("request", m).Debug("Executing v1OutdialsIDPut.")
+
+	var req request.V1DataOutdialsIDPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		logrus.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	// handle
+	tmp, err := h.outdialHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not update outdial. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1OutdialsIDCampaignIDPut handles /v1/outdials/<outdial-id>/campaign_id PUT request
+func (h *listenHandler) v1OutdialsIDCampaignIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpVals := strings.Split(u.Path, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "v1OutdialsIDCampaignIDPut",
+			"outdial_id": id,
+		},
+	)
+	log.WithField("request", m).Debug("Executing v1OutdialsIDCampaignIDPut.")
+
+	var req request.V1DataOutdialsIDCampaignIDPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		logrus.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	// handle
+	tmp, err := h.outdialHandler.UpdateCampaignID(ctx, id, req.CampaignID)
+	if err != nil {
+		log.Errorf("Could not update outdial. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1OutdialsIDDataPut handles /v1/outdials/<outdial-id>/data PUT request
+func (h *listenHandler) v1OutdialsIDDataPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpVals := strings.Split(u.Path, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "v1OutdialsIDDataPut",
+			"outdial_id": id,
+		},
+	)
+	log.WithField("request", m).Debug("Executing v1OutdialsIDDataPut.")
+
+	var req request.V1DataOutdialsIDDataPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		logrus.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	// handle
+	tmp, err := h.outdialHandler.UpdateData(ctx, id, req.Data)
+	if err != nil {
+		log.Errorf("Could not update outdial. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1OutdialsIDAvailableGet handles /v1/outdials/<outdial-id>/available GET request
+func (h *listenHandler) v1OutdialsIDAvailableGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -161,7 +288,15 @@ func (h *listenHandler) v1OutdialsIDAvailableGet(m *rabbitmqhandler.Request) (*r
 	}
 
 	tmpVals := strings.Split(u.Path, "/")
-	outdialID := uuid.FromStringOrNil(tmpVals[3])
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "v1OutdialsIDAvailableGet",
+			"outdial_id": id,
+		},
+	)
+	log.WithField("request", m).Debug("Executing v1OutdialsIDAvailableGet.")
 
 	// parse the params
 	tryCount0, _ := strconv.Atoi(u.Query().Get("try_count_0"))
@@ -173,7 +308,7 @@ func (h *listenHandler) v1OutdialsIDAvailableGet(m *rabbitmqhandler.Request) (*r
 	tmpLimit, _ := strconv.Atoi(u.Query().Get("limit"))
 	limit := uint64(tmpLimit)
 
-	tmp, err := h.outdialTargetHandler.GetAvailable(ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, time.Millisecond*time.Duration(interval), limit)
+	tmp, err := h.outdialTargetHandler.GetAvailable(ctx, id, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, time.Millisecond*time.Duration(interval), limit)
 	if err != nil {
 		log.Errorf("Could not get available targets. err: %v", err)
 		return nil, err
@@ -195,22 +330,22 @@ func (h *listenHandler) v1OutdialsIDAvailableGet(m *rabbitmqhandler.Request) (*r
 }
 
 // v1OutdialsIDTargetsPost handles /v1/outdials/<outdial-id>/targets POST request
-func (h *listenHandler) v1OutdialsIDTargetsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1OutdialsIDTargetsPost",
-		},
-	)
-	log.WithField("request", m).Debug("Received request.")
-
+func (h *listenHandler) v1OutdialsIDTargetsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
 
 	tmpVals := strings.Split(u.Path, "/")
-	outdialID := uuid.FromStringOrNil(tmpVals[3])
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "v1OutdialsIDTargetsPost",
+			"outdial_id": id,
+		},
+	)
+	log.WithField("request", m).Debug("Executing v1OutdialsIDTargetsPost.")
 
 	var req request.V1DataOutdialsIDTargetsPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
@@ -221,7 +356,7 @@ func (h *listenHandler) v1OutdialsIDTargetsPost(m *rabbitmqhandler.Request) (*ra
 	// create
 	tmp, err := h.outdialTargetHandler.Create(
 		ctx,
-		outdialID,
+		id,
 		req.Name,
 		req.Detail,
 		req.Data,
@@ -252,30 +387,29 @@ func (h *listenHandler) v1OutdialsIDTargetsPost(m *rabbitmqhandler.Request) (*ra
 }
 
 // v1OutdialsIDTargetsGet handles /v1/outdials/<outdial-id>/targets GET request
-func (h *listenHandler) v1OutdialsIDTargetsGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1OutdialsIDTargetsGet",
-		},
-	)
-	log.WithField("request", m).Debug("Received request.")
-
+func (h *listenHandler) v1OutdialsIDTargetsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
 
 	tmpVals := strings.Split(u.Path, "/")
-	outdialID := uuid.FromStringOrNil(tmpVals[3])
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "v1OutdialsIDTargetsGet",
+			"outdial_id": id,
+		},
+	)
+	log.WithField("request", m).Debug("Executing v1OutdialsIDTargetsGet.")
 
 	// parse the pagination params
 	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	tmp, err := h.outdialTargetHandler.GetsByOutdialID(ctx, outdialID, pageToken, pageSize)
+	tmp, err := h.outdialTargetHandler.GetsByOutdialID(ctx, id, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not get outdialtargets. err: %v", err)
 		return nil, err

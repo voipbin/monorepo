@@ -92,6 +92,28 @@ func (h *outdialTargetHandler) Get(ctx context.Context, id uuid.UUID) (*outdialt
 	return res, nil
 }
 
+// Delete deletes outdialtarget
+func (h *outdialTargetHandler) Delete(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":              "Delete",
+			"outdial_target_id": id,
+		})
+
+	if err := h.db.OutdialTargetDelete(ctx, id); err != nil {
+		log.Errorf("Could not delete the outdial. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.OutdialTargetGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted the outdial. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // GetsByOutdialID returns list of outdialtargets
 func (h *outdialTargetHandler) GetsByOutdialID(ctx context.Context, outdialID uuid.UUID, token string, limit uint64) ([]*outdialtarget.OutdialTarget, error) {
 	log := logrus.WithFields(
@@ -141,6 +163,53 @@ func (h *outdialTargetHandler) GetAvailable(
 	)
 	if err != nil {
 		log.Errorf("Could not get available outdialtarget. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateProgressing updates the outdialtarget's status to progress and increase try count
+func (h *outdialTargetHandler) UpdateProgressing(ctx context.Context, id uuid.UUID, destinationIndex int) (*outdialtarget.OutdialTarget, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":             "UpdateProgressing",
+			"outdialtarget_id": id,
+		})
+
+	if errUpdate := h.db.OutdialTargetUpdateProgressing(ctx, id, destinationIndex); errUpdate != nil {
+		log.Errorf("Could not update the outdial target status to progressing. err: %v", errUpdate)
+		return nil, errUpdate
+	}
+
+	// get updated
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated outdialtarget. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateProgressing updates the outdialtarget's status to progress and increase try count
+func (h *outdialTargetHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status outdialtarget.Status) (*outdialtarget.OutdialTarget, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":             "UpdateStatus",
+			"outdialtarget_id": id,
+			"status":           status,
+		})
+
+	if errUpdate := h.db.OutdialTargetUpdateStatus(ctx, id, status); errUpdate != nil {
+		log.Errorf("Could not update the outdialtarget status. err: %v", errUpdate)
+		return nil, errUpdate
+	}
+
+	// get updated
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated outdialtarget. err: %v", err)
 		return nil, err
 	}
 

@@ -2,6 +2,7 @@ create table outdials(
   -- identity
   id          binary(16),
   customer_id binary(16),
+
   campaign_id binary(16),
 
   name      varchar(255),

@@ -668,7 +668,7 @@ func (h *handler) OutdialTargetUpdateProgressing(ctx context.Context, id uuid.UU
 	return nil
 }
 
-// OutdialTargetUpdateProgressing updates outdialtarget's basic info.
+// OutdialTargetGetAvailable returns available outdialtargets.
 func (h *handler) OutdialTargetGetAvailable(
 	ctx context.Context,
 	outdialID uuid.UUID,

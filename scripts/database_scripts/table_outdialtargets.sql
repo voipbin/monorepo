@@ -1,7 +1,6 @@
 create table outdialtargets(
   -- identity
   id          binary(16),
-  customer_id binary(16),
   outdial_id  binary(16),
 
   name      varchar(255),
@@ -9,7 +8,6 @@ create table outdialtargets(
 
   data    text,
   status  varchar(255),
-  destinations json,
 
   -- destinations
   destination_0 json,
@@ -33,6 +31,4 @@ create table outdialtargets(
   primary key(id)
 );
 
-create index idx_outdialtargets_customer_id on outdialtargets(customer_id);
 create index idx_outdialtargets_outdial_id on outdialtargets(outdial_id);
-create index idx_outdialtargets_name on outdialtargets(name);
