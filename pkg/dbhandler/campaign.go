@@ -1,0 +1,373 @@
+package dbhandler
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+)
+
+const (
+	// select query for campaign get
+	campaignSelect = `
+	select
+		id,
+		customer_id,
+
+		name,
+		detail,
+
+		status,
+		service_level,
+
+		outplan_id,
+		outdial_id,
+		queue_id,
+
+		next_campaign_id,
+
+		tm_create,
+		tm_update,
+		tm_delete
+	from
+		campaigns
+	`
+)
+
+// campaignGetFromRow gets the campaign from the row.
+func (h *handler) campaignGetFromRow(row *sql.Rows) (*campaign.Campaign, error) {
+	res := &campaign.Campaign{}
+	if err := row.Scan(
+		&res.ID,
+		&res.CustomerID,
+
+		&res.Name,
+		&res.Detail,
+
+		&res.Status,
+		&res.ServiceLevel,
+
+		&res.OutplanID,
+		&res.OutdialID,
+		&res.QueueID,
+
+		&res.NextCampaignID,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+		&res.TMDelete,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. campaignGetFromRow. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// CampaignCreate insert a new campaign record
+func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) error {
+	q := `insert into campaigns(
+		id,
+		customer_id,
+
+		name,
+		detail,
+
+		status,
+		service_level,
+
+		outplan_id,
+		outdial_id,
+		queue_id,
+
+		next_campaign_id,
+
+		tm_create,
+		tm_update,
+		tm_delete
+	) values(
+		?, ?,
+		?, ?,
+		?, ?,
+		?, ?, ?,
+		?,
+		?, ?, ?
+	)`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. CampaignCreate. err: %v", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx,
+		t.ID.Bytes(),
+		t.CustomerID.Bytes(),
+
+		t.Name,
+		t.Detail,
+
+		t.Status,
+		t.ServiceLevel,
+
+		t.OutplanID.Bytes(),
+		t.OutdialID.Bytes(),
+		t.QueueID.Bytes(),
+
+		t.NextCampaignID.Bytes(),
+
+		t.TMCreate,
+		t.TMUpdate,
+		t.TMDelete,
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute query. CampaignCreate. err: %v", err)
+	}
+
+	_ = h.campaignUpdateToCache(ctx, t.ID)
+
+	return nil
+}
+
+// campaignUpdateToCache gets the campaign from the DB and update the cache.
+func (h *handler) campaignUpdateToCache(ctx context.Context, id uuid.UUID) error {
+
+	res, err := h.campaignGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.campaignSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// campaignSetToCache sets the given campaign to the cache
+func (h *handler) campaignSetToCache(ctx context.Context, f *campaign.Campaign) error {
+	if err := h.cache.CampaignSet(ctx, f); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// campaignGetFromCache returns campaign from the cache if possible.
+func (h *handler) campaignGetFromCache(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+
+	// get from cache
+	res, err := h.cache.CampaignGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// campaignGetFromDB gets the campaign info from the db.
+func (h *handler) campaignGetFromDB(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where id = ?", campaignSelect)
+
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("could not prepare. campaignGetFromDB. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	row, err := stmt.QueryContext(ctx, id.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. campaignGetFromDB. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.campaignGetFromRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// CampaignDelete deletes the given campaign
+func (h *handler) CampaignDelete(ctx context.Context, id uuid.UUID) error {
+	q := `
+	update campaigns set
+		tm_delete = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignDelete. err: %v", err)
+	}
+
+	// update cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaignGet returns campaign.
+func (h *handler) CampaignGet(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+
+	res, err := h.campaignGetFromCache(ctx, id)
+	if err == nil {
+		return res, nil
+	}
+
+	res, err = h.campaignGetFromDB(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = h.campaignSetToCache(ctx, res)
+
+	return res, nil
+}
+
+// CampaignGetsByCustomerID returns list of campaigns.
+func (h *handler) CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete >= ?
+			and customer_id = ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, campaignSelect)
+
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CampaignGetsByCustomerID. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*campaign.Campaign
+	for rows.Next() {
+		u, err := h.campaignGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not scan the row. CampaignGetsByCustomerID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
+// CampaignUpdateBasicInfo updates campaign's basic information.
+func (h *handler) CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+	q := `
+	update campaigns set
+		name = ?,
+		detail = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, name, detail, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateBasicInfo. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaignUpdateResourceInfo updates campaign's resource information.
+func (h *handler) CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) error {
+	q := `
+	update campaigns set
+		outplan_id = ?,
+		outdial_id = ?,
+		queue_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, outplanID.Bytes(), outdialID.Bytes(), queueID.Bytes(), GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateResourceInfo. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaignUpdateNextCampaignID updates campaign's next_campaign_id information.
+func (h *handler) CampaignUpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) error {
+	q := `
+	update campaigns set
+		next_campaign_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, nextCampaignID.Bytes(), GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateNextCampaignID. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaignUpdateStatus updates campaign's status.
+func (h *handler) CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) error {
+	q := `
+	update campaigns set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, status, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateStatus. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaignUpdateServiceLevel updates campaign's service_level.
+func (h *handler) CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) error {
+	q := `
+	update campaigns set
+		service_level = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, serviceLevel, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateServiceLevel. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}

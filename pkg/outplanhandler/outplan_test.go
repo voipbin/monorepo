@@ -1,0 +1,335 @@
+package outplanhandler
+
+import (
+	"context"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
+)
+
+func Test_Create(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID   uuid.UUID
+		outplanName  string
+		detail       string
+		actions      []fmaction.Action
+		source       *cmaddress.Address
+		DialTimeout  int
+		endHandle    outplan.EndHandle
+		tryInterval  int
+		maxTryCount0 int
+		maxTryCount1 int
+		maxTryCount2 int
+		maxTryCount3 int
+		maxTryCount4 int
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("bccbd45a-b3d8-11ec-a518-b79a1b2fe501"),
+			"test name",
+			"test detail",
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+
+			30000,
+			outplan.EndHandleStop,
+			300000,
+			3,
+			3,
+			3,
+			3,
+			3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := outplanHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutplanCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().OutplanGet(ctx, gomock.Any()).Return(&outplan.Outplan{}, nil)
+
+			_, err := h.Create(
+				ctx,
+				tt.customerID,
+				tt.outplanName,
+				tt.detail,
+				tt.actions,
+				tt.source,
+				tt.DialTimeout,
+				tt.endHandle,
+				tt.tryInterval,
+				tt.maxTryCount0,
+				tt.maxTryCount1,
+				tt.maxTryCount2,
+				tt.maxTryCount3,
+				tt.maxTryCount4,
+			)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("25c10840-b483-11ec-adef-db7166e52bbe"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := outplanHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutplanDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+			_, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_GetsByCustomerID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		token      string
+		limit      uint64
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("68d4b05a-b3d9-11ec-99be-d305ba7d7154"),
+			"2020-10-10 03:30:17.000000",
+			10,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := outplanHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutplanGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return([]*outplan.Outplan{}, nil)
+			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_UpdateBasicInfo(t *testing.T) {
+	tests := []struct {
+		name string
+
+		id          uuid.UUID
+		outplanName string
+		detail      string
+	}{
+		{
+			"test normal",
+
+			uuid.FromStringOrNil("ede467d0-b3da-11ec-bb49-e75e301e41f0"),
+			"update name",
+			"update detail",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &outplanHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutplanUpdateBasicInfo(ctx, tt.id, tt.outplanName, tt.detail).Return(nil)
+			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+
+			_, err := h.UpdateBasicInfo(ctx, tt.id, tt.outplanName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_UpdateActionInfo(t *testing.T) {
+	tests := []struct {
+		name string
+
+		id        uuid.UUID
+		actions   []fmaction.Action
+		source    *cmaddress.Address
+		endHandle outplan.EndHandle
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("4dbf65e2-b3db-11ec-9f36-d7e97af657ab"),
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			outplan.EndHandleStop,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &outplanHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutplanUpdateActionInfo(ctx, tt.id, tt.actions, tt.source, tt.endHandle).Return(nil)
+			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+
+			_, err := h.UpdateActionInfo(ctx, tt.id, tt.actions, tt.source, tt.endHandle)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_UpdateDialInfo(t *testing.T) {
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		dialTimeout  int
+		tyrInterval  int
+		maxTryCount0 int
+		maxTryCount1 int
+		maxTryCount2 int
+		maxTryCount3 int
+		maxTryCount4 int
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("1f7003d0-b3dc-11ec-906b-33094783cdd2"),
+			30000,
+			600000,
+			3,
+			3,
+			3,
+			3,
+			3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &outplanHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutplanUpdateDialInfo(ctx, tt.id, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(nil)
+			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+
+			_, err := h.UpdateDialInfo(ctx, tt.id, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
