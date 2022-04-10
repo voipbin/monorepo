@@ -389,6 +389,8 @@ type RequestHandler interface {
 		interval int,
 		limit int,
 	) ([]omoutdialtarget.OutdialTarget, error)
+	OMV1OutdialtargetUpdateStatusProgressing(ctx context.Context, outdialtargetID uuid.UUID, destinationIndex int) (*omoutdialtarget.OutdialTarget, error)
+	OMV1OutdialtargetUpdateStatus(ctx context.Context, outdialtargetID uuid.UUID, status omoutdialtarget.Status) (*omoutdialtarget.OutdialTarget, error)
 
 	// queue-manager queue
 	QMV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueue.Queue, error)
