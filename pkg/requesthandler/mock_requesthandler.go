@@ -1668,6 +1668,36 @@ func (mr *MockRequestHandlerMockRecorder) OMV1OutdialtargetGetsAvailable(ctx, ou
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OMV1OutdialtargetGetsAvailable", reflect.TypeOf((*MockRequestHandler)(nil).OMV1OutdialtargetGetsAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, interval, limit)
 }
 
+// OMV1OutdialtargetUpdateStatus mocks base method.
+func (m *MockRequestHandler) OMV1OutdialtargetUpdateStatus(ctx context.Context, outdialtargetID uuid.UUID, status outdialtarget.Status) (*outdialtarget.OutdialTarget, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OMV1OutdialtargetUpdateStatus", ctx, outdialtargetID, status)
+	ret0, _ := ret[0].(*outdialtarget.OutdialTarget)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OMV1OutdialtargetUpdateStatus indicates an expected call of OMV1OutdialtargetUpdateStatus.
+func (mr *MockRequestHandlerMockRecorder) OMV1OutdialtargetUpdateStatus(ctx, outdialtargetID, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OMV1OutdialtargetUpdateStatus", reflect.TypeOf((*MockRequestHandler)(nil).OMV1OutdialtargetUpdateStatus), ctx, outdialtargetID, status)
+}
+
+// OMV1OutdialtargetUpdateStatusProgressing mocks base method.
+func (m *MockRequestHandler) OMV1OutdialtargetUpdateStatusProgressing(ctx context.Context, outdialtargetID uuid.UUID, destinationIndex int) (*outdialtarget.OutdialTarget, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OMV1OutdialtargetUpdateStatusProgressing", ctx, outdialtargetID, destinationIndex)
+	ret0, _ := ret[0].(*outdialtarget.OutdialTarget)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OMV1OutdialtargetUpdateStatusProgressing indicates an expected call of OMV1OutdialtargetUpdateStatusProgressing.
+func (mr *MockRequestHandlerMockRecorder) OMV1OutdialtargetUpdateStatusProgressing(ctx, outdialtargetID, destinationIndex interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OMV1OutdialtargetUpdateStatusProgressing", reflect.TypeOf((*MockRequestHandler)(nil).OMV1OutdialtargetUpdateStatusProgressing), ctx, outdialtargetID, destinationIndex)
+}
+
 // QMV1QueueCreate mocks base method.
 func (m *MockRequestHandler) QMV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
