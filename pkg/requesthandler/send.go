@@ -158,13 +158,13 @@ func (r *requestHandler) sendRequestSM(uri string, method rabbitmqhandler.Reques
 	return r.sendRequest(queueStorage, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// // sendRequestUM send a request to the user-manager and return the response
-// // timeout millisecond
-// // delayed millisecond
-// func (r *requestHandler) sendRequestUM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+// sendRequestUM send a request to the user-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestUM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-// 	return r.sendRequest(queueUser, uri, method, resource, timeout, delayed, dataType, data)
-// }
+	return r.sendRequest(queueUser, uri, method, resource, timeout, delayed, dataType, data)
+}
 
 // sendRequestAM send a request to the agent-manager and return the response
 // timeout millisecond

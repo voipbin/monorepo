@@ -40,6 +40,7 @@ import (
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	bucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	user "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 )
 
 // MockRequestHandler is a mock of RequestHandler interface.
@@ -2231,6 +2232,122 @@ func (m *MockRequestHandler) TSV1StreamingCreate(ctx context.Context, customerID
 func (mr *MockRequestHandlerMockRecorder) TSV1StreamingCreate(ctx, customerID, referenceID, referenceType, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TSV1StreamingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TSV1StreamingCreate), ctx, customerID, referenceID, referenceType, language)
+}
+
+// UMV1UserCreate mocks base method.
+func (m *MockRequestHandler) UMV1UserCreate(ctx context.Context, timeout int, username, password, name, detail string, permission user.Permission) (*user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UMV1UserCreate", ctx, timeout, username, password, name, detail, permission)
+	ret0, _ := ret[0].(*user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UMV1UserCreate indicates an expected call of UMV1UserCreate.
+func (mr *MockRequestHandlerMockRecorder) UMV1UserCreate(ctx, timeout, username, password, name, detail, permission interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UMV1UserCreate", reflect.TypeOf((*MockRequestHandler)(nil).UMV1UserCreate), ctx, timeout, username, password, name, detail, permission)
+}
+
+// UMV1UserDelete mocks base method.
+func (m *MockRequestHandler) UMV1UserDelete(ctx context.Context, id uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UMV1UserDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UMV1UserDelete indicates an expected call of UMV1UserDelete.
+func (mr *MockRequestHandlerMockRecorder) UMV1UserDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UMV1UserDelete", reflect.TypeOf((*MockRequestHandler)(nil).UMV1UserDelete), ctx, id)
+}
+
+// UMV1UserGet mocks base method.
+func (m *MockRequestHandler) UMV1UserGet(ctx context.Context, id uint64) (*user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UMV1UserGet", ctx, id)
+	ret0, _ := ret[0].(*user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UMV1UserGet indicates an expected call of UMV1UserGet.
+func (mr *MockRequestHandlerMockRecorder) UMV1UserGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UMV1UserGet", reflect.TypeOf((*MockRequestHandler)(nil).UMV1UserGet), ctx, id)
+}
+
+// UMV1UserGets mocks base method.
+func (m *MockRequestHandler) UMV1UserGets(ctx context.Context, pageToken string, pageSize uint64) ([]user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UMV1UserGets", ctx, pageToken, pageSize)
+	ret0, _ := ret[0].([]user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UMV1UserGets indicates an expected call of UMV1UserGets.
+func (mr *MockRequestHandlerMockRecorder) UMV1UserGets(ctx, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UMV1UserGets", reflect.TypeOf((*MockRequestHandler)(nil).UMV1UserGets), ctx, pageToken, pageSize)
+}
+
+// UMV1UserLogin mocks base method.
+func (m *MockRequestHandler) UMV1UserLogin(ctx context.Context, timeout int, username, password string) (*user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UMV1UserLogin", ctx, timeout, username, password)
+	ret0, _ := ret[0].(*user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UMV1UserLogin indicates an expected call of UMV1UserLogin.
+func (mr *MockRequestHandlerMockRecorder) UMV1UserLogin(ctx, timeout, username, password interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UMV1UserLogin", reflect.TypeOf((*MockRequestHandler)(nil).UMV1UserLogin), ctx, timeout, username, password)
+}
+
+// UMV1UserUpdateBasicInfo mocks base method.
+func (m *MockRequestHandler) UMV1UserUpdateBasicInfo(ctx context.Context, userID uint64, name, detail string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UMV1UserUpdateBasicInfo", ctx, userID, name, detail)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UMV1UserUpdateBasicInfo indicates an expected call of UMV1UserUpdateBasicInfo.
+func (mr *MockRequestHandlerMockRecorder) UMV1UserUpdateBasicInfo(ctx, userID, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UMV1UserUpdateBasicInfo", reflect.TypeOf((*MockRequestHandler)(nil).UMV1UserUpdateBasicInfo), ctx, userID, name, detail)
+}
+
+// UMV1UserUpdatePassword mocks base method.
+func (m *MockRequestHandler) UMV1UserUpdatePassword(ctx context.Context, timeout int, userID uint64, password string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UMV1UserUpdatePassword", ctx, timeout, userID, password)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UMV1UserUpdatePassword indicates an expected call of UMV1UserUpdatePassword.
+func (mr *MockRequestHandlerMockRecorder) UMV1UserUpdatePassword(ctx, timeout, userID, password interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UMV1UserUpdatePassword", reflect.TypeOf((*MockRequestHandler)(nil).UMV1UserUpdatePassword), ctx, timeout, userID, password)
+}
+
+// UMV1UserUpdatePermission mocks base method.
+func (m *MockRequestHandler) UMV1UserUpdatePermission(ctx context.Context, userID uint64, permission user.Permission) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UMV1UserUpdatePermission", ctx, userID, permission)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UMV1UserUpdatePermission indicates an expected call of UMV1UserUpdatePermission.
+func (mr *MockRequestHandlerMockRecorder) UMV1UserUpdatePermission(ctx, userID, permission interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UMV1UserUpdatePermission", reflect.TypeOf((*MockRequestHandler)(nil).UMV1UserUpdatePermission), ctx, userID, permission)
 }
 
 // WMV1WebhookSend mocks base method.
