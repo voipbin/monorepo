@@ -38,7 +38,6 @@ import (
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -84,8 +83,8 @@ const (
 	queueStorage    = "bin-manager.storage-manager.request"
 	queueTranscribe = "bin-manager.transcribe-manager.request"
 	queueTTS        = "bin-manager.tts-manager.request"
-	queueUser       = "bin-manager.user-manager.request"
-	queueWebhook    = "bin-manager.webhook-manager.request"
+	// queueUser       = "bin-manager.user-manager.request"
+	queueWebhook = "bin-manager.webhook-manager.request"
 )
 
 // default stasis application name.
@@ -165,7 +164,7 @@ const (
 
 	resourceTTSSpeeches resource = "tts/speeches"
 
-	resourceUMUsers resource = "um/users"
+	// resourceUMUsers resource = "um/users"
 )
 
 func initPrometheus(namespace string) {
@@ -446,15 +445,15 @@ type RequestHandler interface {
 	TSV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType tstranscribe.Type, language string) (*tstranscribe.Transcribe, error)
 	TSV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*tstranscribe.Transcribe, error)
 
-	// user-manager
-	UMV1UserCreate(ctx context.Context, timeout int, username, password, name, detail string, permission umuser.Permission) (*umuser.User, error)
-	UMV1UserDelete(ctx context.Context, id uint64) error
-	UMV1UserGet(ctx context.Context, id uint64) (*umuser.User, error)
-	UMV1UserGets(ctx context.Context, pageToken string, pageSize uint64) ([]umuser.User, error)
-	UMV1UserLogin(ctx context.Context, timeout int, username, password string) (*umuser.User, error)
-	UMV1UserUpdateBasicInfo(ctx context.Context, userID uint64, name, detail string) error
-	UMV1UserUpdatePassword(ctx context.Context, timeout int, userID uint64, password string) error
-	UMV1UserUpdatePermission(ctx context.Context, userID uint64, permission umuser.Permission) error
+	// // user-manager
+	// UMV1UserCreate(ctx context.Context, timeout int, username, password, name, detail string, permission umuser.Permission) (*umuser.User, error)
+	// UMV1UserDelete(ctx context.Context, id uint64) error
+	// UMV1UserGet(ctx context.Context, id uint64) (*umuser.User, error)
+	// UMV1UserGets(ctx context.Context, pageToken string, pageSize uint64) ([]umuser.User, error)
+	// UMV1UserLogin(ctx context.Context, timeout int, username, password string) (*umuser.User, error)
+	// UMV1UserUpdateBasicInfo(ctx context.Context, userID uint64, name, detail string) error
+	// UMV1UserUpdatePassword(ctx context.Context, timeout int, userID uint64, password string) error
+	// UMV1UserUpdatePermission(ctx context.Context, userID uint64, permission umuser.Permission) error
 
 	// webhook-manager webhooks
 	WMV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType, messageType string, messageData []byte) error
