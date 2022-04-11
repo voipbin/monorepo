@@ -460,3 +460,107 @@ func Test_CampaigncallUpdateStatus(t *testing.T) {
 		})
 	}
 }
+
+func Test_CampaigncallUpdateActiveflowID(t *testing.T) {
+	tests := []struct {
+		name         string
+		campaigncall *campaigncall.Campaigncall
+
+		activeflowID uuid.UUID
+
+		expectRes *campaigncall.Campaigncall
+	}{
+		{
+			"normal",
+			&campaigncall.Campaigncall{
+				ID:              uuid.FromStringOrNil("b763f327-ce45-46f7-9a27-2449e51395be"),
+				CustomerID:      uuid.FromStringOrNil("3405b2d3-5da1-41f2-b4fd-77f3202b72ce"),
+				CampaignID:      uuid.FromStringOrNil("a43632bc-b501-11ec-8c14-dbf345739172"),
+				OutplanID:       uuid.FromStringOrNil("5f6f2cea-b4fe-11ec-9b36-eb1f55d879de"),
+				OutdialID:       uuid.FromStringOrNil("5fa1b52a-b4fe-11ec-a2f7-f73dfe01ba97"),
+				OutdialTargetID: uuid.FromStringOrNil("5fd06ca8-b4fe-11ec-b8b8-1fd108444321"),
+				QueueID:         uuid.FromStringOrNil("6003b072-b4fe-11ec-afc8-df78feb301b9"),
+				ReferenceType:   campaigncall.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("d8a52825-8434-4ceb-8944-677095755cb1"),
+				Status:          campaigncall.StatusProgressing,
+				Source: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destination: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+				DestinationIndex: 0,
+				TryCount:         1,
+				TMCreate:         "2020-04-18 03:22:18.995000",
+				TMUpdate:         "2020-04-18 03:22:18.995000",
+			},
+
+			uuid.FromStringOrNil("2452b844-dc04-46ee-959f-199c8cec9101"),
+
+			&campaigncall.Campaigncall{
+				ID:              uuid.FromStringOrNil("b763f327-ce45-46f7-9a27-2449e51395be"),
+				CustomerID:      uuid.FromStringOrNil("3405b2d3-5da1-41f2-b4fd-77f3202b72ce"),
+				CampaignID:      uuid.FromStringOrNil("a43632bc-b501-11ec-8c14-dbf345739172"),
+				OutplanID:       uuid.FromStringOrNil("5f6f2cea-b4fe-11ec-9b36-eb1f55d879de"),
+				OutdialID:       uuid.FromStringOrNil("5fa1b52a-b4fe-11ec-a2f7-f73dfe01ba97"),
+				OutdialTargetID: uuid.FromStringOrNil("5fd06ca8-b4fe-11ec-b8b8-1fd108444321"),
+				QueueID:         uuid.FromStringOrNil("6003b072-b4fe-11ec-afc8-df78feb301b9"),
+				ActiveflowID:    uuid.FromStringOrNil("2452b844-dc04-46ee-959f-199c8cec9101"),
+				ReferenceType:   campaigncall.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("d8a52825-8434-4ceb-8944-677095755cb1"),
+				Status:          campaigncall.StatusProgressing,
+				Source: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destination: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+				DestinationIndex: 0,
+				TryCount:         1,
+				TMCreate:         "2020-04-18 03:22:18.995000",
+				TMUpdate:         "2020-04-18 03:22:18.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().CampaigncallSet(ctx, tt.campaigncall).Return(nil)
+			if err := h.CampaigncallCreate(context.Background(), tt.campaigncall); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CampaigncallSet(ctx, gomock.Any()).Return(nil)
+			if err := h.CampaigncallUpdateActiveflowID(ctx, tt.campaigncall.ID, tt.activeflowID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CampaigncallGet(gomock.Any(), tt.campaigncall.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaigncallSet(gomock.Any(), gomock.Any())
+			res, err := h.CampaigncallGet(ctx, tt.campaigncall.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			tt.expectRes.TMUpdate = res.TMUpdate
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
