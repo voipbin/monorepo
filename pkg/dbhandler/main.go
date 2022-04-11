@@ -48,6 +48,7 @@ type DBHandler interface {
 	CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error
+	CampaigncallUpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) error
 }
 
 // handler database handler

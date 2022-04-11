@@ -16,6 +16,7 @@ type Outplan struct {
 	Detail string `json:"detail"`
 
 	// action settings
+	FlowID    uuid.UUID          `json:"flow_id"`
 	Actions   []action.Action    `json:"actions"`
 	Source    *cmaddress.Address `json:"source"` // caller id
 	EndHandle EndHandle          `json:"end_handle"`
@@ -34,9 +35,15 @@ type Outplan struct {
 	TMDelete string `json:"tm_delete"`
 }
 
+// const defines
+const (
+	MaxTryCountLen = 5 // length of max try count
+)
+
 // EndHandle defines
 type EndHandle string
 
+// list of EndHandle types
 const (
 	EndHandleStop     EndHandle = "stop"
 	EndHandleContinue EndHandle = "continue"

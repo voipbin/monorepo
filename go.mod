@@ -16,6 +16,7 @@ require (
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220329151049-d7ded2418210
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220407105244-2fc86da3801f
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220407065856-d8e87c4b7787
+	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220407104327-e065a02296ab
 )
 
 require (
@@ -33,7 +34,6 @@ require (
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20220318121408-b737007a1e9d // indirect
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220327172303-37339951d6fc // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220320183155-5a5e01a5c899 // indirect
-	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220407104327-e065a02296ab // indirect
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220405053152-9f340b15005b // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220209071252-a365e400801c // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20211221033732-78e26f6c23a6 // indirect
