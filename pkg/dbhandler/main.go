@@ -19,18 +19,16 @@ import (
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
-	// activeflow
 	ActiveflowCreate(ctx context.Context, af *activeflow.Activeflow) error
 	ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error
 	ActiveflowDelete(ctx context.Context, id uuid.UUID) error
 	ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error)
 
-	// flow
 	FlowCreate(ctx context.Context, f *flow.Flow) error
 	FlowDelete(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
-	FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
+	FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
 	FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
 	FlowSetToCache(ctx context.Context, f *flow.Flow) error
 	FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error
@@ -44,7 +42,7 @@ type handler struct {
 
 // handler errors
 var (
-	ErrNotFound = errors.New("record not found")
+	ErrNotFound = errors.New("Record not found")
 )
 
 // list of default values

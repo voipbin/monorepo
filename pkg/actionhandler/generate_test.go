@@ -12,6 +12,10 @@ import (
 )
 
 func Test_generateFlowActions(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h := &actionHandler{}
 
 	tests := []struct {
 		name string
@@ -130,11 +134,6 @@ func Test_generateFlowActions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			h := &actionHandler{}
-
 			ctx := context.Background()
 
 			res, err := h.GenerateFlowActions(ctx, tt.actions)

@@ -215,8 +215,8 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	return res, nil
 }
 
-// FlowGetsByCustomerID returns list of flows.
-func (h *handler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
+// FlowGetsBy returns list of flows.
+func (h *handler) FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
 
 	// prepare
 	q := fmt.Sprintf(`

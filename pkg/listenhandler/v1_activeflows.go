@@ -14,7 +14,8 @@ import (
 
 // v1ActiveflowsPost handles /v1/activeflows POST request
 // creates a new activeflow with given data.
-func (h *listenHandler) v1ActiveflowsPost(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
 
 	var reqData request.V1DataActiveFlowsPost
 	if err := json.Unmarshal(req.Data, &reqData); err != nil {
@@ -46,7 +47,8 @@ func (h *listenHandler) v1ActiveflowsPost(ctx context.Context, req *rabbitmqhand
 
 // v1ActiveflowsIDDelete handles
 // /v1/activeflows/{id} DELETE
-func (h *listenHandler) v1ActiveflowsIDDelete(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
 
 	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb"
 	tmpVals := strings.Split(req.URI, "/")
@@ -83,7 +85,8 @@ func (h *listenHandler) v1ActiveflowsIDDelete(ctx context.Context, req *rabbitmq
 
 // v1ActiveflowsIDNextGet handles
 // /v1/activeflows/{id}/next GET
-func (h *listenHandler) v1ActiveflowsIDNextGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDNextGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
 
 	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/next"
 	tmpVals := strings.Split(req.URI, "/")
@@ -117,7 +120,8 @@ func (h *listenHandler) v1ActiveflowsIDNextGet(ctx context.Context, req *rabbitm
 
 // v1ActiveflowsIDForwardActionIDPut handles
 // /v1/activeflows/{id}/forward_action_id PUT
-func (h *listenHandler) v1ActiveflowsIDForwardActionIDPut(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDForwardActionIDPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
 
 	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/forward_action_id"
 	tmpVals := strings.Split(req.URI, "/")
@@ -153,7 +157,8 @@ func (h *listenHandler) v1ActiveflowsIDForwardActionIDPut(ctx context.Context, r
 
 // v1ActiveflowsIDExecutePost handles
 // /v1/activeflows/{id}/execute Post
-func (h *listenHandler) v1ActiveflowsIDExecutePost(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDExecutePost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
 
 	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/execute"
 	tmpVals := strings.Split(req.URI, "/")

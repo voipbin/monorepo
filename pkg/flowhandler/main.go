@@ -40,7 +40,7 @@ type FlowHandler interface {
 	) (*flow.Flow, error)
 	FlowDelete(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
-	FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
+	FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
 	FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
 	FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error)
 }

@@ -14,11 +14,20 @@ import (
 )
 
 func TestActionGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	tests := []struct {
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &flowHandler{
+		db: mockDB,
+	}
+
+	type test struct {
 		name string
 		flow *flow.Flow
-	}{
+	}
+
+	tests := []test{
 		{
 			"test normal",
 			&flow.Flow{
@@ -39,14 +48,6 @@ func TestActionGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			h := &flowHandler{
-				db: mockDB,
-			}
-
 			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
 			action, err := h.ActionGet(context.Background(), tt.flow.ID, tt.flow.Actions[0].ID)
 			if err != nil {

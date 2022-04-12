@@ -15,6 +15,16 @@ import (
 )
 
 func Test_Execute(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &activeflowHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
 
 	tests := []struct {
 		name string
@@ -72,22 +82,11 @@ func Test_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &activeflowHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
-
 			ctx := context.Background()
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveFlow, nil).AnyTimes()
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseActiveFlow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveFlow)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseActiveFlow.CustomerID, activeflow.EventTypeActiveFlowUpdated, tt.responseActiveFlow)
 
 			if err := h.Execute(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

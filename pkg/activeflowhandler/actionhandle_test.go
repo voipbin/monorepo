@@ -24,8 +24,21 @@ import (
 )
 
 func TestActiveFlowHandleActionConnect(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	tests := []struct {
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+
+		actionHandler: mockAction,
+	}
+
+	type test struct {
 		name   string
 		callID uuid.UUID
 		af     *activeflow.Activeflow
@@ -37,7 +50,9 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 		unchained    bool
 
 		expectReqFlowActions []action.Action
-	}{
+	}
+
+	tests := []test{
 		{
 			"single destination",
 			uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
@@ -185,20 +200,6 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAction := actionhandler.NewMockActionHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-
-				actionHandler: mockAction,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.cf, nil)
@@ -220,6 +221,16 @@ func TestActiveFlowHandleActionConnect(t *testing.T) {
 }
 
 func TestGetActionsFromFlow(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name   string
@@ -239,17 +250,6 @@ func TestGetActionsFromFlow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			tmpFlow := &flow.Flow{
@@ -266,6 +266,16 @@ func TestGetActionsFromFlow(t *testing.T) {
 }
 
 func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name string
@@ -326,17 +336,6 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.updateActiveFlow).Return(nil)
@@ -349,6 +348,16 @@ func TestActiveFlowHandleActionGotoLoopContinue(t *testing.T) {
 }
 
 func Test_activeFlowHandleActionGotoLoopOver(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name string
@@ -418,17 +427,6 @@ func Test_activeFlowHandleActionGotoLoopOver(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			if err := h.actionHandleGoto(ctx, tt.callID, tt.activeFlow); err != nil {
@@ -440,6 +438,17 @@ func Test_activeFlowHandleActionGotoLoopOver(t *testing.T) {
 }
 
 func Test_actionHandleQueueJoin(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
 	tests := []struct {
 		name string
 
@@ -611,17 +620,6 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
@@ -639,6 +637,18 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 }
 
 func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+
+	h := &activeflowHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		actionHandler: mockAction,
+	}
 
 	tests := []struct {
 		name string
@@ -778,19 +788,6 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAction := actionhandler.NewMockActionHandler(mc)
-
-			h := &activeflowHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				actionHandler: mockAction,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().FMV1FlowGet(ctx, tt.flowID).Return(tt.responseflow, nil)
@@ -804,6 +801,16 @@ func TestActiveFlowHandleActionPatchFlow(t *testing.T) {
 }
 
 func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name string
@@ -881,17 +888,6 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CFV1ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
@@ -906,6 +902,19 @@ func TestActiveFlowHandleActionConferenceJoin(t *testing.T) {
 }
 
 func TestActiveFlowHandleActionAgentCall(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+
+		actionHandler: mockAction,
+	}
 
 	tests := []struct {
 		name string
@@ -972,20 +981,6 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAction := actionhandler.NewMockActionHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-
-				actionHandler: mockAction,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.activeFlow.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.responseConference, nil)
@@ -1003,6 +998,16 @@ func TestActiveFlowHandleActionAgentCall(t *testing.T) {
 }
 
 func Test_activeFlowHandleActionBranch(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name string
@@ -1119,17 +1124,6 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CMV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
@@ -1145,6 +1139,16 @@ func Test_activeFlowHandleActionBranch(t *testing.T) {
 }
 
 func Test_activeFlowHandleActionConditionCallDigits(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name string
@@ -1203,17 +1207,6 @@ func Test_activeFlowHandleActionConditionCallDigits(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CMV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
@@ -1226,6 +1219,16 @@ func Test_activeFlowHandleActionConditionCallDigits(t *testing.T) {
 }
 
 func Test_activeFlowHandleActionConditionCallDigitsFail(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name string
@@ -1326,17 +1329,6 @@ func Test_activeFlowHandleActionConditionCallDigitsFail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CMV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
@@ -1350,6 +1342,16 @@ func Test_activeFlowHandleActionConditionCallDigitsFail(t *testing.T) {
 }
 
 func Test_actionHandleConditionCallStatus(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name string
@@ -1394,17 +1396,6 @@ func Test_actionHandleConditionCallStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CMV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
@@ -1417,6 +1408,16 @@ func Test_actionHandleConditionCallStatus(t *testing.T) {
 }
 
 func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name string
@@ -1485,17 +1486,6 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CMV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
@@ -1509,6 +1499,16 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 }
 
 func Test_actionHandleMessageSend(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	tests := []struct {
 		name string
@@ -1595,17 +1595,6 @@ func Test_actionHandleMessageSend(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().MMV1MessageSend(ctx, tt.expectCustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(&mmmessage.Message{}, nil)
@@ -1618,6 +1607,16 @@ func Test_actionHandleMessageSend(t *testing.T) {
 }
 
 func Test_actionHandleTranscribeRecording(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	type test struct {
 		name       string
@@ -1650,17 +1649,6 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 			mockReq.EXPECT().TSV1CallRecordingCreate(ctx, tt.customerID, tt.callID, tt.language, 120000, 30).Return([]tstranscribe.Transcribe{}, nil)
 			if err := h.actionHandleTranscribeRecording(ctx, tt.activeflow, tt.callID, tt.act); err != nil {
@@ -1671,6 +1659,16 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 }
 
 func Test_actionHandleTranscribeStart(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
 
 	type test struct {
 		name       string
@@ -1714,17 +1712,6 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
 			ctx := context.Background()
 			mockReq.EXPECT().TSV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language).Return(tt.response, nil)
 			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow, tt.referenceID, tt.act); err != nil {

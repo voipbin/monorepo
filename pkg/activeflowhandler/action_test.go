@@ -11,15 +11,16 @@ import (
 )
 
 func TestAppendActions(t *testing.T) {
-
-	tests := []struct {
+	type test struct {
 		name         string
 		action1      []action.Action
 		action2      []action.Action
 		expectAction []action.Action
 
 		targetActionID uuid.UUID
-	}{
+	}
+
+	tests := []test{
 		{
 			"normal",
 			[]action.Action{
@@ -87,15 +88,16 @@ func TestAppendActions(t *testing.T) {
 }
 
 func TestReplaceActions(t *testing.T) {
-
-	tests := []struct {
+	type test struct {
 		name         string
 		action1      []action.Action
 		action2      []action.Action
 		expectAction []action.Action
 
 		targetActionID uuid.UUID
-	}{
+	}
+
+	tests := []test{
 		{
 			"normal",
 			[]action.Action{

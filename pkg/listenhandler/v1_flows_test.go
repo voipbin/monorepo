@@ -13,9 +13,19 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
-func Test_v1FlowsPost(t *testing.T) {
+func TestFlowsPost(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	tests := []struct {
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		flowHandler: mockFlowHandler,
+	}
+
+	type test struct {
 		name    string
 		request *rabbitmqhandler.Request
 
@@ -25,7 +35,9 @@ func Test_v1FlowsPost(t *testing.T) {
 		detail     string
 		persist    bool
 		actions    []action.Action
-	}{
+	}
+
+	tests := []test{
 		{
 			"empty actions",
 			&rabbitmqhandler.Request{
@@ -131,17 +143,6 @@ func Test_v1FlowsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:  mockSock,
-				flowHandler: mockFlowHandler,
-			}
-
 			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions).Return(&flow.Flow{}, nil)
 
 			if _, err := h.processRequest(tt.request); err != nil {
@@ -151,9 +152,19 @@ func Test_v1FlowsPost(t *testing.T) {
 	}
 }
 
-func Test_v1FlowsGet(t *testing.T) {
+func TestV1FlowsGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	tests := []struct {
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		flowHandler: mockFlowHandler,
+	}
+
+	type test struct {
 		name       string
 		customerID uuid.UUID
 		flowType   flow.Type
@@ -163,7 +174,9 @@ func Test_v1FlowsGet(t *testing.T) {
 		flows      []*flow.Flow
 
 		expectRes *rabbitmqhandler.Response
-	}{
+	}
+
+	tests := []test{
 		{
 			"1 item",
 			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
@@ -283,21 +296,10 @@ func Test_v1FlowsGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:  mockSock,
-				flowHandler: mockFlowHandler,
-			}
-
 			if tt.flowType != flow.TypeNone {
 				mockFlowHandler.EXPECT().FlowGetsByType(gomock.Any(), tt.customerID, tt.flowType, tt.pageToken, tt.pageSize).Return(tt.flows, nil)
 			} else {
-				mockFlowHandler.EXPECT().FlowGetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.flows, nil)
+				mockFlowHandler.EXPECT().FlowGets(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.flows, nil)
 			}
 
 			res, err := h.processRequest(tt.request)
@@ -312,13 +314,26 @@ func Test_v1FlowsGet(t *testing.T) {
 	}
 }
 
-func Test_v1FlowsIDActionsIDGet(t *testing.T) {
-	tests := []struct {
+func TestV1FlowsIDActionsIDGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		flowHandler: mockFlowHandler,
+	}
+
+	type test struct {
 		name           string
 		request        *rabbitmqhandler.Request
 		expectFlowID   uuid.UUID
 		expectActionID uuid.UUID
-	}{
+	}
+
+	tests := []test{
 		{
 			"empty actions",
 			&rabbitmqhandler.Request{
@@ -334,17 +349,6 @@ func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:  mockSock,
-				flowHandler: mockFlowHandler,
-			}
-
 			mockFlowHandler.EXPECT().ActionGet(gomock.Any(), tt.expectFlowID, tt.expectActionID).Return(nil, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -358,7 +362,18 @@ func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 	}
 }
 
-func Test_v1FlowsIDGet(t *testing.T) {
+func TestV1FlowsIDGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		flowHandler: mockFlowHandler,
+	}
+
 	tests := []struct {
 		name      string
 		request   *rabbitmqhandler.Request
@@ -416,17 +431,6 @@ func Test_v1FlowsIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:  mockSock,
-				flowHandler: mockFlowHandler,
-			}
-
 			mockFlowHandler.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -441,9 +445,19 @@ func Test_v1FlowsIDGet(t *testing.T) {
 	}
 }
 
-func Test_v1FlowsIDPut(t *testing.T) {
+func TestV1FlowsIDPut(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	tests := []struct {
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		flowHandler: mockFlowHandler,
+	}
+
+	type test struct {
 		name    string
 		request *rabbitmqhandler.Request
 
@@ -454,7 +468,9 @@ func Test_v1FlowsIDPut(t *testing.T) {
 
 		responseFlow *flow.Flow
 		expectRes    *rabbitmqhandler.Response
-	}{
+	}
+
+	tests := []test{
 		{
 			"normal",
 			&rabbitmqhandler.Request{
@@ -501,17 +517,6 @@ func Test_v1FlowsIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:  mockSock,
-				flowHandler: mockFlowHandler,
-			}
-
 			mockFlowHandler.EXPECT().FlowUpdate(gomock.Any(), tt.id, tt.flowName, tt.detail, tt.actions).Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -526,16 +531,28 @@ func Test_v1FlowsIDPut(t *testing.T) {
 	}
 }
 
-func Test_v11FlowsIDDelete(t *testing.T) {
+func TestV1FlowsIDDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	tests := []struct {
+	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+
+	h := &listenHandler{
+		rabbitSock:  mockSock,
+		flowHandler: mockFlowHandler,
+	}
+
+	type test struct {
 		name    string
 		flowID  uuid.UUID
 		request *rabbitmqhandler.Request
 
 		responseFlow *flow.Flow
 		expectRes    *rabbitmqhandler.Response
-	}{
+	}
+
+	tests := []test{
 		{
 			"normal",
 			uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
@@ -559,17 +576,6 @@ func Test_v11FlowsIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:  mockSock,
-				flowHandler: mockFlowHandler,
-			}
-
 			mockFlowHandler.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
