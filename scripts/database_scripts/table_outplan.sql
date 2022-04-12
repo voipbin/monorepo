@@ -6,13 +6,12 @@ create table outplans(
   name      varchar(255),
   detail    text,
 
-  flow_id       binary(16),
   actions       json,
   source        json,
-  end_handle    varchar(255),
-
   dial_timeout  integer,
+  end_handle    varchar(255),
   try_interval  integer,
+
   max_try_count_0 integer,
   max_try_count_1 integer,
   max_try_count_2 integer,
@@ -28,4 +27,3 @@ create table outplans(
 );
 
 create index idx_outplans_customer_id on outplans(customer_id);
-create index idx_outplans_flow_id on outplans(flow_id);

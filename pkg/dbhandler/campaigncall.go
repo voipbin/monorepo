@@ -340,23 +340,3 @@ func (h *handler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, st
 
 	return nil
 }
-
-// CampaigncallUpdateActiveflowID updates campaigncall's activeflow_id and reference_id.
-func (h *handler) CampaigncallUpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) error {
-	q := `
-	update campaigncalls set
-		activeflow_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, activeflowID.Bytes(), GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. CampaigncallUpdateActiveflowID. err: %v", err)
-	}
-
-	// set to the cache
-	_ = h.campaigncallUpdateToCache(ctx, id)
-
-	return nil
-}

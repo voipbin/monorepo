@@ -227,20 +227,6 @@ func (mr *MockDBHandlerMockRecorder) CampaigncallGetsByCampaignIDAndStatus(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsByCampaignIDAndStatus", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetsByCampaignIDAndStatus), ctx, campaignID, status, token, limit)
 }
 
-// CampaigncallUpdateActiveflowID mocks base method.
-func (m *MockDBHandler) CampaigncallUpdateActiveflowID(ctx context.Context, id, activeflowID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaigncallUpdateActiveflowID", ctx, id, activeflowID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CampaigncallUpdateActiveflowID indicates an expected call of CampaigncallUpdateActiveflowID.
-func (mr *MockDBHandlerMockRecorder) CampaigncallUpdateActiveflowID(ctx, id, activeflowID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallUpdateActiveflowID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallUpdateActiveflowID), ctx, id, activeflowID)
-}
-
 // CampaigncallUpdateStatus mocks base method.
 func (m *MockDBHandler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error {
 	m.ctrl.T.Helper()
