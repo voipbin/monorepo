@@ -12,7 +12,7 @@ require (
 	github.com/prometheus/common v0.33.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220412175532-6f72ae964292
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220412175035-1ea79d8e3980
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220413023809-ada95c1670de
 	golang.org/x/net v0.0.0-20220412020605-290c469a71a5 // indirect
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	golang.org/x/text v0.3.7 // indirect

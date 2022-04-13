@@ -53,7 +53,7 @@ func TestCMRecordingGet(t *testing.T) {
 			},
 			&cmrecording.Recording{
 				ID:          uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
-				UserID:      0,
+				CustomerID:  uuid.FromStringOrNil("e46238ef-c246-4024-9926-417246acdcba"),
 				Type:        cmrecording.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 				Status:      cmrecording.StatusEnd,
@@ -63,9 +63,9 @@ func TestCMRecordingGet(t *testing.T) {
 			"https://download.uri/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 
 			&bucketrecording.BucketRecording{
-				RecordingID:    uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
-				BucketURI:      "gs://voipbin-production/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
-				DownloadURI:    "https://download.uri/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
+				RecordingID:      uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
+				BucketURI:        "gs://voipbin-production/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
+				DownloadURI:      "https://download.uri/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 				TMDownloadExpire: "",
 			},
 		},

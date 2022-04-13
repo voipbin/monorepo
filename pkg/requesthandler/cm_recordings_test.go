@@ -43,7 +43,7 @@ func TestCMRecordingGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"147ff2c6-981e-11eb-90c2-d3780290d3d1","user_id":0,"type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","filename":"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav","webhook_uri":"","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"147ff2c6-981e-11eb-90c2-d3780290d3d1","customer_id":"29e0c938-8bc4-4763-a706-fcf716839b68","type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","filename":"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav","webhook_uri":"","asterisk_id":"","channel_id":"","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 
 			"bin-manager.call-manager.request",
@@ -54,7 +54,7 @@ func TestCMRecordingGet(t *testing.T) {
 			},
 			&cmrecording.Recording{
 				ID:          uuid.FromStringOrNil("147ff2c6-981e-11eb-90c2-d3780290d3d1"),
-				UserID:      0,
+				CustomerID:  uuid.FromStringOrNil("29e0c938-8bc4-4763-a706-fcf716839b68"),
 				Type:        cmrecording.TypeCall,
 				ReferenceID: uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 				Status:      cmrecording.StatusEnd,
