@@ -17,19 +17,6 @@ import (
 )
 
 func TestGenerateFlowForAgentCall(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockAction := actionhandler.NewMockActionHandler(mc)
-	h := &activeflowHandler{
-		db:            mockDB,
-		notifyHandler: mockNotify,
-		reqHandler:    mockReq,
-		actionHandler: mockAction,
-	}
 
 	tests := []struct {
 		name string
@@ -64,6 +51,19 @@ func TestGenerateFlowForAgentCall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			h := &activeflowHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+				actionHandler: mockAction,
+			}
 
 			ctx := context.Background()
 

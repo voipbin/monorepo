@@ -16,18 +16,6 @@ import (
 )
 
 func Test_V1ActiveflowsPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		flowHandler:       mockFlowHandler,
-		activeflowHandler: mockActive,
-	}
 
 	tests := []struct {
 		name    string
@@ -79,6 +67,19 @@ func Test_V1ActiveflowsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				flowHandler:       mockFlowHandler,
+				activeflowHandler: mockActive,
+			}
+
 			mockActive.EXPECT().Create(gomock.Any(), tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.af, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -93,19 +94,6 @@ func Test_V1ActiveflowsPost(t *testing.T) {
 }
 
 func TestV1ActiveflowsIDNextGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		flowHandler:       mockFlowHandler,
-		activeflowHandler: mockActive,
-	}
-
 	tests := []struct {
 		name            string
 		request         *rabbitmqhandler.Request
@@ -132,6 +120,19 @@ func TestV1ActiveflowsIDNextGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				flowHandler:       mockFlowHandler,
+				activeflowHandler: mockActive,
+			}
+
 			mockActive.EXPECT().GetNextAction(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.nextAction, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -146,18 +147,6 @@ func TestV1ActiveflowsIDNextGet(t *testing.T) {
 }
 
 func TestV1ActiveflowsIDForwardActionIDPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		flowHandler:       mockFlowHandler,
-		activeflowHandler: mockActive,
-	}
 
 	tests := []struct {
 		name            string
@@ -194,6 +183,19 @@ func TestV1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				flowHandler:       mockFlowHandler,
+				activeflowHandler: mockActive,
+			}
+
 			mockActive.EXPECT().SetForwardActionID(gomock.Any(), tt.callID, tt.forwardActionID, tt.forwardNow).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -208,19 +210,6 @@ func TestV1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 }
 
 func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		flowHandler:       mockFlowHandler,
-		activeflowHandler: mockActive,
-	}
-
 	tests := []struct {
 		name    string
 		request *rabbitmqhandler.Request
@@ -248,6 +237,19 @@ func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				flowHandler:       mockFlowHandler,
+				activeflowHandler: mockActive,
+			}
+
 			mockActive.EXPECT().Execute(gomock.Any(), tt.activeflowID)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -264,18 +266,6 @@ func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 }
 
 func Test_v1ActiveflowsIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
-	mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		flowHandler:       mockFlowHandler,
-		activeflowHandler: mockActive,
-	}
 
 	tests := []struct {
 		name    string
@@ -309,6 +299,19 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				flowHandler:       mockFlowHandler,
+				activeflowHandler: mockActive,
+			}
+
 			mockActive.EXPECT().Delete(gomock.Any(), tt.activeflowID).Return(tt.responseDelete, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {

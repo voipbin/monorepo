@@ -15,22 +15,12 @@ import (
 )
 
 func TestFlowCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		db:    dbTest,
-		cache: mockCache,
-	}
-
-	type test struct {
+	tests := []struct {
 		name       string
 		flow       *flow.Flow
 		expectFlow *flow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"have no actions",
 			&flow.Flow{
@@ -109,15 +99,25 @@ func TestFlowCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
-			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
+			if err := h.FlowCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
-			res, err := h.FlowGet(context.Background(), tt.flow.ID)
+			mockCache.EXPECT().FlowGet(ctx, tt.flow.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
+			res, err := h.FlowGet(ctx, tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -132,24 +132,14 @@ func TestFlowCreate(t *testing.T) {
 }
 
 func TestFlowGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		db:    dbTest,
-		cache: mockCache,
-	}
-
-	type test struct {
+	tests := []struct {
 		name       string
 		customerID uuid.UUID
 		limit      uint64
 		flows      []flow.Flow
 		expectFlow []*flow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"have no actions",
 			uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
@@ -191,16 +181,25 @@ func TestFlowGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
 			ctx := context.Background()
 
 			for _, flow := range tt.flows {
-				mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+				mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 				if err := h.FlowCreate(ctx, &flow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			flows, err := h.FlowGets(ctx, tt.customerID, GetCurTime(), tt.limit)
+			flows, err := h.FlowGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -217,25 +216,15 @@ func TestFlowGets(t *testing.T) {
 }
 
 func TestFlowGetsByType(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		db:    dbTest,
-		cache: mockCache,
-	}
-
-	type test struct {
+	tests := []struct {
 		name       string
 		customerID uuid.UUID
 		flowType   flow.Type
 		limit      uint64
 		flows      []flow.Flow
 		expectFlow []*flow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
@@ -282,10 +271,19 @@ func TestFlowGetsByType(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
 			ctx := context.Background()
 
 			for _, flow := range tt.flows {
-				mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+				mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 				if err := h.FlowCreate(ctx, &flow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
@@ -308,12 +306,8 @@ func TestFlowGetsByType(t *testing.T) {
 }
 
 func TestFlowUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name string
 		flow *flow.Flow
 
@@ -321,9 +315,7 @@ func TestFlowUpdate(t *testing.T) {
 		detail    string
 		actions   []action.Action
 		expectRes *flow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"test normal",
 			&flow.Flow{
@@ -392,20 +384,26 @@ func TestFlowUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
-			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+			ctx := context.Background()
+
+			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowUpdate(context.Background(), tt.flow.ID, tt.flowName, tt.detail, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().FlowGet(ctx, tt.flow.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			res, err := h.FlowGet(context.Background(), tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -420,18 +418,12 @@ func TestFlowUpdate(t *testing.T) {
 	}
 }
 
-func TestFlowDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_FlowDelete(t *testing.T) {
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name string
 		flow *flow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal deletion",
 			&flow.Flow{
@@ -447,6 +439,11 @@ func TestFlowDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
