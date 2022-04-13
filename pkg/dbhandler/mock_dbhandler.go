@@ -153,19 +153,19 @@ func (mr *MockDBHandlerMockRecorder) FlowGet(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockDBHandler)(nil).FlowGet), ctx, id)
 }
 
-// FlowGets mocks base method.
-func (m *MockDBHandler) FlowGets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
+// FlowGetsByCustomerID mocks base method.
+func (m *MockDBHandler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowGets", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "FlowGetsByCustomerID", ctx, customerID, token, limit)
 	ret0, _ := ret[0].([]*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowGets indicates an expected call of FlowGets.
-func (mr *MockDBHandlerMockRecorder) FlowGets(ctx, customerID, token, limit interface{}) *gomock.Call {
+// FlowGetsByCustomerID indicates an expected call of FlowGetsByCustomerID.
+func (mr *MockDBHandlerMockRecorder) FlowGetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGets", reflect.TypeOf((*MockDBHandler)(nil).FlowGets), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).FlowGetsByCustomerID), ctx, customerID, token, limit)
 }
 
 // FlowGetsByType mocks base method.
