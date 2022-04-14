@@ -16,15 +16,8 @@ import (
 )
 
 func TestCMV1CallHealth(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID     uuid.UUID
@@ -34,9 +27,7 @@ func TestCMV1CallHealth(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -60,6 +51,14 @@ func TestCMV1CallHealth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -72,15 +71,8 @@ func TestCMV1CallHealth(t *testing.T) {
 }
 
 func TestCMV1CallActionTimeout(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID uuid.UUID
@@ -90,9 +82,7 @@ func TestCMV1CallActionTimeout(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -120,6 +110,14 @@ func TestCMV1CallActionTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -132,15 +130,8 @@ func TestCMV1CallActionTimeout(t *testing.T) {
 }
 
 func TestCMV1CallActionNext(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID uuid.UUID
@@ -149,9 +140,7 @@ func TestCMV1CallActionNext(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -192,6 +181,14 @@ func TestCMV1CallActionNext(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -204,15 +201,8 @@ func TestCMV1CallActionNext(t *testing.T) {
 }
 
 func CMV1CallsCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID   uuid.UUID
@@ -225,9 +215,7 @@ func CMV1CallsCreate(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 		expectRes     []cmcall.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -267,6 +255,14 @@ func CMV1CallsCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -283,38 +279,33 @@ func CMV1CallsCreate(t *testing.T) {
 }
 
 func TestCMV1CallCreateWithID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID       uuid.UUID
 		customerID   uuid.UUID
 		flowID       uuid.UUID
+		activeflowID uuid.UUID
 		masterCallID uuid.UUID
-		source       *cmaddress.Address
-		destination  *cmaddress.Address
+
+		source      *cmaddress.Address
+		destination *cmaddress.Address
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 		expectRes     *cmcall.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("9dcdc9a0-4d1c-11ec-81cc-bf06212a283e"),
 			uuid.FromStringOrNil("45a4dbac-7f52-11ec-98a8-7f1e6d2fae52"),
 			uuid.FromStringOrNil("9f4b89b6-4d1c-11ec-a565-af220567858d"),
+			uuid.FromStringOrNil("0a5273c9-73ac-4590-87de-4c7f33da7614"),
 			uuid.FromStringOrNil("f993c284-8c97-11ec-aaa3-a76b1106d031"),
+
 			&cmaddress.Address{
 				Type:   cmaddress.TypeTel,
 				Target: "+821021656521",
@@ -329,7 +320,7 @@ func TestCMV1CallCreateWithID(t *testing.T) {
 				URI:      "/v1/calls/9dcdc9a0-4d1c-11ec-81cc-bf06212a283e",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"flow_id":"9f4b89b6-4d1c-11ec-a565-af220567858d","customer_id":"45a4dbac-7f52-11ec-98a8-7f1e6d2fae52","master_call_id":"f993c284-8c97-11ec-aaa3-a76b1106d031","source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destination":{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}}`),
+				Data:     []byte(`{"flow_id":"9f4b89b6-4d1c-11ec-a565-af220567858d","activeflow_id":"0a5273c9-73ac-4590-87de-4c7f33da7614","customer_id":"45a4dbac-7f52-11ec-98a8-7f1e6d2fae52","master_call_id":"f993c284-8c97-11ec-aaa3-a76b1106d031","source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destination":{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -344,10 +335,18 @@ func TestCMV1CallCreateWithID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
+			res, err := reqHandler.CMV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -360,15 +359,8 @@ func TestCMV1CallCreateWithID(t *testing.T) {
 }
 
 func TestCMV1CallGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID uuid.UUID
@@ -377,9 +369,7 @@ func TestCMV1CallGet(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 		expectRes     *cmcall.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -404,6 +394,14 @@ func TestCMV1CallGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -420,15 +418,8 @@ func TestCMV1CallGet(t *testing.T) {
 }
 
 func TestCMV1CallGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -439,9 +430,7 @@ func TestCMV1CallGets(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 		expectRes     []cmcall.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -497,6 +486,14 @@ func TestCMV1CallGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -513,15 +510,8 @@ func TestCMV1CallGets(t *testing.T) {
 }
 
 func TestCMCallAddChainedCall(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID        uuid.UUID
@@ -532,9 +522,7 @@ func TestCMCallAddChainedCall(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectRes     *cmcall.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -562,6 +550,14 @@ func TestCMCallAddChainedCall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -579,15 +575,8 @@ func TestCMCallAddChainedCall(t *testing.T) {
 }
 
 func TestCMCallRemoveChainedCall(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID        uuid.UUID
@@ -598,9 +587,7 @@ func TestCMCallRemoveChainedCall(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectRes     *cmcall.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -627,6 +614,14 @@ func TestCMCallRemoveChainedCall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -644,15 +639,8 @@ func TestCMCallRemoveChainedCall(t *testing.T) {
 }
 
 func TestCMCallHangup(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID uuid.UUID
@@ -662,9 +650,7 @@ func TestCMCallHangup(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  *cmcall.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -694,6 +680,14 @@ func TestCMCallHangup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -710,15 +704,8 @@ func TestCMCallHangup(t *testing.T) {
 }
 
 func TestCMV1CallAddExternalMedia(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID         uuid.UUID
@@ -733,9 +720,7 @@ func TestCMV1CallAddExternalMedia(t *testing.T) {
 
 		expectRequest *rabbitmqhandler.Request
 		expectRes     *cmresponse.V1ResponseCallsIDExternalMediaPost
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -768,6 +753,14 @@ func TestCMV1CallAddExternalMedia(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
@@ -785,15 +778,8 @@ func TestCMV1CallAddExternalMedia(t *testing.T) {
 }
 
 func Test_CMV1CallGetDigits(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID uuid.UUID
@@ -802,9 +788,7 @@ func Test_CMV1CallGetDigits(t *testing.T) {
 
 		expectRequest *rabbitmqhandler.Request
 		expectRes     string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -827,6 +811,14 @@ func Test_CMV1CallGetDigits(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
@@ -844,15 +836,8 @@ func Test_CMV1CallGetDigits(t *testing.T) {
 }
 
 func Test_CMV1CallSetDigits(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID        uuid.UUID
@@ -860,9 +845,7 @@ func Test_CMV1CallSetDigits(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -884,6 +867,14 @@ func Test_CMV1CallSetDigits(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
