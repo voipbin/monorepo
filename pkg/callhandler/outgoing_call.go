@@ -39,7 +39,7 @@ func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowI
 
 		switch destination.Type {
 		case address.TypeSIP, address.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, masterCallID, source, destination)
+			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination)
 			if err != nil {
 				log.Errorf("Could not create an outgoing call. err: %v", err)
 				continue
@@ -64,12 +64,13 @@ func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowI
 }
 
 // CreateCallOutgoing creates a call for outgoing
-func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, masterCallID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
+func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"funcs":          "CreateCallOutgoing",
 		"id":             id,
 		"customer_id":    customerID,
 		"flow":           flowID,
+		"activeflow_id":  activeflowID,
 		"master_call_id": masterCallID,
 		"source":         source,
 		"destination":    destination,
@@ -82,7 +83,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// create active-flow
-	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, flowID, fmactiveflow.ReferenceTypeCall, id)
+	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, activeflowID, flowID, fmactiveflow.ReferenceTypeCall, id)
 	if err != nil {
 		af = &fmactiveflow.Activeflow{}
 		log.Errorf("Could not get an active flow for outgoing call. Created dummy active flow. This call will be hungup. call: %s, flow: %s, err: %v", id, flowID, err)

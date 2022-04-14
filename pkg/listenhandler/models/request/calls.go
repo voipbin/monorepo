@@ -23,6 +23,7 @@ type V1DataCallsPost struct {
 // /v1/calls/<id> POST
 type V1DataCallsIDPost struct {
 	FlowID       uuid.UUID       `json:"flow_id"`
+	ActiveflosID uuid.UUID       `json:"activeflow_id"`
 	CustomerID   uuid.UUID       `json:"customer_id"`
 	MasterCallID uuid.UUID       `json:"master_call_id"`
 	Source       address.Address `json:"source"`

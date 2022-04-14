@@ -270,40 +270,31 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 }
 
 func TestProcessV1CallsIDPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:  mockSock,
-		callHandler: mockCall,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		callID       uuid.UUID
 		customerID   uuid.UUID
 		flowID       uuid.UUID
+		activeflowID uuid.UUID
 		masterCallID uuid.UUID
-		source       address.Address
-		destination  address.Address
+
+		source      address.Address
+		destination address.Address
 
 		call      *call.Call
 		request   *rabbitmqhandler.Request
 		expectRes *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"empty addresses",
 
 			uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
 			uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
 			uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+			uuid.FromStringOrNil("bf88a888-ddab-435b-8ae1-1eb8a3072230"),
 			uuid.FromStringOrNil("11b1b1fa-8c93-11ec-9597-2320d5458176"),
+
 			address.Address{},
 			address.Address{},
 
@@ -319,7 +310,7 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "master_call_id": "11b1b1fa-8c93-11ec-9597-2320d5458176", "source": {}, "destination": {}}`),
+				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "bf88a888-ddab-435b-8ae1-1eb8a3072230", "master_call_id": "11b1b1fa-8c93-11ec-9597-2320d5458176", "source": {}, "destination": {}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -333,7 +324,9 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 			uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
 			uuid.FromStringOrNil("ffeda266-7f50-11ec-8089-df3388aef0cc"),
 			uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+			uuid.FromStringOrNil("2e9f9862-9803-47f0-8f40-66f1522ef7f3"),
 			uuid.Nil,
+
 			address.Address{
 				Type:   address.TypeSIP,
 				Target: "test_source@127.0.0.1:5061",
@@ -357,7 +350,7 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "ffeda266-7f50-11ec-8089-df3388aef0cc", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {}}`),
+				Data:     []byte(`{"customer_id": "ffeda266-7f50-11ec-8089-df3388aef0cc", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "2e9f9862-9803-47f0-8f40-66f1522ef7f3", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -371,7 +364,9 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 			uuid.FromStringOrNil("f93eef0c-ed79-11ea-85cb-b39596cdf7ff"),
 			uuid.FromStringOrNil("0017a4bc-7f51-11ec-8407-2f0fd8f346ef"),
 			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+			uuid.FromStringOrNil("5516fd59-00f2-415d-bcd5-7f0d0b798bfc"),
 			uuid.Nil,
+
 			address.Address{
 				Type:   address.TypeSIP,
 				Target: "test_source@127.0.0.1:5061",
@@ -403,7 +398,7 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/f93eef0c-ed79-11ea-85cb-b39596cdf7ff",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "0017a4bc-7f51-11ec-8407-2f0fd8f346ef", "flow_id": "00000000-0000-0000-0000-000000000000","source": {"type": "sip","target": "test_source@127.0.0.1:5061","name": "test_source"},"destination": {"type": "sip","target": "test_destination@127.0.0.1:5061","name": "test_destination"}}`),
+				Data:     []byte(`{"customer_id": "0017a4bc-7f51-11ec-8407-2f0fd8f346ef", "flow_id": "00000000-0000-0000-0000-000000000000", "activeflow_id": "5516fd59-00f2-415d-bcd5-7f0d0b798bfc", "source": {"type": "sip","target": "test_source@127.0.0.1:5061","name": "test_source"},"destination": {"type": "sip","target": "test_destination@127.0.0.1:5061","name": "test_destination"}}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -415,8 +410,18 @@ func TestProcessV1CallsIDPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination).Return(tt.call, nil)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination).Return(tt.call, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
