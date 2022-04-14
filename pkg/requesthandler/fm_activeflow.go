@@ -14,11 +14,12 @@ import (
 )
 
 // FMV1ActiveflowCreate creates a new activeflow.
-func (r *requestHandler) FMV1ActiveflowCreate(ctx context.Context, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error) {
+func (r *requestHandler) FMV1ActiveflowCreate(ctx context.Context, id, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error) {
 
 	uri := "/v1/activeflows"
 
 	m, err := json.Marshal(fmrequest.V1DataActiveFlowsPost{
+		ID:            id,
 		FlowID:        flowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,

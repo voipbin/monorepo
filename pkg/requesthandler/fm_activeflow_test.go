@@ -14,17 +14,11 @@ import (
 )
 
 func TestFMV1ActiveflowCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
 
 	tests := []struct {
 		name string
 
+		id            uuid.UUID
 		referenceType fmactiveflow.ReferenceType
 		referenceID   uuid.UUID
 		flowID        uuid.UUID
@@ -38,6 +32,7 @@ func TestFMV1ActiveflowCreate(t *testing.T) {
 		{
 			"type call",
 
+			uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c"),
 			fmactiveflow.ReferenceTypeCall,
 			uuid.FromStringOrNil("447e712e-82d8-11eb-8900-7b97c080ddd8"),
 			uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"),
@@ -47,16 +42,16 @@ func TestFMV1ActiveflowCreate(t *testing.T) {
 				URI:      "/v1/activeflows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8"}`),
+				Data:     []byte(`{"id":"aa847807-6cc4-4713-9dec-53a42840e74c","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8"}`),
 			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"4a93277e-a7b4-11ec-860a-cbb5f65b6655","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"aa847807-6cc4-4713-9dec-53a42840e74c","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&fmactiveflow.Activeflow{
-				ID:            uuid.FromStringOrNil("4a93277e-a7b4-11ec-860a-cbb5f65b6655"),
+				ID:            uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c"),
 				ReferenceType: fmactiveflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("447e712e-82d8-11eb-8900-7b97c080ddd8"),
 				FlowID:        uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"),
@@ -70,6 +65,7 @@ func TestFMV1ActiveflowCreate(t *testing.T) {
 		{
 			"type message",
 
+			uuid.FromStringOrNil("be2255b2-0e47-4db8-956a-2fb9f45417b8"),
 			fmactiveflow.ReferenceTypeMessage,
 			uuid.FromStringOrNil("a8d145b8-a7b5-11ec-ac30-6b8228b173eb"),
 			uuid.FromStringOrNil("a929cd00-a7b5-11ec-a2bd-d375b3bee397"),
@@ -79,16 +75,49 @@ func TestFMV1ActiveflowCreate(t *testing.T) {
 				URI:      "/v1/activeflows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb"}`),
+				Data:     []byte(`{"id":"be2255b2-0e47-4db8-956a-2fb9f45417b8","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb"}`),
 			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"a95537d8-a7b5-11ec-b63c-57c0410e1ca4","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"be2255b2-0e47-4db8-956a-2fb9f45417b8","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&fmactiveflow.Activeflow{
-				ID:            uuid.FromStringOrNil("a95537d8-a7b5-11ec-b63c-57c0410e1ca4"),
+				ID:            uuid.FromStringOrNil("be2255b2-0e47-4db8-956a-2fb9f45417b8"),
+				ReferenceType: fmactiveflow.ReferenceTypeMessage,
+				ReferenceID:   uuid.FromStringOrNil("a8d145b8-a7b5-11ec-ac30-6b8228b173eb"),
+				FlowID:        uuid.FromStringOrNil("a929cd00-a7b5-11ec-a2bd-d375b3bee397"),
+				CustomerID:    uuid.FromStringOrNil("f42b33e2-7f4d-11ec-8c86-ebf558a4306c"),
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+				Actions: []fmaction.Action{},
+			},
+		},
+		{
+			"empty id",
+
+			uuid.Nil,
+			fmactiveflow.ReferenceTypeMessage,
+			uuid.FromStringOrNil("a8d145b8-a7b5-11ec-ac30-6b8228b173eb"),
+			uuid.FromStringOrNil("a929cd00-a7b5-11ec-a2bd-d375b3bee397"),
+
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/activeflows",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb"}`),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+			&fmactiveflow.Activeflow{
+				ID:            uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
 				ReferenceType: fmactiveflow.ReferenceTypeMessage,
 				ReferenceID:   uuid.FromStringOrNil("a8d145b8-a7b5-11ec-ac30-6b8228b173eb"),
 				FlowID:        uuid.FromStringOrNil("a929cd00-a7b5-11ec-a2bd-d375b3bee397"),
@@ -103,9 +132,18 @@ func TestFMV1ActiveflowCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			res, err := reqHandler.FMV1ActiveflowCreate(context.Background(), tt.flowID, tt.referenceType, tt.referenceID)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			res, err := reqHandler.FMV1ActiveflowCreate(ctx, tt.id, tt.flowID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
