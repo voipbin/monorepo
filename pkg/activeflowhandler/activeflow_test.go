@@ -23,9 +23,11 @@ func TestActiveFlowCreate(t *testing.T) {
 		name string
 		flow *flow.Flow
 
+		id           uuid.UUID
 		refereceType activeflow.ReferenceType
 		referenceID  uuid.UUID
 		expectActive *activeflow.Activeflow
+		flowID       uuid.UUID
 	}{
 		{
 			"normal",
@@ -34,10 +36,11 @@ func TestActiveFlowCreate(t *testing.T) {
 				Actions: []action.Action{},
 			},
 
+			uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
 			activeflow.ReferenceTypeCall,
 			uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
 			&activeflow.Activeflow{
-				ID:            uuid.FromStringOrNil("32808a7c-a7a1-11ec-8de8-2331c11da2e8"),
+				ID:            uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
 				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
@@ -49,6 +52,32 @@ func TestActiveFlowCreate(t *testing.T) {
 				Actions:         []action.Action{},
 				ExecutedActions: []action.Action{},
 			},
+			uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+		},
+		{
+			"nil id",
+			&flow.Flow{
+				ID:      uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				Actions: []action.Action{},
+			},
+
+			uuid.Nil,
+			activeflow.ReferenceTypeCall,
+			uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
+			&activeflow.Activeflow{
+				ID:            uuid.FromStringOrNil("78184d65-899f-438f-aeca-8cce4f445756"),
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
+				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				ExecuteCount:    0,
+				ForwardActionID: action.IDEmpty,
+				Actions:         []action.Action{},
+				ExecutedActions: []action.Action{},
+			},
+			uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
 		},
 	}
 
@@ -72,7 +101,7 @@ func TestActiveFlowCreate(t *testing.T) {
 			mockDB.EXPECT().ActiveflowGet(gomock.Any(), gomock.Any()).Return(tt.expectActive, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectActive.CustomerID, activeflow.EventTypeActiveflowCreated, tt.expectActive)
 
-			res, err := h.Create(ctx, tt.refereceType, tt.referenceID, tt.flow.ID)
+			res, err := h.Create(ctx, tt.id, tt.refereceType, tt.referenceID, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

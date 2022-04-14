@@ -12,6 +12,7 @@ import (
 // v1 data type request struct for
 // /v1/activeflows POST
 type V1DataActiveFlowsPost struct {
+	ID     uuid.UUID `json:"id"`
 	FlowID uuid.UUID `json:"flow_id"`
 
 	ReferenceType activeflow.ReferenceType `json:"reference_type"`

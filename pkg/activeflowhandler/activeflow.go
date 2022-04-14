@@ -13,9 +13,10 @@ import (
 )
 
 // Create creates a active flow
-func (h *activeflowHandler) Create(ctx context.Context, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
+func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
+		"id":             id,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"flow_id":        flowID,
@@ -28,8 +29,14 @@ func (h *activeflowHandler) Create(ctx context.Context, referenceType activeflow
 		return nil, err
 	}
 
+	// check id is valid
+	if id == uuid.Nil {
+		id = uuid.Must(uuid.NewV4())
+		log.Infof("The id is not valid. Created a new id. id: %s", id)
+		log = log.WithField("id", id)
+	}
+
 	// create activeflow
-	id := uuid.Must(uuid.NewV4())
 	curTime := dbhandler.GetCurTime()
 	tmpAF := &activeflow.Activeflow{
 		ID: id,

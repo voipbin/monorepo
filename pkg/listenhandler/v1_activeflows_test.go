@@ -21,12 +21,13 @@ func Test_V1ActiveflowsPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
+		expectID           uuid.UUID
 		expectRefereceType activeflow.ReferenceType
 		expectRefereceID   uuid.UUID
+		expectFlowID       uuid.UUID
 
-		expectFlowID uuid.UUID
-		af           *activeflow.Activeflow
-		expectRes    *rabbitmqhandler.Response
+		af        *activeflow.Activeflow
+		expectRes *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -34,15 +35,16 @@ func Test_V1ActiveflowsPost(t *testing.T) {
 				URI:      "/v1/activeflows",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
+				Data:     []byte(`{"id":"a508739b-d98d-40fb-8a47-61e9a70958cd","reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
 			},
 
+			uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
 			activeflow.ReferenceTypeCall,
 			uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
 
 			uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
 			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("bd89ee76-a7a4-11ec-a1bd-8315ed90b9d1"),
+				ID: uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
 
 				FlowID:     uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
 				CustomerID: uuid.FromStringOrNil("cd607242-7f4b-11ec-a34f-bb861637ee36"),
@@ -60,7 +62,43 @@ func Test_V1ActiveflowsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bd89ee76-a7a4-11ec-a1bd-8315ed90b9d1","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"execute_count":0,"forward_action_id":"00000000-0000-0000-0000-000000000000","actions":[],"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a508739b-d98d-40fb-8a47-61e9a70958cd","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"execute_count":0,"forward_action_id":"00000000-0000-0000-0000-000000000000","actions":[],"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+		{
+			"empty id",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/activeflows",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
+			},
+
+			uuid.Nil,
+			activeflow.ReferenceTypeCall,
+			uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
+
+			uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+			&activeflow.Activeflow{
+				ID: uuid.FromStringOrNil("7a18e7e0-7d67-44f2-9591-58cc7d8f5610"),
+
+				FlowID:     uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+				CustomerID: uuid.FromStringOrNil("cd607242-7f4b-11ec-a34f-bb861637ee36"),
+
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
+
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				ExecuteCount:    0,
+				ForwardActionID: action.IDEmpty,
+				Actions:         []action.Action{},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"7a18e7e0-7d67-44f2-9591-58cc7d8f5610","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"execute_count":0,"forward_action_id":"00000000-0000-0000-0000-000000000000","actions":[],"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -80,7 +118,7 @@ func Test_V1ActiveflowsPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Create(gomock.Any(), tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.af, nil)
+			mockActive.EXPECT().Create(gomock.Any(), tt.expectID, tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.af, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
