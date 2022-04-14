@@ -23,7 +23,7 @@ func (h *listenHandler) v1ActiveflowsPost(ctx context.Context, req *rabbitmqhand
 	}
 
 	// create active flow
-	resActiveFlow, err := h.activeflowHandler.Create(ctx, reqData.ReferenceType, reqData.ReferenceID, reqData.FlowID)
+	resActiveFlow, err := h.activeflowHandler.Create(ctx, reqData.ID, reqData.ReferenceType, reqData.ReferenceID, reqData.FlowID)
 	if err != nil {
 		logrus.Errorf("Could not create a new active flow. err: %v", err)
 		return nil, err
