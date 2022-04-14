@@ -138,12 +138,13 @@ func (r *requestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID
 // CMV1CallCreateWithID sends a request to call-manager
 // to creating a call with the given id.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, masterCallID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
 	data := &cmrequest.V1DataCallsIDPost{
 		CustomerID:   customerID,
 		FlowID:       flowID,
+		ActiveflosID: activeflowID,
 		MasterCallID: masterCallID,
 		Source:       *source,
 		Destination:  *destination,

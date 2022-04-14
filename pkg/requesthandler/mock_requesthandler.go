@@ -780,18 +780,18 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallAddExternalMedia(ctx, callID, 
 }
 
 // CMV1CallCreateWithID mocks base method.
-func (m *MockRequestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, masterCallID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
+func (m *MockRequestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CMV1CallCreateWithID", ctx, id, customerID, flowID, masterCallID, source, destination)
+	ret := m.ctrl.Call(m, "CMV1CallCreateWithID", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CMV1CallCreateWithID indicates an expected call of CMV1CallCreateWithID.
-func (mr *MockRequestHandlerMockRecorder) CMV1CallCreateWithID(ctx, id, customerID, flowID, masterCallID, source, destination interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CMV1CallCreateWithID(ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallCreateWithID), ctx, id, customerID, flowID, masterCallID, source, destination)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CMV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CMV1CallCreateWithID), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination)
 }
 
 // CMV1CallGet mocks base method.
