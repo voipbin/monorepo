@@ -207,7 +207,7 @@ func TestTypeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.conference, nil)
 			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
-			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), tt.conference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.activeFlow, nil)
+			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), uuid.Nil, tt.conference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.activeFlow, nil)
 
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
@@ -667,7 +667,7 @@ func TestTypeFlowStart(t *testing.T) {
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(nil)
 
 			mockReq.EXPECT().NMV1NumberGetByNumber(gomock.Any(), tt.channel.DestinationNumber).Return(tt.numb, nil)
-			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), tt.numb.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.af, nil)
+			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), uuid.Nil, tt.numb.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.af, nil)
 			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
