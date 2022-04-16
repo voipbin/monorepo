@@ -1295,6 +1295,21 @@ func (mr *MockRequestHandlerMockRecorder) FMV1FlowUpdate(ctx, f interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowUpdate", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowUpdate), ctx, f)
 }
 
+// FMV1FlowUpdateActions mocks base method.
+func (m *MockRequestHandler) FMV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []action.Action) (*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMV1FlowUpdateActions", ctx, flowID, actions)
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMV1FlowUpdateActions indicates an expected call of FMV1FlowUpdateActions.
+func (mr *MockRequestHandlerMockRecorder) FMV1FlowUpdateActions(ctx, flowID, actions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowUpdateActions", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowUpdateActions), ctx, flowID, actions)
+}
+
 // MMV1Hook mocks base method.
 func (m *MockRequestHandler) MMV1Hook(ctx context.Context, hm *hook.Hook) error {
 	m.ctrl.T.Helper()

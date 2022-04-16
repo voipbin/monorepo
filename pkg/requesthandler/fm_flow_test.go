@@ -16,15 +16,8 @@ import (
 )
 
 func TestFMV1FlowCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -39,9 +32,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  *fmflow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -81,6 +72,14 @@ func TestFMV1FlowCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -97,15 +96,8 @@ func TestFMV1FlowCreate(t *testing.T) {
 }
 
 func TestFMV1FlowUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		requestFlow *fmflow.Flow
@@ -114,9 +106,7 @@ func TestFMV1FlowUpdate(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  *fmflow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"empty action",
 			&fmflow.Flow{
@@ -152,6 +142,14 @@ func TestFMV1FlowUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -168,15 +166,8 @@ func TestFMV1FlowUpdate(t *testing.T) {
 }
 
 func TestFMV1FlowGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		flowID uuid.UUID
@@ -186,9 +177,7 @@ func TestFMV1FlowGet(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  *fmflow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -220,6 +209,14 @@ func TestFMV1FlowGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -236,15 +233,8 @@ func TestFMV1FlowGet(t *testing.T) {
 }
 
 func TestFMV1FlowDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		flowID uuid.UUID
@@ -253,9 +243,7 @@ func TestFMV1FlowDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -275,6 +263,14 @@ func TestFMV1FlowDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -286,15 +282,8 @@ func TestFMV1FlowDelete(t *testing.T) {
 }
 
 func TestFMV1FlowGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -307,9 +296,7 @@ func TestFMV1FlowGets(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  []fmflow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -379,6 +366,14 @@ func TestFMV1FlowGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -389,6 +384,109 @@ func TestFMV1FlowGets(t *testing.T) {
 
 			if reflect.DeepEqual(tt.expectResult, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+			}
+		})
+	}
+}
+
+func Test_FMV1FlowUpdateActions(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		flowID  uuid.UUID
+		actions []fmaction.Action
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectResult  *fmflow.Flow
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("a645703d-4cd7-4c5d-af76-d2f9f2fafcd0"),
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"a645703d-4cd7-4c5d-af76-d2f9f2fafcd0","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+			},
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows/a645703d-4cd7-4c5d-af76-d2f9f2fafcd0/actions",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}`),
+			},
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("a645703d-4cd7-4c5d-af76-d2f9f2fafcd0"),
+				CustomerID: uuid.FromStringOrNil("bb832464-7f4d-11ec-aab5-8f3e1e3958d5"),
+				Name:       "update name",
+				Detail:     "update detail",
+				Actions:    []fmaction.Action{},
+				TMCreate:   "2020-09-20 03:23:20.995000",
+				TMUpdate:   "",
+				TMDelete:   "",
+			},
+		},
+		{
+			"empty actions",
+
+			uuid.FromStringOrNil("0fb53139-3e5d-4ce7-8de6-d39420a18cf5"),
+			[]fmaction.Action{},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0fb53139-3e5d-4ce7-8de6-d39420a18cf5","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+			},
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows/0fb53139-3e5d-4ce7-8de6-d39420a18cf5/actions",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actions":[]}`),
+			},
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("0fb53139-3e5d-4ce7-8de6-d39420a18cf5"),
+				CustomerID: uuid.FromStringOrNil("bb832464-7f4d-11ec-aab5-8f3e1e3958d5"),
+				Name:       "update name",
+				Detail:     "update detail",
+				Actions:    []fmaction.Action{},
+				TMCreate:   "2020-09-20 03:23:20.995000",
+				TMUpdate:   "",
+				TMDelete:   "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.FMV1FlowUpdateActions(ctx, tt.flowID, tt.actions)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectResult, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
 			}
 		})
 	}

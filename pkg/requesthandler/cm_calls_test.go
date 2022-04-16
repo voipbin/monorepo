@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestCMV1CallHealth(t *testing.T) {
+func Test_CMV1CallHealth(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -70,7 +70,7 @@ func TestCMV1CallHealth(t *testing.T) {
 	}
 }
 
-func TestCMV1CallActionTimeout(t *testing.T) {
+func Test_CMV1CallActionTimeout(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -129,7 +129,7 @@ func TestCMV1CallActionTimeout(t *testing.T) {
 	}
 }
 
-func TestCMV1CallActionNext(t *testing.T) {
+func Test_CMV1CallActionNext(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -200,7 +200,7 @@ func TestCMV1CallActionNext(t *testing.T) {
 	}
 }
 
-func CMV1CallsCreate(t *testing.T) {
+func Test_CMV1CallsCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -278,7 +278,7 @@ func CMV1CallsCreate(t *testing.T) {
 	}
 }
 
-func TestCMV1CallCreateWithID(t *testing.T) {
+func Test_CMV1CallCreateWithID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -358,7 +358,7 @@ func TestCMV1CallCreateWithID(t *testing.T) {
 	}
 }
 
-func TestCMV1CallGet(t *testing.T) {
+func Test_CMV1CallGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -417,7 +417,7 @@ func TestCMV1CallGet(t *testing.T) {
 	}
 }
 
-func TestCMV1CallGets(t *testing.T) {
+func Test_CMV1CallGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -509,7 +509,7 @@ func TestCMV1CallGets(t *testing.T) {
 	}
 }
 
-func TestCMCallAddChainedCall(t *testing.T) {
+func Test_CMCallAddChainedCall(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -574,7 +574,7 @@ func TestCMCallAddChainedCall(t *testing.T) {
 	}
 }
 
-func TestCMCallRemoveChainedCall(t *testing.T) {
+func Test_CMCallRemoveChainedCall(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -638,7 +638,7 @@ func TestCMCallRemoveChainedCall(t *testing.T) {
 	}
 }
 
-func TestCMCallHangup(t *testing.T) {
+func Test_CMCallHangup(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -703,7 +703,7 @@ func TestCMCallHangup(t *testing.T) {
 	}
 }
 
-func TestCMV1CallAddExternalMedia(t *testing.T) {
+func Test_CMV1CallAddExternalMedia(t *testing.T) {
 
 	tests := []struct {
 		name string
