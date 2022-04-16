@@ -18,7 +18,7 @@ type Flow struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
-	Persist    bool   `json:"persist"`
+	Persist bool `json:"persist"`
 
 	Actions []action.Action `json:"actions"`
 
@@ -36,6 +36,7 @@ const (
 	TypeFlow       Type = "flow"       // normal flow
 	TypeConference Type = "conference" // conference-manager
 	TypeQueue      Type = "queue"      // queue-manager
+	TypeCampaign   Type = "campaign"   // campaign-manager
 )
 
 // Matches return true if the given items are the same
