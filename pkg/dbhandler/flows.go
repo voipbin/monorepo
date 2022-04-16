@@ -331,3 +331,28 @@ func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 
 	return nil
 }
+
+// FlowUpdateActions updates the actions.
+func (h *handler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error {
+	q := `
+	update flows set
+		actions = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	tmpActions, err := json.Marshal(actions)
+	if err != nil {
+		return fmt.Errorf("could not marshal actions. FlowUpdateActions. err: %v", err)
+	}
+
+	if _, err := h.db.Exec(q, tmpActions, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. FlowUpdateActions. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.flowUpdateToCache(ctx, id)
+
+	return nil
+}

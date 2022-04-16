@@ -297,3 +297,83 @@ func TestFlowUpdate(t *testing.T) {
 		})
 	}
 }
+
+func Test_FlowUpdateActions(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id      uuid.UUID
+		actions []action.Action
+
+		responseFlow *flow.Flow
+		expectRes    *flow.Flow
+	}{
+		{
+			"test normal",
+
+			uuid.FromStringOrNil("a544c079-cf19-4111-a8ac-238791c4750d"),
+			[]action.Action{
+				{
+					ID:   uuid.FromStringOrNil("bbaa71de-5c9c-40fb-b8e7-28c331c28f73"),
+					Type: action.TypeAnswer,
+				},
+			},
+
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("a544c079-cf19-4111-a8ac-238791c4750d"),
+				Name:   "changed name",
+				Detail: "changed detail",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("bbaa71de-5c9c-40fb-b8e7-28c331c28f73"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			&flow.Flow{
+				ID:     uuid.FromStringOrNil("a544c079-cf19-4111-a8ac-238791c4750d"),
+				Name:   "changed name",
+				Detail: "changed detail",
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("bbaa71de-5c9c-40fb-b8e7-28c331c28f73"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			h := &flowHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				actionHandler: mockAction,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().FlowUpdateActions(ctx, tt.id, gomock.Any()).Return(nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.id).Return(tt.responseFlow, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow)
+
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
+			res, err := h.FlowUpdateActions(ctx, tt.id, tt.actions)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}

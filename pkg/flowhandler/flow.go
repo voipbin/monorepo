@@ -197,3 +197,39 @@ func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) (*flow.Flow,
 
 	return res, nil
 }
+
+// FlowUpdateActions updates the actions and return the updated flow
+func (h *flowHandler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "FlowUpdateActions",
+			"flow_id": id,
+		})
+	log.WithFields(
+		logrus.Fields{
+			"actions": actions,
+		},
+	).Debug("Updating the flow.")
+
+	// generates the tmpActions
+	tmpActions, err := h.actionHandler.GenerateFlowActions(ctx, actions)
+	if err != nil {
+		log.Errorf("Could not generate the flow actions. err: %v", err)
+		return nil, err
+	}
+	log.WithField("new_actions", tmpActions).Debug("Created the new actions tmp.")
+
+	if err := h.db.FlowUpdateActions(ctx, id, tmpActions); err != nil {
+		log.Errorf("Could not update the flow info. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.FlowGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated flow. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishEvent(ctx, flow.EventTypeFlowUpdated, res)
+
+	return res, nil
+}
