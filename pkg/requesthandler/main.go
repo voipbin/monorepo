@@ -331,6 +331,7 @@ type RequestHandler interface {
 	FMV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 	FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error)
+	FMV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error)
 
 	// message-manager hook
 	MMV1Hook(ctx context.Context, hm *hmhook.Hook) error

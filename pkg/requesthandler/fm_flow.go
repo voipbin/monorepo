@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	fmrequest "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
 
@@ -104,6 +105,40 @@ func (r *requestHandler) FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*f
 		Name:    f.Name,
 		Detail:  f.Detail,
 		Actions: f.Actions,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPut, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resFlow fmflow.Flow
+	if err := json.Unmarshal([]byte(res.Data), &resFlow); err != nil {
+		return nil, err
+	}
+
+	return &resFlow, nil
+}
+
+// FMV1FlowUpdateActions sends a request to flow-manager
+// to update the actions.
+// it returns updated flow info if it succeed.
+func (r *requestHandler) FMV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error) {
+	uri := fmt.Sprintf("/v1/flows/%s/actions", flowID)
+
+	data := &fmrequest.V1DataFlowIDActionsPut{
+		Actions: actions,
 	}
 
 	m, err := json.Marshal(data)
