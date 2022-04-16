@@ -58,3 +58,10 @@ type V1DataFlowIDPut struct {
 
 	Actions []action.Action `json:"actions"` // actions
 }
+
+// V1DataFlowIDActionsPut is
+// v1 data type request struct for
+// /v1/flows/{id}/actions PUT
+type V1DataFlowIDActionsPut struct {
+	Actions []action.Action `json:"actions"` // actions
+}

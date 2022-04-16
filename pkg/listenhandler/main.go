@@ -46,6 +46,7 @@ var (
 	regV1FlowsGet         = regexp.MustCompile(`/v1/flows\?`)
 	regV1Flows            = regexp.MustCompile("/v1/flows$")
 	regV1FlowsID          = regexp.MustCompile("/v1/flows/" + regUUID + "$")
+	regV1FlowsIDActions   = regexp.MustCompile("/v1/flows/" + regUUID + "/actions$")
 	regV1FlowsIDActionsID = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "$")
 )
 
@@ -157,18 +158,22 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/activeflows"
 		response, err = h.v1ActiveflowsPost(ctx, m)
 
+	// activeflows/<activeflow-id>
 	case regV1ActiveflowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		requestType = "/activeflows/<activeflow-id>"
 		response, err = h.v1ActiveflowsIDDelete(ctx, m)
 
+	// activeflows/<activeflow-id>/next
 	case regV1ActiveflowsIDNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/activeflows/<activeflow-id>/next"
 		response, err = h.v1ActiveflowsIDNextGet(ctx, m)
 
+	// activeflows/<activeflow-id>/forward_action_id
 	case regV1ActiveflowsIDForwardActionID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		requestType = "/activeflows/<activeflow-id>/forward_action_id"
 		response, err = h.v1ActiveflowsIDForwardActionIDPut(ctx, m)
 
+	// activeflows/<activeflow-id>/execute
 	case regV1ActiveflowsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/activeflows/<activeflow-id>/execute"
 		response, err = h.v1ActiveflowsIDExecutePost(ctx, m)
@@ -182,10 +187,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/flows"
 		response, err = h.v1FlowsGet(ctx, m)
 
-	case regV1FlowsIDActionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		requestType = "/flows/<flow-id>/actions"
-		response, err = h.v1FlowsIDActionsIDGet(ctx, m)
-
+	// flows/<flow-id>
 	case regV1FlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows/<flow-id>"
 		response, err = h.v1FlowsIDGet(ctx, m)
@@ -197,6 +199,15 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1FlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		requestType = "/flows/<flow-id>"
 		response, err = h.v1FlowsIDDelete(ctx, m)
+
+	// flows/<flow-id>/actions
+	case regV1FlowsIDActions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/flows/<flow-id>/actions"
+		response, err = h.v1FlowsIDActionsPut(ctx, m)
+
+	case regV1FlowsIDActionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/flows/<flow-id>/actions/<action-id>"
+		response, err = h.v1FlowsIDActionsIDGet(ctx, m)
 
 	default:
 		logrus.WithFields(

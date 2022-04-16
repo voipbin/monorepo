@@ -238,6 +238,51 @@ func (h *listenHandler) v1FlowsGet(ctx context.Context, m *rabbitmqhandler.Reque
 	return res, nil
 }
 
+// v1FlowsIDActionsPut handles /v1/flows/{id}/actions PUT request
+func (h *listenHandler) v1FlowsIDActionsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1FlowsIDPut",
+		},
+	)
+	log.WithField("request", m).Debug("Received request.")
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/flows/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
+	tmpVals := strings.Split(u.Path, "/")
+	flowID := uuid.FromStringOrNil(tmpVals[3])
+
+	var req request.V1DataFlowIDActionsPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.flowHandler.FlowUpdateActions(ctx, flowID, req.Actions)
+	if err != nil {
+		log.Errorf("Could not update the flow actions. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // v1FlowsIDActionsIDGet handles
 // /v1/flows/{id}/actions/{id} GET
 func (h *listenHandler) v1FlowsIDActionsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {

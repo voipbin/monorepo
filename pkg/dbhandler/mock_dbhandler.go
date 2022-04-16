@@ -210,3 +210,17 @@ func (mr *MockDBHandlerMockRecorder) FlowUpdate(ctx, id, name, detail, actions i
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), ctx, id, name, detail, actions)
 }
+
+// FlowUpdateActions mocks base method.
+func (m *MockDBHandler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowUpdateActions", ctx, id, actions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FlowUpdateActions indicates an expected call of FlowUpdateActions.
+func (mr *MockDBHandlerMockRecorder) FlowUpdateActions(ctx, id, actions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdateActions", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdateActions), ctx, id, actions)
+}
