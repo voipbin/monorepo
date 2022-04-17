@@ -3,9 +3,11 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 )
@@ -22,6 +24,10 @@ const (
 
 		status,
 		service_level,
+		end_handle,
+
+		flow_id,
+		actions,
 
 		outplan_id,
 		outdial_id,
@@ -39,6 +45,9 @@ const (
 
 // campaignGetFromRow gets the campaign from the row.
 func (h *handler) campaignGetFromRow(row *sql.Rows) (*campaign.Campaign, error) {
+
+	var actions string
+
 	res := &campaign.Campaign{}
 	if err := row.Scan(
 		&res.ID,
@@ -49,6 +58,10 @@ func (h *handler) campaignGetFromRow(row *sql.Rows) (*campaign.Campaign, error) 
 
 		&res.Status,
 		&res.ServiceLevel,
+		&res.EndHandle,
+
+		&res.FlowID,
+		&actions,
 
 		&res.OutplanID,
 		&res.OutdialID,
@@ -61,6 +74,10 @@ func (h *handler) campaignGetFromRow(row *sql.Rows) (*campaign.Campaign, error) 
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. campaignGetFromRow. err: %v", err)
+	}
+
+	if err := json.Unmarshal([]byte(actions), &res.Actions); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the action. campaignGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -77,6 +94,10 @@ func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) erro
 
 		status,
 		service_level,
+		end_handle,
+
+		flow_id,
+		actions,
 
 		outplan_id,
 		outdial_id,
@@ -90,6 +111,7 @@ func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) erro
 	) values(
 		?, ?,
 		?, ?,
+		?, ?, ?,
 		?, ?,
 		?, ?, ?,
 		?,
@@ -101,6 +123,11 @@ func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) erro
 	}
 	defer stmt.Close()
 
+	actions, err := json.Marshal(t.Actions)
+	if err != nil {
+		return fmt.Errorf("could not marshal the action. CampaignCreate. err: %v", err)
+	}
+
 	_, err = stmt.ExecContext(ctx,
 		t.ID.Bytes(),
 		t.CustomerID.Bytes(),
@@ -110,6 +137,10 @@ func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) erro
 
 		t.Status,
 		t.ServiceLevel,
+		t.EndHandle,
+
+		t.FlowID.Bytes(),
+		actions,
 
 		t.OutplanID.Bytes(),
 		t.OutdialID.Bytes(),
@@ -364,6 +395,51 @@ func (h *handler) CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, 
 
 	if _, err := h.db.Exec(q, serviceLevel, GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateServiceLevel. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaignUpdateEndHandle updates campaign's end_handle.
+func (h *handler) CampaignUpdateEndHandle(ctx context.Context, id uuid.UUID, endHandle campaign.EndHandle) error {
+	q := `
+	update campaigns set
+		end_handle = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, endHandle, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateEndHandle. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaignUpdateActions updates campaign's actions.
+func (h *handler) CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) error {
+	q := `
+	update campaigns set
+		actions = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	tmpActions, err := json.Marshal(actions)
+	if err != nil {
+		return fmt.Errorf("could not marshal the actions. CampaignUpdateActions. err: %v", err)
+	}
+
+	if _, err := h.db.Exec(q, tmpActions, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateActions. err: %v", err)
 	}
 
 	// set to the cache

@@ -9,7 +9,6 @@ import (
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
@@ -23,10 +22,8 @@ func Test_Create(t *testing.T) {
 		customerID   uuid.UUID
 		outplanName  string
 		detail       string
-		actions      []fmaction.Action
 		source       *cmaddress.Address
 		DialTimeout  int
-		endHandle    outplan.EndHandle
 		tryInterval  int
 		maxTryCount0 int
 		maxTryCount1 int
@@ -40,18 +37,12 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("bccbd45a-b3d8-11ec-a518-b79a1b2fe501"),
 			"test name",
 			"test detail",
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
 			&cmaddress.Address{
 				Type:   cmaddress.TypeTel,
 				Target: "+821100000001",
 			},
 
 			30000,
-			outplan.EndHandleStop,
 			300000,
 			3,
 			3,
@@ -86,10 +77,8 @@ func Test_Create(t *testing.T) {
 				tt.customerID,
 				tt.outplanName,
 				tt.detail,
-				tt.actions,
 				tt.source,
 				tt.DialTimeout,
-				tt.endHandle,
 				tt.tryInterval,
 				tt.maxTryCount0,
 				tt.maxTryCount1,
@@ -231,62 +220,63 @@ func Test_UpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_UpdateActionInfo(t *testing.T) {
-	tests := []struct {
-		name string
+// func Test_UpdateActionInfo(t *testing.T) {
+// 	tests := []struct {
+// 		name string
 
-		id        uuid.UUID
-		actions   []fmaction.Action
-		source    *cmaddress.Address
-		endHandle outplan.EndHandle
-	}{
-		{
-			"normal",
+// 		id        uuid.UUID
+// 		actions   []fmaction.Action
+// 		source    *cmaddress.Address
+// 		endHandle outplan.EndHandle
+// 	}{
+// 		{
+// 			"normal",
 
-			uuid.FromStringOrNil("4dbf65e2-b3db-11ec-9f36-d7e97af657ab"),
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
-				Target: "+821100000001",
-			},
-			outplan.EndHandleStop,
-		},
-	}
+// 			uuid.FromStringOrNil("4dbf65e2-b3db-11ec-9f36-d7e97af657ab"),
+// 			[]fmaction.Action{
+// 				{
+// 					Type: fmaction.TypeAnswer,
+// 				},
+// 			},
+// 			&cmaddress.Address{
+// 				Type:   cmaddress.TypeTel,
+// 				Target: "+821100000001",
+// 			},
+// 			outplan.EndHandleStop,
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			h := &outplanHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			h := &outplanHandler{
+// 				db:            mockDB,
+// 				notifyHandler: mockNotify,
+// 			}
 
-			ctx := context.Background()
+// 			ctx := context.Background()
 
-			mockDB.EXPECT().OutplanUpdateActionInfo(ctx, tt.id, tt.actions, tt.source, tt.endHandle).Return(nil)
-			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+// 			mockDB.EXPECT().OutplanUpdateActionInfo(ctx, tt.id, tt.actions, tt.source, tt.endHandle).Return(nil)
+// 			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
 
-			_, err := h.UpdateActionInfo(ctx, tt.id, tt.actions, tt.source, tt.endHandle)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
+// 			_, err := h.UpdateActionInfo(ctx, tt.id, tt.actions, tt.source, tt.endHandle)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_UpdateDialInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
 		id           uuid.UUID
+		source       *cmaddress.Address
 		dialTimeout  int
 		tyrInterval  int
 		maxTryCount0 int
@@ -299,6 +289,10 @@ func Test_UpdateDialInfo(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("1f7003d0-b3dc-11ec-906b-33094783cdd2"),
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
 			30000,
 			600000,
 			3,
@@ -323,10 +317,10 @@ func Test_UpdateDialInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutplanUpdateDialInfo(ctx, tt.id, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(nil)
+			mockDB.EXPECT().OutplanUpdateDialInfo(ctx, tt.id, tt.source, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(nil)
 			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
 
-			_, err := h.UpdateDialInfo(ctx, tt.id, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
+			_, err := h.UpdateDialInfo(ctx, tt.id, tt.source, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

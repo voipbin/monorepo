@@ -10,13 +10,13 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
+	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // DBHandler interface for call_manager database handle
@@ -28,8 +28,19 @@ type DBHandler interface {
 	OutplanGet(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error)
 	OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error)
 	OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
-	OutplanUpdateActionInfo(ctx context.Context, id uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, endHandle outplan.EndHandle) error
-	OutplanUpdateDialInfo(ctx context.Context, id uuid.UUID, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) error
+	// OutplanUpdateActionInfo(ctx context.Context, id uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, endHandle outplan.EndHandle) error
+	OutplanUpdateDialInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		source *cmaddress.Address,
+		dialTimeout int,
+		tryInterval int,
+		maxTryCount0 int,
+		maxTryCount1 int,
+		maxTryCount2 int,
+		maxTryCount3 int,
+		maxTryCount4 int,
+	) error
 
 	// campaign
 	CampaignCreate(ctx context.Context, t *campaign.Campaign) error
@@ -41,6 +52,8 @@ type DBHandler interface {
 	CampaignUpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) error
 	CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) error
 	CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) error
+	CampaignUpdateEndHandle(ctx context.Context, id uuid.UUID, endHandle campaign.EndHandle) error
+	CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) error
 
 	// campaigncall
 	CampaigncallCreate(ctx context.Context, t *campaigncall.Campaigncall) error
@@ -48,6 +61,7 @@ type DBHandler interface {
 	CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error
+	CampaigncallUpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) error
 }
 
 // handler database handler

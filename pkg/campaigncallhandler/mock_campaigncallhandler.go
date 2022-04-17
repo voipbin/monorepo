@@ -38,18 +38,33 @@ func (m *MockCampaigncallHandler) EXPECT() *MockCampaigncallHandlerMockRecorder 
 }
 
 // Create mocks base method.
-func (m *MockCampaigncallHandler) Create(ctx context.Context, customerID, campaignID, outplanID, outdialID, outdialTargetID, queueID, activeflowID uuid.UUID, referenceType campaigncall.ReferenceType, referenceID uuid.UUID, source, destination *address.Address, destinationIndex, tryCount int) (*campaigncall.Campaigncall, error) {
+func (m *MockCampaigncallHandler) Create(ctx context.Context, customerID, campaignID, outplanID, outdialID, outdialTargetID, queueID, activeflowID, flowID uuid.UUID, referenceType campaigncall.ReferenceType, referenceID uuid.UUID, source, destination *address.Address, destinationIndex, tryCount int) (*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, campaignID, outplanID, outdialID, outdialTargetID, queueID, activeflowID, referenceType, referenceID, source, destination, destinationIndex, tryCount)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, campaignID, outplanID, outdialID, outdialTargetID, queueID, activeflowID, flowID, referenceType, referenceID, source, destination, destinationIndex, tryCount)
 	ret0, _ := ret[0].(*campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockCampaigncallHandlerMockRecorder) Create(ctx, customerID, campaignID, outplanID, outdialID, outdialTargetID, queueID, activeflowID, referenceType, referenceID, source, destination, destinationIndex, tryCount interface{}) *gomock.Call {
+func (mr *MockCampaigncallHandlerMockRecorder) Create(ctx, customerID, campaignID, outplanID, outdialID, outdialTargetID, queueID, activeflowID, flowID, referenceType, referenceID, source, destination, destinationIndex, tryCount interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCampaigncallHandler)(nil).Create), ctx, customerID, campaignID, outplanID, outdialID, outdialTargetID, queueID, activeflowID, referenceType, referenceID, source, destination, destinationIndex, tryCount)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCampaigncallHandler)(nil).Create), ctx, customerID, campaignID, outplanID, outdialID, outdialTargetID, queueID, activeflowID, flowID, referenceType, referenceID, source, destination, destinationIndex, tryCount)
+}
+
+// Done mocks base method.
+func (m *MockCampaigncallHandler) Done(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Done", ctx, id, status, result)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Done indicates an expected call of Done.
+func (mr *MockCampaigncallHandlerMockRecorder) Done(ctx, id, status, result interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Done", reflect.TypeOf((*MockCampaigncallHandler)(nil).Done), ctx, id, status, result)
 }
 
 // Get mocks base method.
@@ -95,6 +110,21 @@ func (m *MockCampaigncallHandler) GetsByCampaignIDAndStatus(ctx context.Context,
 func (mr *MockCampaigncallHandlerMockRecorder) GetsByCampaignIDAndStatus(ctx, campaignID, status, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCampaignIDAndStatus", reflect.TypeOf((*MockCampaigncallHandler)(nil).GetsByCampaignIDAndStatus), ctx, campaignID, status, token, limit)
+}
+
+// UpdateActiveflowID mocks base method.
+func (m *MockCampaigncallHandler) UpdateActiveflowID(ctx context.Context, id, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateActiveflowID", ctx, id, activeflowID)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateActiveflowID indicates an expected call of UpdateActiveflowID.
+func (mr *MockCampaigncallHandlerMockRecorder) UpdateActiveflowID(ctx, id, activeflowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateActiveflowID", reflect.TypeOf((*MockCampaigncallHandler)(nil).UpdateActiveflowID), ctx, id, activeflowID)
 }
 
 // UpdateStatus mocks base method.

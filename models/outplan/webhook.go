@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // WebhookMessage defines
@@ -16,10 +15,8 @@ type WebhookMessage struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
-	// action settings
-	Actions   []action.Action    `json:"actions"`
-	Source    *cmaddress.Address `json:"source"` // caller id
-	EndHandle EndHandle          `json:"end_handle"`
+	// source settings
+	Source *cmaddress.Address `json:"source"` // caller id
 
 	// plan dial settings
 	DialTimeout  int `json:"dial_timeout"` // milliseconds
@@ -43,9 +40,7 @@ func (h *Outplan) ConvertWebhookMessage() *WebhookMessage {
 		Name:   h.Name,
 		Detail: h.Detail,
 
-		Actions:   h.Actions,
-		Source:    h.Source,
-		EndHandle: h.EndHandle,
+		Source: h.Source,
 
 		DialTimeout:  h.DialTimeout,
 		TryInterval:  h.TryInterval,

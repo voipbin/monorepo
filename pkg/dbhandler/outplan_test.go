@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
@@ -28,16 +27,16 @@ func Test_OutplanCreate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("50745688-b3b5-11ec-91bd-c3d3ee057cb1"),
 				Name:       "test name",
 				Detail:     "test detail",
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				// Actions: []fmaction.Action{
+				// 	{
+				// 		Type: fmaction.TypeAnswer,
+				// 	},
+				// },
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				EndHandle:    outplan.EndHandleStop,
+				// EndHandle:    outplan.EndHandleStop,
 				DialTimeout:  30000,
 				TryInterval:  600000,
 				MaxTryCount0: 3,
@@ -54,16 +53,16 @@ func Test_OutplanCreate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("50745688-b3b5-11ec-91bd-c3d3ee057cb1"),
 				Name:       "test name",
 				Detail:     "test detail",
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				// Actions: []fmaction.Action{
+				// 	{
+				// 		Type: fmaction.TypeAnswer,
+				// 	},
+				// },
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				EndHandle:    outplan.EndHandleStop,
+				// EndHandle:    outplan.EndHandleStop,
 				DialTimeout:  30000,
 				TryInterval:  600000,
 				MaxTryCount0: 3,
@@ -124,16 +123,16 @@ func Test_OutplanDelete(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("9aa97862-b47f-11ec-a611-5379cfa62666"),
 				Name:       "test name",
 				Detail:     "test detail",
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				// Actions: []fmaction.Action{
+				// 	{
+				// 		Type: fmaction.TypeAnswer,
+				// 	},
+				// },
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				EndHandle:    outplan.EndHandleStop,
+				// EndHandle:    outplan.EndHandleStop,
 				DialTimeout:  30000,
 				TryInterval:  600000,
 				MaxTryCount0: 3,
@@ -199,16 +198,16 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
 					Name:       "test name",
 					Detail:     "test detail",
-					Actions: []fmaction.Action{
-						{
-							Type: fmaction.TypeAnswer,
-						},
-					},
+					// Actions: []fmaction.Action{
+					// 	{
+					// 		Type: fmaction.TypeAnswer,
+					// 	},
+					// },
 					Source: &cmaddress.Address{
 						Type:   cmaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					EndHandle:    outplan.EndHandleStop,
+					// EndHandle:    outplan.EndHandleStop,
 					DialTimeout:  30000,
 					TryInterval:  600000,
 					MaxTryCount0: 3,
@@ -234,16 +233,16 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
 					Name:       "test name",
 					Detail:     "test detail",
-					Actions: []fmaction.Action{
-						{
-							Type: fmaction.TypeAnswer,
-						},
-					},
+					// Actions: []fmaction.Action{
+					// 	{
+					// 		Type: fmaction.TypeAnswer,
+					// 	},
+					// },
 					Source: &cmaddress.Address{
 						Type:   cmaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					EndHandle:    outplan.EndHandleStop,
+					// EndHandle:    outplan.EndHandleStop,
 					DialTimeout:  30000,
 					TryInterval:  600000,
 					MaxTryCount0: 3,
@@ -260,16 +259,16 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
 					Name:       "test name",
 					Detail:     "test detail",
-					Actions: []fmaction.Action{
-						{
-							Type: fmaction.TypeAnswer,
-						},
-					},
+					// Actions: []fmaction.Action{
+					// 	{
+					// 		Type: fmaction.TypeAnswer,
+					// 	},
+					// },
 					Source: &cmaddress.Address{
 						Type:   cmaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					EndHandle:    outplan.EndHandleStop,
+					// EndHandle:    outplan.EndHandleStop,
 					DialTimeout:  30000,
 					TryInterval:  600000,
 					MaxTryCount0: 3,
@@ -339,16 +338,16 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
 				Name:       "test name",
 				Detail:     "test detail",
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				// Actions: []fmaction.Action{
+				// 	{
+				// 		Type: fmaction.TypeAnswer,
+				// 	},
+				// },
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				EndHandle:    outplan.EndHandleStop,
+				// EndHandle:    outplan.EndHandleStop,
 				DialTimeout:  30000,
 				TryInterval:  600000,
 				MaxTryCount0: 3,
@@ -369,16 +368,16 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
 				Name:       "update name",
 				Detail:     "update detail",
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				// Actions: []fmaction.Action{
+				// 	{
+				// 		Type: fmaction.TypeAnswer,
+				// 	},
+				// },
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				EndHandle:    outplan.EndHandleStop,
+				// EndHandle:    outplan.EndHandleStop,
 				DialTimeout:  30000,
 				TryInterval:  600000,
 				MaxTryCount0: 3,
@@ -431,141 +430,12 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_OutplanUpdateActionInfo(t *testing.T) {
-	tests := []struct {
-		name    string
-		outplan *outplan.Outplan
-
-		actions   []fmaction.Action
-		source    *cmaddress.Address
-		endHandle outplan.EndHandle
-
-		expectRes *outplan.Outplan
-	}{
-		{
-			"normal",
-			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("d20dcd92-b3b9-11ec-bfc5-33f2d787acbe"),
-				CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
-				Name:       "test name",
-				Detail:     "test detail",
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
-					Target: "+821100000001",
-				},
-				EndHandle:    outplan.EndHandleStop,
-				DialTimeout:  30000,
-				TryInterval:  600000,
-				MaxTryCount0: 3,
-				MaxTryCount1: 3,
-				MaxTryCount2: 3,
-				MaxTryCount3: 3,
-				MaxTryCount4: 3,
-				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
-				TMDelete:     DefaultTimeStamp,
-			},
-
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeBeep,
-				},
-				{
-					Type: fmaction.TypeBeep,
-				},
-				{
-					Type: fmaction.TypeBeep,
-				},
-			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
-				Target: "+821100000002",
-			},
-			outplan.EndHandleContinue,
-
-			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("d20dcd92-b3b9-11ec-bfc5-33f2d787acbe"),
-				CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
-				Name:       "test name",
-				Detail:     "test detail",
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeBeep,
-					},
-					{
-						Type: fmaction.TypeBeep,
-					},
-					{
-						Type: fmaction.TypeBeep,
-					},
-				},
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
-					Target: "+821100000002",
-				},
-				EndHandle:    outplan.EndHandleContinue,
-				DialTimeout:  30000,
-				TryInterval:  600000,
-				MaxTryCount0: 3,
-				MaxTryCount1: 3,
-				MaxTryCount2: 3,
-				MaxTryCount3: 3,
-				MaxTryCount4: 3,
-				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
-				TMDelete:     DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				db:    dbTest,
-				cache: mockCache,
-			}
-
-			ctx := context.Background()
-
-			mockCache.EXPECT().OutplanSet(ctx, tt.outplan).Return(nil)
-			if err := h.OutplanCreate(context.Background(), tt.outplan); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
-			if err := h.OutplanUpdateActionInfo(ctx, tt.outplan.ID, tt.actions, tt.source, tt.endHandle); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().OutplanGet(gomock.Any(), tt.outplan.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().OutplanSet(gomock.Any(), gomock.Any())
-			res, err := h.OutplanGet(ctx, tt.outplan.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			tt.expectRes.TMUpdate = res.TMUpdate
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_OutplanUpdateDialInfo(t *testing.T) {
 	tests := []struct {
 		name    string
 		outplan *outplan.Outplan
 
+		source       *cmaddress.Address
 		dialTimeout  int
 		tryInterval  int
 		maxTryCount0 int
@@ -583,16 +453,10 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
 				Name:       "test name",
 				Detail:     "test detail",
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				EndHandle:    outplan.EndHandleStop,
 				DialTimeout:  30000,
 				TryInterval:  600000,
 				MaxTryCount0: 3,
@@ -605,6 +469,10 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				TMDelete:     DefaultTimeStamp,
 			},
 
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000002",
+			},
 			60000,
 			300000,
 			2,
@@ -618,16 +486,10 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
 				Name:       "test name",
 				Detail:     "test detail",
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
-					Target: "+821100000001",
+					Target: "+821100000002",
 				},
-				EndHandle:    outplan.EndHandleStop,
 				DialTimeout:  60000,
 				TryInterval:  300000,
 				MaxTryCount0: 2,
@@ -661,7 +523,7 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 			}
 
 			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
-			if err := h.OutplanUpdateDialInfo(ctx, tt.outplan.ID, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4); err != nil {
+			if err := h.OutplanUpdateDialInfo(ctx, tt.outplan.ID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

@@ -3,15 +3,13 @@ create table outplans(
   id          binary(16),
   customer_id binary(16),
 
-  name      varchar(255),
-  detail    text,
+  name    varchar(255),
+  detail  text,
 
-  actions       json,
-  source        json,
+  source  json,
+
   dial_timeout  integer,
-  end_handle    varchar(255),
   try_interval  integer,
-
   max_try_count_0 integer,
   max_try_count_1 integer,
   max_try_count_2 integer,

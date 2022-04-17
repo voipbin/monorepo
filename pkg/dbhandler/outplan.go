@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 )
@@ -23,10 +23,9 @@ const (
 		name,
 		detail,
 
-		actions,
 		source,
+		
 		dial_timeout,
-		end_handle,
 		try_interval,
 
 		max_try_count_0,
@@ -45,7 +44,6 @@ const (
 
 // outplanGetFromRow gets the outplan from the row.
 func (h *handler) outplanGetFromRow(row *sql.Rows) (*outplan.Outplan, error) {
-	var actions string
 	var source string
 
 	res := &outplan.Outplan{}
@@ -56,10 +54,9 @@ func (h *handler) outplanGetFromRow(row *sql.Rows) (*outplan.Outplan, error) {
 		&res.Name,
 		&res.Detail,
 
-		&actions,
 		&source,
+
 		&res.DialTimeout,
-		&res.EndHandle,
 		&res.TryInterval,
 
 		&res.MaxTryCount0,
@@ -73,10 +70,6 @@ func (h *handler) outplanGetFromRow(row *sql.Rows) (*outplan.Outplan, error) {
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. outplanGetFromRow. err: %v", err)
-	}
-
-	if errActions := json.Unmarshal([]byte(actions), &res.Actions); errActions != nil {
-		return nil, fmt.Errorf("could not unmarshal the actions. outplanGetFromRow. err: %v", errActions)
 	}
 
 	if errSource := json.Unmarshal([]byte(source), &res.Source); errSource != nil {
@@ -96,10 +89,9 @@ func (h *handler) OutplanCreate(ctx context.Context, t *outplan.Outplan) error {
 		name,
 		detail,
 
-		actions,
 		source,
+
 		dial_timeout,
-		end_handle,
 		try_interval,
 
 		max_try_count_0,
@@ -114,7 +106,8 @@ func (h *handler) OutplanCreate(ctx context.Context, t *outplan.Outplan) error {
 	) values(
 		?, ?,
 		?, ?,
-		?, ?, ?, ?, ?,
+		?, 
+		?, ?,
 		?, ?, ?, ?, ?,
 		?, ?, ?
 		)`
@@ -123,11 +116,6 @@ func (h *handler) OutplanCreate(ctx context.Context, t *outplan.Outplan) error {
 		return fmt.Errorf("could not prepare. OutplanCreate. err: %v", err)
 	}
 	defer stmt.Close()
-
-	actions, err := json.Marshal(t.Actions)
-	if err != nil {
-		return fmt.Errorf("could not marshal actions. OutplanCreate. err: %v", err)
-	}
 
 	source, err := json.Marshal(t.Source)
 	if err != nil {
@@ -141,10 +129,9 @@ func (h *handler) OutplanCreate(ctx context.Context, t *outplan.Outplan) error {
 		t.Name,
 		t.Detail,
 
-		actions,
 		source,
+
 		t.DialTimeout,
-		t.EndHandle,
 		t.TryInterval,
 
 		t.MaxTryCount0,
@@ -327,42 +314,22 @@ func (h *handler) OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 	return nil
 }
 
-// OutplanUpdateActionInfo updates outplan's action related information.
-func (h *handler) OutplanUpdateActionInfo(ctx context.Context, id uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, endHandle outplan.EndHandle) error {
-	q := `
-	update outplans set
-		actions = ?,
-		source = ?,
-		end_handle = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpActions, err := json.Marshal(actions)
-	if err != nil {
-		return fmt.Errorf("could not marshal the actions. OutplanUpdateActionInfo. err: %v", err)
-	}
-
-	tmpSource, err := json.Marshal(source)
-	if err != nil {
-		return fmt.Errorf("could not marshal the source. OutplanUpdateActionInfo. err: %v", err)
-	}
-
-	if _, err := h.db.Exec(q, tmpActions, tmpSource, endHandle, GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutplanUpdateActionInfo. err: %v", err)
-	}
-
-	// set to the cache
-	_ = h.outplanUpdateToCache(ctx, id)
-
-	return nil
-}
-
 // OutplanUpdateDialInfo updates outplan's action related information.
-func (h *handler) OutplanUpdateDialInfo(ctx context.Context, id uuid.UUID, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) error {
+func (h *handler) OutplanUpdateDialInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	source *cmaddress.Address,
+	dialTimeout int,
+	tryInterval int,
+	maxTryCount0 int,
+	maxTryCount1 int,
+	maxTryCount2 int,
+	maxTryCount3 int,
+	maxTryCount4 int,
+) error {
 	q := `
 	update outplans set
+		source = ?,
 		dial_timeout = ?,
 		try_interval = ?,
 		max_try_count_0 = ?,
@@ -375,8 +342,13 @@ func (h *handler) OutplanUpdateDialInfo(ctx context.Context, id uuid.UUID, dialT
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4, GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutplanUpdateActionInfo. err: %v", err)
+	tmpSource, err := json.Marshal(source)
+	if err != nil {
+		return fmt.Errorf("could not marshal source. OutplanCreate. err: %v", err)
+	}
+
+	if _, err := h.db.Exec(q, tmpSource, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. OutplanUpdateDialInfo. err: %v", err)
 	}
 
 	// set to the cache

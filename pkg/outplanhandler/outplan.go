@@ -6,21 +6,20 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 )
 
+// Create creates a new outplan
 func (h *outplanHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	actions []fmaction.Action,
+
 	source *cmaddress.Address,
 	dialTimeout int,
-	endHandle outplan.EndHandle,
 	tryInterval int,
 	maxTryCount0 int,
 	maxTryCount1 int,
@@ -41,11 +40,10 @@ func (h *outplanHandler) Create(
 		ID:         id,
 		CustomerID: customerID,
 
-		Name:      name,
-		Detail:    detail,
-		Actions:   actions,
-		Source:    source,
-		EndHandle: endHandle,
+		Name:   name,
+		Detail: detail,
+
+		Source: source,
 
 		DialTimeout:  dialTimeout,
 		TryInterval:  tryInterval,
@@ -159,39 +157,40 @@ func (h *outplanHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 	return res, nil
 }
 
+// // UpdateActionInfo updates outplan's action info
+// func (h *outplanHandler) UpdateActionInfo(ctx context.Context, id uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, endHandle outplan.EndHandle) (*outplan.Outplan, error) {
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func":       "UpdateActionInfo",
+// 			"id":         id,
+// 			"actions":    actions,
+// 			"source":     source,
+// 			"end_handle": endHandle,
+// 		})
+// 	log.Debug("Updating outplan action info.")
+
+// 	if err := h.db.OutplanUpdateActionInfo(ctx, id, actions, source, endHandle); err != nil {
+// 		log.Errorf("Could not update outplan action info. err: %v", err)
+// 		return nil, err
+// 	}
+
+// 	// get updated outplan
+// 	res, err := h.db.OutplanGet(ctx, id)
+// 	if err != nil {
+// 		log.Errorf("Could not get updated outplan info. err: %v", err)
+// 		return nil, err
+// 	}
+
+// 	return res, nil
+// }
+
 // UpdateActionInfo updates outplan's action info
-func (h *outplanHandler) UpdateActionInfo(ctx context.Context, id uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, endHandle outplan.EndHandle) (*outplan.Outplan, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "UpdateActionInfo",
-			"id":         id,
-			"actions":    actions,
-			"source":     source,
-			"end_handle": endHandle,
-		})
-	log.Debug("Updating outplan action info.")
-
-	if err := h.db.OutplanUpdateActionInfo(ctx, id, actions, source, endHandle); err != nil {
-		log.Errorf("Could not update outplan action info. err: %v", err)
-		return nil, err
-	}
-
-	// get updated outplan
-	res, err := h.db.OutplanGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated outplan info. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// UpdateActionInfo updates outplan's action info
-func (h *outplanHandler) UpdateDialInfo(ctx context.Context, id uuid.UUID, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
+func (h *outplanHandler) UpdateDialInfo(ctx context.Context, id uuid.UUID, source *cmaddress.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":            "UpdateActionInfo",
 			"id":              id,
+			"source":          source,
 			"dial_timeout":    dialTimeout,
 			"try_interval":    tryInterval,
 			"mac_try_count_0": maxTryCount0,
@@ -202,7 +201,7 @@ func (h *outplanHandler) UpdateDialInfo(ctx context.Context, id uuid.UUID, dialT
 		})
 	log.Debug("Updating outplan dial info.")
 
-	if err := h.db.OutplanUpdateDialInfo(ctx, id, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4); err != nil {
+	if err := h.db.OutplanUpdateDialInfo(ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4); err != nil {
 		log.Errorf("Could not update outplan dial info. err: %v", err)
 		return nil, err
 	}

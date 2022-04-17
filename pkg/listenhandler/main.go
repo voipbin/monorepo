@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"time"
@@ -36,17 +37,18 @@ type listenHandler struct {
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
-	// outdials
-	regV1Outdials             = regexp.MustCompile("/v1/outdials$")
-	regV1OutdialsGet          = regexp.MustCompile(`/v1/outdials\?`)
-	regV1OutdialsID           = regexp.MustCompile("/v1/outdials/" + regUUID + "$")
-	regV1OutdialsIDAvailable  = regexp.MustCompile("/v1/outdials/" + regUUID + `/available\?`)
-	regV1OutdialsIDTargets    = regexp.MustCompile("/v1/outdials/" + regUUID + "/targets$")
-	regV1OutdialsIDTargetsGet = regexp.MustCompile("/v1/outdials/" + regUUID + `/targets\?`)
+	// campaigns
+	regV1Campaigns               = regexp.MustCompile("/v1/campaigns$")
+	regV1CampaignsGet            = regexp.MustCompile(`/v1/campaigns\?`)
+	regV1CampaignsID             = regexp.MustCompile("/v1/campaigns/" + regUUID + "$")
+	regV1CampaignsIDExecute      = regexp.MustCompile("/v1/campaigns/" + regUUID + "/execute$")
+	regV1CampaignsIDStatus       = regexp.MustCompile("/v1/campaigns/" + regUUID + "/status$")
+	regV1CampaignsIDServiceLevel = regexp.MustCompile("/v1/campaigns/" + regUUID + "/service_level$")
+	regV1CampaignsIDActions      = regexp.MustCompile("/v1/campaigns/" + regUUID + "/actions$")
 )
 
 var (
-	metricsNamespace = "outdial_manager"
+	metricsNamespace = "campaign_manager"
 
 	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -138,6 +140,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
+	ctx := context.Background()
+
 	logrus.WithFields(
 		logrus.Fields{
 			"uri":       m.URI,
@@ -150,10 +154,43 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	switch {
 
 	// v1
-	// // outdials
-	// case regV1Outdials.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	requestType = "/outdials POST"
-	// 	response, err = h.v1OutdialsPost(m)
+	// /v1/campaigns
+	case regV1Campaigns.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/v1/campaigns"
+		response, err = h.v1CampaignsPost(ctx, m)
+
+	case regV1CampaignsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/v1/campaigns"
+		response, err = h.v1CampaignsGet(ctx, m)
+
+	// /v1/campaigns/<campaign-id>
+	case regV1CampaignsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/v1/campaigns/<campaign-id>"
+		response, err = h.v1CampaignsIDGet(ctx, m)
+
+	case regV1CampaignsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/v1/campaigns/<campaign-id>"
+		response, err = h.v1CampaignsIDDelete(ctx, m)
+
+	// /v1/campaigns/<campaign-id>/execute
+	case regV1CampaignsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/v1/campaigns/<campaign-id>/execute"
+		response, err = h.v1CampaignsIDExecutePost(ctx, m)
+
+	// /v1/campaigns/<campaign-id>/status
+	case regV1CampaignsIDStatus.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/v1/campaigns/<campaign-id>/status"
+		response, err = h.v1CampaignsIDStatusPut(ctx, m)
+
+	// /v1/campaigns/<campaign-id>/service_level
+	case regV1CampaignsIDServiceLevel.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/v1/campaigns/<campaign-id>/service_level"
+		response, err = h.v1CampaignsIDServiceLevelPut(ctx, m)
+
+	// /v1/campaigns/<campaign-id>/actions
+	case regV1CampaignsIDActions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/v1/campaigns/<campaign-id>/actions"
+		response, err = h.v1CampaignsIDActionsPut(ctx, m)
 
 	// case regV1OutdialsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 	// 	requestType = "/outdials GET"
