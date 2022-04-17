@@ -144,16 +144,16 @@ func (r *requestHandler) CAV1CampaignDelete(ctx context.Context, campaignID uuid
 
 // CAV1CampaignExecute sends a request to campaign-manager
 // to execute the campaign.
-func (r *requestHandler) CAV1CampaignExecute(ctx context.Context, id uuid.UUID) error {
+// delay millisecond
+func (r *requestHandler) CAV1CampaignExecute(ctx context.Context, id uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/campaigns/%s/execute", id)
 
-	res, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPost, resourceCACampaigns, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPost, resourceCACampaigns, requestTimeoutDefault, delay, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
 	case res == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil
 	case res.StatusCode > 299:
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}

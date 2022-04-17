@@ -302,21 +302,22 @@ func Test_CAV1CampaignExecute(t *testing.T) {
 		name string
 
 		campaignID uuid.UUID
+		delay      int
 
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *cacampaign.Campaign
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("00089b80-3c19-42f1-80d3-f6ff450b1562"),
+			DelayNow,
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"00089b80-3c19-42f1-80d3-f6ff450b1562"}`),
 			},
 
 			"bin-manager.campaign-manager.request",
@@ -325,8 +326,23 @@ func Test_CAV1CampaignExecute(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 			},
-			&cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("22d9075d-08bd-4eb0-b868-3b102f0bcb39"),
+		},
+		{
+			"5 seconds delay",
+
+			uuid.FromStringOrNil("d7bc51db-e61b-460b-b13e-2d4f453151cd"),
+			5000,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+
+			"bin-manager.campaign-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/campaigns/d7bc51db-e61b-460b-b13e-2d4f453151cd/execute",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
 			},
 		},
 	}
@@ -342,9 +358,13 @@ func Test_CAV1CampaignExecute(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			if tt.delay == 0 {
+				mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			} else {
+				mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+			}
 
-			if err := reqHandler.CAV1CampaignExecute(ctx, tt.campaignID); err != nil {
+			if err := reqHandler.CAV1CampaignExecute(ctx, tt.campaignID, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

@@ -21,6 +21,7 @@ import (
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	response "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
+	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -617,6 +618,125 @@ func (m *MockRequestHandler) AstPlaybackStop(ctx context.Context, asteriskID, pl
 func (mr *MockRequestHandlerMockRecorder) AstPlaybackStop(ctx, asteriskID, playabckID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstPlaybackStop", reflect.TypeOf((*MockRequestHandler)(nil).AstPlaybackStop), ctx, asteriskID, playabckID)
+}
+
+// CAV1CampaignCreate mocks base method.
+func (m *MockRequestHandler) CAV1CampaignCreate(ctx context.Context, id, customerID uuid.UUID, name, detail string, serviceLevel int, endHandle campaign.EndHandle, actions []action.Action, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignCreate", ctx, id, customerID, name, detail, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignCreate indicates an expected call of CAV1CampaignCreate.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignCreate(ctx, id, customerID, name, detail, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignCreate", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignCreate), ctx, id, customerID, name, detail, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID)
+}
+
+// CAV1CampaignDelete mocks base method.
+func (m *MockRequestHandler) CAV1CampaignDelete(ctx context.Context, campaignID uuid.UUID) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignDelete", ctx, campaignID)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignDelete indicates an expected call of CAV1CampaignDelete.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignDelete(ctx, campaignID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignDelete", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignDelete), ctx, campaignID)
+}
+
+// CAV1CampaignExecute mocks base method.
+func (m *MockRequestHandler) CAV1CampaignExecute(ctx context.Context, id uuid.UUID, delay int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignExecute", ctx, id, delay)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CAV1CampaignExecute indicates an expected call of CAV1CampaignExecute.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignExecute(ctx, id, delay interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignExecute", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignExecute), ctx, id, delay)
+}
+
+// CAV1CampaignGet mocks base method.
+func (m *MockRequestHandler) CAV1CampaignGet(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignGet", ctx, id)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignGet indicates an expected call of CAV1CampaignGet.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignGet", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignGet), ctx, id)
+}
+
+// CAV1CampaignGets mocks base method.
+func (m *MockRequestHandler) CAV1CampaignGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignGets", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignGets indicates an expected call of CAV1CampaignGets.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignGets", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignGets), ctx, customerID, pageToken, pageSize)
+}
+
+// CAV1CampaignUpdateActions mocks base method.
+func (m *MockRequestHandler) CAV1CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignUpdateActions", ctx, id, actions)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignUpdateActions indicates an expected call of CAV1CampaignUpdateActions.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateActions(ctx, id, actions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateActions", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateActions), ctx, id, actions)
+}
+
+// CAV1CampaignUpdateServiceLevel mocks base method.
+func (m *MockRequestHandler) CAV1CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignUpdateServiceLevel", ctx, id, serviceLevel)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignUpdateServiceLevel indicates an expected call of CAV1CampaignUpdateServiceLevel.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateServiceLevel(ctx, id, serviceLevel interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateServiceLevel", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateServiceLevel), ctx, id, serviceLevel)
+}
+
+// CAV1CampaignUpdateStatus mocks base method.
+func (m *MockRequestHandler) CAV1CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignUpdateStatus", ctx, id, status)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignUpdateStatus indicates an expected call of CAV1CampaignUpdateStatus.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateStatus(ctx, id, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateStatus", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateStatus), ctx, id, status)
 }
 
 // CFV1ConferenceCreate mocks base method.
