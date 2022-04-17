@@ -28,21 +28,21 @@ func (r *requestHandler) FMV1ActiveflowCreate(ctx context.Context, id, flowID uu
 		return nil, err
 	}
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
 
-	if res.StatusCode >= 299 {
+	if tmp.StatusCode >= 299 {
 		return nil, fmt.Errorf("could not get next action")
 	}
 
-	var af fmactiveflow.Activeflow
-	if err := json.Unmarshal([]byte(res.Data), &af); err != nil {
+	var res fmactiveflow.Activeflow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &af, nil
+	return &res, nil
 }
 
 // FMV1ActiveflowDelete delets activeflow.
@@ -50,21 +50,21 @@ func (r *requestHandler) FMV1ActiveflowDelete(ctx context.Context, id uuid.UUID)
 
 	uri := fmt.Sprintf("/v1/activeflows/%s", id)
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodDelete, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodDelete, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	if res.StatusCode >= 299 {
+	if tmp.StatusCode >= 299 {
 		return nil, fmt.Errorf("could not get next action")
 	}
 
-	var af fmactiveflow.Activeflow
-	if err := json.Unmarshal([]byte(res.Data), &af); err != nil {
+	var res fmactiveflow.Activeflow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &af, nil
+	return &res, nil
 }
 
 // FMV1ActiveflowGetNextAction gets the next action.
@@ -79,21 +79,21 @@ func (r *requestHandler) FMV1ActiveflowGetNextAction(ctx context.Context, id, cu
 		return nil, err
 	}
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
 
-	if res.StatusCode >= 299 {
+	if tmp.StatusCode >= 299 {
 		return nil, fmt.Errorf("could not get next action")
 	}
 
-	var action fmaction.Action
-	if err := json.Unmarshal([]byte(res.Data), &action); err != nil {
+	var res fmaction.Action
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &action, nil
+	return &res, nil
 }
 
 // FMV1ActiveflowUpdateForwardActionID updates the forward action id.
