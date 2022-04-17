@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
@@ -21,11 +22,19 @@ func Test_CampaignCreate(t *testing.T) {
 		{
 			"normal",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
-				CustomerID:     uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
-				Name:           "test name",
-				Detail:         "test detail",
-				Status:         campaign.StatusStop,
+				ID:           uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
+				CustomerID:   uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				Name:         "test name",
+				Detail:       "test detail",
+				Status:       campaign.StatusStop,
+				ServiceLevel: 0,
+				EndHandle:    campaign.EndHandleStop,
+				FlowID:       uuid.FromStringOrNil("8aaeab73-36ce-4ac7-9dd2-2e21fc6210b1"),
+				Actions: []fmaction.Action{
+					{
+						Type: fmaction.TypeAnswer,
+					},
+				},
 				OutplanID:      uuid.FromStringOrNil("ba29f006-b3ce-11ec-80d2-a71d2212a7d7"),
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
@@ -140,11 +149,19 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 			"1 item",
 			[]*campaign.Campaign{
 				{
-					ID:             uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
-					CustomerID:     uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
-					Name:           "test name",
-					Detail:         "test detail",
-					Status:         campaign.StatusStop,
+					ID:           uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
+					CustomerID:   uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
+					Name:         "test name",
+					Detail:       "test detail",
+					Status:       campaign.StatusStop,
+					ServiceLevel: 10,
+					EndHandle:    campaign.EndHandleStop,
+					FlowID:       uuid.FromStringOrNil("7d469238-eb40-481f-99dd-bc59bb1d38f7"),
+					Actions: []fmaction.Action{
+						{
+							Type: fmaction.TypeAnswer,
+						},
+					},
 					OutplanID:      uuid.FromStringOrNil("f9771d70-b3d2-11ec-9154-dfb637b4a732"),
 					OutdialID:      uuid.FromStringOrNil("f9a4deb8-b3d2-11ec-8ced-cfd5fa2a7c1b"),
 					QueueID:        uuid.FromStringOrNil("f9ce6d96-b3d2-11ec-94ac-bb22aad0488d"),
@@ -551,6 +568,189 @@ func Test_OutplanUpdateServiceLevel(t *testing.T) {
 
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateServiceLevel(ctx, tt.campaign.ID, tt.serviceLevel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CampaignGet(gomock.Any(), tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignSet(gomock.Any(), gomock.Any())
+			res, err := h.CampaignGet(ctx, tt.campaign.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			tt.expectRes.TMUpdate = res.TMUpdate
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_OutplanUpdateEndHandle(t *testing.T) {
+	tests := []struct {
+		name     string
+		campaign *campaign.Campaign
+
+		endHandle campaign.EndHandle
+		expectRes *campaign.Campaign
+	}{
+		{
+			"normal",
+			&campaign.Campaign{
+				ID:             uuid.FromStringOrNil("38a47dc8-704e-4818-bb16-113335ed85ec"),
+				CustomerID:     uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				Name:           "test name",
+				Detail:         "test detail",
+				Status:         campaign.StatusStop,
+				ServiceLevel:   100,
+				EndHandle:      campaign.EndHandleStop,
+				OutplanID:      uuid.FromStringOrNil("298c7482-b3d4-11ec-9ea5-ef75a2e6bfb6"),
+				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
+				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
+				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
+				TMCreate:       "2020-04-18 03:22:17.995000",
+				TMUpdate:       "2020-04-18 03:22:17.995000",
+				TMDelete:       DefaultTimeStamp,
+			},
+
+			campaign.EndHandleContinue,
+			&campaign.Campaign{
+				ID:             uuid.FromStringOrNil("38a47dc8-704e-4818-bb16-113335ed85ec"),
+				CustomerID:     uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				Name:           "test name",
+				Detail:         "test detail",
+				Status:         campaign.StatusStop,
+				ServiceLevel:   100,
+				EndHandle:      campaign.EndHandleContinue,
+				OutplanID:      uuid.FromStringOrNil("298c7482-b3d4-11ec-9ea5-ef75a2e6bfb6"),
+				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
+				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
+				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
+				TMCreate:       "2020-04-18 03:22:17.995000",
+				TMUpdate:       "2020-04-18 03:22:17.995000",
+				TMDelete:       DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().CampaignSet(ctx, tt.campaign).Return(nil)
+			if err := h.CampaignCreate(context.Background(), tt.campaign); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			if err := h.CampaignUpdateEndHandle(ctx, tt.campaign.ID, tt.endHandle); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CampaignGet(gomock.Any(), tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignSet(gomock.Any(), gomock.Any())
+			res, err := h.CampaignGet(ctx, tt.campaign.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			tt.expectRes.TMUpdate = res.TMUpdate
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_OutplanUpdateActionInfo(t *testing.T) {
+	tests := []struct {
+		name     string
+		campaign *campaign.Campaign
+
+		actions []fmaction.Action
+
+		expectRes *campaign.Campaign
+	}{
+		{
+			"normal",
+			&campaign.Campaign{
+				ID:             uuid.FromStringOrNil("20e8968f-b36b-4b2c-acc7-d4240724d967"),
+				CustomerID:     uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				Name:           "test name",
+				Detail:         "test detail",
+				Status:         campaign.StatusStop,
+				ServiceLevel:   100,
+				EndHandle:      campaign.EndHandleStop,
+				FlowID:         uuid.FromStringOrNil("4a2530aa-9ea7-4441-a137-dfcf54e0f609"),
+				OutplanID:      uuid.FromStringOrNil("298c7482-b3d4-11ec-9ea5-ef75a2e6bfb6"),
+				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
+				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
+				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
+				TMCreate:       "2020-04-18 03:22:17.995000",
+				TMUpdate:       "2020-04-18 03:22:17.995000",
+				TMDelete:       DefaultTimeStamp,
+			},
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+
+			&campaign.Campaign{
+				ID:           uuid.FromStringOrNil("20e8968f-b36b-4b2c-acc7-d4240724d967"),
+				CustomerID:   uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				Name:         "test name",
+				Detail:       "test detail",
+				Status:       campaign.StatusStop,
+				ServiceLevel: 100,
+				EndHandle:    campaign.EndHandleStop,
+				FlowID:       uuid.FromStringOrNil("4a2530aa-9ea7-4441-a137-dfcf54e0f609"),
+				Actions: []fmaction.Action{
+					{
+						Type: fmaction.TypeAnswer,
+					},
+				},
+				OutplanID:      uuid.FromStringOrNil("298c7482-b3d4-11ec-9ea5-ef75a2e6bfb6"),
+				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
+				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
+				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
+				TMCreate:       "2020-04-18 03:22:17.995000",
+				TMUpdate:       "2020-04-18 03:22:17.995000",
+				TMDelete:       DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().CampaignSet(ctx, tt.campaign).Return(nil)
+			if err := h.CampaignCreate(context.Background(), tt.campaign); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			if err := h.CampaignUpdateActions(ctx, tt.campaign.ID, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

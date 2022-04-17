@@ -1,0 +1,52 @@
+package request
+
+import (
+	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+)
+
+// V1DataCampaignsPost is
+// v1 data type request struct for
+// /v1/campaigns POST
+type V1DataCampaignsPost struct {
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+
+	ServiceLevel int                `json:"service_level"`
+	EndHandle    campaign.EndHandle `json:"end_handle"`
+
+	// action settings
+	Actions []fmaction.Action `json:"actions"`
+
+	// resource info
+	OutplanID uuid.UUID `json:"outplan_id"`
+	OutdialID uuid.UUID `json:"outdial_id"`
+	QueueID   uuid.UUID `json:"queue_id"`
+
+	NextCampaignID uuid.UUID `json:"next_campaign_id"`
+}
+
+// V1DataCampaignIDStatusPut is
+// v1 data type request struct for
+// /v1/campaigns/<campaign-id>/status PUT
+type V1DataCampaignsIDStatusPut struct {
+	Status campaign.Status `json:"status"`
+}
+
+// V1DataCampaignsIDServiceLevelPut is
+// v1 data type request struct for
+// /v1/campaigns/<campaign-id>/service_level PUT
+type V1DataCampaignsIDServiceLevelPut struct {
+	ServiceLevel int `json:"service_level"`
+}
+
+// V1DataCampaignsIDActionsPut is
+// v1 data type request struct for
+// /v1/campaigns/<campaign-id>/actions PUT
+type V1DataCampaignsIDActionsPut struct {
+	Actions []fmaction.Action `json:"actions"`
+}

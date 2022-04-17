@@ -15,12 +15,16 @@ import (
 func (h *campaigncallHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
+
 	campaignID uuid.UUID,
 	outplanID uuid.UUID,
 	outdialID uuid.UUID,
 	outdialTargetID uuid.UUID,
 	queueID uuid.UUID,
+
 	activeflowID uuid.UUID,
+	flowID uuid.UUID,
+
 	referenceType campaigncall.ReferenceType,
 	referenceID uuid.UUID,
 	source *cmaddress.Address,
@@ -38,14 +42,18 @@ func (h *campaigncallHandler) Create(
 	ts := dbhandler.GetCurTime()
 	id := uuid.Must(uuid.NewV4())
 	t := &campaigncall.Campaigncall{
-		ID:               id,
-		CustomerID:       customerID,
-		CampaignID:       campaignID,
-		OutplanID:        outplanID,
-		OutdialID:        outdialID,
-		OutdialTargetID:  outdialTargetID,
-		QueueID:          queueID,
-		ActiveflowID:     activeflowID,
+		ID:         id,
+		CustomerID: customerID,
+
+		CampaignID:      campaignID,
+		OutplanID:       outplanID,
+		OutdialID:       outdialID,
+		OutdialTargetID: outdialTargetID,
+		QueueID:         queueID,
+
+		ActiveflowID: activeflowID,
+		FlowID:       flowID,
+
 		ReferenceType:    referenceType,
 		ReferenceID:      referenceID,
 		Status:           campaigncall.StatusDialing,
@@ -115,7 +123,7 @@ func (h *campaigncallHandler) GetsByCampaignID(ctx context.Context, campaignID u
 func (h *campaigncallHandler) GetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":        "GetsByCampaignID",
+			"func":        "GetsByCampaignIDAndStatus",
 			"campaign_id": campaignID,
 			"token":       token,
 			"limit":       limit,
@@ -135,13 +143,37 @@ func (h *campaigncallHandler) GetsByCampaignIDAndStatus(ctx context.Context, cam
 func (h *campaigncallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) (*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "GetsByCampaignID",
+			"func": "UpdateStatus",
 			"id":   id,
 		})
 	log.Debug("Getting campaigncalls.")
 
 	if err := h.db.CampaigncallUpdateStatus(ctx, id, status); err != nil {
 		log.Errorf("Could not get UpdateStatus. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated campaigncall. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaigncall.EventTypeCampaigncallUpdated, res)
+
+	return res, nil
+}
+
+// UpdateActiveflowID updates the activeflow_id
+func (h *campaigncallHandler) UpdateActiveflowID(ctx context.Context, id, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "UpdateActiveflowID",
+			"id":   id,
+		})
+	log.Debug("Updating activeflow id.")
+
+	if err := h.db.CampaigncallUpdateActiveflowID(ctx, id, activeflowID); err != nil {
+		log.Errorf("Could not update the activeflow_id. err: %v", err)
 		return nil, err
 	}
 

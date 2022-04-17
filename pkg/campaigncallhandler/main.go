@@ -26,12 +26,16 @@ type CampaigncallHandler interface {
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
+
 		campaignID uuid.UUID,
 		outplanID uuid.UUID,
 		outdialID uuid.UUID,
 		outdialTargetID uuid.UUID,
 		queueID uuid.UUID,
+
 		activeflowID uuid.UUID,
+		flowID uuid.UUID,
+
 		referenceType campaigncall.ReferenceType,
 		referenceID uuid.UUID,
 		source *cmaddress.Address,
@@ -43,6 +47,9 @@ type CampaigncallHandler interface {
 	GetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	GetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) (*campaigncall.Campaigncall, error)
+	UpdateActiveflowID(ctx context.Context, id, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error)
+
+	Done(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) (*campaigncall.Campaigncall, error)
 }
 
 // NewCampaigncallHandler returns CampaignCallHandler

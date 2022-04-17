@@ -8,6 +8,10 @@ create table campaigns(
 
   status        varchar(255),
   service_level integer,
+  end_handle  varchar(255),
+
+  flow_id binary(16),
+  actions json,
 
   outplan_id  binary(16),
   outdial_id  binary(16),
@@ -24,6 +28,7 @@ create table campaigns(
 );
 
 create index idx_campaigns_customer_id on campaigns(customer_id);
+create index idx_campaigns_flow_id on campaigns(flow_id);
 create index idx_campaigns_outplan_id on campaigns(outplan_id);
 create index idx_campaigns_outdial_id on campaigns(outdial_id);
 create index idx_campaigns_queue_id on campaigns(queue_id);

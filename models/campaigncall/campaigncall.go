@@ -16,7 +16,9 @@ type Campaigncall struct {
 	OutdialTargetID uuid.UUID `json:"outdial_target_id"`
 	QueueID         uuid.UUID `json:"queue_id"`
 
-	ActiveflowID  uuid.UUID     `json:"activeflow_id"`  // this is required
+	ActiveflowID uuid.UUID `json:"activeflow_id"` // this is required
+	FlowID       uuid.UUID `json:"flow_id"`
+
 	ReferenceType ReferenceType `json:"reference_type"` // none or call
 	ReferenceID   uuid.UUID     `json:"reference_id"`   // reference id
 
@@ -48,4 +50,11 @@ const (
 	StatusDialing     = "dialing"     // the campaigncall is dialing(not answered yet)
 	StatusProgressing = "progressing" // the campaigncall is progressing(the call answered)
 	StatusDone        = "done"        // the campaigncall is hungup
+)
+
+type Result string
+
+const (
+	ResultSuccess = "success"
+	ResultFail    = "fail"
 )

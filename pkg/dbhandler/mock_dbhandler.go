@@ -98,6 +98,20 @@ func (mr *MockDBHandlerMockRecorder) CampaignGetsByCustomerID(ctx, customerID, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).CampaignGetsByCustomerID), ctx, customerID, token, limit)
 }
 
+// CampaignUpdateActions mocks base method.
+func (m *MockDBHandler) CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateActions", ctx, id, actions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaignUpdateActions indicates an expected call of CampaignUpdateActions.
+func (mr *MockDBHandlerMockRecorder) CampaignUpdateActions(ctx, id, actions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateActions", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateActions), ctx, id, actions)
+}
+
 // CampaignUpdateBasicInfo mocks base method.
 func (m *MockDBHandler) CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	m.ctrl.T.Helper()
@@ -110,6 +124,20 @@ func (m *MockDBHandler) CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUI
 func (mr *MockDBHandlerMockRecorder) CampaignUpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateBasicInfo), ctx, id, name, detail)
+}
+
+// CampaignUpdateEndHandle mocks base method.
+func (m *MockDBHandler) CampaignUpdateEndHandle(ctx context.Context, id uuid.UUID, endHandle campaign.EndHandle) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateEndHandle", ctx, id, endHandle)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaignUpdateEndHandle indicates an expected call of CampaignUpdateEndHandle.
+func (mr *MockDBHandlerMockRecorder) CampaignUpdateEndHandle(ctx, id, endHandle interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateEndHandle", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateEndHandle), ctx, id, endHandle)
 }
 
 // CampaignUpdateNextCampaignID mocks base method.
@@ -227,6 +255,20 @@ func (mr *MockDBHandlerMockRecorder) CampaigncallGetsByCampaignIDAndStatus(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsByCampaignIDAndStatus", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetsByCampaignIDAndStatus), ctx, campaignID, status, token, limit)
 }
 
+// CampaigncallUpdateActiveflowID mocks base method.
+func (m *MockDBHandler) CampaigncallUpdateActiveflowID(ctx context.Context, id, activeflowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallUpdateActiveflowID", ctx, id, activeflowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaigncallUpdateActiveflowID indicates an expected call of CampaigncallUpdateActiveflowID.
+func (mr *MockDBHandlerMockRecorder) CampaigncallUpdateActiveflowID(ctx, id, activeflowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallUpdateActiveflowID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallUpdateActiveflowID), ctx, id, activeflowID)
+}
+
 // CampaigncallUpdateStatus mocks base method.
 func (m *MockDBHandler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error {
 	m.ctrl.T.Helper()
@@ -299,20 +341,6 @@ func (mr *MockDBHandlerMockRecorder) OutplanGetsByCustomerID(ctx, customerID, to
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).OutplanGetsByCustomerID), ctx, customerID, token, limit)
 }
 
-// OutplanUpdateActionInfo mocks base method.
-func (m *MockDBHandler) OutplanUpdateActionInfo(ctx context.Context, id uuid.UUID, actions []action.Action, source *address.Address, endHandle outplan.EndHandle) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutplanUpdateActionInfo", ctx, id, actions, source, endHandle)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// OutplanUpdateActionInfo indicates an expected call of OutplanUpdateActionInfo.
-func (mr *MockDBHandlerMockRecorder) OutplanUpdateActionInfo(ctx, id, actions, source, endHandle interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanUpdateActionInfo", reflect.TypeOf((*MockDBHandler)(nil).OutplanUpdateActionInfo), ctx, id, actions, source, endHandle)
-}
-
 // OutplanUpdateBasicInfo mocks base method.
 func (m *MockDBHandler) OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	m.ctrl.T.Helper()
@@ -328,15 +356,15 @@ func (mr *MockDBHandlerMockRecorder) OutplanUpdateBasicInfo(ctx, id, name, detai
 }
 
 // OutplanUpdateDialInfo mocks base method.
-func (m *MockDBHandler) OutplanUpdateDialInfo(ctx context.Context, id uuid.UUID, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) error {
+func (m *MockDBHandler) OutplanUpdateDialInfo(ctx context.Context, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutplanUpdateDialInfo", ctx, id, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	ret := m.ctrl.Call(m, "OutplanUpdateDialInfo", ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // OutplanUpdateDialInfo indicates an expected call of OutplanUpdateDialInfo.
-func (mr *MockDBHandlerMockRecorder) OutplanUpdateDialInfo(ctx, id, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) OutplanUpdateDialInfo(ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanUpdateDialInfo", reflect.TypeOf((*MockDBHandler)(nil).OutplanUpdateDialInfo), ctx, id, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanUpdateDialInfo", reflect.TypeOf((*MockDBHandler)(nil).OutplanUpdateDialInfo), ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 }

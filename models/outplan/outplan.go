@@ -3,7 +3,6 @@ package outplan
 import (
 	"github.com/gofrs/uuid"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // Outplan defines
@@ -15,10 +14,8 @@ type Outplan struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
-	// action settings
-	Actions   []action.Action    `json:"actions"`
-	Source    *cmaddress.Address `json:"source"` // caller id
-	EndHandle EndHandle          `json:"end_handle"`
+	// source settings
+	Source *cmaddress.Address `json:"source"` // caller id
 
 	// plan dial settings
 	DialTimeout  int `json:"dial_timeout"` // milliseconds
@@ -34,10 +31,7 @@ type Outplan struct {
 	TMDelete string `json:"tm_delete"`
 }
 
-// EndHandle defines
-type EndHandle string
-
+// const defines
 const (
-	EndHandleStop     EndHandle = "stop"
-	EndHandleContinue EndHandle = "continue"
+	MaxTryCountLen = 5 // length of max try count
 )

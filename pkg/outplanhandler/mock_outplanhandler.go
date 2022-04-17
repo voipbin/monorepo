@@ -12,7 +12,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // MockOutplanHandler is a mock of OutplanHandler interface.
@@ -39,18 +38,18 @@ func (m *MockOutplanHandler) EXPECT() *MockOutplanHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockOutplanHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, actions []action.Action, source *address.Address, dialTimeout int, endHandle outplan.EndHandle, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
+func (m *MockOutplanHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, actions, source, dialTimeout, endHandle, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	ret0, _ := ret[0].(*outplan.Outplan)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockOutplanHandlerMockRecorder) Create(ctx, customerID, name, detail, actions, source, dialTimeout, endHandle, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
+func (mr *MockOutplanHandlerMockRecorder) Create(ctx, customerID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockOutplanHandler)(nil).Create), ctx, customerID, name, detail, actions, source, dialTimeout, endHandle, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockOutplanHandler)(nil).Create), ctx, customerID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 }
 
 // Delete mocks base method.
@@ -98,21 +97,6 @@ func (mr *MockOutplanHandlerMockRecorder) GetsByCustomerID(ctx, customerID, toke
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockOutplanHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
 }
 
-// UpdateActionInfo mocks base method.
-func (m *MockOutplanHandler) UpdateActionInfo(ctx context.Context, id uuid.UUID, actions []action.Action, source *address.Address, endHandle outplan.EndHandle) (*outplan.Outplan, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateActionInfo", ctx, id, actions, source, endHandle)
-	ret0, _ := ret[0].(*outplan.Outplan)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateActionInfo indicates an expected call of UpdateActionInfo.
-func (mr *MockOutplanHandlerMockRecorder) UpdateActionInfo(ctx, id, actions, source, endHandle interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateActionInfo", reflect.TypeOf((*MockOutplanHandler)(nil).UpdateActionInfo), ctx, id, actions, source, endHandle)
-}
-
 // UpdateBasicInfo mocks base method.
 func (m *MockOutplanHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*outplan.Outplan, error) {
 	m.ctrl.T.Helper()
@@ -129,16 +113,16 @@ func (mr *MockOutplanHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail 
 }
 
 // UpdateDialInfo mocks base method.
-func (m *MockOutplanHandler) UpdateDialInfo(ctx context.Context, id uuid.UUID, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
+func (m *MockOutplanHandler) UpdateDialInfo(ctx context.Context, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateDialInfo", ctx, id, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	ret := m.ctrl.Call(m, "UpdateDialInfo", ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	ret0, _ := ret[0].(*outplan.Outplan)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateDialInfo indicates an expected call of UpdateDialInfo.
-func (mr *MockOutplanHandlerMockRecorder) UpdateDialInfo(ctx, id, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
+func (mr *MockOutplanHandlerMockRecorder) UpdateDialInfo(ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDialInfo", reflect.TypeOf((*MockOutplanHandler)(nil).UpdateDialInfo), ctx, id, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDialInfo", reflect.TypeOf((*MockOutplanHandler)(nil).UpdateDialInfo), ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 }
