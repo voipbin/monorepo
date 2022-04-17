@@ -205,3 +205,11 @@ func (r *requestHandler) sendRequestOutdial(uri string, method rabbitmqhandler.R
 
 	return r.sendRequest(queueOutdial, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestCampaign send a request to the campaign-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestCampaign(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(queueCampaign, uri, method, resource, timeout, delayed, dataType, data)
+}

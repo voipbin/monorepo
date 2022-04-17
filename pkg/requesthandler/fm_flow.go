@@ -7,7 +7,6 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	fmrequest "gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
@@ -16,7 +15,7 @@ import (
 )
 
 // FMV1FlowCreate creates a new flow.
-func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []action.Action, persist bool) (*fmflow.Flow, error) {
+func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error) {
 
 	uri := "/v1/flows"
 
@@ -34,21 +33,21 @@ func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUI
 		return nil, err
 	}
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
 
-	if res.StatusCode >= 299 {
+	if tmp.StatusCode >= 299 {
 		return nil, fmt.Errorf("could not find action")
 	}
 
-	var resFlow fmflow.Flow
-	if err := json.Unmarshal([]byte(res.Data), &resFlow); err != nil {
+	var res fmflow.Flow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resFlow, nil
+	return &res, nil
 }
 
 // FMV1FlowGet sends a request to flow-manager
@@ -57,23 +56,23 @@ func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUI
 func (r *requestHandler) FMV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var f fmflow.Flow
-	if err := json.Unmarshal([]byte(res.Data), &f); err != nil {
+	var res fmflow.Flow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &f, nil
+	return &res, nil
 }
 
 // FMV1FlowDelete sends a request to flow-manager
@@ -112,23 +111,23 @@ func (r *requestHandler) FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*f
 		return nil, err
 	}
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPut, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPut, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resFlow fmflow.Flow
-	if err := json.Unmarshal([]byte(res.Data), &resFlow); err != nil {
+	var res fmflow.Flow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resFlow, nil
+	return &res, nil
 }
 
 // FMV1FlowUpdateActions sends a request to flow-manager
@@ -146,46 +145,46 @@ func (r *requestHandler) FMV1FlowUpdateActions(ctx context.Context, flowID uuid.
 		return nil, err
 	}
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPut, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPut, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resFlow fmflow.Flow
-	if err := json.Unmarshal([]byte(res.Data), &resFlow); err != nil {
+	var res fmflow.Flow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resFlow, nil
+	return &res, nil
 }
 
 // FMV1FlowGets sends a request to flow-manager
-// to getting a list of flow info.
-// it returns detail list of flow info if it succeed.
+// to getting a list of flows.
+// it returns detail list of flows if it succeed.
 func (r *requestHandler) FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, flowType)
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var f []fmflow.Flow
-	if err := json.Unmarshal([]byte(res.Data), &f); err != nil {
+	var res []fmflow.Flow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return f, nil
+	return res, nil
 }

@@ -73,6 +73,7 @@ const (
 	queueAgent      = "bin-manager.agent-manager.request"
 	queueAPI        = "bin-manager.api-manager.request"
 	queueCall       = "bin-manager.call-manager.request"
+	queueCampaign   = "bin-manager.campaign-manager.request"
 	queueConference = "bin-manager.conference-manager.request"
 	queueCustomer   = "bin-manager.customer-manager.request"
 	queueFlow       = "bin-manager.flow-manager.request"
@@ -122,6 +123,8 @@ const (
 
 	resourceAMAgent resource = "am/agents"
 	resourceAMTag   resource = "am/tags"
+
+	resourceCACampaigns resource = "ca/campaigns"
 
 	resourceCMCall               resource = "cm/calls"
 	resourceCMCallsActionNext    resource = "cm/calls/action-next"
