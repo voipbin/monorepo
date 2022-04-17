@@ -19,6 +19,7 @@ import (
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
+	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -258,6 +259,29 @@ type RequestHandler interface {
 	AMV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error)
 	AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*amtag.Tag, error)
 	AMV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
+
+	// campaign-manager campaigns
+	CAV1CampaignCreate(
+		ctx context.Context,
+		id uuid.UUID,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		serviceLevel int,
+		endHandle cacampaign.EndHandle,
+		actions []fmaction.Action,
+		outplanID uuid.UUID,
+		outdialID uuid.UUID,
+		queueID uuid.UUID,
+		nextCampaignID uuid.UUID,
+	) (*cacampaign.Campaign, error)
+	CAV1CampaignGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaign.Campaign, error)
+	CAV1CampaignGet(ctx context.Context, id uuid.UUID) (*cacampaign.Campaign, error)
+	CAV1CampaignDelete(ctx context.Context, campaignID uuid.UUID) (*cacampaign.Campaign, error)
+	CAV1CampaignExecute(ctx context.Context, id uuid.UUID, delay int) error
+	CAV1CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status cacampaign.Status) (*cacampaign.Campaign, error)
+	CAV1CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*cacampaign.Campaign, error)
+	CAV1CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*cacampaign.Campaign, error)
 
 	// call-manager call
 	CMV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
