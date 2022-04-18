@@ -243,6 +243,7 @@ func TestFMV1FlowDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
+		expectResult  *fmflow.Flow
 	}{
 		{
 			"normal",
@@ -250,6 +251,7 @@ func TestFMV1FlowDelete(t *testing.T) {
 			uuid.FromStringOrNil("4193c3a2-67ca-11eb-a892-0b6d18cda91a"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				Data:       []byte(`{"id":"4193c3a2-67ca-11eb-a892-0b6d18cda91a"}`),
 			},
 
 			"bin-manager.flow-manager.request",
@@ -257,6 +259,9 @@ func TestFMV1FlowDelete(t *testing.T) {
 				URI:      "/v1/flows/4193c3a2-67ca-11eb-a892-0b6d18cda91a",
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: ContentTypeJSON,
+			},
+			&fmflow.Flow{
+				ID: uuid.FromStringOrNil("4193c3a2-67ca-11eb-a892-0b6d18cda91a"),
 			},
 		},
 	}
@@ -274,8 +279,13 @@ func TestFMV1FlowDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FMV1FlowDelete(ctx, tt.flowID); err != nil {
+			res, err := reqHandler.FMV1FlowDelete(ctx, tt.flowID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectResult, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
 			}
 		})
 	}

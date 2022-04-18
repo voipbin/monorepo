@@ -1357,11 +1357,12 @@ func (mr *MockRequestHandlerMockRecorder) FMV1FlowCreate(ctx, customerID, flowTy
 }
 
 // FMV1FlowDelete mocks base method.
-func (m *MockRequestHandler) FMV1FlowDelete(ctx context.Context, flowID uuid.UUID) error {
+func (m *MockRequestHandler) FMV1FlowDelete(ctx context.Context, flowID uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FMV1FlowDelete", ctx, flowID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FMV1FlowDelete indicates an expected call of FMV1FlowDelete.
