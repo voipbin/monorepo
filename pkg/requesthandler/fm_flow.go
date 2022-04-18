@@ -77,21 +77,26 @@ func (r *requestHandler) FMV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fm
 
 // FMV1FlowDelete sends a request to flow-manager
 // to deleting the flow.
-func (r *requestHandler) FMV1FlowDelete(ctx context.Context, flowID uuid.UUID) error {
+func (r *requestHandler) FMV1FlowDelete(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodDelete, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodDelete, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
-		return err
-	case res == nil:
+		return nil, err
+	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res fmflow.Flow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // FMV1FlowUpdate sends a request to flow-manager

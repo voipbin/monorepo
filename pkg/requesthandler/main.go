@@ -354,7 +354,7 @@ type RequestHandler interface {
 
 	// flow-manager flow
 	FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error)
-	FMV1FlowDelete(ctx context.Context, flowID uuid.UUID) error
+	FMV1FlowDelete(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 	FMV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 	FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error)
