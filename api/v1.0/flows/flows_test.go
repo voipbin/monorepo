@@ -29,21 +29,12 @@ func setupServer(app *gin.Engine) {
 
 func TestFlowsPOST(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name        string
 		customer    cscustomer.Customer
 		requestBody request.BodyFlowsPOST
-		reqFlow     *fmflow.Flow
 		resFlow     *fmflow.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -61,16 +52,7 @@ func TestFlowsPOST(t *testing.T) {
 					},
 				},
 			},
-			&fmflow.Flow{
-				Name:    "test name",
-				Detail:  "test detail",
-				Persist: true,
-				Actions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
-				},
-			},
+
 			&fmflow.WebhookMessage{
 				ID:     uuid.FromStringOrNil("264b18d4-82fa-11eb-919b-9f55a7f6ace1"),
 				Name:   "test name",
@@ -86,6 +68,11 @@ func TestFlowsPOST(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -102,7 +89,7 @@ func TestFlowsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Actions, true).Return(tt.resFlow, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/flows", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
@@ -116,21 +103,13 @@ func TestFlowsPOST(t *testing.T) {
 
 func TestFlowsIDGET(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		flow     *fmflow.Flow
 
 		expectFlow *fmflow.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -163,6 +142,11 @@ func TestFlowsIDGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -186,21 +170,13 @@ func TestFlowsIDGET(t *testing.T) {
 
 func TestFlowsIDPUT(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name        string
 		customer    cscustomer.Customer
 		flowID      uuid.UUID
 		requestBody request.BodyFlowsIDPUT
 		requestFlow *fmflow.Flow
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -234,6 +210,11 @@ func TestFlowsIDPUT(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -264,19 +245,11 @@ func TestFlowsIDPUT(t *testing.T) {
 
 func TestFlowsIDDELETE(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		flowID   uuid.UUID
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -288,6 +261,11 @@ func TestFlowsIDDELETE(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -298,7 +276,7 @@ func TestFlowsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().FlowDelete(&tt.customer, tt.flowID).Return(nil)
+			mockSvc.EXPECT().FlowDelete(&tt.customer, tt.flowID).Return(&fmflow.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/flows/%s", tt.flowID), nil)
 
 			r.ServeHTTP(w, req)
