@@ -19,6 +19,8 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
+	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
@@ -100,7 +102,7 @@ type ServiceHandler interface {
 
 	// flow handlers
 	FlowCreate(u *cscustomer.Customer, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
-	FlowDelete(u *cscustomer.Customer, id uuid.UUID) error
+	FlowDelete(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
 	FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
 	FlowGets(u *cscustomer.Customer, pageSize uint64, pageToken string) ([]*fmflow.WebhookMessage, error)
 	FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error)
@@ -118,6 +120,30 @@ type ServiceHandler interface {
 	NumberDelete(u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
 	NumberUpdateFlowIDs(u *cscustomer.Customer, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
+
+	// outdials
+	OutdialCreate(u *cscustomer.Customer, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error)
+	OutdialGets(u *cscustomer.Customer, size uint64, token string) ([]*omoutdial.WebhookMessage, error)
+	OutdialDelete(u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error)
+	OutdialGet(u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error)
+	OutdialUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*omoutdial.WebhookMessage, error)
+	OutdialUpdateCampaignID(u *cscustomer.Customer, id, campaignID uuid.UUID) (*omoutdial.WebhookMessage, error)
+	OutdialUpdateData(u *cscustomer.Customer, id uuid.UUID, data string) (*omoutdial.WebhookMessage, error)
+
+	// outdialtargets
+	OutdialtargetCreate(
+		u *cscustomer.Customer,
+		outdialID uuid.UUID,
+		name string,
+		detail string,
+		data string,
+		destination0 *cmaddress.Address,
+		destination1 *cmaddress.Address,
+		destination2 *cmaddress.Address,
+		destination3 *cmaddress.Address,
+		destination4 *cmaddress.Address,
+	) (*omoutdialtarget.WebhookMessage, error)
+	OutdialtargetDelete(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error)
 
 	// queue handler
 	QueueGet(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)

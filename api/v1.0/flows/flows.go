@@ -285,11 +285,12 @@ func flowsIDDELETE(c *gin.Context) {
 
 	// delete a flow
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.FlowDelete(&u, id); err != nil {
+	res, err := serviceHandler.FlowDelete(&u, id)
+	if err != nil {
 		log.Errorf("Could not delete the flow. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
