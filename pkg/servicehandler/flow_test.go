@@ -15,176 +15,58 @@ import (
 )
 
 func TestFlowCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer *cscustomer.Customer
-		flow     *fmflow.Flow
-		reqFlow  *fmflow.Flow
+
+		flowName string
+		detail   string
+		actions  []fmaction.Action
+		persist  bool
 
 		response  *fmflow.Flow
 		expectRes *fmflow.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&fmflow.Flow{
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions:    []fmaction.Action{},
-				Persist:    true,
+
+			"test name",
+			"test detail",
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
 			},
+			true,
+
 			&fmflow.Flow{
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions:    []fmaction.Action{},
-				Persist:    true,
-			},
-			&fmflow.Flow{
-				ID:         uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions:    []fmaction.Action{},
-				Persist:    true,
+				ID: uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
 			},
 			&fmflow.WebhookMessage{
-				ID:      uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
-				Name:    "test",
-				Detail:  "test detail",
-				Actions: []fmaction.Action{},
-			},
-		},
-		{
-			"webhook",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-			},
-			&fmflow.Flow{
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions:    []fmaction.Action{},
-				Persist:    true,
-			},
-			&fmflow.Flow{
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions:    []fmaction.Action{},
-				Persist:    true,
-			},
-			&fmflow.Flow{
-				ID:         uuid.FromStringOrNil("5d70b47c-82f5-11eb-9d41-53331f170b23"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "test",
-				Detail:     "test detail",
-				Actions:    []fmaction.Action{},
-				Persist:    true,
-			},
-			&fmflow.WebhookMessage{
-				ID:      uuid.FromStringOrNil("5d70b47c-82f5-11eb-9d41-53331f170b23"),
-				Name:    "test",
-				Detail:  "test detail",
-				Actions: []fmaction.Action{},
+				ID: uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.reqFlow.Name, tt.reqFlow.Detail, tt.reqFlow.Actions, tt.reqFlow.Persist).Return(tt.response, nil)
-			res, err := h.FlowCreate(tt.customer, tt.flow.Name, tt.flow.Detail, tt.flow.Actions, tt.flow.Persist)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
 			}
 
-			if reflect.DeepEqual(*res, *tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func TestFlowUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
-
-	type test struct {
-		name     string
-		customer *cscustomer.Customer
-		flow     *fmflow.Flow
-
-		requestFlow *fmflow.Flow
-		response    *fmflow.Flow
-		expectRes   *fmflow.WebhookMessage
-	}
-
-	tests := []test{
-		{
-			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-			},
-			&fmflow.Flow{
-				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
-				Name:    "update name",
-				Detail:  "update detail",
-				Actions: []fmaction.Action{},
-			},
-			&fmflow.Flow{
-				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
-				Name:    "update name",
-				Detail:  "update detail",
-				Actions: []fmaction.Action{},
-			},
-			&fmflow.Flow{
-				ID:         uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				Name:       "update name",
-				Detail:     "update detail",
-				Actions:    []fmaction.Action{},
-				Persist:    true,
-			},
-			&fmflow.WebhookMessage{
-				ID:      uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
-				Name:    "update name",
-				Detail:  "update detail",
-				Actions: []fmaction.Action{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flow.ID).Return(&fmflow.Flow{CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988")}, nil)
-			mockReq.EXPECT().FMV1FlowUpdate(gomock.Any(), tt.requestFlow).Return(tt.response, nil)
-			res, err := h.FlowUpdate(tt.customer, tt.flow)
+			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.persist).Return(tt.response, nil)
+			res, err := h.FlowCreate(tt.customer, tt.flowName, tt.detail, tt.actions, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -197,26 +79,15 @@ func TestFlowUpdate(t *testing.T) {
 }
 
 func TestFlowDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer *cscustomer.Customer
 		flowID   uuid.UUID
 
-		response *fmflow.Flow
-	}
-
-	tests := []test{
+		response  *fmflow.Flow
+		expectRes *fmflow.WebhookMessage
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -231,43 +102,53 @@ func TestFlowDelete(t *testing.T) {
 				Detail:     "test detail",
 				Actions:    []fmaction.Action{},
 			},
+			&fmflow.WebhookMessage{
+				ID:      uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
+				Name:    "test",
+				Detail:  "test detail",
+				Actions: []fmaction.Action{},
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FMV1FlowDelete(gomock.Any(), tt.flowID).Return(nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			if err := h.FlowDelete(tt.customer, tt.flowID); err != nil {
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FMV1FlowDelete(gomock.Any(), tt.flowID).Return(tt.response, nil)
+
+			res, err := h.FlowDelete(tt.customer, tt.flowID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
 		})
 	}
 }
 
 func TestFlowGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer *cscustomer.Customer
 		flowID   uuid.UUID
 
 		response  *fmflow.Flow
 		expectRes *fmflow.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -324,6 +205,17 @@ func TestFlowGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
 
 			res, err := h.FlowGet(tt.customer, tt.flowID)
@@ -339,18 +231,8 @@ func TestFlowGet(t *testing.T) {
 }
 
 func TestFlowGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name      string
 		customer  *cscustomer.Customer
 		pageToken string
@@ -358,9 +240,7 @@ func TestFlowGets(t *testing.T) {
 
 		response  []fmflow.Flow
 		expectRes []*fmflow.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -440,6 +320,17 @@ func TestFlowGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().FMV1FlowGets(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.FlowGets(tt.customer, tt.pageSize, tt.pageToken)
@@ -448,6 +339,140 @@ func TestFlowGets(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestFlowUpdate(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer *cscustomer.Customer
+
+		flowID   uuid.UUID
+		flowName string
+		detail   string
+		actions  []fmaction.Action
+
+		response  *fmflow.Flow
+		expectRes *fmflow.WebhookMessage
+	}{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+
+			uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
+			"test name",
+			"test detail",
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+			&fmflow.WebhookMessage{
+				ID: uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			f := &fmflow.Flow{
+				ID:      tt.flowID,
+				Name:    tt.flowName,
+				Detail:  tt.detail,
+				Actions: tt.actions,
+			}
+
+			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FMV1FlowUpdate(gomock.Any(), f).Return(tt.response, nil)
+			res, err := h.FlowUpdate(tt.customer, f)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*res, *tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_FlowUpdateActions(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer *cscustomer.Customer
+		flowID   uuid.UUID
+		actions  []fmaction.Action
+
+		response  *fmflow.Flow
+		expectRes *fmflow.WebhookMessage
+	}{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+			uuid.FromStringOrNil("1058806a-45c1-4bc0-9605-1148e20008c1"),
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+
+			&fmflow.WebhookMessage{
+				ID: uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FMV1FlowUpdateActions(gomock.Any(), tt.flowID, tt.actions).Return(tt.response, nil)
+			res, err := h.FlowUpdateActions(tt.customer, tt.flowID, tt.actions)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*res, *tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
 		})
