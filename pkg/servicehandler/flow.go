@@ -16,6 +16,7 @@ import (
 func (h *serviceHandler) FlowCreate(u *cscustomer.Customer, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "FlowCreate",
 		"customer_id": u.ID,
 		"name":        name,
 		"persist":     persist,
@@ -33,9 +34,10 @@ func (h *serviceHandler) FlowCreate(u *cscustomer.Customer, name, detail string,
 }
 
 // FlowDelete deletes the flow of the given id.
-func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) error {
+func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "FlowDelete",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"flow_id":     id,
@@ -46,20 +48,22 @@ func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) error 
 	f, err := h.reqHandler.FMV1FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
-		return fmt.Errorf("could not find flow info. err: %v", err)
+		return nil, fmt.Errorf("could not find flow info. err: %v", err)
 	}
 
 	// permission check
 	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != f.CustomerID {
 		log.Errorf("The customer has no permission for this flow. customer: %s, flow_customer: %s", u.ID, f.CustomerID)
-		return fmt.Errorf("customer has no permission")
+		return nil, fmt.Errorf("customer has no permission")
 	}
 
-	if err := h.reqHandler.FMV1FlowDelete(ctx, id); err != nil {
-		return err
+	tmp, err := h.reqHandler.FMV1FlowDelete(ctx, id)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // FlowGet gets the flow of the given id.
@@ -67,6 +71,7 @@ func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) error 
 func (h *serviceHandler) FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "FlowGet",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"flow_id":     id,
@@ -95,6 +100,7 @@ func (h *serviceHandler) FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.
 func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token string) ([]*fmflow.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "FlowGets",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"size":        size,
@@ -128,6 +134,7 @@ func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token str
 func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "FlowUpdate",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"flow":        f.ID,
@@ -148,6 +155,41 @@ func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fm
 	}
 
 	tmp, err := h.reqHandler.FMV1FlowUpdate(ctx, f)
+	if err != nil {
+		logrus.Errorf("Could not update the flow. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// FlowUpdateActions updates the flow's actions.
+// It returns updated flow if it succeed.
+func (h *serviceHandler) FlowUpdateActions(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.WebhookMessage, error) {
+	ctx := context.Background()
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "FlowUpdateActions",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"flow_id":     flowID,
+	})
+	log.Debug("Updating a flow actions.")
+
+	// get flows
+	tmpFlow, err := h.reqHandler.FMV1FlowGet(ctx, flowID)
+	if err != nil {
+		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find flows info. err: %v", err)
+	}
+
+	// check the ownership
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpFlow.CustomerID {
+		log.Info("The customer has no permission for this call.")
+		return nil, fmt.Errorf("customer has no permission")
+	}
+
+	tmp, err := h.reqHandler.FMV1FlowUpdateActions(ctx, flowID, actions)
 	if err != nil {
 		logrus.Errorf("Could not update the flow. err: %v", err)
 		return nil, err
