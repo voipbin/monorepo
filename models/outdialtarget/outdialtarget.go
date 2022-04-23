@@ -40,7 +40,7 @@ type Status string
 
 // list of status
 const (
-	StatusProgressing = "progressing"
-	StatusDone        = "done"
-	StatusIdle        = "idle"
+	StatusProgressing Status = "progressing"
+	StatusDone        Status = "done"
+	StatusIdle        Status = "idle"
 )
