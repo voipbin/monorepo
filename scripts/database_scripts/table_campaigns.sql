@@ -3,6 +3,10 @@ create table campaigns(
   id          binary(16),
   customer_id binary(16),
 
+  type varchar(255),
+
+  execute varchar(255),
+
   name      varchar(255),
   detail    text,
 

@@ -16,13 +16,14 @@ type Campaigncall struct {
 	OutdialTargetID uuid.UUID `json:"outdial_target_id"`
 	QueueID         uuid.UUID `json:"queue_id"`
 
-	ActiveflowID uuid.UUID `json:"activeflow_id"` // this is required
-	FlowID       uuid.UUID `json:"flow_id"`
+	ActiveflowID uuid.UUID `json:"activeflow_id"` // activeflow id
+	FlowID       uuid.UUID `json:"flow_id"`       // flow id
 
 	ReferenceType ReferenceType `json:"reference_type"` // none or call
 	ReferenceID   uuid.UUID     `json:"reference_id"`   // reference id
 
 	Status Status `json:"status"`
+	Result Result `json:"result"`
 
 	Source           *cmaddress.Address `json:"source"`
 	Destination      *cmaddress.Address `json:"destination"`
@@ -38,8 +39,9 @@ type ReferenceType string
 
 // list of ReferenceTypes
 const (
-	ReferenceTypeNone = "none"
-	ReferenceTypeCall = "call"
+	ReferenceTypeNone ReferenceType = "none"
+	ReferenceTypeCall ReferenceType = "call"
+	ReferenceTypeFlow ReferenceType = "flow"
 )
 
 // Status defines
@@ -47,14 +49,15 @@ type Status string
 
 // list of Status
 const (
-	StatusDialing     = "dialing"     // the campaigncall is dialing(not answered yet)
-	StatusProgressing = "progressing" // the campaigncall is progressing(the call answered)
-	StatusDone        = "done"        // the campaigncall is hungup
+	StatusDialing     Status = "dialing"     // the campaigncall is dialing(not answered yet)
+	StatusProgressing Status = "progressing" // the campaigncall is progressing(the call answered)
+	StatusDone        Status = "done"        // the campaigncall is hungup
 )
 
 type Result string
 
 const (
-	ResultSuccess = "success"
-	ResultFail    = "fail"
+	ResultNone    Result = ""        // no result.
+	ResultSuccess Result = "success" // success
+	ResultFail    Result = "fail"    // fail
 )

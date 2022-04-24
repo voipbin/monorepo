@@ -78,6 +78,15 @@ func (h *campaigncallHandler) Create(
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaigncall.EventTypeCampaigncallCreated, res)
 
+	// set the outdial target status to progressing
+	tmpTarget, err := h.reqHandler.OMV1OutdialtargetUpdateStatusProgressing(ctx, t.OutdialTargetID, destinationIndex)
+	if err != nil {
+		log.Errorf("Could not update the outdialtarget status to progressing. err: %v", err)
+		_, _ = h.Done(ctx, t.ID, campaigncall.ResultFail)
+		return nil, err
+	}
+	log.WithField("target", tmpTarget).Infof("Updated outdial target status to progressing. outdialtarget_id: %s", tmpTarget.ID)
+
 	return res, nil
 }
 
@@ -91,6 +100,42 @@ func (h *campaigncallHandler) Get(ctx context.Context, id uuid.UUID) (*campaignc
 	log.Debug("Getting campaigncall.")
 
 	res, err := h.db.CampaigncallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get campaigncall. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// GetByReferenceID returns list of campaigncall of the referenceID
+func (h *campaigncallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":         "GetByReferenceID",
+			"reference_id": referenceID,
+		})
+	log.Debug("Getting campaigncall.")
+
+	res, err := h.db.CampaigncallGetByReferenceID(ctx, referenceID)
+	if err != nil {
+		log.Errorf("Could not get campaigncall. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// GetByActiveflowID returns list of campaigncall of the activeflowID
+func (h *campaigncallHandler) GetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "GetByActiveflowID",
+			"activeflow_id": activeflowID,
+		})
+	log.Debug("Getting campaigncall.")
+
+	res, err := h.db.CampaigncallGetByActiveflowID(ctx, activeflowID)
 	if err != nil {
 		log.Errorf("Could not get campaigncall. err: %v", err)
 		return nil, err
@@ -139,11 +184,31 @@ func (h *campaigncallHandler) GetsByCampaignIDAndStatus(ctx context.Context, cam
 	return res, nil
 }
 
-// UpdateStatus updates the status
-func (h *campaigncallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) (*campaigncall.Campaigncall, error) {
+// GetsOngoingByCampaignID returns list of ongoing campaigncalls
+func (h *campaigncallHandler) GetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "UpdateStatus",
+			"func":        "GetsOngoingByCampaignID",
+			"campaign_id": campaignID,
+			"token":       token,
+			"limit":       limit,
+		})
+	log.Debug("Getting campaigncalls.")
+
+	res, err := h.db.CampaigncallGetsOngoingByCampaignID(ctx, campaignID, token, limit)
+	if err != nil {
+		log.Errorf("Could not get GetsOngoingByCampaignID. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// updateStatus updates the status
+func (h *campaigncallHandler) updateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) (*campaigncall.Campaigncall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "updateStatus",
 			"id":   id,
 		})
 	log.Debug("Getting campaigncalls.")
@@ -163,17 +228,17 @@ func (h *campaigncallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, st
 	return res, nil
 }
 
-// UpdateActiveflowID updates the activeflow_id
-func (h *campaigncallHandler) UpdateActiveflowID(ctx context.Context, id, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
+// updateStatusDone updates the status
+func (h *campaigncallHandler) updateStatusDone(ctx context.Context, id uuid.UUID, result campaigncall.Result) (*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "UpdateActiveflowID",
+			"func": "updateStatusDone",
 			"id":   id,
 		})
-	log.Debug("Updating activeflow id.")
+	log.Debug("Getting campaigncalls.")
 
-	if err := h.db.CampaigncallUpdateActiveflowID(ctx, id, activeflowID); err != nil {
-		log.Errorf("Could not update the activeflow_id. err: %v", err)
+	if err := h.db.CampaigncallUpdateStatusAndResult(ctx, id, campaigncall.StatusDone, result); err != nil {
+		log.Errorf("Could not get UpdateStatus. err: %v", err)
 		return nil, err
 	}
 

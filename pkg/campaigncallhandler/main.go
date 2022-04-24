@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -44,12 +45,19 @@ type CampaigncallHandler interface {
 		tryCount int,
 	) (*campaigncall.Campaigncall, error)
 	Get(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
+	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error)
+	GetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error)
 	GetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	GetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
-	UpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) (*campaigncall.Campaigncall, error)
-	UpdateActiveflowID(ctx context.Context, id, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error)
+	GetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 
-	Done(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) (*campaigncall.Campaigncall, error)
+	// status
+	Done(ctx context.Context, id uuid.UUID, result campaigncall.Result) (*campaigncall.Campaigncall, error)
+	Progressing(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
+
+	// eventhandle
+	EventHandleReferenceCallHungup(ctx context.Context, c *cmcall.Call, cc *campaigncall.Campaigncall) (*campaigncall.Campaigncall, error)
+	EventHandleActiveflowDeleted(ctx context.Context, cc *campaigncall.Campaigncall) (*campaigncall.Campaigncall, error)
 }
 
 // NewCampaigncallHandler returns CampaignCallHandler

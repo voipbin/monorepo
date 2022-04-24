@@ -15,7 +15,8 @@ create table campaigncalls(
   reference_type  varchar(255),
   reference_id    binary(16),
 
-  status          varchar(255),
+  status  varchar(255),
+  result  varchar(255),
 
   source            json,
   destination       json,
@@ -35,3 +36,4 @@ create index idx_campaigncalls_campaign_id on campaigncalls(campaign_id);
 create index idx_campaigncalls_outdial_target_id on campaigncalls(outdial_target_id);
 create index idx_campaigncalls_activeflow_id on campaigncalls(activeflow_id);
 create index idx_campaigncalls_reference_id on campaigncalls(reference_id);
+create index idx_campaigncalls_campaign_id_status on campaigncalls(campaign_id, status);

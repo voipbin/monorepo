@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 )
 
@@ -53,18 +54,48 @@ func (mr *MockCampaigncallHandlerMockRecorder) Create(ctx, customerID, campaignI
 }
 
 // Done mocks base method.
-func (m *MockCampaigncallHandler) Done(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) (*campaigncall.Campaigncall, error) {
+func (m *MockCampaigncallHandler) Done(ctx context.Context, id uuid.UUID, result campaigncall.Result) (*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Done", ctx, id, status, result)
+	ret := m.ctrl.Call(m, "Done", ctx, id, result)
 	ret0, _ := ret[0].(*campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Done indicates an expected call of Done.
-func (mr *MockCampaigncallHandlerMockRecorder) Done(ctx, id, status, result interface{}) *gomock.Call {
+func (mr *MockCampaigncallHandlerMockRecorder) Done(ctx, id, result interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Done", reflect.TypeOf((*MockCampaigncallHandler)(nil).Done), ctx, id, status, result)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Done", reflect.TypeOf((*MockCampaigncallHandler)(nil).Done), ctx, id, result)
+}
+
+// EventHandleActiveflowDeleted mocks base method.
+func (m *MockCampaigncallHandler) EventHandleActiveflowDeleted(ctx context.Context, cc *campaigncall.Campaigncall) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventHandleActiveflowDeleted", ctx, cc)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EventHandleActiveflowDeleted indicates an expected call of EventHandleActiveflowDeleted.
+func (mr *MockCampaigncallHandlerMockRecorder) EventHandleActiveflowDeleted(ctx, cc interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventHandleActiveflowDeleted", reflect.TypeOf((*MockCampaigncallHandler)(nil).EventHandleActiveflowDeleted), ctx, cc)
+}
+
+// EventHandleReferenceCallHungup mocks base method.
+func (m *MockCampaigncallHandler) EventHandleReferenceCallHungup(ctx context.Context, c *call.Call, cc *campaigncall.Campaigncall) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventHandleReferenceCallHungup", ctx, c, cc)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EventHandleReferenceCallHungup indicates an expected call of EventHandleReferenceCallHungup.
+func (mr *MockCampaigncallHandlerMockRecorder) EventHandleReferenceCallHungup(ctx, c, cc interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventHandleReferenceCallHungup", reflect.TypeOf((*MockCampaigncallHandler)(nil).EventHandleReferenceCallHungup), ctx, c, cc)
 }
 
 // Get mocks base method.
@@ -80,6 +111,36 @@ func (m *MockCampaigncallHandler) Get(ctx context.Context, id uuid.UUID) (*campa
 func (mr *MockCampaigncallHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCampaigncallHandler)(nil).Get), ctx, id)
+}
+
+// GetByActiveflowID mocks base method.
+func (m *MockCampaigncallHandler) GetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByActiveflowID", ctx, activeflowID)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByActiveflowID indicates an expected call of GetByActiveflowID.
+func (mr *MockCampaigncallHandlerMockRecorder) GetByActiveflowID(ctx, activeflowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByActiveflowID", reflect.TypeOf((*MockCampaigncallHandler)(nil).GetByActiveflowID), ctx, activeflowID)
+}
+
+// GetByReferenceID mocks base method.
+func (m *MockCampaigncallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByReferenceID", ctx, referenceID)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByReferenceID indicates an expected call of GetByReferenceID.
+func (mr *MockCampaigncallHandlerMockRecorder) GetByReferenceID(ctx, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockCampaigncallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
 // GetsByCampaignID mocks base method.
@@ -112,32 +173,32 @@ func (mr *MockCampaigncallHandlerMockRecorder) GetsByCampaignIDAndStatus(ctx, ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCampaignIDAndStatus", reflect.TypeOf((*MockCampaigncallHandler)(nil).GetsByCampaignIDAndStatus), ctx, campaignID, status, token, limit)
 }
 
-// UpdateActiveflowID mocks base method.
-func (m *MockCampaigncallHandler) UpdateActiveflowID(ctx context.Context, id, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
+// GetsOngoingByCampaignID mocks base method.
+func (m *MockCampaigncallHandler) GetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateActiveflowID", ctx, id, activeflowID)
+	ret := m.ctrl.Call(m, "GetsOngoingByCampaignID", ctx, campaignID, token, limit)
+	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetsOngoingByCampaignID indicates an expected call of GetsOngoingByCampaignID.
+func (mr *MockCampaigncallHandlerMockRecorder) GetsOngoingByCampaignID(ctx, campaignID, token, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsOngoingByCampaignID", reflect.TypeOf((*MockCampaigncallHandler)(nil).GetsOngoingByCampaignID), ctx, campaignID, token, limit)
+}
+
+// Progressing mocks base method.
+func (m *MockCampaigncallHandler) Progressing(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Progressing", ctx, id)
 	ret0, _ := ret[0].(*campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// UpdateActiveflowID indicates an expected call of UpdateActiveflowID.
-func (mr *MockCampaigncallHandlerMockRecorder) UpdateActiveflowID(ctx, id, activeflowID interface{}) *gomock.Call {
+// Progressing indicates an expected call of Progressing.
+func (mr *MockCampaigncallHandlerMockRecorder) Progressing(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateActiveflowID", reflect.TypeOf((*MockCampaigncallHandler)(nil).UpdateActiveflowID), ctx, id, activeflowID)
-}
-
-// UpdateStatus mocks base method.
-func (m *MockCampaigncallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) (*campaigncall.Campaigncall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatus", ctx, id, status)
-	ret0, _ := ret[0].(*campaigncall.Campaigncall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateStatus indicates an expected call of UpdateStatus.
-func (mr *MockCampaigncallHandlerMockRecorder) UpdateStatus(ctx, id, status interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockCampaigncallHandler)(nil).UpdateStatus), ctx, id, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Progressing", reflect.TypeOf((*MockCampaigncallHandler)(nil).Progressing), ctx, id)
 }

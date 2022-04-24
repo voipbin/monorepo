@@ -31,6 +31,7 @@ type CampaignHandler interface {
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
+		campaignType campaign.Type,
 		name string,
 		detail string,
 		actions []fmaction.Action,
@@ -48,11 +49,17 @@ type CampaignHandler interface {
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*campaign.Campaign, error)
 	UpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) (*campaign.Campaign, error)
 	UpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) (*campaign.Campaign, error)
-	UpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error)
+	// UpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error)
 	UpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*campaign.Campaign, error)
 	UpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*campaign.Campaign, error)
 
+	UpdateStatusRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
+	UpdateStatusStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
+
 	Execute(ctx context.Context, id uuid.UUID)
+
+	EventHandleActiveflowDeleted(ctx context.Context, campaignID uuid.UUID) error
+	EventHandleReferenceCallHungup(ctx context.Context, campaignID uuid.UUID) error
 }
 
 // NewCampaignHandler return CampaignHandler

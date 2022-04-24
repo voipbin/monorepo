@@ -29,6 +29,7 @@ const (
 		reference_id,
 
 		status,
+		result,
 
 		source,
 		destination,
@@ -64,6 +65,7 @@ func (h *handler) campaigncallGetFromRow(row *sql.Rows) (*campaigncall.Campaignc
 		&res.ReferenceID,
 
 		&res.Status,
+		&res.Result,
 
 		&source,
 		&destination,
@@ -104,6 +106,7 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 		reference_id,
 
 		status,
+		result,
 
 		source,
 		destination,
@@ -116,7 +119,7 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 		?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?,
-		?,
+		?, ?,
 		?, ?, ?, ?,
 		?, ?
 	)`
@@ -151,6 +154,7 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 		t.ReferenceID.Bytes(),
 
 		t.Status,
+		t.Result,
 
 		source,
 		destination,
@@ -254,6 +258,68 @@ func (h *handler) CampaigncallGet(ctx context.Context, id uuid.UUID) (*campaignc
 	return res, nil
 }
 
+// CampaigncallGetByReferenceID returns campaigncall of the reference_id.
+func (h *handler) CampaigncallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where reference_id = ?", campaigncallSelect)
+
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("could not prepare. CampaigncallGetByReferenceID. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	row, err := stmt.QueryContext(ctx, referenceID.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CampaigncallGetByReferenceID. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.campaigncallGetFromRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// CampaigncallGetByActiveflowID returns campaigncall of the activeflow_id.
+func (h *handler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where activeflow_id = ?", campaigncallSelect)
+
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("could not prepare. CampaigncallGetByReferenceID. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	row, err := stmt.QueryContext(ctx, activeflowID.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CampaigncallGetByReferenceID. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.campaigncallGetFromRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // CampaigncallGetsByCampaignID returns list of campaigncall.
 func (h *handler) CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 
@@ -321,6 +387,40 @@ func (h *handler) CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, cam
 	return res, nil
 }
 
+// CampaigncallGetsByCampaignIDAndStatusOngoing returns list of campaigncall.
+func (h *handler) CampaigncallGetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			(status = ? or status = ?)
+			and campaign_id = ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, campaigncallSelect)
+
+	rows, err := h.db.Query(q, campaigncall.StatusDialing, campaigncall.StatusProgressing, campaignID.Bytes(), token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CampaigncallGetsOngoingByCampaignID. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*campaigncall.Campaigncall
+	for rows.Next() {
+		u, err := h.campaigncallGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not scan the row. CampaigncallGetsOngoingByCampaignID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // CampaigncallUpdateStatus updates campaigncall's status.
 func (h *handler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error {
 	q := `
@@ -341,18 +441,19 @@ func (h *handler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, st
 	return nil
 }
 
-// CampaigncallUpdateActiveflowID updates campaigncall's activeflow_id and reference_id.
-func (h *handler) CampaigncallUpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) error {
+// CampaigncallUpdateStatusAndResult updates campaigncall's status and result.
+func (h *handler) CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) error {
 	q := `
 	update campaigncalls set
-		activeflow_id = ?,
+		result = ?,
+		status = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, activeflowID.Bytes(), GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. CampaigncallUpdateActiveflowID. err: %v", err)
+	if _, err := h.db.Exec(q, result, status, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaigncallUpdateStatusAndResult. err: %v", err)
 	}
 
 	// set to the cache

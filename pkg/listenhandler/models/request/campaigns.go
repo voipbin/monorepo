@@ -13,6 +13,8 @@ type V1DataCampaignsPost struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
+	Type campaign.Type `json:"type"`
+
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
