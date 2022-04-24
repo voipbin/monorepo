@@ -81,6 +81,136 @@ func Test_CampaigncallCreate(t *testing.T) {
 	}
 }
 
+func Test_CampaigncallGetByReferenceID(t *testing.T) {
+	tests := []struct {
+		name         string
+		campaigncall *campaigncall.Campaigncall
+	}{
+		{
+			"normal",
+			&campaigncall.Campaigncall{
+				ID:              uuid.FromStringOrNil("6ab033dd-1509-4f25-b831-8d1ccfdf3c92"),
+				CustomerID:      uuid.FromStringOrNil("d993bcab-03de-40d1-bf91-e94ae143a420"),
+				CampaignID:      uuid.FromStringOrNil("5f3bf276-b4fe-11ec-b032-47340d4fb85e"),
+				OutplanID:       uuid.FromStringOrNil("5f6f2cea-b4fe-11ec-9b36-eb1f55d879de"),
+				OutdialID:       uuid.FromStringOrNil("5fa1b52a-b4fe-11ec-a2f7-f73dfe01ba97"),
+				OutdialTargetID: uuid.FromStringOrNil("5fd06ca8-b4fe-11ec-b8b8-1fd108444321"),
+				QueueID:         uuid.FromStringOrNil("6003b072-b4fe-11ec-afc8-df78feb301b9"),
+				ActiveflowID:    uuid.FromStringOrNil("6038a2b4-b4fe-11ec-885f-170de0f5681f"),
+				ReferenceType:   campaigncall.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("033d0d0b-1ce1-4c9a-94cf-e205db00cd39"),
+				Status:          campaigncall.StatusProgressing,
+				Source: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destination: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+				DestinationIndex: 0,
+				TryCount:         1,
+				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMUpdate:         "2020-04-18 03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().CampaigncallSet(ctx, tt.campaigncall).Return(nil)
+			if err := h.CampaigncallCreate(context.Background(), tt.campaigncall); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.CampaigncallGetByReferenceID(ctx, tt.campaigncall.ReferenceID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.campaigncall, res) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.campaigncall, res)
+			}
+		})
+	}
+}
+
+func Test_CampaigncallGetByActiveflowID(t *testing.T) {
+	tests := []struct {
+		name         string
+		campaigncall *campaigncall.Campaigncall
+	}{
+		{
+			"normal",
+			&campaigncall.Campaigncall{
+				ID:              uuid.FromStringOrNil("ff63cbaf-2221-4631-9b0d-215784734f80"),
+				CustomerID:      uuid.FromStringOrNil("b4c8a95c-f263-44cb-870b-e36c452b4eb4"),
+				CampaignID:      uuid.FromStringOrNil("5f3bf276-b4fe-11ec-b032-47340d4fb85e"),
+				OutplanID:       uuid.FromStringOrNil("5f6f2cea-b4fe-11ec-9b36-eb1f55d879de"),
+				OutdialID:       uuid.FromStringOrNil("5fa1b52a-b4fe-11ec-a2f7-f73dfe01ba97"),
+				OutdialTargetID: uuid.FromStringOrNil("5fd06ca8-b4fe-11ec-b8b8-1fd108444321"),
+				QueueID:         uuid.FromStringOrNil("6003b072-b4fe-11ec-afc8-df78feb301b9"),
+				ActiveflowID:    uuid.FromStringOrNil("951540b8-d39d-4b1a-b696-1621aa90d3ee"),
+				ReferenceType:   campaigncall.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("1da2d1f6-8ea2-4274-9bc3-225fee645cb8"),
+				Status:          campaigncall.StatusProgressing,
+				Source: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destination: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+				DestinationIndex: 0,
+				TryCount:         1,
+				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMUpdate:         "2020-04-18 03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().CampaigncallSet(ctx, tt.campaigncall).Return(nil)
+			if err := h.CampaigncallCreate(context.Background(), tt.campaigncall); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.CampaigncallGetByActiveflowID(ctx, tt.campaigncall.ActiveflowID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.campaigncall, res) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.campaigncall, res)
+			}
+		})
+	}
+}
+
 func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -461,28 +591,31 @@ func Test_CampaigncallUpdateStatus(t *testing.T) {
 	}
 }
 
-func Test_CampaigncallUpdateActiveflowID(t *testing.T) {
+func Test_CampaigncallUpdateStatusAndResult(t *testing.T) {
 	tests := []struct {
 		name         string
 		campaigncall *campaigncall.Campaigncall
 
-		activeflowID uuid.UUID
+		status campaigncall.Status
+		result campaigncall.Result
 
 		expectRes *campaigncall.Campaigncall
 	}{
 		{
 			"normal",
 			&campaigncall.Campaigncall{
-				ID:              uuid.FromStringOrNil("b763f327-ce45-46f7-9a27-2449e51395be"),
-				CustomerID:      uuid.FromStringOrNil("3405b2d3-5da1-41f2-b4fd-77f3202b72ce"),
+				ID:              uuid.FromStringOrNil("bb76dc75-4b32-446c-98e3-bf08eaa85a54"),
+				CustomerID:      uuid.FromStringOrNil("b2ba23bf-fe6c-49e9-9121-fde7d725d9f2"),
 				CampaignID:      uuid.FromStringOrNil("a43632bc-b501-11ec-8c14-dbf345739172"),
 				OutplanID:       uuid.FromStringOrNil("5f6f2cea-b4fe-11ec-9b36-eb1f55d879de"),
 				OutdialID:       uuid.FromStringOrNil("5fa1b52a-b4fe-11ec-a2f7-f73dfe01ba97"),
 				OutdialTargetID: uuid.FromStringOrNil("5fd06ca8-b4fe-11ec-b8b8-1fd108444321"),
 				QueueID:         uuid.FromStringOrNil("6003b072-b4fe-11ec-afc8-df78feb301b9"),
+				ActiveflowID:    uuid.FromStringOrNil("6038a2b4-b4fe-11ec-885f-170de0f5681f"),
 				ReferenceType:   campaigncall.ReferenceTypeCall,
-				ReferenceID:     uuid.FromStringOrNil("d8a52825-8434-4ceb-8944-677095755cb1"),
+				ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 				Status:          campaigncall.StatusProgressing,
+				Result:          campaigncall.ResultNone,
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
@@ -497,20 +630,22 @@ func Test_CampaigncallUpdateActiveflowID(t *testing.T) {
 				TMUpdate:         "2020-04-18 03:22:18.995000",
 			},
 
-			uuid.FromStringOrNil("2452b844-dc04-46ee-959f-199c8cec9101"),
+			campaigncall.StatusDone,
+			campaigncall.ResultSuccess,
 
 			&campaigncall.Campaigncall{
-				ID:              uuid.FromStringOrNil("b763f327-ce45-46f7-9a27-2449e51395be"),
-				CustomerID:      uuid.FromStringOrNil("3405b2d3-5da1-41f2-b4fd-77f3202b72ce"),
+				ID:              uuid.FromStringOrNil("bb76dc75-4b32-446c-98e3-bf08eaa85a54"),
+				CustomerID:      uuid.FromStringOrNil("b2ba23bf-fe6c-49e9-9121-fde7d725d9f2"),
 				CampaignID:      uuid.FromStringOrNil("a43632bc-b501-11ec-8c14-dbf345739172"),
 				OutplanID:       uuid.FromStringOrNil("5f6f2cea-b4fe-11ec-9b36-eb1f55d879de"),
 				OutdialID:       uuid.FromStringOrNil("5fa1b52a-b4fe-11ec-a2f7-f73dfe01ba97"),
 				OutdialTargetID: uuid.FromStringOrNil("5fd06ca8-b4fe-11ec-b8b8-1fd108444321"),
 				QueueID:         uuid.FromStringOrNil("6003b072-b4fe-11ec-afc8-df78feb301b9"),
-				ActiveflowID:    uuid.FromStringOrNil("2452b844-dc04-46ee-959f-199c8cec9101"),
+				ActiveflowID:    uuid.FromStringOrNil("6038a2b4-b4fe-11ec-885f-170de0f5681f"),
 				ReferenceType:   campaigncall.ReferenceTypeCall,
-				ReferenceID:     uuid.FromStringOrNil("d8a52825-8434-4ceb-8944-677095755cb1"),
-				Status:          campaigncall.StatusProgressing,
+				ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
+				Status:          campaigncall.StatusDone,
+				Result:          campaigncall.ResultSuccess,
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
@@ -546,7 +681,7 @@ func Test_CampaigncallUpdateActiveflowID(t *testing.T) {
 			}
 
 			mockCache.EXPECT().CampaigncallSet(ctx, gomock.Any()).Return(nil)
-			if err := h.CampaigncallUpdateActiveflowID(ctx, tt.campaigncall.ID, tt.activeflowID); err != nil {
+			if err := h.CampaigncallUpdateStatusAndResult(ctx, tt.campaigncall.ID, tt.status, tt.result); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

@@ -38,18 +38,18 @@ func (m *MockCampaignHandler) EXPECT() *MockCampaignHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockCampaignHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, actions []action.Action, serviceLevel int, endHandle campaign.EndHandle, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
+func (m *MockCampaignHandler) Create(ctx context.Context, customerID uuid.UUID, campaignType campaign.Type, name, detail string, actions []action.Action, serviceLevel int, endHandle campaign.EndHandle, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, campaignType, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID)
 	ret0, _ := ret[0].(*campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockCampaignHandlerMockRecorder) Create(ctx, customerID, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
+func (mr *MockCampaignHandlerMockRecorder) Create(ctx, customerID, campaignType, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCampaignHandler)(nil).Create), ctx, customerID, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCampaignHandler)(nil).Create), ctx, customerID, campaignType, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID)
 }
 
 // Delete mocks base method.
@@ -65,6 +65,34 @@ func (m *MockCampaignHandler) Delete(ctx context.Context, id uuid.UUID) (*campai
 func (mr *MockCampaignHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCampaignHandler)(nil).Delete), ctx, id)
+}
+
+// EventHandleActiveflowDeleted mocks base method.
+func (m *MockCampaignHandler) EventHandleActiveflowDeleted(ctx context.Context, campaignID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventHandleActiveflowDeleted", ctx, campaignID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventHandleActiveflowDeleted indicates an expected call of EventHandleActiveflowDeleted.
+func (mr *MockCampaignHandlerMockRecorder) EventHandleActiveflowDeleted(ctx, campaignID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventHandleActiveflowDeleted", reflect.TypeOf((*MockCampaignHandler)(nil).EventHandleActiveflowDeleted), ctx, campaignID)
+}
+
+// EventHandleReferenceCallHungup mocks base method.
+func (m *MockCampaignHandler) EventHandleReferenceCallHungup(ctx context.Context, campaignID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventHandleReferenceCallHungup", ctx, campaignID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventHandleReferenceCallHungup indicates an expected call of EventHandleReferenceCallHungup.
+func (mr *MockCampaignHandlerMockRecorder) EventHandleReferenceCallHungup(ctx, campaignID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventHandleReferenceCallHungup", reflect.TypeOf((*MockCampaignHandler)(nil).EventHandleReferenceCallHungup), ctx, campaignID)
 }
 
 // Execute mocks base method.
@@ -184,17 +212,32 @@ func (mr *MockCampaignHandlerMockRecorder) UpdateServiceLevel(ctx, id, serviceLe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceLevel", reflect.TypeOf((*MockCampaignHandler)(nil).UpdateServiceLevel), ctx, id, serviceLevel)
 }
 
-// UpdateStatus mocks base method.
-func (m *MockCampaignHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error) {
+// UpdateStatusRun mocks base method.
+func (m *MockCampaignHandler) UpdateStatusRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatus", ctx, id, status)
+	ret := m.ctrl.Call(m, "UpdateStatusRun", ctx, id)
 	ret0, _ := ret[0].(*campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// UpdateStatus indicates an expected call of UpdateStatus.
-func (mr *MockCampaignHandlerMockRecorder) UpdateStatus(ctx, id, status interface{}) *gomock.Call {
+// UpdateStatusRun indicates an expected call of UpdateStatusRun.
+func (mr *MockCampaignHandlerMockRecorder) UpdateStatusRun(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockCampaignHandler)(nil).UpdateStatus), ctx, id, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusRun", reflect.TypeOf((*MockCampaignHandler)(nil).UpdateStatusRun), ctx, id)
+}
+
+// UpdateStatusStopping mocks base method.
+func (m *MockCampaignHandler) UpdateStatusStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatusStopping", ctx, id)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStatusStopping indicates an expected call of UpdateStatusStopping.
+func (mr *MockCampaignHandlerMockRecorder) UpdateStatusStopping(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusStopping", reflect.TypeOf((*MockCampaignHandler)(nil).UpdateStatusStopping), ctx, id)
 }

@@ -140,6 +140,20 @@ func (mr *MockDBHandlerMockRecorder) CampaignUpdateEndHandle(ctx, id, endHandle 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateEndHandle", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateEndHandle), ctx, id, endHandle)
 }
 
+// CampaignUpdateExecute mocks base method.
+func (m *MockDBHandler) CampaignUpdateExecute(ctx context.Context, id uuid.UUID, execute campaign.Execute) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateExecute", ctx, id, execute)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaignUpdateExecute indicates an expected call of CampaignUpdateExecute.
+func (mr *MockDBHandlerMockRecorder) CampaignUpdateExecute(ctx, id, execute interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateExecute", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateExecute), ctx, id, execute)
+}
+
 // CampaignUpdateNextCampaignID mocks base method.
 func (m *MockDBHandler) CampaignUpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -196,6 +210,34 @@ func (mr *MockDBHandlerMockRecorder) CampaignUpdateStatus(ctx, id, status interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateStatus", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateStatus), ctx, id, status)
 }
 
+// CampaignUpdateStatusAndExecute mocks base method.
+func (m *MockDBHandler) CampaignUpdateStatusAndExecute(ctx context.Context, id uuid.UUID, status campaign.Status, execute campaign.Execute) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateStatusAndExecute", ctx, id, status, execute)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaignUpdateStatusAndExecute indicates an expected call of CampaignUpdateStatusAndExecute.
+func (mr *MockDBHandlerMockRecorder) CampaignUpdateStatusAndExecute(ctx, id, status, execute interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateStatusAndExecute", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateStatusAndExecute), ctx, id, status, execute)
+}
+
+// CampaignUpdateType mocks base method.
+func (m *MockDBHandler) CampaignUpdateType(ctx context.Context, id uuid.UUID, campaignType campaign.Type) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateType", ctx, id, campaignType)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaignUpdateType indicates an expected call of CampaignUpdateType.
+func (mr *MockDBHandlerMockRecorder) CampaignUpdateType(ctx, id, campaignType interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateType", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateType), ctx, id, campaignType)
+}
+
 // CampaigncallCreate mocks base method.
 func (m *MockDBHandler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campaigncall) error {
 	m.ctrl.T.Helper()
@@ -223,6 +265,36 @@ func (m *MockDBHandler) CampaigncallGet(ctx context.Context, id uuid.UUID) (*cam
 func (mr *MockDBHandlerMockRecorder) CampaigncallGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGet", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGet), ctx, id)
+}
+
+// CampaigncallGetByActiveflowID mocks base method.
+func (m *MockDBHandler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallGetByActiveflowID", ctx, activeflowID)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaigncallGetByActiveflowID indicates an expected call of CampaigncallGetByActiveflowID.
+func (mr *MockDBHandlerMockRecorder) CampaigncallGetByActiveflowID(ctx, activeflowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetByActiveflowID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetByActiveflowID), ctx, activeflowID)
+}
+
+// CampaigncallGetByReferenceID mocks base method.
+func (m *MockDBHandler) CampaigncallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallGetByReferenceID", ctx, referenceID)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaigncallGetByReferenceID indicates an expected call of CampaigncallGetByReferenceID.
+func (mr *MockDBHandlerMockRecorder) CampaigncallGetByReferenceID(ctx, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetByReferenceID), ctx, referenceID)
 }
 
 // CampaigncallGetsByCampaignID mocks base method.
@@ -255,18 +327,19 @@ func (mr *MockDBHandlerMockRecorder) CampaigncallGetsByCampaignIDAndStatus(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsByCampaignIDAndStatus", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetsByCampaignIDAndStatus), ctx, campaignID, status, token, limit)
 }
 
-// CampaigncallUpdateActiveflowID mocks base method.
-func (m *MockDBHandler) CampaigncallUpdateActiveflowID(ctx context.Context, id, activeflowID uuid.UUID) error {
+// CampaigncallGetsOngoingByCampaignID mocks base method.
+func (m *MockDBHandler) CampaigncallGetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaigncallUpdateActiveflowID", ctx, id, activeflowID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "CampaigncallGetsOngoingByCampaignID", ctx, campaignID, token, limit)
+	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// CampaigncallUpdateActiveflowID indicates an expected call of CampaigncallUpdateActiveflowID.
-func (mr *MockDBHandlerMockRecorder) CampaigncallUpdateActiveflowID(ctx, id, activeflowID interface{}) *gomock.Call {
+// CampaigncallGetsOngoingByCampaignID indicates an expected call of CampaigncallGetsOngoingByCampaignID.
+func (mr *MockDBHandlerMockRecorder) CampaigncallGetsOngoingByCampaignID(ctx, campaignID, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallUpdateActiveflowID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallUpdateActiveflowID), ctx, id, activeflowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsOngoingByCampaignID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetsOngoingByCampaignID), ctx, campaignID, token, limit)
 }
 
 // CampaigncallUpdateStatus mocks base method.
@@ -281,6 +354,20 @@ func (m *MockDBHandler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UU
 func (mr *MockDBHandlerMockRecorder) CampaigncallUpdateStatus(ctx, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallUpdateStatus", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallUpdateStatus), ctx, id, status)
+}
+
+// CampaigncallUpdateStatusAndResult mocks base method.
+func (m *MockDBHandler) CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallUpdateStatusAndResult", ctx, id, status, result)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaigncallUpdateStatusAndResult indicates an expected call of CampaigncallUpdateStatusAndResult.
+func (mr *MockDBHandlerMockRecorder) CampaigncallUpdateStatusAndResult(ctx, id, status, result interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallUpdateStatusAndResult", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallUpdateStatusAndResult), ctx, id, status, result)
 }
 
 // OutplanCreate mocks base method.

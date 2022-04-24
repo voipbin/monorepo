@@ -19,6 +19,10 @@ const (
 		id,
 		customer_id,
 
+		type,
+
+		execute,
+
 		name,
 		detail,
 
@@ -52,6 +56,10 @@ func (h *handler) campaignGetFromRow(row *sql.Rows) (*campaign.Campaign, error) 
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+
+		&res.Type,
+
+		&res.Execute,
 
 		&res.Name,
 		&res.Detail,
@@ -89,6 +97,10 @@ func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) erro
 		id,
 		customer_id,
 
+		type,
+
+		execute,
+
 		name,
 		detail,
 
@@ -110,6 +122,8 @@ func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) erro
 		tm_delete
 	) values(
 		?, ?,
+		?,
+		?,
 		?, ?,
 		?, ?, ?,
 		?, ?,
@@ -131,6 +145,10 @@ func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) erro
 	_, err = stmt.ExecContext(ctx,
 		t.ID.Bytes(),
 		t.CustomerID.Bytes(),
+
+		t.Type,
+
+		t.Execute,
 
 		t.Name,
 		t.Detail,
@@ -383,6 +401,47 @@ func (h *handler) CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status
 	return nil
 }
 
+// CampaignUpdateStatusAndExecute updates campaign's status and execute.
+func (h *handler) CampaignUpdateStatusAndExecute(ctx context.Context, id uuid.UUID, status campaign.Status, execute campaign.Execute) error {
+	q := `
+	update campaigns set
+		status = ?,
+		execute = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, status, execute, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateStatusAndExecute. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaignUpdateExecute updates campaign's execute.
+func (h *handler) CampaignUpdateExecute(ctx context.Context, id uuid.UUID, execute campaign.Execute) error {
+	q := `
+	update campaigns set
+		execute = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, execute, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateExecute. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // CampaignUpdateServiceLevel updates campaign's service_level.
 func (h *handler) CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) error {
 	q := `
@@ -440,6 +499,26 @@ func (h *handler) CampaignUpdateActions(ctx context.Context, id uuid.UUID, actio
 
 	if _, err := h.db.Exec(q, tmpActions, GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateActions. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.campaignUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaignUpdateType updates campaign's type.
+func (h *handler) CampaignUpdateType(ctx context.Context, id uuid.UUID, campaignType campaign.Type) error {
+	q := `
+	update campaigns set
+		type = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, campaignType, GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaignUpdateType. err: %v", err)
 	}
 
 	// set to the cache

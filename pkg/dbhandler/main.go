@@ -51,17 +51,23 @@ type DBHandler interface {
 	CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) error
 	CampaignUpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) error
 	CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) error
+	CampaignUpdateStatusAndExecute(ctx context.Context, id uuid.UUID, status campaign.Status, execute campaign.Execute) error
+	CampaignUpdateExecute(ctx context.Context, id uuid.UUID, execute campaign.Execute) error
 	CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) error
 	CampaignUpdateEndHandle(ctx context.Context, id uuid.UUID, endHandle campaign.EndHandle) error
 	CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) error
+	CampaignUpdateType(ctx context.Context, id uuid.UUID, campaignType campaign.Type) error
 
 	// campaigncall
 	CampaigncallCreate(ctx context.Context, t *campaigncall.Campaigncall) error
 	CampaigncallGet(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
+	CampaigncallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error)
+	CampaigncallGetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error)
 	CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
+	CampaigncallGetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error
-	CampaigncallUpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) error
+	CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) error
 }
 
 // handler database handler

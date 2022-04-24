@@ -9,6 +9,10 @@ type Campaign struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
+	Type Type `json:"type"`
+
+	Execute Execute `json:"execute"` // if the execute is running, this sets to true
+
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
@@ -17,8 +21,8 @@ type Campaign struct {
 	EndHandle    EndHandle `json:"end_handle"`
 
 	// action settings
-	FlowID  uuid.UUID         `json:"flow_id"`
-	Actions []fmaction.Action `json:"actions"`
+	FlowID  uuid.UUID         `json:"flow_id"` // flow id for campaign execution
+	Actions []fmaction.Action `json:"actions"` // this actions will be stored to the flow
 
 	// resource info
 	OutplanID uuid.UUID `json:"outplan_id"`
@@ -31,6 +35,20 @@ type Campaign struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
+
+type Type string
+
+const (
+	TypeCall Type = "call" // make a call to the destination
+	TypeFlow Type = "flow" // execute a flow with the destination
+)
+
+type Execute string
+
+const (
+	ExecuteRun  Execute = "run"
+	ExecuteStop Execute = "stop"
+)
 
 // Status defines
 type Status string

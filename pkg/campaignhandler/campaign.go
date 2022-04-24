@@ -3,7 +3,6 @@ package campaignhandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -19,11 +18,14 @@ import (
 func (h *campaignHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
+	campaignType campaign.Type,
 	name string,
 	detail string,
+
 	actions []fmaction.Action,
 	serviceLevel int,
 	endHandle campaign.EndHandle,
+
 	outplanID uuid.UUID,
 	outdialID uuid.UUID,
 	queueID uuid.UUID,
@@ -57,13 +59,15 @@ func (h *campaignHandler) Create(
 	t := &campaign.Campaign{
 		ID:             id,
 		CustomerID:     customerID,
+		Type:           campaignType,
 		Name:           name,
 		Detail:         detail,
 		Status:         campaign.StatusStop,
+		Execute:        campaign.ExecuteStop,
 		ServiceLevel:   serviceLevel,
 		EndHandle:      endHandle,
 		FlowID:         f.ID,
-		Actions:        []fmaction.Action{},
+		Actions:        actions,
 		OutplanID:      outplanID,
 		OutdialID:      outdialID,
 		QueueID:        queueID,
@@ -124,6 +128,16 @@ func (h *campaignHandler) Delete(ctx context.Context, id uuid.UUID) (*campaign.C
 	}
 	log.WithField("campaign", res).Debugf("Deleted campaign. campaign_id: %s", res.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignDeleted, res)
+
+	// delete flow
+	f, err := h.reqHandler.FMV1FlowDelete(ctx, res.FlowID)
+	if err != nil {
+		// we got an error here, but we've deleted the campaign already.
+		// just write the log only.
+		log.Errorf("Could not delete the flow. err: %v", err)
+	} else {
+		log.WithField("flow", f).Debugf("Deleted campaign flow. flow_id: %s", f.ID)
+	}
 
 	return res, nil
 }
@@ -214,7 +228,7 @@ func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID,
 		return nil, err
 	}
 
-	actions, err := h.createFlowActions(ctx, c.Actions, c.QueueID)
+	actions, err := h.createFlowActions(ctx, c.Actions, queueID)
 	if err != nil {
 		log.Errorf("Could not create a flow actions. err: %v", err)
 		return nil, err
@@ -265,153 +279,122 @@ func (h *campaignHandler) UpdateNextCampaignID(ctx context.Context, id, nextCamp
 	return res, nil
 }
 
-// UpdateStatus updates campaign's status
-func (h *campaignHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":   "UpdateStatus",
-			"id":     id,
-			"status": status,
-		})
-	log.Debug("Updating campaign status.")
+// // UpdateStatus updates campaign's status
+// func (h *campaignHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error) {
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func":   "UpdateStatus",
+// 			"id":     id,
+// 			"status": status,
+// 		})
+// 	log.Debug("Updating campaign status.")
 
-	switch status {
-	case campaign.StatusRun:
-		return h.updateStatusRun(ctx, id)
+// 	switch status {
+// 	// case campaign.StatusRun:
+// 	// 	return h.updateStatusRun(ctx, id)
 
-	case campaign.StatusStop:
-		return h.updateStatusStopping(ctx, id)
+// 	// case campaign.StatusStop:
+// 	// 	return h.updateStatusStopping(ctx, id)
 
-	default:
-		return nil, fmt.Errorf("unsupported status")
-	}
-}
+// 	default:
+// 		return nil, fmt.Errorf("unsupported status")
+// 	}
+// }
 
-// updateStatusRun
-func (h *campaignHandler) updateStatusRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "updateStatusRun",
-			"id":   id,
-		})
-	log.Debug("Updating the campaign status to run.")
+// // updateStatusRun
+// func (h *campaignHandler) updateStatusRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func": "updateStatusRun",
+// 			"id":   id,
+// 		})
+// 	log.Debug("Updating the campaign status to run.")
 
-	// get campaign
-	c, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get campaign. err: %v", err)
-		return nil, err
-	}
+// 	// get campaign
+// 	c, err := h.Get(ctx, id)
+// 	if err != nil {
+// 		log.Errorf("Could not get campaign. err: %v", err)
+// 		return nil, err
+// 	}
 
-	if c.Status == campaign.StatusRun {
-		log.Infof("Already status run. campaign_id: %s", c.ID)
-		return c, nil
-	}
+// 	if c.Status == campaign.StatusRun {
+// 		log.Infof("Already status run. campaign_id: %s", c.ID)
+// 		return c, nil
+// 	}
 
-	// check the campaign is valid
-	if c.OutdialID == uuid.Nil {
-		log.Infof("The campaign has no outdial_id.")
-		return nil, fmt.Errorf("no outdial_id set")
-	} else if c.OutplanID == uuid.Nil {
-		log.Infof("The campaign has no outplan_id.")
-		return nil, fmt.Errorf("no outplan_id set")
-	}
+// 	// check the campaign is valid
+// 	if c.OutdialID == uuid.Nil {
+// 		log.Infof("The campaign has no outdial_id.")
+// 		return nil, fmt.Errorf("no outdial_id set")
+// 	} else if c.OutplanID == uuid.Nil {
+// 		log.Infof("The campaign has no outplan_id.")
+// 		return nil, fmt.Errorf("no outplan_id set")
+// 	}
 
-	// Set status run
-	if err := h.db.CampaignUpdateStatus(ctx, id, campaign.StatusRun); err != nil {
-		log.Errorf("Could not update campaign. err: %v", err)
-		return nil, err
-	}
+// 	// Set status run
+// 	if err := h.db.CampaignUpdateStatusAndExecute(ctx, id, campaign.StatusRun, campaign.ExecuteRun); err != nil {
+// 		log.Errorf("Could not update campaign. err: %v", err)
+// 		return nil, err
+// 	}
 
-	// execute campaign handle
-	// send execute request with 1 second delay.
+// 	// get updated campaign
+// 	res, err := h.db.CampaignGet(ctx, id)
+// 	if err != nil {
+// 		log.Errorf("Could not get updated campaign info. err: %v", err)
+// 		return nil, err
+// 	}
+// 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignStatusRun, res)
 
-	// get updated campaign
-	res, err := h.db.CampaignGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated campaign info. err: %v", err)
-		return nil, err
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignUpdated, res)
+// 	// execute campaign handle with 1 second delay
+// 	if c.Execute != campaign.ExecuteRun {
+// 		log.Debugf("Starting campaign execute.")
+// 		if errExecute := h.reqHandler.CAV1CampaignExecute(ctx, id, 1000); errExecute != nil {
+// 			log.Errorf("Could not execute the campaign correctly. Stopping the campaign. campaign_id: %s", id)
+// 			_, _ = h.updateStatusStop(ctx, id)
+// 			return nil, errExecute
+// 		}
+// 	}
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
-// updateStatusStopping
-func (h *campaignHandler) updateStatusStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "updateStatusStopping",
-			"id":   id,
-		})
-	log.Debug("Updating the campaign status to stopping.")
+// // updateStatusStopping
+// func (h *campaignHandler) updateStatusStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func": "updateStatusStopping",
+// 			"id":   id,
+// 		})
+// 	log.Debug("Updating the campaign status to stopping.")
 
-	// get campaign
-	c, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get campaign. err: %v", err)
-		return nil, err
-	}
+// 	// get campaign
+// 	c, err := h.Get(ctx, id)
+// 	if err != nil {
+// 		log.Errorf("Could not get campaign. err: %v", err)
+// 		return nil, err
+// 	}
 
-	if c.Status == campaign.StatusStop || c.Status == campaign.StatusStopping {
-		log.Infof("Status is already stop or stopping. campaign_id: %s, status: %s", c.ID, c.Status)
-		return c, nil
-	}
+// 	if c.Status == campaign.StatusStop || c.Status == campaign.StatusStopping {
+// 		log.Infof("Status is already stop or stopping. campaign_id: %s, status: %s", c.ID, c.Status)
+// 		return c, nil
+// 	}
 
-	// Set status stopping
-	if err := h.db.CampaignUpdateStatus(ctx, id, campaign.StatusStopping); err != nil {
-		log.Errorf("Could not update campaign. err: %v", err)
-		return nil, err
-	}
+// 	// Set status stopping
+// 	if err := h.db.CampaignUpdateStatus(ctx, id, campaign.StatusStopping); err != nil {
+// 		log.Errorf("Could not update campaign. err: %v", err)
+// 		return nil, err
+// 	}
 
-	// get updated campaign
-	res, err := h.db.CampaignGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated campaign info. err: %v", err)
-		return nil, err
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignStatusStopping, res)
+// 	// get updated campaign
+// 	res, err := h.db.CampaignGet(ctx, id)
+// 	if err != nil {
+// 		log.Errorf("Could not get updated campaign info. err: %v", err)
+// 		return nil, err
+// 	}
+// 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignStatusStopping, res)
 
-	return res, nil
-}
-
-// updateStatusStop updates the campaign's status to stop.
-func (h *campaignHandler) updateStatusStop(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "updateStatusStop",
-			"id":   id,
-		})
-	log.Debug("Updating the campaign status to stop.")
-
-	// get campaign
-	c, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get campaign. err: %v", err)
-		return nil, err
-	}
-
-	if c.Status != campaign.StatusStopping {
-		log.Errorf("The campaign's status is not stopping.")
-		return nil, fmt.Errorf("wrong status")
-	}
-
-	// Set status stop
-	if err := h.db.CampaignUpdateStatus(ctx, id, campaign.StatusStop); err != nil {
-		log.Errorf("Could not update campaign. err: %v", err)
-		return nil, err
-	}
-
-	// get updated campaign
-	res, err := h.db.CampaignGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated campaign info. err: %v", err)
-		return nil, err
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignStatusStop, res)
-
-	return res, nil
-}
+// 	return res, nil
+// }
 
 // UpdateServiceLevel updates campaign's service_level
 func (h *campaignHandler) UpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*campaign.Campaign, error) {
@@ -512,4 +495,39 @@ func (h *campaignHandler) createFlowActions(ctx context.Context, actions []fmact
 	flowActions = append(flowActions, action)
 
 	return flowActions, nil
+}
+
+// updateExecuteStop updates the campaign execute to stop.
+// and it checks the campaign's stop-able then stops the campaign if it stop-able.
+// otherwise, stopping the campaign.
+func (h *campaignHandler) updateExecuteStop(ctx context.Context, id uuid.UUID) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "updateExecuteStop",
+			"campaign_id": id,
+		})
+	log.Debug("Updating campaign service_level.")
+
+	if err := h.db.CampaignUpdateExecute(ctx, id, campaign.ExecuteStop); err != nil {
+		log.Errorf("Could not stop the campaign execute. err: %v", err)
+		return err
+	}
+
+	// check the campaign is stop-able
+	if h.isStopable(ctx, id) {
+		log.Debugf("The campaign stop-able. Stop the campaign. campaign_id: %s", id)
+		_, err := h.updateStatusStop(ctx, id)
+		if err != nil {
+			log.Errorf("Could not stop the campaign. err: %v", err)
+		}
+		return nil
+	}
+
+	log.Debugf("Stopping the campaign. campaign_id: %s", id)
+	_, err := h.UpdateStatusStopping(ctx, id)
+	if err != nil {
+		log.Errorf("Could not stopping the campaign. err: %v", err)
+	}
+
+	return nil
 }

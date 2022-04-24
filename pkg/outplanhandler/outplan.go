@@ -21,6 +21,7 @@ func (h *outplanHandler) Create(
 	source *cmaddress.Address,
 	dialTimeout int,
 	tryInterval int,
+
 	maxTryCount0 int,
 	maxTryCount1 int,
 	maxTryCount2 int,
@@ -45,8 +46,9 @@ func (h *outplanHandler) Create(
 
 		Source: source,
 
-		DialTimeout:  dialTimeout,
-		TryInterval:  tryInterval,
+		DialTimeout: dialTimeout,
+		TryInterval: tryInterval,
+
 		MaxTryCount0: maxTryCount0,
 		MaxTryCount1: maxTryCount1,
 		MaxTryCount2: maxTryCount2,
@@ -184,11 +186,22 @@ func (h *outplanHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 // 	return res, nil
 // }
 
-// UpdateActionInfo updates outplan's action info
-func (h *outplanHandler) UpdateDialInfo(ctx context.Context, id uuid.UUID, source *cmaddress.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
+// UpdateActionInfo updates outplan's dial info
+func (h *outplanHandler) UpdateDialInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	source *cmaddress.Address,
+	dialTimeout int,
+	tryInterval int,
+	maxTryCount0 int,
+	maxTryCount1 int,
+	maxTryCount2 int,
+	maxTryCount3 int,
+	maxTryCount4 int,
+) (*outplan.Outplan, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":            "UpdateActionInfo",
+			"func":            "UpdateDialInfo",
 			"id":              id,
 			"source":          source,
 			"dial_timeout":    dialTimeout,
@@ -201,7 +214,18 @@ func (h *outplanHandler) UpdateDialInfo(ctx context.Context, id uuid.UUID, sourc
 		})
 	log.Debug("Updating outplan dial info.")
 
-	if err := h.db.OutplanUpdateDialInfo(ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4); err != nil {
+	if err := h.db.OutplanUpdateDialInfo(
+		ctx,
+		id,
+		source,
+		dialTimeout,
+		tryInterval,
+		maxTryCount0,
+		maxTryCount1,
+		maxTryCount2,
+		maxTryCount3,
+		maxTryCount4,
+	); err != nil {
 		log.Errorf("Could not update outplan dial info. err: %v", err)
 		return nil, err
 	}
