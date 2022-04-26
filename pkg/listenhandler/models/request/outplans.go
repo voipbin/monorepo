@@ -30,8 +30,6 @@ type V1DataOutplansPost struct {
 // v1 data type request struct for
 // /v1/outplans/<outplan_id> PUT
 type V1DataOutplansIDPut struct {
-	CustomerID uuid.UUID `json:"customer_id"`
-
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 }
