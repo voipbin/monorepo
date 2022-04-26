@@ -621,18 +621,18 @@ func (mr *MockRequestHandlerMockRecorder) AstPlaybackStop(ctx, asteriskID, playa
 }
 
 // CAV1CampaignCreate mocks base method.
-func (m *MockRequestHandler) CAV1CampaignCreate(ctx context.Context, id, customerID uuid.UUID, name, detail string, serviceLevel int, endHandle campaign.EndHandle, actions []action.Action, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
+func (m *MockRequestHandler) CAV1CampaignCreate(ctx context.Context, id, customerID uuid.UUID, campaignType campaign.Type, name, detail string, serviceLevel int, endHandle campaign.EndHandle, actions []action.Action, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CAV1CampaignCreate", ctx, id, customerID, name, detail, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID)
+	ret := m.ctrl.Call(m, "CAV1CampaignCreate", ctx, id, customerID, campaignType, name, detail, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID)
 	ret0, _ := ret[0].(*campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CAV1CampaignCreate indicates an expected call of CAV1CampaignCreate.
-func (mr *MockRequestHandlerMockRecorder) CAV1CampaignCreate(ctx, id, customerID, name, detail, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignCreate(ctx, id, customerID, campaignType, name, detail, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignCreate", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignCreate), ctx, id, customerID, name, detail, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignCreate", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignCreate), ctx, id, customerID, campaignType, name, detail, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID)
 }
 
 // CAV1CampaignDelete mocks base method.

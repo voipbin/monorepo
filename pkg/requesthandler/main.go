@@ -126,6 +126,7 @@ const (
 	resourceAMTag   resource = "am/tags"
 
 	resourceCACampaigns resource = "ca/campaigns"
+	resourceCAOutplans  resource = "ca/outplans"
 
 	resourceCMCall               resource = "cm/calls"
 	resourceCMCallsActionNext    resource = "cm/calls/action-next"
@@ -265,6 +266,7 @@ type RequestHandler interface {
 		ctx context.Context,
 		id uuid.UUID,
 		customerID uuid.UUID,
+		campaignType cacampaign.Type,
 		name string,
 		detail string,
 		serviceLevel int,
