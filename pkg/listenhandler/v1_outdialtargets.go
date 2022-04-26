@@ -13,6 +13,45 @@ import (
 	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/listenhandler/models/request"
 )
 
+// v1OutdialtargetsIDGet handles /v1/outdialtargets/<outdialtarget-id> GET request
+func (h *listenHandler) v1OutdialtargetsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpVals := strings.Split(u.Path, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "v1OutdialtargetsIDGet",
+			"outdial_id": id,
+		},
+	)
+	log.WithField("request", m).Debug("Executing v1OutdialtargetsIDGet.")
+
+	tmp, err := h.outdialTargetHandler.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete outdialtarget. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // v1OutdialtargetsIDDelete handles /v1/outdialtargets/<outdialtarget-id> DELETE request
 func (h *listenHandler) v1OutdialtargetsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)

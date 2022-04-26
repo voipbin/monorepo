@@ -199,14 +199,21 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.v1OutdialsIDDataPut(ctx, m)
 
 	// outdialtargets
+	// /v1/outdialtargets/<outdialtarget-id>
+	case regV1OutdialtargetsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/outdialtargets/<outdialtarget-id>"
+		response, err = h.v1OutdialtargetsIDGet(ctx, m)
+
 	case regV1OutdialtargetsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		requestType = "/outdialtargets/<outdialtarget-id>"
 		response, err = h.v1OutdialtargetsIDDelete(ctx, m)
 
+	// /v1/outdialtargets/<outdialtarget-id>/progressing
 	case regV1OutdialtargetsIDProgressing.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/outdialtargets/<outdialtarget-id>/progressing"
 		response, err = h.v1OutdialtargetsIDProgressingPost(ctx, m)
 
+	// /v1/outdialtargets/<outdialtarget-id>/status
 	case regV1OutdialtargetsIDStatus.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		requestType = "/outdialtargets/<outdialtarget-id>/status"
 		response, err = h.v1OutdialtargetsIDStatusPut(ctx, m)
