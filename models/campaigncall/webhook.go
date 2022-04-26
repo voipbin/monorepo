@@ -17,11 +17,13 @@ type WebhookMessage struct {
 	OutdialTargetID uuid.UUID `json:"outdial_target_id"`
 	QueueID         uuid.UUID `json:"queue_id"`
 
-	ActiveflowID  uuid.UUID     `json:"activeflow_id"`  // this is required
+	ActiveflowID uuid.UUID `json:"activeflow_id"` // this is required
+
 	ReferenceType ReferenceType `json:"reference_type"` // none or call
 	ReferenceID   uuid.UUID     `json:"reference_id"`   // reference id
 
 	Status Status `json:"status"`
+	Result Result `json:"result"`
 
 	Source           *cmaddress.Address `json:"source"`
 	Destination      *cmaddress.Address `json:"destination"`
@@ -43,11 +45,13 @@ func (h *Campaigncall) ConvertWebhookMessage() *WebhookMessage {
 		OutdialTargetID: h.OutdialTargetID,
 		QueueID:         h.QueueID,
 
-		ActiveflowID:  h.ActiveflowID,
+		ActiveflowID: h.ActiveflowID,
+
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 
 		Status: h.Status,
+		Result: h.Result,
 
 		Source:           h.Source,
 		Destination:      h.Destination,

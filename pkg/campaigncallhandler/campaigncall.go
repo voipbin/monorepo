@@ -110,16 +110,9 @@ func (h *campaigncallHandler) Get(ctx context.Context, id uuid.UUID) (*campaignc
 
 // GetByReferenceID returns list of campaigncall of the referenceID
 func (h *campaigncallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "GetByReferenceID",
-			"reference_id": referenceID,
-		})
-	log.Debug("Getting campaigncall.")
-
+	// we don't write log here. it makes lots of noises.
 	res, err := h.db.CampaigncallGetByReferenceID(ctx, referenceID)
 	if err != nil {
-		log.Errorf("Could not get campaigncall. err: %v", err)
 		return nil, err
 	}
 
@@ -128,16 +121,9 @@ func (h *campaigncallHandler) GetByReferenceID(ctx context.Context, referenceID 
 
 // GetByActiveflowID returns list of campaigncall of the activeflowID
 func (h *campaigncallHandler) GetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "GetByActiveflowID",
-			"activeflow_id": activeflowID,
-		})
-	log.Debug("Getting campaigncall.")
-
+	// we don't write log here. it makes lots of noises.
 	res, err := h.db.CampaigncallGetByActiveflowID(ctx, activeflowID)
 	if err != nil {
-		log.Errorf("Could not get campaigncall. err: %v", err)
 		return nil, err
 	}
 
