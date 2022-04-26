@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
-func Test_V1ActiveflowsPost(t *testing.T) {
+func Test_v1ActiveflowsPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -131,7 +131,7 @@ func Test_V1ActiveflowsPost(t *testing.T) {
 	}
 }
 
-func TestV1ActiveflowsIDNextGet(t *testing.T) {
+func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 	tests := []struct {
 		name            string
 		request         *rabbitmqhandler.Request
@@ -184,7 +184,7 @@ func TestV1ActiveflowsIDNextGet(t *testing.T) {
 	}
 }
 
-func TestV1ActiveflowsIDForwardActionIDPut(t *testing.T) {
+func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 
 	tests := []struct {
 		name            string
