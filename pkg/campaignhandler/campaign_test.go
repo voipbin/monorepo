@@ -5,15 +5,17 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 func Test_Create(t *testing.T) {
@@ -21,6 +23,7 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id           uuid.UUID
 		customerID   uuid.UUID
 		campaignType campaign.Type
 		campaignName string
@@ -40,6 +43,7 @@ func Test_Create(t *testing.T) {
 		{
 			"normal",
 
+			uuid.FromStringOrNil("dc55d2f4-c453-11ec-a621-8be3afeb72f9"),
 			uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
 			campaign.TypeCall,
 			"test name",
@@ -59,7 +63,7 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("c6da6162-dfc5-495d-a5af-e99efc9a97f7"),
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("aaeadded-f0a4-4c0f-8b6a-e33e9e98f7a4"),
+				ID:         uuid.FromStringOrNil("dc55d2f4-c453-11ec-a621-8be3afeb72f9"),
 				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
 			},
 		},
@@ -88,6 +92,7 @@ func Test_Create(t *testing.T) {
 
 			_, err := h.Create(
 				ctx,
+				tt.id,
 				tt.customerID,
 				tt.campaignType,
 				tt.campaignName,
@@ -394,78 +399,96 @@ func Test_UpdateNextCampaignID(t *testing.T) {
 	}
 }
 
-// func Test_UpdateStatusStop(t *testing.T) {
-
-// 	tests := []struct {
-// 		name string
-
-// 		id uuid.UUID
-
-// 		response *campaign.Campaign
-// 	}{
-// 		{
-// 			"normal",
-
-// 			uuid.FromStringOrNil("f16263c3-78eb-44b5-9ccb-1942cfc88186"),
-
-// 			&campaign.Campaign{
-// 				ID:         uuid.FromStringOrNil("f16263c3-78eb-44b5-9ccb-1942cfc88186"),
-// 				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			h := &campaignHandler{
-// 				db:            mockDB,
-// 				notifyHandler: mockNotify,
-// 				reqHandler:    mockReq,
-// 			}
-
-// 			ctx := context.Background()
-
-// 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-// 			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStopping).Return(nil)
-// 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStopping, tt.response)
-
-// 			res, err := h.updateStatusStop(ctx, tt.id)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if reflect.DeepEqual(res, tt.response) != true {
-// 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.response, res)
-// 			}
-// 		})
-// 	}
-// }
-
-func Test_updateStatusStop(t *testing.T) {
+func Test_UpdateServiceLevel(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		id           uuid.UUID
+		serviceLevel int
 
 		response *campaign.Campaign
 	}{
 		{
-			"normal",
+			"test normal",
 
-			uuid.FromStringOrNil("dd70296f-fadd-4fb0-bfc4-017944ec4597"),
+			uuid.FromStringOrNil("d4e36568-c3f4-11ec-9151-8357f70ffbc4"),
+			100,
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("dd70296f-fadd-4fb0-bfc4-017944ec4597"),
+				ID:         uuid.FromStringOrNil("d4e36568-c3f4-11ec-9151-8357f70ffbc4"),
 				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				Status:     campaign.StatusStopping,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaignHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CampaignUpdateServiceLevel(ctx, tt.id, tt.serviceLevel).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
+
+			res, err := h.UpdateServiceLevel(ctx, tt.id, tt.serviceLevel)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.response) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.response, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateActions(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id      uuid.UUID
+		actions []fmaction.Action
+
+		response      *campaign.Campaign
+		responseFlow  *fmflow.Flow
+		expectActions []fmaction.Action
+	}{
+		{
+			"test normal",
+
+			uuid.FromStringOrNil("d4e36568-c3f4-11ec-9151-8357f70ffbc4"),
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+
+			&campaign.Campaign{
+				ID:         uuid.FromStringOrNil("d4e36568-c3f4-11ec-9151-8357f70ffbc4"),
+				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				FlowID:     uuid.FromStringOrNil("8840b1c4-c3f5-11ec-8961-bbf3aed170d6"),
+			},
+			&fmflow.Flow{
+				ID: uuid.FromStringOrNil("8840b1c4-c3f5-11ec-8961-bbf3aed170d6"),
+			},
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
 			},
 		},
 	}
@@ -487,11 +510,12 @@ func Test_updateStatusStop(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop).Return(nil)
+			mockReq.EXPECT().FMV1FlowUpdateActions(ctx, tt.response.FlowID, tt.expectActions).Return(tt.responseFlow, nil)
+			mockDB.EXPECT().CampaignUpdateActions(ctx, tt.id, tt.expectActions)
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStop, tt.response)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
 
-			res, err := h.updateStatusStop(ctx, tt.id)
+			res, err := h.UpdateActions(ctx, tt.id, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -499,6 +523,200 @@ func Test_updateStatusStop(t *testing.T) {
 			if reflect.DeepEqual(res, tt.response) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.response, res)
 			}
+		})
+	}
+}
+
+func Test_createFlowActions(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		actions []fmaction.Action
+		queueID uuid.UUID
+
+		expectRes []fmaction.Action
+	}{
+		{
+			"has no queue id",
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			uuid.Nil,
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+		},
+
+		{
+			"has queue id",
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			uuid.FromStringOrNil("8de92286-c3f6-11ec-bade-ff667a1ea0af"),
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+				{
+					Type:   fmaction.TypeQueueJoin,
+					Option: []byte(`{"queue_id":"8de92286-c3f6-11ec-bade-ff667a1ea0af"}`),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaignHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+
+			ctx := context.Background()
+
+			res, err := h.createFlowActions(ctx, tt.actions, tt.queueID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_updateExecuteStopAndCampaignIsStoppable(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		response *campaign.Campaign
+	}{
+		{
+			"campaign is stoppable",
+
+			uuid.FromStringOrNil("c58bf240-c3f6-11ec-99bd-83480d2667d8"),
+
+			&campaign.Campaign{
+				ID:      uuid.FromStringOrNil("c58bf240-c3f6-11ec-99bd-83480d2667d8"),
+				Execute: campaign.ExecuteStop,
+				Status:  campaign.StatusStopping,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			h := &campaignHandler{
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				reqHandler:          mockReq,
+				campaigncallHandler: mockCampaigncall,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CampaignUpdateExecute(ctx, tt.id, campaign.ExecuteStop).Return(nil)
+
+			// isstoppable
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
+
+			// updateStatusStop
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStop, tt.response)
+
+			if err := h.updateExecuteStop(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_updateExecuteStopAndCampaignIsNotStoppable(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		response *campaign.Campaign
+	}{
+		{
+			"campaign is not stoppable",
+
+			uuid.FromStringOrNil("19cb128e-c3fa-11ec-b6ab-6f645ada73ce"),
+
+			&campaign.Campaign{
+				ID: uuid.FromStringOrNil("19cb128e-c3fa-11ec-b6ab-6f645ada73ce"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			h := &campaignHandler{
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				reqHandler:          mockReq,
+				campaigncallHandler: mockCampaigncall,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CampaignUpdateExecute(ctx, tt.id, campaign.ExecuteStop).Return(nil)
+
+			// is stoppable
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+
+			// UpdateStatusStopping
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStopping).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStopping, tt.response)
+
+			if err := h.updateExecuteStop(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
 		})
 	}
 }

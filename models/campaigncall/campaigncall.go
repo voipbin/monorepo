@@ -54,8 +54,10 @@ const (
 	StatusDone        Status = "done"        // the campaigncall is hungup
 )
 
+// Result defines
 type Result string
 
+// list of results
 const (
 	ResultNone    Result = ""        // no result.
 	ResultSuccess Result = "success" // success

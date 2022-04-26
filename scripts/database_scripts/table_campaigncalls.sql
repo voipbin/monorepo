@@ -1,3 +1,4 @@
+
 create table campaigncalls(
   -- identity
   id                binary(16),
@@ -11,7 +12,7 @@ create table campaigncalls(
 
   activeflow_id     binary(16),
   flow_id           binary(16),
-  
+
   reference_type  varchar(255),
   reference_id    binary(16),
 
@@ -26,7 +27,6 @@ create table campaigncalls(
   -- timestamps
   tm_create datetime(6),  -- create
   tm_update datetime(6),  -- update
-  tm_delete datetime(6),  -- delete
 
   primary key(id)
 );

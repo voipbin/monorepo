@@ -16,7 +16,7 @@ func (h *campaignHandler) EventHandleActiveflowDeleted(ctx context.Context, camp
 		})
 
 	// check is the campaign stopable
-	if !h.isStopable(ctx, campaignID) {
+	if !h.isStoppable(ctx, campaignID) {
 		return nil
 	}
 	log.Debugf("The campaign is able to stop. Stop the campaign. campaign_id: %s", campaignID)
@@ -40,7 +40,7 @@ func (h *campaignHandler) EventHandleReferenceCallHungup(ctx context.Context, ca
 		})
 
 	// check is the campaign stopable
-	if !h.isStopable(ctx, campaignID) {
+	if !h.isStoppable(ctx, campaignID) {
 		return nil
 	}
 	log.Debugf("The campaign is able to stop. Stop the campaign. campaign_id: %s", campaignID)

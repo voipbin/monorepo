@@ -45,6 +45,12 @@ var (
 	regV1CampaignsIDStatus       = regexp.MustCompile("/v1/campaigns/" + regUUID + "/status$")
 	regV1CampaignsIDServiceLevel = regexp.MustCompile("/v1/campaigns/" + regUUID + "/service_level$")
 	regV1CampaignsIDActions      = regexp.MustCompile("/v1/campaigns/" + regUUID + "/actions$")
+
+	// outplans
+	regV1Outplans        = regexp.MustCompile("/v1/outplans$")
+	regV1OutplansGet     = regexp.MustCompile(`/v1/outplans\?`)
+	regV1OutplansID      = regexp.MustCompile("/v1/outplans/" + regUUID + "$")
+	regV1OutplansIDDials = regexp.MustCompile("/v1/outplans/" + regUUID + "/dials$")
 )
 
 var (
@@ -154,6 +160,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	switch {
 
 	// v1
+	// campaigns
 	// /v1/campaigns
 	case regV1Campaigns.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/v1/campaigns"
@@ -171,6 +178,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CampaignsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		requestType = "/v1/campaigns/<campaign-id>"
 		response, err = h.v1CampaignsIDDelete(ctx, m)
+
+	case regV1CampaignsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/v1/campaigns/<campaign-id>"
+		response, err = h.v1CampaignsIDPut(ctx, m)
 
 	// /v1/campaigns/<campaign-id>/execute
 	case regV1CampaignsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
@@ -192,28 +203,33 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/v1/campaigns/<campaign-id>/actions"
 		response, err = h.v1CampaignsIDActionsPut(ctx, m)
 
-	// case regV1OutdialsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/outdials GET"
-	// 	response, err = h.v1OutdialsGet(m)
+	// outplans
+	// /v1/outplans
+	case regV1Outplans.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/v1/outplans"
+		response, err = h.v1OutplansPost(ctx, m)
 
-	// // outdials/<outdial-id>
-	// case regV1OutdialsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/outdials/<outdial-id> GET"
-	// 	response, err = h.v1OutdialsIDGet(m)
+	case regV1OutplansGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/v1/outplans"
+		response, err = h.v1OutplansGet(ctx, m)
 
-	// // outdials/<outdial-id>/available
-	// case regV1OutdialsIDAvailable.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/outdials/<outdial-id>/available GET"
-	// 	response, err = h.v1OutdialsIDAvailableGet(m)
+	// /v1/outplans/<outplan-id>
+	case regV1OutplansID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/v1/outplans/<outplan-id>"
+		response, err = h.v1OutplansIDGet(ctx, m)
 
-	// // outdials/<outdial-id>/targets
-	// case regV1OutdialsIDTargets.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	requestType = "/outdials/<id>/targets POST"
-	// 	response, err = h.v1OutdialsIDTargetsPost(m)
+	case regV1OutplansID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/v1/outplans/<outplan-id>"
+		response, err = h.v1OutplansIDDelete(ctx, m)
 
-	// case regV1OutdialsIDTargetsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/outdials/<id>/targets GET"
-	// 	response, err = h.v1OutdialsIDTargetsGet(m)
+	case regV1OutplansID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/v1/outplans/<outplan-id>"
+		response, err = h.v1OutplansIDPut(ctx, m)
+
+	// /v1/outrplans/<outplan-id>/dials
+	case regV1OutplansIDDials.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/v1/outdials/<outplan-id>/dials"
+		response, err = h.v1OutplansIDDialsPut(ctx, m)
 
 	default:
 		logrus.WithFields(

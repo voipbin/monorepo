@@ -5,6 +5,7 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
+// Campaign defines
 type Campaign struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
@@ -36,15 +37,19 @@ type Campaign struct {
 	TMDelete string `json:"tm_delete"`
 }
 
+// Type defines
 type Type string
 
+// list of types
 const (
 	TypeCall Type = "call" // make a call to the destination
 	TypeFlow Type = "flow" // execute a flow with the destination
 )
 
+// Execute defines
 type Execute string
 
+// list of executes
 const (
 	ExecuteRun  Execute = "run"
 	ExecuteStop Execute = "stop"

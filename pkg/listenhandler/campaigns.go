@@ -10,9 +10,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // v1CampaignsPost handles /v1/campaigns POST request
@@ -33,6 +34,7 @@ func (h *listenHandler) v1CampaignsPost(ctx context.Context, m *rabbitmqhandler.
 	// create a new campaign
 	tmp, err := h.campaignHandler.Create(
 		ctx,
+		req.ID,
 		req.CustomerID,
 		req.Type,
 		req.Name,
@@ -171,6 +173,50 @@ func (h *listenHandler) v1CampaignsIDDelete(ctx context.Context, m *rabbitmqhand
 	tmp, err := h.campaignHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete campaign info. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1CampaignsIDPut handles /v1/campaigns/{id}/service_level PUT request
+func (h *listenHandler) v1CampaignsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "v1CampaignsIDPut",
+			"campaign_id": id,
+		})
+	log.Debug("Executing v1CampaignsIDPut.")
+
+	var req request.V1DataCampaignsIDPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	// update
+	tmp, err := h.campaignHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not update the campaign service_level. err: %v", err)
 		return nil, err
 	}
 

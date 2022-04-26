@@ -963,7 +963,7 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 	}
 }
 
-func Test_OutplanUpdateActionInfo(t *testing.T) {
+func Test_CampaignUpdateActions(t *testing.T) {
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign

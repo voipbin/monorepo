@@ -1,3 +1,4 @@
+
 create table outplans(
   -- identity
   id          binary(16),

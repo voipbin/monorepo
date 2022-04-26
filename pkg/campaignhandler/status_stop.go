@@ -6,11 +6,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 )
 
-// UpdateStatusStopping
+// UpdateStatusStopping updates the campaign's status to the stopping.
+// it checks the condition for status update and returns updated campaign and error
 func (h *campaignHandler) UpdateStatusStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -91,7 +93,8 @@ func (h *campaignHandler) updateStatusStop(ctx context.Context, id uuid.UUID) (*
 	return res, nil
 }
 
-func (h *campaignHandler) isStopable(ctx context.Context, id uuid.UUID) bool {
+// isStoppable returns true if the campaign is stoppable
+func (h *campaignHandler) isStoppable(ctx context.Context, id uuid.UUID) bool {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "isStopable",
@@ -117,7 +120,7 @@ func (h *campaignHandler) isStopable(ctx context.Context, id uuid.UUID) bool {
 	}
 
 	// get campaign calls
-	ccs, err := h.campaigncallHandler.GetsOngoingByCampaignID(ctx, c.ID, dbhandler.GetCurTime(), 10)
+	ccs, err := h.campaigncallHandler.GetsOngoingByCampaignID(ctx, c.ID, dbhandler.GetCurTime(), 1)
 	if err != nil {
 		log.Errorf("Could not get ongoing campaigncalls. err: %s", err)
 	}

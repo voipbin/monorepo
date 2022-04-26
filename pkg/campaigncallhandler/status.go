@@ -2,11 +2,12 @@ package campaigncallhandler
 
 import (
 	"context"
-
-	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
+
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 )
 
@@ -28,7 +29,11 @@ func (h *campaigncallHandler) Done(ctx context.Context, id uuid.UUID, result cam
 	}
 
 	// calculate omoutdialtarget status
-	otStatus := calcDialtargetStatus(result)
+	otStatus, err := calcDialtargetStatus(result)
+	if err != nil {
+		log.Errorf("Could not calculate the dialtarget status. err: %v", err)
+		return nil, err
+	}
 	log.Debugf("Calculated dialtarget status. status: %s", otStatus)
 
 	// send request to update outdial target
@@ -62,10 +67,18 @@ func (h *campaigncallHandler) Progressing(ctx context.Context, id uuid.UUID) (*c
 }
 
 // calcDialtargetStatus returns calculated omoutdialtarget status based on campaigncall result
-func calcDialtargetStatus(result campaigncall.Result) omoutdialtarget.Status {
-	if result == campaigncall.ResultFail {
-		return omoutdialtarget.StatusIdle
+func calcDialtargetStatus(result campaigncall.Result) (omoutdialtarget.Status, error) {
+
+	mapStatus := map[campaigncall.Result]omoutdialtarget.Status{
+		campaigncall.ResultNone:    omoutdialtarget.StatusIdle,
+		campaigncall.ResultSuccess: omoutdialtarget.StatusDone,
+		campaigncall.ResultFail:    omoutdialtarget.StatusIdle,
 	}
 
-	return omoutdialtarget.StatusDone
+	res, ok := mapStatus[result]
+	if !ok {
+		return omoutdialtarget.StatusIdle, fmt.Errorf("status not found")
+	}
+
+	return res, nil
 }

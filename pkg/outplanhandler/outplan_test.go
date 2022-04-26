@@ -220,57 +220,6 @@ func Test_UpdateBasicInfo(t *testing.T) {
 	}
 }
 
-// func Test_UpdateActionInfo(t *testing.T) {
-// 	tests := []struct {
-// 		name string
-
-// 		id        uuid.UUID
-// 		actions   []fmaction.Action
-// 		source    *cmaddress.Address
-// 		endHandle outplan.EndHandle
-// 	}{
-// 		{
-// 			"normal",
-
-// 			uuid.FromStringOrNil("4dbf65e2-b3db-11ec-9f36-d7e97af657ab"),
-// 			[]fmaction.Action{
-// 				{
-// 					Type: fmaction.TypeAnswer,
-// 				},
-// 			},
-// 			&cmaddress.Address{
-// 				Type:   cmaddress.TypeTel,
-// 				Target: "+821100000001",
-// 			},
-// 			outplan.EndHandleStop,
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			h := &outplanHandler{
-// 				db:            mockDB,
-// 				notifyHandler: mockNotify,
-// 			}
-
-// 			ctx := context.Background()
-
-// 			mockDB.EXPECT().OutplanUpdateActionInfo(ctx, tt.id, tt.actions, tt.source, tt.endHandle).Return(nil)
-// 			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
-
-// 			_, err := h.UpdateActionInfo(ctx, tt.id, tt.actions, tt.source, tt.endHandle)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-// 		})
-// 	}
-// }
-
 func Test_UpdateDialInfo(t *testing.T) {
 	tests := []struct {
 		name string

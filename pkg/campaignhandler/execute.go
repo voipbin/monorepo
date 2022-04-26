@@ -3,14 +3,13 @@ package campaignhandler
 import (
 	"context"
 
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
-	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
@@ -113,8 +112,8 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 	}
 	log.WithField("camapaigncall", cc).Debugf("Created a new campaigncall. campaigncall_id: %s", cc.ID)
 
-	// send a campaignexecute request with no delay
-	if errExecute := h.reqHandler.CAV1CampaignExecute(ctx, id, 1); errExecute != nil {
+	// send a campaignexecute request with 500ms delay
+	if errExecute := h.reqHandler.CAV1CampaignExecute(ctx, id, 500); errExecute != nil {
 		log.Infof("Could not send the campaign execution correctly. Stopping campaign execution. err: %v", err)
 		if errStop := h.updateExecuteStop(ctx, id); errStop != nil {
 			log.Errorf("Could not stop the campaign execute. err: %v", errStop)
@@ -124,6 +123,7 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 }
 
 // getDestination returns outdialtarget and target address.
+// returns outdialtarget, destination, destinationindex, trycount, error
 func (h *campaignHandler) getDestination(
 	ctx context.Context,
 	c *campaign.Campaign,
