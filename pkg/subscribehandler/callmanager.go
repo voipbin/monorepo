@@ -18,7 +18,6 @@ func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *rabb
 			"event": m,
 		},
 	)
-	log.Debugf("Received call event. event: %s", m.Type)
 
 	c := cmcall.Call{}
 	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {

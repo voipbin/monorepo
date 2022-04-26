@@ -19,8 +19,9 @@ type WebhookMessage struct {
 	Source *cmaddress.Address `json:"source"` // caller id
 
 	// plan dial settings
-	DialTimeout  int `json:"dial_timeout"` // milliseconds
-	TryInterval  int `json:"try_interval"` // milliseconds
+	DialTimeout int `json:"dial_timeout"` // milliseconds
+	TryInterval int `json:"try_interval"` // milliseconds
+
 	MaxTryCount0 int `json:"max_try_count_0"`
 	MaxTryCount1 int `json:"max_try_count_1"`
 	MaxTryCount2 int `json:"max_try_count_2"`

@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 )
 
 // processEventFMActiveflowDeleted handles the flow-manager's activeflow_deleted event.
@@ -19,7 +19,6 @@ func (h *subscribeHandler) processEventFMActiveflowDeleted(ctx context.Context, 
 			"event": m,
 		},
 	)
-	log.Debugf("Received activeflow event. event: %s", m.Type)
 
 	c := fmactiveflow.Activeflow{}
 	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {
