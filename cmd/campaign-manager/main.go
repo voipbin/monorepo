@@ -24,6 +24,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/subscribehandler"
 )
 
 const serviceName = "campaign-manager"
@@ -34,7 +35,9 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
+var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event,bin-manager.flow-manager.event", "comma separated rabbitmq exchange name for subscribe")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.campaign-manager.request", "rabbitmq queue name for request listen")
+var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.campaign-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
 var rabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.campaign-manager.event", "rabbitmq queue name for event notify") //nolint:deadcode,unused,varcheck // reserved
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
@@ -157,6 +160,12 @@ func run(dbHandler dbhandler.DBHandler) {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
+
+	// run subscribe
+	if errSubscribe := runSubscribe(rabbitSock, outplanHandler, campaignHandler, campaigncallHandler); errSubscribe != nil {
+		log.Errorf("Could not run subscribe correctly. err: %v", errSubscribe)
+		return
+	}
 }
 
 // runListen runs the listen service
@@ -173,6 +182,32 @@ func runListen(
 	// run the service
 	if errRun := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)
+	}
+
+	return nil
+}
+
+// runSubscribe runs the subscribe service
+func runSubscribe(
+	sockListen rabbitmqhandler.Rabbit,
+	outplanHandler outplanhandler.OutplanHandler,
+	campaignHandler campaignhandler.CampaignHandler,
+	campaigncallHandler campaigncallhandler.CampaigncallHandler,
+) error {
+	log := logrus.WithField("func", "runSubscribe")
+
+	subscribeHandler := subscribehandler.NewSubscribeHandler(
+		sockListen,
+		*rabbitQueueSubscribe,
+		*rabbitListenSubscribes,
+		campaignHandler,
+		campaigncallHandler,
+	)
+
+	// run
+	if err := subscribeHandler.Run(); err != nil {
+		log.Errorf("Could not run the subscribe handler correctly. err: %v", err)
+		return err
 	}
 
 	return nil

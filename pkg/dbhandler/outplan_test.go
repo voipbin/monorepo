@@ -27,18 +27,15 @@ func Test_OutplanCreate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("50745688-b3b5-11ec-91bd-c3d3ee057cb1"),
 				Name:       "test name",
 				Detail:     "test detail",
-				// Actions: []fmaction.Action{
-				// 	{
-				// 		Type: fmaction.TypeAnswer,
-				// 	},
-				// },
+
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				// EndHandle:    outplan.EndHandleStop,
+
 				DialTimeout:  30000,
 				TryInterval:  600000,
+
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
 				MaxTryCount2: 3,
@@ -53,18 +50,15 @@ func Test_OutplanCreate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("50745688-b3b5-11ec-91bd-c3d3ee057cb1"),
 				Name:       "test name",
 				Detail:     "test detail",
-				// Actions: []fmaction.Action{
-				// 	{
-				// 		Type: fmaction.TypeAnswer,
-				// 	},
-				// },
+
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				// EndHandle:    outplan.EndHandleStop,
+
 				DialTimeout:  30000,
 				TryInterval:  600000,
+
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
 				MaxTryCount2: 3,
@@ -121,25 +115,24 @@ func Test_OutplanDelete(t *testing.T) {
 			&outplan.Outplan{
 				ID:         uuid.FromStringOrNil("9a72c25e-b47f-11ec-8c84-fbce9a6f9ddf"),
 				CustomerID: uuid.FromStringOrNil("9aa97862-b47f-11ec-a611-5379cfa62666"),
+
 				Name:       "test name",
 				Detail:     "test detail",
-				// Actions: []fmaction.Action{
-				// 	{
-				// 		Type: fmaction.TypeAnswer,
-				// 	},
-				// },
+
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				// EndHandle:    outplan.EndHandleStop,
+
 				DialTimeout:  30000,
 				TryInterval:  600000,
+
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
 				MaxTryCount2: 3,
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
+
 				TMCreate:     "2020-04-18 03:22:17.995000",
 				TMUpdate:     "2020-04-18 03:22:17.995000",
 				TMDelete:     DefaultTimeStamp,
@@ -196,25 +189,24 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 				{
 					ID:         uuid.FromStringOrNil("0b2e5afe-b3b7-11ec-90fb-0f96dcc8665c"),
 					CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
+
 					Name:       "test name",
 					Detail:     "test detail",
-					// Actions: []fmaction.Action{
-					// 	{
-					// 		Type: fmaction.TypeAnswer,
-					// 	},
-					// },
+
 					Source: &cmaddress.Address{
 						Type:   cmaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					// EndHandle:    outplan.EndHandleStop,
+
 					DialTimeout:  30000,
 					TryInterval:  600000,
+
 					MaxTryCount0: 3,
 					MaxTryCount1: 3,
 					MaxTryCount2: 3,
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
+
 					TMCreate:     "2020-04-18 03:22:17.995000",
 					TMUpdate:     "2020-04-18 03:22:17.995000",
 					TMDelete:     DefaultTimeStamp,
@@ -233,23 +225,21 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
 					Name:       "test name",
 					Detail:     "test detail",
-					// Actions: []fmaction.Action{
-					// 	{
-					// 		Type: fmaction.TypeAnswer,
-					// 	},
-					// },
+
 					Source: &cmaddress.Address{
 						Type:   cmaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					// EndHandle:    outplan.EndHandleStop,
+
 					DialTimeout:  30000,
 					TryInterval:  600000,
+
 					MaxTryCount0: 3,
 					MaxTryCount1: 3,
 					MaxTryCount2: 3,
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
+
 					TMCreate:     "2020-04-18 03:22:18.995000",
 					TMUpdate:     "2020-04-18 03:22:17.995000",
 					TMDelete:     DefaultTimeStamp,
@@ -259,23 +249,21 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
 					Name:       "test name",
 					Detail:     "test detail",
-					// Actions: []fmaction.Action{
-					// 	{
-					// 		Type: fmaction.TypeAnswer,
-					// 	},
-					// },
+
 					Source: &cmaddress.Address{
 						Type:   cmaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					// EndHandle:    outplan.EndHandleStop,
+
 					DialTimeout:  30000,
 					TryInterval:  600000,
+
 					MaxTryCount0: 3,
 					MaxTryCount1: 3,
 					MaxTryCount2: 3,
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
+
 					TMCreate:     "2020-04-18 03:22:17.995000",
 					TMUpdate:     "2020-04-18 03:22:17.995000",
 					TMDelete:     DefaultTimeStamp,
@@ -338,23 +326,21 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
 				Name:       "test name",
 				Detail:     "test detail",
-				// Actions: []fmaction.Action{
-				// 	{
-				// 		Type: fmaction.TypeAnswer,
-				// 	},
-				// },
+
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				// EndHandle:    outplan.EndHandleStop,
+
 				DialTimeout:  30000,
 				TryInterval:  600000,
+
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
 				MaxTryCount2: 3,
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
+
 				TMCreate:     "2020-04-18 03:22:17.995000",
 				TMUpdate:     "2020-04-18 03:22:17.995000",
 				TMDelete:     DefaultTimeStamp,
@@ -368,18 +354,15 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
 				Name:       "update name",
 				Detail:     "update detail",
-				// Actions: []fmaction.Action{
-				// 	{
-				// 		Type: fmaction.TypeAnswer,
-				// 	},
-				// },
+
 				Source: &cmaddress.Address{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				// EndHandle:    outplan.EndHandleStop,
+
 				DialTimeout:  30000,
 				TryInterval:  600000,
+				
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
 				MaxTryCount2: 3,

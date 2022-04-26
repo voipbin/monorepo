@@ -159,33 +159,6 @@ func (h *outplanHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 	return res, nil
 }
 
-// // UpdateActionInfo updates outplan's action info
-// func (h *outplanHandler) UpdateActionInfo(ctx context.Context, id uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, endHandle outplan.EndHandle) (*outplan.Outplan, error) {
-// 	log := logrus.WithFields(
-// 		logrus.Fields{
-// 			"func":       "UpdateActionInfo",
-// 			"id":         id,
-// 			"actions":    actions,
-// 			"source":     source,
-// 			"end_handle": endHandle,
-// 		})
-// 	log.Debug("Updating outplan action info.")
-
-// 	if err := h.db.OutplanUpdateActionInfo(ctx, id, actions, source, endHandle); err != nil {
-// 		log.Errorf("Could not update outplan action info. err: %v", err)
-// 		return nil, err
-// 	}
-
-// 	// get updated outplan
-// 	res, err := h.db.OutplanGet(ctx, id)
-// 	if err != nil {
-// 		log.Errorf("Could not get updated outplan info. err: %v", err)
-// 		return nil, err
-// 	}
-
-// 	return res, nil
-// }
-
 // UpdateActionInfo updates outplan's dial info
 func (h *outplanHandler) UpdateDialInfo(
 	ctx context.Context,

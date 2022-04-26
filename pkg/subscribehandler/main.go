@@ -11,14 +11,17 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaignhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // list of publishers
 const (
 	publisherCallManager = "call-manager"
+	publisherFlowManager = "flow-manager"
 )
 
 // SubscribeHandler interface
@@ -137,16 +140,14 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	switch {
 
 	//// call-manager
-	// // confbridge
-	// case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeJoined)):
-	// 	err = h.processEventCMConfbridgeJoined(m)
-
-	// case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved)):
-	// 	err = h.processEventCMConfbridgeLeaved(m)
-
 	// call
 	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHungup)):
 		err = h.processEventCMCallHungup(ctx, m)
+
+	//// flow-manager
+	// activeflow
+	case m.Publisher == publisherFlowManager && (m.Type == string(fmactiveflow.EventTypeActiveflowDeleted)):
+		err = h.processEventFMActiveflowDeleted(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

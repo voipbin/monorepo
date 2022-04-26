@@ -2,8 +2,9 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 )
 
 // V1DataCampaignsPost is
@@ -32,7 +33,15 @@ type V1DataCampaignsPost struct {
 	NextCampaignID uuid.UUID `json:"next_campaign_id"`
 }
 
-// V1DataCampaignIDStatusPut is
+// V1DataCampaignsIDPut is
+// v1 data type request struct for
+// /v1/campaigns/<campaign-id> PUT
+type V1DataCampaignsIDPut struct {
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+}
+
+// V1DataCampaignsIDStatusPut is
 // v1 data type request struct for
 // /v1/campaigns/<campaign-id>/status PUT
 type V1DataCampaignsIDStatusPut struct {

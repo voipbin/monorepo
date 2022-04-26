@@ -25,6 +25,8 @@ const (
 		queue_id,
 
 		activeflow_id,
+		flow_id,
+
 		reference_type,
 		reference_id,
 
@@ -61,6 +63,8 @@ func (h *handler) campaigncallGetFromRow(row *sql.Rows) (*campaigncall.Campaignc
 		&res.QueueID,
 
 		&res.ActiveflowID,
+		&res.FlowID,
+
 		&res.ReferenceType,
 		&res.ReferenceID,
 
@@ -102,6 +106,8 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 		queue_id,
 
 		activeflow_id,
+		flow_id,
+
 		reference_type,
 		reference_id,
 
@@ -118,7 +124,8 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 	) values(
 		?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, ?,
+		?, ?,
+		?, ?,
 		?, ?,
 		?, ?, ?, ?,
 		?, ?
@@ -150,6 +157,8 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 		t.QueueID.Bytes(),
 
 		t.ActiveflowID.Bytes(),
+		t.FlowID.Bytes(),
+
 		t.ReferenceType,
 		t.ReferenceID.Bytes(),
 

@@ -38,18 +38,18 @@ func (m *MockCampaignHandler) EXPECT() *MockCampaignHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockCampaignHandler) Create(ctx context.Context, customerID uuid.UUID, campaignType campaign.Type, name, detail string, actions []action.Action, serviceLevel int, endHandle campaign.EndHandle, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
+func (m *MockCampaignHandler) Create(ctx context.Context, id, customerID uuid.UUID, campaignType campaign.Type, name, detail string, actions []action.Action, serviceLevel int, endHandle campaign.EndHandle, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, campaignType, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID)
+	ret := m.ctrl.Call(m, "Create", ctx, id, customerID, campaignType, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID)
 	ret0, _ := ret[0].(*campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockCampaignHandlerMockRecorder) Create(ctx, customerID, campaignType, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
+func (mr *MockCampaignHandlerMockRecorder) Create(ctx, id, customerID, campaignType, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCampaignHandler)(nil).Create), ctx, customerID, campaignType, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCampaignHandler)(nil).Create), ctx, id, customerID, campaignType, name, detail, actions, serviceLevel, endHandle, outplanID, outdialID, queueID, nextCampaignID)
 }
 
 // Delete mocks base method.

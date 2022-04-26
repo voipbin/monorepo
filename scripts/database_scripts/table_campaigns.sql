@@ -1,3 +1,4 @@
+
 create table campaigns(
   -- identity
   id          binary(16),

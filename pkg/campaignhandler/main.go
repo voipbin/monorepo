@@ -30,6 +30,7 @@ type campaignHandler struct {
 type CampaignHandler interface {
 	Create(
 		ctx context.Context,
+		id uuid.UUID,
 		customerID uuid.UUID,
 		campaignType campaign.Type,
 		name string,
@@ -49,7 +50,6 @@ type CampaignHandler interface {
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*campaign.Campaign, error)
 	UpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) (*campaign.Campaign, error)
 	UpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) (*campaign.Campaign, error)
-	// UpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error)
 	UpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*campaign.Campaign, error)
 	UpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*campaign.Campaign, error)
 

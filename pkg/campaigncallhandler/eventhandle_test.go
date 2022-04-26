@@ -7,11 +7,12 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
+
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 )
 
 func Test_EventHandleActiveflowDeleted(t *testing.T) {
@@ -72,6 +73,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 		campaigncall *campaigncall.Campaigncall
 		response     *campaigncall.Campaigncall
 
+		expectResult campaigncall.Result
 		expectStatus omoutdialtarget.Status
 	}{
 		{
@@ -88,6 +90,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
 			},
 
+			campaigncall.ResultSuccess,
 			omoutdialtarget.StatusDone,
 		},
 		{
@@ -104,6 +107,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
 			},
 
+			campaigncall.ResultFail,
 			omoutdialtarget.StatusIdle,
 		},
 		{
@@ -120,6 +124,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
 			},
 
+			campaigncall.ResultFail,
 			omoutdialtarget.StatusIdle,
 		},
 		{
@@ -136,6 +141,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
 			},
 
+			campaigncall.ResultFail,
 			omoutdialtarget.StatusIdle,
 		},
 		{
@@ -152,6 +158,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
 			},
 
+			campaigncall.ResultFail,
 			omoutdialtarget.StatusIdle,
 		},
 		{
@@ -168,6 +175,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
 			},
 
+			campaigncall.ResultFail,
 			omoutdialtarget.StatusIdle,
 		},
 		{
@@ -184,6 +192,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
 			},
 
+			campaigncall.ResultFail,
 			omoutdialtarget.StatusIdle,
 		},
 		{
@@ -200,6 +209,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
 			},
 
+			campaigncall.ResultFail,
 			omoutdialtarget.StatusIdle,
 		},
 	}
@@ -220,7 +230,7 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaigncallUpdateStatus(ctx, tt.campaigncall.ID, campaigncall.StatusDone).Return(nil)
+			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.campaigncall.ID, campaigncall.StatusDone, tt.expectResult).Return(nil)
 			mockDB.EXPECT().CampaigncallGet(ctx, tt.campaigncall.ID).Return(tt.response, nil)
 			mockReq.EXPECT().OMV1OutdialtargetUpdateStatus(ctx, tt.response.OutdialTargetID, tt.expectStatus).Return(&omoutdialtarget.OutdialTarget{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.response)
