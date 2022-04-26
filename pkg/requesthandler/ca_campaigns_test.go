@@ -10,8 +10,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func Test_CAV1CampaignCreate(t *testing.T) {
@@ -21,6 +22,7 @@ func Test_CAV1CampaignCreate(t *testing.T) {
 
 		id             uuid.UUID
 		customerID     uuid.UUID
+		campaignType   cacampaign.Type
 		campaignName   string
 		campaignDetail string
 		serviceLevel   int
@@ -42,6 +44,7 @@ func Test_CAV1CampaignCreate(t *testing.T) {
 
 			uuid.FromStringOrNil("1d8334ff-afa2-4687-9b9a-038df4f27cf9"),
 			uuid.FromStringOrNil("857f154e-7f4d-11ec-b669-a7aa025fbeaf"),
+			cacampaign.TypeCall,
 			"test name",
 			"test detail",
 			100,
@@ -63,7 +66,7 @@ func Test_CAV1CampaignCreate(t *testing.T) {
 				URI:      "/v1/campaigns",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"1d8334ff-afa2-4687-9b9a-038df4f27cf9","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","name":"test name","detail":"test detail","service_level":100,"end_handle":"stop","actions":[],"outplan_id":"b07a3fb5-59df-450f-a3bf-779faea8baaf","outdial_id":"b07a3fb5-59df-450f-a3bf-779faea8baaf","queue_id":"6d23319a-74f9-4251-bdbf-650926b7ceb6","next_campaign_id":"01f7ce4d-69bc-4d6a-aafa-6b4cdf43a4d1"}`),
+				Data:     []byte(`{"id":"1d8334ff-afa2-4687-9b9a-038df4f27cf9","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"call","name":"test name","detail":"test detail","service_level":100,"end_handle":"stop","actions":[],"outplan_id":"b07a3fb5-59df-450f-a3bf-779faea8baaf","outdial_id":"b07a3fb5-59df-450f-a3bf-779faea8baaf","queue_id":"6d23319a-74f9-4251-bdbf-650926b7ceb6","next_campaign_id":"01f7ce4d-69bc-4d6a-aafa-6b4cdf43a4d1"}`),
 			},
 			&cacampaign.Campaign{
 				ID: uuid.FromStringOrNil("1d8334ff-afa2-4687-9b9a-038df4f27cf9"),
@@ -88,6 +91,7 @@ func Test_CAV1CampaignCreate(t *testing.T) {
 				ctx,
 				tt.id,
 				tt.customerID,
+				tt.campaignType,
 				tt.campaignName,
 				tt.campaignDetail,
 				tt.serviceLevel,
@@ -368,6 +372,72 @@ func Test_CAV1CampaignExecute(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+		})
+	}
+}
+
+func Test_CAV1CampaignUpdateBasicInfo(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		campaignID   uuid.UUID
+		updateName   string
+		updateDetail string
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectResult  *cacampaign.Campaign
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
+			"update name",
+			"update detail",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"1692450e-c50f-11ec-8e6c-07b184583eb1"}`),
+			},
+
+			"bin-manager.campaign-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/campaigns/1692450e-c50f-11ec-8e6c-07b184583eb1",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
+			},
+			&cacampaign.Campaign{
+				ID: uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CAV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.updateName, tt.updateDetail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectResult, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			}
 		})
 	}
 }

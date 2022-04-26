@@ -9,8 +9,9 @@ import (
 	"github.com/gofrs/uuid"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	carequest "gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // CAV1CampaignCreate creates a new campaign.
@@ -18,6 +19,7 @@ func (r *requestHandler) CAV1CampaignCreate(
 	ctx context.Context,
 	id uuid.UUID,
 	customerID uuid.UUID,
+	campaignType cacampaign.Type,
 	name string,
 	detail string,
 	serviceLevel int,
@@ -34,6 +36,7 @@ func (r *requestHandler) CAV1CampaignCreate(
 	reqData := &carequest.V1DataCampaignsPost{
 		ID:             id,
 		CustomerID:     customerID,
+		Type:           campaignType,
 		Name:           name,
 		Detail:         detail,
 		ServiceLevel:   serviceLevel,
@@ -139,7 +142,6 @@ func (r *requestHandler) CAV1CampaignDelete(ctx context.Context, campaignID uuid
 	}
 
 	return &res, nil
-
 }
 
 // CAV1CampaignExecute sends a request to campaign-manager
@@ -159,6 +161,41 @@ func (r *requestHandler) CAV1CampaignExecute(ctx context.Context, id uuid.UUID, 
 	}
 
 	return nil
+}
+
+// CAV1CampaignUpdateBasicInfo sends a request to campaign-manager
+// to update the campaign's basic info.
+// delay millisecond
+func (r *requestHandler) CAV1CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*cacampaign.Campaign, error) {
+	uri := fmt.Sprintf("/v1/campaigns/%s", id)
+
+	data := &carequest.V1DataCampaignsIDPut{
+		Name:   name,
+		Detail: detail,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPut, resourceCACampaigns, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cacampaign.Campaign
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // CAV1CampaignUpdateStatus sends a request to campaign-manager
